@@ -4,6 +4,8 @@ import time
 import os
 
 def calc_dt(x, kx, timeshift = 0):
+    matches = []
+
     kx = [u + timeshift for u in kx]
     dt = []
     
@@ -26,19 +28,28 @@ def calc_dt(x, kx, timeshift = 0):
         v = kv - hpv
         if abs(u) < abs(v):
             dt.append(u)
+            matches.append((u, i, ki))
         else:
             dt.append(v)
+            matches.append((v, i-1, ki))
         ki += 1
 
     hist(dt, bins=100, range=(-1, 1), histtype='step',
          label="Shift %+g s" % timeshift)
 
-    return dt
+    return matches
 
 def read_from_db(limit):
-    db = MySQLdb.connect('127.0.0.1', 'analysis', 'Data4analysis!', 'eventwarehouse', 3307)
+    db = MySQLdb.connect('127.0.0.1', 'analysis', 'Data4analysis!',
+                         'eventwarehouse', 3307)
     cursor = db.cursor()
-    sql = "select date, time, nanoseconds, doublevalue from event join calculateddata using(event_id) join calculateddatatype using (calculateddatatype_id) where uploadcode='PH1' and station_id=601 limit %d" % limit
+    sql = "SELECT date, time, nanoseconds, doublevalue " \
+          "FROM event " \
+          "JOIN calculateddata USING(event_id) " \
+          "JOIN calculateddatatype USING (calculateddatatype_id) " \
+          "WHERE uploadcode='IN2' " \
+          "AND station_id=601 " \
+          "LIMIT %d" % limit
     cursor.execute(sql)
     result = cursor.fetchall()
     return result
@@ -58,7 +69,7 @@ def calc_hisparc_times(result):
     return d, x
 
 def calc_kascade_times(ht):
-    kx = []; ky = []
+    kx = []; ky = []; kyy = []
     f = open('kascade-time.dat', 'r')
     while True:
         line = f.readline()
@@ -69,14 +80,16 @@ def calc_kascade_times(ht):
             continue
         kx.append(t)
         ky.append(data[4])
+        kyy.append(data[3])
         if t > ht[-1]:
             break
-    return kx, ky
+    return kx, ky, kyy
 
 def do_timeshifts(shifts):
     for shift in shifts:
         print "Calculating dt's for timeshift", shift
-        dt = calc_dt(x, kx, shift)
+        matches = calc_dt(x, kx, shift)
+    return matches
 
 def finish_graph():
     legend()
@@ -88,9 +101,11 @@ if __name__ == '__main__':
     os.environ['TZ'] = 'UTC'
     time.tzset()
 
-    #result = read_from_db(100000)
-    #d, x = calc_hisparc_times(result)
-    #kx, ky = calc_kascade_times(d['time'])
+    result = read_from_db(1000000)
+    d, x = calc_hisparc_times(result)
+    kx, ky, kyy = calc_kascade_times(d['time'])
 
-    do_timeshifts([0, 1, -1, 13, -13, 13.2])
+    matches = do_timeshifts([13.180212926864623])
     finish_graph()
+
+    matches = [v for v in matches if abs(v[0]) < 1e-5]
