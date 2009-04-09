@@ -1,3 +1,4 @@
 *.dat
 *.dat.gz
 plots
+*.h5
