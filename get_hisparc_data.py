@@ -37,21 +37,22 @@ def get_hisparc_data(station_id=601, start=None, stop=None, limit=None,
     if not events:
         return None, None
 
-    # in the case of an offset, determine 'start' from the event data
-    if offset:
-        date = events[0][1]
-        timedelta = events[0][2]
-        start = datetime.datetime.combine(date, datetime.time()) + timedelta
+    # determine 'start' from the event data
+    date = events[0][1]
+    timedelta = events[0][2]
+    start = datetime.datetime.combine(date, datetime.time()) + timedelta
 
-    # in the case of a limit, determine 'stop' from the event data
-    if limit:
-        date = events[-1][1]
-        timedelta = events[-1][2]
-        stop = datetime.datetime.combine(date, datetime.time()) + timedelta
+    # determine 'stop' from the event data
+    date = events[-1][1]
+    timedelta = events[-1][2]
+    stop = datetime.datetime.combine(date, datetime.time()) + timedelta
 
     # get the eventdata, where we don't select on event_ids, but rather
     # rely on 'start' and 'stop' instead.
+    print "Time window: ", start, stop
     eventdata = get_hisparc_eventdata(db, station_id, start, stop)
+
+    db.close()
 
     return events, eventdata
 
@@ -82,11 +83,13 @@ def get_hisparc_events(db, station_id, start=None, stop=None, limit=None,
     sql = "SELECT event_id, date, time, nanoseconds FROM event " \
           "WHERE station_id=%d AND eventtype_id=1 " % station_id
     if start:
-        sql += "AND date >= '%s' AND time >= '%s' " \
-               % (start.date(), start.time().strftime('%H:%M:%S'))
+        sql += "AND (date > '%s' OR (date = '%s' AND time >= '%s')) " \
+               % (start.date(), start.date(),
+                  start.time().strftime('%H:%M:%S'))
     if stop:
-        sql += "AND date <= '%s' AND time <= '%s' " \
-               % (stop.date(), stop.time().strftime('%H:%M:%S'))
+        sql += "AND (date < '%s' OR (date = '%s' AND time <= '%s')) " \
+               % (stop.date(), stop.date(),
+                  stop.time().strftime('%H:%M:%S'))
     sql += "ORDER BY date, time, nanoseconds "
     if limit:
         if offset:
@@ -133,12 +136,14 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None):
     sql += "AND uploadcode " \
            "IN ('PH1','PH2','PH3','PH4','IN1','IN2','IN3','IN4') "
     if start:
-        sql += "AND date >= '%s' AND time >= '%s' " \
-               % (start.date(), start.time().strftime('%H:%M:%S'))
+        sql += "AND (date > '%s' OR (date = '%s' AND time >= '%s')) " \
+               % (start.date(), start.date(),
+                  start.time().strftime('%H:%M:%S'))
     if stop:
-        sql += "AND date <= '%s' AND time <= '%s' " \
-               % (stop.date(), stop.time().strftime('%H:%M:%S'))
+        sql += "AND (date < '%s' OR (date = '%s' AND time <= '%s')) " \
+               % (stop.date(), stop.date(),
+                  stop.time().strftime('%H:%M:%S'))
     sql += "ORDER BY date, time, nanoseconds"
     cursor.execute(sql)
     results = cursor.fetchall()
-    return results    
+    return results

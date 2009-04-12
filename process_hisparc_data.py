@@ -50,7 +50,12 @@ def process_events(events, eventdata, table):
         while True:
             # now process the eventdata row by row, using the current index
             # data_idx
-            data_row = eventdata[data_idx]
+            try:
+                data_row = eventdata[data_idx]
+            except IndexError:
+                # We've exhausted all eventdata. Break to store the current
+                # event. Hopefully, we've exhausted events as well.
+                break
             if data_row[0] == event_id:
                 # the eventdata matches the current event, make sure to
                 # read the next eventdata row next time and process the
