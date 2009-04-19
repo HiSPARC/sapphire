@@ -10,8 +10,8 @@ import datetime
 import time
 import os
 
-def process_events(events, eventdata, table):
-    """ Do the actual data processing and storing
+def process_hisparc_events(events, eventdata, table):
+    """Do the actual data processing and storing
 
     This function concurrently reads the events and eventdata lists and
     builds up the event rows. When a row is complete, i.e. there are no
@@ -85,5 +85,6 @@ def process_events(events, eventdata, table):
     table.flush()
 
 if __name__ == '__main__':
+    print 'Setting time zone to UTC'
     os.environ['TZ'] = 'UTC'
     time.tzset()
