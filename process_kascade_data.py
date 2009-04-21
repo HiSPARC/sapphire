@@ -8,7 +8,7 @@
 """
 import subprocess
 
-def process_kascade_events(file, table):
+def process_kascade_events(filename, table):
     """Do the actual data processing.
 
     This function starts a subprocess to unzip the data file, reads the
@@ -18,12 +18,13 @@ def process_kascade_events(file, table):
     when our detector was turned on.
 
     Arguments:
-    file        the KASCADE data file
+    filename    the KASCADE data filename
     table       the destination table
 
     """
     # start a subprocess which executes gunzip
-    p = subprocess.Popen(['gunzip', '-c', file], stdout=subprocess.PIPE)
+    p = subprocess.Popen(['gunzip', '-c', filename],
+                         stdout=subprocess.PIPE)
 
     tablerow = table.row
 
