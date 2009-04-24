@@ -41,6 +41,7 @@ def process_hisparc_events(events, eventdata, table):
         tablerow['event_id'] = event_id
         tablerow['timestamp'] = timestamp
         tablerow['nanoseconds'] = nanoseconds
+        tablerow['ext_timestamp'] = timestamp * 1e9 + nanoseconds
 
         # get default values for the eventdata
         data = {}

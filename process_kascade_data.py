@@ -52,6 +52,7 @@ def process_kascade_events(filename, table):
             tablerow['event_id'] = Ieve
             tablerow['timestamp'] = Gt
             tablerow['nanoseconds'] = Mmn
+            tablerow['ext_timestamp'] = Gt * 1e9 + Mmn
             tablerow['energy'] = EnergyArray
             tablerow['core_pos'] = [Xc, Yc]
             tablerow['zenith'] = Ze
