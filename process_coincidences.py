@@ -8,6 +8,86 @@ import datetime
 import time
 import os
 
+def do_timeshifts(datafile, shifts, limit=None):
+    """Search for coincidences using multiple time shifts
+
+    This function enables you to search for coincidences multiple times,
+    using a list of time shifts. Given a data file, the events are read
+    into arrays and passed on to the search_coincidences function. For
+    each shift, a histogram is plotted so you can get a feel for the
+    goodness of the shift. The coincidences data from the last shift is
+    returned.
+
+    Arguments:
+    datafile    the data file containing the events
+    shifts      a list of time shifts
+    limit       an optional limit on the number of kascade events used in
+                the search
+
+    Returns:
+    An array of coincidences from the last shift ([dt in nanoseconds,
+    hisparc event id, kascade event id]).
+
+    """
+    # Get arrays from the tables. This is much, much faster than working
+    # from the tables directly. Pity.
+    h, k = get_arrays_from_tables(datafile.root.hisparc.events,
+                                  datafile.root.kascade.events, limit)
+
+    for shift in shifts:
+        print "Calculating dt's for timeshift %.9f (%d nanoseconds)" % \
+              (shift, long(shift * 1e9))
+        coincidences = search_coincidences(h, k, shift)
+
+        dt = [x[0] / 1e9 for x in coincidences]
+        hist(dt, bins=100, range=(-1, 1), histtype='step',
+             label="Shift %+g s" % shift)
+
+    finish_graph()
+    return coincidences
+
+def store_coincidences(datafile, coincidences):
+    """Store coincidences in a table
+
+    This function stores coincidences which are found by
+    search_coincidences in a table, so data can be easily retrieved without
+    resorting to lookups which span multiple tables.
+
+    Arguments:
+    datafile            datafile to hold the coincidences
+    coincidences        a list of coincidences, as given by
+                        search_coincidences
+
+    """
+    table = datafile.root.coincidences.events
+    tablerow = table.row
+
+    for coincidence in coincidences:
+        hisparc = datafile.root.hisparc.events[coincidence[1]]
+        kascade = datafile.root.kascade.events[coincidence[2]]
+        tablerow['hisparc_event_id'] = hisparc['event_id']
+        tablerow['kascade_event_id'] = kascade['event_id']
+        tablerow['hisparc_timestamp'] = hisparc['timestamp']
+        tablerow['hisparc_nanoseconds'] = hisparc['nanoseconds']
+        tablerow['hisparc_ext_timestamp'] = hisparc['ext_timestamp']
+        tablerow['hisparc_pulseheights'] = hisparc['pulseheights']
+        tablerow['hisparc_integrals'] = hisparc['integrals']
+        tablerow['kascade_timestamp'] = kascade['timestamp']
+        tablerow['kascade_nanoseconds'] = kascade['nanoseconds']
+        tablerow['kascade_ext_timestamp'] = kascade['ext_timestamp']
+        tablerow['kascade_energy'] = kascade['energy']
+        tablerow['kascade_core_pos'] = kascade['core_pos']
+        tablerow['kascade_zenith'] = kascade['zenith']
+        tablerow['kascade_azimuth'] = kascade['azimuth']
+        tablerow['kascade_Num_e'] = kascade['Num_e']
+        tablerow['kascade_Num_mu'] = kascade['Num_mu']
+        tablerow['kascade_dens_e'] = kascade['dens_e']
+        tablerow['kascade_dens_mu'] = kascade['dens_mu']
+        tablerow['kascade_P200'] = kascade['P200']
+        tablerow['kascade_T200'] = kascade['T200']
+        tablerow.append()
+    table.flush()
+
 def search_coincidences(hisparc_data, kascade_data, timeshift, limit=None):
     """Search for coincidences
 
@@ -98,44 +178,6 @@ def shift_data(data, timeshift):
     timeshift = long(timeshift * 1e9)
 
     return [[x[0], x[1] + timeshift] for x in data]
-
-def do_timeshifts(datafile, shifts, limit=None):
-    """Search for coincidences using multiple time shifts
-
-    This function enables you to search for coincidences multiple times,
-    using a list of time shifts. Given a data file, the events are read
-    into arrays and passed on to the search_coincidences function. For
-    each shift, a histogram is plotted so you can get a feel for the
-    goodness of the shift. The coincidences data from the last shift is
-    returned.
-
-    Arguments:
-    datafile    the data file containing the events
-    shifts      a list of time shifts
-    limit       an optional limit on the number of kascade events used in
-                the search
-
-    Returns:
-    An array of coincidences from the last shift ([dt in nanoseconds,
-    hisparc event id, kascade event id]).
-
-    """
-    # Get arrays from the tables. This is much, much faster than working
-    # from the tables directly. Pity.
-    h, k = get_arrays_from_tables(datafile.root.hisparc.events,
-                                  datafile.root.kascade.events, limit)
-
-    for shift in shifts:
-        print "Calculating dt's for timeshift %.9f (%d nanoseconds)" % \
-              (shift, long(shift * 1e9))
-        coincidences = search_coincidences(h, k, shift)
-
-        dt = [x[0] / 1e9 for x in coincidences]
-        hist(dt, bins=100, range=(-1, 1), histtype='step',
-             label="Shift %+g s" % shift)
-
-    finish_graph()
-    return coincidences
 
 def finish_graph():
     """Finish the histogram
