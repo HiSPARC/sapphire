@@ -21,11 +21,11 @@ class IntegrityError(Error):
         message --- error message
 
     """
-    def __init__(self, message):
-        self.message = message
+    def __init__(self, msg):
+        self.msg = msg
 
     def __str__(self):
-        return self.message
+        return self.msg
 
 
 def process_hisparc_events(events, eventdata, table):
