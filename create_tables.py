@@ -47,8 +47,7 @@ class Coincidence(tables.IsDescription):
     kascade_P200 = tables.FloatCol(pos=18)
     kascade_T200 = tables.FloatCol(pos=19)
 
-
-if __name__ == '__main__':
+def create_tables():
     print "Creating a new PyTables data file... ",
     data = tables.openFile('data_new.h5', 'w', 'HiSPARC / KASCADE data')
     hisparc = data.createGroup('/', 'hisparc', 'HiSPARC data')
@@ -61,3 +60,7 @@ if __name__ == '__main__':
                      'Coincidence events')
     data.close()
     print "done."
+
+
+if __name__ == '__main__':
+    create_tables()

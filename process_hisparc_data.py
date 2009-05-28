@@ -10,6 +10,24 @@ import datetime
 import time
 import os
 
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class IntegrityError(Error):
+    """Exception raised for data integrity errors.
+
+    Attributes:
+        message --- error message
+
+    """
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
 def process_hisparc_events(events, eventdata, table):
     """Do the actual data processing and storing
 
@@ -18,6 +36,9 @@ def process_hisparc_events(events, eventdata, table):
     more eventdata values for the current event row, it is stored in a
     pytables table.
 
+    This is one nice long algorithmic hack. This is the price we have to
+    pay to gain a speed increase of a factor of 20 or so.
+
     Arguments:
     events          contents from the eventwarehouse event table
     eventdata       contents from the eventwarehouse eventdata table
@@ -25,8 +46,19 @@ def process_hisparc_events(events, eventdata, table):
 
     """
     tablerow = table.row
-
     data_idx = 0
+
+    # First, make sure we have no 'old' eventdata records in the first few
+    # rows.
+    event_id = events[0][0]
+    try:
+        while eventdata[data_idx][0] != event_id:
+            data_idx += 1
+    except IndexError:
+        # We've exhausted all eventdata records, there is no match!
+        raise IntegrityError("Eventdata records don't match event " \
+                             "records.")
+
     for row in events:
         # We process the events row by row
         event_id = row[0]
@@ -78,6 +110,10 @@ def process_hisparc_events(events, eventdata, table):
                 # exhausted this events' eventdata. Break to store this
                 # event.
                 break
+        if (data['pulseheights'] == tablerow['pulseheights']).all() or \
+           (data['integrals'] == tablerow['integrals']).all():
+            raise IntegrityError("Possibly missing event records.")
+
         tablerow['pulseheights'] = data['pulseheights']
         tablerow['integrals'] = data['integrals']
         tablerow.append()
