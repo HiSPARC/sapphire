@@ -27,6 +27,10 @@ def get_hisparc_data(station_id=601, start=None, stop=None, limit=None,
     offset              an offset in the total event list from which point
                         on a limit number of events is being selected
 
+    Returns:
+    events              events from the eventwarehouse event table
+    eventdata           corresponding data from the eventdata table
+
     """
     db = MySQLdb.connect('127.0.0.1', 'analysis', 'Data4analysis!',
                          'eventwarehouse', 3307)

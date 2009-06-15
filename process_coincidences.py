@@ -60,6 +60,7 @@ def store_coincidences(datafile, coincidences):
 
     """
     table = datafile.root.coincidences.events
+    old_data_length = len(table)
     tablerow = table.row
 
     for coincidence in coincidences:
@@ -87,6 +88,11 @@ def store_coincidences(datafile, coincidences):
         tablerow['kascade_T200'] = kascade['T200']
         tablerow.append()
     table.flush()
+
+    # Flush old data
+    if old_data_length:
+        print "Flushing old data..."
+        table.removeRows(0, old_data_length)
 
 def search_coincidences(hisparc_data, kascade_data, timeshift, limit=None):
     """Search for coincidences
@@ -200,6 +206,9 @@ def get_arrays_from_tables(h, k, limit):
     tables with hisparc and kascade data. It honors a limit and only
     fetches events which fall inside the time window.
 
+    Caveat: because the timeshift is not yet known, a few coincidences
+    may fall outside the time window and not be taken into account.
+
     Arguments:
     h           hisparc event table
     k           kascade event table
@@ -211,7 +220,7 @@ def get_arrays_from_tables(h, k, limit):
 
     """
     try:
-        k_t = k[limit]['timestamp']
+        k_t = k[limit - 1]['timestamp']
     except (IndexError, TypeError):
         k_t = k[-1]['timestamp']
     h_t = h[-1]['timestamp']
@@ -227,4 +236,5 @@ def get_arrays_from_tables(h, k, limit):
 
 
 if __name__ == '__main__':
+    print "Careful: the following search is limited to 1000 kascade events"
     c = do_timeshifts(data, [-13.180213654], limit=1000)

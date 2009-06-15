@@ -2,3 +2,4 @@
 *.dat.gz
 plots
 *.h5
+tmp
