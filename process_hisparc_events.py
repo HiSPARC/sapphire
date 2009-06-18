@@ -7,7 +7,7 @@
 
 """
 import datetime
-import time
+import calendar
 import os
 
 class Error(Exception):
@@ -68,7 +68,7 @@ def process_hisparc_events(events, eventdata, table):
 
         # calculate the timestamp (in GPS time, not UTC time!)
         t = datetime.datetime.combine(date, datetime.time()) + timedelta
-        timestamp = time.mktime(t.utctimetuple())
+        timestamp = calendar.timegm(t.utctimetuple())
 
         tablerow['event_id'] = event_id
         tablerow['timestamp'] = timestamp
@@ -120,8 +120,3 @@ def process_hisparc_events(events, eventdata, table):
         # continue on to the next event
 
     table.flush()
-
-if __name__ == '__main__':
-    print 'Setting time zone to UTC'
-    os.environ['TZ'] = 'UTC'
-    time.tzset()
