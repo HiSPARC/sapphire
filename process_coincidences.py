@@ -237,4 +237,6 @@ def get_arrays_from_tables(h, k, limit):
 
 if __name__ == '__main__':
     print "Careful: the following search is limited to 1000 kascade events"
+    print "The complete statement would be:"
+    print "c = do_timeshifts(data, [-13.180213654])"
     c = do_timeshifts(data, [-13.180213654], limit=1000)

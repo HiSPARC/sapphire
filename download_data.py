@@ -96,7 +96,8 @@ if __name__ == '__main__':
 
     queue = Queue(maxsize=2)
     downloader = Process(target=downloader, args=(queue,),
-                         kwargs={'offset': offset})
+                         kwargs={'offset': offset, 'chunksize': 50000,
+                                 'limit': 10})
     processor = Process(target=processor, args=(queue, table))
 
     print "Starting subprocesses..."
