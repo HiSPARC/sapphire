@@ -149,5 +149,24 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None):
                   stop.time().strftime('%H:%M:%S'))
     sql += "ORDER BY date, time, nanoseconds"
     cursor.execute(sql)
-    results = cursor.fetchall()
-    return results
+    calculateddata = cursor.fetchall()
+
+    sql  = "SELECT event_id, uploadcode, blobvalue " \
+           "FROM event e JOIN eventdata USING(event_id) " \
+           "JOIN eventdatatype USING(eventdatatype_id) " \
+           "WHERE station_id=%d AND e.eventtype_id=1 " % station_id
+    sql += "AND uploadcode " \
+           "IN ('TR1', 'TR2', 'TR3', 'TR4') "
+    if start:
+        sql += "AND (date > '%s' OR (date = '%s' AND time >= '%s')) " \
+               % (start.date(), start.date(),
+                  start.time().strftime('%H:%M:%S'))
+    if stop:
+        sql += "AND (date < '%s' OR (date = '%s' AND time <= '%s')) " \
+               % (stop.date(), stop.date(),
+                  stop.time().strftime('%H:%M:%S'))
+    sql += "ORDER BY date, time, nanoseconds"
+    cursor.execute(sql)
+    eventdata = cursor.fetchall()
+
+    return sorted(calculateddata + eventdata)

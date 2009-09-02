@@ -10,6 +10,14 @@ import datetime
 import calendar
 import os
 
+# This is a list of misbehaving events which screw up event processing
+MISBEHAVING_EVENTS = [
+    36163719,           # This event has a timestamp which places it
+                        # _before_ event 36163718
+    38372320,           # This event has a timestamp which places it
+                        # _after_ event 38372322
+]
+
 class Error(Exception):
     """Base class for exceptions in this module."""
     pass
@@ -28,7 +36,7 @@ class IntegrityError(Error):
         return self.msg
 
 
-def process_hisparc_events(events, eventdata, table):
+def process_hisparc_events(events, eventdata, data):
     """Do the actual data processing and storing
 
     This function concurrently reads the events and eventdata lists and
@@ -42,11 +50,18 @@ def process_hisparc_events(events, eventdata, table):
     Arguments:
     events          contents from the eventwarehouse event table
     eventdata       contents from the eventwarehouse eventdata table
-    table           the destination table
+    data            the destination data file handle
 
     """
+    table = data.root.hisparc.events
+    traces = data.root.hisparc.traces
+
     tablerow = table.row
     data_idx = 0
+
+    # Filter out misbehaving events
+    events = [x for x in events if x[0] not in MISBEHAVING_EVENTS]
+    eventdata = [x for x in eventdata if x[0] not in MISBEHAVING_EVENTS]
 
     # First, make sure we have no 'old' eventdata records in the first few
     # rows.
@@ -79,6 +94,7 @@ def process_hisparc_events(events, eventdata, table):
         data = {}
         data['pulseheights'] = tablerow['pulseheights']
         data['integrals'] = tablerow['integrals']
+        data['traces'] = tablerow['traces']
 
         while True:
             # now process the eventdata row by row, using the current index
@@ -101,6 +117,13 @@ def process_hisparc_events(events, eventdata, table):
                     key = 'pulseheights'
                 elif uploadcode[:2] == 'IN':
                     key = 'integrals'
+                elif uploadcode[:2] == 'TR':
+                    key = 'traces'
+                    # Store the trace in the VLArray
+                    traces.append(value)
+                    # The 'value' stored in the event table is the index to
+                    # the trace in the VLArray
+                    value = len(traces) - 1
                 else:
                     continue
                 idx = int(uploadcode[2]) - 1 
@@ -111,11 +134,13 @@ def process_hisparc_events(events, eventdata, table):
                 # event.
                 break
         if (data['pulseheights'] == tablerow['pulseheights']).all() or \
-           (data['integrals'] == tablerow['integrals']).all():
+           (data['integrals'] == tablerow['integrals']).all() or \
+           (data['traces'] == tablerow['traces']).all():
             raise IntegrityError("Possibly missing event records.")
 
         tablerow['pulseheights'] = data['pulseheights']
         tablerow['integrals'] = data['integrals']
+        tablerow['traces'] = data['traces']
         tablerow.append()
         # continue on to the next event
 

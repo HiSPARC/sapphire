@@ -7,6 +7,7 @@ class HisparcEvent(tables.IsDescription):
     ext_timestamp = tables.UInt64Col(pos=3)
     pulseheights = tables.Int16Col(shape=4, dflt=-9999, pos=4)
     integrals = tables.Int32Col(shape=4, dflt=-9999, pos=5)
+    traces = tables.Int32Col(shape=4, dflt=-1, pos=6)
 
 class KascadeEvent(tables.IsDescription):
     run_id = tables.IntCol(pos=0)
@@ -33,19 +34,20 @@ class Coincidence(tables.IsDescription):
     hisparc_ext_timestamp = tables.UInt64Col(pos=4)
     hisparc_pulseheights = tables.Int16Col(shape=4, dflt=-9999, pos=5)
     hisparc_integrals = tables.Int32Col(shape=4, dflt=-9999, pos=6)
-    kascade_timestamp = tables.Time32Col(pos=7)
-    kascade_nanoseconds = tables.UInt32Col(pos=8)
-    kascade_ext_timestamp = tables.UInt64Col(pos=9)
-    kascade_energy = tables.FloatCol(pos=10)
-    kascade_core_pos = tables.FloatCol(shape=2, pos=11)
-    kascade_zenith = tables.FloatCol(pos=12)
-    kascade_azimuth = tables.FloatCol(pos=13)
-    kascade_Num_e = tables.FloatCol(pos=14)
-    kascade_Num_mu = tables.FloatCol(pos=15)
-    kascade_dens_e = tables.FloatCol(shape=4, pos=16)
-    kascade_dens_mu = tables.FloatCol(shape=4, pos=17)
-    kascade_P200 = tables.FloatCol(pos=18)
-    kascade_T200 = tables.FloatCol(pos=19)
+    hisparc_traces = tables.Int32Col(shape=4, dflt=-1, pos=7)
+    kascade_timestamp = tables.Time32Col(pos=8)
+    kascade_nanoseconds = tables.UInt32Col(pos=9)
+    kascade_ext_timestamp = tables.UInt64Col(pos=10)
+    kascade_energy = tables.FloatCol(pos=11)
+    kascade_core_pos = tables.FloatCol(shape=2, pos=12)
+    kascade_zenith = tables.FloatCol(pos=13)
+    kascade_azimuth = tables.FloatCol(pos=14)
+    kascade_Num_e = tables.FloatCol(pos=15)
+    kascade_Num_mu = tables.FloatCol(pos=16)
+    kascade_dens_e = tables.FloatCol(shape=4, pos=17)
+    kascade_dens_mu = tables.FloatCol(shape=4, pos=18)
+    kascade_P200 = tables.FloatCol(pos=19)
+    kascade_T200 = tables.FloatCol(pos=20)
 
 def create_tables():
     print "Creating a new PyTables data file... ",
@@ -54,10 +56,14 @@ def create_tables():
     kascade = data.createGroup('/', 'kascade', 'KASCADE data')
     coincidences = data.createGroup('/', 'coincidences',
                                     'HiSPARC / KASCADE coincidences')
-    data.createTable(hisparc, 'events', HisparcEvent, 'HiSPARC events')
-    data.createTable(kascade, 'events', KascadeEvent, 'KASCADE events')
+    data.createTable(hisparc, 'events', HisparcEvent, 'HiSPARC events',
+                     expectedrows=50000)
+    data.createVLArray(hisparc, 'traces', tables.VLStringAtom(),
+                       'HiSPARC event traces', expectedsizeinMB=100)
+    data.createTable(kascade, 'events', KascadeEvent, 'KASCADE events',
+                     expectedrows=5000)
     data.createTable(coincidences, 'events', Coincidence,
-                     'Coincidence events')
+                     'Coincidence events', expectedrows=5000)
     data.close()
     print "done."
 

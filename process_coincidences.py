@@ -73,6 +73,7 @@ def store_coincidences(datafile, coincidences):
         tablerow['hisparc_ext_timestamp'] = hisparc['ext_timestamp']
         tablerow['hisparc_pulseheights'] = hisparc['pulseheights']
         tablerow['hisparc_integrals'] = hisparc['integrals']
+        tablerow['hisparc_traces'] = hisparc['traces']
         tablerow['kascade_timestamp'] = kascade['timestamp']
         tablerow['kascade_nanoseconds'] = kascade['nanoseconds']
         tablerow['kascade_ext_timestamp'] = kascade['ext_timestamp']

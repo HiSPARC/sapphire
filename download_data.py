@@ -58,7 +58,7 @@ def downloader(queue, chunksize=50000, offset=0, limit=None):
     except KeyboardInterrupt:
         print "Downloader received KeyboardInterrupt, shutting down..."
 
-def processor(queue, table):
+def processor(queue, datafile):
     """Download HiSPARC data and append it to the data file
 
     This function processes the data which has been put in Queue object,
@@ -66,18 +66,16 @@ def processor(queue, table):
 
     Arguments:
     queue               a multiprocessing Queue object
-    table               the pytables data table
+    datafile            the pytables data file
 
     """
-    table = datafile.root.hisparc.events
-
     try:
         while True:
             events, eventdata = queue.get()
 
             if events:
                 print "Processing events... "
-                process_hisparc_events(events, eventdata, table)
+                process_hisparc_events(events, eventdata, datafile)
                 print "done."
             else:
                 print "No more events, shutting down."
@@ -91,14 +89,13 @@ if __name__ == '__main__':
         create_tables()
 
     datafile = tables.openFile('data_new.h5', 'a')
-    table =  datafile.root.hisparc.events
-    offset = len(table)
+    offset = len(datafile.root.hisparc.events)
 
     queue = Queue(maxsize=2)
     downloader = Process(target=downloader, args=(queue,),
-                         kwargs={'offset': offset, 'chunksize': 50000,
-                                 'limit': 10})
-    processor = Process(target=processor, args=(queue, table))
+                         kwargs={'offset': offset, 'chunksize': 5000,
+                                 'limit': 200})
+    processor = Process(target=processor, args=(queue, datafile))
 
     print "Starting subprocesses..."
     downloader.start()
