@@ -7,6 +7,7 @@
 import datetime
 import time
 import os
+import pylab
 
 def do_timeshifts(datafile, shifts, limit=None):
     """Search for coincidences using multiple time shifts
@@ -40,8 +41,8 @@ def do_timeshifts(datafile, shifts, limit=None):
         coincidences = search_coincidences(h, k, shift)
 
         dt = [x[0] / 1e9 for x in coincidences]
-        hist(dt, bins=100, range=(-1, 1), histtype='step',
-             label="Shift %+g s" % shift)
+        pylab.hist(dt, bins=100, range=(-1, 1), histtype='step',
+                   label="Shift %+g s" % shift)
 
     finish_graph()
     return coincidences
@@ -193,12 +194,12 @@ def finish_graph():
     figure.
 
     """
-    legend()
-    xlabel("Time difference (s)")
-    ylabel("Counts")
-    title("Nearest neighbour events for HiSPARC / KASCADE")
-    gca().axis('auto')
-    gcf().show()
+    pylab.legend()
+    pylab.xlabel("Time difference (s)")
+    pylab.ylabel("Counts")
+    pylab.title("Nearest neighbour events for HiSPARC / KASCADE")
+    pylab.gca().axis('auto')
+    pylab.gcf().show()
 
 def get_arrays_from_tables(h, k, limit):
     """Get data arrays from data tables
@@ -235,9 +236,10 @@ def get_arrays_from_tables(h, k, limit):
 
     return h, k
 
+def test(datafile):
+    """Perform a small coincidence test"""
 
-if __name__ == '__main__':
     print "Careful: the following search is limited to 1000 kascade events"
     print "The complete statement would be:"
     print "c = do_timeshifts(data, [-13.180213654])"
-    c = do_timeshifts(data, [-13.180213654], limit=1000)
+    c = do_timeshifts(datafile, [-13.180213654], limit=1000)

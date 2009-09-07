@@ -1,4 +1,22 @@
+"""Create tables
+
+    This file contians blablalba
+"""
+
 import tables
+import os
+
+class Error(Exception):
+    """Base class for Error exceptions"""
+    pass
+
+class FileExistsError(Error):
+    """Raised when a file already exists"""
+    def __init__(self, value='File already exists'):
+        self.value = value
+
+    def __str__(self):
+        return self.value
 
 class HisparcEvent(tables.IsDescription):
     event_id = tables.UInt64Col(pos=0)
@@ -49,9 +67,26 @@ class Coincidence(tables.IsDescription):
     kascade_P200 = tables.FloatCol(pos=19)
     kascade_T200 = tables.FloatCol(pos=20)
 
-def create_tables():
+def create_tables(filename):
+    """Create HiSPARC and KASCADE tables in data file
+
+    This function will create a new HDF5 file (if it doesn't exist already)
+    and creates a basic structure useful for combined HiSPARC / KASCADE
+    data analysis.
+
+    Arguments:
+    filename            the filename of the HDF5 file
+
+    Return values:
+    file                handle to the opened file
+
+    """
+
+    if os.path.exists(filename):
+        raise FileExistsError
+
     print "Creating a new PyTables data file... ",
-    data = tables.openFile('data_new.h5', 'w', 'HiSPARC / KASCADE data')
+    data = tables.openFile(filename, 'a', 'HiSPARC / KASCADE data')
     hisparc = data.createGroup('/', 'hisparc', 'HiSPARC data')
     kascade = data.createGroup('/', 'kascade', 'KASCADE data')
     coincidences = data.createGroup('/', 'coincidences',
@@ -64,9 +99,6 @@ def create_tables():
                      expectedrows=5000)
     data.createTable(coincidences, 'events', Coincidence,
                      'Coincidence events', expectedrows=5000)
+
     data.close()
     print "done."
-
-
-if __name__ == '__main__':
-    create_tables()

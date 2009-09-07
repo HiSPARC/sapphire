@@ -1,16 +1,49 @@
 """ Fetch events and eventdata from the eventwarehouse
 
     This module fetches data from the eventwarehouse, based on supplied
-    start and end dates, limits and offsets. This data can then be passed
-    on to the process_hisparc_data module.
+    start and end dates, limits and offsets.
+
+    This module also processes data read from the event and eventdata
+    tables in the eventwarehouse database. Timestamps are calculated from
+    the date and time columns (remember, in GPS time!). The eventdata
+    columns are processed and stored alongside the event data.
 
 """
 import MySQLdb
 import datetime
+import calendar
+import os
 
-def get_hisparc_data(station_id=601, start=None, stop=None, limit=None,
-                     offset=None):
+def get_and_process_events(station_id, table, traces, start=None,
+                           stop=None, limit=None, offset=None):
+    """ Get and process events from the eventwarehouse
+
+    This is the highest level function in this module.
+
+    This function fetches events and eventdata from the eventwarehouse
+    based on start and end dates, limits and offsets. It then stores it in
+    the user-supplied event table and traces array.
+
+    Arguments:
+    station_id          the HiSPARC station id
+    table               the destination event table
+    traces              the destination traces array
+    start               a datetime instance defining the start of the
+                        search interval (inclusive)
+    stop                a datetime instance defining the end of the search
+                        interval (inclusive)
+    limit               the maximum number of events
+    offset              an offset in the total event list from which point
+                        on a limit number of events is being selected
+
+    """
+    events, eventdata = get_events(station_id, start, stop, limit, offset)
+    process_events(events, eventdata, table, traces)
+
+def get_events(station_id, start=None, stop=None, limit=None, offset=None):
     """ Get events and eventdata from the eventwarehouse
+
+    You might want to  use `get_and_process_events' instead.
 
     This function fetches events and eventdata from the eventwarehouse
     based on start and end dates, limits and offsets. You can pass this
@@ -29,7 +62,7 @@ def get_hisparc_data(station_id=601, start=None, stop=None, limit=None,
 
     Returns:
     events              events from the eventwarehouse event table
-    eventdata           corresponding data from the eventdata table
+    eventdata           corresponding data from the eventdata tables
 
     """
     db = MySQLdb.connect('127.0.0.1', 'analysis', 'Data4analysis!',
@@ -63,6 +96,8 @@ def get_hisparc_data(station_id=601, start=None, stop=None, limit=None,
 def get_hisparc_events(db, station_id, start=None, stop=None, limit=None,
                        offset=None):
     """ Get data from the eventd table
+
+    Low-level: you probably want to use `get_data'
 
     This function fetches data from the event table, selected by using
     the start and stop datetime instances and possibly by using a limit and
@@ -106,6 +141,8 @@ def get_hisparc_events(db, station_id, start=None, stop=None, limit=None,
 
 def get_hisparc_eventdata(db, station_id, start=None, stop=None):
     """ Get data from the eventdata table
+
+    Low-level: you probably want to use `get_data'
 
     This function fetches data from the eventdata table, selected by using
     the start and stop datetime instances. It doesn't select using a set of
@@ -170,3 +207,139 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None):
     eventdata = cursor.fetchall()
 
     return sorted(calculateddata + eventdata)
+
+
+# This is a list of misbehaving events which screw up event processing
+MISBEHAVING_EVENTS = [
+    36163719,           # This event has a timestamp which places it
+                        # _before_ event 36163718
+    38372320,           # This event has a timestamp which places it
+                        # _after_ event 38372322
+]
+
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class IntegrityError(Error):
+    """Exception raised for data integrity errors.
+
+    Attributes:
+        message --- error message
+
+    """
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+def process_events(events, eventdata, table, traces):
+    """Do the actual data processing and storing
+
+    You might want to  use `get_and_process_events' instead.
+
+    This function concurrently reads the events and eventdata lists and
+    builds up the event rows. When a row is complete, i.e. there are no
+    more eventdata values for the current event row, it is stored in a
+    pytables table.
+
+    This is one nice long algorithmic hack. This is the price we have to
+    pay to gain a speed increase of a factor of 20 or so.
+
+    Arguments:
+    events          contents from the eventwarehouse event table
+    eventdata       contents from the eventwarehouse eventdata table
+    table           the destination event table
+    traces          the destination traces array
+
+    """
+    tablerow = table.row
+    data_idx = 0
+
+    # Filter out misbehaving events
+    events = [x for x in events if x[0] not in MISBEHAVING_EVENTS]
+    eventdata = [x for x in eventdata if x[0] not in MISBEHAVING_EVENTS]
+
+    # First, make sure we have no 'old' eventdata records in the first few
+    # rows.
+    event_id = events[0][0]
+    try:
+        while eventdata[data_idx][0] != event_id:
+            data_idx += 1
+    except IndexError:
+        # We've exhausted all eventdata records, there is no match!
+        raise IntegrityError("Eventdata records don't match event " \
+                             "records.")
+
+    for row in events:
+        # We process the events row by row
+        event_id = row[0]
+        date = row[1]
+        timedelta = row[2]
+        nanoseconds = row[3]
+
+        # calculate the timestamp (in GPS time, not UTC time!)
+        t = datetime.datetime.combine(date, datetime.time()) + timedelta
+        timestamp = calendar.timegm(t.utctimetuple())
+
+        tablerow['event_id'] = event_id
+        tablerow['timestamp'] = timestamp
+        tablerow['nanoseconds'] = nanoseconds
+        tablerow['ext_timestamp'] = timestamp * 1e9 + nanoseconds
+
+        # get default values for the eventdata
+        data = {}
+        data['pulseheights'] = tablerow['pulseheights']
+        data['integrals'] = tablerow['integrals']
+        data['traces'] = tablerow['traces']
+
+        while True:
+            # now process the eventdata row by row, using the current index
+            # data_idx
+            try:
+                data_row = eventdata[data_idx]
+            except IndexError:
+                # We've exhausted all eventdata. Break to store the current
+                # event. Hopefully, we've exhausted events as well.
+                break
+            if data_row[0] == event_id:
+                # the eventdata matches the current event, make sure to
+                # read the next eventdata row next time and process the
+                # current row
+                data_idx += 1
+                uploadcode = data_row[1]
+                value = data_row[2]
+
+                if uploadcode[:2] == 'PH':
+                    key = 'pulseheights'
+                elif uploadcode[:2] == 'IN':
+                    key = 'integrals'
+                elif uploadcode[:2] == 'TR':
+                    key = 'traces'
+                    # Store the trace in the VLArray
+                    traces.append(value)
+                    # The 'value' stored in the event table is the index to
+                    # the trace in the VLArray
+                    value = len(traces) - 1
+                else:
+                    continue
+                idx = int(uploadcode[2]) - 1 
+                data[key][idx] = value
+            else:
+                # The eventdata is not matching this event. Probably we've
+                # exhausted this events' eventdata. Break to store this
+                # event.
+                break
+        if (data['pulseheights'] == tablerow['pulseheights']).all() or \
+           (data['integrals'] == tablerow['integrals']).all() or \
+           (data['traces'] == tablerow['traces']).all():
+            raise IntegrityError("Possibly missing event records.")
+
+        tablerow['pulseheights'] = data['pulseheights']
+        tablerow['integrals'] = data['integrals']
+        tablerow['traces'] = data['traces']
+        tablerow.append()
+        # continue on to the next event
+
+    table.flush()

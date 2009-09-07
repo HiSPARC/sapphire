@@ -11,7 +11,7 @@ import time
 
 import gpstime
 
-def process_kascade_events(filename, table, start=None, stop=None):
+def process_events(filename, table, start=None, stop=None):
     """Do the actual data processing.
 
     This function starts a subprocess to unzip the data file, reads the
@@ -76,7 +76,7 @@ def process_kascade_events(filename, table, start=None, stop=None):
     # flush the table buffers and write them to disk
     table.flush()
 
-def kascade_helper(datafile, kascadefile):
+def helper(hisparc, kascade, kascadefile):
     """Helper for quickly processing KASCADE data
 
     This function looks at the HiSPARC event data in the specified datafile
@@ -85,13 +85,11 @@ def kascade_helper(datafile, kascadefile):
     inspected to determine the time window.
 
     Arguments:
-    datafile            pytables data file
+    hisparc             HiSPARC event table
+    kascade             KASCADE event table
     kascadefile         KASCADE data file
 
     """
-    hisparc = datafile.root.hisparc.events
-    kascade = datafile.root.kascade.events
-
     # Determine start and end timestamps from HiSPARC data
     try:
         hstart = gpstime.gps_to_utc(hisparc[0]['timestamp'])
@@ -129,4 +127,4 @@ def kascade_helper(datafile, kascadefile):
 
     print "Processing data from %s to %s" % (time.ctime(start),
                                              time.ctime(stop))
-    process_kascade_events(kascadefile, kascade, start, stop)
+    process_events(kascadefile, kascade, start, stop)

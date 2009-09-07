@@ -1,4 +1,7 @@
 import zlib
+from numpy import (mean, std, nan, sqrt, arctan2, cos, sin, arcsin, pi,
+                   isnan, array, arccos, arcsin)
+import pylab
 
 ADC_THRESHOLD = 50
 ADC_TIME_PER_SAMPLE = 2.5e-9
@@ -152,7 +155,7 @@ def opening_angle(theta1, phi1, theta2, phi2):
     return arccos(sin(theta1) * sin(theta2) * cos(phi1 - phi2) +
                   cos(theta1) * cos(theta2))
 
-def angle_graphs(coincidences, ph_threshold, accuracy):
+def angle_graphs(data, coincidences, ph_threshold, accuracy):
     """Produce some nice graphs"""
 
     cs = [x.fetch_all_fields() for x in coincidences if min(x['hisparc_pulseheights']) >= ph_threshold]
@@ -178,28 +181,28 @@ def angle_graphs(coincidences, ph_threshold, accuracy):
         if theta[i][1] > accuracy and phi[i][1] > accuracy:
             oa.append(opening_angle(theta[i][0], phi[i][0], cs[i]['kascade_zenith'], cs[i]['kascade_azimuth']))
 
-    figure()
-    hist(ht, bins=50, histtype='step', range=[0, pi/2], label='HiSPARC')
-    hist(kt, bins=50, histtype='step', range=[0, pi/2], label='KASCADE')
-    legend()
-    xlabel('Zenith angle (radians)')
-    ylabel('Count')
-    title('Histogram of averaged zenith angles (accur > %.2f)' % accuracy)
+    pylab.figure()
+    pylab.hist(ht, bins=50, histtype='step', range=[0, pi/2], label='HiSPARC')
+    pylab.hist(kt, bins=50, histtype='step', range=[0, pi/2], label='KASCADE')
+    pylab.legend()
+    pylab.xlabel('Zenith angle (radians)')
+    pylab.ylabel('Count')
+    pylab.title('Histogram of averaged zenith angles (accur > %.2f)' % accuracy)
 
-    figure()
-    hist(hp, bins=50, histtype='step', range=[-pi, pi], label='HiSPARC')
-    hist(kp, bins=50, histtype='step', range=[-pi, pi], label='KASCADE')
-    legend()
-    xlabel('Azimuthal angle (radians)')
-    ylabel('Count')
-    title('Histogram of averaged azimuthal angles (accur > %.2f)' % accuracy)
+    pylab.figure()
+    pylab.hist(hp, bins=50, histtype='step', range=[-pi, pi], label='HiSPARC')
+    pylab.hist(kp, bins=50, histtype='step', range=[-pi, pi], label='KASCADE')
+    pylab.legend()
+    pylab.xlabel('Azimuthal angle (radians)')
+    pylab.ylabel('Count')
+    pylab.title('Histogram of averaged azimuthal angles (accur > %.2f)' % accuracy)
 
-    figure()
-    hist(oa, bins=50, histtype='step')
-    legend()
-    xlabel('Angle (radians)')
-    ylabel('Count')
-    title('Histogram of opening angles (accur > %.2f)' % accuracy)
+    pylab.figure()
+    pylab.hist(oa, bins=50, histtype='step')
+    pylab.legend()
+    pylab.xlabel('Angle (radians)')
+    pylab.ylabel('Count')
+    pylab.title('Histogram of opening angles (accur > %.2f)' % accuracy)
 
 def test_angles():
     for theta in arange(0, 5) * (pi / 8):

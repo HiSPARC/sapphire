@@ -13,10 +13,10 @@ import tables
 from multiprocessing import Process, Queue
 
 from create_tables import create_tables
-from get_hisparc_data import get_hisparc_data
-from process_hisparc_events import process_hisparc_events
 
-def downloader(queue, chunksize=50000, offset=0, limit=None):
+from hisparc.eventwarehouse import get_events, process_events
+
+def download(queue, chunksize=50000, offset=0, limit=None):
     """Download HiSPARC data
 
     This function downloads HiSPARC data, starting from an offset.  It
@@ -36,8 +36,8 @@ def downloader(queue, chunksize=50000, offset=0, limit=None):
         while True:
             print "Downloading %d events, starting from offset %d... " % \
                 (chunksize, offset)
-            events, eventdata = get_hisparc_data(limit=chunksize,
-                                                 offset=offset)
+            events, eventdata = get_events(601, limit=chunksize,
+                                           offset=offset)
             print "done."
 
             if events:
@@ -58,8 +58,8 @@ def downloader(queue, chunksize=50000, offset=0, limit=None):
     except KeyboardInterrupt:
         print "Downloader received KeyboardInterrupt, shutting down..."
 
-def processor(queue, datafile):
-    """Download HiSPARC data and append it to the data file
+def process(queue, datafile):
+    """Append HiSPARC data to the data file
 
     This function processes the data which has been put in Queue object,
     appending it to the pytables data table.
@@ -75,7 +75,9 @@ def processor(queue, datafile):
 
             if events:
                 print "Processing events... "
-                process_hisparc_events(events, eventdata, datafile)
+                process_events(events, eventdata,
+                               datafile.root.hisparc.events,
+                               datafile.root.hisparc.traces)
                 print "done."
             else:
                 print "No more events, shutting down."
@@ -84,18 +86,29 @@ def processor(queue, datafile):
         print "Processor received KeyboardInterrupt, shutting down..."
 
 
-if __name__ == '__main__':
-    if not os.path.isfile('data_new.h5'):
-        create_tables()
+def start_download(filename, limit=1, chunksize=5000):
+    """Start a multi-process download
 
-    datafile = tables.openFile('data_new.h5', 'a')
+    A convenience function to start a download and process the data in
+    separate processes to speed up download on multi-core machines.
+
+    Arguments:
+    filename            The filename of the datafile
+    limit               The number of chunks to download
+    chunksize           The number of events in one chunk
+
+    """
+    if not os.path.isfile(filename):
+        datafile = create_tables(filename)
+    
+    datafile = tables.openFile(filename, 'a')
     offset = len(datafile.root.hisparc.events)
 
     queue = Queue(maxsize=2)
-    downloader = Process(target=downloader, args=(queue,),
-                         kwargs={'offset': offset, 'chunksize': 5000,
-                                 'limit': 200})
-    processor = Process(target=processor, args=(queue, datafile))
+    downloader = Process(target=download, args=(queue,),
+                         kwargs={'offset': offset, 'chunksize': chunksize,
+                                 'limit': limit})
+    processor = Process(target=process, args=(queue, datafile))
 
     print "Starting subprocesses..."
     downloader.start()
@@ -107,3 +120,7 @@ if __name__ == '__main__':
         processor.join()
     except KeyboardInterrupt:
         print "Main program received KeyboardInterrupt."
+        downloader.join()
+        processor.join()
+
+    datafile.close()
