@@ -1,3 +1,9 @@
+""" Reconstruct shower angle of incidence
+
+    This module can be used to reconstruct the shower angle of incidence.
+    Currently it only works for the HiSPARC detector station at KASCADE
+
+"""
 import zlib
 from numpy import (mean, std, nan, sqrt, arctan2, cos, sin, arcsin, pi,
                    isnan, array, arccos, arcsin)

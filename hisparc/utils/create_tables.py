@@ -1,8 +1,8 @@
-"""Create tables
+""" Create tables
 
-    This file contians blablalba
+    Create a HiSPARC / KASCADE data structure in a new pytables file
+
 """
-
 import tables
 import os
 
