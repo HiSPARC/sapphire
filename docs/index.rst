@@ -6,12 +6,15 @@
 Welcome to HiSPARC framework's documentation!
 =============================================
 
+Currently, you probably want to start with the :doc:`log-replay` section.
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
-   
+
    intro
+   log-replay
    hisparc
    analysis
    eventwarehouse
