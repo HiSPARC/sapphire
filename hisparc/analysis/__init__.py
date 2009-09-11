@@ -4,9 +4,11 @@
 
     This package contains the following modules:
 
-    angles -- reconstruct the shower angle of incidence
-    clean_up_coincidences -- remove false coincidences from KASCADE /
-                             HiSPARC data set
-    kascade_coincidences -- find coincidences between HiSPARC and KASCADE
+    :mod:`~hisparc.analysis.angles`
+        reconstruct the shower angle of incidence
+    :mod:`~hisparc.analysis.clean_up_coincidences`
+        remove false coincidences from KASCADE / HiSPARC data set
+    :mod:`~hisparc.analysis.kascade_coincidences`
+        find coincidences between HiSPARC and KASCADE
 
 """

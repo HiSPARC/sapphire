@@ -1,0 +1,1 @@
+.. |hisparc| replace:: HiSPARC

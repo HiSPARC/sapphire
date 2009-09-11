@@ -1,5 +1,3 @@
-*.dat
-*.dat.gz
-plots
 *.h5
-tmp
+docs/_build
+kascade.dat.gz

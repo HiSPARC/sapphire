@@ -20,12 +20,17 @@ def do_timeshifts(datafile, shifts, limit=None):
     returned.
 
     Arguments:
-    datafile    the data file containing the events
-    shifts      a list of time shifts
-    limit       an optional limit on the number of kascade events used in
-                the search
+
+    datafile:
+        the data file containing the events
+    shifts:
+        a list of time shifts
+    limit:
+        an optional limit on the number of kascade events used in the
+        search
 
     Returns:
+
     An array of coincidences from the last shift ([dt in nanoseconds,
     hisparc event id, kascade event id]).
 
@@ -55,9 +60,11 @@ def store_coincidences(datafile, coincidences):
     resorting to lookups which span multiple tables.
 
     Arguments:
-    datafile            datafile to hold the coincidences
-    coincidences        a list of coincidences, as given by
-                        search_coincidences
+
+    datafile:
+        datafile to hold the coincidences
+    coincidences:
+        a list of coincidences, as given by search_coincidences
 
     """
     table = datafile.root.coincidences.events
@@ -105,12 +112,16 @@ def search_coincidences(hisparc_data, kascade_data, timeshift, limit=None):
     compensate for delays in the experimental setup.
 
     Arguments:
-    hisparc_data        an array containing the hisparc data
-    kascade_data        an array containing the kascade data
-    timeshift           the amount of time the HiSPARC data are shifted (in
-                        seconds)
+
+    hisparc_data:
+        an array containing the hisparc data
+    kascade_data:
+        an array containing the kascade data
+    timeshift:
+        the amount of time the HiSPARC data are shifted (in seconds)
 
     Output:
+
     An array of time differences and event ids of each KASCADE event and
     the nearest neighbour HiSPARC event.
 
@@ -175,10 +186,14 @@ def shift_data(data, timeshift):
     containing the shifted data.
 
     Arguments:
-    data        the HiSPARC or KASCADE data to be shifted
-    timeshift   the timeshift in seconds
+
+    data:
+        the HiSPARC or KASCADE data to be shifted
+    timeshift:
+        the timeshift in seconds
 
     Returns:
+
     an array containing the original data shifted in time
 
     """
@@ -212,11 +227,16 @@ def get_arrays_from_tables(h, k, limit):
     may fall outside the time window and not be taken into account.
 
     Arguments:
-    h           hisparc event table
-    k           kascade event table
-    limit       limit on the number of kascade events
+
+    h:
+        hisparc event table
+    k:
+        kascade event table
+    limit:
+        limit on the number of kascade events
 
     Returns:
+
     Two arrays containing hisparc and kascade data ([event id, timestamp in
     nanoseconds])
 

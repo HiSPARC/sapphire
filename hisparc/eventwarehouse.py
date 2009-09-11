@@ -8,6 +8,9 @@
     the date and time columns (remember, in GPS time!). The eventdata
     columns are processed and stored alongside the event data.
 
+    The function you probably want to use is
+    :func:`get_and_process_events`.
+
 """
 import MySQLdb
 import datetime
@@ -21,8 +24,9 @@ class Error(Exception):
 class IntegrityError(Error):
     """Exception raised for data integrity errors.
 
-    Attributes:
-        message --- error message
+    .. attribute:: message
+
+        error message
 
     """
     def __init__(self, msg):
@@ -33,7 +37,7 @@ class IntegrityError(Error):
 
 def get_and_process_events(station_id, table, traces, start=None,
                            stop=None, limit=None, offset=None):
-    """ Get and process events from the eventwarehouse
+    """Get and process events from the eventwarehouse
 
     This is the highest level function in this module.
 
@@ -41,17 +45,16 @@ def get_and_process_events(station_id, table, traces, start=None,
     based on start and end dates, limits and offsets. It then stores it in
     the user-supplied event table and traces array.
 
-    Arguments:
-    station_id          the HiSPARC station id
-    table               the destination event table
-    traces              the destination traces array
-    start               a datetime instance defining the start of the
-                        search interval (inclusive)
-    stop                a datetime instance defining the end of the search
-                        interval (inclusive)
-    limit               the maximum number of events
-    offset              an offset in the total event list from which point
-                        on a limit number of events is being selected
+    :param station_id: the HiSPARC station id
+    :param table: the destination event table
+    :param traces: the destination traces array
+    :param start: a datetime instance defining the start of the search
+        interval (inclusive)
+    :param stop: a datetime instance defining the end of the search
+        interval (inclusive)
+    :param limit: the maximum number of events
+    :param offset: an offset in the total event list from which point on a
+        limit number of events is being selected
 
     """
     events, eventdata, calculateddata = get_events(station_id, start, stop,
@@ -59,28 +62,27 @@ def get_and_process_events(station_id, table, traces, start=None,
     process_events(events, eventdata, calculateddata, table, traces)
 
 def get_events(station_id, start=None, stop=None, limit=None, offset=None):
-    """ Get events and eventdata from the eventwarehouse
+    """Get events and eventdata from the eventwarehouse
 
-    You might want to  use `get_and_process_events' instead.
+    Low-level: you might want to use :func:`get_and_process_events`
+    instead.
 
     This function fetches events and eventdata from the eventwarehouse
     based on start and end dates, limits and offsets. You can pass this
     data on to the process_events function in the process_hisparc_data
     module.
 
-    Arguments:
-    station_id          the HiSPARC station id
-    start               a datetime instance defining the start of the
-                        search interval (inclusive)
-    stop                a datetime instance defining the end of the search
-                        interval (inclusive)
-    limit               the maximum number of events
-    offset              an offset in the total event list from which point
-                        on a limit number of events is being selected
+    :param station_id: the HiSPARC station id
+    :param start: a datetime instance defining the start of the search
+        interval (inclusive)
+    :param stop: a datetime instance defining the end of the search
+        interval (inclusive)
+    :param limit: the maximum number of events
+    :param offset: an offset in the total event list from which point on a
+        limit number of events is being selected
 
-    Returns:
-    events              events from the eventwarehouse event table
-    eventdata           corresponding data from the eventdata tables
+    :return: events, eventdata, calculateddata: events from the
+        eventwarehouse event table with corresponding eventdata
 
     """
     db = MySQLdb.connect('127.0.0.1', 'analysis', 'Data4analysis!',
@@ -90,7 +92,7 @@ def get_events(station_id, start=None, stop=None, limit=None, offset=None):
     events = get_hisparc_events(db, station_id, start, stop, limit, offset)
 
     if not events:
-        return None, None
+        return None, None, None
 
     # determine 'start' from the event data
     date = events[0][1]
@@ -116,7 +118,8 @@ def get_hisparc_events(db, station_id, start=None, stop=None, limit=None,
                        offset=None):
     """ Get data from the eventd table
 
-    Low-level: you probably want to use `get_data'
+    Low-level: you might want to use :func:`get_and_process_events`
+    instead.
 
     This function fetches data from the event table, selected by using
     the start and stop datetime instances and possibly by using a limit and
@@ -124,16 +127,17 @@ def get_hisparc_events(db, station_id, start=None, stop=None, limit=None,
     get_hisparc_data which calls this routine and then continues to fetch
     the corresponding eventdata.
 
-    Arguments:
-    db                  a MySQLdb connection instance to the eventwarehouse
-    station_id          the HiSPARC station id
-    start               a datetime instance defining the start of the
-                        search interval (inclusive)
-    stop                a datetime instance defining the end of the search
-                        interval (inclusive)
-    limit               the maximum number of events
-    offset              an offset in the total event list from which point on a
-                        limit number of events is being selected
+    :param db: a MySQLdb connection instance to the eventwarehouse
+    :param station_id: the HiSPARC station id
+    :param start: a datetime instance defining the start of the search
+        interval (inclusive)
+    :param stop: a datetime instance defining the end of the search
+        interval (inclusive)
+    :param limit: the maximum number of events
+    :param offset: an offset in the total event list from which point on a
+        limit number of events is being selected
+
+    :return: a list of event records
 
     """
     cursor = db.cursor()
@@ -161,7 +165,8 @@ def get_hisparc_events(db, station_id, start=None, stop=None, limit=None,
 def get_hisparc_eventdata(db, station_id, start=None, stop=None):
     """ Get data from the eventdata table
 
-    Low-level: you probably want to use `get_data'
+    Low-level: you might want to use :func:`get_and_process_events`
+    instead.
 
     This function fetches data from the eventdata table, selected by using
     the start and stop datetime instances. It doesn't select using a set of
@@ -178,13 +183,14 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None):
     Of course, this is already done for you by the get_hisparc_data
     routine, which you should probably use.
 
-    Arguments:
-    db                  a MySQLdb connection instance to the eventwarehouse
-    station_id          the HiSPARC station id
-    start               a datetime instance defining the start of the
-                        search interval (inclusive)
-    stop                a datetime instance defining the end of the search
-                        interval (inclusive)
+    :param db: a MySQLdb connection instance to the eventwarehouse
+    :param station_id: the HiSPARC station id
+    :param start: a datetime instance defining the start of the search
+        interval (inclusive)
+    :param stop: a datetime instance defining the end of the search
+        interval (inclusive)
+
+    :return: eventdata, calculateddata: event data records
 
     """
     cursor = db.cursor()
@@ -231,7 +237,8 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None):
 def process_events(events, eventdata, calculateddata, table, traces):
     """Do the actual data processing and storing
 
-    You might want to  use `get_and_process_events' instead.
+    Low-level: you might want to use :func:`get_and_process_events`
+    instead.
 
     This function concurrently reads the events and eventdata lists and
     builds up the event rows. When a row is complete, i.e. there are no
@@ -241,12 +248,12 @@ def process_events(events, eventdata, calculateddata, table, traces):
     This is one nice long algorithmic hack. This is the price we have to
     pay to gain a speed increase of a factor of 20 or so.
 
-    Arguments:
-    events          contents from the eventwarehouse event table
-    eventdata       contents from the eventwarehouse eventdata table
-    calculateddata  contents from the eventwarehouse calculateddata table
-    table           the destination event table
-    traces          the destination traces array
+    :param events: contents from the eventwarehouse event table
+    :param eventdata: contents from the eventwarehouse eventdata table
+    :param calculateddata: contents from the eventwarehouse calculateddata
+        table
+    :param table: the destination event table
+    :param traces: the destination traces array
 
     """
     tablerow = table.row

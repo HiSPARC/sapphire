@@ -7,6 +7,8 @@
     functionality is actually in this script, but is rather imported from
     other scripts.  Therefore, this script is just a convenience.
 
+    You want to use the :func:`start_download` function.
+
 """
 import os.path
 import tables
@@ -23,12 +25,11 @@ def download(queue, chunksize=50000, offset=0, limit=None):
     downloads chunksize events at a time and ends after a limit number of
     downloads.  Downloaded data will be put in a Queue object.
 
-    Arguments:
-    queue               a multiprocessing Queue object
-    chunksize           number of events at a time which are downloaded and
-                        processed
-    offset              the number of events which should be skipped
-    limit               the maximum number of chunks to process
+    :param queue: a multiprocessing Queue object
+    :param chunksize: number of events at a time which are downloaded and
+        processed
+    :param offset: the number of events which should be skipped
+    :param limit: the maximum number of chunks to process
 
     """
     count = 0
@@ -65,9 +66,8 @@ def process(queue, datafile):
     This function processes the data which has been put in Queue object,
     appending it to the pytables data table.
 
-    Arguments:
-    queue               a multiprocessing Queue object
-    datafile            the pytables data file
+    :param queue: a multiprocessing Queue object
+    :param datafile: the pytables data file
 
     """
     try:
@@ -93,10 +93,31 @@ def start_download(filename, limit=1, chunksize=5000):
     A convenience function to start a download and process the data in
     separate processes to speed up download on multi-core machines.
 
-    Arguments:
-    filename            The filename of the datafile
-    limit               The number of chunks to download
-    chunksize           The number of events in one chunk
+    :param filename: The filename of the datafile
+    :param limit: The number of chunks to download
+    :param chunksize: The number of events in one chunk
+
+    Example usage::
+
+        >>> from hisparc.utils import download_data
+        >>> download_data.start_download('testdata.h5', limit=2)
+        Creating a new PyTables data file...  done.
+        Starting subprocesses...
+        Downloading 5000 events, starting from offset 0... 
+        Waiting for subprocesses to shut down...
+        Time window:  2008-07-01 14:29:45 2008-07-01 14:52:44
+        done.
+        Putting events in queue...
+        Downloading 5000 events, starting from offset 5000... 
+        Processing events... 
+        Time window:  2008-07-01 14:52:44 2008-07-01 15:15:18
+        done.
+        Putting events in queue...
+        Limit reached, shutting down.
+        done.
+        Processing events... 
+        done.
+        No more events, shutting down.
 
     """
     if not os.path.isfile(filename):

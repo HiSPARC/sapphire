@@ -5,6 +5,8 @@
     the KASCADE array, with calculated particle densities at the location
     of our detectors.
 
+    You probably want to use the :func:`helper` function.
+
 """
 import gzip
 import time
@@ -20,9 +22,8 @@ def process_events(filename, table, start=None, stop=None):
     Only data starting from July 1st, 14:29 UTC is processed, since that is
     when our detector was turned on.
 
-    Arguments:
-    filename    the KASCADE data filename
-    table       the destination table
+    :param filename: the KASCADE data filename
+    :param table: the destination table
 
     """
     f = gzip.open(filename)
@@ -84,10 +85,9 @@ def helper(hisparc, kascade, kascadefile):
     later coincidence processing.  Also, existing KASCADE data rows are
     inspected to determine the time window.
 
-    Arguments:
-    hisparc             HiSPARC event table
-    kascade             KASCADE event table
-    kascadefile         KASCADE data file
+    :param hisparc: HiSPARC event table
+    :param kascade: KASCADE event table
+    :param kascadefile: KASCADE data file
 
     """
     # Determine start and end timestamps from HiSPARC data
