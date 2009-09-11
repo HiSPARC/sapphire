@@ -14,6 +14,23 @@ import datetime
 import calendar
 import os
 
+class Error(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class IntegrityError(Error):
+    """Exception raised for data integrity errors.
+
+    Attributes:
+        message --- error message
+
+    """
+    def __init__(self, msg):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
 def get_and_process_events(station_id, table, traces, start=None,
                            stop=None, limit=None, offset=None):
     """ Get and process events from the eventwarehouse
@@ -37,8 +54,9 @@ def get_and_process_events(station_id, table, traces, start=None,
                         on a limit number of events is being selected
 
     """
-    events, eventdata = get_events(station_id, start, stop, limit, offset)
-    process_events(events, eventdata, table, traces)
+    events, eventdata, calculateddata = get_events(station_id, start, stop,
+                                                   limit, offset)
+    process_events(events, eventdata, calculateddata, table, traces)
 
 def get_events(station_id, start=None, stop=None, limit=None, offset=None):
     """ Get events and eventdata from the eventwarehouse
@@ -87,11 +105,12 @@ def get_events(station_id, start=None, stop=None, limit=None, offset=None):
     # get the eventdata, where we don't select on event_ids, but rather
     # rely on 'start' and 'stop' instead.
     print "Time window: ", start, stop
-    eventdata = get_hisparc_eventdata(db, station_id, start, stop)
+    eventdata, calculateddata = get_hisparc_eventdata(db, station_id,
+                                                      start, stop)
 
     db.close()
 
-    return events, eventdata
+    return events, eventdata, calculateddata
 
 def get_hisparc_events(db, station_id, start=None, stop=None, limit=None,
                        offset=None):
@@ -206,35 +225,10 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None):
     cursor.execute(sql)
     eventdata = cursor.fetchall()
 
-    return sorted(calculateddata + eventdata)
+    return eventdata, calculateddata
 
 
-# This is a list of misbehaving events which screw up event processing
-MISBEHAVING_EVENTS = [
-    36163719,           # This event has a timestamp which places it
-                        # _before_ event 36163718
-    38372320,           # This event has a timestamp which places it
-                        # _after_ event 38372322
-]
-
-class Error(Exception):
-    """Base class for exceptions in this module."""
-    pass
-
-class IntegrityError(Error):
-    """Exception raised for data integrity errors.
-
-    Attributes:
-        message --- error message
-
-    """
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
-
-def process_events(events, eventdata, table, traces):
+def process_events(events, eventdata, calculateddata, table, traces):
     """Do the actual data processing and storing
 
     You might want to  use `get_and_process_events' instead.
@@ -250,23 +244,23 @@ def process_events(events, eventdata, table, traces):
     Arguments:
     events          contents from the eventwarehouse event table
     eventdata       contents from the eventwarehouse eventdata table
+    calculateddata  contents from the eventwarehouse calculateddata table
     table           the destination event table
     traces          the destination traces array
 
     """
     tablerow = table.row
-    data_idx = 0
-
-    # Filter out misbehaving events
-    events = [x for x in events if x[0] not in MISBEHAVING_EVENTS]
-    eventdata = [x for x in eventdata if x[0] not in MISBEHAVING_EVENTS]
+    eventdata_idx = 0
+    calculateddata_idx = 0
 
     # First, make sure we have no 'old' eventdata records in the first few
     # rows.
     event_id = events[0][0]
     try:
-        while eventdata[data_idx][0] != event_id:
-            data_idx += 1
+        while eventdata[eventdata_idx][0] != event_id:
+            eventdata_idx += 1
+        while calculateddata[calculateddata_idx][0] != event_id:
+            calculateddata_idx += 1
     except IndexError:
         # We've exhausted all eventdata records, there is no match!
         raise IntegrityError("Eventdata records don't match event " \
@@ -294,43 +288,44 @@ def process_events(events, eventdata, table, traces):
         data['integrals'] = tablerow['integrals']
         data['traces'] = tablerow['traces']
 
-        while True:
-            # now process the eventdata row by row, using the current index
-            # data_idx
-            try:
-                data_row = eventdata[data_idx]
-            except IndexError:
-                # We've exhausted all eventdata. Break to store the current
-                # event. Hopefully, we've exhausted events as well.
-                break
-            if data_row[0] == event_id:
-                # the eventdata matches the current event, make sure to
-                # read the next eventdata row next time and process the
-                # current row
-                data_idx += 1
-                uploadcode = data_row[1]
-                value = data_row[2]
+        # create a list containing the current event's data records
+        datalist = []
+        try:
+            while eventdata[eventdata_idx][0] == event_id:
+                datalist.append(eventdata[eventdata_idx])
+                eventdata_idx += 1
+        except IndexError:
+            pass
 
-                if uploadcode[:2] == 'PH':
-                    key = 'pulseheights'
-                elif uploadcode[:2] == 'IN':
-                    key = 'integrals'
-                elif uploadcode[:2] == 'TR':
-                    key = 'traces'
-                    # Store the trace in the VLArray
-                    traces.append(value)
-                    # The 'value' stored in the event table is the index to
-                    # the trace in the VLArray
-                    value = len(traces) - 1
-                else:
-                    continue
-                idx = int(uploadcode[2]) - 1 
-                data[key][idx] = value
+        try:
+            while calculateddata[calculateddata_idx][0] == event_id:
+                datalist.append(calculateddata[calculateddata_idx])
+                calculateddata_idx += 1
+        except IndexError:
+            pass
+
+        # process the data in this list
+        for data_row in datalist:
+            uploadcode = data_row[1]
+            value = data_row[2]
+
+            if uploadcode[:2] == 'PH':
+                key = 'pulseheights'
+            elif uploadcode[:2] == 'IN':
+                key = 'integrals'
+            elif uploadcode[:2] == 'TR':
+                key = 'traces'
+                # Store the trace in the VLArray
+                traces.append(value)
+                # The 'value' stored in the event table is the index to
+                # the trace in the VLArray
+                value = len(traces) - 1
             else:
-                # The eventdata is not matching this event. Probably we've
-                # exhausted this events' eventdata. Break to store this
-                # event.
-                break
+                raise IntegrityError("Unknown datatype %s" % uploadcode)
+            idx = int(uploadcode[2]) - 1 
+            data[key][idx] = value
+
+        # check to see if our new event is complete
         if (data['pulseheights'] == tablerow['pulseheights']).all() or \
            (data['integrals'] == tablerow['integrals']).all() or \
            (data['traces'] == tablerow['traces']).all():

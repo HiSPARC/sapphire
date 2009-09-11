@@ -36,13 +36,14 @@ def download(queue, chunksize=50000, offset=0, limit=None):
         while True:
             print "Downloading %d events, starting from offset %d... " % \
                 (chunksize, offset)
-            events, eventdata = get_events(601, limit=chunksize,
-                                           offset=offset)
+            events, eventdata, calculateddata = get_events(601,
+                                                           limit=chunksize,
+                                                           offset=offset)
             print "done."
 
             if events:
                 print "Putting events in queue..."
-                queue.put((events, eventdata))
+                queue.put((events, eventdata, calculateddata))
                 offset += chunksize
             else:
                 print "No more events, shutting down."
@@ -54,7 +55,7 @@ def download(queue, chunksize=50000, offset=0, limit=None):
                 break
 
         # Signalling shut down
-        queue.put((None, None))
+        queue.put((None, None, None))
     except KeyboardInterrupt:
         print "Downloader received KeyboardInterrupt, shutting down..."
 
@@ -71,11 +72,11 @@ def process(queue, datafile):
     """
     try:
         while True:
-            events, eventdata = queue.get()
+            events, eventdata, calculateddata = queue.get()
 
             if events:
                 print "Processing events... "
-                process_events(events, eventdata,
+                process_events(events, eventdata, calculateddata,
                                datafile.root.hisparc.events,
                                datafile.root.hisparc.traces)
                 print "done."
@@ -99,8 +100,8 @@ def start_download(filename, limit=1, chunksize=5000):
 
     """
     if not os.path.isfile(filename):
-        datafile = create_tables(filename)
-    
+        create_tables(filename)
+
     datafile = tables.openFile(filename, 'a')
     offset = len(datafile.root.hisparc.events)
 
