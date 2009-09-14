@@ -8,12 +8,15 @@ Welcome to HiSPARC framework's documentation!
 
 Currently, you probably want to start with the :doc:`log-replay` section.
 
+There is also a section on installation.
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
    intro
+   install
    log-replay
    hisparc
    analysis

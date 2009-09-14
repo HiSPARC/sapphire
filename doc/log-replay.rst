@@ -9,7 +9,13 @@ On Monday, September 7th, 2009 David gave a short introduction to *python*,
 small collection of scripts, but its interface is remarkably easy to use
 from an advanced python shell like *IPython*.
 
-First, just to show you how easy it is to plot sin(x)::
+To use IPython with all the power of data visualization, invoke it with
+the *-pylab* option, like so::
+
+    $ ipython -pylab
+
+That will save you a bunch of import statements.  First, just to show you
+how easy it is to plot sin(x)::
 
     >>> x = arange(-2*pi, 2*pi + pi/16, pi/8)
     >>> y = sin(x)
