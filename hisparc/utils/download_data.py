@@ -18,7 +18,7 @@ from create_tables import create_tables
 
 from hisparc.eventwarehouse import get_events, process_events
 
-def download(queue, chunksize=50000, offset=0, limit=None):
+def download(queue, station_id, chunksize=50000, offset=0, limit=None):
     """Download HiSPARC data
 
     This function downloads HiSPARC data, starting from an offset.  It
@@ -37,7 +37,7 @@ def download(queue, chunksize=50000, offset=0, limit=None):
         while True:
             print "Downloading %d events, starting from offset %d... " % \
                 (chunksize, offset)
-            events, eventdata, calculateddata = get_events(601,
+            events, eventdata, calculateddata = get_events(station_id,
                                                            limit=chunksize,
                                                            offset=offset)
             print "done."
@@ -87,7 +87,7 @@ def process(queue, datafile):
         print "Processor received KeyboardInterrupt, shutting down..."
 
 
-def start_download(filename, limit=1, chunksize=5000):
+def start_download(filename, station_id=601, limit=1, chunksize=5000):
     """Start a multi-process download
 
     A convenience function to start a download and process the data in
@@ -127,7 +127,7 @@ def start_download(filename, limit=1, chunksize=5000):
     offset = len(datafile.root.hisparc.events)
 
     queue = Queue(maxsize=2)
-    downloader = Process(target=download, args=(queue,),
+    downloader = Process(target=download, args=(queue, station_id),
                          kwargs={'offset': offset, 'chunksize': chunksize,
                                  'limit': limit})
     processor = Process(target=process, args=(queue, datafile))
