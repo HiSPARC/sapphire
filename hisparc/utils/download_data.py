@@ -12,13 +12,23 @@
 """
 import os.path
 import tables
-from multiprocessing import Process, Queue
-
-from create_tables import create_tables
+from multiprocessing import Process, Queue, Event
+import signal
 
 from hisparc.eventwarehouse import get_events, process_events
 
-def download(queue, station_id, chunksize=50000, offset=0, limit=None):
+interrupt = Event()
+
+
+def handler(signum, frame):
+    """Handler to signal a KeyboardInterrupt to all threads"""
+    if not interrupt.is_set():
+        print "KeyboardInterrupt, please wait..."
+        interrupt.set()
+    else:
+        pass
+
+def download(queue, station_id, chunksize, offset, limit, get_traces):
     """Download HiSPARC data
 
     This function downloads HiSPARC data, starting from an offset.  It
@@ -30,81 +40,94 @@ def download(queue, station_id, chunksize=50000, offset=0, limit=None):
         processed
     :param offset: the number of events which should be skipped
     :param limit: the maximum number of chunks to process
+    :param get_traces: boolean, select whether traces should be fetched
 
     """
     count = 0
-    try:
-        while True:
-            print "Downloading %d events, starting from offset %d... " % \
-                (chunksize, offset)
-            events, eventdata, calculateddata = get_events(station_id,
-                                                           limit=chunksize,
-                                                           offset=offset)
-            print "done."
+    # Loop until interrupt is signalled
+    while not interrupt.is_set():
+        print "Downloading %d events, starting from offset %d... " % \
+            (chunksize, offset)
+        events, eventdata, calculateddata = get_events(station_id,
+                                                       limit=chunksize,
+                                                       offset=offset,
+                                                       get_traces=get_traces)
+        print "done."
 
-            if events:
-                print "Putting events in queue..."
-                queue.put((events, eventdata, calculateddata))
-                offset += chunksize
-            else:
-                print "No more events, shutting down."
-                break
+        if events:
+            print "Putting events in queue..."
+            queue.put((events, eventdata, calculateddata))
+            offset += chunksize
+        else:
+            print "No more events, shutting down."
+            break
 
-            count += 1
-            if limit and count >= limit:
-                print "Limit reached, shutting down."
-                break
+        count += 1
+        if limit and count >= limit:
+            print "Limit reached, shutting down."
+            break
 
-        # Signalling shut down
-        queue.put((None, None, None))
-    except KeyboardInterrupt:
-        print "Downloader received KeyboardInterrupt, shutting down..."
+    # Signalling shut down
+    queue.put((None, None, None))
 
-def process(queue, datafile):
+    if interrupt.is_set():
+        print ("Downloader interrupted, please wait for processor to "
+               "finish...")
+
+def process(queue, eventstable, traces):
     """Append HiSPARC data to the data file
 
     This function processes the data which has been put in Queue object,
     appending it to the pytables data table.
 
     :param queue: a multiprocessing Queue object
-    :param datafile: the pytables data file
+    :param events: the PyTables destination events table
+    :param traces: the PyTables destination traces array
 
     """
-    try:
-        while True:
+
+    while True:
+        try:
             events, eventdata, calculateddata = queue.get()
+        except IOError:
+            # Probably due to repeatedly pressing Ctrl-C, restart call
+            continue
 
-            if events:
-                print "Processing events... "
-                process_events(events, eventdata, calculateddata,
-                               datafile.root.hisparc.events,
-                               datafile.root.hisparc.traces)
-                print "done."
-            else:
-                print "No more events, shutting down."
-                break
-    except KeyboardInterrupt:
-        print "Processor received KeyboardInterrupt, shutting down..."
+        if events:
+            print "Processing events... "
+            process_events(events, eventdata, calculateddata,
+                           eventstable, traces)
+            print "done."
+        else:
+            print "No more events, shutting down."
+            break
 
 
-def start_download(filename, station_id=601, limit=1, chunksize=5000):
+def start_download(file, group, station_id=601, limit=1, chunksize=5000,
+                   get_traces=False):
     """Start a multi-process download
 
     A convenience function to start a download and process the data in
     separate processes to speed up download on multi-core machines.
 
-    :param filename: The filename of the datafile
+    :param file: The PyTables datafile handler
+    :param group: The PyTables destination group, which should have an
+        events table and traces array
+    :param station_id: The HiSPARC station number for which to get events
     :param limit: The number of chunks to download
     :param chunksize: The number of events in one chunk
+    :param get_traces: boolean, select whether traces should be fetched
 
     Example usage::
 
+        >>> import tables
+        >>> data = tables.openFile('test.h5', 'a')
         >>> from hisparc.utils import download_data
-        >>> download_data.start_download('testdata.h5', limit=2)
-        Creating a new PyTables data file...  done.
-        Starting subprocesses...
+        >>> download_data.start_download(data,
+        ... '/hisparc/sciencepark/station501', limit=2, get_traces=True)
+        Starting download subprocess...
+        Waiting for download to shut down...
         Downloading 5000 events, starting from offset 0... 
-        Waiting for subprocesses to shut down...
         Time window:  2008-07-01 14:29:45 2008-07-01 14:52:44
         done.
         Putting events in queue...
@@ -120,29 +143,24 @@ def start_download(filename, station_id=601, limit=1, chunksize=5000):
         No more events, shutting down.
 
     """
-    if not os.path.isfile(filename):
-        create_tables(filename)
+    # create a custom signal handler to elegantly handle KeyboardInterrupt
+    # in all handlers
+    signal.signal(signal.SIGINT, handler)
+    signal.siginterrupt(signal.SIGINT, False)
+    interrupt.clear()
 
-    datafile = tables.openFile(filename, 'a')
-    offset = len(datafile.root.hisparc.events)
+    events = file.getNode(group, 'events')
+    traces = file.getNode(group, 'traces')
+    offset = len(events)
 
     queue = Queue(maxsize=2)
     downloader = Process(target=download, args=(queue, station_id),
                          kwargs={'offset': offset, 'chunksize': chunksize,
-                                 'limit': limit})
-    processor = Process(target=process, args=(queue, datafile))
+                                 'limit': limit, 'get_traces': get_traces})
 
-    print "Starting subprocesses..."
+    print "Starting download subprocess..."
     downloader.start()
-    processor.start()
 
-    print "Waiting for subprocesses to shut down..."
-    try:
-        downloader.join()
-        processor.join()
-    except KeyboardInterrupt:
-        print "Main program received KeyboardInterrupt."
-        downloader.join()
-        processor.join()
-
-    datafile.close()
+    print "Waiting for download to shut down..."
+    process(queue, events, traces)
+    downloader.join()

@@ -36,7 +36,8 @@ class IntegrityError(Error):
         return self.msg
 
 def get_and_process_events(station_id, table, traces, start=None,
-                           stop=None, limit=None, offset=None):
+                           stop=None, limit=None, offset=None,
+                           get_traces=False):
     """Get and process events from the eventwarehouse
 
     This is the highest level function in this module.
@@ -55,13 +56,16 @@ def get_and_process_events(station_id, table, traces, start=None,
     :param limit: the maximum number of events
     :param offset: an offset in the total event list from which point on a
         limit number of events is being selected
+    :param get_traces: boolean, select whether traces should be fetched
 
     """
     events, eventdata, calculateddata = get_events(station_id, start, stop,
-                                                   limit, offset)
+                                                   limit, offset,
+                                                   get_traces)
     process_events(events, eventdata, calculateddata, table, traces)
 
-def get_events(station_id, start=None, stop=None, limit=None, offset=None):
+def get_events(station_id, start=None, stop=None, limit=None, offset=None,
+               get_traces=False):
     """Get events and eventdata from the eventwarehouse
 
     Low-level: you might want to use :func:`get_and_process_events`
@@ -80,6 +84,7 @@ def get_events(station_id, start=None, stop=None, limit=None, offset=None):
     :param limit: the maximum number of events
     :param offset: an offset in the total event list from which point on a
         limit number of events is being selected
+    :param get_traces: boolean, select whether traces should be fetched
 
     :return: events, eventdata, calculateddata: events from the
         eventwarehouse event table with corresponding eventdata
@@ -108,7 +113,8 @@ def get_events(station_id, start=None, stop=None, limit=None, offset=None):
     # rely on 'start' and 'stop' instead.
     print "Time window: ", start, stop
     eventdata, calculateddata = get_hisparc_eventdata(db, station_id,
-                                                      start, stop)
+                                                      start, stop,
+                                                      get_traces)
 
     db.close()
 
@@ -162,7 +168,8 @@ def get_hisparc_events(db, station_id, start=None, stop=None, limit=None,
     results = cursor.fetchall()
     return results    
 
-def get_hisparc_eventdata(db, station_id, start=None, stop=None):
+def get_hisparc_eventdata(db, station_id, start=None, stop=None,
+                          get_traces=False):
     """ Get data from the eventdata table
 
     Low-level: you might want to use :func:`get_and_process_events`
@@ -189,6 +196,7 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None):
         interval (inclusive)
     :param stop: a datetime instance defining the end of the search
         interval (inclusive)
+    :param get_traces: boolean, select whether traces should be fetched
 
     :return: eventdata, calculateddata: event data records
 
@@ -213,23 +221,26 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None):
     cursor.execute(sql)
     calculateddata = cursor.fetchall()
 
-    sql  = "SELECT event_id, uploadcode, blobvalue " \
-           "FROM event e JOIN eventdata USING(event_id) " \
-           "JOIN eventdatatype USING(eventdatatype_id) " \
-           "WHERE station_id=%d AND e.eventtype_id=1 " % station_id
-    sql += "AND uploadcode " \
-           "IN ('TR1', 'TR2', 'TR3', 'TR4') "
-    if start:
-        sql += "AND (date > '%s' OR (date = '%s' AND time >= '%s')) " \
-               % (start.date(), start.date(),
-                  start.time().strftime('%H:%M:%S'))
-    if stop:
-        sql += "AND (date < '%s' OR (date = '%s' AND time <= '%s')) " \
-               % (stop.date(), stop.date(),
-                  stop.time().strftime('%H:%M:%S'))
-    sql += "ORDER BY date, time, nanoseconds"
-    cursor.execute(sql)
-    eventdata = cursor.fetchall()
+    if get_traces:
+        sql  = "SELECT event_id, uploadcode, blobvalue " \
+               "FROM event e JOIN eventdata USING(event_id) " \
+               "JOIN eventdatatype USING(eventdatatype_id) " \
+               "WHERE station_id=%d AND e.eventtype_id=1 " % station_id
+        sql += "AND uploadcode " \
+               "IN ('TR1', 'TR2', 'TR3', 'TR4') "
+        if start:
+            sql += "AND (date > '%s' OR (date = '%s' AND time >= '%s')) " \
+                   % (start.date(), start.date(),
+                      start.time().strftime('%H:%M:%S'))
+        if stop:
+            sql += "AND (date < '%s' OR (date = '%s' AND time <= '%s')) " \
+                   % (stop.date(), stop.date(),
+                      stop.time().strftime('%H:%M:%S'))
+        sql += "ORDER BY date, time, nanoseconds"
+        cursor.execute(sql)
+        eventdata = cursor.fetchall()
+    else:
+        eventdata = None
 
     return eventdata, calculateddata
 
@@ -264,8 +275,9 @@ def process_events(events, eventdata, calculateddata, table, traces):
     # rows.
     event_id = events[0][0]
     try:
-        while eventdata[eventdata_idx][0] != event_id:
-            eventdata_idx += 1
+        if eventdata:
+            while eventdata[eventdata_idx][0] != event_id:
+                eventdata_idx += 1
         while calculateddata[calculateddata_idx][0] != event_id:
             calculateddata_idx += 1
     except IndexError:
@@ -297,12 +309,13 @@ def process_events(events, eventdata, calculateddata, table, traces):
 
         # create a list containing the current event's data records
         datalist = []
-        try:
-            while eventdata[eventdata_idx][0] == event_id:
-                datalist.append(eventdata[eventdata_idx])
-                eventdata_idx += 1
-        except IndexError:
-            pass
+        if eventdata:
+            try:
+                while eventdata[eventdata_idx][0] == event_id:
+                    datalist.append(eventdata[eventdata_idx])
+                    eventdata_idx += 1
+            except IndexError:
+                pass
 
         try:
             while calculateddata[calculateddata_idx][0] == event_id:
@@ -332,11 +345,8 @@ def process_events(events, eventdata, calculateddata, table, traces):
             idx = int(uploadcode[2]) - 1 
             data[key][idx] = value
 
-        # check to see if our new event is complete
-        if (data['pulseheights'] == tablerow['pulseheights']).all() or \
-           (data['integrals'] == tablerow['integrals']).all() or \
-           (data['traces'] == tablerow['traces']).all():
-            raise IntegrityError("Possibly missing event records.")
+        #FIXME
+        #raise IntegrityError("Possibly missing event records.")
 
         tablerow['pulseheights'] = data['pulseheights']
         tablerow['integrals'] = data['integrals']
@@ -345,3 +355,4 @@ def process_events(events, eventdata, calculateddata, table, traces):
         # continue on to the next event
 
     table.flush()
+    traces.flush()
