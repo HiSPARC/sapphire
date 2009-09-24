@@ -54,3 +54,20 @@ def create_tables(filename):
 
     data.close()
     print "done."
+
+def create_group(file, group, description=None):
+    """Create a standard HiSPARC event group
+
+    This function will create a standard HiSPARC event group in your
+    PyTables file.  Parent groups much exist already.
+
+    :param file: the PyTables file handle
+    :param group: the group to be created
+    :param description: a description of the group
+
+    """
+    parent, newgroup = os.path.split(group)
+    file.createGroup(parent, newgroup, description, createparents=True)
+    file.createTable(group, 'events', HisparcEvent, 'HiSPARC events')
+    file.createVLArray(group, 'traces', tables.VLStringAtom(),
+                       'HiSPARC event traces')

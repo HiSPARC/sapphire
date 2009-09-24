@@ -9,6 +9,16 @@ On Monday, September 7th, 2009 David gave a short introduction to *python*,
 small collection of scripts, but its interface is remarkably easy to use
 from an advanced python shell like *IPython*.
 
+.. note::
+
+   This log was generated using an outdated version of the framework.  If
+   you want to run these exact examples, be sure to revert to revision 21,
+   like so::
+
+        $ bzr revert -r 21
+
+   Please see the :doc:`install` for more information.
+
 To use IPython with all the power of data visualization, invoke it with
 the *-pylab* option, like so::
 

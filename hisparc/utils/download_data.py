@@ -16,6 +16,7 @@ from multiprocessing import Process, Queue, Event
 import signal
 
 from hisparc.eventwarehouse import get_events, process_events
+from hisparc.utils.create_tables import create_group
 
 interrupt = Event()
 
@@ -28,7 +29,8 @@ def handler(signum, frame):
     else:
         pass
 
-def download(queue, station_id, chunksize, offset, limit, get_traces):
+def download(queue, station_id, limit, chunksize, start, stop, offset,
+             get_traces):
     """Download HiSPARC data
 
     This function downloads HiSPARC data, starting from an offset.  It
@@ -36,10 +38,14 @@ def download(queue, station_id, chunksize, offset, limit, get_traces):
     downloads.  Downloaded data will be put in a Queue object.
 
     :param queue: a multiprocessing Queue object
+    :param limit: the maximum number of chunks to process
     :param chunksize: number of events at a time which are downloaded and
         processed
+    :param start: a datetime instance defining the start of the search
+        interval (inclusive)
+    :param stop: a datetime instance defining the end of the search
+        interval (inclusive)
     :param offset: the number of events which should be skipped
-    :param limit: the maximum number of chunks to process
     :param get_traces: boolean, select whether traces should be fetched
 
     """
@@ -48,10 +54,17 @@ def download(queue, station_id, chunksize, offset, limit, get_traces):
     while not interrupt.is_set():
         print "Downloading %d events, starting from offset %d... " % \
             (chunksize, offset)
-        events, eventdata, calculateddata = get_events(station_id,
-                                                       limit=chunksize,
-                                                       offset=offset,
-                                                       get_traces=get_traces)
+        try:
+            events, eventdata, calculateddata = get_events(station_id,
+                                                    start=start,
+                                                    stop=stop,
+                                                    limit=chunksize,
+                                                    offset=offset,
+                                                    get_traces=get_traces)
+        except Exception as exc:
+            print repr(exc)
+            break
+
         print "done."
 
         if events:
@@ -59,7 +72,7 @@ def download(queue, station_id, chunksize, offset, limit, get_traces):
             queue.put((events, eventdata, calculateddata))
             offset += chunksize
         else:
-            print "No more events, shutting down."
+            print "No more events to download, shutting down."
             break
 
         count += 1
@@ -99,12 +112,12 @@ def process(queue, eventstable, traces):
                            eventstable, traces)
             print "done."
         else:
-            print "No more events, shutting down."
+            print "No more events to process, shutting down."
             break
 
 
-def start_download(file, group, station_id=601, limit=1, chunksize=5000,
-                   get_traces=False):
+def start_download(file, group, station_id=601, start=None, stop=None,
+                   limit=1, chunksize=5000, get_traces=False):
     """Start a multi-process download
 
     A convenience function to start a download and process the data in
@@ -114,6 +127,10 @@ def start_download(file, group, station_id=601, limit=1, chunksize=5000,
     :param group: The PyTables destination group, which should have an
         events table and traces array
     :param station_id: The HiSPARC station number for which to get events
+    :param start: a datetime instance defining the start of the search
+        interval (inclusive)
+    :param stop: a datetime instance defining the end of the search
+        interval (inclusive)
     :param limit: The number of chunks to download
     :param chunksize: The number of events in one chunk
     :param get_traces: boolean, select whether traces should be fetched
@@ -121,7 +138,7 @@ def start_download(file, group, station_id=601, limit=1, chunksize=5000,
     Example usage::
 
         >>> import tables
-        >>> data = tables.openFile('test.h5', 'a')
+        >>> data = tables.openFile('test.h5', 'w')
         >>> from hisparc.utils import download_data
         >>> download_data.start_download(data,
         ... '/hisparc/sciencepark/station501', limit=2, get_traces=True)
@@ -149,14 +166,27 @@ def start_download(file, group, station_id=601, limit=1, chunksize=5000,
     signal.siginterrupt(signal.SIGINT, False)
     interrupt.clear()
 
-    events = file.getNode(group, 'events')
-    traces = file.getNode(group, 'traces')
+    try:
+        events = file.getNode(group, 'events')
+        traces = file.getNode(group, 'traces')
+    except tables.NoSuchNodeError:
+        create_group(file, group)
+        events = file.getNode(group, 'events')
+        traces = file.getNode(group, 'traces')
+
     offset = len(events)
+    if offset:
+        print ("WARNING: previous events found. If called with the exact "
+               "same start argument (which may be None, or not "
+               "specified), download will continue where it left off.  "
+               "If not, your data might overlap or you might miss data.")
 
     queue = Queue(maxsize=2)
     downloader = Process(target=download, args=(queue, station_id),
-                         kwargs={'offset': offset, 'chunksize': chunksize,
-                                 'limit': limit, 'get_traces': get_traces})
+                         kwargs={'start': start, 'stop': stop,
+                                 'offset': offset, 'chunksize': chunksize,
+                                 'limit': limit,
+                                 'get_traces': get_traces})
 
     print "Starting download subprocess..."
     downloader.start()
