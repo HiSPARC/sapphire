@@ -162,7 +162,7 @@ def start_download(file, group, station_id=601, start=None, stop=None,
     """
     # create a custom signal handler to elegantly handle KeyboardInterrupt
     # in all handlers
-    signal.signal(signal.SIGINT, handler)
+    old_handler = signal.signal(signal.SIGINT, handler)
     signal.siginterrupt(signal.SIGINT, False)
     interrupt.clear()
 
@@ -194,3 +194,5 @@ def start_download(file, group, station_id=601, start=None, stop=None,
     print "Waiting for download to shut down..."
     process(queue, events, traces)
     downloader.join()
+
+    signal.signal(signal.SIGINT, old_handler)

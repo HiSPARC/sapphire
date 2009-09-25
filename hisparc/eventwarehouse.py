@@ -343,6 +343,12 @@ def process_events(events, eventdata, calculateddata, table, traces):
             else:
                 raise IntegrityError("Unknown datatype %s" % uploadcode)
             idx = int(uploadcode[2]) - 1 
+
+            # ok, fixing some eventwarehouse bugs...
+            if value == 4294966297 or value == 64537:
+                value = -999
+
+            # store value
             data[key][idx] = value
 
         #FIXME

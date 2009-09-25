@@ -12,8 +12,14 @@
    :members:
 .. moduleauthor:: David Fokkema <davidf@nikhef.nl>
 
-:mod:`~hisparc.analysis.kascade_coincidences` -- Search for HiSPARC / KASCADE coincidences
-------------------------------------------------------------------------------------------
+:mod:`~hisparc.analysis.kascade_coincidences` -- Search for |hisparc| / |kascade| coincidences
+----------------------------------------------------------------------------------------------
 .. automodule:: hisparc.analysis.kascade_coincidences
+   :members:
+.. moduleauthor:: David Fokkema <davidf@nikhef.nl>
+
+:mod:`~hisparc.analysis.traces` -- Analyse |hisparc| traces
+-----------------------------------------------------------
+.. automodule:: hisparc.analysis.traces
    :members:
 .. moduleauthor:: David Fokkema <davidf@nikhef.nl>
