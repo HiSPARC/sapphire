@@ -299,7 +299,9 @@ def process_events(events, eventdata, calculateddata, table, traces):
         tablerow['event_id'] = event_id
         tablerow['timestamp'] = timestamp
         tablerow['nanoseconds'] = nanoseconds
-        tablerow['ext_timestamp'] = timestamp * 1e9 + nanoseconds
+        # careful with intermediate typecasting! we lose precision if we
+        # multiply with just 1e9.
+        tablerow['ext_timestamp'] = timestamp * long(1e9) + nanoseconds
 
         # get default values for the eventdata
         data = {}
