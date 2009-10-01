@@ -12,6 +12,12 @@
    :members:
 .. moduleauthor:: David Fokkema <davidf@nikhef.nl>
 
+:mod:`~hisparc.analysis.coincidences` -- Search for station coincidences
+------------------------------------------------------------------------
+.. automodule:: hisparc.analysis.coincidences
+   :members:
+.. moduleauthor:: David Fokkema <davidf@nikhef.nl>
+
 :mod:`~hisparc.analysis.kascade_coincidences` -- Search for |hisparc| / |kascade| coincidences
 ----------------------------------------------------------------------------------------------
 .. automodule:: hisparc.analysis.kascade_coincidences
