@@ -10,10 +10,11 @@
     You want to use the :func:`start_download` function.
 
 """
-import os.path
+import os
 import tables
 from multiprocessing import Process, Queue, Event
 import signal
+import traceback
 
 from hisparc.eventwarehouse import get_events, process_events
 from hisparc.utils.create_tables import create_group
@@ -61,8 +62,8 @@ def download(queue, station_id, limit, chunksize, start, stop, offset,
                                                     limit=chunksize,
                                                     offset=offset,
                                                     get_traces=get_traces)
-        except Exception as exc:
-            print repr(exc)
+        except Exception:
+            print traceback.print_exc()
             break
 
         print "done."
@@ -162,8 +163,9 @@ def start_download(file, group, station_id=601, start=None, stop=None,
     """
     # create a custom signal handler to elegantly handle KeyboardInterrupt
     # in all handlers
-    old_handler = signal.signal(signal.SIGINT, handler)
-    signal.siginterrupt(signal.SIGINT, False)
+    if os.name == 'posix':
+        old_handler = signal.signal(signal.SIGINT, handler)
+        signal.siginterrupt(signal.SIGINT, False)
     interrupt.clear()
 
     try:
@@ -195,4 +197,5 @@ def start_download(file, group, station_id=601, start=None, stop=None,
     process(queue, events, traces)
     downloader.join()
 
-    signal.signal(signal.SIGINT, old_handler)
+    if os.name == 'posix':
+        signal.signal(signal.SIGINT, old_handler)
