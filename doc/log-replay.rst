@@ -27,7 +27,7 @@ the *-pylab* option, like so::
 That will save you a bunch of import statements.  First, just to show you
 how easy it is to plot sin(x)::
 
-    >>> x = arange(-2*pi, 2*pi + pi/16, pi/8)
+    >>> x = linspace(-2 * pi, 2 * pi)
     >>> y = sin(x)
     >>> plot(x,y)
     [<matplotlib.lines.Line2D object at 0xa394e6c>]

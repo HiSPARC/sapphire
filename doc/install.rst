@@ -10,7 +10,9 @@ Python and several libraries before you can use the framework.
 Furthermore, due to the fact that the framework is still in early alpha
 and development happens in a quick pace, there are no code releases yet.
 Of course, you can grab the sources from the source repository, which is
-in Bazaar.
+in Bazaar, but only if you have a Nikhef login.  If not, you can contact
+`David Fokkema <davidf@nikhef.nl>`_ to obtain a code dump.  We'll work
+towards code releases and a website with issue tracker.
 
 Currently, the instructions are for Ubuntu Linux and Microsoft Windows.
 If you want to submit instructions for other platforms, you're very
