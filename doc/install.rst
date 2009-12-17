@@ -47,6 +47,11 @@ You'll need to have the following installed in order to make use of the
     A package for managing hierarchical datasets and designed to
     efficiently and easily cope with extremely large amounts of data
 
+`HDF5 <http://hdfgroup.org/HDF5/>`_
+    A data model, library, and file format for storing and managing data.
+    It supports an unlimited variety of datatypes, and is designed for
+    flexible and efficient I/O and for high volume and complex data.
+
 `MySQLdb <http://mysql-python.sourceforge.net/>`_
     An interface to the popular MySQL database server, needed to connect
     to our current eventwarehouse
@@ -72,7 +77,7 @@ Installation in any Linux distribution is rather painless. Especially in
 Debian-based distributions, like Ubuntu, it is as easy as opening a
 terminal and typing::
 
-    $ sudo apt-get install bzr ipython python-scipy python-matplotlib python-mysqldb python-setuptools
+    $ sudo apt-get install bzr ipython python-scipy python-matplotlib python-mysqldb python-setuptools libhdf5-serial-dev python-dev
     $ sudo easy_install tables
 
 That's all for the prerequisites. For checking out the framework sources,
