@@ -203,12 +203,12 @@ def get_hisparc_eventdata(db, station_id, start=None, stop=None,
     """
     cursor = db.cursor()
 
-    sql  = "SELECT event_id, uploadcode, doublevalue " \
+    sql  = "SELECT event_id, uploadcode, doublevalue, integervalue " \
            "FROM event e JOIN calculateddata USING(event_id) " \
            "JOIN calculateddatatype USING(calculateddatatype_id) " \
            "WHERE station_id=%d AND e.eventtype_id=1 " % station_id
     sql += "AND uploadcode " \
-           "IN ('PH1','PH2','PH3','PH4','IN1','IN2','IN3','IN4') "
+           "IN ('PH1','PH2','PH3','PH4','IN1','IN2','IN3','IN4','NP1','NP2','NP3','NP4') "
     if start:
         sql += "AND (date > '%s' OR (date = '%s' AND time >= '%s')) " \
                % (start.date(), start.date(),
@@ -307,6 +307,7 @@ def process_events(events, eventdata, calculateddata, table, traces):
         data = {}
         data['pulseheights'] = tablerow['pulseheights']
         data['integrals'] = tablerow['integrals']
+        data['n_peaks'] = tablerow['n_peaks']
         data['traces'] = tablerow['traces']
 
         # create a list containing the current event's data records
@@ -335,6 +336,9 @@ def process_events(events, eventdata, calculateddata, table, traces):
                 key = 'pulseheights'
             elif uploadcode[:2] == 'IN':
                 key = 'integrals'
+            elif uploadcode[:2] == 'NP':
+                key = 'n_peaks'
+                value = data_row[3]
             elif uploadcode[:2] == 'TR':
                 key = 'traces'
                 # Store the trace in the VLArray
@@ -358,6 +362,7 @@ def process_events(events, eventdata, calculateddata, table, traces):
 
         tablerow['pulseheights'] = data['pulseheights']
         tablerow['integrals'] = data['integrals']
+        tablerow['n_peaks'] = data['n_peaks']
         tablerow['traces'] = data['traces']
         tablerow.append()
         # continue on to the next event

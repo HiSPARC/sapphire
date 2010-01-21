@@ -7,7 +7,8 @@ class HisparcEvent(tables.IsDescription):
     ext_timestamp = tables.UInt64Col(pos=3)
     pulseheights = tables.Int16Col(shape=4, dflt=-9999, pos=4)
     integrals = tables.Int32Col(shape=4, dflt=-9999, pos=5)
-    traces = tables.Int32Col(shape=4, dflt=-1, pos=6)
+    n_peaks = tables.Int32Col(shape=4, dflt=-9999, pos=6)
+    traces = tables.Int32Col(shape=4, dflt=-1, pos=7)
 
 class KascadeEvent(tables.IsDescription):
     run_id = tables.IntCol(pos=0)
