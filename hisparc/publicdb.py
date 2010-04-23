@@ -47,7 +47,8 @@ def store_data(dst_file, dst_group, src_filename, t0, t1):
     This can be further optimized at the expense of spaghetti code.
 
     """
-    with tables.openFile(src_filename) as src_file:
+    # Open in rw mode, need to update blob idxs, if necessary
+    with tables.openFile(src_filename, 'a') as src_file:
         src_group = src_file.listNodes('/')[0]
         dst_group = get_or_create_group(dst_file, dst_group)
 
