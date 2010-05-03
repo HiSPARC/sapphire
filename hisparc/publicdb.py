@@ -11,6 +11,10 @@ import tables
 import os
 import calendar
 
+import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('hisparc.publicdb')
+
 #PUBLICDB_XMLRPC_URL = 'http://localhost:8000/raw_data/rpc'
 PUBLICDB_XMLRPC_URL = 'http://data.hisparc.nl/django/raw_data/rpc'
 
@@ -34,9 +38,14 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
     server = xmlrpclib.ServerProxy(PUBLICDB_XMLRPC_URL)
 
     for t0, t1 in datetimerange(start, end):
+        logger.info("%s %s" % (t0, t1))
+        logger.info("Getting server data URL (%s)" % t0)
         url = server.hisparc.get_data_url(station_id, t0, get_blobs)
+        logger.info("Downloading data...")
         tmp_datafile, headers = urllib.urlretrieve(url)
+        logger.info("Storing data...")
         store_data(file, group, tmp_datafile, t0, t1)
+        logger.info("Done.")
 
 def store_data(dst_file, dst_group, src_filename, t0, t1):
     """Copy data from a temporary file to the destination file
@@ -69,7 +78,7 @@ def store_data(dst_file, dst_group, src_filename, t0, t1):
                     cond = 'timestamp >= %d' % \
                         calendar.timegm(t0.utctimetuple())
                 else:
-                    cond = '%d <= timestamp <= %d' % \
+                    cond = '(%d <= timestamp) & (timestamp <= %d)' % \
                         (calendar.timegm(t0.utctimetuple()),
                          calendar.timegm(t1.utctimetuple()))
 
