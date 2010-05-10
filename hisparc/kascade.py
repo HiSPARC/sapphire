@@ -19,9 +19,6 @@ def process_events(filename, table, start=None, stop=None):
     This function starts a subprocess to unzip the data file, reads the
     data line by line and stores it in a pytables table, row by row.
 
-    Only data starting from July 1st, 14:29 UTC is processed, since that is
-    when our detector was turned on.
-
     :param filename: the KASCADE data filename
     :param table: the destination table
 
@@ -42,7 +39,7 @@ def process_events(filename, table, start=None, stop=None):
 
         # read all columns into KASCADE-named variables
         Irun, Ieve, Gt, Mmn, EnergyArray, Xc, Yc, Ze, Az, Size, Nmu, He0, \
-        Hmu0, He1, Hmu1, He2, Hmu2, He3, Hmu3, P200, T200 = data
+        Hmu0, He1, Hmu1, He2, Hmu2, He3, Hmu3, T200, P200 = data
 
         # if start and stop are specified, the following boils down to:
         #     start < Gt < stop
