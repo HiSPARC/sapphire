@@ -9,7 +9,7 @@ import time
 import os
 import pylab
 
-def do_timeshifts(datafile, shifts, limit=None):
+def do_timeshifts(hevents, kevents, shifts, limit=None, h=None, k=None):
     """Search for coincidences using multiple time shifts
 
     This function enables you to search for coincidences multiple times,
@@ -21,13 +21,19 @@ def do_timeshifts(datafile, shifts, limit=None):
 
     Arguments:
 
-    datafile:
-        the data file containing the events
+    hevents:
+        hisparc events
+    kevents:
+        kascade events
     shifts:
         a list of time shifts
     limit:
         an optional limit on the number of kascade events used in the
         search
+    h:
+        prefetched array from hisparc table (optional)
+    k:
+        prefetched array from kascade table (optional)
 
     Returns:
 
@@ -37,8 +43,8 @@ def do_timeshifts(datafile, shifts, limit=None):
     """
     # Get arrays from the tables. This is much, much faster than working
     # from the tables directly. Pity.
-    h, k = get_arrays_from_tables(datafile.root.hisparc.events,
-                                  datafile.root.kascade.events, limit)
+    if not h or not k:
+        h, k = get_arrays_from_tables(hevents, kevents, limit)
 
     for shift in shifts:
         print "Calculating dt's for timeshift %.9f (%d nanoseconds)" % \
@@ -52,7 +58,7 @@ def do_timeshifts(datafile, shifts, limit=None):
     finish_graph()
     return coincidences
 
-def store_coincidences(datafile, coincidences):
+def store_coincidences(table, hevents, kevents, coincidences):
     """Store coincidences in a table
 
     This function stores coincidences which are found by
@@ -61,19 +67,22 @@ def store_coincidences(datafile, coincidences):
 
     Arguments:
 
-    datafile:
-        datafile to hold the coincidences
+    table:
+        table to hold the coincidences
+    hevents:
+        hisparc event table
+    kevents:
+        kascade event table
     coincidences:
         a list of coincidences, as given by search_coincidences
 
     """
-    table = datafile.root.coincidences.events
     old_data_length = len(table)
     tablerow = table.row
 
     for coincidence in coincidences:
-        hisparc = datafile.root.hisparc.events[coincidence[1]]
-        kascade = datafile.root.kascade.events[coincidence[2]]
+        hisparc = hevents[coincidence[1]]
+        kascade = kevents[coincidence[2]]
         tablerow['hisparc_event_id'] = hisparc['event_id']
         tablerow['kascade_event_id'] = kascade['event_id']
         tablerow['hisparc_timestamp'] = hisparc['timestamp']
@@ -216,7 +225,7 @@ def finish_graph():
     pylab.gca().axis('auto')
     pylab.gcf().show()
 
-def get_arrays_from_tables(h, k, limit):
+def get_arrays_from_tables(h, k, limit=None):
     """Get data arrays from data tables
 
     This function returns an array of values extracted from the event
@@ -256,10 +265,10 @@ def get_arrays_from_tables(h, k, limit):
 
     return h, k
 
-def test(datafile):
+def test(hevents, kevents):
     """Perform a small coincidence test"""
 
     print "Careful: the following search is limited to 1000 kascade events"
     print "The complete statement would be:"
-    print "c = do_timeshifts(data, [-13.180213654])"
-    c = do_timeshifts(datafile, [-13.180213654], limit=1000)
+    print "c = do_timeshifts(hevents, kevents, [-13.180220188408871]"
+    c = do_timeshifts(hevents, kevents, [-13.180220188408871], limit=1000)
