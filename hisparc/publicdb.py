@@ -10,6 +10,7 @@ import datetime
 import tables
 import os
 import calendar
+import re
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -40,7 +41,12 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
     for t0, t1 in datetimerange(start, end):
         logger.info("%s %s" % (t0, t1))
         logger.info("Getting server data URL (%s)" % t0)
-        url = server.hisparc.get_data_url(station_id, t0, get_blobs)
+        try:
+            url = server.hisparc.get_data_url(station_id, t0, get_blobs)
+        except Exception, exc:
+            if re.search("No data", str(exc)):
+                logger.warning("No data for %s" % t0)
+                continue
         logger.info("Downloading data...")
         tmp_datafile, headers = urllib.urlretrieve(url)
         logger.info("Storing data...")
