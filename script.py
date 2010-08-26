@@ -32,51 +32,46 @@ def save_particle(row, p, id):
 
 
 if __name__ == '__main__':
-    sim = aires.SimulationData('sim', 'showere15.grdpcles')
+    sim = aires.SimulationData('sim', 'showere15-angle.grdpcles')
 
-    if not os.path.exists(DATA_FILE):
-        data = tables.openFile(DATA_FILE, 'w')
-        data.createGroup('/', 'showers', 'Simulated showers')
-        data.createGroup('/showers', 's1', 'Shower 1')
-        gammas = data.createTable('/showers/s1', 'gammas', Particle,
-                                  'Gammas')
-        muons = data.createTable('/showers/s1', 'muons', Particle,
-                                 'Muons and anti-muons')
-        electrons = data.createTable('/showers/s1', 'electrons', Particle,
-                                     'Electrons and positrons')
-        leptons = data.createTable('/showers/s1', 'leptons', Particle,
-                                   'Electrons, positrons, muons and anti-muons')
-        lepgammas = data.createTable('/showers/s1', 'lepgammas', Particle,
-                                     'Electrons, positrons, muons, '
-                                     'anti-muons and gammas')
+    data = tables.openFile(DATA_FILE, 'a')
+    #data.createGroup('/', 'showers', 'Simulated showers')
+    data.createGroup('/showers', 's2', 'Shower 2 - Angle')
+    gammas = data.createTable('/showers/s2', 'gammas', Particle,
+                              'Gammas')
+    muons = data.createTable('/showers/s2', 'muons', Particle,
+                             'Muons and anti-muons')
+    electrons = data.createTable('/showers/s2', 'electrons', Particle,
+                                 'Electrons and positrons')
+    leptons = data.createTable('/showers/s2', 'leptons', Particle,
+                               'Electrons, positrons, muons and anti-muons')
+    lepgammas = data.createTable('/showers/s2', 'lepgammas', Particle,
+                                 'Electrons, positrons, muons, '
+                                 'anti-muons and gammas')
 
 
-        shower = [x for x in sim.showers()][0]
+    shower = [x for x in sim.showers()][0]
 
-        muons_row = muons.row
-        gammas_row = gammas.row
-        electrons_row = electrons.row
-        leptons_row = leptons.row
-        lepgammas_row = lepgammas.row
+    muons_row = muons.row
+    gammas_row = gammas.row
+    electrons_row = electrons.row
+    leptons_row = leptons.row
+    lepgammas_row = lepgammas.row
 
-        for id, p in enumerate(shower.particles()):
-            if p.name == 'gamma':
-                save_particle(gammas_row, p, id)
-                save_particle(lepgammas_row, p, id)
-            elif p.name == 'muon' or p.name == 'anti-muon':
-                save_particle(muons_row, p, id)
-                save_particle(leptons_row, p, id)
-                save_particle(lepgammas_row, p, id)
-            elif p.name == 'electron' or p.name == 'positron':
-                save_particle(electrons_row, p, id)
-                save_particle(leptons_row, p, id)
-                save_particle(lepgammas_row, p, id)
-        muons.flush()
-        gammas.flush()
-        electrons.flush()
-        leptons.flush()
-        lepgammas.flush()
-    else:
-        print """
-If you want to regenerate the data set, please remove the %s file.
-        """ % DATA_FILE
+    for id, p in enumerate(shower.particles()):
+        if p.name == 'gamma':
+            save_particle(gammas_row, p, id)
+            save_particle(lepgammas_row, p, id)
+        elif p.name == 'muon' or p.name == 'anti-muon':
+            save_particle(muons_row, p, id)
+            save_particle(leptons_row, p, id)
+            save_particle(lepgammas_row, p, id)
+        elif p.name == 'electron' or p.name == 'positron':
+            save_particle(electrons_row, p, id)
+            save_particle(leptons_row, p, id)
+            save_particle(lepgammas_row, p, id)
+    muons.flush()
+    gammas.flush()
+    electrons.flush()
+    leptons.flush()
+    lepgammas.flush()

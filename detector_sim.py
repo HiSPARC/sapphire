@@ -264,7 +264,7 @@ if __name__ == '__main__':
     except NameError:
         data2 = tables.openFile(HDFFILE, 'r')
 
-    group = data.root.showers.s1.leptons
+    group = data.root.showers.s2.leptons
 
     #plot_positions_test()
     #detector_test(group)
@@ -272,7 +272,7 @@ if __name__ == '__main__':
     #_ip.magic("time do_simulation(group, .0002)")
     #_ip.magic("time do_simulation(group, .0004)")
     #_ip.magic("time do_simulation(group, D)")
+    _ip.magic("time do_simulation(group, .001)")
 
-    do_simulation(group, .001)
     #store_results_in_tables(OUTFILE, HDFFILE)
     #analyze_results(HDFFILE)
