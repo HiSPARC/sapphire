@@ -18,10 +18,9 @@ from numpy import pi, sqrt, arctan2, sin, cos
 
 from pylab import *
 
-#OUTFILE = 'simulation-e15.csv'
-OUTFILE = 'tmp.csv'
+OUTFILE = 'simulation-e15-angled-angles.csv'
 DATAFILE = 'data-e15.h5'
-HDFFILE = 'simulation-e15.h5'
+HDFFILE = 'simulation-e15-angled.h5'
 
 D = .01
 MIN = 3
@@ -30,7 +29,7 @@ RINGS = [(0, 4, 20, False), (4, 20, 10, False), (20, 40, 16, False),
          (40, 80, 30, False), (80, 80, 30, True)]
 DETECTORS = [(0., 5.77, 'UD'), (0., 0., 'UD'), (-5., -2.89, 'LR'),
              (5., -2.89, 'LR')]
-DETECTOR_SIZE = (-.25, .25, -.5, .5)
+DETECTOR_SIZE = (.25, .5)
 
 
 class ParticleEvent(tables.IsDescription):
@@ -45,7 +44,11 @@ class StationEvent(tables.IsDescription):
     id = tables.UInt32Col()
     r = tables.Float32Col()
     phi = tables.Float32Col()
-    times = tables.Float32Col(shape=4)
+    alpha = tables.Float32Col()
+    t1 = tables.Float32Col()
+    t2 = tables.Float32Col()
+    t3 = tables.Float32Col()
+    t4 = tables.Float32Col()
 
 
 def simulate_positions(r0, r1=1., density=1., iscorner=False):
@@ -106,7 +109,7 @@ def plot_positions_test():
 
     print "Total:", N
 
-def get_station_particles(data, r, phi):
+def get_station_particles(data, r, phi, alpha=None):
     """Return all particles hitting a station"""
 
     X = r * cos(phi)
@@ -115,29 +118,79 @@ def get_station_particles(data, r, phi):
 
     for detector in DETECTORS:
         x, y, orientation = detector
-        particles.append(get_detector_particles(data, X + x, Y + y,
-                                                orientation))
+        particles.append(get_detector_particles(data, X, Y, x, y,
+                                                orientation, alpha))
     return particles
 
-def get_detector_particles(data, x, y, orientation):
+def get_detector_particles(data, X, Y, x, y, orientation, alpha=None):
     """Return all particles hitting a single detector"""
 
-    x0, x1, y0, y1 = get_detector_corners(x, y, orientation)
-    return data.readWhere("(x0 < x) & (x < x1) & (y0 < y) & (y < y1)")
+    c = get_detector_corners(X, Y, x, y, orientation, alpha)
 
-def get_detector_corners(x, y, orientation):
+    b11, line1, b12 = get_line_boundary_eqs(c[0], c[1], c[2])
+    b21, line2, b22 = get_line_boundary_eqs(c[1], c[2], c[3])
+
+    return data.readWhere("(b11 < %s) & (%s < b12) & "
+                          "(b21 < %s) & (%s < b22)" % (line1, line1,
+                                                       line2, line2))
+
+def get_line_boundary_eqs(p0, p1, p2):
+    """Get line equations using three points
+
+    Given three points, this function computes the equations for two
+    parallel lines going through these points.  The first and second point
+    are on the same line, whereas the third point is taken to be on a
+    line which runs parallel to the first.  The return value is an
+    equation and two boundaries which can be used to test if a point is
+    between the two lines.
+
+    """
+    (x0, y0), (x1, y1), (x2, y2) = p0, p1, p2
+
+    # First, compute the slope
+    a = (y1 - y0) / (x1 - x0)
+
+    # Calculate the y-intercepts of both lines
+    b1 = y0 - a * x0
+    b2 = y2 - a * x2
+
+    # Compute the general equation for the lines
+    if not isinf(a):
+        line = "y - %f * x" % a
+    else:
+        # line is exactly vertical
+        line = "x"
+        b1, b2 = x0, x2
+
+    # And order the y-intercepts
+    if b1 > b2:
+        b1, b2 = b2, b1
+
+    return b1, line, b2
+
+def get_detector_corners(X, Y, x, y, orientation, alpha=None):
     """Get the x, y coordinates of the detector corners"""
 
-    dx0, dx1, dy0, dy1 = DETECTOR_SIZE
+    dx, dy = DETECTOR_SIZE
 
     if orientation == 'UD':
-        return x + dx0, x + dx1, y + dy0, y + dy1
+        corners = [(x - dx, y - dy), (x + dx, y - dy), (x + dx, y + dy),
+                   (x - dx, y + dy)]
     elif orientation == 'LR':
-        return x + dy0, x + dy1, y + dx0, y + dx1
+        corners = [(x - dy, y - dx), (x + dy, y - dx), (x + dy, y + dx),
+                   (x - dy, y + dx)]
     else:
         raise Exception("Unknown detector orientation: %s" % orientation)
 
-def plot_detectors_test(data, r, phi):
+    if alpha is not None:
+        sina = sin(alpha)
+        cosa = cos(alpha)
+        corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
+                   corners]
+
+    return [[X + x, Y + y] for x, y in corners]
+
+def plot_detectors_test(data, r, phi, alpha=None):
     """Test the detector and particle positions"""
 
     figure()
@@ -146,27 +199,28 @@ def plot_detectors_test(data, r, phi):
 
     for x, y, orient in DETECTORS:
         plot(X + x, Y + y, '.', ms=5.)
-        x0, x1, y0, y1 = get_detector_corners(X + x, Y + y, orient)
-        print x0, x1, y0, y1
-        plot([x0, x0, x1, x1, x0], [y0, y1, y1, y0, y0])
+        corners = get_detector_corners(X, Y, x, y, orient, alpha)
+        plot([u for u, v in corners] + [corners[0][0]],
+             [v for u, v in corners] + [corners[0][1]])
 
     title("HiSPARC detectors")
     xlabel("Afstand (m)")
     ylabel("Afstand (m)")
     axis('equal')
 
-    for p in get_station_particles(data, r, phi):
+    for p in get_station_particles(data, r, phi, alpha):
         plot(p[:]['x'], p[:]['y'], '.', ms=1.)
 
 def detector_test(data):
     """Test the detector positions and measured particles"""
 
-    plot_detectors_test(group, 0, 0)
-    plot_detectors_test(group, 5, 0)
-    plot_detectors_test(group, 5, .5 * pi)
-    plot_detectors_test(group, 50, .25 * pi)
+    for theta in linspace(-pi, pi, 10):
+        plot_detectors_test(group, 0, 0, theta)
+        plot_detectors_test(group, 5, 0, theta)
+        #plot_detectors_test(group, 5, .5 * pi, theta)
+        #plot_detectors_test(group, 50, .25 * pi, theta)
 
-def do_simulation(data, density):
+def do_simulation(data, density, use_alpha=0.):
     """Perform a full simulation"""
 
     with open(OUTFILE, 'w') as file:
@@ -176,18 +230,28 @@ def do_simulation(data, density):
             r_list, phi_list = simulate_positions(r0, r1,
                                                   rel_density * density,
                                                   iscorner)
-            for event_id, (r, phi) in enumerate(zip(r_list, phi_list), N):
-                save_event_header(writer, event_id, r, phi)
-                particles = get_station_particles(data, r, phi)
+            if use_alpha is True:
+                alpha_list = np.random.uniform(-pi, pi, len(r_list))
+            else:
+                alpha_list = len(r_list) * [alpha]
+
+            for event_id, (r, phi, alpha) in enumerate(zip(r_list,
+                                                           phi_list,
+                                                           alpha_list),
+                                                       N):
+                save_event_header(writer, event_id, r, phi, alpha)
+                particles = get_station_particles(data, r, phi, alpha)
                 for scint_id, p in enumerate(particles, 1):
                     save_detector_particles(writer, event_id, scint_id, p)
 
             N = event_id + 1
 
-def save_event_header(writer, event_id, r, phi):
-    writer.writerow([event_id * 10, 0, r, phi, 0, 0])
+def save_event_header(writer, event_id, r, phi, alpha):
+    # ID + 0, 0, r, phi, alpha, 0
+    writer.writerow([event_id * 10, 0, r, phi, alpha, 0])
 
 def save_detector_particles(writer, event_id, scint_id, particles):
+    # ID + scintnum, pid, r, phi, t, E
     for p in particles:
         writer.writerow([event_id * 10 + scint_id, p['pid'],
                          p['core_distance'], p['polar_angle'],
@@ -235,18 +299,22 @@ def analyze_results(hdffile):
             row['id'] = event['id']
             row['r'] = event['r']
             row['phi'] = event['phi']
+            # header has alpha in place of time
+            row['alpha'] = event['time']
             t = [[], [], [], []]
             while True:
                 event = sim.next()
                 idx = event['id'] % 10
                 if idx == 0:
-                    row['times'] = [min(x) if len(x) else nan for x in t]
+                    row['t1'], row['t2'], row['t3'], row['t4'] = \
+                        [min(x) if len(x) else nan for x in t]
                     row.append()
                     break
                 else:
                     t[idx - 1].append(event['time'])
     except StopIteration:
-        row['times'] = [min(x) if len(x) else nan for x in t]
+        row['t1'], row['t2'], row['t3'], row['t4'] = [min(x) if len(x)
+                                                      else nan for x in t]
         row.append()
 
     table.flush()
@@ -259,10 +327,10 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile(DATAFILE, 'r')
     
-    try:
-        data2
-    except NameError:
-        data2 = tables.openFile(HDFFILE, 'r')
+    #try:
+    #    data2
+    #except NameError:
+    #    data2 = tables.openFile(HDFFILE, 'r')
 
     group = data.root.showers.s2.leptons
 
@@ -272,7 +340,9 @@ if __name__ == '__main__':
     #_ip.magic("time do_simulation(group, .0002)")
     #_ip.magic("time do_simulation(group, .0004)")
     #_ip.magic("time do_simulation(group, D)")
-    _ip.magic("time do_simulation(group, .001)")
+    #_ip.magic("time do_simulation(group, .001, use_alpha=True)")
 
     #store_results_in_tables(OUTFILE, HDFFILE)
-    #analyze_results(HDFFILE)
+    analyze_results(HDFFILE)
+
+    #do_simulation(group, .001, use_alpha=True)
