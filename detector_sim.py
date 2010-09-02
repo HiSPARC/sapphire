@@ -14,7 +14,7 @@
 import tables
 import csv
 import numpy as np
-from numpy import pi, sqrt, arctan2, sin, cos
+from math import pi, sqrt, sin, cos, atan2, ceil, isinf
 
 from pylab import *
 
@@ -27,8 +27,13 @@ MIN = 3
 
 RINGS = [(0, 4, 20, False), (4, 20, 10, False), (20, 40, 16, False),
          (40, 80, 30, False), (80, 80, 30, True)]
-DETECTORS = [(0., 5.77, 'UD'), (0., 0., 'UD'), (-5., -2.89, 'LR'),
-             (5., -2.89, 'LR')]
+
+DETECTOR_SPACING = 10.
+l = DETECTOR_SPACING / 2.
+x = l / 3. * sqrt(3)
+DETECTORS = [(0., 2 * x, 'UD'), (0., 0., 'UD'), (-l, -x, 'LR'),
+             (l, -x, 'LR')]
+
 DETECTOR_SIZE = (.25, .5)
 
 
@@ -49,6 +54,10 @@ class StationEvent(tables.IsDescription):
     t2 = tables.Float32Col()
     t3 = tables.Float32Col()
     t4 = tables.Float32Col()
+    n1 = tables.UInt16Col()
+    n2 = tables.UInt16Col()
+    n3 = tables.UInt16Col()
+    n4 = tables.UInt16Col()
 
 
 def simulate_positions(r0, r1=1., density=1., iscorner=False):
@@ -71,7 +80,7 @@ def random_ring(r0, r1, num):
     """Simulate positions uniformly on a ring"""
 
     phi = np.random.uniform(-pi, pi, num)
-    r = sqrt(np.random.uniform(r0 ** 2, r1 ** 2, num))
+    r = np.sqrt(np.random.uniform(r0 ** 2, r1 ** 2, num))
 
     return r, phi
 
@@ -85,7 +94,7 @@ def random_corner(R, num):
         if r < R:
             continue
         else:
-            phi = arctan2(y, x)
+            phi = atan2(y, x)
             r_list.append(r)
             phi_list.append(phi)
     return np.array(r_list), np.array(phi_list)
@@ -308,6 +317,8 @@ def analyze_results(hdffile):
                 if idx == 0:
                     row['t1'], row['t2'], row['t3'], row['t4'] = \
                         [min(x) if len(x) else nan for x in t]
+                    row['n1'], row['n2'], row['n3'], row['n4'] = \
+                        [len(x) for x in t]
                     row.append()
                     break
                 else:
@@ -315,6 +326,7 @@ def analyze_results(hdffile):
     except StopIteration:
         row['t1'], row['t2'], row['t3'], row['t4'] = [min(x) if len(x)
                                                       else nan for x in t]
+        row['n1'], row['n2'], row['n3'], row['n4'] = [len(x) for x in t]
         row.append()
 
     table.flush()
@@ -340,9 +352,9 @@ if __name__ == '__main__':
     #_ip.magic("time do_simulation(group, .0002)")
     #_ip.magic("time do_simulation(group, .0004)")
     #_ip.magic("time do_simulation(group, D)")
-    #_ip.magic("time do_simulation(group, .001, use_alpha=True)")
+    #_ip.magic("timeit do_simulation(group, .001, use_alpha=True)")
 
     #store_results_in_tables(OUTFILE, HDFFILE)
-    analyze_results(HDFFILE)
+    #analyze_results(HDFFILE)
 
-    #do_simulation(group, .001, use_alpha=True)
+    #do_simulation(group, 1., use_alpha=True)
