@@ -16,23 +16,17 @@ import csv
 import numpy as np
 from math import pi, sqrt, sin, cos, atan2, ceil, isinf
 
-from pylab import *
+from multiprocessing import Process
 
-OUTFILE = 'simulation-e15-angled-angles.csv'
+#from pylab import *
+
 DATAFILE = 'data-e15.h5'
-HDFFILE = 'simulation-e15-angled.h5'
 
-D = .01
+D = 1.
 MIN = 3
 
 RINGS = [(0, 4, 20, False), (4, 20, 10, False), (20, 40, 16, False),
          (40, 80, 30, False), (80, 80, 30, True)]
-
-DETECTOR_SPACING = 10.
-l = DETECTOR_SPACING / 2.
-x = l / 3. * sqrt(3)
-DETECTORS = [(0., 2 * x, 'UD'), (0., 0., 'UD'), (-l, -x, 'LR'),
-             (l, -x, 'LR')]
 
 DETECTOR_SIZE = (.25, .5)
 
@@ -229,10 +223,20 @@ def detector_test(data):
         #plot_detectors_test(group, 5, .5 * pi, theta)
         #plot_detectors_test(group, 50, .25 * pi, theta)
 
-def do_simulation(data, density, use_alpha=0.):
+def do_simulation(data, stationsize, outfile, density, use_alpha=0.):
     """Perform a full simulation"""
 
-    with open(OUTFILE, 'w') as file:
+    dataf = tables.openFile('data-e15.h5', 'r')
+    data = dataf.getNode('/showers', data)
+
+    global DETECTORS
+    DETECTOR_SPACING = stationsize
+    l = DETECTOR_SPACING / 2.
+    x = l / 3. * sqrt(3)
+    DETECTORS = [(0., 2 * x, 'UD'), (0., 0., 'UD'), (-l, -x, 'LR'),
+                 (l, -x, 'LR')]
+
+    with open(outfile, 'w') as file:
         writer = csv.writer(file, delimiter='\t')
         N = 0
         for r0, r1, rel_density, iscorner in RINGS:
@@ -242,7 +246,7 @@ def do_simulation(data, density, use_alpha=0.):
             if use_alpha is True:
                 alpha_list = np.random.uniform(-pi, pi, len(r_list))
             else:
-                alpha_list = len(r_list) * [alpha]
+                alpha_list = len(r_list) * [use_alpha]
 
             for event_id, (r, phi, alpha) in enumerate(zip(r_list,
                                                            phi_list,
@@ -254,6 +258,7 @@ def do_simulation(data, density, use_alpha=0.):
                     save_detector_particles(writer, event_id, scint_id, p)
 
             N = event_id + 1
+    dataf.close()
 
 def save_event_header(writer, event_id, r, phi, alpha):
     # ID + 0, 0, r, phi, alpha, 0
@@ -334,27 +339,22 @@ def analyze_results(hdffile):
 
 
 if __name__ == '__main__':
-    try:
-        data
-    except NameError:
-        data = tables.openFile(DATAFILE, 'r')
-    
-    #try:
-    #    data2
-    #except NameError:
-    #    data2 = tables.openFile(HDFFILE, 'r')
+    DENSITY = 1.
+    ps = []
+    for group, stationsize, outfile in [
+        ('zenith0/leptons', 10., 'detsim-angle-0.csv'),
+        ('zenith5/leptons', 10., 'detsim-angle-5.csv'),
+        ('zenith23/leptons', 5., 'detsim-angle-23-size5.csv'),
+        ('zenith23/leptons', 10., 'detsim-angle-23.csv'),
+        ('zenith23/leptons', 20., 'detsim-angle-23-size20.csv'),
+        ('zenith35/leptons', 10., 'detsim-angle-35.csv')]:
 
-    group = data.root.showers.s2.leptons
-
-    #plot_positions_test()
-    #detector_test(group)
-    #_ip.magic("time do_simulation(group, .0001)")
-    #_ip.magic("time do_simulation(group, .0002)")
-    #_ip.magic("time do_simulation(group, .0004)")
-    #_ip.magic("time do_simulation(group, D)")
-    #_ip.magic("timeit do_simulation(group, .001, use_alpha=True)")
-
-    #store_results_in_tables(OUTFILE, HDFFILE)
-    #analyze_results(HDFFILE)
-
-    #do_simulation(group, 1., use_alpha=True)
+        p = Process(target=do_simulation, kwargs=dict(data=group,
+                                                      stationsize=stationsize,
+                                                      outfile=outfile,
+                                                      density=DENSITY,
+                                                      use_alpha=True))
+        p.start()
+        ps.append(p)
+    for p in ps:
+        p.join()

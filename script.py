@@ -30,25 +30,20 @@ def save_particle(row, p, id):
     row['y'] = 10 ** p.core_distance * sin(p.polar_angle)
     row.append()
 
-
-if __name__ == '__main__':
-    sim = aires.SimulationData('sim', 'showere15-angle.grdpcles')
-
-    data = tables.openFile(DATA_FILE, 'a')
-    #data.createGroup('/', 'showers', 'Simulated showers')
-    data.createGroup('/showers', 's2', 'Shower 2 - Angle')
-    gammas = data.createTable('/showers/s2', 'gammas', Particle,
+def store_simulation_data(data, group, file):
+    sim = aires.SimulationData('sim', file)
+    group = data.createGroup('/showers', group, 'Shower Data')
+    gammas = data.createTable(group, 'gammas', Particle,
                               'Gammas')
-    muons = data.createTable('/showers/s2', 'muons', Particle,
+    muons = data.createTable(group, 'muons', Particle,
                              'Muons and anti-muons')
-    electrons = data.createTable('/showers/s2', 'electrons', Particle,
+    electrons = data.createTable(group, 'electrons', Particle,
                                  'Electrons and positrons')
-    leptons = data.createTable('/showers/s2', 'leptons', Particle,
+    leptons = data.createTable(group, 'leptons', Particle,
                                'Electrons, positrons, muons and anti-muons')
-    lepgammas = data.createTable('/showers/s2', 'lepgammas', Particle,
+    lepgammas = data.createTable(group, 'lepgammas', Particle,
                                  'Electrons, positrons, muons, '
                                  'anti-muons and gammas')
-
 
     shower = [x for x in sim.showers()][0]
 
@@ -75,3 +70,12 @@ if __name__ == '__main__':
     electrons.flush()
     leptons.flush()
     lepgammas.flush()
+
+
+if __name__ == '__main__':
+    data = tables.openFile(DATA_FILE, 'w')
+    data.createGroup('/', 'showers', 'Simulated showers')
+    store_simulation_data(data, 'zenith0', 'showere15.grdpcles')
+    store_simulation_data(data, 'zenith23', 'showere15-angle.grdpcles')
+    store_simulation_data(data, 'zenith5', 'showere15-angle-5.grdpcles')
+    store_simulation_data(data, 'zenith35', 'showere15-angle-35.grdpcles')
