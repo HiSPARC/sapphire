@@ -3,6 +3,7 @@ from itertools import combinations
 import re
 
 from pylab import *
+from tikz_plot import tikz_2dhist
 
 
 DETECTORS = [(0., 5.77, 'UD'), (0., 0., 'UD'), (-5., -2.89, 'LR'),
@@ -89,6 +90,7 @@ def plot_reconstructed_angles(data, tablename, THETA, D, binning=False,
     phis = array(phis)
 
     subtitle = "theta: %.1f degrees, size: %d meters, binsize: %r, randomized: %r" % (rad2deg(THETA), R, binning, randomize_binning)
+
     figure()
     plot(-rad2deg(alphas), rad2deg(phis), '.', ms=1.)
     axis('tight')
@@ -96,12 +98,19 @@ def plot_reconstructed_angles(data, tablename, THETA, D, binning=False,
     xlabel("Simulated angle (degrees)")
     ylabel("Reconstructed angle (degrees)")
     savefig('plots/auto-azimuth-TH%d-D%d-R%d-b%d-rb%s.pdf' % (rad2deg(THETA), D, R, binning, randomize_binning))
+
+    fn = 'plots/auto-azimuth-TH%d-D%d-R%d-b%d-rb%s.tikz' % (rad2deg(THETA), D, R, binning, randomize_binning)
+    #tikz_2dhist(fn, -rad2deg(alphas), rad2deg(phis), bins=(72,72),
+    tikz_2dhist(fn, -rad2deg(alphas), rad2deg(phis), bins=(9,9),
+                use_log=False)
+
     figure()
     hist(rad2deg(thetas), bins=linspace(0, 90, 200), histtype='step')
     title("Reconstructed zenith angle from simulation (D >= %d)\n%s" % (D, subtitle))
     xlabel("Reconstructed angle (degrees)")
     ylabel("Count")
     savefig('plots/auto-zenith-TH%d-D%d-R%d-b%d-rb%s.pdf' % (rad2deg(THETA), D, R, binning, randomize_binning))
+
     figure()
     n, bins, patches = hist(rad2deg(opening_angles),
                             bins=linspace(0, 120, 200), histtype='step')
