@@ -15,10 +15,11 @@ import tables
 import csv
 import numpy as np
 from math import pi, sqrt, sin, cos, atan2, ceil, isinf
+import gzip
 
 from multiprocessing import Process
 
-#from pylab import *
+from pylab import *
 
 DATAFILE = 'data-e15.h5'
 
@@ -274,36 +275,52 @@ def save_detector_particles(writer, event_id, scint_id, particles):
 def store_results_in_tables(csvfile, hdffile):
     """Read a csv file with simulation data and store in PyTables"""
 
-    data = tables.openFile(hdffile, 'w')
-    data.createTable('/', 'sim', ParticleEvent,
-                     "Detector simulation data")
-    table = data.root.sim
-    row = table.row
-
-    with open(csvfile, 'r') as file:
-        reader = csv.reader(file, delimiter='\t')
-        for line in reader:
-            (row['id'], row['pid'], row['r'], row['phi'], row['time'],
-             row['energy']) = line
-            row.append()
-    table.flush()
-    data.close()
-
-def analyze_results(hdffile):
-    """Analyze simulation results and deduce detector pulse times"""
-
     data = tables.openFile(hdffile, 'a')
+    try:
+        data.createGroup('/', 'simulations', "Detector simulation data")
+    except tables.NodeError:
+        pass
+
+    tablename = csvfile.replace('detsim-', '').replace(
+                    '.csv.gz', '').replace('-', '_')
 
     try:
-        data.removeNode('/', 'analysis')
+        data.removeNode('/simulations', tablename)
     except tables.NoSuchNodeError:
         pass
 
-    data.createTable('/', 'analysis', StationEvent,
-                     "Analyzed detector simulation data")
+    table = data.createTable('/simulations', tablename, ParticleEvent,
+                             "Detector simulation data")
+    row = table.row
 
-    sim = iter(data.root.sim)
-    table = data.root.analysis
+    file = gzip.open(csvfile, 'r')
+    reader = csv.reader(file, delimiter='\t')
+    for line in reader:
+        (row['id'], row['pid'], row['r'], row['phi'], row['time'],
+         row['energy']) = line
+        row.append()
+
+    file.close()
+    table.flush()
+    data.close()
+
+def analyze_results(hdffile, tablename):
+    """Analyze simulation results and deduce detector pulse times"""
+
+    data = tables.openFile(hdffile, 'a')
+    try:
+        data.createGroup('/', 'analysis', "Analyzed simulation data")
+    except tables.NodeError:
+        pass
+
+    try:
+        data.removeNode('/analysis', tablename)
+    except tables.NoSuchNodeError:
+        pass
+
+    table = data.createTable('/analysis', tablename, StationEvent,
+                             "Analyzed simulation data")
+    sim = iter(data.getNode('/simulations', tablename))
     row = table.row
 
     try:
@@ -337,8 +354,7 @@ def analyze_results(hdffile):
     table.flush()
     data.close()
 
-
-if __name__ == '__main__':
+def do_full_simulation():
     DENSITY = 1.
     ps = []
     for group, stationsize, outfile in [
@@ -358,3 +374,25 @@ if __name__ == '__main__':
         ps.append(p)
     for p in ps:
         p.join()
+
+def store_full_results():
+    store_results_in_tables('detsim-angle-0.csv.gz', 'data-e15.h5')
+    store_results_in_tables('detsim-angle-5.csv.gz', 'data-e15.h5')
+    store_results_in_tables('detsim-angle-23.csv.gz', 'data-e15.h5')
+    store_results_in_tables('detsim-angle-23-size5.csv.gz', 'data-e15.h5')
+    store_results_in_tables('detsim-angle-23-size20.csv.gz', 'data-e15.h5')
+    store_results_in_tables('detsim-angle-35.csv.gz', 'data-e15.h5')
+
+def analyze_full_results():
+    analyze_results('data-e15.h5', 'angle_0')
+    analyze_results('data-e15.h5', 'angle_5')
+    analyze_results('data-e15.h5', 'angle_23')
+    analyze_results('data-e15.h5', 'angle_23_size5')
+    analyze_results('data-e15.h5', 'angle_23_size20')
+    analyze_results('data-e15.h5', 'angle_35')
+
+
+if __name__ == '__main__':
+    #do_full_simulation()
+    #store_full_results()
+    #analyze_full_results()

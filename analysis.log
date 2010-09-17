@@ -1,0 +1,195 @@
+
+
+Angle reconstruction (D >= 2)
+Size of station: 10 meters
+Simulated zenith angle: 0.0 degrees
+Unbinned timings used.
+Total of 26811 (690594) events
+Total number reconstructions:         26890
+Number of succesful reconstructions:  26811 ( 99.7 %)
+Number of failed reconstructions:        79 (  0.3 %)
+Angle resolution (68% integrated): 6.63 degrees
+
+
+
+Angle reconstruction (D >= 1)
+Size of station: 10 meters
+Simulated zenith angle: 5.0 degrees
+Unbinned timings used.
+Total of 122088 (690594) events
+Total number reconstructions:        137140
+Number of succesful reconstructions: 122088 ( 89.0 %)
+Number of failed reconstructions:     15052 ( 11.0 %)
+Angle resolution (68% integrated): 19.30 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 10 meters
+Simulated zenith angle: 5.0 degrees
+Unbinned timings used.
+Total of 47862 (690594) events
+Total number reconstructions:         48056
+Number of succesful reconstructions:  47862 ( 99.6 %)
+Number of failed reconstructions:       194 (  0.4 %)
+Angle resolution (68% integrated): 7.24 degrees
+
+
+
+Angle reconstruction (D >= 4)
+Size of station: 10 meters
+Simulated zenith angle: 5.0 degrees
+Unbinned timings used.
+Total of 15955 (690594) events
+Total number reconstructions:         15955
+Number of succesful reconstructions:  15955 (100.0 %)
+Number of failed reconstructions:         0 (  0.0 %)
+Angle resolution (68% integrated): 2.41 degrees
+
+
+
+Angle reconstruction (D >= 1)
+Size of station: 10 meters
+Simulated zenith angle: 22.5 degrees
+Unbinned timings used.
+Total of 59319 (690594) events
+Total number reconstructions:         66393
+Number of succesful reconstructions:  59319 ( 89.3 %)
+Number of failed reconstructions:      7074 ( 10.7 %)
+Angle resolution (68% integrated): 18.09 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 10 meters
+Simulated zenith angle: 22.5 degrees
+Unbinned timings used.
+Total of 20325 (690594) events
+Total number reconstructions:         20404
+Number of succesful reconstructions:  20325 ( 99.6 %)
+Number of failed reconstructions:        79 (  0.4 %)
+Angle resolution (68% integrated): 6.03 degrees
+
+
+
+Angle reconstruction (D >= 4)
+Size of station: 10 meters
+Simulated zenith angle: 22.5 degrees
+Unbinned timings used.
+Total of 6062 (690594) events
+Total number reconstructions:          6062
+Number of succesful reconstructions:   6062 (100.0 %)
+Number of failed reconstructions:         0 (  0.0 %)
+Angle resolution (68% integrated): 2.41 degrees
+
+
+
+Angle reconstruction (D >= 1)
+Size of station: 10 meters
+Simulated zenith angle: 35.0 degrees
+Unbinned timings used.
+Total of 23644 (690594) events
+Total number reconstructions:         27094
+Number of succesful reconstructions:  23644 ( 87.3 %)
+Number of failed reconstructions:      3450 ( 12.7 %)
+Angle resolution (68% integrated): 17.49 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 10 meters
+Simulated zenith angle: 35.0 degrees
+Unbinned timings used.
+Total of 5012 (690594) events
+Total number reconstructions:          5035
+Number of succesful reconstructions:   5012 ( 99.5 %)
+Number of failed reconstructions:        23 (  0.5 %)
+Angle resolution (68% integrated): 4.82 degrees
+
+
+
+Angle reconstruction (D >= 4)
+Size of station: 10 meters
+Simulated zenith angle: 35.0 degrees
+Unbinned timings used.
+Total of 569 (690594) events
+Total number reconstructions:           569
+Number of succesful reconstructions:    569 (100.0 %)
+Number of failed reconstructions:         0 (  0.0 %)
+Angle resolution (68% integrated): 2.41 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 5 meters
+Simulated zenith angle: 22.5 degrees
+Unbinned timings used.
+Total of 21037 (690594) events
+Total number reconstructions:         21565
+Number of succesful reconstructions:  21037 ( 97.6 %)
+Number of failed reconstructions:       528 (  2.4 %)
+Angle resolution (68% integrated): 9.05 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 20 meters
+Simulated zenith angle: 22.5 degrees
+Unbinned timings used.
+Total of 15587 (690594) events
+Total number reconstructions:         15592
+Number of succesful reconstructions:  15587 (100.0 %)
+Number of failed reconstructions:         5 (  0.0 %)
+Angle resolution (68% integrated): 4.22 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 10 meters
+Simulated zenith angle: 22.5 degrees
+Binning of timings was used with binsize: 1.000000 ns
+Timing values were randomized inside a bin.
+Total of 20324 (690594) events
+Total number reconstructions:         20404
+Number of succesful reconstructions:  20324 ( 99.6 %)
+Number of failed reconstructions:        80 (  0.4 %)
+Angle resolution (68% integrated): 6.03 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 10 meters
+Simulated zenith angle: 22.5 degrees
+Binning of timings was used with binsize: 2.500000 ns
+Total of 20329 (690594) events
+Total number reconstructions:         20404
+Number of succesful reconstructions:  20329 ( 99.6 %)
+Number of failed reconstructions:        75 (  0.4 %)
+Angle resolution (68% integrated): 7.24 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 10 meters
+Simulated zenith angle: 22.5 degrees
+Binning of timings was used with binsize: 2.500000 ns
+Timing values were randomized inside a bin.
+Total of 20323 (690594) events
+Total number reconstructions:         20404
+Number of succesful reconstructions:  20323 ( 99.6 %)
+Number of failed reconstructions:        81 (  0.4 %)
+Angle resolution (68% integrated): 7.24 degrees
+
+
+
+Angle reconstruction (D >= 2)
+Size of station: 10 meters
+Simulated zenith angle: 22.5 degrees
+Binning of timings was used with binsize: 5.000000 ns
+Timing values were randomized inside a bin.
+Total of 20313 (690594) events
+Total number reconstructions:         20404
+Number of succesful reconstructions:  20313 ( 99.6 %)
+Number of failed reconstructions:        91 (  0.4 %)
+Angle resolution (68% integrated): 10.85 degrees
+

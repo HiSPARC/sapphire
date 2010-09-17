@@ -1,5 +1,6 @@
 import tables
 from itertools import combinations
+import re
 
 from pylab import *
 
@@ -34,23 +35,43 @@ def plot_ring_timings(data, rings, normed, binstep):
     xlabel("time (ns)")
     ylabel("count")
 
-def plot_reconstructed_angles(data, D, N=None):
+def plot_reconstructed_angles(data, tablename, THETA, D, binning=False,
+                              randomize_binning=False, N=None):
     """Reconstruct angles from simulation for minimum particle density"""
 
-    THETA = pi / 8
+    match = re.search('_size([0-9]+)', tablename)
+    if match:
+        R = int(match.group(1))
+    else:
+        R = 10
 
+    NS = 0
+    NF = 0
+    NT = 0
     alphas = []
     thetas = []
     phis = []
     opening_angles = []
-    for event in data.root.analysis[:N]:
+    table = data.getNode('/analysis', tablename)
+    for event in table[:N]:
         if min(event['n1'], event['n3'], event['n4']) >= D:
-            #event['t1'] = floor(event['t1'] / 2.5) * 2.5 + uniform(0, 2.5)
-            #event['t2'] = floor(event['t2'] / 2.5) * 2.5 + uniform(0, 2.5)
-            #event['t3'] = floor(event['t3'] / 2.5) * 2.5 + uniform(0, 2.5)
-            #event['t4'] = floor(event['t4'] / 2.5) * 2.5 + uniform(0, 2.5)
-            theta, phi = reconstruct_angle(event)
+            NT += 1
+            # Do we need to bin timing data?
+            if binning is not False:
+                event['t1'] = floor(event['t1'] / binning) * binning 
+                event['t2'] = floor(event['t2'] / binning) * binning 
+                event['t3'] = floor(event['t3'] / binning) * binning 
+                event['t4'] = floor(event['t4'] / binning) * binning 
+                # Do we need to randomize inside a bin?
+                if randomize_binning is True:
+                    event['t1'] += uniform(0, binning)
+                    event['t2'] += uniform(0, binning)
+                    event['t3'] += uniform(0, binning)
+                    event['t4'] += uniform(0, binning)
+
+            theta, phi = reconstruct_angle(event, R)
             if not isnan(theta) and not isnan(phi):
+                NS += 1
                 alpha = event['alpha']
                 alphas.append(alpha)
                 thetas.append(theta)
@@ -59,38 +80,68 @@ def plot_reconstructed_angles(data, D, N=None):
                                        cos(phi - -alpha) + cos(theta) *
                                        cos(THETA))
                 opening_angles.append(opening_angle)
+            else:
+                NF += 1
 
+    opening_angles = array(opening_angles)
+    alphas = array(alphas)
+    thetas = array(thetas)
+    phis = array(phis)
+
+    subtitle = "theta: %.1f degrees, size: %d meters, binsize: %r, randomized: %r" % (rad2deg(THETA), R, binning, randomize_binning)
     figure()
-    plot([-x for x in alphas], phis, '.', ms=1.)
+    plot(-rad2deg(alphas), rad2deg(phis), '.', ms=1.)
     axis('tight')
-    title("Reconstructed azimuthal angle from simulation (D >= %d)" % D)
-    xlabel("Simulated angle (radians)")
-    ylabel("Reconstructed angle (radians)")
+    title("Reconstructed azimuthal angle from simulation (D >= %d)\n%s" % (D, subtitle))
+    xlabel("Simulated angle (degrees)")
+    ylabel("Reconstructed angle (degrees)")
+    savefig('plots/auto-azimuth-TH%d-D%d-R%d-b%d-rb%s.pdf' % (rad2deg(THETA), D, R, binning, randomize_binning))
     figure()
-    hist(thetas, bins=linspace(0, pi/2, 200), histtype='step')
-    title("Reconstructed zenith angle from simulation (D >= %d)" % D)
-    xlabel("Reconstructed angle (radians)")
+    hist(rad2deg(thetas), bins=linspace(0, 90, 200), histtype='step')
+    title("Reconstructed zenith angle from simulation (D >= %d)\n%s" % (D, subtitle))
+    xlabel("Reconstructed angle (degrees)")
     ylabel("Count")
+    savefig('plots/auto-zenith-TH%d-D%d-R%d-b%d-rb%s.pdf' % (rad2deg(THETA), D, R, binning, randomize_binning))
     figure()
-    hist(opening_angles, bins=200, histtype='step')
-    title("Opening angle of reconstructed and simulated shower angle")
-    xlabel("Opening angle (radians)")
+    n, bins, patches = hist(rad2deg(opening_angles),
+                            bins=linspace(0, 120, 200), histtype='step')
+    res = get_resolution(n, bins)
+    axvspan(xmin=0, xmax=res, color='blue', alpha=.2)
+    title("Opening angle of reconstructed and simulated angles (D >= %d)\n%s" % (D, subtitle))
+    xlabel("Opening angle (degrees)")
     ylabel("Count")
+    figtext(.65, .8, "resolution: %.2f deg\nfailed: %5.1f %%" %
+            (res, 100. * NF / NT))
+    savefig('plots/auto-opening-TH%d-D%d-R%d-b%d-rb%s.pdf' % (rad2deg(THETA), D, R, binning, randomize_binning))
 
+    print
+    print
     print "Angle reconstruction (D >= %d)" % D
+    print "Size of station: %d meters" % R
+    print "Simulated zenith angle: %.1f degrees" % rad2deg(THETA)
+    if binning is not False:
+        print "Binning of timings was used with binsize: %f ns" % binning
+        if randomize_binning is True:
+            print "Timing values were randomized inside a bin."
+    else:
+        print "Unbinned timings used."
     print "Total of %d (%d) events" % (len(thetas),
-                                       len(data.root.analysis))
-    opening_angles = [rad2deg(x) for x in opening_angles]
-    print "Opening angle mean:    %.2f degrees" % mean(opening_angles)
-    print "Opening angle std dev: %.2f degrees" % std(opening_angles)
+                                       len(table))
+    print "Total number reconstructions:        %6d" % NT
+    print "Number of succesful reconstructions: %6d (%5.1f %%)" % \
+        (NS, 100. * NS / NT)
+    print "Number of failed reconstructions:    %6d (%5.1f %%)" % \
+        (NF, 100. * NF / NT)
+    print "Angle resolution (68%% integrated): %.2f degrees" % res
+    print
 
-def reconstruct_angle(event):
+def reconstruct_angle(event, R=10):
     """Reconstruct angles from a single event"""
 
     c = 3.00e+8
 
-    r1 = 10
-    r2 = 10
+    r1 = R
+    r2 = R 
 
     dt1 = event['t1'] - event['t3']
     dt2 = event['t1'] - event['t4']
@@ -123,6 +174,21 @@ def calc_phi(s1, s2):
 
     return arctan2((y2 - y1), (x2 - x1))
 
+def get_resolution(n, bins):
+    """Get angle resolution from histogram values
+
+    Resolution is defined as the opening angle which contains 68 % of all
+    events.
+
+    """
+    total = sum(n)
+    N = 0 
+    for c, res in zip(n, bins[1:]):
+        N += c
+        if 1. * N / total >= .68:
+            break
+    return res
+
 def plot_random_angles(N):
     DT = 10 / 3e8 * 1e9
     ts1 = uniform(-DT / 2, DT / 2, N)
@@ -154,12 +220,45 @@ def plot_random_angles(N):
 
 
 if __name__ == '__main__':
+    # invalid values in arcsin will be ignored (nan handles the situation
+    # quite well)
+    np.seterr(invalid='ignore')
+
     try:
         data
     except NameError:
-        data = tables.openFile('simulation-e15-angled.h5', 'r')
+        data = tables.openFile('data-e15.h5', 'r')
 
-    #plot_all_ring_timings(data)
-    _ip.magic("time plot_reconstructed_angles(data, D=1)")
-    #_ip.magic("time plot_reconstructed_angles(data, D=4)")
-    #thetas, phis = plot_random_angles(100000)
+    # zenith 0 degrees
+    plot_reconstructed_angles(data, 'angle_0', 0, D=2)
+
+    # zenith 5 degrees, D=1,2,4
+    kwargs = dict(data=data, tablename='angle_5', THETA=deg2rad(5))
+    plot_reconstructed_angles(D=1, **kwargs)
+    plot_reconstructed_angles(D=2, **kwargs)
+    plot_reconstructed_angles(D=4, **kwargs)
+
+    # zenith 22.5 degrees, D=1,2,4
+    kwargs = dict(data=data, tablename='angle_23', THETA=pi / 8)
+    plot_reconstructed_angles(D=1, **kwargs)
+    plot_reconstructed_angles(D=2, **kwargs)
+    plot_reconstructed_angles(D=4, **kwargs)
+
+    # zenith 35 degrees, D=1,2,4
+    kwargs = dict(data=data, tablename='angle_35', THETA=deg2rad(35))
+    plot_reconstructed_angles(D=1, **kwargs)
+    plot_reconstructed_angles(D=2, **kwargs)
+    plot_reconstructed_angles(D=4, **kwargs)
+
+    # SPECIALS
+    # zenith 22.5, D=2, sizes=5,20
+    kwargs = dict(data=data, THETA=pi / 8, D=2)
+    plot_reconstructed_angles(tablename='angle_23_size5', **kwargs)
+    plot_reconstructed_angles(tablename='angle_23_size20', **kwargs)
+
+    # zenith 22.5, D=2, binnings
+    kwargs = dict(data=data, tablename='angle_23', THETA=pi / 8, D=2)
+    plot_reconstructed_angles(binning=1, randomize_binning=True, **kwargs)
+    plot_reconstructed_angles(binning=2.5, randomize_binning=False, **kwargs)
+    plot_reconstructed_angles(binning=2.5, randomize_binning=True, **kwargs)
+    plot_reconstructed_angles(binning=5, randomize_binning=True, **kwargs)
