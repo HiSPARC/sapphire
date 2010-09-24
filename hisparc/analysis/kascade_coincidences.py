@@ -8,6 +8,7 @@ import datetime
 import time
 import os
 import pylab
+import operator
 
 def do_timeshifts(hevents, kevents, shifts, dtlimit=None, limit=None,
                   h=None, k=None):
@@ -238,6 +239,9 @@ def get_arrays_from_tables(h, k, limit=None):
          k.where('timestamp <= t_end')]
     h = [[x['event_id'], x['ext_timestamp']] for x in \
          h.where('timestamp <= t_end')]
+
+    # hisparc events are not necessarily sorted on timestamp
+    h = sorted(h, key=operator.itemgetter(1))
 
     return h, k
 
