@@ -25,3 +25,7 @@
         a collection of modules to make life easy
 
 """
+import containers
+import publicdb
+import kascade
+import analysis

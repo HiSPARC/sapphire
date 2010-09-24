@@ -5,7 +5,8 @@
     the KASCADE array, with calculated particle densities at the location
     of our detectors.
 
-    You probably want to use the :func:`helper` function.
+    You probably want to use the :func:`helper` function, and then move on
+    to the :mod:`~hisparc.analysis` package.
 
 """
 import gzip
@@ -16,8 +17,8 @@ import gpstime
 def process_events(filename, table, start=None, stop=None):
     """Do the actual data processing.
 
-    This function starts a subprocess to unzip the data file, reads the
-    data line by line and stores it in a pytables table, row by row.
+    This function unzips the data file on the fly, reads the data and
+    stores it in a pytables table.
 
     :param filename: the KASCADE data filename
     :param table: the destination table
@@ -27,7 +28,6 @@ def process_events(filename, table, start=None, stop=None):
     tablerow = table.row
 
     while True:
-        # read a line from the subprocess stdout buffer
         line = f.readline()
         if not line:
             # no more lines left, EOF
@@ -66,7 +66,7 @@ def process_events(filename, table, start=None, stop=None):
             tablerow['T200'] = T200
             # ...and store it
             tablerow.append()
-        elif stop is not None and stop < Gt:
+        elif stop is not None and Gt >= stop:
             # timestamp is after explicitly specified stop time, so no need
             # to process the rest of the data
             break
@@ -85,6 +85,37 @@ def helper(hisparc, kascade, kascadefile):
     :param hisparc: HiSPARC event table
     :param kascade: KASCADE event table
     :param kascadefile: KASCADE data file
+
+    Example::
+
+        >>> import tables
+        >>> import hisparc
+        >>> data = tables.openFile('kascade.h5', 'a')
+        >>> data.createGroup('/', 'kascade', "KASCADE data")
+        /kascade (Group) 'KASCADE data'
+          children := []
+        >>> data.createTable('/kascade', 'events', hisparc.containers.KascadeEvent, "KASCADE events")
+        /kascade/events (Table(0,)) 'KASCADE events'
+          description := {
+          "run_id": Int32Col(shape=(), dflt=0, pos=0),
+          "event_id": Int64Col(shape=(), dflt=0, pos=1),
+          "timestamp": Time32Col(shape=(), dflt=0, pos=2),
+          "nanoseconds": UInt32Col(shape=(), dflt=0, pos=3),
+          "ext_timestamp": UInt64Col(shape=(), dflt=0, pos=4),
+          "energy": Float64Col(shape=(), dflt=0.0, pos=5),
+          "core_pos": Float64Col(shape=(2,), dflt=0.0, pos=6),
+          "zenith": Float64Col(shape=(), dflt=0.0, pos=7),
+          "azimuth": Float64Col(shape=(), dflt=0.0, pos=8),
+          "Num_e": Float64Col(shape=(), dflt=0.0, pos=9),
+          "Num_mu": Float64Col(shape=(), dflt=0.0, pos=10),
+          "dens_e": Float64Col(shape=(4,), dflt=0.0, pos=11),
+          "dens_mu": Float64Col(shape=(4,), dflt=0.0, pos=12),
+          "P200": Float64Col(shape=(), dflt=0.0, pos=13),
+          "T200": Float64Col(shape=(), dflt=0.0, pos=14)}
+          byteorder := 'little'
+          chunkshape := (399,)
+        >>> hisparc.kascade.helper(data.root.hisparc.cluster_kascade.station_601.events, data.root.kascade.events, 'HiSparc.dat.gz')
+        Processing data from Tue Jul  1 16:29:31 2008 to Tue Jul  1 17:15:06 2008
 
     """
     # Determine start and end timestamps from HiSPARC data
@@ -106,7 +137,7 @@ def helper(hisparc, kascade, kascadefile):
     if hstart < kstart and kstart is not None:
         # This should never happen
         print "WARNING: HiSPARC data found which is earlier than KASCADE"
-        print "data.  This happens, but please check your timestamps:"
+        print "data.  Please check your timestamps:"
         print "First HiSPARC data:", hstart
         print "First KASCADE data:", kstart
         print "The timestamps should not differ by much."

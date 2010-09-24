@@ -12,3 +12,4 @@
         find coincidences between HiSPARC and KASCADE
 
 """
+import kascade_coincidences

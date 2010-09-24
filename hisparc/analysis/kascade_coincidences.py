@@ -9,7 +9,8 @@ import time
 import os
 import pylab
 
-def do_timeshifts(hevents, kevents, shifts, limit=None, h=None, k=None):
+def do_timeshifts(hevents, kevents, shifts, dtlimit=None, limit=None,
+                  h=None, k=None):
     """Search for coincidences using multiple time shifts
 
     This function enables you to search for coincidences multiple times,
@@ -19,26 +20,19 @@ def do_timeshifts(hevents, kevents, shifts, limit=None, h=None, k=None):
     goodness of the shift. The coincidences data from the last shift is
     returned.
 
-    Arguments:
+    :param hevents: hisparc event table
+    :param kevents: kascade event table
+    :param shifts: a list of time shifts
+    :param dtlimit: limit on the time difference between hisparc and
+        kascade events in nanoseconds.  If this limit is exceeded,
+        coincidences are not stored.  Default: None.
+    :param limit: an optional limit on the number of kascade events used
+        in the search
+    :param h: prefetched array from hisparc table (optional)
+    :param k: prefetched array from kascade table (optional)
 
-    hevents:
-        hisparc events
-    kevents:
-        kascade events
-    shifts:
-        a list of time shifts
-    limit:
-        an optional limit on the number of kascade events used in the
-        search
-    h:
-        prefetched array from hisparc table (optional)
-    k:
-        prefetched array from kascade table (optional)
-
-    Returns:
-
-    An array of coincidences from the last shift ([dt in nanoseconds,
-    hisparc event id, kascade event id]).
+    :return: An array of coincidences from the last shift ([dt in
+        nanoseconds, hisparc event id, kascade event id]).
 
     """
     # Get arrays from the tables. This is much, much faster than working
@@ -49,7 +43,7 @@ def do_timeshifts(hevents, kevents, shifts, limit=None, h=None, k=None):
     for shift in shifts:
         print "Calculating dt's for timeshift %.9f (%d nanoseconds)" % \
               (shift, long(shift * 1e9))
-        coincidences = search_coincidences(h, k, shift)
+        coincidences = search_coincidences(h, k, shift, dtlimit)
 
         dt = [x[0] / 1e9 for x in coincidences]
         pylab.hist(dt, bins=100, range=(-1, 1), histtype='step',
@@ -65,16 +59,11 @@ def store_coincidences(table, hevents, kevents, coincidences):
     search_coincidences in a table, so data can be easily retrieved without
     resorting to lookups which span multiple tables.
 
-    Arguments:
-
-    table:
-        table to hold the coincidences
-    hevents:
-        hisparc event table
-    kevents:
-        kascade event table
-    coincidences:
-        a list of coincidences, as given by search_coincidences
+    :param table: table to hold the coincidences
+    :param hevents: hisparc event table
+    :param kevents: kascade event table
+    :param coincidences: a list of coincidences, as given by
+        search_coincidences
 
     """
     old_data_length = len(table)
@@ -83,27 +72,28 @@ def store_coincidences(table, hevents, kevents, coincidences):
     for coincidence in coincidences:
         hisparc = hevents[coincidence[1]]
         kascade = kevents[coincidence[2]]
-        tablerow['hisparc_event_id'] = hisparc['event_id']
-        tablerow['kascade_event_id'] = kascade['event_id']
-        tablerow['hisparc_timestamp'] = hisparc['timestamp']
-        tablerow['hisparc_nanoseconds'] = hisparc['nanoseconds']
-        tablerow['hisparc_ext_timestamp'] = hisparc['ext_timestamp']
-        tablerow['hisparc_pulseheights'] = hisparc['pulseheights']
-        tablerow['hisparc_integrals'] = hisparc['integrals']
-        tablerow['hisparc_traces'] = hisparc['traces']
-        tablerow['kascade_timestamp'] = kascade['timestamp']
-        tablerow['kascade_nanoseconds'] = kascade['nanoseconds']
-        tablerow['kascade_ext_timestamp'] = kascade['ext_timestamp']
-        tablerow['kascade_energy'] = kascade['energy']
-        tablerow['kascade_core_pos'] = kascade['core_pos']
-        tablerow['kascade_zenith'] = kascade['zenith']
-        tablerow['kascade_azimuth'] = kascade['azimuth']
-        tablerow['kascade_Num_e'] = kascade['Num_e']
-        tablerow['kascade_Num_mu'] = kascade['Num_mu']
-        tablerow['kascade_dens_e'] = kascade['dens_e']
-        tablerow['kascade_dens_mu'] = kascade['dens_mu']
-        tablerow['kascade_P200'] = kascade['P200']
-        tablerow['kascade_T200'] = kascade['T200']
+        tablerow['event_id'] = hisparc['event_id']
+        tablerow['k_event_id'] = kascade['event_id']
+        tablerow['timestamp'] = hisparc['timestamp']
+        tablerow['nanoseconds'] = hisparc['nanoseconds']
+        tablerow['ext_timestamp'] = hisparc['ext_timestamp']
+        tablerow['pulseheights'] = hisparc['pulseheights']
+        tablerow['integrals'] = hisparc['integrals']
+        tablerow['n_peaks'] = hisparc['n_peaks']
+        tablerow['traces'] = hisparc['traces']
+        tablerow['k_timestamp'] = kascade['timestamp']
+        tablerow['k_nanoseconds'] = kascade['nanoseconds']
+        tablerow['k_ext_timestamp'] = kascade['ext_timestamp']
+        tablerow['k_energy'] = kascade['energy']
+        tablerow['k_core_pos'] = kascade['core_pos']
+        tablerow['k_zenith'] = kascade['zenith']
+        tablerow['k_azimuth'] = kascade['azimuth']
+        tablerow['k_Num_e'] = kascade['Num_e']
+        tablerow['k_Num_mu'] = kascade['Num_mu']
+        tablerow['k_dens_e'] = kascade['dens_e']
+        tablerow['k_dens_mu'] = kascade['dens_mu']
+        tablerow['k_P200'] = kascade['P200']
+        tablerow['k_T200'] = kascade['T200']
         tablerow.append()
     table.flush()
 
@@ -112,7 +102,8 @@ def store_coincidences(table, hevents, kevents, coincidences):
         print "Flushing old data..."
         table.removeRows(0, old_data_length)
 
-def search_coincidences(hisparc_data, kascade_data, timeshift, limit=None):
+def search_coincidences(hisparc_data, kascade_data, timeshift,
+                        dtlimit=None):
     """Search for coincidences
 
     This function does the actual searching of coincidences. It uses a
@@ -120,19 +111,16 @@ def search_coincidences(hisparc_data, kascade_data, timeshift, limit=None):
     time, so not taking UTC leap seconds into account). The shift will also
     compensate for delays in the experimental setup.
 
-    Arguments:
+    :param hisparc_data: an array containing the hisparc data
+    :param kascade_data: an array containing the kascade data
+    :param timeshift: the amount of time the HiSPARC data are shifted (in
+        seconds)
+    :param dtlimit: limit on the time difference between hisparc and
+        kascade events in nanoseconds.  If this limit is exceeded,
+        coincidences are not stored.  Default: None.
 
-    hisparc_data:
-        an array containing the hisparc data
-    kascade_data:
-        an array containing the kascade data
-    timeshift:
-        the amount of time the HiSPARC data are shifted (in seconds)
-
-    Output:
-
-    An array of time differences and event ids of each KASCADE event and
-    the nearest neighbour HiSPARC event.
+    :return: An array of time differences and event ids of each KASCADE
+        event and the nearest neighbour HiSPARC event.
 
     """
     # Shift the kascade data instead of the hisparc data. There is less of
@@ -175,11 +163,12 @@ def search_coincidences(hisparc_data, kascade_data, timeshift, limit=None):
         dt_right = h_t_next - k_t
 
         # Determine the nearest neighbor and add that to the coincidence
-        # list.
-        if abs(dt_left) < abs(dt_right):
-            coincidences.append((dt_left, h_idx, k_idx))
-        else:
-            coincidences.append((dt_right, h_idx + 1, k_idx))
+        # list, if dtlimit is not exceeded
+        if dtlimit is None or min(abs(dt_left), abs(dt_right)) < dtlimit:
+            if abs(dt_left) < abs(dt_right):
+                coincidences.append((dt_left, h_idx, k_idx))
+            else:
+                coincidences.append((dt_right, h_idx + 1, k_idx))
 
         # Found a match for this kascade event, so continue with the next
         # one.
@@ -194,16 +183,10 @@ def shift_data(data, timeshift):
     in seconds. The original data is left untouched. Returns a new array
     containing the shifted data.
 
-    Arguments:
+    :param data: the HiSPARC or KASCADE data to be shifted
+    :param timeshift: the timeshift in seconds
 
-    data:
-        the HiSPARC or KASCADE data to be shifted
-    timeshift:
-        the timeshift in seconds
-
-    Returns:
-
-    an array containing the original data shifted in time
+    :return: an array containing the original data shifted in time
 
     """
     # convert timeshift to an integer value in nanoseconds
@@ -235,19 +218,12 @@ def get_arrays_from_tables(h, k, limit=None):
     Caveat: because the timeshift is not yet known, a few coincidences
     may fall outside the time window and not be taken into account.
 
-    Arguments:
+    :param h: hisparc event table
+    :param k: kascade event table
+    :param limit: limit on the number of kascade events
 
-    h:
-        hisparc event table
-    k:
-        kascade event table
-    limit:
-        limit on the number of kascade events
-
-    Returns:
-
-    Two arrays containing hisparc and kascade data ([event id, timestamp in
-    nanoseconds])
+    :return: Two arrays containing hisparc and kascade data ([event id,
+        timestamp in nanoseconds])
 
     """
     try:
@@ -266,9 +242,17 @@ def get_arrays_from_tables(h, k, limit=None):
     return h, k
 
 def test(hevents, kevents):
-    """Perform a small coincidence test"""
+    """Perform a small coincidence test
 
+    Careful: the following search is limited to 1000 kascade events
+    The complete statement would be:
+    c = :func:`do_timeshifts(hevents, kevents, [-13.180220188408871])`
+
+    :param hevents: hisparc event table
+    :param kevents: kascade event table
+
+    """
     print "Careful: the following search is limited to 1000 kascade events"
     print "The complete statement would be:"
-    print "c = do_timeshifts(hevents, kevents, [-13.180220188408871]"
-    c = do_timeshifts(hevents, kevents, [-13.180220188408871], limit=1000)
+    print "c = do_timeshifts(hevents, kevents, [-13.180220188408871])"
+    return do_timeshifts(hevents, kevents, [-13.180220188408871], limit=1000)
