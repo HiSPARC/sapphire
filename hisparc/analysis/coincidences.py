@@ -12,9 +12,8 @@ import time
 
 from hisparc.analysis.traces import get_traces
 
-COINC_WINDOW = long(200e-6 * 1e9)
 
-def search_coincidences(data, stations, shifts=None, limit=None):
+def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
     """Search for coincidences
 
     Search for coincidences in a set of PyTables event tables, optionally
@@ -27,6 +26,9 @@ def search_coincidences(data, stations, shifts=None, limit=None):
     :param data: the PyTables data file
     :param stations: a list of HiSPARC event tables (normally from
         different stations, hence the name)
+    :param window: the time window in nanoseconds which will be searched
+        for coincidences.  Events falling outside this window will not be
+        part of the coincidence.  Default: 200000 (i.e. 200 us).
     :param shifts: a list of time shifts which may contain 'None'.
     :param limit: limit the number of events which are processed
 
@@ -64,7 +66,7 @@ def search_coincidences(data, stations, shifts=None, limit=None):
                 shifts[i] = long(shifts[i] * 1e9)
 
     timestamps = retrieve_timestamps(stations, shifts, limit)
-    coincidences = do_search_coincidences(timestamps)
+    coincidences = do_search_coincidences(timestamps, window)
 
     return coincidences, timestamps
 
@@ -108,7 +110,7 @@ def retrieve_timestamps(stations, shifts=None, limit=None):
 
     return timestamps
 
-def do_search_coincidences(timestamps):
+def do_search_coincidences(timestamps, window=200000):
     """Search for coincidences in a set of timestamps
 
     Given a set of timestamps, search for coincidences.  That is, search
@@ -117,6 +119,9 @@ def do_search_coincidences(timestamps):
 
     :param timestamps: a list of tuples (timestamp, station_idx,
         event_idx) which will be searched
+    :param window: the time window in nanoseconds which will be searched
+        for coincidences.  Events falling outside this window will not be
+        part of the coincidence.  Default: 200000 (i.e. 200 us).
 
     :return: a list of coincidences, which each consist of a list with
         indexes into the timestamps array as a pointer to the events
@@ -135,7 +140,7 @@ def do_search_coincidences(timestamps):
         # traverse the rest of the timestamps
         for j in xrange(i + 1, len(timestamps)):
             # if a timestamp is within the coincidence window, add it
-            if timestamps[j][0] - t0 < COINC_WINDOW:
+            if timestamps[j][0] - t0 < window:
                 c.append(j)
             else:
                 # coincidence window has passed, break for-loop
