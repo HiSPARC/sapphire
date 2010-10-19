@@ -6,10 +6,12 @@
 
     :mod:`~hisparc.analysis.angles`
         reconstruct the shower angle of incidence
-    :mod:`~hisparc.analysis.clean_up_coincidences`
-        remove false coincidences from KASCADE / HiSPARC data set
+    :mod:`~hisparc.analysis.coincidences`
+        search for coincidences between HiSPARC stations
     :mod:`~hisparc.analysis.kascade_coincidences`
         find coincidences between HiSPARC and KASCADE
+    :mod:`~hisparc.analysis.traces`
+        retrieve traces from binary data
 
 """
 import kascade_coincidences

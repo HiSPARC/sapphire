@@ -15,14 +15,12 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   intro
    install
    log-replay
    hisparc
+   publicdb
    analysis
-   eventwarehouse
    kascade
-   utils
 
 Indices and tables
 ==================

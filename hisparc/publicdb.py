@@ -3,6 +3,8 @@
     This module enables you to access the public database and even the raw
     event data.
 
+    For convenience, you'll want the :func:`download_data` function.
+
 """
 import xmlrpclib
 import urllib
@@ -34,6 +36,19 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         interval
     :param get_blobs: boolean, select whether binary data like traces
         should be fetched
+
+    Example::
+
+        >>> import tables
+        >>> import datetime
+        >>> import hisparc
+        >>> data = tables.openFile('data.h5', 'w')
+        >>> hisparc.publicdb.download_data(data, '/s501', 501, datetime.datetime(2010, 9, 1), datetime.datetime(2010, 9, 2))
+        INFO:hisparc.publicdb:2010-09-01 00:00:00 None
+        INFO:hisparc.publicdb:Getting server data URL (2010-09-01 00:00:00)
+        INFO:hisparc.publicdb:Downloading data...
+        INFO:hisparc.publicdb:Storing data...
+        INFO:hisparc.publicdb:Done.
 
     """
     server = xmlrpclib.ServerProxy(PUBLICDB_XMLRPC_URL)
@@ -128,35 +143,34 @@ def datetimerange(start, stop):
 
     Example::
 
-    >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
-    ...                        datetime.datetime(2010, 1, 1, 13)):
-    ...     x
-    ...     
-    (datetime.datetime(2010, 1, 1, 11, 0), datetime.datetime(2010, 1, 1, 13, 0))
+        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
+        ...                        datetime.datetime(2010, 1, 1, 13)):
+        ...     x
+        ...     
+        (datetime.datetime(2010, 1, 1, 11, 0), datetime.datetime(2010, 1, 1, 13, 0))
 
-    >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
-    ...                        datetime.datetime(2010, 1, 2)):
-    ...     x
-    ...     
-    (datetime.datetime(2010, 1, 1, 11, 0), None)
+        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
+        ...                        datetime.datetime(2010, 1, 2)):
+        ...     x
+        ...     
+        (datetime.datetime(2010, 1, 1, 11, 0), None)
 
-    >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
-    ...                        datetime.datetime(2010, 1, 2, 13)):
-    ...     x
-    ...     
-    (datetime.datetime(2010, 1, 1, 11, 0), None)
-    (datetime.datetime(2010, 1, 2, 0, 0), datetime.datetime(2010, 1, 2, 13, 0))
+        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
+        ...                        datetime.datetime(2010, 1, 2, 13)):
+        ...     x
+        ...     
+        (datetime.datetime(2010, 1, 1, 11, 0), None)
+        (datetime.datetime(2010, 1, 2, 0, 0), datetime.datetime(2010, 1, 2, 13, 0))
 
-    >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
-    ...                        datetime.datetime(2010, 1, 5, 13)):
-    ...     x
-    ...     
-    (datetime.datetime(2010, 1, 1, 11, 0), None)
-    (datetime.datetime(2010, 1, 2, 0, 0), None)
-    (datetime.datetime(2010, 1, 3, 0, 0), None)
-    (datetime.datetime(2010, 1, 4, 0, 0), None)
-    (datetime.datetime(2010, 1, 5, 0, 0), datetime.datetime(2010, 1, 5, 13, 0))
-
+        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
+        ...                        datetime.datetime(2010, 1, 5, 13)):
+        ...     x
+        ...     
+        (datetime.datetime(2010, 1, 1, 11, 0), None)
+        (datetime.datetime(2010, 1, 2, 0, 0), None)
+        (datetime.datetime(2010, 1, 3, 0, 0), None)
+        (datetime.datetime(2010, 1, 4, 0, 0), None)
+        (datetime.datetime(2010, 1, 5, 0, 0), datetime.datetime(2010, 1, 5, 13, 0))
 
     """
     if start.date() == stop.date():
