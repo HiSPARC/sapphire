@@ -7,16 +7,15 @@
 
 import tables
 import datetime
-from hisparc.utils import download_data
+from hisparc.publicdb import download_data
 import pylab
 
 if __name__ == '__main__':
     # Open data file and download data
     data = tables.openFile('kvi.h5', 'w')
-    download_data.start_download(data, '/hisparc/kvi', station_id=4001,
-                                 start=datetime.datetime(2009, 11, 23),
-                                 stop=datetime.datetime(2009, 11, 24),
-                                 limit=None)
+    download_data(data, '/hisparc/kvi', station_id=4001,
+                  start=datetime.datetime(2009, 11, 23),
+                  end=datetime.datetime(2009, 11, 24))
 
     # Fetch pulseheights...
     ph = [x['pulseheights'] for x in data.root.hisparc.kvi.events]

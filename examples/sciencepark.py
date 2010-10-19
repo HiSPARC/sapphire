@@ -25,7 +25,7 @@
 
 import tables
 import datetime
-from hisparc.utils import download_data
+from hisparc.publicdb import download_data
 from hisparc.analysis import coincidences
 import time
 
@@ -34,10 +34,10 @@ if __name__ == '__main__':
 
     t0 = time.time()
     for station in range(501, 506):
-        download_data.start_download(
+        download_data(
             data, '/hisparc/station' + str(station), station_id=station,
             start=datetime.datetime(2009, 2, 24, 12),
-            stop=datetime.datetime(2009, 2, 24, 13), limit=None)
+            end=datetime.datetime(2009, 2, 24, 13))
 
     t1 = time.time()
     coincidences, timestamps = coincidences.search_coincidences(

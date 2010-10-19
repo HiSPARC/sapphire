@@ -9,7 +9,7 @@ import tables
 import datetime
 import pylab
 
-from hisparc.utils import download_data
+from hisparc.publicdb import download_data
 
 
 def make_hist(data, bins, title, xlim=None):
@@ -27,14 +27,12 @@ if __name__ == '__main__':
         data = tables.openFile('jos.h5', 'r')
     else:
         data = tables.openFile('jos.h5', 'w')
-        download_data.start_download(data, '/hisparc/s501', station_id=501,
-                                     start=datetime.datetime(2009, 1, 3),
-                                     stop=datetime.datetime(2009, 1, 11),
-                                     limit=None)
-        download_data.start_download(data, '/hisparc/s505', station_id=505,
-                                     start=datetime.datetime(2009, 1, 3),
-                                     stop=datetime.datetime(2009, 1, 11),
-                                     limit=None)
+        download_data(data, '/hisparc/s501', station_id=501,
+                      start=datetime.datetime(2009, 1, 3),
+                      end=datetime.datetime(2009, 1, 11))
+        download_data(data, '/hisparc/s505', station_id=505,
+                      start=datetime.datetime(2009, 1, 3),
+                      end=datetime.datetime(2009, 1, 11))
 
     ph = [x['pulseheights'] for x in data.root.hisparc.s501.events]
     twohigh = zip(*[x for x in ph if (x >= 123).tolist().count(True) >= 2])
@@ -48,3 +46,5 @@ if __name__ == '__main__':
     make_hist(twohigh, bins=range(0, 2000, 1),
               title="Trigger: at least two high (1 ADC values per bin)",
               xlim=(0, 200))
+
+    pylab.show()
