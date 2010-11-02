@@ -145,3 +145,4 @@ start ``ipython -pylab``.  Then, just issue one of the following lines::
     >>> %run -i examples/sciencepark.py
     >>> %run -i examples/kvi.py
 
+More examples are available in the examples/ subdirectory.

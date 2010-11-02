@@ -3,6 +3,12 @@
 Replay of the introductory session (September 7th, 2009)
 ========================================================
 
+.. note::
+
+   This is old.  It can only give you an overview of the sort of things
+   you can do.  For correct examples, look at the examples/ subdirectory
+   or read the function reference.
+
 On Monday, September 7th, 2009 David gave a short introduction to *python*,
 *matplotlib* (with its *pylab* interface) and what is to become the
 *HiSPARC framework*.  Currently, the "framework" only consists of a

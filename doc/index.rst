@@ -6,9 +6,23 @@
 Welcome to HiSPARC framework's documentation!
 =============================================
 
-Currently, you probably want to start with the :doc:`log-replay` section.
+Due to time considerations, a nice introduction and tutorial is still
+missing.  Please look at the included examples in the examples
+subdirectory to get an idea of how to download data, for example.
 
-There is also a section on installation.
+The scripts for downloading data are pretty much final.  This means that
+you can analyze all raw data at will.
+
+The other scripts are still in development, especially the ones in the
+:mod:`~hisparc.analysis` module.
+
+The :doc:`log-replay` is old and you shouldn't blindly trust the examples
+given.  We've transitioned to a new datastore, for example.  However, it
+might still be useful to give an overview of the things you can do with
+these scripts and `Python <http://www.python.org/>`_,
+`Matplotlib <http://matplotlib.sourceforge.net/>`_ and
+`PyTables <http://www.pytables.org/>`_ in general.
+
 
 Contents:
 
