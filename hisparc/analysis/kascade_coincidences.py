@@ -7,8 +7,12 @@
 import datetime
 import time
 import os
-import pylab
 import operator
+
+try:
+    import pylab
+except ImportError:
+    pass
 
 def do_timeshifts(hevents, kevents, shifts, dtlimit=None, limit=None,
                   h=None, k=None):
@@ -47,8 +51,11 @@ def do_timeshifts(hevents, kevents, shifts, dtlimit=None, limit=None,
         coincidences = search_coincidences(h, k, shift, dtlimit)
 
         dt = [x[0] / 1e9 for x in coincidences]
-        pylab.hist(dt, bins=100, range=(-1, 1), histtype='step',
-                   label="Shift %+g s" % shift)
+        try:
+            pylab.hist(dt, bins=100, range=(-1, 1), histtype='step',
+                       label="Shift %+g s" % shift)
+        except NameError:
+            pass
 
     finish_graph()
     return coincidences
@@ -202,12 +209,16 @@ def finish_graph():
     figure.
 
     """
-    pylab.legend()
-    pylab.xlabel("Time difference (s)")
-    pylab.ylabel("Counts")
-    pylab.title("Nearest neighbour events for HiSPARC / KASCADE")
-    pylab.gca().axis('auto')
-    pylab.gcf().show()
+    try:
+        pylab.legend()
+        pylab.xlabel("Time difference (s)")
+        pylab.ylabel("Counts")
+        pylab.title("Nearest neighbour events for HiSPARC / KASCADE")
+        pylab.gca().axis('auto')
+        pylab.gcf().show()
+    except NameError:
+        print "Unfortunately, the pylab interface was not available."
+        print "No graphs at this point."
 
 def get_arrays_from_tables(h, k, limit=None):
     """Get data arrays from data tables
@@ -245,7 +256,7 @@ def get_arrays_from_tables(h, k, limit=None):
 
     return h, k
 
-def test(hevents, kevents):
+def test(hevents, kevents, h=None, k=None):
     """Perform a small coincidence test
 
     Careful: the following search is limited to 1000 kascade events
@@ -259,4 +270,5 @@ def test(hevents, kevents):
     print "Careful: the following search is limited to 1000 kascade events"
     print "The complete statement would be:"
     print "c = do_timeshifts(hevents, kevents, [-13.180220188408871])"
-    return do_timeshifts(hevents, kevents, [-13.180220188408871], limit=1000)
+    return do_timeshifts(hevents, kevents, [-13.180220188408871],
+                         limit=1000, h=h, k=k)
