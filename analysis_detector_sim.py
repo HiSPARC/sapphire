@@ -147,13 +147,18 @@ def plot_reconstructed_angles(data, tablename, THETA, D, binning=False,
 def reconstruct_angle(event, R=10):
     """Reconstruct angles from a single event"""
 
+    dt1 = event['t1'] - event['t3']
+    dt2 = event['t1'] - event['t4']
+
+    return reconstruct_angle_dt(dt1, dt2, R)
+
+def reconstruct_angle_dt(dt1, dt2, R=10):
+    """Reconstruct angle given time differences"""
+
     c = 3.00e+8
 
     r1 = R
     r2 = R 
-
-    dt1 = event['t1'] - event['t3']
-    dt2 = event['t1'] - event['t4']
 
     phi1 = calc_phi(1, 3)
     phi2 = calc_phi(1, 4)
@@ -162,18 +167,6 @@ def reconstruct_angle(event, R=10):
                   (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
     theta = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
     theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
-    #print 80 * '-'
-    #if abs(theta - theta2) > 1e-5:
-    #    print 80 * '!'
-    #    print theta, theta2
-    #if r1 < 0:
-    #    print "R1", r1
-    #if cos(phi - phi1) < 0:
-    #    print "cos", cos(phi - phi1)
-    #if dt1 < 0:
-    #    print "dt1", dt1
-    #if theta < 0:
-    #    print "theta:", theta
 
     return theta, phi
 
@@ -227,16 +220,8 @@ def plot_random_angles(N):
 
     return thetas, phis
 
-
-if __name__ == '__main__':
-    # invalid values in arcsin will be ignored (nan handles the situation
-    # quite well)
-    np.seterr(invalid='ignore')
-
-    try:
-        data
-    except NameError:
-        data = tables.openFile('data-e15.h5', 'r')
+def plot_all_reconstructed_angles(data):
+    """Generate plots used in pamflet"""
 
     # zenith 0 degrees
     plot_reconstructed_angles(data, 'angle_0', 0, D=2)
@@ -271,3 +256,68 @@ if __name__ == '__main__':
     plot_reconstructed_angles(binning=2.5, randomize_binning=False, **kwargs)
     plot_reconstructed_angles(binning=2.5, randomize_binning=True, **kwargs)
     plot_reconstructed_angles(binning=5, randomize_binning=True, **kwargs)
+
+def plot_estimate_timing_errors(data, tablename, D, N, limit=None):
+    NS, NF, NT = 0, 0, 0
+
+    phis = []
+    dphis = []
+    table = data.getNode('/analysis', tablename)
+    for event in table[:limit]:
+        if min(event['n1'], event['n3'], event['n4']) >= D:
+            NT += 1
+            theta, phi = reconstruct_angle(event)
+            if not isnan(theta) and not isnan(phi):
+                NS += 1
+                phis.append(phi)
+
+                t1 = event['t1']
+                t3 = event['t3']
+                t4 = event['t4']
+
+                for i in range(N):
+                    dt1, dt3, dt4 = normal(scale=1.3, size=3)
+                    event['t1'] = t1 + dt1
+                    event['t3'] = t3 + dt3
+                    event['t4'] = t4 + dt4
+                    theta2, phi2 = reconstruct_angle(event)
+                    dphis.append((phi, phi - phi2))
+            else:
+                NF += 1
+
+    phis = array(phis)
+    # Make sure all dphis are within [-pi, pi)
+    dphis = (array(dphis) + pi) % (2 * pi) - pi
+
+    print "Total of %d (%d) events" % (len(phis),
+                                       len(table))
+    print "Total number reconstructions:        %6d" % NT
+    print "Number of succesful reconstructions: %6d (%5.1f %%)" % \
+        (NS, 100. * NS / NT)
+    print "Number of failed reconstructions:    %6d (%5.1f %%)" % \
+        (NF, 100. * NF / NT)
+    print
+
+    plot(dphis[:,0], dphis[:,1], '.', ms=1.)
+    xlabel("Azimuthal angle (rad)")
+    ylabel("Error in azimuthal angle (rad)")
+    title("Timing errors introduce azimuthal angle errors")
+
+    return phis, dphis
+
+
+if __name__ == '__main__':
+    # invalid values in arcsin will be ignored (nan handles the situation
+    # quite well)
+    np.seterr(invalid='ignore')
+
+    try:
+        data
+    except NameError:
+        data = tables.openFile('data-e15.h5', 'r')
+
+    # For pamflet:
+    #plot_all_reconstructed_angles(data)
+
+    phis, dphis = plot_estimate_timing_errors(data, 'angle_23', 2, 10,
+                                              limit=10000)
