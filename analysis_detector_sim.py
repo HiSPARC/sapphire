@@ -3,6 +3,7 @@ from itertools import combinations
 import re
 
 from pylab import *
+from scipy.optimize import curve_fit
 from tikz_plot import tikz_2dhist
 
 
@@ -257,8 +258,11 @@ def plot_all_reconstructed_angles(data):
     plot_reconstructed_angles(binning=2.5, randomize_binning=True, **kwargs)
     plot_reconstructed_angles(binning=5, randomize_binning=True, **kwargs)
 
-def plot_estimate_timing_errors(data, tablename, D, N, limit=None):
+def plot_random_timing_errors(data, tablename, D, dt1=None, dt3=None,
+                              dt4=None, limit=None):
     NS, NF, NT = 0, 0, 0
+
+    N = 10
 
     phis = []
     dphis = []
@@ -276,10 +280,12 @@ def plot_estimate_timing_errors(data, tablename, D, N, limit=None):
                 t4 = event['t4']
 
                 for i in range(N):
-                    dt1, dt3, dt4 = normal(scale=1.3, size=3)
-                    event['t1'] = t1 + dt1
-                    event['t3'] = t3 + dt3
-                    event['t4'] = t4 + dt4
+                    if dt1:
+                        event['t1'] = t1 + normal(scale=dt1)
+                    if dt3:
+                        event['t3'] = t3 + normal(scale=dt3)
+                    if dt4:
+                        event['t4'] = t4 + normal(scale=dt4)
                     theta2, phi2 = reconstruct_angle(event)
                     dphis.append((phi, phi - phi2))
             else:
@@ -298,12 +304,96 @@ def plot_estimate_timing_errors(data, tablename, D, N, limit=None):
         (NF, 100. * NF / NT)
     print
 
+    figure()
+    dphis = rad2deg(dphis)
     plot(dphis[:,0], dphis[:,1], '.', ms=1.)
     xlabel("Azimuthal angle (rad)")
     ylabel("Error in azimuthal angle (rad)")
-    title("Timing errors introduce azimuthal angle errors")
+    title("Timing errors introduce azimuthal angle errors (rand)")
 
     return phis, dphis
+
+def plot_estimate_timing_errors(dtv, whichdt, N=10, thetacond=None):
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
+    t1s = []
+    phis = zeros(shape=(N, N, N))
+    phis_err = zeros(shape=(N, N, N))
+    dt = 300. / (N - 1)
+    for i, t1 in enumerate(linspace(-100, 200, N)):
+        t1 += uniform(-.5 * dt, .5 * dt)
+        for j, t3 in enumerate(linspace(-100, 200, N)):
+            t3 += uniform(-.5 * dt, .5 * dt)
+            for k, t4 in enumerate(linspace(-100, 200, N)):
+                t4 += uniform(-.5 * dt, .5 * dt)
+
+                theta, phi = reconstruct_angle_dt(t1 - t3, t1 - t4)
+                if thetacond:
+                    if not thetacond[0] < rad2deg(theta) < thetacond[1]:
+                        phis[i,j,k] = nan
+                        continue
+
+                if not isnan(theta) and not isnan(phi):
+                    phis[i,j,k] = phi
+                    if whichdt == 'dt1':
+                        phis_err[i,j,k] = calc_phi_error_from_dt1(
+                                            phi1, phi2, phi, t1, t3, t4)
+                    elif whichdt == 'dt3':
+                        phis_err[i,j,k] = calc_phi_error_from_dt3(
+                                            phi1, phi2, phi, t1, t3, t4)
+                    elif whichdt == 'dt4':
+                        phis_err[i,j,k] = calc_phi_error_from_dt4(
+                                            phi1, phi2, phi, t1, t3, t4)
+                    else:
+                        raise Exception("Unsupport dt type: %s" % whichdt)
+                else:
+                    phis[i,j,k] = nan
+
+    #figure()
+    d = array([(u, v) for u, v in zip(phis.flatten(), phis_err.flatten())
+               if not isnan(u)])
+
+    # Fit a sin curve to data
+    f = lambda x, a, b: a * sin(x + b)
+    popt, pcov = curve_fit(f, d[:,0], dtv * d[:,1])
+
+    plot(rad2deg(d[:,0]), rad2deg(dtv * d[:,1]), '.', ms=1.)
+    plot(rad2deg(d[:,0]), rad2deg(-dtv * d[:,1]), '.', ms=1.)
+    x = linspace(-pi, pi, 50)
+    plot(rad2deg(x), rad2deg(f(x, popt[0], popt[1])))
+    plot(rad2deg(x), -rad2deg(f(x, popt[0], popt[1])))
+
+    xlabel("Azimuthal angle (deg)")
+    ylabel("Error in azimuthal angle (deg)")
+    title("Azimuthal angle error due to timing errors\n"
+          "(%s, %.1f) (calc, %.1f) (theta, %s)" % (whichdt, dtv,
+                                                   rad2deg(popt[0]),
+                                                   thetacond))
+
+    return phis, phis_err, d
+
+def calc_phi_error_from_dt1(phi1, phi2, phi, t1, t3, t4):
+    r1 = r2 = 10.
+
+    return 1 / (1 + tan(phi) ** 2) * \
+           (r2 * cos(phi2) - r1 * cos(phi1) + \
+            (r2 * sin(phi2) - r1 * sin(phi1)) * tan(phi)) / \
+           (r2 * (t3 - t1) * sin(phi2) - r1 * (t4 - t1) * sin(phi1))
+
+def calc_phi_error_from_dt3(phi1, phi2, phi, t1, t3, t4):
+    r1 = r2 = 10.
+
+    return 1 / (1 + tan(phi) ** 2) * \
+           (-r2 * (sin(phi2) * tan(phi) + cos(phi2))) / \
+           (r2 * (t3 - t1) * sin(phi2) - r1 * (t4 - t1) * sin(phi1))
+
+def calc_phi_error_from_dt4(phi1, phi2, phi, t1, t3, t4):
+    r1 = r2 = 10.
+
+    return 1 / (1 + tan(phi) ** 2) * \
+           (r1 * (cos(phi1) + sin(phi1) * tan(phi))) / \
+           (r2 * (t3 - t1) * sin(phi2) - r1 * (t4 - t1) * sin(phi1))
 
 
 if __name__ == '__main__':
@@ -319,5 +409,16 @@ if __name__ == '__main__':
     # For pamflet:
     #plot_all_reconstructed_angles(data)
 
-    phis, dphis = plot_estimate_timing_errors(data, 'angle_23', 2, 10,
-                                              limit=10000)
+    N = 100
+    phis, dphis = plot_random_timing_errors(data, 'angle_23', 2, dt1=1.3,
+                                            limit=10000)
+    phis, phis_err, md = plot_estimate_timing_errors(1.3, 'dt1', N=N,
+                                                     thetacond=(18, 28))
+    phis, dphis = plot_random_timing_errors(data, 'angle_23', 2, dt3=1.3,
+                                            limit=10000)
+    phis, phis_err, md = plot_estimate_timing_errors(1.3, 'dt3', N=N,
+                                                     thetacond=(18, 28))
+    phis, dphis = plot_random_timing_errors(data, 'angle_23', 2, dt4=1.3,
+                                            limit=10000)
+    phis, phis_err, md = plot_estimate_timing_errors(1.3, 'dt4', N=N,
+                                                     thetacond=(18, 28))
