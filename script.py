@@ -17,11 +17,14 @@ def process_traces(events, traces_table, limit=None):
     """Process traces to yield pulse timing information"""
 
     result = []
+    result2 = []
     for event in events[:limit]:
         trace = get_traces(traces_table, event)
-        timings = [1e9 * reconstruct_time_from_trace(x) for x in trace]
+        timings, timings2 = zip(*[reconstruct_time_from_trace(x) for x in
+                                  trace])
         result.append(timings)
-    return array(result)
+        result2.append(timings2)
+    return 1e9 * array(result), 1e9 * array(result2)
 
 def get_traces(traces_table, event):
     """Retrieve traces from table and reconstruct them"""
@@ -51,12 +54,20 @@ def reconstruct_time_from_trace(trace):
     threshold = ADC_THRESHOLD
 
     value = nan
-    for i in range(len(trace)):
-        if trace[i] >= threshold:
+    for i, t in enumerate(trace):
+        if t >= threshold:
             value = i
             break
 
-    return value * ADC_TIME_PER_SAMPLE
+    # Better value, interpolation
+    if not isnan(value):
+        x0, x1 = i - 1, i
+        y0, y1 = trace[x0], trace[x1]
+        v2 = 1. * (threshold - y0) / (y1 - y0) + x0
+    else:
+        v2 = nan
+
+    return value * ADC_TIME_PER_SAMPLE, v2 * ADC_TIME_PER_SAMPLE
 
 def plot_traces(data, station, event_id):
     """Plot traces from a single event"""
@@ -101,7 +112,8 @@ def get_timing_data(data):
 
     return timing_data
 
-def plot_reconstructed_angles(events, timing_data, D=2., randomize=False):
+def plot_reconstructed_angles(events, timing_data, D=2., s='', shifts=None,
+                              randomize=False):
     theta_list = []
     phi_list = []
 
@@ -110,13 +122,11 @@ def plot_reconstructed_angles(events, timing_data, D=2., randomize=False):
 
     NT, NS, NF = 0, 0, 0
     for event, timings in zip(events[:], timing_data):
-        # Derived from fitting guass to dt's (see fit.py)
-        timings[0] += .25
-        timings[2] += 1.15
-        timings[3] -= -.21
+        if shifts:
+            timings += shifts
 
         ph1, ph2, ph3, ph4 = event['pulseheights']
-        if min([ph1, ph3, ph4]) / 350. >= D:
+        if min([ph1 / 380., ph3 / 410., ph4 / 380.]) >= D:
             NT += 1
             if randomize is True:
                 timings = [x + uniform(0, 2.5) for x in timings]
@@ -151,7 +161,7 @@ def plot_reconstructed_angles(events, timing_data, D=2., randomize=False):
     xlim(0, 40)
     ylabel("HiSPARC theta angle")
     ylim(0, 90)
-    savefig("plots/auto-theta-D%d.eps" % D)
+    savefig("plots/auto-theta-D%d%s.pdf" % (D, s))
 
     figure()
     plot(rad2deg(k_phis), rad2deg(phis), '.', ms=1.)
@@ -160,7 +170,7 @@ def plot_reconstructed_angles(events, timing_data, D=2., randomize=False):
     xlim(-180, 180)
     ylabel("HiSPARC phi angle")
     ylim(-180, 180)
-    savefig("plots/auto-phi-D%d.eps" % D)
+    savefig("plots/auto-phi-D%d%s.pdf" % (D, s))
 
     figure()
     plot(rad2deg(k_phis_orig), rad2deg(phis), '.', ms=1.)
@@ -169,21 +179,21 @@ def plot_reconstructed_angles(events, timing_data, D=2., randomize=False):
     xlim(0, 360)
     ylabel("HiSPARC phi angle")
     ylim(-180, 180)
-    savefig("plots/auto-phiorig-D%d.eps" % D)
+    savefig("plots/auto-phiorig-D%d%s.pdf" % (D, s))
 
     figure()
     hist(rad2deg(thetas - k_thetas), bins=200, histtype='step')
     title("Theta angle reconstruction accuracy (min. D >= %.1f)" % D)
     xlabel("HiSPARC - KASCADE theta angle")
     ylabel("count")
-    savefig("plots/auto-thetahist-D%d.eps" % D)
+    savefig("plots/auto-thetahist-D%d%s.pdf" % (D, s))
 
     figure()
     hist(rad2deg(phis - k_phis), bins=200, histtype='step')
     title("Phi angle reconstruction accuracy (min. D >= %.1f)" % D)
     xlabel("HiSPARC - KASCADE phi angle")
     ylabel("count")
-    savefig("plots/auto-phihist-D%d.eps" % D)
+    savefig("plots/auto-phihist-D%d%s.pdf" % (D, s))
 
     figure()
     n, bins, patches = hist(rad2deg(angular_dists),
@@ -196,7 +206,7 @@ def plot_reconstructed_angles(events, timing_data, D=2., randomize=False):
     ylabel("Count")
     figtext(.65, .8, "resolution: %.2f deg\nfailed: %5.1f %%" %
             (res, 100. * NF / NT))
-    savefig("plots/auto-angdist-D%d.eps" % D)
+    savefig("plots/auto-angdist-D%d%s.pdf" % (D, s))
 
     figure()
     hist(rad2deg(thetas), bins=200, histtype='step')
@@ -207,6 +217,8 @@ def plot_reconstructed_angles(events, timing_data, D=2., randomize=False):
     print
     print
     print "Angle reconstruction (D >= %d)" % D
+    print "Shifts: %r" % shifts
+    print "Tag: %s" % s
     print "Total of %d events" % len(events)
     print "Total number reconstructions:        %6d" % NT
     print "Number of succesful reconstructions: %6d (%5.1f %%)" % \
@@ -273,9 +285,43 @@ if __name__ == '__main__':
 
     try:
         timing_data
+        timing_data_linear
     except NameError:
-        timing_data = get_timing_data(data)
+        timing_data = data.root.analysis_new.timing_data.read()
+        timing_data_linear = data.root.analysis_new.timing_data_linear.read()
 
-    events = data.root.kascade.coincidences
+    events = data.root.kascade_new.coincidences
     print "Reconstructing angles..."
     plot_reconstructed_angles(events, timing_data, 1., randomize=False)
+    plot_reconstructed_angles(events, timing_data, 2., randomize=False)
+    plot_reconstructed_angles(events, timing_data, 4., randomize=False)
+
+    plot_reconstructed_angles(events, timing_data_linear, 1., '-linear',
+                              randomize=False)
+    plot_reconstructed_angles(events, timing_data_linear, 2., '-linear',
+                              randomize=False)
+    plot_reconstructed_angles(events, timing_data_linear, 4., '-linear',
+                              randomize=False)
+
+    plot_reconstructed_angles(events, timing_data, 1., '-shifts',
+                              shifts=[.25, 0., 1.17, -.21],
+                              randomize=False)
+    plot_reconstructed_angles(events, timing_data, 2., '-shifts',
+                              shifts=[.25, 0., 1.17, -.21],
+                              randomize=False)
+    plot_reconstructed_angles(events, timing_data, 4., '-shifts',
+                              shifts=[.25, 0., 1.17, -.21],
+                              randomize=False)
+
+    plot_reconstructed_angles(events, timing_data_linear, 1.,
+                              '-linear-shifts',
+                              shifts=[.26, 0., 1.20, -.19],
+                              randomize=False)
+    plot_reconstructed_angles(events, timing_data_linear, 2.,
+                              '-linear-shifts',
+                              shifts=[.26, 0., 1.20, -.19],
+                              randomize=False)
+    plot_reconstructed_angles(events, timing_data_linear, 4.,
+                              '-linear-shifts',
+                              shifts=[.26, 0., 1.20, -.19],
+                              randomize=False)

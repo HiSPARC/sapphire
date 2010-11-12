@@ -11,16 +11,14 @@ def frac_bins(low, high, binsize, nbins=1):
     high = ceil((high - low) / binsize) * binsize + low + .5 * binsize
     return arange(low, high, binsize)
 
-def fit_gauss_to_timings(data):
-    timing_data = data.root.analysis.timing_data.read()
-    coincidences = data.root.kascade.coincidences[:]
-
+def fit_gauss_to_timings(events, timing_data):
+    events = events[:]
     gauss = lambda x, N, mu, sigma: N * normpdf(x, mu, sigma)
 
     figure()
     for i, j in [(1, 0), (1, 2), (1, 3)]:
         dt = []
-        for t, c in zip(timing_data, coincidences):
+        for t, c in zip(timing_data, events):
             ph = c['pulseheights']
             if min([ph[i], ph[j]]) / 350. >= 2.:
                 dt.append(t[i] - t[j])
@@ -44,4 +42,9 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile('kascade.h5', 'a')
 
-    fit_gauss_to_timings(data)
+    events = data.root.kascade_new.coincidences
+    timings = data.root.analysis_new.timing_data.read()
+    timings_linear = data.root.analysis_new.timing_data_linear.read()
+
+    fit_gauss_to_timings(events, timings)
+    fit_gauss_to_timings(events, timings_linear)
