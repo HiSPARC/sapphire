@@ -326,18 +326,17 @@ def plot_estimate_timing_errors(dtv, whichdt, N=10, thetacond=None):
     phi1 = calc_phi(1, 3)
     phi2 = calc_phi(1, 4)
 
-    t1s = []
     phis = zeros(shape=(N, N, N))
     thetas = zeros(shape=(N, N, N))
     phis_err = zeros(shape=(N, N, N))
     thetas_err = zeros(shape=(N, N, N))
     dt = 300. / (N - 1)
     for i, t1 in enumerate(linspace(-100, 200, N)):
-        t1 += uniform(-.5 * dt, .5 * dt)
+        #t1 += uniform(-.5 * dt, .5 * dt)
         for j, t3 in enumerate(linspace(-100, 200, N)):
-            t3 += uniform(-.5 * dt, .5 * dt)
+            #t3 += uniform(-.5 * dt, .5 * dt)
             for k, t4 in enumerate(linspace(-100, 200, N)):
-                t4 += uniform(-.5 * dt, .5 * dt)
+                #t4 += uniform(-.5 * dt, .5 * dt)
 
                 theta, phi = reconstruct_angle_dt(t1 - t3, t1 - t4)
                 if thetacond:
@@ -464,6 +463,37 @@ def plot_total_phi_error(poptdt1, poptdt3, poptdt4):
     title("Total error in azimuthal angle")
     legend(loc="lower right")
 
+def mytest(N=10, phicond=None):
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
+    phis = zeros(shape=(N, N, N))
+    thetas = zeros(shape=(N, N, N))
+    phis_err = zeros(shape=(N, N, N))
+    dt = 300. / (N - 1)
+    for i, t1 in enumerate(linspace(-100, 200, N)):
+        t1 += uniform(-.5 * dt, .5 * dt)
+        for j, t3 in enumerate(linspace(-100, 200, N)):
+            t3 += uniform(-.5 * dt, .5 * dt)
+            for k, t4 in enumerate(linspace(-100, 200, N)):
+                t4 += uniform(-.5 * dt, .5 * dt)
+
+                theta, phi = reconstruct_angle_dt(t1 - t3, t1 - t4)
+
+                if not isnan(theta) and not isnan(phi):
+                    phis[i,j,k] = phi
+                    thetas[i,j,k] = theta
+                    phis_err[i,j,k] = dphi_dt4(phi1, phi2, phi, t1, t3,
+                                               t4)
+                    if phicond:
+                        if phicond[0] < rad2deg(phi) < phicond[1]:
+                            print phi, phis_err[i,j,k], (t3 - t1) / (t4 - t1)
+                else:
+                    phis[i,j,k] = nan
+                    thetas[i,j,k] = nan
+    return phis, phis_err
+
+
 
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
@@ -478,14 +508,14 @@ if __name__ == '__main__':
     # For pamflet:
     #plot_all_reconstructed_angles(data)
 
-    N = 40
+    N = 100
     #phis, dphis, thetas, dthetas = \
     #    plot_random_timing_errors(data, 'angle_23', 2, dt3=1.3,
     #                              limit=10000)
-    phis, phis_err, thetas, thetas_err, poptdt1 = \
-        plot_estimate_timing_errors(1.3, 'dt1', N=N)#, thetacond=(18, 28))
-    phis, phis_err, thetas, thetas_err, poptdt3 = \
-        plot_estimate_timing_errors(1.3, 'dt3', N=N)#, thetacond=(18, 28))
-    phis, phis_err, thetas, thetas_err, poptdt4 = \
-        plot_estimate_timing_errors(1.3, 'dt4', N=N)#, thetacond=(18, 28))
-    plot_total_phi_error(poptdt1, poptdt3, poptdt4)
+    #phis, phis_err, thetas, thetas_err, poptdt1 = \
+    #    plot_estimate_timing_errors(1.3, 'dt1', N=N)#, thetacond=(18, 28))
+    #phis, phis_err, thetas, thetas_err, poptdt3 = \
+    #    plot_estimate_timing_errors(1.3, 'dt3', N=N)#, thetacond=(18, 28))
+    #phis, phis_err, thetas, thetas_err, poptdt4 = \
+    #    plot_estimate_timing_errors(1.3, 'dt4', N=N)#, thetacond=(18, 28))
+    #plot_total_phi_error(poptdt1, poptdt3, poptdt4)
