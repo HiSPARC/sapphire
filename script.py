@@ -6,6 +6,8 @@ from pylab import *
 from IPython.Shell import IPShellEmbed
 ipshell = IPShellEmbed()
 
+import sys
+
 ADC_THRESHOLD = 20
 ADC_TIME_PER_SAMPLE = 2.5e-9
 
@@ -172,44 +174,60 @@ def plot_reconstructed_angles(events, timing_data, D=2., s='', shifts=None,
     ylim(-180, 180)
     savefig("plots/auto-phi-D%d%s.pdf" % (D, s))
 
-    figure()
-    plot(rad2deg(k_phis_orig), rad2deg(phis), '.', ms=1.)
-    title("Phi angle reconstruction (min. D >= %.1f)" % D)
-    xlabel("KASCADE phi angle")
-    xlim(0, 360)
-    ylabel("HiSPARC phi angle")
-    ylim(-180, 180)
-    savefig("plots/auto-phiorig-D%d%s.pdf" % (D, s))
+    #figure()
+    #plot(rad2deg(k_phis_orig), rad2deg(phis), '.', ms=1.)
+    #title("Phi angle reconstruction (min. D >= %.1f)" % D)
+    #xlabel("KASCADE phi angle")
+    #xlim(0, 360)
+    #ylabel("HiSPARC phi angle")
+    #ylim(-180, 180)
+    #savefig("plots/auto-phiorig-D%d%s.pdf" % (D, s))
 
     figure()
-    hist(rad2deg(thetas - k_thetas), bins=200, histtype='step')
+    n, bins, patches = hist(abs(rad2deg(thetas - k_thetas)), bins=200,
+                            histtype='step')
+    res_t = get_resolution(n, bins)
+    axvspan(xmin=0, xmax=res_t, color='blue', alpha=.2)
     title("Theta angle reconstruction accuracy (min. D >= %.1f)" % D)
     xlabel("HiSPARC - KASCADE theta angle")
     ylabel("count")
+    figtext(.65, .8, "resolution: %.2f deg" % (res_t))
     savefig("plots/auto-thetahist-D%d%s.pdf" % (D, s))
 
     figure()
-    hist(rad2deg(phis - k_phis), bins=200, histtype='step')
+    dphis = phis - k_phis
+    dphis = (dphis + pi) % (2 * pi) - pi
+    n, bins, patches = hist(abs(rad2deg(dphis)), bins=200,
+                            histtype='step')
+    res_p = get_resolution(n, bins)
+    axvspan(xmin=0, xmax=res_p, color='blue', alpha=.2)
     title("Phi angle reconstruction accuracy (min. D >= %.1f)" % D)
     xlabel("HiSPARC - KASCADE phi angle")
     ylabel("count")
+    figtext(.65, .8, "resolution: %.2f deg" % (res_p))
     savefig("plots/auto-phihist-D%d%s.pdf" % (D, s))
+
+    figure()
+    plot(rad2deg(dphis), rad2deg(k_thetas), '.', ms=1.)
+    title("Azimuthal reconstruction vs zenith angle")
+    xlabel("HiSPARC - KASCADE phi angle")
+    ylabel("KASCADE theta angle")
+    savefig("plots/auto-phithetahist-D%d%s.pdf" % (D, s))
 
     figure()
     n, bins, patches = hist(rad2deg(angular_dists),
                             bins=linspace(0, 120, 200), histtype='step')
-    res = get_resolution(n, bins)
-    #axvspan(xmin=0, xmax=res, color='blue', alpha=.2)
-    axvline(x=res, color='blue', alpha=.2)
+    res_d = get_resolution(n, bins)
+    axvspan(xmin=0, xmax=res_d, color='blue', alpha=.2)
+    #axvline(x=res, color='blue', alpha=.2)
     title("Angular distance of HiSPARC and KASCADE angles (D >= %d)" % D)
     xlabel("Angular distance (degrees)")
     ylabel("Count")
-    figtext(.65, .8, "resolution: %.2f deg\nfailed: %5.1f %%" %
-            (res, 100. * NF / NT))
+    figtext(.65, .8, "resolution: %.2f deg" % (res_d))
     savefig("plots/auto-angdist-D%d%s.pdf" % (D, s))
 
     figure()
-    hist(rad2deg(thetas), bins=200, histtype='step')
+    hist(rad2deg(k_thetas), bins=200, histtype='step')
     title("KASCADE zenith angles")
     xlabel("zenith angle (degrees)")
     ylabel("count")
@@ -225,7 +243,9 @@ def plot_reconstructed_angles(events, timing_data, D=2., s='', shifts=None,
         (NS, 100. * NS / NT)
     print "Number of failed reconstructions:    %6d (%5.1f %%)" % \
         (NF, 100. * NF / NT)
-    print "Angle resolution (68%% integrated): %.2f degrees" % res
+    print "Zenith resolution (68%% integrated): %.2f degrees" % res_t
+    print "Azimuthal resolution (68%% integrated): %.2f degrees" % res_p
+    print "Angular distance resolution (68%% integrated): %.2f degrees" % res_d
     print
 
 def reconstruct_angle(event_timing):
@@ -292,36 +312,13 @@ if __name__ == '__main__':
 
     events = data.root.kascade_new.coincidences
     print "Reconstructing angles..."
-    plot_reconstructed_angles(events, timing_data, 1., randomize=False)
+    #plot_reconstructed_angles(events, timing_data, 1., randomize=False)
     plot_reconstructed_angles(events, timing_data, 2., randomize=False)
-    plot_reconstructed_angles(events, timing_data, 4., randomize=False)
+    #plot_reconstructed_angles(events, timing_data, 4., randomize=False)
 
-    plot_reconstructed_angles(events, timing_data_linear, 1., '-linear',
-                              randomize=False)
-    plot_reconstructed_angles(events, timing_data_linear, 2., '-linear',
-                              randomize=False)
-    plot_reconstructed_angles(events, timing_data_linear, 4., '-linear',
-                              randomize=False)
-
-    plot_reconstructed_angles(events, timing_data, 1., '-shifts',
-                              shifts=[.25, 0., 1.17, -.21],
-                              randomize=False)
-    plot_reconstructed_angles(events, timing_data, 2., '-shifts',
-                              shifts=[.25, 0., 1.17, -.21],
-                              randomize=False)
-    plot_reconstructed_angles(events, timing_data, 4., '-shifts',
-                              shifts=[.25, 0., 1.17, -.21],
-                              randomize=False)
-
-    plot_reconstructed_angles(events, timing_data_linear, 1.,
-                              '-linear-shifts',
-                              shifts=[.26, 0., 1.20, -.19],
-                              randomize=False)
-    plot_reconstructed_angles(events, timing_data_linear, 2.,
-                              '-linear-shifts',
-                              shifts=[.26, 0., 1.20, -.19],
-                              randomize=False)
-    plot_reconstructed_angles(events, timing_data_linear, 4.,
-                              '-linear-shifts',
-                              shifts=[.26, 0., 1.20, -.19],
-                              randomize=False)
+    #plot_reconstructed_angles(events, timing_data_linear, 1., '-linear',
+    #                          randomize=False)
+    #plot_reconstructed_angles(events, timing_data_linear, 2., '-linear',
+    #                          randomize=False)
+    #plot_reconstructed_angles(events, timing_data_linear, 4., '-linear',
+    #                          randomize=False)
