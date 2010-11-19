@@ -11,6 +11,28 @@ DETECTORS = [(0., 5.77, 'UD'), (0., 0., 'UD'), (-5., -2.89, 'LR'),
              (5., -2.89, 'LR')]
 
 
+class ReconstructedEvent(tables.IsDescription):
+    r = tables.Float32Col()
+    phi = tables.Float32Col()
+    alpha = tables.Float32Col()
+    t1 = tables.Float32Col()
+    t2 = tables.Float32Col()
+    t3 = tables.Float32Col()
+    t4 = tables.Float32Col()
+    n1 = tables.UInt16Col()
+    n2 = tables.UInt16Col()
+    n3 = tables.UInt16Col()
+    n4 = tables.UInt16Col()
+    sim_theta = tables.Float32Col()
+    sim_phi = tables.Float32Col()
+    r_theta = tables.Float32Col()
+    r_phi = tables.Float32Col()
+    D = tables.UInt16Col()
+    size = tables.UInt8Col()
+    bin = tables.Float32Col()
+    bin_r = tables.BoolCol()
+
+
 def plot_all_ring_timings(data):
     """Plot timing histograms for various core distances"""
 
@@ -177,7 +199,7 @@ def calc_phi(s1, s2):
 
     return arctan2((y2 - y1), (x2 - x1))
 
-def get_resolution(n, bins):
+def get_resolution(n, bins, area=.68):
     """Get angle resolution from histogram values
 
     Resolution is defined as the opening angle which contains 68 % of all
@@ -188,7 +210,7 @@ def get_resolution(n, bins):
     N = 0 
     for c, res in zip(n, bins[1:]):
         N += c
-        if 1. * N / total >= .68:
+        if 1. * N / total >= area:
             break
     return res
 
@@ -493,6 +515,282 @@ def mytest(N=10, phicond=None):
                     thetas[i,j,k] = nan
     return phis, phis_err
 
+def do_full_reconstruction(data, tablename):
+    try:
+        data.createGroup('/', 'reconstructions', "Angle reconstructions")
+    except tables.NodeError:
+        pass
+
+    try:
+        data.removeNode('/reconstructions', tablename)
+    except tables.NoSuchNodeError:
+        pass
+
+    table = data.createTable('/reconstructions', tablename,
+                             ReconstructedEvent, "Reconstruction data")
+
+    # zenith 0 degrees
+    kwargs = dict(data=data, tablename='angle_0', THETA=0, dest=table)
+    reconstruct_angles(D=1, **kwargs)
+    reconstruct_angles(D=2, **kwargs)
+    reconstruct_angles(D=3, **kwargs)
+    reconstruct_angles(D=4, **kwargs)
+    reconstruct_angles(D=5, **kwargs)
+
+    # zenith 5 degrees, D=1,2,3,4,5
+    kwargs = dict(data=data, tablename='angle_5', THETA=deg2rad(5),
+                  dest=table)
+    reconstruct_angles(D=1, **kwargs)
+    reconstruct_angles(D=2, **kwargs)
+    reconstruct_angles(D=3, **kwargs)
+    reconstruct_angles(D=4, **kwargs)
+    reconstruct_angles(D=5, **kwargs)
+
+    # zenith 22.5 degrees, D=1,2,3,4,5
+    kwargs = dict(data=data, tablename='angle_23', THETA=pi / 8,
+                  dest=table)
+    reconstruct_angles(D=1, **kwargs)
+    reconstruct_angles(D=2, **kwargs)
+    reconstruct_angles(D=3, **kwargs)
+    reconstruct_angles(D=4, **kwargs)
+    reconstruct_angles(D=5, **kwargs)
+
+    # zenith 35 degrees, D=1,2,3,4,5
+    kwargs = dict(data=data, tablename='angle_35', THETA=deg2rad(35),
+                  dest=table)
+    reconstruct_angles(D=1, **kwargs)
+    reconstruct_angles(D=2, **kwargs)
+    reconstruct_angles(D=3, **kwargs)
+    reconstruct_angles(D=4, **kwargs)
+    reconstruct_angles(D=5, **kwargs)
+
+    # SPECIALS
+    # zenith 22.5, sizes=5,20, D=1,2,3,4,5
+    kwargs = dict(data=data, THETA=pi / 8, dest=table)
+    reconstruct_angles(tablename='angle_23_size5', D=1, **kwargs)
+    reconstruct_angles(tablename='angle_23_size5', D=2, **kwargs)
+    reconstruct_angles(tablename='angle_23_size5', D=3, **kwargs)
+    reconstruct_angles(tablename='angle_23_size5', D=4, **kwargs)
+    reconstruct_angles(tablename='angle_23_size5', D=5, **kwargs)
+    reconstruct_angles(tablename='angle_23_size20', D=1, **kwargs)
+    reconstruct_angles(tablename='angle_23_size20', D=2, **kwargs)
+    reconstruct_angles(tablename='angle_23_size20', D=3, **kwargs)
+    reconstruct_angles(tablename='angle_23_size20', D=4, **kwargs)
+    reconstruct_angles(tablename='angle_23_size20', D=5, **kwargs)
+
+    # zenith 22.5, binnings, D=1,2,3,4,5
+    kwargs = dict(data=data, tablename='angle_23', THETA=pi / 8,
+                  dest=table)
+    kwargs['randomize_binning'] = False
+    reconstruct_angles(binning=1, D=1, **kwargs)
+    reconstruct_angles(binning=1, D=2, **kwargs)
+    reconstruct_angles(binning=1, D=3, **kwargs)
+    reconstruct_angles(binning=1, D=4, **kwargs)
+    reconstruct_angles(binning=1, D=5, **kwargs)
+    reconstruct_angles(binning=2.5, D=1, **kwargs)
+    reconstruct_angles(binning=2.5, D=2, **kwargs)
+    reconstruct_angles(binning=2.5, D=3, **kwargs)
+    reconstruct_angles(binning=2.5, D=4, **kwargs)
+    reconstruct_angles(binning=2.5, D=5, **kwargs)
+    reconstruct_angles(binning=5, D=1, **kwargs)
+    reconstruct_angles(binning=5, D=2, **kwargs)
+    reconstruct_angles(binning=5, D=3, **kwargs)
+    reconstruct_angles(binning=5, D=4, **kwargs)
+    reconstruct_angles(binning=5, D=5, **kwargs)
+    kwargs['randomize_binning'] = True
+    reconstruct_angles(binning=1, D=1, **kwargs)
+    reconstruct_angles(binning=1, D=2, **kwargs)
+    reconstruct_angles(binning=1, D=3, **kwargs)
+    reconstruct_angles(binning=1, D=4, **kwargs)
+    reconstruct_angles(binning=1, D=5, **kwargs)
+    reconstruct_angles(binning=2.5, D=1, **kwargs)
+    reconstruct_angles(binning=2.5, D=2, **kwargs)
+    reconstruct_angles(binning=2.5, D=3, **kwargs)
+    reconstruct_angles(binning=2.5, D=4, **kwargs)
+    reconstruct_angles(binning=2.5, D=5, **kwargs)
+    reconstruct_angles(binning=5, D=1, **kwargs)
+    reconstruct_angles(binning=5, D=2, **kwargs)
+    reconstruct_angles(binning=5, D=3, **kwargs)
+    reconstruct_angles(binning=5, D=4, **kwargs)
+    reconstruct_angles(binning=5, D=5, **kwargs)
+
+def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
+                       randomize_binning=False, N=None):
+    """Reconstruct angles from simulation for minimum particle density"""
+
+    match = re.search('_size([0-9]+)', tablename)
+    if match:
+        R = int(match.group(1))
+    else:
+        R = 10
+
+    table = data.getNode('/analysis', tablename)
+    dst_row = dest.row
+    for event in table[:N]:
+        if min(event['n1'], event['n3'], event['n4']) >= D:
+            # Do we need to bin timing data?
+            if binning is not False:
+                event['t1'] = floor(event['t1'] / binning) * binning 
+                event['t2'] = floor(event['t2'] / binning) * binning 
+                event['t3'] = floor(event['t3'] / binning) * binning 
+                event['t4'] = floor(event['t4'] / binning) * binning 
+                # Do we need to randomize inside a bin?
+                if randomize_binning is True:
+                    event['t1'] += uniform(0, binning)
+                    event['t2'] += uniform(0, binning)
+                    event['t3'] += uniform(0, binning)
+                    event['t4'] += uniform(0, binning)
+
+            theta, phi = reconstruct_angle(event, R)
+            alpha = event['alpha']
+
+            if not isnan(theta) and not isnan(phi):
+                ang_dist = arccos(sin(theta) * sin(THETA) *
+                                  cos(phi - -alpha) + cos(theta) *
+                                  cos(THETA))
+
+                dst_row['r'] = event['r']
+                dst_row['phi'] = event['phi']
+                dst_row['alpha'] = alpha
+                dst_row['t1'] = event['t1']
+                dst_row['t2'] = event['t2']
+                dst_row['t3'] = event['t3']
+                dst_row['t4'] = event['t4']
+                dst_row['n1'] = event['n1']
+                dst_row['n2'] = event['n2']
+                dst_row['n3'] = event['n3']
+                dst_row['n4'] = event['n4']
+                dst_row['sim_theta'] = THETA
+                dst_row['sim_phi'] = -alpha
+                dst_row['r_theta'] = theta
+                dst_row['r_phi'] = phi
+                dst_row['D'] = min(event['n1'], event['n3'], event['n4'])
+                dst_row['size'] = R
+                if binning is False:
+                    bin_size = 0
+                else:
+                    bin_size = binning
+                dst_row['bin'] = bin_size
+                dst_row['bin_r'] = randomize_binning
+                dst_row.append()
+    dest.flush()
+
+def do_reconstruction_plots(data, tablename):
+    """Make plots based upon earlier reconstructions"""
+
+    table = data.getNode('/reconstructions', tablename)
+
+    figure()
+    x, y, y2 = [], [], []
+    for D in range(1, 6):
+        x.append(D)
+        events = table.readWhere(
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            (D, float32(pi / 8)))
+        print len(events),
+        errors = events['sim_theta'] - events['r_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['sim_phi'] - events['r_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        y.append(std(errors))
+        y2.append(std(errors2))
+    plot(x, rad2deg(y), '.-', label="Theta")
+    plot(x, rad2deg(y2), '.-', label="Phi")
+    xlabel("Minimum number of particles")
+    ylabel("Uncertainty in angle reconstruction (deg)")
+    title("Uncertainty as a function of number of particles")
+    figtext(.65, .8, "Azimuthal angle: 22.5 degrees",
+            horizontalalignment='right')
+    legend()
+    savefig('plots/auto-results-MIP.pdf')
+    print
+
+    figure()
+    x, y, y2 = [], [], []
+    for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
+        x.append(THETA)
+        events = table.readWhere(
+            '(D>=2) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            float32(THETA))
+        print len(events),
+        errors = events['sim_theta'] - events['r_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['sim_phi'] - events['r_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        y.append(std(errors))
+        y2.append(std(errors2))
+    plot(rad2deg(x), rad2deg(y), '.-', label="Theta")
+    # Azimuthal angle undefined for zenith = 0
+    plot(rad2deg(x[1:]), rad2deg(y2[1:]), '.-', label="Phi")
+    xlabel("Shower zenith angle (degrees)")
+    ylabel("Uncertainty in angle reconstruction (deg)")
+    title("Uncertainty as a function of shower zenith angle")
+    figtext(.65, .8, "Number of particles at least 2",
+            horizontalalignment='right')
+    legend()
+    ylim(ymin=0)
+    savefig('plots/auto-results-zenith.pdf')
+    print
+
+    figure()
+    x, y, y2 = [], [], []
+    for size in [5, 10, 20]:
+        x.append(size)
+        events = table.readWhere(
+            '(D>=2) & (sim_theta==%.40f) & (size==%d) & (bin==0)' %
+            (float32(pi/ 8), size))
+        print len(events),
+        errors = events['sim_theta'] - events['r_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['sim_phi'] - events['r_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        y.append(std(errors))
+        y2.append(std(errors2))
+    plot(x, rad2deg(y), '.-', label="Theta")
+    plot(x, rad2deg(y2), '.-', label="Phi")
+    xlabel("Station size (m)")
+    ylabel("Uncertainty in angle reconstruction (deg)")
+    title("Uncertainty as a function of station size")
+    figtext(.65, .8, "Number of particles at least 2\n"
+            "Azimuthal angle: 22.5 degrees", horizontalalignment='right')
+    legend()
+    savefig('plots/auto-results-size.pdf')
+    print
+
+    figure()
+    x, y, y2 = [], [], []
+    for bin_size in [0, 1, 2.5, 5]:
+        x.append(bin_size)
+        events = table.readWhere(
+            '(D>=2) & (sim_theta==%.40f) & (size==10) & (bin==%.40f) & '
+            '(bin_r==False)' %
+            (float32(pi/ 8), bin_size))
+        print len(events),
+        errors = events['sim_theta'] - events['r_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['sim_phi'] - events['r_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        y.append(std(errors))
+        y2.append(std(errors2))
+    plot(x, rad2deg(y), '.-', label="Theta")
+    plot(x, rad2deg(y2), '.-', label="Phi")
+    xlabel("Bin size (ns)")
+    ylabel("Uncertainty in angle reconstruction (deg)")
+    title("Uncertainty as a function of bin size")
+    figtext(.65, .8, "Number of particles at least 2\n"
+            "Azimuthal angle: 22.5 degrees", horizontalalignment='right')
+    legend(loc='best')
+    ylim(ymin=0)
+    savefig('plots/auto-results-binsize.pdf')
+    print
 
 
 if __name__ == '__main__':
@@ -503,12 +801,15 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('data-e15.h5', 'r')
+        data = tables.openFile('data-e15.h5', 'a')
+
+    #do_full_reconstruction(data, 'full')
+    do_reconstruction_plots(data, 'full')
 
     # For pamflet:
     #plot_all_reconstructed_angles(data)
 
-    N = 100
+    #N = 100
     #phis, dphis, thetas, dthetas = \
     #    plot_random_timing_errors(data, 'angle_23', 2, dt3=1.3,
     #                              limit=10000)
