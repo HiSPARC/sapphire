@@ -227,7 +227,7 @@ def detector_test(data):
 def do_simulation(data, stationsize, outfile, density, use_alpha=0.):
     """Perform a full simulation"""
 
-    dataf = tables.openFile('data-e15.h5', 'r')
+    dataf = tables.openFile(DATAFILE, 'r')
     data = dataf.getNode('/showers', data)
 
     global DETECTORS
@@ -237,7 +237,7 @@ def do_simulation(data, stationsize, outfile, density, use_alpha=0.):
     DETECTORS = [(0., 2 * x, 'UD'), (0., 0., 'UD'), (-l, -x, 'LR'),
                  (l, -x, 'LR')]
 
-    with open(outfile, 'w') as file:
+    with gzip.open(outfile, 'w') as file:
         writer = csv.writer(file, delimiter='\t')
         N = 0
         for r0, r1, rel_density, iscorner in RINGS:
@@ -358,12 +358,13 @@ def do_full_simulation():
     DENSITY = 1.
     ps = []
     for group, stationsize, outfile in [
-        ('zenith0/leptons', 10., 'detsim-angle-0.csv'),
-        ('zenith5/leptons', 10., 'detsim-angle-5.csv'),
-        ('zenith23/leptons', 5., 'detsim-angle-23-size5.csv'),
-        ('zenith23/leptons', 10., 'detsim-angle-23.csv'),
-        ('zenith23/leptons', 20., 'detsim-angle-23-size20.csv'),
-        ('zenith35/leptons', 10., 'detsim-angle-35.csv')]:
+        ('zenith0/leptons', 10., 'detsim-angle-0.csv.gz'),
+        ('zenith5/leptons', 10., 'detsim-angle-5.csv.gz'),
+        ('zenith23/leptons', 5., 'detsim-angle-23-size5.csv.gz'),
+        ('zenith23/leptons', 10., 'detsim-angle-23.csv.gz'),
+        ('zenith23/leptons', 20., 'detsim-angle-23-size20.csv.gz'),
+        ('zenith35/leptons', 10., 'detsim-angle-35.csv.gz'),
+        ('zenith80/leptons', 10., 'detsim-angle-80.csv.gz')]:
 
         p = Process(target=do_simulation, kwargs=dict(data=group,
                                                       stationsize=stationsize,
@@ -376,23 +377,25 @@ def do_full_simulation():
         p.join()
 
 def store_full_results():
-    store_results_in_tables('detsim-angle-0.csv.gz', 'data-e15.h5')
-    store_results_in_tables('detsim-angle-5.csv.gz', 'data-e15.h5')
-    store_results_in_tables('detsim-angle-23.csv.gz', 'data-e15.h5')
-    store_results_in_tables('detsim-angle-23-size5.csv.gz', 'data-e15.h5')
-    store_results_in_tables('detsim-angle-23-size20.csv.gz', 'data-e15.h5')
-    store_results_in_tables('detsim-angle-35.csv.gz', 'data-e15.h5')
+    store_results_in_tables('detsim-angle-0.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-5.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-23.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-23-size5.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-23-size20.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-35.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-80.csv.gz', DATAFILE)
 
 def analyze_full_results():
-    analyze_results('data-e15.h5', 'angle_0')
-    analyze_results('data-e15.h5', 'angle_5')
-    analyze_results('data-e15.h5', 'angle_23')
-    analyze_results('data-e15.h5', 'angle_23_size5')
-    analyze_results('data-e15.h5', 'angle_23_size20')
-    analyze_results('data-e15.h5', 'angle_35')
+    analyze_results(DATAFILE, 'angle_0')
+    analyze_results(DATAFILE, 'angle_5')
+    analyze_results(DATAFILE, 'angle_23')
+    analyze_results(DATAFILE, 'angle_23_size5')
+    analyze_results(DATAFILE, 'angle_23_size20')
+    analyze_results(DATAFILE, 'angle_35')
+    analyze_results(DATAFILE, 'angle_80')
 
 
 if __name__ == '__main__':
-    #do_full_simulation()
-    #store_full_results()
-    #analyze_full_results()
+    do_full_simulation()
+    store_full_results()
+    analyze_full_results()

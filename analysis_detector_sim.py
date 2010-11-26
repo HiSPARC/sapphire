@@ -1,14 +1,33 @@
 import tables
 from itertools import combinations
 import re
+import csv
 
 from pylab import *
 from scipy.optimize import curve_fit
 from tikz_plot import tikz_2dhist
 
+USE_TEX = False
+
 
 DETECTORS = [(0., 5.77, 'UD'), (0., 0., 'UD'), (-5., -2.89, 'LR'),
              (5., -2.89, 'LR')]
+
+#TIMING_ERROR = 1.3
+#TIMING_ERROR = 2 * 1.3
+#TIMING_ERROR = 2.5
+TIMING_ERROR = 3
+
+# For matplotlib plots
+if USE_TEX:
+    rcParams['font.serif'] = 'Computer Modern'
+    rcParams['font.sans-serif'] = 'Computer Modern'
+    rcParams['font.family'] = 'sans-serif'
+    rcParams['figure.figsize'] = [5 * x for x in (1, 2./3)]
+    rcParams['figure.subplot.left'] = 0.125
+    rcParams['figure.subplot.bottom'] = 0.125
+    rcParams['font.size'] = 11
+    rcParams['legend.fontsize'] = 'small'
 
 
 class ReconstructedEvent(tables.IsDescription):
@@ -33,32 +52,6 @@ class ReconstructedEvent(tables.IsDescription):
     bin_r = tables.BoolCol()
 
 
-def plot_all_ring_timings(data):
-    """Plot timing histograms for various core distances"""
-
-    plot_ring_timings(data, [(0, 4), (4, 20), (20, 40), (40, 80),
-                             (80, 120)], normed=False, binstep=.1)
-    plot_ring_timings(data, [(40, 50), (50, 60), (60, 70), (70, 80)],
-                      normed=True, binstep=.5)
-
-def plot_ring_timings(data, rings, normed, binstep):
-    """Plot timing histograms for various core distances"""
-
-    figure()
-    for r0, r1 in rings:
-        t = []
-        events = data.root.analysis.readWhere('(r0 <= r) & (r < r1)')
-        times = events['times'].T
-        for s1, s2 in combinations(range(4), 2):
-            t.extend(times[s1] - times[s2])
-        t = [x for x in t if not isnan(x)]
-        hist(t, bins=arange(-20, 20, binstep), histtype='step',
-             normed=normed, label="%.1f < r < %.1f" % (r0, r1))
-    legend()
-    title("Time differences between scintillator events")
-    xlabel("time (ns)")
-    ylabel("count")
-
 def reconstruct_angle(event, R=10):
     """Reconstruct angles from a single event"""
 
@@ -80,10 +73,15 @@ def reconstruct_angle_dt(dt1, dt2, R=10):
 
     phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
                   (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
-    theta = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
+    theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
     theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
 
-    return theta, phi
+    e1 = sqrt(rel_theta1_errorsq(theta1, phi, phi1, phi2, R, R))
+    e2 = sqrt(rel_theta2_errorsq(theta2, phi, phi1, phi2, R, R))
+
+    theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
+
+    return theta_wgt, phi
 
 def calc_phi(s1, s2):
     """Calculate angle between detectors (phi1, phi2)"""
@@ -93,13 +91,131 @@ def calc_phi(s1, s2):
 
     return arctan2((y2 - y1), (x2 - x1))
 
-def dphi_dt1(phi, theta, phi1, phi2, r1=10, r2=10):
-    r1 = r2 = 10.
+def rel_phi_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
+    # speed of light in m / ns
+    c = .3
 
-    return 1 / (1 + tan(phi) ** 2) * \
-           (r2 * cos(phi2) - r1 * cos(phi1) + \
-            (r2 * sin(phi2) - r1 * sin(phi1)) * tan(phi)) / \
-           (r2 * (t3 - t1) * sin(phi2) - r1 * (t4 - t1) * sin(phi1))
+    tanphi = tan(phi)
+    sinphi1 = sin(phi1)
+    cosphi1 = cos(phi1)
+    sinphi2 = sin(phi2)
+    cosphi2 = cos(phi2)
+
+    den = ((1 + tanphi ** 2) ** 2 * r1 ** 2 * r2 ** 2 * sin(theta) ** 2
+       * (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2
+       / c ** 2)
+
+    A = (r1 ** 2 * sinphi1 ** 2
+         + r2 ** 2 * sinphi2 ** 2
+         - r1 * r2 * sinphi1 * sinphi2)
+    B = (2 * r1 ** 2 * sinphi1 * cosphi1
+         + 2 * r2 ** 2 * sinphi2 * cosphi2
+         - r1 * r2 * sinphi2 * cosphi1
+         - r1 * r2 * sinphi1 * cosphi2)
+    C = (r1 ** 2 * cosphi1 ** 2
+         + r2 ** 2 * cosphi2 ** 2
+         - r1 * r2 * cosphi1 * cosphi2)
+
+    return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
+
+def dphi_dt0(theta, phi, phi1, phi2, r1=10, r2=10):
+    # speed of light in m / ns
+    c = .3
+
+    tanphi = tan(phi)
+    sinphi1 = sin(phi1)
+    cosphi1 = cos(phi1)
+    sinphi2 = sin(phi2)
+    cosphi2 = cos(phi2)
+
+    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
+           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
+           / c)
+    num = (r2 * cosphi2 - r1 * cosphi1
+           + tanphi * (r2 * sinphi2 - r1 * sinphi1))
+
+    return num / den
+
+def dphi_dt1(theta, phi, phi1, phi2, r1=10, r2=10):
+    # speed of light in m / ns
+    c = .3
+
+    tanphi = tan(phi)
+    sinphi1 = sin(phi1)
+    cosphi1 = cos(phi1)
+    sinphi2 = sin(phi2)
+    cosphi2 = cos(phi2)
+
+    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
+           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
+           / c)
+    num = -r2 * (sinphi2 * tanphi + cosphi2)
+
+    return num / den
+
+def dphi_dt2(theta, phi, phi1, phi2, r1=10, r2=10):
+    # speed of light in m / ns
+    c = .3
+
+    tanphi = tan(phi)
+    sinphi1 = sin(phi1)
+    cosphi1 = cos(phi1)
+    sinphi2 = sin(phi2)
+    cosphi2 = cos(phi2)
+
+    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
+           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
+           / c)
+    num = r1 * (sinphi1 * tanphi + cosphi1)
+
+    return num / den
+
+def rel_theta_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
+    e1 = rel_theta1_errorsq(theta, phi, phi1, phi2, r1, r2)
+    e2 = rel_theta2_errorsq(theta, phi, phi1, phi2, r1, r2)
+
+    #return minimum(e1, e2)
+    return e1
+
+def rel_theta1_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
+    # speed of light in m / ns
+    c = .3
+
+    sintheta = sin(theta)
+    sinphiphi1 = sin(phi - phi1)
+
+    den = (1 - sintheta ** 2) * r1 ** 2 * cos(phi - phi1) ** 2
+
+    A = (r1 ** 2 * sinphiphi1 ** 2
+         * rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+    B = (r1 * c * sinphiphi1
+         * (dphi_dt0(theta, phi, phi1, phi2, r1, r2)
+            - dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
+    C = 2 * c ** 2
+
+    errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
+
+    return where(isnan(errsq), inf, errsq)
+
+def rel_theta2_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
+    # speed of light in m / ns
+    c = .3
+
+    sintheta = sin(theta)
+    sinphiphi2 = sin(phi - phi2)
+
+    den = (1 - sintheta ** 2) * r2 ** 2 * cos(phi - phi2) ** 2
+
+    A = (r2 ** 2 * sinphiphi2 ** 2
+         * rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+    B = (r2 * c * sinphiphi2
+         * (dphi_dt0(theta, phi, phi1, phi2, r1, r2)
+            - dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
+    C = 2 * c ** 2
+
+    errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
+
+    return where(isnan(errsq), inf, errsq)
 
 def do_full_reconstruction(data, tablename):
     """Do a reconstruction of all simulated data and store results"""
@@ -120,87 +236,39 @@ def do_full_reconstruction(data, tablename):
     # zenith 0 degrees
     kwargs = dict(data=data, tablename='angle_0', THETA=0, dest=table)
     reconstruct_angles(D=1, **kwargs)
-    reconstruct_angles(D=2, **kwargs)
-    reconstruct_angles(D=3, **kwargs)
-    reconstruct_angles(D=4, **kwargs)
-    reconstruct_angles(D=5, **kwargs)
 
     # zenith 5 degrees, D=1,2,3,4,5
     kwargs = dict(data=data, tablename='angle_5', THETA=deg2rad(5),
                   dest=table)
     reconstruct_angles(D=1, **kwargs)
-    reconstruct_angles(D=2, **kwargs)
-    reconstruct_angles(D=3, **kwargs)
-    reconstruct_angles(D=4, **kwargs)
-    reconstruct_angles(D=5, **kwargs)
 
     # zenith 22.5 degrees, D=1,2,3,4,5
     kwargs = dict(data=data, tablename='angle_23', THETA=pi / 8,
                   dest=table)
     reconstruct_angles(D=1, **kwargs)
-    reconstruct_angles(D=2, **kwargs)
-    reconstruct_angles(D=3, **kwargs)
-    reconstruct_angles(D=4, **kwargs)
-    reconstruct_angles(D=5, **kwargs)
 
     # zenith 35 degrees, D=1,2,3,4,5
     kwargs = dict(data=data, tablename='angle_35', THETA=deg2rad(35),
                   dest=table)
     reconstruct_angles(D=1, **kwargs)
-    reconstruct_angles(D=2, **kwargs)
-    reconstruct_angles(D=3, **kwargs)
-    reconstruct_angles(D=4, **kwargs)
-    reconstruct_angles(D=5, **kwargs)
 
     # SPECIALS
     # zenith 22.5, sizes=5,20, D=1,2,3,4,5
     kwargs = dict(data=data, THETA=pi / 8, dest=table)
     reconstruct_angles(tablename='angle_23_size5', D=1, **kwargs)
-    reconstruct_angles(tablename='angle_23_size5', D=2, **kwargs)
-    reconstruct_angles(tablename='angle_23_size5', D=3, **kwargs)
-    reconstruct_angles(tablename='angle_23_size5', D=4, **kwargs)
-    reconstruct_angles(tablename='angle_23_size5', D=5, **kwargs)
     reconstruct_angles(tablename='angle_23_size20', D=1, **kwargs)
-    reconstruct_angles(tablename='angle_23_size20', D=2, **kwargs)
-    reconstruct_angles(tablename='angle_23_size20', D=3, **kwargs)
-    reconstruct_angles(tablename='angle_23_size20', D=4, **kwargs)
-    reconstruct_angles(tablename='angle_23_size20', D=5, **kwargs)
 
     # zenith 22.5, binnings, D=1,2,3,4,5
     kwargs = dict(data=data, tablename='angle_23', THETA=pi / 8,
                   dest=table)
     kwargs['randomize_binning'] = False
     reconstruct_angles(binning=1, D=1, **kwargs)
-    reconstruct_angles(binning=1, D=2, **kwargs)
-    reconstruct_angles(binning=1, D=3, **kwargs)
-    reconstruct_angles(binning=1, D=4, **kwargs)
-    reconstruct_angles(binning=1, D=5, **kwargs)
     reconstruct_angles(binning=2.5, D=1, **kwargs)
-    reconstruct_angles(binning=2.5, D=2, **kwargs)
-    reconstruct_angles(binning=2.5, D=3, **kwargs)
-    reconstruct_angles(binning=2.5, D=4, **kwargs)
-    reconstruct_angles(binning=2.5, D=5, **kwargs)
     reconstruct_angles(binning=5, D=1, **kwargs)
-    reconstruct_angles(binning=5, D=2, **kwargs)
-    reconstruct_angles(binning=5, D=3, **kwargs)
-    reconstruct_angles(binning=5, D=4, **kwargs)
-    reconstruct_angles(binning=5, D=5, **kwargs)
     kwargs['randomize_binning'] = True
     reconstruct_angles(binning=1, D=1, **kwargs)
-    reconstruct_angles(binning=1, D=2, **kwargs)
-    reconstruct_angles(binning=1, D=3, **kwargs)
-    reconstruct_angles(binning=1, D=4, **kwargs)
-    reconstruct_angles(binning=1, D=5, **kwargs)
     reconstruct_angles(binning=2.5, D=1, **kwargs)
-    reconstruct_angles(binning=2.5, D=2, **kwargs)
-    reconstruct_angles(binning=2.5, D=3, **kwargs)
-    reconstruct_angles(binning=2.5, D=4, **kwargs)
-    reconstruct_angles(binning=2.5, D=5, **kwargs)
     reconstruct_angles(binning=5, D=1, **kwargs)
-    reconstruct_angles(binning=5, D=2, **kwargs)
-    reconstruct_angles(binning=5, D=3, **kwargs)
-    reconstruct_angles(binning=5, D=4, **kwargs)
-    reconstruct_angles(binning=5, D=5, **kwargs)
 
 def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
                        randomize_binning=False, N=None):
@@ -268,7 +336,14 @@ def do_reconstruction_plots(data, tablename):
 
     table = data.getNode('/reconstructions', tablename)
 
+    #plot_uncertainty_mip(table)
+    plot_uncertainty_zenith(table)
+    #plot_uncertainty_size(table)
+    #plot_uncertainty_binsize(table)
+
+def plot_uncertainty_mip(table):
     figure()
+    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for D in range(1, 6):
         x.append(D)
@@ -284,18 +359,24 @@ def do_reconstruction_plots(data, tablename):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
-    plot(x, rad2deg(y), '.-', label="Theta")
-    plot(x, rad2deg(y2), '.-', label="Phi")
+    plot(x, rad2deg(y), '^', label="Theta")
+    plot(x, rad2deg(y2), 'v', label="Phi")
     xlabel("Minimum number of particles")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title("Uncertainty as a function of number of particles")
-    figtext(.65, .8, "Azimuthal angle: 22.5 degrees",
-            horizontalalignment='right')
-    legend()
+    title(r"$\theta = 22.5^\circ$")
+    legend(frameon=False)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
     savefig('plots/auto-results-MIP.pdf')
     print
 
+def plot_uncertainty_zenith(table):
+    # constants for uncertainty estimation
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
     figure()
+    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
         x.append(THETA)
@@ -311,20 +392,38 @@ def do_reconstruction_plots(data, tablename):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
-    plot(rad2deg(x), rad2deg(y), '.-', label="Theta")
+    plot(rad2deg(x), rad2deg(y), '^', label="Theta")
     # Azimuthal angle undefined for zenith = 0
-    plot(rad2deg(x[1:]), rad2deg(y2[1:]), '.-', label="Phi")
+    plot(rad2deg(x[1:]), rad2deg(y2[1:]), 'v', label="Phi")
+    # Uncertainty estimate
+    x = linspace(0, deg2rad(80), 50)
+    phis = linspace(-pi, pi, 50)
+    y, y2, y3 = [], [], []
+    for t in x:
+        y.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)))
+        y2.append(mean(rel_theta_errorsq(t, phis, phi1, phi2)))
+    y = TIMING_ERROR * sqrt(array(y))
+    y2 = TIMING_ERROR * sqrt(array(y2))
+    plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
+    plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
+    # Labels etc.
     xlabel("Shower zenith angle (degrees)")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title("Uncertainty as a function of shower zenith angle")
-    figtext(.65, .8, "Number of particles at least 2",
-            horizontalalignment='right')
-    legend()
-    ylim(ymin=0)
+    title(r"$N_{MIP} \geq 2$")
+    legend(frameon=False)
+    ylim(0, 60)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
     savefig('plots/auto-results-zenith.pdf')
     print
 
+def plot_uncertainty_size(table):
+    # constants for uncertainty estimation
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
     figure()
+    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for size in [5, 10, 20]:
         x.append(size)
@@ -340,25 +439,47 @@ def do_reconstruction_plots(data, tablename):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
-    plot(x, rad2deg(y), '.-', label="Theta")
-    plot(x, rad2deg(y2), '.-', label="Phi")
+    plot(x, rad2deg(y), '^', label="Theta")
+    plot(x, rad2deg(y2), 'v', label="Phi")
+    # Uncertainty estimate
+    x = linspace(5, 20, 50)
+    phis = linspace(-pi, pi, 50)
+    y, y2 = [], []
+    for s in x:
+        y.append(mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
+        y2.append(mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
+    y = TIMING_ERROR * sqrt(array(y))
+    y2 = TIMING_ERROR * sqrt(array(y2))
+    plot(x, rad2deg(y), label="Estimate Phi")
+    plot(x, rad2deg(y2), label="Estimate Theta")
+    # Labels etc.
     xlabel("Station size (m)")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title("Uncertainty as a function of station size")
-    figtext(.65, .8, "Number of particles at least 2\n"
-            "Azimuthal angle: 22.5 degrees", horizontalalignment='right')
-    legend()
+    title(r"$\theta = 22.5^\circ, N_{MIP} \geq 2$")
+    legend(frameon=False)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
     savefig('plots/auto-results-size.pdf')
     print
 
+def plot_uncertainty_binsize(table):
+    # constants for uncertainty estimation
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
     figure()
+    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for bin_size in [0, 1, 2.5, 5]:
+        if bin_size == 0:
+            is_randomized = False
+        else:
+            is_randomized = True
         x.append(bin_size)
         events = table.readWhere(
             '(D>=2) & (sim_theta==%.40f) & (size==10) & (bin==%.40f) & '
-            '(bin_r==False)' %
-            (float32(pi/ 8), bin_size))
+            '(bin_r==%s)' %
+            (float32(pi/ 8), bin_size, is_randomized))
         print len(events),
         errors = events['sim_theta'] - events['r_theta']
         # Make sure -pi < errors < pi
@@ -368,17 +489,61 @@ def do_reconstruction_plots(data, tablename):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
-    plot(x, rad2deg(y), '.-', label="Theta")
-    plot(x, rad2deg(y2), '.-', label="Phi")
+    plot(x, rad2deg(y), '^', label="Theta")
+    plot(x, rad2deg(y2), 'v', label="Phi")
+    # Uncertainty estimate
+    x = linspace(0, 5, 50)
+    phis = linspace(-pi, pi, 50)
+    y, y2 = [], []
+    phi_errorsq = mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2))
+    theta_errorsq = mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2))
+    for t in x:
+        y.append(sqrt((TIMING_ERROR ** 2 + t ** 2 / 12) * phi_errorsq))
+        y2.append(sqrt((TIMING_ERROR ** 2 + t ** 2 / 12) * theta_errorsq))
+    y = array(y)
+    y2 = array(y2)
+    plot(x, rad2deg(y), label="Estimate Phi")
+    plot(x, rad2deg(y2), label="Estimate Theta")
+    # Labels etc.
     xlabel("Bin size (ns)")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title("Uncertainty as a function of bin size")
-    figtext(.65, .8, "Number of particles at least 2\n"
-            "Azimuthal angle: 22.5 degrees", horizontalalignment='right')
-    legend(loc='best')
+    title(r"$\theta = 22.5^\circ, N_{MIP} \geq 2$")
+    legend(loc='best', frameon=False)
     ylim(ymin=0)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
     savefig('plots/auto-results-binsize.pdf')
     print
+
+def plot_ring_arrival_times(data, tablename, theta):
+    s = data.getNode('/showers', tablename)
+    bins = [0, 4, 20, 40, 80, sqrt(2 * 80 ** 2)]
+    phi_bins = linspace(-pi, pi, 17)
+
+    figure()
+    T, E = [], []
+    for a, b in zip(bins[:-1], bins[1:]):
+        t, e = [], []
+        for pa, pb in zip(phi_bins[:-1], phi_bins[1:]):
+            p = s.electrons.readWhere('(%f <= core_distance) & '
+                                      '(core_distance < %f) &'
+                                      '(%f <= polar_angle) &'
+                                      '(polar_angle < %f)' % (a, b, pa,
+                                                              pb))
+            t.append(p['arrival_time'] - min(p['arrival_time']))
+            e.append(p['energy'])
+        T.append([x for sublist in t for x in sublist])
+        T.append([x for sublist in e for x in sublist])
+    
+    for a, b, t in zip(bins[:-1], bins[1:], T):
+        hist(t, bins=linspace(0, 100, 200), histtype='step',
+             label='%d < r < %d' % (a, b), log=True, normed=True)
+
+    xlabel("Arrival time (ns)")
+    ylabel("Normed count")
+    title(r"$\theta=%s^\circ$" % theta)
+    legend()
+    ylim(ymin=1e-4)
 
 
 if __name__ == '__main__':
@@ -393,3 +558,7 @@ if __name__ == '__main__':
 
     #do_full_reconstruction(data, 'full')
     do_reconstruction_plots(data, 'full')
+    #plot_ring_arrival_times(data, 'zenith0', 0)
+    #plot_ring_arrival_times(data, 'zenith5', 5)
+    #plot_ring_arrival_times(data, 'zenith23', 22.5)
+    #plot_ring_arrival_times(data, 'zenith35', 35)

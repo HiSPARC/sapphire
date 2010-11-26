@@ -73,9 +73,11 @@ def store_simulation_data(data, group, file):
 
 
 if __name__ == '__main__':
+    raise Exception("Warning!! Overwriting ALL data!!! (comment me)")
     data = tables.openFile(DATA_FILE, 'w')
     data.createGroup('/', 'showers', 'Simulated showers')
     store_simulation_data(data, 'zenith0', 'showere15.grdpcles')
     store_simulation_data(data, 'zenith23', 'showere15-angle.grdpcles')
     store_simulation_data(data, 'zenith5', 'showere15-angle-5.grdpcles')
     store_simulation_data(data, 'zenith35', 'showere15-angle-35.grdpcles')
+    store_simulation_data(data, 'zenith80', 'showere15-angle-80.grdpcles')
