@@ -237,28 +237,29 @@ def do_simulation(data, stationsize, outfile, density, use_alpha=0.):
     DETECTORS = [(0., 2 * x, 'UD'), (0., 0., 'UD'), (-l, -x, 'LR'),
                  (l, -x, 'LR')]
 
-    with gzip.open(outfile, 'w') as file:
-        writer = csv.writer(file, delimiter='\t')
-        N = 0
-        for r0, r1, rel_density, iscorner in RINGS:
-            r_list, phi_list = simulate_positions(r0, r1,
-                                                  rel_density * density,
-                                                  iscorner)
-            if use_alpha is True:
-                alpha_list = np.random.uniform(-pi, pi, len(r_list))
-            else:
-                alpha_list = len(r_list) * [use_alpha]
+    file = gzip.open(outfile, 'w')
+    writer = csv.writer(file, delimiter='\t')
+    N = 0
+    for r0, r1, rel_density, iscorner in RINGS:
+        r_list, phi_list = simulate_positions(r0, r1,
+                                              rel_density * density,
+                                              iscorner)
+        if use_alpha is True:
+            alpha_list = np.random.uniform(-pi, pi, len(r_list))
+        else:
+            alpha_list = len(r_list) * [use_alpha]
 
-            for event_id, (r, phi, alpha) in enumerate(zip(r_list,
-                                                           phi_list,
-                                                           alpha_list),
-                                                       N):
-                save_event_header(writer, event_id, r, phi, alpha)
-                particles = get_station_particles(data, r, phi, alpha)
-                for scint_id, p in enumerate(particles, 1):
-                    save_detector_particles(writer, event_id, scint_id, p)
+        for event_id, (r, phi, alpha) in enumerate(zip(r_list,
+                                                       phi_list,
+                                                       alpha_list),
+                                                   N):
+            save_event_header(writer, event_id, r, phi, alpha)
+            particles = get_station_particles(data, r, phi, alpha)
+            for scint_id, p in enumerate(particles, 1):
+                save_detector_particles(writer, event_id, scint_id, p)
 
-            N = event_id + 1
+        N = event_id + 1
+    file.close()
     dataf.close()
 
 def save_event_header(writer, event_id, r, phi, alpha):
@@ -364,6 +365,9 @@ def do_full_simulation():
         ('zenith23/leptons', 10., 'detsim-angle-23.csv.gz'),
         ('zenith23/leptons', 20., 'detsim-angle-23-size20.csv.gz'),
         ('zenith35/leptons', 10., 'detsim-angle-35.csv.gz'),
+        ('zenith40/leptons', 10., 'detsim-angle-40.csv.gz'),
+        ('zenith45/leptons', 10., 'detsim-angle-45.csv.gz'),
+        ('zenith60/leptons', 10., 'detsim-angle-60.csv.gz'),
         ('zenith80/leptons', 10., 'detsim-angle-80.csv.gz')]:
 
         p = Process(target=do_simulation, kwargs=dict(data=group,
@@ -383,6 +387,9 @@ def store_full_results():
     store_results_in_tables('detsim-angle-23-size5.csv.gz', DATAFILE)
     store_results_in_tables('detsim-angle-23-size20.csv.gz', DATAFILE)
     store_results_in_tables('detsim-angle-35.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-40.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-45.csv.gz', DATAFILE)
+    store_results_in_tables('detsim-angle-60.csv.gz', DATAFILE)
     store_results_in_tables('detsim-angle-80.csv.gz', DATAFILE)
 
 def analyze_full_results():
@@ -392,6 +399,9 @@ def analyze_full_results():
     analyze_results(DATAFILE, 'angle_23_size5')
     analyze_results(DATAFILE, 'angle_23_size20')
     analyze_results(DATAFILE, 'angle_35')
+    analyze_results(DATAFILE, 'angle_40')
+    analyze_results(DATAFILE, 'angle_45')
+    analyze_results(DATAFILE, 'angle_60')
     analyze_results(DATAFILE, 'angle_80')
 
 

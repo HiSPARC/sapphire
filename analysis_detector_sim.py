@@ -7,16 +7,17 @@ from pylab import *
 from scipy.optimize import curve_fit
 from tikz_plot import tikz_2dhist
 
+from scipy import integrate
+from scipy.special import erf
+
 USE_TEX = False
 
 
 DETECTORS = [(0., 5.77, 'UD'), (0., 0., 'UD'), (-5., -2.89, 'LR'),
              (5., -2.89, 'LR')]
 
-#TIMING_ERROR = 1.3
-#TIMING_ERROR = 2 * 1.3
-#TIMING_ERROR = 2.5
-TIMING_ERROR = 3
+TIMING_ERROR = 4
+#TIMING_ERROR = 7
 
 # For matplotlib plots
 if USE_TEX:
@@ -233,42 +234,33 @@ def do_full_reconstruction(data, tablename):
     table = data.createTable('/reconstructions', tablename,
                              ReconstructedEvent, "Reconstruction data")
 
-    # zenith 0 degrees
-    kwargs = dict(data=data, tablename='angle_0', THETA=0, dest=table)
-    reconstruct_angles(D=1, **kwargs)
-
-    # zenith 5 degrees, D=1,2,3,4,5
-    kwargs = dict(data=data, tablename='angle_5', THETA=deg2rad(5),
-                  dest=table)
-    reconstruct_angles(D=1, **kwargs)
-
-    # zenith 22.5 degrees, D=1,2,3,4,5
-    kwargs = dict(data=data, tablename='angle_23', THETA=pi / 8,
-                  dest=table)
-    reconstruct_angles(D=1, **kwargs)
-
-    # zenith 35 degrees, D=1,2,3,4,5
-    kwargs = dict(data=data, tablename='angle_35', THETA=deg2rad(35),
-                  dest=table)
-    reconstruct_angles(D=1, **kwargs)
+    kwargs = dict(data=data, dest=table, D=1)
+    reconstruct_angles(tablename='angle_0', THETA=0, **kwargs)
+    reconstruct_angles(tablename='angle_5', THETA=deg2rad(5), **kwargs)
+    reconstruct_angles(tablename='angle_23', THETA=pi / 8, **kwargs)
+    reconstruct_angles(tablename='angle_35', THETA=deg2rad(35), **kwargs)
+    reconstruct_angles(tablename='angle_40', THETA=deg2rad(40), **kwargs)
+    reconstruct_angles(tablename='angle_45', THETA=deg2rad(45), **kwargs)
+    reconstruct_angles(tablename='angle_60', THETA=deg2rad(60), **kwargs)
+    reconstruct_angles(tablename='angle_80', THETA=deg2rad(80), **kwargs)
 
     # SPECIALS
-    # zenith 22.5, sizes=5,20, D=1,2,3,4,5
-    kwargs = dict(data=data, THETA=pi / 8, dest=table)
-    reconstruct_angles(tablename='angle_23_size5', D=1, **kwargs)
-    reconstruct_angles(tablename='angle_23_size20', D=1, **kwargs)
+    # Station sizes
+    reconstruct_angles(tablename='angle_23_size5', THETA=pi / 8, **kwargs)
+    reconstruct_angles(tablename='angle_23_size20', THETA=pi / 8, **kwargs)
 
-    # zenith 22.5, binnings, D=1,2,3,4,5
-    kwargs = dict(data=data, tablename='angle_23', THETA=pi / 8,
-                  dest=table)
+    # SPECIALS
+    # Binnings
+    kwargs = dict(data=data, tablename='angle_23', dest=table,
+                  THETA=pi / 8, D=1)
     kwargs['randomize_binning'] = False
-    reconstruct_angles(binning=1, D=1, **kwargs)
-    reconstruct_angles(binning=2.5, D=1, **kwargs)
-    reconstruct_angles(binning=5, D=1, **kwargs)
+    reconstruct_angles(binning=1, **kwargs)
+    reconstruct_angles(binning=2.5, **kwargs)
+    reconstruct_angles(binning=5, **kwargs)
     kwargs['randomize_binning'] = True
-    reconstruct_angles(binning=1, D=1, **kwargs)
-    reconstruct_angles(binning=2.5, D=1, **kwargs)
-    reconstruct_angles(binning=5, D=1, **kwargs)
+    reconstruct_angles(binning=1, **kwargs)
+    reconstruct_angles(binning=2.5, **kwargs)
+    reconstruct_angles(binning=5, **kwargs)
 
 def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
                        randomize_binning=False, N=None):
@@ -336,20 +328,25 @@ def do_reconstruction_plots(data, tablename):
 
     table = data.getNode('/reconstructions', tablename)
 
-    #plot_uncertainty_mip(table)
+    plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
-    #plot_uncertainty_size(table)
-    #plot_uncertainty_binsize(table)
+    plot_uncertainty_phi(table)
+    plot_uncertainty_size(table)
+    plot_uncertainty_binsize(table)
 
 def plot_uncertainty_mip(table):
+    # constants for uncertainty estimation
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for D in range(1, 6):
         x.append(D)
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
-            (D, float32(pi / 8)))
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0) & '
+            '(0 < r) & (r <= 100)' % (D, float32(pi / 8)))
         print len(events),
         errors = events['sim_theta'] - events['r_theta']
         # Make sure -pi < errors < pi
@@ -361,10 +358,25 @@ def plot_uncertainty_mip(table):
         y2.append(std(errors2))
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
+    print
+    print "mip: D, theta_std, phi_std"
+    for u, v, w in zip(x, y, y2):
+        print u, v, w
+    print
+    # Uncertainty estimate
+    x = linspace(1, 5, 50)
+    phis = linspace(-pi, pi, 50)
+    phi_errsq = mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2))
+    theta_errsq = mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2))
+    y = TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
+    y2 = TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
+    plot(x, rad2deg(y), label="Estimate Phi")
+    plot(x, rad2deg(y2), label="Estimate Theta")
+    # Labels etc.
     xlabel("Minimum number of particles")
     ylabel("Uncertainty in angle reconstruction (deg)")
     title(r"$\theta = 22.5^\circ$")
-    legend(frameon=False)
+    legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-MIP.pdf')
@@ -378,12 +390,15 @@ def plot_uncertainty_zenith(table):
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
+    global MYT
+    MYT = []
     for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
         x.append(THETA)
         events = table.readWhere(
-            '(D>=2) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
             float32(THETA))
-        print len(events),
+        MYT.append((events['t1'], events['t3'], events['t4']))
+        print rad2deg(THETA), len(events),
         errors = events['sim_theta'] - events['r_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
@@ -395,26 +410,61 @@ def plot_uncertainty_zenith(table):
     plot(rad2deg(x), rad2deg(y), '^', label="Theta")
     # Azimuthal angle undefined for zenith = 0
     plot(rad2deg(x[1:]), rad2deg(y2[1:]), 'v', label="Phi")
+    print
+    print "zenith: theta, theta_std, phi_std"
+    for u, v, w in zip(x, y, y2):
+        print u, v, w
+    print
     # Uncertainty estimate
-    x = linspace(0, deg2rad(80), 50)
+    x = linspace(0, deg2rad(35), 50)
     phis = linspace(-pi, pi, 50)
     y, y2, y3 = [], [], []
     for t in x:
         y.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)))
+        y3.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)) * sin(t) ** 2)
         y2.append(mean(rel_theta_errorsq(t, phis, phi1, phi2)))
+    y = TIMING_ERROR * sqrt(array(y))
+    y3 = TIMING_ERROR * sqrt(array(y3))
+    y2 = TIMING_ERROR * sqrt(array(y2))
+    plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
+    plot(rad2deg(x), rad2deg(y3), label="Estimate Phi * sin(Theta)")
+    plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
+    # Labels etc.
+    xlabel("Shower zenith angle (degrees)")
+    ylabel("Uncertainty in angle reconstruction (deg)")
+    title(r"$N_{MIP} = 2$")
+    ylim(0, 100)
+    legend(numpoints=1)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-zenith.pdf')
+    print
+
+def plot_uncertainty_phi(table):
+    # constants for uncertainty estimation
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
+    figure()
+    rcParams['text.usetex'] = False
+    # Uncertainty estimate
+    x = linspace(0, deg2rad(360), 50)
+    y, y2 = [], []
+    for p in x:
+        y.append(rel_phi_errorsq(pi / 8, p, phi1, phi2))
+        y2.append(rel_theta_errorsq(pi / 8, p, phi1, phi2))
     y = TIMING_ERROR * sqrt(array(y))
     y2 = TIMING_ERROR * sqrt(array(y2))
     plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
     plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
     # Labels etc.
-    xlabel("Shower zenith angle (degrees)")
+    xlabel("Shower azimuth angle (degrees)")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$N_{MIP} \geq 2$")
-    legend(frameon=False)
-    ylim(0, 60)
+    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
+    legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
-    savefig('plots/auto-results-zenith.pdf')
+    savefig('plots/auto-results-phi.pdf')
     print
 
 def plot_uncertainty_size(table):
@@ -428,7 +478,7 @@ def plot_uncertainty_size(table):
     for size in [5, 10, 20]:
         x.append(size)
         events = table.readWhere(
-            '(D>=2) & (sim_theta==%.40f) & (size==%d) & (bin==0)' %
+            '(D==2) & (sim_theta==%.40f) & (size==%d) & (bin==0)' %
             (float32(pi/ 8), size))
         print len(events),
         errors = events['sim_theta'] - events['r_theta']
@@ -441,6 +491,11 @@ def plot_uncertainty_size(table):
         y2.append(std(errors2))
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
+    print
+    print "stationsize: size, theta_std, phi_std"
+    for u, v, w in zip(x, y, y2):
+        print u, v, w
+    print
     # Uncertainty estimate
     x = linspace(5, 20, 50)
     phis = linspace(-pi, pi, 50)
@@ -455,8 +510,8 @@ def plot_uncertainty_size(table):
     # Labels etc.
     xlabel("Station size (m)")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5^\circ, N_{MIP} \geq 2$")
-    legend(frameon=False)
+    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
+    legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-size.pdf')
@@ -477,9 +532,9 @@ def plot_uncertainty_binsize(table):
             is_randomized = True
         x.append(bin_size)
         events = table.readWhere(
-            '(D>=2) & (sim_theta==%.40f) & (size==10) & (bin==%.40f) & '
+            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==%.40f) & '
             '(bin_r==%s)' %
-            (float32(pi/ 8), bin_size, is_randomized))
+            (float32(pi / 8), bin_size, is_randomized))
         print len(events),
         errors = events['sim_theta'] - events['r_theta']
         # Make sure -pi < errors < pi
@@ -491,6 +546,11 @@ def plot_uncertainty_binsize(table):
         y2.append(std(errors2))
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
+    print
+    print "binsize: size, theta_std, phi_std"
+    for u, v, w in zip(x, y, y2):
+        print u, v, w
+    print
     # Uncertainty estimate
     x = linspace(0, 5, 50)
     phis = linspace(-pi, pi, 50)
@@ -507,43 +567,101 @@ def plot_uncertainty_binsize(table):
     # Labels etc.
     xlabel("Bin size (ns)")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5^\circ, N_{MIP} \geq 2$")
-    legend(loc='best', frameon=False)
+    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
+    legend(loc='best', numpoints=1)
     ylim(ymin=0)
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-binsize.pdf')
     print
 
-def plot_ring_arrival_times(data, tablename, theta):
-    s = data.getNode('/showers', tablename)
-    bins = [0, 4, 20, 40, 80, sqrt(2 * 80 ** 2)]
-    phi_bins = linspace(-pi, pi, 17)
+# Time of first hit pamflet functions
+Q = lambda t, n: ((.5 * (1 - erf(t / sqrt(2)))) ** (n - 1)
+                  * exp(-.5 * t ** 2) / sqrt(2 * pi))
+
+expv_t = vectorize(lambda n: integrate.quad(lambda t: t * Q(t, n)
+                                                      / n ** -1,
+                                            -inf, +inf))
+expv_tv = lambda n: expv_t(n)[0]
+expv_tsq = vectorize(lambda n: integrate.quad(lambda t: t ** 2 * Q(t, n)
+                                                        / n ** -1,
+                                              -inf, +inf))
+expv_tsqv = lambda n: expv_tsq(n)[0]
+
+std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
+
+def plot_shower_front_timings(data, tablename):
+    table = data.getNode('/analysis', tablename)
 
     figure()
-    T, E = [], []
-    for a, b in zip(bins[:-1], bins[1:]):
-        t, e = [], []
-        for pa, pb in zip(phi_bins[:-1], phi_bins[1:]):
-            p = s.electrons.readWhere('(%f <= core_distance) & '
-                                      '(core_distance < %f) &'
-                                      '(%f <= polar_angle) &'
-                                      '(polar_angle < %f)' % (a, b, pa,
-                                                              pb))
-            t.append(p['arrival_time'] - min(p['arrival_time']))
-            e.append(p['energy'])
-        T.append([x for sublist in t for x in sublist])
-        T.append([x for sublist in e for x in sublist])
-    
-    for a, b, t in zip(bins[:-1], bins[1:], T):
-        hist(t, bins=linspace(0, 100, 200), histtype='step',
-             label='%d < r < %d' % (a, b), log=True, normed=True)
-
-    xlabel("Arrival time (ns)")
-    ylabel("Normed count")
-    title(r"$\theta=%s^\circ$" % theta)
+    rcParams['text.usetex'] = False
+    for R0, R1 in [(0, 4), (4, 20), (20, 40), (40, 80)]:
+        events = table.readWhere('(n1==2) & (n2==2) & (%d <= r) & (r < %d)'
+                                 % (R0, R1))
+        if len(events):
+            hist([u for u in events['t1'] - events['t2'] if not isnan(u)],
+                 bins=linspace(-50, 50, 100), histtype='step', normed=True,
+                 label="$%d <= R < %d$" % (R0, R1))
+    xlabel("Arrival time difference (ns)")
+    ylabel("Count")
+    title(r"Shower front thickness ($\theta = %s^\circ$)" %
+          tablename.replace('angle_',''))
     legend()
-    ylim(ymin=1e-4)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-shower-front-timings-%s.pdf' % tablename)
+
+def plot_shower_front_density(data, tablename):
+    table = data.getNode('/analysis', tablename)
+
+    figure()
+    rcParams['text.usetex'] = False
+    for R0, R1 in [(0, 4), (4, 20), (20, 40), (40, 80)]:
+        events = table.readWhere('(%d <= r) & (r < %d)' % (R0, R1))
+        hist(events['n1'],
+             bins=arange(-.5, 5.5), histtype='step',
+             label="$%d <= R < %d$" % (R0, R1))
+    xlabel("Number of particles per scintillator")
+    ylabel("Count")
+    title(r"Shower front density ($\theta = %s^\circ$)" %
+          tablename.replace('angle_',''))
+    legend()
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-shower-front-density-%s.pdf' % tablename)
+
+def plot_zenith_core_dists(data):
+    figure()
+    rcParams['text.usetex'] = False
+    for t in ['angle_0', 'angle_5', 'angle_23', 'angle_35']:
+        table = data.getNode('/analysis', t)
+        events = table.readWhere('(n1==2) & (n3==2) & (n4==2)')
+        hist(events['r'], bins=linspace(0, 100, 50), histtype='step',
+             label=r'$\theta = %s^\circ$' % t.replace('angle_', ''))
+    xlabel("Core distance (m)")
+    ylabel("Count")
+    title("Core distances ($N_{MIP} = 2$)")
+    legend()
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-zenith-core-dists.pdf')
+
+def plot_mip_core_dists(data, tablename):
+    table = data.getNode('/analysis', tablename)
+    figure()
+    rcParams['text.usetex'] = False
+    for N in range(1, 6):
+        events = table.readWhere('(n1==%d) & (n3==%d) & (n4==%d)' % (N, N, N))
+        hist(events['r'], bins=linspace(0, 100, 50), histtype='step',
+             label='%d MIP' % N)
+    xlabel("Core distance (m)")
+    ylabel("Count")
+    title(r"Core distances ($\theta = 22.5^\circ$)")
+    legend()
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-mip-core-dists-%s.pdf' %
+            tablename.replace('_', '-'))
 
 
 if __name__ == '__main__':
@@ -558,7 +676,8 @@ if __name__ == '__main__':
 
     #do_full_reconstruction(data, 'full')
     do_reconstruction_plots(data, 'full')
-    #plot_ring_arrival_times(data, 'zenith0', 0)
-    #plot_ring_arrival_times(data, 'zenith5', 5)
-    #plot_ring_arrival_times(data, 'zenith23', 22.5)
-    #plot_ring_arrival_times(data, 'zenith35', 35)
+
+    plot_zenith_core_dists(data)
+    plot_mip_core_dists(data, 'angle_23')
+    plot_shower_front_timings(data, 'angle_0')
+    plot_shower_front_density(data, 'angle_0')

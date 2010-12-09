@@ -80,4 +80,7 @@ if __name__ == '__main__':
     store_simulation_data(data, 'zenith23', 'showere15-angle.grdpcles')
     store_simulation_data(data, 'zenith5', 'showere15-angle-5.grdpcles')
     store_simulation_data(data, 'zenith35', 'showere15-angle-35.grdpcles')
+    store_simulation_data(data, 'zenith40', 'showere15-angle-40.grdpcles')
+    store_simulation_data(data, 'zenith45', 'showere15-angle-45.grdpcles')
+    store_simulation_data(data, 'zenith60', 'showere15-angle-60.grdpcles')
     store_simulation_data(data, 'zenith80', 'showere15-angle-80.grdpcles')
