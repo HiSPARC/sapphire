@@ -3,18 +3,18 @@
     This script will analyze the simulation data, make selections, and
     build datasets containing the timing information of pairs of
     particles.  The first particle in each pair will have a particular
-    distance to the shower core (typically 150 m) and the second particle
-    of the pair will be within a particular distance of the first one
-    (typically inter-detector distances).
+    distance to the shower core and the second particle of the pair will
+    be within a particular distance of the first one (typically
+    inter-detector distances).
 
-    These datasets are saved to a PyTables file as well as a CSV file.
+    These datasets are saved to a PyTables file.
 
 """
 
 import tables
-import csv
 import time
 from math import atan2, sqrt, pi
+from numpy import linspace
 
 DATAFILE = 'data-e15.h5'
 OUTFILE = 'analysis-e15.h5'
@@ -55,7 +55,8 @@ def make_particle_tables(shower, outfile, table, p1, p2, r0, r1, dr0, dr1,
     dr0sq = dr0 ** 2
     dr1sq = dr1 ** 2
 
-    print "Performing analysis for %s and %s" % (p1, p2)
+    print "Performing analysis for %s and %s with %f <= R < %f" % (p1, p2,
+                                                                   r0, r1)
     t0 = time.time()
     N, M = 0, 0
     for p in getattr(shower, p1).where('(r0 <= core_distance) & '
@@ -93,29 +94,14 @@ def make_particle_tables(shower, outfile, table, p1, p2, r0, r1, dr0, dr1,
     print "Analysis took %.1f seconds (%d pairs)" % (t1 - t0, M)
 
 def do_analysis(shower, outfile):
-    kwargs = dict(shower=shower, outfile=outfile, p1='lepgammas',
-                  p2='lepgammas')
+    kwargs = dict(shower=shower, outfile=outfile, p1='leptons',
+                  p2='leptons')
 
-    make_particle_tables(r0=50., r1=60., dr0=0., dr1=1.,
-                         table='g50_60_0', **kwargs)
-    make_particle_tables(r0=50., r1=60., dr0=5.2, dr1=6.2,
-                         table='g50_60_6', **kwargs)
-    make_particle_tables(r0=50., r1=60., dr0=9.5, dr1=10.5,
-                         table='g50_60_10', **kwargs)
-    
-    make_particle_tables(r0=20., r1=25., dr0=0., dr1=1.,
-                         table='g20_25_0', **kwargs)
-    make_particle_tables(r0=20., r1=25., dr0=5.2, dr1=6.2,
-                         table='g20_25_6', **kwargs)
-    make_particle_tables(r0=20., r1=25., dr0=9.5, dr1=10.5,
-                         table='g20_25_10', **kwargs)
-
-    make_particle_tables(r0=10., r1=15., dr0=0., dr1=1.,
-                         table='g10_15_0', **kwargs)
-    make_particle_tables(r0=10., r1=15., dr0=5.2, dr1=6.2,
-                         table='g10_15_6', **kwargs)
-    make_particle_tables(r0=10., r1=15., dr0=9.5, dr1=10.5,
-                         table='g10_15_10', **kwargs)
+    bins = linspace(0, 80, 6)
+    print 'Bin edges:', bins
+    for r0, r1 in zip(bins[:-1], bins[1:]):
+        make_particle_tables(r0=r0, r1=r1, dr0=0., dr1=1.,
+                             table='g_%d_%d' % (r0, r1), **kwargs)
 
 if __name__ == '__main__':
     try:
@@ -126,8 +112,6 @@ if __name__ == '__main__':
     try:
         outfile
     except NameError:
-        outfile = tables.openFile(OUTFILE, 'a')
+        outfile = tables.openFile(OUTFILE, 'w')
     
-    shower = data.root.showers.s1
-
-    do_analysis(shower, outfile)
+    do_analysis(data.root.showers.zenith0, outfile)

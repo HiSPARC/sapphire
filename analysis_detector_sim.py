@@ -333,6 +333,9 @@ def do_reconstruction_plots(data, tablename):
     plot_uncertainty_phi(table)
     plot_uncertainty_size(table)
     plot_uncertainty_binsize(table)
+    plot_mip_core_dists_mean(table)
+    plot_uncertainty_core_dist_phi(table)
+    plot_uncertainty_core_dist_theta(table)
 
 def plot_uncertainty_mip(table):
     # constants for uncertainty estimation
@@ -650,8 +653,11 @@ def plot_mip_core_dists(data, tablename):
     table = data.getNode('/analysis', tablename)
     figure()
     rcParams['text.usetex'] = False
+    x, y = [], []
     for N in range(1, 6):
         events = table.readWhere('(n1==%d) & (n3==%d) & (n4==%d)' % (N, N, N))
+        x.append(N)
+        y.append(mean(events['r']))
         hist(events['r'], bins=linspace(0, 100, 50), histtype='step',
              label='%d MIP' % N)
     xlabel("Core distance (m)")
@@ -662,6 +668,153 @@ def plot_mip_core_dists(data, tablename):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-mip-core-dists-%s.pdf' %
             tablename.replace('_', '-'))
+
+def plot_mip_core_dists_mean(table):
+    figure()
+    rcParams['text.usetex'] = False
+    for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
+        x, y, yerr = [], [], []
+        for N in range(1, 6):
+            events = table.readWhere(
+                '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+                (N, float32(THETA)))
+            x.append(N)
+            y.append(mean(events['r']))
+            yerr.append(std(events['r']))
+        plot(x, y, '^-', label=r"$\theta = %.1f^\circ$" % rad2deg(THETA))
+    print "zenith: theta, r_mean, r_std"
+    for u, v, w in zip(x, y, yerr):
+        print u, v, w
+    print
+    # Labels etc.
+    xlabel("Number of particles")
+    ylabel("Core distance (m)")
+    legend(numpoints=1)
+    xlim(.5, 5.5)
+    ylim(ymin=0)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-mip_core_dists_mean.pdf')
+    print
+
+    figure()
+    rcParams['text.usetex'] = False
+    THETA = pi / 8
+    x, y, yerr = [], [], []
+    for N in range(1, 6):
+        events = table.readWhere(
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            (N, float32(THETA)))
+        x.append(N)
+        y.append(mean(events['r']))
+        yerr.append(std(events['r']))
+    plot(x, y, '^-', label=r"$\theta = %.1f^\circ$" % rad2deg(THETA))
+    print "zenith: theta, r_mean, r_std"
+    for u, v, w in zip(x, y, yerr):
+        print u, v, w
+    print
+    # Labels etc.
+    xlabel("Number of particles")
+    ylabel("Core distance (m)")
+    title(r"$\theta = %.1f^\circ$" % rad2deg(THETA))
+    xlim(.5, 5.5)
+    ylim(ymin=0)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-mip_core_dists_mean2.pdf')
+    print
+
+def plot_sim_shower_timings(datafile):
+    data = tables.openFile(datafile, 'r')
+
+    global DT
+
+    figure()
+    rcParams['text.usetex'] = False
+    x, y, y2 = [], [], []
+    for n in data.root._v_children:
+        t = data.getNode('/', n)
+        events = t.read()
+        x.append(mean(events['R']))
+        y.append(std(events['T'] - events['t']))
+        DT = events['T'] - events['t']
+        dts = sorted(abs(events['T'] - events['t']))
+        err = dts[2 * len(dts) / 3]
+        y2.append(err)
+    plot(x, y, '^', label="Std. dev.")
+    plot(x, y2, '^', label="cont. 68 %")
+    xlabel("Core distance (m)")
+    ylabel("Uncertainty in time difference (ns)")
+    title(r"$\theta = 0^\circ$")
+    legend(loc='best')
+    ylim(ymin=0)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-sim-shower-timings.pdf')
+
+def plot_uncertainty_core_dist_phi(table):
+    figure()
+    rcParams['text.usetex'] = False
+    THETA = pi / 8
+    bins = linspace(0, 80, 6)
+    for N in range(1, 6):
+        events = table.readWhere(
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            (N, float32(THETA)))
+        x, y, yerr, l = [], [], [], []
+        for r0, r1 in zip(bins[:-1], bins[1:]):
+            e = events.compress((r0 <= events['r']) & (events['r'] < r1))
+            if len(e) > 10:
+                x.append(mean([r0, r1]))
+                y.append(mean(e['sim_phi'] - e['r_phi']))
+                yerr.append(std(e['sim_phi'] - e['r_phi']))
+                l.append(len(e))
+        print "core_dist_mip_unc: core, phi_e_mean, phi_e_std, len"
+        for u, v, w, i in zip(x, y, yerr, l):
+            print u, v, w, i
+        print
+        plot(x, rad2deg(yerr), '^-', label="%d MIP" % N)
+    # Labels etc.
+    xlabel("Core distance (m)")
+    ylabel("Uncertainty phi (deg)")
+    title(r"$\theta = 22.5^\circ$")
+    legend(loc='best', numpoints=1)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-core-dist-phi.pdf')
+    print
+
+def plot_uncertainty_core_dist_theta(table):
+    figure()
+    rcParams['text.usetex'] = False
+    THETA = pi / 8
+    bins = linspace(0, 80, 6)
+    for N in range(1, 6):
+        events = table.readWhere(
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            (N, float32(THETA)))
+        x, y, yerr, l = [], [], [], []
+        for r0, r1 in zip(bins[:-1], bins[1:]):
+            e = events.compress((r0 <= events['r']) & (events['r'] < r1))
+            if len(e) > 10:
+                x.append(mean([r0, r1]))
+                y.append(mean(e['sim_theta'] - e['r_theta']))
+                yerr.append(std(e['sim_theta'] - e['r_theta']))
+                l.append(len(e))
+        print "core_dist_mip_unc: core, theta_e_mean, theta_e_std, len"
+        for u, v, w, i in zip(x, y, yerr, l):
+            print u, v, w, i
+        print
+        plot(x, rad2deg(yerr), '^-', label="%d MIP" % N)
+    # Labels etc.
+    xlabel("Core distance (m)")
+    ylabel("Uncertainty theta (deg)")
+    title(r"$\theta = 22.5^\circ$")
+    legend(loc='best', numpoints=1)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-core-dist-theta.pdf')
+    print
 
 
 if __name__ == '__main__':
@@ -676,6 +829,8 @@ if __name__ == '__main__':
 
     #do_full_reconstruction(data, 'full')
     do_reconstruction_plots(data, 'full')
+
+    plot_sim_shower_timings('analysis-e15.h5')
 
     plot_zenith_core_dists(data)
     plot_mip_core_dists(data, 'angle_23')
