@@ -775,7 +775,7 @@ def plot_zenith_core_dists_mean(table, sim_table):
     legend()
     if USE_TEX:
         rcParams['text.usetex'] = True
-    savefig('plots/auto-results-mip_core_dists_mean.pdf')
+    savefig('plots/auto-results-zenith_core_dists_mean.pdf')
 
 def plot_sim_shower_timings(datafile):
     data = tables.openFile(datafile, 'r')
