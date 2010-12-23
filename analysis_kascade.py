@@ -344,6 +344,8 @@ def plot_uncertainty_mip(table, sim_table):
     phi1 = calc_phi(1, 3)
     phi2 = calc_phi(1, 4)
 
+    THETA = pi / 8
+
     figure()
     rcParams['text.usetex'] = False
     x, y, y2, sy, sy2 = [], [], [], [], []
@@ -352,7 +354,7 @@ def plot_uncertainty_mip(table, sim_table):
         ### KASCADE data
         events = table.readWhere(
             '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
-             % (D, deg2rad(18), deg2rad(28)))
+             % (D, THETA - deg2rad(D_Z), THETA + deg2rad(D_Z)))
         print len(events),
         errors = events['k_theta'] - events['h_theta']
         # Make sure -pi < errors < pi
@@ -366,7 +368,7 @@ def plot_uncertainty_mip(table, sim_table):
         ### simulation data
         events = sim_table.readWhere(
             '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0) & '
-            '(0 < r) & (r <= 100)' % (D, float32(pi / 8)))
+            '(0 < r) & (r <= 100)' % (D, float32(THETA)))
         print len(events),
         errors = events['sim_theta'] - events['r_theta']
         # Make sure -pi < errors < pi
@@ -396,9 +398,9 @@ def plot_uncertainty_mip(table, sim_table):
     plot(x, rad2deg(sy2), 'v', label="Phi (simulation)")
     plot(cx, rad2deg(cy), label="Phi (calculation)")
     # Labels etc.
-    xlabel("Minimum number of particles")
+    xlabel("$N_{MIP}$")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5^\circ$")
+    title(r"$\theta = %.1f \pm %d^\circ$" % (rad2deg(THETA), D_Z))
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
@@ -469,7 +471,7 @@ def plot_uncertainty_zenith(table, sim_table):
     plot(rad2deg(cx), rad2deg(cy), label="Phi (calculation)")
     plot(rad2deg(cx), rad2deg(cy3), label="Phi (calculation) * sin(Theta)")
     # Labels etc.
-    xlabel("Shower zenith angle (deg $\pm %d$)" % D_Z)
+    xlabel("Zenith angle (deg $\pm %d$)" % D_Z)
     ylabel("Uncertainty in angle reconstruction (deg)")
     title(r"$N_{MIP} = 2$")
     ylim(0, 100)
@@ -695,7 +697,7 @@ def plot_mip_core_dists(data, tablename):
         x.append(N)
         y.append(mean(events['r']))
         hist(events['r'], bins=linspace(0, 100, 50), histtype='step',
-             label='%d MIP' % N)
+             label='$N_{MIP} = %d$' % N)
     xlabel("Core distance (m)")
     ylabel("Count")
     title(r"Core distances ($\theta = 22.5^\circ$)")
@@ -725,16 +727,14 @@ def plot_mip_core_dists_mean(table, sim_table):
             (N, float32(THETA)))
         sy.append(mean(events['r']))
         syerr.append(std(events['r']))
-    plot(x, y, '^-', label=r"$(.8\,\mathrm{PeV} \leq E < 2\,\mathrm{PeV})$" %
-         rad2deg(THETA))
-    plot(x, sy, '^-', label=r"(simulation, $E = 1\,\mathrm{PeV}$)" %
-         rad2deg(THETA))
+    plot(x, y, '^-', label=r"$(.8\,\mathrm{PeV} \leq E < 2\,\mathrm{PeV})$")
+    plot(x, sy, '^-', label=r"(simulation, $E = 1\,\mathrm{PeV}$)")
     print "zenith: theta, r_mean, r_std"
     for u, v, w in zip(x, y, yerr):
         print u, v, w
     print
     # Labels etc.
-    xlabel("Number of particles")
+    xlabel("$N_{MIP}$")
     ylabel("Core distance (m)")
     title(r"$\theta = %.1f \pm %d^\circ$" % (rad2deg(THETA), D_Z))
     xlim(.5, 5.5)
@@ -771,8 +771,8 @@ def plot_zenith_core_dists_mean(table, sim_table):
     # Labels etc.
     xlabel("Zenith angle (deg $\pm %d$)" % D_Z)
     ylabel("Core distance (m)")
-    title(r"%d MIP" % N)
-    legend()
+    title(r"$N_{MIP} = %d$" % N)
+    legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-zenith_core_dists_mean.pdf')
@@ -857,7 +857,7 @@ def plot_uncertainty_core_dist_phi_theta(table, sim_table):
     # Labels etc.
     xlabel("Core distance (m)")
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5 \pm %d^\circ$, %d MIP" % (D2_Z, N))
+    title(r"$\theta = 22.5 \pm %d^\circ, N_{MIP} = %d$" % (D2_Z, N))
     legend(loc='center right', numpoints=1)
     ylim(ymin=0)
     if USE_TEX:
