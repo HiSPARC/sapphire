@@ -5,7 +5,6 @@ import csv
 
 from pylab import *
 from scipy.optimize import curve_fit
-from tikz_plot import tikz_2dhist
 
 from scipy import integrate
 from scipy.special import erf
@@ -13,8 +12,12 @@ from scipy.special import erf
 USE_TEX = False
 
 
-DETECTORS = [(0., 5.77, 'UD'), (0., 0., 'UD'), (-5., -2.89, 'LR'),
-             (5., -2.89, 'LR')]
+ADC_THRESHOLD = 20
+ADC_TIME_PER_SAMPLE = 2.5e-9
+ADC_MIP = 400.
+
+DETECTORS = [(65., 15.05, 'UD'), (65., 20.82, 'UD'), (70., 23.71, 'LR'),
+             (60., 23.71, 'LR')]
 
 TIMING_ERROR = 4
 #TIMING_ERROR = 7
@@ -31,10 +34,64 @@ if USE_TEX:
     rcParams['legend.fontsize'] = 'small'
 
 
+def process_traces(events, traces_table, limit=None):
+    """Process traces to yield pulse timing information"""
+
+    result = []
+    result2 = []
+    for event in events[:limit]:
+        trace = get_traces(traces_table, event)
+        timings, timings2 = zip(*[reconstruct_time_from_trace(x) for x in
+                                  trace])
+        result.append(timings)
+        result2.append(timings2)
+    return 1e9 * array(result), 1e9 * array(result2)
+
+def get_traces(traces_table, event):
+    """Retrieve traces from table and reconstruct them"""
+
+    if type(event) != list:
+        idxs = event['traces']
+    else:
+        idxs = event
+
+    traces = []
+    for idx in idxs:
+        trace = zlib.decompress(traces_table[idx]).split(',')
+        if trace[-1] == '':
+            del trace[-1]
+        trace = array([int(x) for x in trace])
+        traces.append(trace)
+    return traces
+
+def reconstruct_time_from_trace(trace):
+    """Reconstruct time of measurement from a trace"""
+
+    t = trace[:100]
+    baseline = mean(t)
+    stdev = std(t)
+
+    trace = trace - baseline
+    threshold = ADC_THRESHOLD
+
+    value = nan
+    for i, t in enumerate(trace):
+        if t >= threshold:
+            value = i
+            break
+
+    # Better value, interpolation
+    if not isnan(value):
+        x0, x1 = i - 1, i
+        y0, y1 = trace[x0], trace[x1]
+        v2 = 1. * (threshold - y0) / (y1 - y0) + x0
+    else:
+        v2 = nan
+
+    return value * ADC_TIME_PER_SAMPLE, v2 * ADC_TIME_PER_SAMPLE
+
 class ReconstructedEvent(tables.IsDescription):
     r = tables.Float32Col()
-    phi = tables.Float32Col()
-    alpha = tables.Float32Col()
     t1 = tables.Float32Col()
     t2 = tables.Float32Col()
     t3 = tables.Float32Col()
@@ -43,15 +100,12 @@ class ReconstructedEvent(tables.IsDescription):
     n2 = tables.UInt16Col()
     n3 = tables.UInt16Col()
     n4 = tables.UInt16Col()
-    sim_theta = tables.Float32Col()
-    sim_phi = tables.Float32Col()
-    r_theta = tables.Float32Col()
-    r_phi = tables.Float32Col()
+    k_theta = tables.Float32Col()
+    k_phi = tables.Float32Col()
+    k_energy = tables.Float32Col()
+    h_theta = tables.Float32Col()
+    h_phi = tables.Float32Col()
     D = tables.UInt16Col()
-    size = tables.UInt8Col()
-    bin = tables.Float32Col()
-    bin_r = tables.BoolCol()
-
 
 def reconstruct_angle(event, R=10):
     """Reconstruct angles from a single event"""
@@ -218,8 +272,8 @@ def rel_theta2_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
 
     return where(isnan(errsq), inf, errsq)
 
-def do_full_reconstruction(data, tablename):
-    """Do a reconstruction of all simulated data and store results"""
+def reconstruct_angles(data, dstname, events, timing_data, N=None):
+    """Reconstruct angles"""
 
     try:
         data.createGroup('/', 'reconstructions', "Angle reconstructions")
@@ -227,101 +281,49 @@ def do_full_reconstruction(data, tablename):
         pass
 
     try:
-        data.removeNode('/reconstructions', tablename)
+        data.removeNode('/reconstructions', dstname)
     except tables.NoSuchNodeError:
         pass
 
-    table = data.createTable('/reconstructions', tablename,
-                             ReconstructedEvent, "Reconstruction data")
+    dest = data.createTable('/reconstructions', dstname,
+                            ReconstructedEvent, "Reconstruction data")
 
-    kwargs = dict(data=data, dest=table, D=1)
-    reconstruct_angles(tablename='angle_0', THETA=0, **kwargs)
-    reconstruct_angles(tablename='angle_5', THETA=deg2rad(5), **kwargs)
-    reconstruct_angles(tablename='angle_23', THETA=pi / 8, **kwargs)
-    reconstruct_angles(tablename='angle_35', THETA=deg2rad(35), **kwargs)
-    reconstruct_angles(tablename='angle_40', THETA=deg2rad(40), **kwargs)
-    reconstruct_angles(tablename='angle_45', THETA=deg2rad(45), **kwargs)
-    reconstruct_angles(tablename='angle_60', THETA=deg2rad(60), **kwargs)
-    reconstruct_angles(tablename='angle_80', THETA=deg2rad(80), **kwargs)
+    R = 10
 
-    # SPECIALS
-    # Station sizes
-    reconstruct_angles(tablename='angle_23_size5', THETA=pi / 8, **kwargs)
-    reconstruct_angles(tablename='angle_23_size20', THETA=pi / 8, **kwargs)
+    NT, NS = 0, 0
 
-    # SPECIALS
-    # Binnings
-    kwargs = dict(data=data, tablename='angle_23', dest=table,
-                  THETA=pi / 8, D=1)
-    kwargs['randomize_binning'] = False
-    reconstruct_angles(binning=1, **kwargs)
-    reconstruct_angles(binning=2.5, **kwargs)
-    reconstruct_angles(binning=5, **kwargs)
-    kwargs['randomize_binning'] = True
-    reconstruct_angles(binning=1, **kwargs)
-    reconstruct_angles(binning=2.5, **kwargs)
-    reconstruct_angles(binning=5, **kwargs)
-
-def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
-                       randomize_binning=False, N=None):
-    """Reconstruct angles from simulation for minimum particle density"""
-
-    match = re.search('_size([0-9]+)', tablename)
-    if match:
-        R = int(match.group(1))
-    else:
-        R = 10
-
-    table = data.getNode('/analysis', tablename)
     dst_row = dest.row
-    for event in table[:N]:
-        if min(event['n1'], event['n3'], event['n4']) >= D:
-            # Do we need to bin timing data?
-            if binning is not False:
-                event['t1'] = floor(event['t1'] / binning) * binning 
-                event['t2'] = floor(event['t2'] / binning) * binning 
-                event['t3'] = floor(event['t3'] / binning) * binning 
-                event['t4'] = floor(event['t4'] / binning) * binning 
-                # Do we need to randomize inside a bin?
-                if randomize_binning is True:
-                    event['t1'] += uniform(0, binning)
-                    event['t2'] += uniform(0, binning)
-                    event['t3'] += uniform(0, binning)
-                    event['t4'] += uniform(0, binning)
+    for rawevent, timing in zip(events[:N], timing_data):
+        NT += 1
+        n1, n2, n3, n4 = rawevent['pulseheights'] / ADC_MIP
+        event = dict(n1=n1, n2=n2, n3=n3, n4=n4, t1=timing[0],
+                     t2=timing[1], t3=timing[2], t4=timing[3])
 
-            theta, phi = reconstruct_angle(event, R)
-            alpha = event['alpha']
+        theta, phi = reconstruct_angle(event, R)
 
-            if not isnan(theta) and not isnan(phi):
-                ang_dist = arccos(sin(theta) * sin(THETA) *
-                                  cos(phi - -alpha) + cos(theta) *
-                                  cos(THETA))
-
-                dst_row['r'] = event['r']
-                dst_row['phi'] = event['phi']
-                dst_row['alpha'] = alpha
-                dst_row['t1'] = event['t1']
-                dst_row['t2'] = event['t2']
-                dst_row['t3'] = event['t3']
-                dst_row['t4'] = event['t4']
-                dst_row['n1'] = event['n1']
-                dst_row['n2'] = event['n2']
-                dst_row['n3'] = event['n3']
-                dst_row['n4'] = event['n4']
-                dst_row['sim_theta'] = THETA
-                dst_row['sim_phi'] = -alpha
-                dst_row['r_theta'] = theta
-                dst_row['r_phi'] = phi
-                dst_row['D'] = min(event['n1'], event['n3'], event['n4'])
-                dst_row['size'] = R
-                if binning is False:
-                    bin_size = 0
-                else:
-                    bin_size = binning
-                dst_row['bin'] = bin_size
-                dst_row['bin_r'] = randomize_binning
-                dst_row.append()
+        if not isnan(theta) and not isnan(phi):
+            NS += 1
+            xc, yc = rawevent['k_core_pos'] - DETECTORS[1][:2]
+            dst_row['r'] = sqrt(xc ** 2 + yc ** 2)
+            dst_row['t1'] = event['t1']
+            dst_row['t2'] = event['t2']
+            dst_row['t3'] = event['t3']
+            dst_row['t4'] = event['t4']
+            dst_row['n1'] = event['n1']
+            dst_row['n2'] = event['n2']
+            dst_row['n3'] = event['n3']
+            dst_row['n4'] = event['n4']
+            dst_row['k_theta'] = rawevent['k_zenith']
+            dst_row['k_phi'] = -(rawevent['k_azimuth'] + deg2rad(75)) % \
+                               (2 * pi) - pi
+            dst_row['k_energy'] = rawevent['k_energy']
+            dst_row['h_theta'] = theta
+            dst_row['h_phi'] = phi
+            dst_row['D'] = round(min(event['n1'], event['n3'], event['n4']))
+            dst_row.append()
     dest.flush()
+
+    print NT, NS
 
 def do_reconstruction_plots(data, tablename):
     """Make plots based upon earlier reconstructions"""
@@ -330,9 +332,6 @@ def do_reconstruction_plots(data, tablename):
 
     plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
-    plot_uncertainty_phi(table)
-    plot_uncertainty_size(table)
-    plot_uncertainty_binsize(table)
     plot_mip_core_dists_mean(table)
     plot_uncertainty_core_dist_phi(table)
     plot_uncertainty_core_dist_theta(table)
@@ -348,13 +347,13 @@ def plot_uncertainty_mip(table):
     for D in range(1, 6):
         x.append(D)
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0) & '
-            '(0 < r) & (r <= 100)' % (D, float32(pi / 8)))
+            '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
+             % (D, deg2rad(18), deg2rad(28)))
         print len(events),
-        errors = events['sim_theta'] - events['r_theta']
+        errors = events['k_theta'] - events['h_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['sim_phi'] - events['r_phi']
+        errors2 = events['k_phi'] - events['h_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
@@ -398,14 +397,14 @@ def plot_uncertainty_zenith(table):
     for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
         x.append(THETA)
         events = table.readWhere(
-            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
-            float32(THETA))
+            '(D==2) & (%f <= k_theta) & (k_theta < %f)'
+             % (THETA - deg2rad(5), THETA + deg2rad(5)))
         MYT.append((events['t1'], events['t3'], events['t4']))
         print rad2deg(THETA), len(events),
-        errors = events['sim_theta'] - events['r_theta']
+        errors = events['k_theta'] - events['h_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['sim_phi'] - events['r_phi']
+        errors2 = events['k_phi'] - events['h_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
@@ -481,13 +480,13 @@ def plot_uncertainty_size(table):
     for size in [5, 10, 20]:
         x.append(size)
         events = table.readWhere(
-            '(D==2) & (sim_theta==%.40f) & (size==%d) & (bin==0)' %
+            '(D==2) & (k_theta==%.40f) & (size==%d) & (bin==0)' %
             (float32(pi/ 8), size))
         print len(events),
-        errors = events['sim_theta'] - events['r_theta']
+        errors = events['k_theta'] - events['h_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['sim_phi'] - events['r_phi']
+        errors2 = events['k_phi'] - events['h_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
@@ -535,14 +534,14 @@ def plot_uncertainty_binsize(table):
             is_randomized = True
         x.append(bin_size)
         events = table.readWhere(
-            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==%.40f) & '
+            '(D==2) & (k_theta==%.40f) & (size==10) & (bin==%.40f) & '
             '(bin_r==%s)' %
             (float32(pi / 8), bin_size, is_randomized))
         print len(events),
-        errors = events['sim_theta'] - events['r_theta']
+        errors = events['k_theta'] - events['h_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['sim_phi'] - events['r_phi']
+        errors2 = events['k_phi'] - events['h_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
@@ -676,8 +675,8 @@ def plot_mip_core_dists_mean(table):
         x, y, yerr = [], [], []
         for N in range(1, 6):
             events = table.readWhere(
-                '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
-                (N, float32(THETA)))
+                '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
+                 % (N, THETA - deg2rad(5), THETA + deg2rad(5)))
             x.append(N)
             y.append(mean(events['r']))
             yerr.append(std(events['r']))
@@ -703,8 +702,8 @@ def plot_mip_core_dists_mean(table):
     x, y, yerr = [], [], []
     for N in range(1, 6):
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
-            (N, float32(THETA)))
+            '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
+             % (N, THETA - deg2rad(5), THETA + deg2rad(5)))
         x.append(N)
         y.append(mean(events['r']))
         yerr.append(std(events['r']))
@@ -759,15 +758,18 @@ def plot_uncertainty_core_dist_phi(table):
     bins = linspace(0, 80, 6)
     for N in range(1, 6):
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
-            (N, float32(THETA)))
+            '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
+             % (N, THETA - deg2rad(5), THETA + deg2rad(5)))
         x, y, yerr, l = [], [], [], []
         for r0, r1 in zip(bins[:-1], bins[1:]):
             e = events.compress((r0 <= events['r']) & (events['r'] < r1))
             if len(e) > 10:
+                errors = e['k_phi'] - e['h_phi']
+                # Make sure -pi < errors < pi
+                errors = (errors + pi) % (2 * pi) - pi
                 x.append(mean([r0, r1]))
-                y.append(mean(e['sim_phi'] - e['r_phi']))
-                yerr.append(std(e['sim_phi'] - e['r_phi']))
+                y.append(mean(errors))
+                yerr.append(std(errors))
                 l.append(len(e))
         print "core_dist_mip_unc: core, phi_e_mean, phi_e_std, len"
         for u, v, w, i in zip(x, y, yerr, l):
@@ -791,15 +793,18 @@ def plot_uncertainty_core_dist_theta(table):
     bins = linspace(0, 80, 6)
     for N in range(1, 6):
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
-            (N, float32(THETA)))
+            '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
+             % (N, THETA - deg2rad(5), THETA + deg2rad(5)))
         x, y, yerr, l = [], [], [], []
         for r0, r1 in zip(bins[:-1], bins[1:]):
             e = events.compress((r0 <= events['r']) & (events['r'] < r1))
             if len(e) > 10:
+                errors = e['k_theta'] - e['h_theta']
+                # Make sure -pi < errors < pi
+                errors = (errors + pi) % (2 * pi) - pi
                 x.append(mean([r0, r1]))
-                y.append(mean(e['sim_theta'] - e['r_theta']))
-                yerr.append(std(e['sim_theta'] - e['r_theta']))
+                y.append(mean(errors))
+                yerr.append(std(errors))
                 l.append(len(e))
         print "core_dist_mip_unc: core, theta_e_mean, theta_e_std, len"
         for u, v, w, i in zip(x, y, yerr, l):
@@ -825,14 +830,17 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('data-e15.h5', 'a')
+        data = tables.openFile('kascade.h5', 'a')
 
-    #do_full_reconstruction(data, 'full')
+    try:
+        timing_data
+        timing_data_linear
+    except NameError:
+        timing_data = data.root.analysis_new.timing_data.read()
+        timing_data_linear = data.root.analysis_new.timing_data_linear.read()
+
+    events = data.root.kascade_new.coincidences
+
+    #print "Reconstructing events..."
+    #reconstruct_angles(data, 'full', events, timing_data)
     do_reconstruction_plots(data, 'full')
-
-    plot_sim_shower_timings('analysis-e15.h5')
-
-    plot_zenith_core_dists(data)
-    plot_mip_core_dists(data, 'angle_23')
-    plot_shower_front_timings(data, 'angle_0')
-    plot_shower_front_density(data, 'angle_0')
