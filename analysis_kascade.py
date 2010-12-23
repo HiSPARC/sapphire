@@ -335,6 +335,7 @@ def do_reconstruction_plots(data, tablename, sim_data, sim_tablename):
 
     plot_uncertainty_mip(table, sim_table)
     plot_uncertainty_zenith(table, sim_table)
+    plot_uncertainty_energy(table)
     plot_mip_core_dists_mean(table, sim_table)
     plot_zenith_core_dists_mean(table, sim_table)
     plot_uncertainty_core_dist_phi_theta(table, sim_table)
@@ -508,19 +509,23 @@ def plot_uncertainty_phi(table):
     savefig('plots/auto-results-phi.pdf')
     print
 
-def plot_uncertainty_size(table):
-    # constants for uncertainty estimation
-    phi1 = calc_phi(1, 3)
-    phi2 = calc_phi(1, 4)
+def plot_uncertainty_energy(table):
+    THETA = pi / 8
+    N = 2
+    D2_Z = 5 * D_Z
+    D_lE = .2
 
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
-    for size in [5, 10, 20]:
-        x.append(size)
+    for lE in range(14, 18):
+        x.append(lE)
+        ### KASCADE data
         events = table.readWhere(
-            '(D==2) & (k_theta==%.40f) & (size==%d) & (bin==0)' %
-            (float32(pi/ 8), size))
+            '(D==%d) & (%f <= k_theta) & (k_theta < %f) & '
+            '(%f <= k_energy) & (k_energy < %f)'
+             % (N, THETA - deg2rad(D2_Z), THETA + deg2rad(D2_Z),
+                10 ** (lE - D_lE), 10 ** (lE + D_lE)))
         print len(events),
         errors = events['k_theta'] - events['h_theta']
         # Make sure -pi < errors < pi
@@ -530,90 +535,17 @@ def plot_uncertainty_size(table):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
+
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
-    print
-    print "stationsize: size, theta_std, phi_std"
-    for u, v, w in zip(x, y, y2):
-        print u, v, w
-    print
-    # Uncertainty estimate
-    x = linspace(5, 20, 50)
-    phis = linspace(-pi, pi, 50)
-    y, y2 = [], []
-    for s in x:
-        y.append(mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
-        y2.append(mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
-    y = TIMING_ERROR * sqrt(array(y))
-    y2 = TIMING_ERROR * sqrt(array(y2))
-    plot(x, rad2deg(y), label="Estimate Phi")
-    plot(x, rad2deg(y2), label="Estimate Theta")
     # Labels etc.
-    xlabel("Station size (m)")
+    xlabel("log Energy (eV) $\pm %.1f$" % D_lE)
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
+    title(r"$\theta = %.1f \pm %d^\circ$" % (rad2deg(THETA), D2_Z))
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
-    savefig('plots/auto-results-size.pdf')
-    print
-
-def plot_uncertainty_binsize(table):
-    # constants for uncertainty estimation
-    phi1 = calc_phi(1, 3)
-    phi2 = calc_phi(1, 4)
-
-    figure()
-    rcParams['text.usetex'] = False
-    x, y, y2 = [], [], []
-    for bin_size in [0, 1, 2.5, 5]:
-        if bin_size == 0:
-            is_randomized = False
-        else:
-            is_randomized = True
-        x.append(bin_size)
-        events = table.readWhere(
-            '(D==2) & (k_theta==%.40f) & (size==10) & (bin==%.40f) & '
-            '(bin_r==%s)' %
-            (float32(pi / 8), bin_size, is_randomized))
-        print len(events),
-        errors = events['k_theta'] - events['h_theta']
-        # Make sure -pi < errors < pi
-        errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['k_phi'] - events['h_phi']
-        # Make sure -pi < errors2 < pi
-        errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
-    plot(x, rad2deg(y), '^', label="Theta")
-    plot(x, rad2deg(y2), 'v', label="Phi")
-    print
-    print "binsize: size, theta_std, phi_std"
-    for u, v, w in zip(x, y, y2):
-        print u, v, w
-    print
-    # Uncertainty estimate
-    x = linspace(0, 5, 50)
-    phis = linspace(-pi, pi, 50)
-    y, y2 = [], []
-    phi_errorsq = mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2))
-    theta_errorsq = mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2))
-    for t in x:
-        y.append(sqrt((TIMING_ERROR ** 2 + t ** 2 / 12) * phi_errorsq))
-        y2.append(sqrt((TIMING_ERROR ** 2 + t ** 2 / 12) * theta_errorsq))
-    y = array(y)
-    y2 = array(y2)
-    plot(x, rad2deg(y), label="Estimate Phi")
-    plot(x, rad2deg(y2), label="Estimate Theta")
-    # Labels etc.
-    xlabel("Bin size (ns)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
-    legend(loc='best', numpoints=1)
-    ylim(ymin=0)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    savefig('plots/auto-results-binsize.pdf')
+    savefig('plots/auto-results-energy.pdf')
     print
 
 # Time of first hit pamflet functions
@@ -630,82 +562,6 @@ expv_tsq = vectorize(lambda n: integrate.quad(lambda t: t ** 2 * Q(t, n)
 expv_tsqv = lambda n: expv_tsq(n)[0]
 
 std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
-
-def plot_shower_front_timings(data, tablename):
-    table = data.getNode('/analysis', tablename)
-
-    figure()
-    rcParams['text.usetex'] = False
-    for R0, R1 in [(0, 4), (4, 20), (20, 40), (40, 80)]:
-        events = table.readWhere('(n1==2) & (n2==2) & (%d <= r) & (r < %d)'
-                                 % (R0, R1))
-        if len(events):
-            hist([u for u in events['t1'] - events['t2'] if not isnan(u)],
-                 bins=linspace(-50, 50, 100), histtype='step', normed=True,
-                 label="$%d <= R < %d$" % (R0, R1))
-    xlabel("Arrival time difference (ns)")
-    ylabel("Count")
-    title(r"Shower front thickness ($\theta = %s^\circ$)" %
-          tablename.replace('angle_',''))
-    legend()
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    savefig('plots/auto-results-shower-front-timings-%s.pdf' % tablename)
-
-def plot_shower_front_density(data, tablename):
-    table = data.getNode('/analysis', tablename)
-
-    figure()
-    rcParams['text.usetex'] = False
-    for R0, R1 in [(0, 4), (4, 20), (20, 40), (40, 80)]:
-        events = table.readWhere('(%d <= r) & (r < %d)' % (R0, R1))
-        hist(events['n1'],
-             bins=arange(-.5, 5.5), histtype='step',
-             label="$%d <= R < %d$" % (R0, R1))
-    xlabel("Number of particles per scintillator")
-    ylabel("Count")
-    title(r"Shower front density ($\theta = %s^\circ$)" %
-          tablename.replace('angle_',''))
-    legend()
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    savefig('plots/auto-results-shower-front-density-%s.pdf' % tablename)
-
-def plot_zenith_core_dists(data):
-    figure()
-    rcParams['text.usetex'] = False
-    for t in ['angle_0', 'angle_5', 'angle_23', 'angle_35']:
-        table = data.getNode('/analysis', t)
-        events = table.readWhere('(n1==2) & (n3==2) & (n4==2)')
-        hist(events['r'], bins=linspace(0, 100, 50), histtype='step',
-             label=r'$\theta = %s^\circ$' % t.replace('angle_', ''))
-    xlabel("Core distance (m)")
-    ylabel("Count")
-    title("Core distances ($N_{MIP} = 2$)")
-    legend()
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    savefig('plots/auto-results-zenith-core-dists.pdf')
-
-def plot_mip_core_dists(data, tablename):
-    table = data.getNode('/analysis', tablename)
-    figure()
-    rcParams['text.usetex'] = False
-    x, y = [], []
-    for N in range(1, 6):
-        events = table.readWhere('(n1==%d) & (n3==%d) & (n4==%d)' % (N, N, N))
-        x.append(N)
-        y.append(mean(events['r']))
-        hist(events['r'], bins=linspace(0, 100, 50), histtype='step',
-             label='$N_{MIP} = %d$' % N)
-    xlabel("Core distance (m)")
-    ylabel("Count")
-    title(r"Core distances ($\theta = 22.5^\circ$)")
-    legend()
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    savefig('plots/auto-results-mip-core-dists-%s.pdf' %
-            tablename.replace('_', '-'))
 
 def plot_mip_core_dists_mean(table, sim_table):
     figure()
@@ -776,34 +632,6 @@ def plot_zenith_core_dists_mean(table, sim_table):
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-zenith_core_dists_mean.pdf')
-
-def plot_sim_shower_timings(datafile):
-    data = tables.openFile(datafile, 'r')
-
-    global DT
-
-    figure()
-    rcParams['text.usetex'] = False
-    x, y, y2 = [], [], []
-    for n in data.root._v_children:
-        t = data.getNode('/', n)
-        events = t.read()
-        x.append(mean(events['R']))
-        y.append(std(events['T'] - events['t']))
-        DT = events['T'] - events['t']
-        dts = sorted(abs(events['T'] - events['t']))
-        err = dts[2 * len(dts) / 3]
-        y2.append(err)
-    plot(x, y, '^', label="Std. dev.")
-    plot(x, y2, '^', label="cont. 68 %")
-    xlabel("Core distance (m)")
-    ylabel("Uncertainty in time difference (ns)")
-    title(r"$\theta = 0^\circ$")
-    legend(loc='best')
-    ylim(ymin=0)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    savefig('plots/auto-results-sim-shower-timings.pdf')
 
 def plot_uncertainty_core_dist_phi_theta(table, sim_table):
     THETA = pi / 8
@@ -891,4 +719,5 @@ if __name__ == '__main__':
 
     #print "Reconstructing events..."
     #reconstruct_angles(data, 'full', events, timing_data)
+    #reconstruct_angles(data, 'full_linear', events, timing_data_linear)
     do_reconstruction_plots(data, 'full', sim_data, 'full')
