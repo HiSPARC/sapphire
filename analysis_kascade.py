@@ -9,12 +9,14 @@ from scipy.optimize import curve_fit
 from scipy import integrate
 from scipy.special import erf
 
-USE_TEX = False
+USE_TEX = True
 
 
 ADC_THRESHOLD = 20
 ADC_TIME_PER_SAMPLE = 2.5e-9
 ADC_MIP = 400.
+
+D_Z = 1 # Delta zenith (used in data selection)
 
 DETECTORS = [(65., 15.05, 'UD'), (65., 20.82, 'UD'), (70., 23.71, 'LR'),
              (60., 23.71, 'LR')]
@@ -325,27 +327,29 @@ def reconstruct_angles(data, dstname, events, timing_data, N=None):
 
     print NT, NS
 
-def do_reconstruction_plots(data, tablename):
+def do_reconstruction_plots(data, tablename, sim_data, sim_tablename):
     """Make plots based upon earlier reconstructions"""
 
     table = data.getNode('/reconstructions', tablename)
+    sim_table = sim_data.getNode('/reconstructions', sim_tablename)
 
-    plot_uncertainty_mip(table)
-    plot_uncertainty_zenith(table)
-    plot_mip_core_dists_mean(table)
-    plot_uncertainty_core_dist_phi(table)
-    plot_uncertainty_core_dist_theta(table)
+    plot_uncertainty_mip(table, sim_table)
+    plot_uncertainty_zenith(table, sim_table)
+    plot_mip_core_dists_mean(table, sim_table)
+    plot_zenith_core_dists_mean(table, sim_table)
+    plot_uncertainty_core_dist_phi_theta(table, sim_table)
 
-def plot_uncertainty_mip(table):
+def plot_uncertainty_mip(table, sim_table):
     # constants for uncertainty estimation
     phi1 = calc_phi(1, 3)
     phi2 = calc_phi(1, 4)
 
     figure()
     rcParams['text.usetex'] = False
-    x, y, y2 = [], [], []
+    x, y, y2, sy, sy2 = [], [], [], [], []
     for D in range(1, 6):
         x.append(D)
+        ### KASCADE data
         events = table.readWhere(
             '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
              % (D, deg2rad(18), deg2rad(28)))
@@ -358,22 +362,39 @@ def plot_uncertainty_mip(table):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
-    plot(x, rad2deg(y), '^', label="Theta")
-    plot(x, rad2deg(y2), 'v', label="Phi")
+
+        ### simulation data
+        events = sim_table.readWhere(
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0) & '
+            '(0 < r) & (r <= 100)' % (D, float32(pi / 8)))
+        print len(events),
+        errors = events['sim_theta'] - events['r_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['sim_phi'] - events['r_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        sy.append(std(errors))
+        sy2.append(std(errors2))
     print
     print "mip: D, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
     # Uncertainty estimate
-    x = linspace(1, 5, 50)
+    cx = linspace(1, 5, 50)
     phis = linspace(-pi, pi, 50)
     phi_errsq = mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2))
     theta_errsq = mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2))
-    y = TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
-    y2 = TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
-    plot(x, rad2deg(y), label="Estimate Phi")
-    plot(x, rad2deg(y2), label="Estimate Theta")
+    cy = TIMING_ERROR * std_t(cx) * sqrt(phi_errsq)
+    cy2 = TIMING_ERROR * std_t(cx) * sqrt(theta_errsq)
+
+    plot(x, rad2deg(y), '^', label="Theta")
+    plot(x, rad2deg(sy), '^', label="Theta (simulation)")
+    plot(cx, rad2deg(cy2), label="Theta (calculation)")
+    plot(x, rad2deg(y2), 'v', label="Phi")
+    plot(x, rad2deg(sy2), 'v', label="Phi (simulation)")
+    plot(cx, rad2deg(cy), label="Phi (calculation)")
     # Labels etc.
     xlabel("Minimum number of particles")
     ylabel("Uncertainty in angle reconstruction (deg)")
@@ -384,22 +405,20 @@ def plot_uncertainty_mip(table):
     savefig('plots/auto-results-MIP.pdf')
     print
 
-def plot_uncertainty_zenith(table):
+def plot_uncertainty_zenith(table, sim_table):
     # constants for uncertainty estimation
     phi1 = calc_phi(1, 3)
     phi2 = calc_phi(1, 4)
 
     figure()
     rcParams['text.usetex'] = False
-    x, y, y2 = [], [], []
-    global MYT
-    MYT = []
+    x, y, y2, sy, sy2 = [], [], [], [], []
     for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
         x.append(THETA)
+        ### KASCADE data
         events = table.readWhere(
             '(D==2) & (%f <= k_theta) & (k_theta < %f)'
-             % (THETA - deg2rad(5), THETA + deg2rad(5)))
-        MYT.append((events['t1'], events['t3'], events['t4']))
+             % (THETA - deg2rad(D_Z), THETA + deg2rad(D_Z)))
         print rad2deg(THETA), len(events),
         errors = events['k_theta'] - events['h_theta']
         # Make sure -pi < errors < pi
@@ -409,30 +428,48 @@ def plot_uncertainty_zenith(table):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
-    plot(rad2deg(x), rad2deg(y), '^', label="Theta")
-    # Azimuthal angle undefined for zenith = 0
-    plot(rad2deg(x[1:]), rad2deg(y2[1:]), 'v', label="Phi")
+
+        ### simulation data
+        events = sim_table.readWhere(
+            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
+            float32(THETA))
+        print rad2deg(THETA), len(events),
+        errors = events['sim_theta'] - events['r_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['sim_phi'] - events['r_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        sy.append(std(errors))
+        sy2.append(std(errors2))
     print
     print "zenith: theta, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
     # Uncertainty estimate
-    x = linspace(0, deg2rad(35), 50)
+    cx = linspace(0, deg2rad(35), 50)
     phis = linspace(-pi, pi, 50)
-    y, y2, y3 = [], [], []
-    for t in x:
-        y.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)))
-        y3.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)) * sin(t) ** 2)
-        y2.append(mean(rel_theta_errorsq(t, phis, phi1, phi2)))
-    y = TIMING_ERROR * sqrt(array(y))
-    y3 = TIMING_ERROR * sqrt(array(y3))
-    y2 = TIMING_ERROR * sqrt(array(y2))
-    plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
-    plot(rad2deg(x), rad2deg(y3), label="Estimate Phi * sin(Theta)")
-    plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
+    cy, cy2, cy3 = [], [], []
+    for t in cx:
+        cy.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)))
+        cy3.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)) * sin(t) ** 2)
+        cy2.append(mean(rel_theta_errorsq(t, phis, phi1, phi2)))
+    cy = TIMING_ERROR * sqrt(array(cy))
+    cy3 = TIMING_ERROR * sqrt(array(cy3))
+    cy2 = TIMING_ERROR * sqrt(array(cy2))
+
+
+    plot(rad2deg(x), rad2deg(y), '^', label="Theta")
+    plot(rad2deg(x), rad2deg(sy), '^', label="Theta (simulation)")
+    plot(rad2deg(cx), rad2deg(cy2), label="Theta (calculation)")
+    # Azimuthal angle undefined for zenith = 0
+    plot(rad2deg(x[1:]), rad2deg(y2[1:]), 'v', label="Phi")
+    plot(rad2deg(x[1:]), rad2deg(sy2[1:]), 'v', label="Phi (simulation)")
+    plot(rad2deg(cx), rad2deg(cy), label="Phi (calculation)")
+    plot(rad2deg(cx), rad2deg(cy3), label="Phi (calculation) * sin(Theta)")
     # Labels etc.
-    xlabel("Shower zenith angle (degrees)")
+    xlabel("Shower zenith angle (deg $\pm %d$)" % D_Z)
     ylabel("Uncertainty in angle reconstruction (deg)")
     title(r"$N_{MIP} = 2$")
     ylim(0, 100)
@@ -668,19 +705,30 @@ def plot_mip_core_dists(data, tablename):
     savefig('plots/auto-results-mip-core-dists-%s.pdf' %
             tablename.replace('_', '-'))
 
-def plot_mip_core_dists_mean(table):
+def plot_mip_core_dists_mean(table, sim_table):
     figure()
     rcParams['text.usetex'] = False
-    for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
-        x, y, yerr = [], [], []
-        for N in range(1, 6):
-            events = table.readWhere(
-                '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
-                 % (N, THETA - deg2rad(5), THETA + deg2rad(5)))
-            x.append(N)
-            y.append(mean(events['r']))
-            yerr.append(std(events['r']))
-        plot(x, y, '^-', label=r"$\theta = %.1f^\circ$" % rad2deg(THETA))
+    THETA = pi / 8
+    x, y, yerr, sy, syerr = [], [], [], [], []
+    for N in range(1, 6):
+        events = table.readWhere(
+            '(D==%d) & (%f <= k_theta) & (k_theta < %f) & '
+            '(%f <= k_energy) & (k_energy < %f)'
+             % (N, THETA - deg2rad(D_Z), THETA + deg2rad(D_Z),
+                8e14, 2e15))
+        x.append(N)
+        y.append(mean(events['r']))
+        yerr.append(std(events['r']))
+
+        events = sim_table.readWhere(
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
+            (N, float32(THETA)))
+        sy.append(mean(events['r']))
+        syerr.append(std(events['r']))
+    plot(x, y, '^-', label=r"$(.8\,\mathrm{PeV} \leq E < 2\,\mathrm{PeV})$" %
+         rad2deg(THETA))
+    plot(x, sy, '^-', label=r"(simulation, $E = 1\,\mathrm{PeV}$)" %
+         rad2deg(THETA))
     print "zenith: theta, r_mean, r_std"
     for u, v, w in zip(x, y, yerr):
         print u, v, w
@@ -688,40 +736,46 @@ def plot_mip_core_dists_mean(table):
     # Labels etc.
     xlabel("Number of particles")
     ylabel("Core distance (m)")
-    legend(numpoints=1)
+    title(r"$\theta = %.1f \pm %d^\circ$" % (rad2deg(THETA), D_Z))
     xlim(.5, 5.5)
     ylim(ymin=0)
+    legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-mip_core_dists_mean.pdf')
     print
 
+def plot_zenith_core_dists_mean(table, sim_table):
     figure()
     rcParams['text.usetex'] = False
-    THETA = pi / 8
-    x, y, yerr = [], [], []
-    for N in range(1, 6):
+    x, y, yerr, sy, syerr = [], [], [], [], []
+    N = 2
+    for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
         events = table.readWhere(
-            '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
-             % (N, THETA - deg2rad(5), THETA + deg2rad(5)))
-        x.append(N)
+            '(D==%d) & (%f <= k_theta) & (k_theta < %f) & '
+            '(%f <= k_energy) & (k_energy < %f)'
+             % (N, THETA - deg2rad(D_Z), THETA + deg2rad(D_Z),
+                8e14, 2e15))
+        x.append(THETA)
         y.append(mean(events['r']))
         yerr.append(std(events['r']))
-    plot(x, y, '^-', label=r"$\theta = %.1f^\circ$" % rad2deg(THETA))
-    print "zenith: theta, r_mean, r_std"
-    for u, v, w in zip(x, y, yerr):
-        print u, v, w
-    print
+
+        events = sim_table.readWhere(
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
+            (N, float32(THETA)))
+        sy.append(mean(events['r']))
+        syerr.append(std(events['r']))
+    plot(rad2deg(x), y, '^-',
+         label=r"$(.8\,\mathrm{PeV} \leq E < 2\,\mathrm{PeV})$")
+    plot(rad2deg(x), sy, '^-', label=r"(simulation, $E = 1\,\mathrm{PeV}$)")
     # Labels etc.
-    xlabel("Number of particles")
+    xlabel("Zenith angle (deg $\pm %d$)" % D_Z)
     ylabel("Core distance (m)")
-    title(r"$\theta = %.1f^\circ$" % rad2deg(THETA))
-    xlim(.5, 5.5)
-    ylim(ymin=0)
+    title(r"%d MIP" % N)
+    legend()
     if USE_TEX:
         rcParams['text.usetex'] = True
-    savefig('plots/auto-results-mip_core_dists_mean2.pdf')
-    print
+    savefig('plots/auto-results-mip_core_dists_mean.pdf')
 
 def plot_sim_shower_timings(datafile):
     data = tables.openFile(datafile, 'r')
@@ -751,75 +805,64 @@ def plot_sim_shower_timings(datafile):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-sim-shower-timings.pdf')
 
-def plot_uncertainty_core_dist_phi(table):
-    figure()
-    rcParams['text.usetex'] = False
+def plot_uncertainty_core_dist_phi_theta(table, sim_table):
     THETA = pi / 8
     bins = linspace(0, 80, 6)
-    for N in range(1, 6):
-        events = table.readWhere(
-            '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
-             % (N, THETA - deg2rad(5), THETA + deg2rad(5)))
-        x, y, yerr, l = [], [], [], []
-        for r0, r1 in zip(bins[:-1], bins[1:]):
-            e = events.compress((r0 <= events['r']) & (events['r'] < r1))
-            if len(e) > 10:
-                errors = e['k_phi'] - e['h_phi']
-                # Make sure -pi < errors < pi
-                errors = (errors + pi) % (2 * pi) - pi
-                x.append(mean([r0, r1]))
-                y.append(mean(errors))
-                yerr.append(std(errors))
-                l.append(len(e))
-        print "core_dist_mip_unc: core, phi_e_mean, phi_e_std, len"
-        for u, v, w, i in zip(x, y, yerr, l):
-            print u, v, w, i
-        print
-        plot(x, rad2deg(yerr), '^-', label="%d MIP" % N)
-    # Labels etc.
-    xlabel("Core distance (m)")
-    ylabel("Uncertainty phi (deg)")
-    title(r"$\theta = 22.5^\circ$")
-    legend(loc='best', numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    savefig('plots/auto-results-core-dist-phi.pdf')
-    print
+    N = 2
+    D2_Z = 5
+    events = table.readWhere(
+        '(D==2) & (%f <= k_theta) & (k_theta < %f) & '
+        '(%f <= k_energy) & (k_energy < %f)'
+         % (THETA - deg2rad(D2_Z), THETA + deg2rad(D2_Z),
+            8e14, 2e15))
+    sim_events = sim_table.readWhere(
+            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
+            (float32(THETA)))
+    x, y, y2, l, sx, sy, sy2 = [], [], [], [], [], [], []
+    for r0, r1 in zip(bins[:-1], bins[1:]):
+        e = events.compress((r0 <= events['r']) & (events['r'] < r1))
+        if len(e) > 10:
+            errors = e['k_phi'] - e['h_phi']
+            errors2 = e['k_theta'] - e['h_theta']
+            # Make sure -pi < errors < pi
+            errors = (errors + pi) % (2 * pi) - pi
+            errors2 = (errors2 + pi) % (2 * pi) - pi
+            x.append(mean([r0, r1]))
+            y.append(std(errors))
+            y2.append(std(errors2))
+            l.append(len(e))
 
-def plot_uncertainty_core_dist_theta(table):
+        e = sim_events.compress((r0 <= sim_events['r']) & 
+                                (sim_events['r'] < r1))
+        if len(e) > 10:
+            errors = e['sim_phi'] - e['r_phi']
+            errors2 = e['sim_theta'] - e['r_theta']
+            # Make sure -pi < errors < pi
+            errors = (errors + pi) % (2 * pi) - pi
+            errors2 = (errors2 + pi) % (2 * pi) - pi
+            sx.append(mean([r0, r1]))
+            sy.append(std(errors))
+            sy2.append(std(errors2))
+
     figure()
     rcParams['text.usetex'] = False
-    THETA = pi / 8
-    bins = linspace(0, 80, 6)
-    for N in range(1, 6):
-        events = table.readWhere(
-            '(D==%d) & (%f <= k_theta) & (k_theta < %f)'
-             % (N, THETA - deg2rad(5), THETA + deg2rad(5)))
-        x, y, yerr, l = [], [], [], []
-        for r0, r1 in zip(bins[:-1], bins[1:]):
-            e = events.compress((r0 <= events['r']) & (events['r'] < r1))
-            if len(e) > 10:
-                errors = e['k_theta'] - e['h_theta']
-                # Make sure -pi < errors < pi
-                errors = (errors + pi) % (2 * pi) - pi
-                x.append(mean([r0, r1]))
-                y.append(mean(errors))
-                yerr.append(std(errors))
-                l.append(len(e))
-        print "core_dist_mip_unc: core, theta_e_mean, theta_e_std, len"
-        for u, v, w, i in zip(x, y, yerr, l):
-            print u, v, w, i
-        print
-        plot(x, rad2deg(yerr), '^-', label="%d MIP" % N)
+    plot(x, rad2deg(y2), '^-',
+         label="Theta $(.8\,\mathrm{PeV} \leq E < 2\,\mathrm{PeV})$")
+    plot(sx, rad2deg(sy2), '^-',
+         label="Theta (simulation, $E = 1\,\mathrm{PeV}$)")
+    plot(x, rad2deg(y), '^-',
+         label="Phi $(.8\,\mathrm{PeV} \leq E < 2\,\mathrm{PeV})$")
+    plot(sx, rad2deg(sy), '^-',
+         label="Phi (simulation, $E = 1\,\mathrm{PeV}$)")
     # Labels etc.
     xlabel("Core distance (m)")
-    ylabel("Uncertainty theta (deg)")
-    title(r"$\theta = 22.5^\circ$")
-    legend(loc='best', numpoints=1)
+    ylabel("Uncertainty in angle reconstruction (deg)")
+    title(r"$\theta = 22.5 \pm %d^\circ$, %d MIP" % (D2_Z, N))
+    legend(loc='center right', numpoints=1)
+    ylim(ymin=0)
     if USE_TEX:
         rcParams['text.usetex'] = True
-    savefig('plots/auto-results-core-dist-theta.pdf')
-    print
+    savefig('plots/auto-results-core-dist-phi-theta.pdf')
 
 
 if __name__ == '__main__':
@@ -833,6 +876,11 @@ if __name__ == '__main__':
         data = tables.openFile('kascade.h5', 'a')
 
     try:
+        sim_data
+    except NameError:
+        sim_data = tables.openFile('data-e15.h5', 'r')
+
+    try:
         timing_data
         timing_data_linear
     except NameError:
@@ -843,4 +891,4 @@ if __name__ == '__main__':
 
     #print "Reconstructing events..."
     #reconstruct_angles(data, 'full', events, timing_data)
-    do_reconstruction_plots(data, 'full')
+    do_reconstruction_plots(data, 'full', sim_data, 'full')
