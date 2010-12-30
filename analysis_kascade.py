@@ -9,6 +9,8 @@ from scipy.optimize import curve_fit
 from scipy import integrate
 from scipy.special import erf
 
+from hisparc.analysis import kascade_coincidences
+
 USE_TEX = True
 
 
@@ -327,14 +329,17 @@ def reconstruct_angles(data, dstname, events, timing_data, N=None):
 
     print NT, NS
 
-def do_reconstruction_plots(data, tablename, sim_data, sim_tablename):
+def do_reconstruction_plots(data, tablename, table2name, sim_data,
+                            sim_tablename):
     """Make plots based upon earlier reconstructions"""
 
     table = data.getNode('/reconstructions', tablename)
+    table2 = data.getNode('/reconstructions', table2name)
     sim_table = sim_data.getNode('/reconstructions', sim_tablename)
 
     plot_uncertainty_mip(table, sim_table)
     plot_uncertainty_zenith(table, sim_table)
+    plot_uncertainty_zenith2(table, table2)
     plot_uncertainty_energy(table)
     plot_mip_core_dists_mean(table, sim_table)
     plot_zenith_core_dists_mean(table, sim_table)
@@ -480,6 +485,66 @@ def plot_uncertainty_zenith(table, sim_table):
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-zenith.pdf')
+    print
+
+def plot_uncertainty_zenith2(table, table2):
+    # constants for uncertainty estimation
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
+    figure()
+    rcParams['text.usetex'] = False
+    x, y, y2, ty, ty2 = [], [], [], [], []
+    for THETA in [deg2rad(5), pi / 8, deg2rad(35)]:
+        x.append(THETA)
+        ### KASCADE data
+        events = table.readWhere(
+            '(D==2) & (%f <= k_theta) & (k_theta < %f)'
+             % (THETA - deg2rad(D_Z), THETA + deg2rad(D_Z)))
+        print rad2deg(THETA), len(events),
+        errors = events['k_theta'] - events['h_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['k_phi'] - events['h_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        y.append(std(errors))
+        y2.append(std(errors2) * sin(THETA))
+
+        ### other KASCADE data
+        events = table2.readWhere(
+            '(D==2) & (%f <= k_theta) & (k_theta < %f)'
+             % (THETA - deg2rad(D_Z), THETA + deg2rad(D_Z)))
+        print rad2deg(THETA), len(events),
+        errors = events['k_theta'] - events['h_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['k_phi'] - events['h_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        ty.append(std(errors))
+        ty2.append(std(errors2) * sin(THETA))
+    print
+    print "zenith: theta, theta_std, phi_std"
+    for u, v, w in zip(x, y, y2):
+        print u, v, w
+    print
+    
+    plot(rad2deg(x), rad2deg(y), '^', label="Theta (FSOT)")
+    plot(rad2deg(x), rad2deg(ty), '^', label="Theta (LINT)")
+    # Azimuthal angle undefined for zenith = 0
+    plot(rad2deg(x[1:]), rad2deg(y2[1:]), 'v', label="Phi (FSOT)")
+    plot(rad2deg(x[1:]), rad2deg(ty2[1:]), 'v', label="Phi (LINT)")
+    # Labels etc.
+    xlabel("Zenith angle (deg $\pm %d$)" % D_Z)
+    ylabel("Uncertainty in angle reconstruction (deg)")
+    title(r"$N_{MIP} = 2$")
+    legend(loc='lower right', numpoints=1)
+    ylim(0, 14)
+    xlim(0, 40)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-zenith2.pdf')
     print
 
 def plot_uncertainty_phi(table):
@@ -692,6 +757,88 @@ def plot_uncertainty_core_dist_phi_theta(table, sim_table):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-core-dist-phi-theta.pdf')
 
+def plot_interarrival_times(h, k):
+    figure()
+    rcParams['text.usetex'] = False
+    for shift in [-12, -13, -13.180220188, -14]:
+        c = array(kascade_coincidences.search_coincidences(h, k, shift))
+        hist(abs(c[:,0]) / 1e9, bins=linspace(0, 1, 200), histtype='step',
+             log=True)
+    xlabel("Time difference (s)")
+    ylabel("Count")
+    ylim(ymin=10)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-interarrival-times.pdf')
+
+def negpos68(x):
+    xmin = sorted(-x.compress(x <= 0))
+    xmin = xmin[len(xmin) * 2 / 3]
+
+    xmax = sorted(x.compress(x >= 0))
+    xmax = xmax[len(xmax) * 2 / 3]
+
+    return (xmin + xmax) / 2.
+
+def plot_arrival_times_core(data, datasim):
+    D2_Z = 5
+    r = linspace(0, 100, 25)
+
+    events = datasim.root.analysis.angle_0
+    mr, tm, dt = [], [], []
+    for r0, r1 in zip(r[:-1], r[1:]):
+        sel = events.readWhere('(r0 <= r) & (r < r1)')
+        t1 = sel['t1'] - sel['t2']
+        t3 = sel['t3'] - sel['t2']
+        t4 = sel['t4'] - sel['t2']
+        t = array([t1.flatten(), t3.flatten(), t4.flatten()]).flatten()
+        t = compress(-isnan(t), t)
+        tm.append(mean(t))
+        dt.append(negpos68(t))
+        mr.append((r0 + r1) / 2.)
+    mrsim, tmsim, dtsim = mr, tm, dt
+
+    figure()
+    events = data.root.reconstructions.raw
+    mr, tm, dt = [], [], []
+    for r0, r1 in zip(r[:-1], r[1:]):
+        sel = events.readWhere('(r0 <= r) & (r < r1) & (%f <= k_theta) & '
+                               '(k_theta < %f) & (%f <= k_energy) & '
+                               '(k_energy < %f)' %
+                               (-deg2rad(D2_Z), deg2rad(D2_Z), 8e14, 2e15))
+        t1 = compress((sel['n1'] >= 1) & (sel['n2'] >= 1),
+                      sel['t1'] - sel['t2'])
+        t3 = compress((sel['n3'] >= 1) & (sel['n2'] >= 1),
+                      sel['t3'] - sel['t2'])
+        t4 = compress((sel['n4'] >= 1) & (sel['n2'] >= 1),
+                      sel['t4'] - sel['t2'])
+        t = array(t1.tolist() + t3.tolist() + t4.tolist()).flatten()
+        t = compress(-isnan(t), t)
+
+        tm.append(mean(t))
+        dt.append(negpos68(t))
+        mr.append((r0 + r1) / 2.)
+    errorbar(mrsim, tmsim, yerr=dtsim, drawstyle='steps-mid', capsize=0,
+             label="simulation")
+    errorbar(mr, tm, yerr=dt, drawstyle='steps-mid', capsize=0,
+             label="kascade")
+    xlabel("Core distance (m)")
+    ylabel("Mean arrival time (ns)")
+    title(r"$\theta < %d^\circ, %.1f\,\mathrm{PeV} \leq E < "
+          r"%.1f\,\mathrm{PeV}$" % (D2_Z, 8e14 / 1e15, 2e15 / 1e15))
+    legend(numpoints=1, loc='best')
+    savefig('plots/auto-results-arrival-core-mean.pdf')
+
+    figure()
+    plot(mrsim, dtsim, 'o', label="simulation")
+    plot(mr, dt, 'o', label="kascade")
+    xlabel("Core distance (m)")
+    ylabel("arrival time spread (ns)")
+    title(r"$\theta < %d^\circ, %.1f\,\mathrm{PeV} \leq E < "
+          r"%.1f\,\mathrm{PeV}$" % (D2_Z, 8e14 / 1e15, 2e15 / 1e15))
+    legend(numpoints=1, loc='best')
+    savefig('plots/auto-results-arrival-core-spread.pdf')
+
 
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
@@ -720,4 +867,13 @@ if __name__ == '__main__':
     #print "Reconstructing events..."
     #reconstruct_angles(data, 'full', events, timing_data)
     #reconstruct_angles(data, 'full_linear', events, timing_data_linear)
-    do_reconstruction_plots(data, 'full', sim_data, 'full')
+    #do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
+
+    plot_arrival_times_core(data, sim_data)
+
+    #try:
+    #    h, k
+    #except NameError:
+    #    h = data.root.datasets.h.read()
+    #    k = data.root.datasets.knew.read()
+    #plot_interarrival_times(h, k)
