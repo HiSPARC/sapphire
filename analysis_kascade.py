@@ -9,6 +9,8 @@ from scipy.optimize import curve_fit
 from scipy import integrate
 from scipy.special import erf
 
+from itertools import combinations
+
 from hisparc.analysis import kascade_coincidences
 
 USE_TEX = True
@@ -763,9 +765,10 @@ def plot_interarrival_times(h, k):
     for shift in [-12, -13, -13.180220188, -14]:
         c = array(kascade_coincidences.search_coincidences(h, k, shift))
         hist(abs(c[:,0]) / 1e9, bins=linspace(0, 1, 200), histtype='step',
-             log=True)
+             log=True, label=r'$\Delta t = %.4f\,\mathrm{ns}$' % shift)
     xlabel("Time difference (s)")
     ylabel("Count")
+    legend()
     ylim(ymin=10)
     if USE_TEX:
         rcParams['text.usetex'] = True
@@ -773,16 +776,24 @@ def plot_interarrival_times(h, k):
 
 def negpos68(x):
     xmin = sorted(-x.compress(x <= 0))
+    if len(xmin) == 0:
+        return nan
     xmin = xmin[len(xmin) * 2 / 3]
 
     xmax = sorted(x.compress(x >= 0))
+    if len(xmax) == 0:
+        return nan
     xmax = xmax[len(xmax) * 2 / 3]
 
     return (xmin + xmax) / 2.
 
+def get_raw_timings(events, i, j):
+    return compress((events['n%d' % i] >= 1) & (events['n%d' % j] >= 1),
+                    events['t%d' % i] - events['t%d' % j])
+
 def plot_arrival_times_core(data, datasim):
     D2_Z = 5
-    r = linspace(0, 100, 25)
+    r = linspace(0, 100, 10)
 
     events = datasim.root.analysis.angle_0
     mr, tm, dt = [], [], []
@@ -799,6 +810,7 @@ def plot_arrival_times_core(data, datasim):
     mrsim, tmsim, dtsim = mr, tm, dt
 
     figure()
+    rcParams['text.usetex'] = False
     events = data.root.reconstructions.raw
     mr, tm, dt = [], [], []
     for r0, r1 in zip(r[:-1], r[1:]):
@@ -806,14 +818,10 @@ def plot_arrival_times_core(data, datasim):
                                '(k_theta < %f) & (%f <= k_energy) & '
                                '(k_energy < %f)' %
                                (-deg2rad(D2_Z), deg2rad(D2_Z), 8e14, 2e15))
-        t1 = compress((sel['n1'] >= 1) & (sel['n2'] >= 1),
-                      sel['t1'] - sel['t2'])
-        t3 = compress((sel['n3'] >= 1) & (sel['n2'] >= 1),
-                      sel['t3'] - sel['t2'])
-        t4 = compress((sel['n4'] >= 1) & (sel['n2'] >= 1),
-                      sel['t4'] - sel['t2'])
-        t = array(t1.tolist() + t3.tolist() + t4.tolist()).flatten()
-        t = compress(-isnan(t), t)
+        t = []
+        for i, j in combinations((1, 2, 3, 4), 2):
+            t += get_raw_timings(sel, i, j).tolist()
+        t = array(t)
 
         tm.append(mean(t))
         dt.append(negpos68(t))
@@ -821,22 +829,27 @@ def plot_arrival_times_core(data, datasim):
     errorbar(mrsim, tmsim, yerr=dtsim, drawstyle='steps-mid', capsize=0,
              label="simulation")
     errorbar(mr, tm, yerr=dt, drawstyle='steps-mid', capsize=0,
-             label="kascade")
+             label="KASCADE")
     xlabel("Core distance (m)")
     ylabel("Mean arrival time (ns)")
     title(r"$\theta < %d^\circ, %.1f\,\mathrm{PeV} \leq E < "
           r"%.1f\,\mathrm{PeV}$" % (D2_Z, 8e14 / 1e15, 2e15 / 1e15))
     legend(numpoints=1, loc='best')
+    if USE_TEX:
+        rcParams['text.usetex'] = True
     savefig('plots/auto-results-arrival-core-mean.pdf')
 
     figure()
-    plot(mrsim, dtsim, 'o', label="simulation")
-    plot(mr, dt, 'o', label="kascade")
+    rcParams['text.usetex'] = False
+    plot(mrsim, dtsim, 'v', label="simulation")
+    plot(mr, dt, '^', label="KASCADE")
     xlabel("Core distance (m)")
     ylabel("arrival time spread (ns)")
     title(r"$\theta < %d^\circ, %.1f\,\mathrm{PeV} \leq E < "
           r"%.1f\,\mathrm{PeV}$" % (D2_Z, 8e14 / 1e15, 2e15 / 1e15))
     legend(numpoints=1, loc='best')
+    if USE_TEX:
+        rcParams['text.usetex'] = True
     savefig('plots/auto-results-arrival-core-spread.pdf')
 
 
@@ -867,7 +880,7 @@ if __name__ == '__main__':
     #print "Reconstructing events..."
     #reconstruct_angles(data, 'full', events, timing_data)
     #reconstruct_angles(data, 'full_linear', events, timing_data_linear)
-    #do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
+    do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
 
     plot_arrival_times_core(data, sim_data)
 
