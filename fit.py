@@ -40,7 +40,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('kascade.h5', 'a')
+        data = tables.openFile('kascade.h5', 'r')
 
     events = data.root.kascade_new.coincidences
     timings = data.root.analysis_new.timing_data.read()

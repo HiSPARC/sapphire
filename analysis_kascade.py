@@ -278,7 +278,8 @@ def rel_theta2_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
 
     return where(isnan(errsq), inf, errsq)
 
-def reconstruct_angles(data, dstname, events, timing_data, N=None):
+def reconstruct_angles(data, dstname, events, timing_data, shifts=None,
+                       N=None):
     """Reconstruct angles"""
 
     try:
@@ -302,6 +303,11 @@ def reconstruct_angles(data, dstname, events, timing_data, N=None):
     for rawevent, timing in zip(events[:N], timing_data):
         NT += 1
         n1, n2, n3, n4 = rawevent['pulseheights'] / ADC_MIP
+        if shifts:
+            timing += shifts
+        ###FIXME
+        #timing *= .9
+        ###/FIXME
         event = dict(n1=n1, n2=n2, n3=n3, n4=n4, t1=timing[0],
                      t2=timing[1], t3=timing[2], t4=timing[3])
 
@@ -339,13 +345,16 @@ def do_reconstruction_plots(data, tablename, table2name, sim_data,
     table2 = data.getNode('/reconstructions', table2name)
     sim_table = sim_data.getNode('/reconstructions', sim_tablename)
 
-    plot_uncertainty_mip(table, sim_table)
-    plot_uncertainty_zenith(table, sim_table)
-    plot_uncertainty_zenith2(table, table2)
-    plot_uncertainty_energy(table)
-    plot_mip_core_dists_mean(table, sim_table)
-    plot_zenith_core_dists_mean(table, sim_table)
-    plot_uncertainty_core_dist_phi_theta(table, sim_table)
+    plot_2d_results_phi(data)
+    plot_2d_results_theta(data)
+
+    #plot_uncertainty_mip(table, sim_table)
+    #plot_uncertainty_zenith(table, sim_table)
+    #plot_uncertainty_zenith2(table, table2)
+    #plot_uncertainty_energy(table)
+    #plot_mip_core_dists_mean(table, sim_table)
+    #plot_zenith_core_dists_mean(table, sim_table)
+    #plot_uncertainty_core_dist_phi_theta(table, sim_table)
 
 def plot_uncertainty_mip(table, sim_table):
     # constants for uncertainty estimation
@@ -852,6 +861,154 @@ def plot_arrival_times_core(data, datasim):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-arrival-core-spread.pdf')
 
+def plot_2d_results_phi(data):
+    #table = data.getNode('/reconstructions', 'full_.9scaled_linear')
+    table = data.root.reconstructions.full_linear
+    events = table.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
+
+    mylog = vectorize(lambda x: log10(x) if x > 0 else 0)
+
+    H, xedges, yedges = histogram2d(rad2deg(events['k_phi']),
+                                    rad2deg(events['h_phi']), bins=200)
+    x = (xedges[:-1] + xedges[1:]) / 2
+    y = (yedges[:-1] + yedges[1:]) / 2
+
+    figure()
+    rcParams['text.usetex'] = False
+    gca().set_axis_bgcolor('b')
+    contourf(x, y, H.T)
+    colorbar()
+    xlabel(r"$\phi_K\,(^\circ)$")
+    ylabel(r"$\phi_H\,(^\circ)$")
+    title("$N_{MIP} \geq 1$")
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-2d-phi.pdf')
+
+    figure()
+    rcParams['text.usetex'] = False
+    gca().set_axis_bgcolor('b')
+    lH = mylog(H)
+    contourf(x, y, lH.T)
+    colorbar()
+    xlabel(r"$\phi_K\,(^\circ)$")
+    ylabel(r"$\phi_H\,(^\circ)$")
+    title("$N_{MIP} \geq 1$")
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-2d-phi-log.pdf')
+
+    # Use the original timings (FSOT)
+    #table = data.getNode('/reconstructions', 'full_.9scaled')
+    table = data.root.reconstructions.full
+    table2 = data.root.reconstructions.full_shifted
+    events = table.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
+    events2 = table2.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
+
+    figure()
+    rcParams['text.usetex'] = False
+    phis = linspace(-pi, pi, 21)
+    bins, mean_dphi, std_dphi, mean_dphi2, std_dphi2 = [], [], [], [], []
+    for low, high in zip(phis[:-1], phis[1:]):
+        # First table
+        sel = events.compress((low <= events['k_phi']) &
+                              (events['k_phi'] < high))
+        dphi = sel['h_phi'] - sel['k_phi']
+        dphi = (dphi + pi) % (2 * pi) - pi
+        bins.append((low + high) / 2)
+        mean_dphi.append(mean(dphi))
+        std_dphi.append(std(dphi))
+
+        # Second table
+        sel = events2.compress((low <= events2['k_phi']) &
+                              (events2['k_phi'] < high))
+        dphi = sel['h_phi'] - sel['k_phi']
+        dphi = (dphi + pi) % (2 * pi) - pi
+        mean_dphi2.append(mean(dphi))
+        std_dphi2.append(std(dphi))
+    errorbar(rad2deg(bins), rad2deg(mean_dphi), yerr=rad2deg(std_dphi),
+             #drawstyle='steps-mid', fmt='-o', label='Uncorrected')
+             fmt='o', label='Uncorrected')
+    errorbar(rad2deg(bins), rad2deg(mean_dphi2), yerr=rad2deg(std_dphi2),
+             #drawstyle='steps-mid', fmt='-o', label='Time-shifted')
+             fmt='o', label='Time-shifted')
+    axhline(0, c='k')
+    xlabel(r"$\phi_K\,(^\circ)$")
+    ylabel(r"Mean $\phi_H - \phi_K\,(^\circ)$")
+    title("$N_{MIP} \geq 1$")
+    legend(numpoints=1, loc='best')
+    xlim(-180, 180)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-bin-phi.pdf')
+
+def plot_2d_results_theta(data):
+    #table = data.getNode('/reconstructions', 'full_.9scaled_linear')
+    table = data.root.reconstructions.full_linear
+    events = table.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
+
+    H, xedges, yedges = histogram2d(rad2deg(events['k_theta']),
+                                    rad2deg(events['h_theta']),
+                                    bins=[linspace(0, 40, 201),
+                                          linspace(0, 40, 201)])
+
+    figure()
+    gca().set_axis_bgcolor('b')
+    rcParams['text.usetex'] = False
+    x = (xedges[:-1] + xedges[1:]) / 2
+    y = (yedges[:-1] + yedges[1:]) / 2
+    contourf(x, y, H.T)
+    colorbar()
+    xlabel(r"$\theta_K\,(^\circ)$")
+    ylabel(r"$\theta_H\,(^\circ)$")
+    title("$N_{MIP} \geq 1$")
+    axis('auto')
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-2d-theta.pdf')
+
+    # Use the original (FSOT) timings
+    #table = data.getNode('/reconstructions', 'full_.9scaled')
+    table = data.root.reconstructions.full
+    table2 = data.root.reconstructions.full_shifted
+    events = table.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
+    events2 = table2.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
+
+    figure()
+    rcParams['text.usetex'] = False
+    thetas = linspace(0, deg2rad(40), 21)
+    bins, mean_dtheta, std_dtheta, mean_dtheta2, std_dtheta2 = [], [], \
+                                                               [], [], []
+    for low, high in zip(thetas[:-1], thetas[1:]):
+        # First table
+        sel = events.compress((low <= events['k_theta']) &
+                              (events['k_theta'] < high))
+        dtheta = sel['h_theta'] - sel['k_theta']
+        bins.append((low + high) / 2)
+        mean_dtheta.append(mean(dtheta))
+        std_dtheta.append(std(dtheta))
+
+        # Second table
+        sel = events2.compress((low <= events2['k_theta']) &
+                              (events2['k_theta'] < high))
+        dtheta = sel['h_theta'] - sel['k_theta']
+        mean_dtheta2.append(mean(dtheta))
+        std_dtheta2.append(std(dtheta))
+    errorbar(rad2deg(bins), rad2deg(mean_dtheta), yerr=rad2deg(std_dtheta),
+             #drawstyle='steps-mid', fmt='-o', label="Uncorrected")
+             fmt='o', label="Uncorrected")
+    errorbar(rad2deg(bins), rad2deg(mean_dtheta2),
+             yerr=rad2deg(std_dtheta2),
+             #drawstyle='steps-mid', fmt='-o', label="Time-shifted")
+             fmt='o', label="Time-shifted")
+    axhline(0, c='k')
+    xlabel(r"$\theta_K\,(^\circ)$")
+    ylabel(r"Mean $\theta_H - \theta_K\,(^\circ)$")
+    title("$N_{MIP} \geq 1$")
+    legend(loc='best', numpoints=1)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-bin-theta.pdf')
 
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
@@ -880,9 +1037,16 @@ if __name__ == '__main__':
     #print "Reconstructing events..."
     #reconstruct_angles(data, 'full', events, timing_data)
     #reconstruct_angles(data, 'full_linear', events, timing_data_linear)
+    #reconstruct_angles(data, 'full_shifted', events, timing_data,
+    #                   [0.25, 0, 1.17, -0.21])
+    #reconstruct_angles(data, 'full_shifted_linear', events,
+    #                   timing_data_linear, [0.26, 0, 1.20, -0.19])
+    #reconstruct_angles(data, 'full_.9scaled', events, timing_data)
+    #reconstruct_angles(data, 'full_.9scaled_linear', events,
+    #                   timing_data_linear)
     do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
 
-    plot_arrival_times_core(data, sim_data)
+    #plot_arrival_times_core(data, sim_data)
 
     #try:
     #    h, k
