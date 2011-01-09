@@ -152,7 +152,8 @@ def do_search_coincidences(timestamps, window=200000):
 
     return coincidences
 
-def get_events(data, stations, coincidence, timestamps):
+def get_events(data, stations, coincidence, timestamps,
+               get_raw_traces=False):
     """Get event data of a coincidence
 
     Return a list of events making up a coincidence.
@@ -164,6 +165,8 @@ def get_events(data, stations, coincidence, timestamps):
         :func:`search_coincidences`.
     :param timestamps: the list of timestamps, as returned by
         :func:`search_coincidences`.
+    :param get_raw_traces: boolean.  If true, return the compressed adc
+        values instead of the uncompressed traces.
 
     :return: a list of tuples.  Each tuple consists of (station, event,
         traces), where event is the event row from PyTables and traces is
@@ -177,7 +180,10 @@ def get_events(data, stations, coincidence, timestamps):
         event_table = data.getNode(stations[station], 'events')
         blob_table = data.getNode(stations[station], 'blobs')
         event = event_table[index]
-        traces = get_traces(blob_table, event['traces'])
+        if not get_raw_traces:
+            traces = get_traces(blob_table, event['traces'])
+        else:
+            traces = [blob_table[x] for x in event['traces']]
         events.append((stations[station], event, traces))
 
     return events
