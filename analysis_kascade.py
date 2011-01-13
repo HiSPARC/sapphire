@@ -110,6 +110,8 @@ class ReconstructedEvent(tables.IsDescription):
     k_phi = tables.Float32Col()
     k_energy = tables.Float32Col()
     h_theta = tables.Float32Col()
+    h_theta1 = tables.Float32Col()
+    h_theta2 = tables.Float32Col()
     h_phi = tables.Float32Col()
     D = tables.UInt16Col()
 
@@ -142,7 +144,7 @@ def reconstruct_angle_dt(dt1, dt2, R=10):
 
     theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
-    return theta_wgt, phi
+    return theta_wgt, phi, theta1, theta2
 
 def calc_phi(s1, s2):
     """Calculate angle between detectors (phi1, phi2)"""
@@ -311,7 +313,7 @@ def reconstruct_angles(data, dstname, events, timing_data, shifts=None,
         event = dict(n1=n1, n2=n2, n3=n3, n4=n4, t1=timing[0],
                      t2=timing[1], t3=timing[2], t4=timing[3])
 
-        theta, phi = reconstruct_angle(event, R)
+        theta, phi, theta1, theta2 = reconstruct_angle(event, R)
 
         if not isnan(theta) and not isnan(phi):
             NS += 1
@@ -330,6 +332,8 @@ def reconstruct_angles(data, dstname, events, timing_data, shifts=None,
                                (2 * pi) - pi
             dst_row['k_energy'] = rawevent['k_energy']
             dst_row['h_theta'] = theta
+            dst_row['h_theta1'] = theta1
+            dst_row['h_theta2'] = theta2
             dst_row['h_phi'] = phi
             dst_row['D'] = round(min(event['n1'], event['n3'], event['n4']))
             dst_row.append()
@@ -769,12 +773,22 @@ def plot_uncertainty_core_dist_phi_theta(table, sim_table):
     savefig('plots/auto-results-core-dist-phi-theta.pdf')
 
 def plot_interarrival_times(h, k):
+    f = lambda x, N, a: N * exp(a * x)
+
     figure()
     rcParams['text.usetex'] = False
     for shift in [-12, -13, -13.180220188, -14]:
         c = array(kascade_coincidences.search_coincidences(h, k, shift))
-        hist(abs(c[:,0]) / 1e9, bins=linspace(0, 1, 200), histtype='step',
-             log=True, label=r'$\Delta t = %.4f\,\mathrm{ns}$' % shift)
+        n, bins, patches = hist(abs(c[:,0]) / 1e9, bins=linspace(0, 1, 200),
+                                histtype='step', log=True,
+                                label=r'$\Delta t = %.4f\,\mathrm{ns}$'
+                                      % shift)
+
+    b = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
+    popt, pcov = curve_fit(f, b, n)
+    print "Interarrival times rate: %f" % popt[1]
+    plot(b, f(b, *popt), label="a=%f" % popt[1])
+
     xlabel("Time difference (s)")
     ylabel("Count")
     legend()
@@ -782,6 +796,23 @@ def plot_interarrival_times(h, k):
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-interarrival-times.pdf')
+
+    figure()
+    rcParams['text.usetex'] = False
+    shift = -13.180220188
+    c = array(kascade_coincidences.search_coincidences(h, k[:20000], shift))
+    n, bins, patches = hist(c[:,0] / 1e3, bins=linspace(-10, 10, 100),
+                            histtype='step',
+                            label=r'$\Delta t = %.4f\,\mathrm{ns}$'
+                                      % shift)
+    xlabel("Time difference (us)")
+    ylabel("Count")
+    title(r"$\Delta t = %.4f\,\mathrm{ns}$" % shift)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-interarrival-times-corr.pdf')
+
+
 
 def negpos68(x):
     xmin = sorted(-x.compress(x <= 0))
@@ -1010,6 +1041,73 @@ def plot_2d_results_theta(data):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-bin-theta.pdf')
 
+def plot_energy_zenith_bin(data, tablename):
+    table = data.getNode('/reconstructions', tablename)
+
+
+    figure()
+    rcParams['text.usetex'] = False
+   
+    energies = arange(14, 17.1, 1.)
+    thetas = linspace(0, deg2rad(40), 21)
+
+    for elow, ehigh in zip(energies[:-1], energies[1:]):
+        events = table.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1) & '
+                                 '(%f <= k_energy) & (k_energy < %f)' %
+                                 (10 ** elow, 10 ** ehigh))
+        print elow, ehigh, len(events)
+        bins, mean_dtheta, std_dtheta, mean_dtheta2, std_dtheta2 = \
+            [], [], [], [], []
+        for low, high in zip(thetas[:-1], thetas[1:]):
+            # First table
+            sel = events.compress((low <= events['k_theta']) &
+                                  (events['k_theta'] < high))
+            dtheta = sel['h_theta'] - sel['k_theta']
+            bins.append((low + high) / 2)
+            mean_dtheta.append(mean(dtheta))
+            std_dtheta.append(std(dtheta))
+
+        plot(rad2deg(bins), rad2deg(mean_dtheta), 'o',
+             label="%.1f <= log(E) < %.1f" % (elow, ehigh))
+    axhline(0, c='k')
+    xlabel(r"$\theta_K\,(^\circ)$")
+    ylabel(r"Mean $\theta_H - \theta_K\,(^\circ)$")
+    title("$N_{MIP} \geq 1$")
+    legend(loc='best', numpoints=1)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-bin-theta-energy.pdf')
+
+def plot_zenith_bin_12(data):
+    table = data.root.reconstructions.full3_linear
+    events = table.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
+
+    figure()
+    rcParams['text.usetex'] = False
+    thetas = linspace(0, deg2rad(40), 21)
+    bins, mean_dtheta, mean_dtheta2 = [], [], []
+    for low, high in zip(thetas[:-1], thetas[1:]):
+        sel = events.compress((low <= events['k_theta']) &
+                              (events['k_theta'] < high))
+        dtheta = sel['h_theta1'] - sel['k_theta']
+        dtheta2 = sel['h_theta2'] - sel['k_theta']
+        print (low + high) / 2, mean(dtheta), mean(dtheta2)
+        bins.append((low + high) / 2)
+        mean_dtheta.append(mean(dtheta))
+        mean_dtheta2.append(mean(dtheta2))
+
+    plot(rad2deg(bins), rad2deg(mean_dtheta), 'o', label="Theta 1")
+    plot(rad2deg(bins), rad2deg(mean_dtheta2), 'o', label="Theta 2")
+    axhline(0, c='k')
+    xlabel(r"$\theta_K\,(^\circ)$")
+    ylabel(r"Mean $\theta_H - \theta_K\,(^\circ)$")
+    title("$N_{MIP} \geq 1$")
+    legend(loc='best', numpoints=1)
+    if USE_TEX:
+        rcParams['text.usetex'] = True
+    savefig('plots/auto-results-bin-theta-12.pdf')
+
+
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
     # quite well)
@@ -1044,13 +1142,17 @@ if __name__ == '__main__':
     #reconstruct_angles(data, 'full_.9scaled', events, timing_data)
     #reconstruct_angles(data, 'full_.9scaled_linear', events,
     #                   timing_data_linear)
-    do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
+    #reconstruct_angles(data, 'full3_linear', events, timing_data_linear)
+    #do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
+
+    #plot_zenith_bin_12(data)
+    #plot_energy_zenith_bin(data, 'full')
 
     #plot_arrival_times_core(data, sim_data)
 
-    #try:
-    #    h, k
-    #except NameError:
-    #    h = data.root.datasets.h.read()
-    #    k = data.root.datasets.knew.read()
-    #plot_interarrival_times(h, k)
+    try:
+        h, k
+    except NameError:
+        h = data.root.datasets.h.read()
+        k = data.root.datasets.knew.read()
+    plot_interarrival_times(h, k)
