@@ -52,7 +52,7 @@ def unpack_legacy_message(self):
                                         self.second
                                     )
     # Get the nanoseconds
-    self.nanoseconds = struct.unpack(">I", self.blob[11:15])[0] + random.randrange(1,9000)
+    self.nanoseconds = struct.unpack(">I", self.blob[11:15])[0]
     # Trigger time of Slave relative to Master in ns
     self.SLVtime = struct.unpack(">i", self.blob[15:19])[0]
     # Trigger pattern

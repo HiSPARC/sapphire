@@ -1,12 +1,11 @@
-from IPython.Shell import IPShellEmbed
-ipshell = IPShellEmbed()
-
 import re
 import gzip
 import tables
 
 from CIC import CIC
 from store_events import store_event
+
+DATAFILE = '../generator.h5'
 
 mysql_escape_sequences = {r'\0': '\x00',
                           r"\'": r"'",
@@ -22,7 +21,7 @@ mysql_escape_sequences = {r'\0': '\x00',
                          }
 
 def process_dump(path):
-    datafile = tables.openFile('kascade.h5', 'w')
+    datafile = tables.openFile(DATAFILE, 'w')
 
     id = 0
     buffer = gzip.open(path)
@@ -30,8 +29,6 @@ def process_dump(path):
         match = re.match("INSERT INTO `message` VALUES (.*)", line)
         if match:
             id = process_insert(datafile, match.group(1), id)
-        #if id > 1000:
-        #    break
     buffer.close()
 
     datafile.close()
@@ -40,10 +37,15 @@ def process_insert(datafile, s, id):
     insert_pattern = re.compile(r"""(\((?:[^'\)]+|'(?:\\?.)*?')+\))""")
     value_pattern = re.compile(r"""([0-9]+|'(?:\\?.)*?')""")
     for insert in insert_pattern.finditer(s):
-        id += 1
         values = value_pattern.findall(insert.group(1))
         event_id, type, msg = int(values[0]), int(values[2]),\
                               values[4][1:-1]
+
+        if id != 0:
+            id += 1
+        else:
+            id = event_id
+
         msg = re.sub(r'\\.', unescape_mysql_string, msg)
         if id != event_id:
             raise Exception("Regexp error: %d != %d" % (id, event_id))
@@ -67,5 +69,4 @@ def unescape_mysql_string(matchobj):
 
 
 if __name__ == '__main__':
-    process_dump('data-buffer-20080912.sql.gz')
-    #process_dump('bufferdata.sql.gz')
+    process_dump('../generator-buffer.sql.gz')
