@@ -13,7 +13,7 @@ from itertools import combinations
 
 from hisparc.analysis import kascade_coincidences
 
-USE_TEX = True
+USE_TEX = False
 
 
 ADC_THRESHOLD = 20
@@ -1107,6 +1107,49 @@ def plot_zenith_bin_12(data):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-bin-theta-12.pdf')
 
+def reconstruct_optimal_coincidences(h, k, initial, limit=None):
+    """Determine optimal timeshift for coincidences and reconstruct"""
+
+    t0 = max(h[0][1], k[0][1])
+    if limit:
+        limit *= int(1e9)
+        for i, t in enumerate([x[1] for x in h]):
+            if t - t0 > limit:
+                break
+        h = h[:i]
+        for i, t in enumerate([x[1] for x in k]):
+            if t - t0 > limit:
+                break
+        k = k[:i]
+
+    c = kascade_coincidences.search_coincidences(h, k, initial)
+    m = median([x[0] for x in c])
+    shift = initial - m / 1e9
+
+    c = kascade_coincidences.search_coincidences(h, k, shift)
+    hist([x[0] for x in c], bins=200, range=[-1e6, 1e6], histtype='step')
+    m = median([x[0] for x in c])
+    print "Median of residual time differences (ns):", m
+
+    # Drop outliers
+    c = [x for x in c if -1e6 < x[0] < 1e6]
+
+    figure()
+    rcParams['text.usetex'] = False
+    #plot([(k[x[2]][1] - t0) / 1e9 for x in c], [x[0] for x in c], ',')
+
+    dt = [x[0] for x in c]
+    h_idx = [x[1] for x in c]
+    k_idx = [x[2] for x in c]
+    h_t = [h[x][1] % int(1e9) for x in h_idx]
+    k_t = [k[x][1] % int(1e9) for x in k_idx]
+
+    plot(h_t, dt, 'o-')
+
+    xlabel("Time (s)")
+    ylabel("Residual time difference (ns)")
+    axis('tight')
+
 
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
@@ -1155,4 +1198,5 @@ if __name__ == '__main__':
     except NameError:
         h = data.root.datasets.h.read()
         k = data.root.datasets.knew.read()
-    plot_interarrival_times(h, k)
+    #plot_interarrival_times(h, k)
+    reconstruct_optimal_coincidences(h, k, initial=-13.18, limit=60)
