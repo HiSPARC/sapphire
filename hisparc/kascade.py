@@ -53,7 +53,7 @@ def process_events(filename, table, start=None, stop=None):
             tablerow['event_id'] = Ieve
             tablerow['timestamp'] = Gt
             tablerow['nanoseconds'] = Mmn
-            tablerow['ext_timestamp'] = Gt * 1e9 + Mmn
+            tablerow['ext_timestamp'] = Gt * long(1e9) + Mmn
             tablerow['energy'] = EnergyArray
             tablerow['core_pos'] = [Xc, Yc]
             tablerow['zenith'] = Ze
