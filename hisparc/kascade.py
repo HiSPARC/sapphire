@@ -120,17 +120,19 @@ def helper(hisparc, kascade, kascadefile):
     """
     # Determine start and end timestamps from HiSPARC data
     try:
-        hstart = gpstime.gps_to_utc(hisparc[0]['timestamp'])
-        hstop = gpstime.gps_to_utc(hisparc[-1]['timestamp'])
+        ts = hisparc[:]['timestamp']
+        hstart = gpstime.gps_to_utc(min(ts))
+        hstop = gpstime.gps_to_utc(max(ts))
     except IndexError:
         print "There is no HiSPARC data yet."
         return
     
     # Determine start and stop timestamps from KASCADE data
     try:
-        kstart = kascade[0]['timestamp']
-        kstop = kascade[-1]['timestamp']
-    except IndexError:
+        ts = kascade[:]['timestamp']
+        kstart = min(ts)
+        kstop = max(ts)
+    except ValueError:
         kstart = None
         kstop = None
 
