@@ -2,6 +2,7 @@ import tables
 from itertools import combinations
 import re
 import csv
+import zlib
 
 from pylab import *
 from scipy.optimize import curve_fit
@@ -12,6 +13,7 @@ from scipy.special import erf
 from itertools import combinations
 
 from hisparc.analysis import kascade_coincidences
+from hisparc.containers import Coincidence
 
 USE_TEX = False
 
@@ -801,7 +803,12 @@ def plot_interarrival_times(h, k):
     rcParams['text.usetex'] = False
     shift = -13.180220188
     c = array(kascade_coincidences.search_coincidences(h, k[:20000], shift))
-    n, bins, patches = hist(c[:,0] / 1e3, bins=linspace(-10, 10, 100),
+    l = len(c)
+    n, bins, patches = hist(c[:,0] / 1e3, bins=linspace(-10, -5, 500),
+                            histtype='step',
+                            label=r'$\Delta t = %.4f\,\mathrm{ns}$'
+                                      % shift)
+    n, bins, patches = hist(c[:l / 2, 0] / 1e3, bins=linspace(-10, -5, 500),
                             histtype='step',
                             label=r'$\Delta t = %.4f\,\mathrm{ns}$'
                                       % shift)
@@ -1107,8 +1114,72 @@ def plot_zenith_bin_12(data):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-bin-theta-12.pdf')
 
-def reconstruct_optimal_coincidences(h, k, initial, limit=None):
+def reconstruct_optimal_coincidences(h, k, initial, start=None, limit=None):
     """Determine optimal timeshift for coincidences and reconstruct"""
+
+    t0 = max(h[0][1], k[0][1])
+
+    if start: 
+        start *= int(1e9)
+        for i, t in enumerate([x[1] for x in h]):
+            if t - t0 > start:
+                break
+        h = h[i:]
+        for i, t in enumerate([x[1] for x in k]):
+            if t - t0 > start:
+                break
+        k = k[i:]
+    
+    t0 += start
+
+    if limit:
+        limit *= int(1e9)
+        for i, t in enumerate([x[1] for x in h]):
+            if t - t0 > limit:
+                break
+        h = h[:i]
+        for i, t in enumerate([x[1] for x in k]):
+            if t - t0 > limit:
+                break
+        k = k[:i]
+
+    #h = [(x[0], x[1] ^ (2 ** 10 - 1)) for x in h]
+    #h = [(x[0], x[1] ^ (2 ** 11 - 1)) for x in h]
+    #c = kascade_coincidences.search_coincidences(h, k, initial)
+    #m = median([x[0] for x in c])
+    #shift = initial - m / 1e9
+    #print shift
+
+    shift = initial
+    c = kascade_coincidences.search_coincidences(h, k, shift)
+    m = median([x[0] for x in c])
+    print "Median of residual time differences (ns):", m
+    print "Length: ", len(c)
+    #figure()
+    hist([x[0] for x in c], bins=range(-2000, 5000, 5), histtype='step')
+
+    # Drop outliers
+    c = [x for x in c if -1e6 < x[0] < 1e6]
+
+    #figure()
+    rcParams['text.usetex'] = False
+    #plot([(k[x[2]][1] - t0) / 1e9 for x in c], [x[0] for x in c], ',')
+
+    dt = [x[0] for x in c]
+    h_idx = [x[1] for x in c]
+    k_idx = [x[2] for x in c]
+    h_t = [h[x][1] % int(1e9) for x in h_idx]
+    k_t = [k[x][1] % int(1e9) for x in k_idx]
+
+    #plot(h_t, dt, 'o-')
+
+    xlabel("Time (s)")
+    ylabel("Residual time difference (ns)")
+    axis('tight')
+
+def time_plot(h, k, initial, batchsize=5000, limit=None):
+    tl = []
+    ml = []
 
     t0 = max(h[0][1], k[0][1])
     if limit:
@@ -1122,33 +1193,31 @@ def reconstruct_optimal_coincidences(h, k, initial, limit=None):
                 break
         k = k[:i]
 
-    c = kascade_coincidences.search_coincidences(h, k, initial)
-    m = median([x[0] for x in c])
-    shift = initial - m / 1e9
-
-    c = kascade_coincidences.search_coincidences(h, k, shift)
-    hist([x[0] for x in c], bins=200, range=[-1e6, 1e6], histtype='step')
-    m = median([x[0] for x in c])
-    print "Median of residual time differences (ns):", m
-
-    # Drop outliers
-    c = [x for x in c if -1e6 < x[0] < 1e6]
+    c = kascade_coincidences.search_coincidences(h, k, initial, dtlimit=100000)
 
     figure()
-    rcParams['text.usetex'] = False
-    #plot([(k[x[2]][1] - t0) / 1e9 for x in c], [x[0] for x in c], ',')
+    for i in range(0, len(c), batchsize):
+        tc = c[i:i + batchsize]
+        
+        print array([x[0] for x in tc])
+        m = median([x[0] for x in tc])
+        t = [x[0] - m for x in tc]
+        ml.append(m)
+        tl.append(h[tc[0][1]][1])
+        print "Median:", m
+        print "Duration: %.1f hours" % ((h[tc[-1][1]][1] - h[tc[0][1]][1]) / 1e9 / 3600)
+        print "Length:", len(t)
 
-    dt = [x[0] for x in c]
-    h_idx = [x[1] for x in c]
-    k_idx = [x[2] for x in c]
-    h_t = [h[x][1] % int(1e9) for x in h_idx]
-    k_t = [k[x][1] % int(1e9) for x in k_idx]
-
-    plot(h_t, dt, 'o-')
+        hist(t, bins=range(-2000, 5000, 5), histtype='step')
 
     xlabel("Time (s)")
-    ylabel("Residual time difference (ns)")
+    ylabel("Count")
     axis('tight')
+
+    figure()
+    plot([x / 1e9 / 86400 for x in tl], ml, '-')
+    xlabel("Time (days)")
+    ylabel("Median (ns)")
 
 
 if __name__ == '__main__':
@@ -1162,18 +1231,60 @@ if __name__ == '__main__':
         data = tables.openFile('kascade.h5', 'a')
 
     try:
-        sim_data
+        h, k
     except NameError:
-        sim_data = tables.openFile('data-e15.h5', 'r')
+        try:
+            print "Reading timing datasets from disk"
+            h = data.root.datasets.h.read()
+            k = data.root.datasets.k.read()
+        except tables.NoSuchNodeError:
+            print "Building timing datasets from disk"
+            h, k = kascade_coincidences.get_arrays_from_tables(
+                        data.root.hisparc.cluster_kascade.station_601.events,
+                        data.root.kascade.events)
+            data.createGroup('/', 'datasets')
+            data.createArray('/datasets', 'h', h)
+            data.createArray('/datasets', 'k', k)
+
+    if 'coincidences' in data.root:
+        print "Reading coincidences from disk"
+        events = data.root.coincidences.events
+    else:
+        print "Searching for coincidences"
+        c = kascade_coincidences.search_coincidences(h, k, -13.180220188,
+                                                     dtlimit=1e9)
+        print "Storing data on disk"
+        data.createGroup('/', 'coincidences',
+                         "HiSPARC / KASCADE coincidences")
+        events = data.createTable('/coincidences', 'events', Coincidence)
+        kascade_coincidences.store_coincidences(events,
+                                data.root.hisparc.cluster_kascade.station_601.events,
+                                data.root.kascade.events, c)
 
     try:
         timing_data
         timing_data_linear
     except NameError:
-        timing_data = data.root.analysis_new.timing_data.read()
-        timing_data_linear = data.root.analysis_new.timing_data_linear.read()
+        try:
+            print "Reading timing data from disk"
+            timing_data = data.root.analysis.timing_data.read()
+            timing_data_linear = data.root.analysis.timing_data_linear.read()
+        except tables.NoSuchNodeError:
+            print "Analysing timing data"
+            timing_data, timing_data_linear = process_traces(events,
+                        data.root.hisparc.cluster_kascade.station_601.blobs)
+            print "Writing timing data to disk"
+            data.createGroup('/', 'analysis')
+            data.createArray('/analysis', 'timing_data', timing_data)
+            data.createArray('/analysis', 'timing_data_linear',
+                             timing_data_linear)
 
-    events = data.root.kascade_new.coincidences
+    #try:
+    #    sim_data
+    #except NameError:
+    #    sim_data = tables.openFile('data-e15.h5', 'r')
+
+    #events = data.root.kascade_new.coincidences
 
     #print "Reconstructing events..."
     #reconstruct_angles(data, 'full', events, timing_data)
@@ -1193,10 +1304,7 @@ if __name__ == '__main__':
 
     #plot_arrival_times_core(data, sim_data)
 
-    try:
-        h, k
-    except NameError:
-        h = data.root.datasets.h.read()
-        k = data.root.datasets.knew.read()
     #plot_interarrival_times(h, k)
-    reconstruct_optimal_coincidences(h, k, initial=-13.18, limit=60)
+    
+    #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=10 * 86400)
+    time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
