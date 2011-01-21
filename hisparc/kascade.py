@@ -35,7 +35,7 @@ def process_events(filename, table, start=None, stop=None):
 
         # break up the line into an array of floats
         data = line.split(' ')
-        data = [float(x) for x in data]
+        data = [int(x) for x in data[:4]] + [float(x) for x in data[4:]]
 
         # read all columns into KASCADE-named variables
         Irun, Ieve, Gt, Mmn, EnergyArray, Xc, Yc, Ze, Az, Size, Nmu, He0, \
