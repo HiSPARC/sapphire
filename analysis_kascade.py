@@ -15,7 +15,7 @@ from itertools import combinations
 from hisparc.analysis import kascade_coincidences
 from hisparc.containers import Coincidence
 
-USE_TEX = False
+USE_TEX = True
 
 
 ADC_THRESHOLD = 20
@@ -309,9 +309,7 @@ def reconstruct_angles(data, dstname, events, timing_data, shifts=None,
         n1, n2, n3, n4 = rawevent['pulseheights'] / ADC_MIP
         if shifts:
             timing += shifts
-        ###FIXME
-        #timing *= .9
-        ###/FIXME
+
         event = dict(n1=n1, n2=n2, n3=n3, n4=n4, t1=timing[0],
                      t2=timing[1], t3=timing[2], t4=timing[3])
 
@@ -354,13 +352,13 @@ def do_reconstruction_plots(data, tablename, table2name, sim_data,
     plot_2d_results_phi(data)
     plot_2d_results_theta(data)
 
-    #plot_uncertainty_mip(table, sim_table)
-    #plot_uncertainty_zenith(table, sim_table)
-    #plot_uncertainty_zenith2(table, table2)
-    #plot_uncertainty_energy(table)
-    #plot_mip_core_dists_mean(table, sim_table)
-    #plot_zenith_core_dists_mean(table, sim_table)
-    #plot_uncertainty_core_dist_phi_theta(table, sim_table)
+    plot_uncertainty_mip(table, sim_table)
+    plot_uncertainty_zenith(table, sim_table)
+    plot_uncertainty_zenith2(table, table2)
+    plot_uncertainty_energy(table)
+    plot_mip_core_dists_mean(table, sim_table)
+    plot_zenith_core_dists_mean(table, sim_table)
+    plot_uncertainty_core_dist_phi_theta(table, sim_table)
 
 def plot_uncertainty_mip(table, sim_table):
     # constants for uncertainty estimation
@@ -547,13 +545,13 @@ def plot_uncertainty_zenith2(table, table2):
         print u, v, w
     print
     
-    plot(rad2deg(x), rad2deg(y), '^', label="Theta (FSOT)")
-    plot(rad2deg(x), rad2deg(ty), '^', label="Theta (LINT)")
+    errorbar(rad2deg(x), rad2deg(y), xerr=D_Z, fmt='^', label="Theta (FSOT)")
+    errorbar(rad2deg(x), rad2deg(ty), xerr=D_Z, fmt='^', label="Theta (LINT)")
     # Azimuthal angle undefined for zenith = 0
-    plot(rad2deg(x[1:]), rad2deg(y2[1:]), 'v', label="Phi (FSOT)")
-    plot(rad2deg(x[1:]), rad2deg(ty2[1:]), 'v', label="Phi (LINT)")
+    errorbar(rad2deg(x[1:]), rad2deg(y2[1:]), xerr=D_Z, fmt='v', label="Phi (FSOT)")
+    errorbar(rad2deg(x[1:]), rad2deg(ty2[1:]), xerr=D_Z, fmt='v', label="Phi (LINT)")
     # Labels etc.
-    xlabel("Zenith angle (deg $\pm %d$)" % D_Z)
+    xlabel("Zenith angle (deg)")
     ylabel("Uncertainty in angle reconstruction (deg)")
     title(r"$N_{MIP} = 2$")
     legend(loc='lower right', numpoints=1)
@@ -789,7 +787,7 @@ def plot_interarrival_times(h, k):
     b = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
     popt, pcov = curve_fit(f, b, n)
     print "Interarrival times rate: %f" % popt[1]
-    plot(b, f(b, *popt), label="a=%f" % popt[1])
+    plot(b, f(b, *popt), label=r"$\lambda = %f$" % popt[1])
 
     xlabel("Time difference (s)")
     ylabel("Count")
@@ -805,16 +803,10 @@ def plot_interarrival_times(h, k):
     c = array(kascade_coincidences.search_coincidences(h, k[:20000], shift))
     l = len(c)
     n, bins, patches = hist(c[:,0] / 1e3, bins=linspace(-10, -5, 500),
-                            histtype='step',
-                            label=r'$\Delta t = %.4f\,\mathrm{ns}$'
-                                      % shift)
-    n, bins, patches = hist(c[:l / 2, 0] / 1e3, bins=linspace(-10, -5, 500),
-                            histtype='step',
-                            label=r'$\Delta t = %.4f\,\mathrm{ns}$'
-                                      % shift)
+                            histtype='step')
     xlabel("Time difference (us)")
     ylabel("Count")
-    title(r"$\Delta t = %.4f\,\mathrm{ns}$" % shift)
+    title(r"$\Delta t = %.9f\,\mathrm{s}$" % shift)
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-interarrival-times-corr.pdf')
@@ -1279,12 +1271,11 @@ if __name__ == '__main__':
             data.createArray('/analysis', 'timing_data_linear',
                              timing_data_linear)
 
-    #try:
-    #    sim_data
-    #except NameError:
-    #    sim_data = tables.openFile('data-e15.h5', 'r')
+    try:
+        sim_data
+    except NameError:
+        sim_data = tables.openFile('data-e15.h5', 'r')
 
-    #events = data.root.kascade_new.coincidences
 
     #print "Reconstructing events..."
     #reconstruct_angles(data, 'full', events, timing_data)
@@ -1293,18 +1284,9 @@ if __name__ == '__main__':
     #                   [0.25, 0, 1.17, -0.21])
     #reconstruct_angles(data, 'full_shifted_linear', events,
     #                   timing_data_linear, [0.26, 0, 1.20, -0.19])
-    #reconstruct_angles(data, 'full_.9scaled', events, timing_data)
-    #reconstruct_angles(data, 'full_.9scaled_linear', events,
-    #                   timing_data_linear)
-    #reconstruct_angles(data, 'full3_linear', events, timing_data_linear)
-    #do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
 
-    #plot_zenith_bin_12(data)
-    #plot_energy_zenith_bin(data, 'full')
-
-    #plot_arrival_times_core(data, sim_data)
-
-    #plot_interarrival_times(h, k)
+    do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
+    plot_interarrival_times(h, k)
     
     #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=10 * 86400)
-    time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
+    #time_plot(h, k, initial=-13.180212844, batchsize=2000, limit=86400)
