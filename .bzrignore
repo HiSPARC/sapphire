@@ -6,3 +6,4 @@ kascade.h5
 *.dat
 *.sql.gz
 *.h5
+generator-kascade.dat.gz

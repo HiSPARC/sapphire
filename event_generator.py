@@ -5,6 +5,8 @@ import struct
 from numpy.random import randint, random
 import MySQLdb
 
+from hisparc import gpstime
+
 
 T0 = 1234567890 # 14 Feb 2009 00:31:30
 H_SHIFT = 13.18 # HiSPARC timeshift
@@ -18,8 +20,10 @@ def generate_events(timespan, rate, reconstructed_fraction):
     timestamps = randint(T0, T0 + timespan, N)
     nanoseconds = randint(0, int(1e9), N)
 
+    timestamps, nanoseconds = zip(*sorted(zip(timestamps, nanoseconds)))
+
     with open(K_FILE, 'w') as f:
-        writer = csv.writer(f, delimiter='\t')
+        writer = csv.writer(f, delimiter=' ')
         db = MySQLdb.connect(user='buffer', passwd='Buffer4hisp!',
                              db='buffer')
         cursor = db.cursor()
@@ -34,20 +38,42 @@ def generate_events(timespan, rate, reconstructed_fraction):
     db.close()
 
 def store_hisparc_event(cursor, ts, ns):
-    t = datetime.datetime.fromtimestamp(ts)
+    t = datetime.datetime.utcfromtimestamp(gpstime.utc_to_gps(ts))
     trace = 'xxx'
     l = len(trace)
 
-    # num_devices = 2, use gps timestamp, ignore rest
-    header = struct.pack('>2BBfBH5BH3L', 0, 0, 0, 0, 2, 2 * l, t.second,
-                         t.minute, t.hour, t.day, t.month, t.year,
-                         int(ns), 0, 0)
-    master = struct.pack('>8H2L%ds%ds' % (l, l), 0, 0, 0, 0, 0, 0, 0, 0,
-                         0, 0, trace, trace)
-    slave = struct.pack('>8H2L%ds%ds' % (l, l), 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                        0, trace, trace)
-
-    msg = header + master + slave
+    msg = struct.pack(">BBHBBBBBHIiHhhhhhhii%ds%dshhhhhhii%ds%ds" % 
+                      (l, l, l, l),
+                      2,        # central database
+                      2,        # number of devices
+                      l * 2,    # length of two traces
+                      t.second,
+                      t.minute,
+                      t.hour,
+                      t.day,
+                      t.month,
+                      t.year,
+                      int(ns),
+                      0,        # SLVtime
+                      0,        # Trigger pattern
+                      0,        # baseline1
+                      0,        # baseline2
+                      0,        # npeaks1
+                      0,        # npeaks2
+                      0,        # pulseheight1
+                      0,        # pulseheight2
+                      0,        # integral1
+                      0,        # integral2
+                      trace, trace,
+                      0,        # baseline3
+                      0,        # baseline4
+                      0,        # npeaks3
+                      0,        # npeaks4
+                      0,        # pulseheight3
+                      0,        # pulseheight4
+                      0,        # integral3
+                      0,        # integral4
+                      trace, trace)
 
     cursor.execute("INSERT INTO message (device_id, message) VALUES "
                    "(601, %s)", (msg,))
@@ -59,4 +85,4 @@ def store_kascade_event(writer, ts, ns):
 
 
 if __name__ == '__main__':
-    generate_events(3600, 4., .1)
+    generate_events(86400, 4., .1)

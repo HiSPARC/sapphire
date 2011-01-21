@@ -15,7 +15,9 @@ from itertools import combinations
 from hisparc.analysis import kascade_coincidences
 from hisparc.containers import Coincidence
 
-USE_TEX = True
+DATAFILE = 'generator.h5'
+
+USE_TEX = False
 
 
 ADC_THRESHOLD = 20
@@ -1193,16 +1195,17 @@ def time_plot(h, k, initial, batchsize=5000, limit=None):
         
         print array([x[0] for x in tc])
         m = median([x[0] for x in tc])
-        t = [x[0] - m for x in tc]
+        #t = [x[0] - m for x in tc]
+        t = [x[0] for x in tc]
         ml.append(m)
-        tl.append(h[tc[0][1]][1])
+        tl.append(h[tc[0][1]][1] - t0)
         print "Median:", m
         print "Duration: %.1f hours" % ((h[tc[-1][1]][1] - h[tc[0][1]][1]) / 1e9 / 3600)
         print "Length:", len(t)
 
         hist(t, bins=range(-2000, 5000, 5), histtype='step')
 
-    xlabel("Time (s)")
+    xlabel("Time (ns)")
     ylabel("Count")
     axis('tight')
 
@@ -1220,7 +1223,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('kascade.h5', 'a')
+        data = tables.openFile(DATAFILE, 'a')
 
     try:
         h, k
@@ -1285,8 +1288,10 @@ if __name__ == '__main__':
     #reconstruct_angles(data, 'full_shifted_linear', events,
     #                   timing_data_linear, [0.26, 0, 1.20, -0.19])
 
-    do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
-    plot_interarrival_times(h, k)
+    #do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
+    #plot_interarrival_times(h, k)
     
     #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=10 * 86400)
-    #time_plot(h, k, initial=-13.180212844, batchsize=2000, limit=86400)
+    #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
+
+    time_plot(h, k, initial=-15, batchsize=5000, limit=None)

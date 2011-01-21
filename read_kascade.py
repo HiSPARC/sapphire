@@ -9,8 +9,10 @@ from hisparc import kascade
 from hisparc.containers import KascadeEvent
 
 
-DATAFILE = 'kascade.h5'
-KASCADEFILE = 'HiSparc-new.dat.gz'
+#DATAFILE = 'kascade.h5'
+#KASCADEFILE = 'HiSparc-new.dat.gz'
+DATAFILE = 'generator.h5'
+KASCADEFILE = 'generator-kascade.dat.gz'
 
 
 def read_kascade_data():
@@ -19,8 +21,10 @@ def read_kascade_data():
     data = tables.openFile(DATAFILE, 'a')
 
     if 'kascade' in data.root:
-        raise RuntimeError("KASCADE event group already exists!")
-    else:
+        data.removeNode('/kascade', recursive=True)
+        #raise RuntimeError("KASCADE event group already exists!")
+    #else:
+    if True:
         data.createGroup('/', 'kascade', "KASCADE data")
         data.createTable('/kascade', 'events', KascadeEvent,
                          "KASCADE events")
