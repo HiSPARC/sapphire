@@ -15,7 +15,7 @@ from itertools import combinations
 from hisparc.analysis import kascade_coincidences
 from hisparc.containers import Coincidence
 
-DATAFILE = 'generator.h5'
+DATAFILE = 'kascade.h5'
 
 USE_TEX = False
 
@@ -1292,6 +1292,4 @@ if __name__ == '__main__':
     #plot_interarrival_times(h, k)
     
     #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=10 * 86400)
-    #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
-
-    time_plot(h, k, initial=-15, batchsize=5000, limit=None)
+    time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
