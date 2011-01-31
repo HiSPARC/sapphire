@@ -10,10 +10,10 @@ GROUP = '/efficiency'
 
 
 def main():
-    plot_energy_histogram()
+    #plot_energy_histogram()
     plot_core_distance()
-    plot_core_alpha()
-    plot_core_pos()
+    #plot_core_alpha()
+    #plot_core_pos()
 
 def plot_energy_histogram():
     events = data.getNode(GROUP, 'events')
@@ -42,6 +42,19 @@ def plot_core_distance():
     ylabel("Count")
     legend()
     savefig("plots/core_distance.pdf")
+    
+    figure()
+    hk, bins = histogram(events[:]['core_dist'], bins=linspace(0, 200,
+                                                               200))
+    hh, bins = histogram(
+            events.readWhere('self_triggered == True')['core_dist'],
+            bins=linspace(0, 200, 200))
+    x = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
+    hr = 1. * hh / hk
+    plot(x, hr)
+    xlabel("Core distance (m)")
+    ylabel("Ratio of selftriggers")
+    savefig("plots/core_distance_ratio.pdf")
 
 def plot_core_alpha():
     events = data.getNode(GROUP, 'events')
