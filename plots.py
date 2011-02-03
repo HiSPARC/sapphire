@@ -11,29 +11,30 @@ GROUP = '/efficiency'
 
 
 def main():
-    plot_energy_histogram()
-    plot_core_distance()
-    plot_core_alpha()
-    plot_core_pos()
-    plot_zenith()
-    plot_azimuth()
-    plot_T200()
-    plot_P200()
+    #plot_energy_histogram()
+    #plot_core_distance()
+    #plot_core_alpha()
+    #plot_core_pos()
+    #plot_zenith()
+    #plot_azimuth()
+    #plot_T200()
+    #plot_P200()
+    plot_particle_density()
 
-    kevents, hevents, labels, sfx = get_regions_data()
-    plot_regions_core_pos(kevents, hevents, labels, sfx)
-    plot_regions_energy_count(kevents, hevents, labels, sfx)
-    plot_regions_energy_ratio(kevents, hevents, labels, sfx)
-    plot_regions_zenith(kevents, hevents, labels, sfx)
-    plot_regions_azimuth(kevents, hevents, labels, sfx)
-    plot_regions_T200(kevents, hevents, labels, sfx)
-    plot_regions_P200(kevents, hevents, labels, sfx)
+    #kevents, hevents, labels, sfx = get_regions_data()
+    #plot_regions_core_pos(kevents, hevents, labels, sfx)
+    #plot_regions_energy_count(kevents, hevents, labels, sfx)
+    #plot_regions_energy_ratio(kevents, hevents, labels, sfx)
+    #plot_regions_zenith(kevents, hevents, labels, sfx)
+    #plot_regions_azimuth(kevents, hevents, labels, sfx)
+    #plot_regions_T200(kevents, hevents, labels, sfx)
+    #plot_regions_P200(kevents, hevents, labels, sfx)
 
-    kevents, hevents, labels, sfx = get_p_regions_data()
-    plot_regions_energy_count(kevents, hevents, labels, sfx)
-    plot_regions_energy_ratio(kevents, hevents, labels, sfx)
-    plot_regions_P200(kevents, hevents, labels, sfx)
-    plot_regions_core_pos(kevents, hevents, labels, sfx)
+    #kevents, hevents, labels, sfx = get_p_regions_data()
+    #plot_regions_energy_count(kevents, hevents, labels, sfx)
+    #plot_regions_energy_ratio(kevents, hevents, labels, sfx)
+    #plot_regions_P200(kevents, hevents, labels, sfx)
+    #plot_regions_core_pos(kevents, hevents, labels, sfx)
 
 def plot_energy_histogram():
     events = data.getNode(GROUP, 'events')
@@ -239,6 +240,24 @@ def plot_P200():
     ylabel("Ratio of self-triggers")
     legend(loc='best')
     savefig("plots/P200_ratio.pdf")
+
+def plot_particle_density():
+    events = data.getNode(GROUP, 'events')
+
+    figure()
+    edges = linspace(0, 200, 200)
+    x, y, y2 = [], [], []
+    for r1, r2 in zip(edges[:-1], edges[1:]):
+        e = events.readWhere('(r1 <= core_dist) & (core_dist < r2)')
+        x.append((r1 + r2) / 2)
+        y.append(median(e[:]['k_dens_e']))
+        y2.append(median(e[:]['k_dens_mu']))
+    plot(x, y, label="Electrons")
+    plot(x, y2, label="Muons")
+    xlabel("Core distance (m)")
+    ylabel("Median electron density $(\mathrm{m}^{-2})$")
+    legend(loc='best')
+    savefig("plots/core_dist_pdens.pdf")
 
 def plot_regions_core_pos(kevents, hevents, labels, sfx):
     for i, (k, h, label) in enumerate(zip(kevents, hevents, labels)):
