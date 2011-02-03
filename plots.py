@@ -15,6 +15,10 @@ def main():
     plot_core_distance()
     plot_core_alpha()
     plot_core_pos()
+    plot_zenith()
+    plot_azimuth()
+    plot_T200()
+    plot_P200()
 
     kevents, hevents, labels = get_regions_data()
     plot_regions_core_pos(kevents, hevents, labels)
@@ -120,6 +124,110 @@ def plot_core_pos():
     ylabel("(m)")
     title("Shower core positions (self-triggered) (log)")
     savefig("plots/core_pos_trig_log.pdf")
+
+def plot_zenith():
+    events = data.getNode(GROUP, 'events')
+
+    figure()
+    hist(rad2deg(events[:]['k_zenith']), bins=200, histtype='step',
+         label="KASCADE trigger")
+    hist(rad2deg(events.readWhere('self_triggered == True')['k_zenith']),
+         bins=200, histtype='step', label="HiSPARC trigger")
+    xlabel("Zenith $(^\circ)$")
+    ylabel("Count")
+    legend(loc='best')
+    savefig("plots/zenith_histogram.pdf")
+   
+    figure()
+    hk, bins = histogram(rad2deg(events[:]['k_zenith']), bins=200)
+    hh, bins = histogram(
+            rad2deg(events.readWhere('self_triggered == True')['k_zenith']),
+            bins=200)
+    x = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
+    hr = 1. * hh / hk
+    plot(x, hr)
+    xlabel("Zenith $(^\circ)$")
+    ylabel("Ratio of self-triggers")
+    legend(loc='best')
+    savefig("plots/zenith_ratio.pdf")
+
+def plot_azimuth():
+    events = data.getNode(GROUP, 'events')
+
+    figure()
+    hist(rad2deg(events[:]['k_azimuth']), bins=200, histtype='step',
+         label="KASCADE trigger")
+    hist(rad2deg(events.readWhere('self_triggered == True')['k_azimuth']),
+         bins=200, histtype='step', label="HiSPARC trigger")
+    xlabel("Azimuth $(^\circ)$")
+    ylabel("Count")
+    legend(loc='best')
+    savefig("plots/azimuth_histogram.pdf")
+   
+    figure()
+    hk, bins = histogram(rad2deg(events[:]['k_azimuth']), bins=200)
+    hh, bins = histogram(
+            rad2deg(events.readWhere('self_triggered == True')['k_azimuth']),
+            bins=200)
+    x = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
+    hr = 1. * hh / hk
+    plot(x, hr)
+    xlabel("Azimuth $(^\circ)$")
+    ylabel("Ratio of self-triggers")
+    legend(loc='best')
+    savefig("plots/azimuth_ratio.pdf")
+
+def plot_T200():
+    events = data.getNode(GROUP, 'events')
+
+    figure()
+    hist(events[:]['k_T200'], bins=200, histtype='step',
+         label="KASCADE trigger")
+    hist(events.readWhere('self_triggered == True')['k_T200'], bins=200,
+         histtype='step', label="HiSPARC trigger")
+    xlabel("Temperature $(^\circ\!\mathrm{C})$")
+    ylabel("Count")
+    legend(loc='best')
+    savefig("plots/T200_histogram.pdf")
+   
+    figure()
+    hk, bins = histogram(events[:]['k_T200'], bins=200)
+    hh, bins = histogram(
+            events.readWhere('self_triggered == True')['k_T200'],
+            bins=200)
+    x = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
+    hr = 1. * hh / hk
+    plot(x, hr)
+    xlabel("Temperature $(^\circ\!\mathrm{C})$")
+    ylabel("Ratio of self-triggers")
+    legend(loc='best')
+    savefig("plots/T200_ratio.pdf")
+
+def plot_P200():
+    events = data.getNode(GROUP, 'events')
+
+    figure()
+    hist(events[:]['k_P200'], bins=200, histtype='step',
+         label="KASCADE trigger")
+    hist(events.readWhere('self_triggered == True')['k_P200'], bins=200,
+         histtype='step', label="HiSPARC trigger")
+    xlabel("Pressure (hPa)")
+    ylabel("Count")
+    legend(loc='best')
+    savefig("plots/P200_histogram.pdf")
+   
+    figure()
+    hk, bins = histogram(events[:]['k_P200'], bins=200)
+    hh, bins = histogram(
+            events.readWhere('self_triggered == True')['k_P200'],
+            bins=200)
+    x = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
+    hr = 1. * hh / hk
+    plot(x, hr)
+    xlabel("Pressure (hPa)")
+    ylabel("Ratio of self-triggers")
+    legend(loc='best')
+    savefig("plots/P200_ratio.pdf")
 
 def plot_regions_core_pos(kevents, hevents, labels):
     for i, (k, h, label) in enumerate(zip(kevents, hevents, labels)):
