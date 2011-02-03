@@ -20,24 +20,30 @@ def main():
     plot_T200()
     plot_P200()
 
-    kevents, hevents, labels = get_regions_data()
-    plot_regions_core_pos(kevents, hevents, labels)
-    plot_regions_energy_count(kevents, hevents, labels)
-    plot_regions_energy_ratio(kevents, hevents, labels)
-    plot_regions_zenith(kevents, hevents, labels)
-    plot_regions_azimuth(kevents, hevents, labels)
-    plot_regions_T200(kevents, hevents, labels)
-    plot_regions_P200(kevents, hevents, labels)
+    kevents, hevents, labels, sfx = get_regions_data()
+    plot_regions_core_pos(kevents, hevents, labels, sfx)
+    plot_regions_energy_count(kevents, hevents, labels, sfx)
+    plot_regions_energy_ratio(kevents, hevents, labels, sfx)
+    plot_regions_zenith(kevents, hevents, labels, sfx)
+    plot_regions_azimuth(kevents, hevents, labels, sfx)
+    plot_regions_T200(kevents, hevents, labels, sfx)
+    plot_regions_P200(kevents, hevents, labels, sfx)
+
+    kevents, hevents, labels, sfx = get_p_regions_data()
+    plot_regions_energy_count(kevents, hevents, labels, sfx)
+    plot_regions_energy_ratio(kevents, hevents, labels, sfx)
+    plot_regions_P200(kevents, hevents, labels, sfx)
+    plot_regions_core_pos(kevents, hevents, labels, sfx)
 
 def plot_energy_histogram():
     events = data.getNode(GROUP, 'events')
 
     figure()
     hist(events[:]['k_energy'] / 1e15, bins=logspace(-1, 2, 200),
-         histtype='step', label="KASCADE trigger")
+         histtype='step', label="KASCADE trigger", normed=True)
     hist(events.readWhere('self_triggered == True')['k_energy'] / 1e15,
          bins=logspace(-1, 2, 200), histtype='step',
-         label="HiSPARC trigger")
+         label="HiSPARC trigger", normed=True)
     xlabel("Energy (PeV)")
     xscale('log')
     ylabel("Count")
@@ -49,10 +55,10 @@ def plot_core_distance():
 
     figure()
     hist(events[:]['core_dist'], bins=linspace(0, 200, 200),
-         histtype='step', label="KASCADE trigger")
+         histtype='step', label="KASCADE trigger", normed=True)
     hist(events.readWhere('self_triggered == True')['core_dist'],
          bins=linspace(0, 200, 200), histtype='step',
-         label="HiSPARC trigger")
+         label="HiSPARC trigger", normed=True)
     axvline(15)
     axvline(30)
     xlabel("Core distance (m)")
@@ -61,6 +67,7 @@ def plot_core_distance():
     savefig("plots/core_distance.pdf")
     
     figure()
+    global hk, hh, x
     hk, bins = histogram(events[:]['core_dist'], bins=linspace(0, 200,
                                                                200))
     hh, bins = histogram(
@@ -80,9 +87,9 @@ def plot_core_alpha():
 
     figure()
     hist(events[:]['core_alpha'] / pi, bins=200, histtype='step',
-         label="KASCADE trigger")
+         label="KASCADE trigger", normed=True)
     hist(events.readWhere('self_triggered == True')['core_alpha'] / pi,
-         bins=200, histtype='step', label="HiSPARC trigger")
+         bins=200, histtype='step', label="HiSPARC trigger", normed=True)
     xlabel("Ground angle to core ($\mathrm{rad} \pi^{-1}$)")
     ylabel("Count")
     legend(loc='best')
@@ -130,9 +137,9 @@ def plot_zenith():
 
     figure()
     hist(rad2deg(events[:]['k_zenith']), bins=200, histtype='step',
-         label="KASCADE trigger")
+         label="KASCADE trigger", normed=True)
     hist(rad2deg(events.readWhere('self_triggered == True')['k_zenith']),
-         bins=200, histtype='step', label="HiSPARC trigger")
+         bins=200, histtype='step', label="HiSPARC trigger", normed=True)
     xlabel("Zenith $(^\circ)$")
     ylabel("Count")
     legend(loc='best')
@@ -156,9 +163,9 @@ def plot_azimuth():
 
     figure()
     hist(rad2deg(events[:]['k_azimuth']), bins=200, histtype='step',
-         label="KASCADE trigger")
+         label="KASCADE trigger", normed=True)
     hist(rad2deg(events.readWhere('self_triggered == True')['k_azimuth']),
-         bins=200, histtype='step', label="HiSPARC trigger")
+         bins=200, histtype='step', label="HiSPARC trigger", normed=True)
     xlabel("Azimuth $(^\circ)$")
     ylabel("Count")
     legend(loc='best')
@@ -181,15 +188,17 @@ def plot_T200():
     events = data.getNode(GROUP, 'events')
 
     figure()
-    hist(events[:]['k_T200'], bins=200, histtype='step',
-         label="KASCADE trigger")
+    hist(events[:]['k_T200'], bins=100, histtype='step',
+         label="KASCADE trigger", normed=True)
     hist(events.readWhere('self_triggered == True')['k_T200'], bins=200,
-         histtype='step', label="HiSPARC trigger")
+         histtype='step', label="HiSPARC trigger", normed=True)
     xlabel("Temperature $(^\circ\!\mathrm{C})$")
     ylabel("Count")
+    # FIXME
+    ylim(ymax=.15)
     legend(loc='best')
     savefig("plots/T200_histogram.pdf")
-   
+
     figure()
     hk, bins = histogram(events[:]['k_T200'], bins=200)
     hh, bins = histogram(
@@ -208,11 +217,13 @@ def plot_P200():
 
     figure()
     hist(events[:]['k_P200'], bins=200, histtype='step',
-         label="KASCADE trigger")
+         label="KASCADE trigger", normed=True)
     hist(events.readWhere('self_triggered == True')['k_P200'], bins=200,
-         histtype='step', label="HiSPARC trigger")
+         histtype='step', label="HiSPARC trigger", normed=True)
     xlabel("Pressure (hPa)")
     ylabel("Count")
+    # FIXME
+    ylim(ymax=.2)
     legend(loc='best')
     savefig("plots/P200_histogram.pdf")
    
@@ -229,7 +240,7 @@ def plot_P200():
     legend(loc='best')
     savefig("plots/P200_ratio.pdf")
 
-def plot_regions_core_pos(kevents, hevents, labels):
+def plot_regions_core_pos(kevents, hevents, labels, sfx):
     for i, (k, h, label) in enumerate(zip(kevents, hevents, labels)):
         figure()
         cores = k[:]['k_core_pos']
@@ -238,7 +249,7 @@ def plot_regions_core_pos(kevents, hevents, labels):
         xlabel("(m)")
         ylabel("(m)")
         title("Shower core positions (%s)" % label)
-        savefig("plots/region_core_pos_%d.pdf" % i)
+        savefig("plots/region_core_pos_%d_%s.pdf" % (i, sfx))
 
     for i, (k, h, label) in enumerate(zip(kevents, hevents, labels)):
         figure()
@@ -248,17 +259,17 @@ def plot_regions_core_pos(kevents, hevents, labels):
         xlabel("(m)")
         ylabel("(m)")
         title("Shower core positions (self-triggered) (%s)" % label)
-        savefig("plots/region_core_pos_trig_%d.pdf" % i)
+        savefig("plots/region_core_pos_trig_%d_%s.pdf" % (i, sfx))
 
-def plot_regions_energy_count(kevents, hevents, labels):
+def plot_regions_energy_count(kevents, hevents, labels, sfx):
     figure()
     for k, h, label in zip(kevents, hevents, labels):
         subplot(211)
         hist(k['k_energy'] / 1e15, bins=logspace(-1, 2, 200),
-             histtype='step', label=label)
+             histtype='step', label=label, normed=True)
         subplot(212)
         hist(h['k_energy'] / 1e15, bins=logspace(-1, 2, 200),
-             histtype='step', label=label)
+             histtype='step', label=label, normed=True)
     subplot(211)
     title("KASCADE (upper), self-triggered (lower)")
     xscale('log')
@@ -269,9 +280,9 @@ def plot_regions_energy_count(kevents, hevents, labels):
     xscale('log')
     ylabel("Count")
     legend(loc='best')
-    savefig("plots/region_energy.pdf")
+    savefig("plots/region_energy_%s.pdf" % sfx)
 
-def plot_regions_energy_ratio(kevents, hevents, labels):
+def plot_regions_energy_ratio(kevents, hevents, labels, sfx):
     figure()
     for k, h, label in zip(kevents, hevents, labels):
         hk, bins = histogram(k['k_energy'] / 1e15, bins=logspace(-1, 2,
@@ -285,17 +296,17 @@ def plot_regions_energy_ratio(kevents, hevents, labels):
     xscale('log')
     ylabel("Ratio")
     legend(loc='best')
-    savefig("plots/region_energy_ratio.pdf")
+    savefig("plots/region_energy_ratio_%s.pdf" % sfx)
 
-def plot_regions_zenith(kevents, hevents, labels):
+def plot_regions_zenith(kevents, hevents, labels, sfx):
     figure()
     for k, h, label in zip(kevents, hevents, labels):
         subplot(211)
         hist(rad2deg(k['k_zenith']), bins=200,
-             histtype='step', label=label)
+             histtype='step', label=label, normed=True)
         subplot(212)
         hist(rad2deg(h['k_zenith']), bins=200,
-             histtype='step', label=label)
+             histtype='step', label=label, normed=True)
     subplot(211)
     title("KASCADE (upper), self-triggered (lower)")
     ylabel("Count")
@@ -304,7 +315,7 @@ def plot_regions_zenith(kevents, hevents, labels):
     xlabel("Zenith $(^\circ)$")
     ylabel("Count")
     legend(loc='best')
-    savefig("plots/region_zenith.pdf")
+    savefig("plots/region_zenith_%s.pdf" % sfx)
 
     figure()
     for k, h, label in zip(kevents, hevents, labels):
@@ -316,17 +327,17 @@ def plot_regions_zenith(kevents, hevents, labels):
     xlabel("Zenith $(^\circ)$")
     ylabel("Ratio")
     legend(loc='best')
-    savefig("plots/region_zenith_ratio.pdf")
+    savefig("plots/region_zenith_ratio_%s.pdf" % sfx)
 
-def plot_regions_azimuth(kevents, hevents, labels):
+def plot_regions_azimuth(kevents, hevents, labels, sfx):
     figure()
     for k, h, label in zip(kevents, hevents, labels):
         subplot(211)
         hist(rad2deg(k['k_azimuth']), bins=200,
-             histtype='step', label=label)
+             histtype='step', label=label, normed=True)
         subplot(212)
         hist(rad2deg(h['k_azimuth']), bins=200,
-             histtype='step', label=label)
+             histtype='step', label=label, normed=True)
     subplot(211)
     title("KASCADE (upper), self-triggered (lower)")
     ylabel("Count")
@@ -335,7 +346,7 @@ def plot_regions_azimuth(kevents, hevents, labels):
     xlabel("Azimuth $(^\circ)$")
     ylabel("Count")
     legend(loc='best')
-    savefig("plots/region_azimuth.pdf")
+    savefig("plots/region_azimuth_%s.pdf" % sfx)
 
     figure()
     for k, h, label in zip(kevents, hevents, labels):
@@ -347,26 +358,28 @@ def plot_regions_azimuth(kevents, hevents, labels):
     xlabel("Azimuth $(^\circ)$")
     ylabel("Ratio")
     legend(loc='best')
-    savefig("plots/region_azimuth_ratio.pdf")
+    savefig("plots/region_azimuth_ratio_%s.pdf" % sfx)
 
-def plot_regions_T200(kevents, hevents, labels):
+def plot_regions_T200(kevents, hevents, labels, sfx):
     figure()
     for k, h, label in zip(kevents, hevents, labels):
         subplot(211)
         hist(k['k_T200'], bins=200,
-             histtype='step', label=label)
+             histtype='step', label=label, normed=True)
         subplot(212)
         hist(h['k_T200'], bins=200,
-             histtype='step', label=label)
+             histtype='step', label=label, normed=True)
     subplot(211)
     title("KASCADE (upper), self-triggered (lower)")
     ylabel("Count")
+    ylim(ymax=.2)
     legend(loc='best')
     subplot(212)
     xlabel("Temperature $(^\circ\mathrm{C})$")
     ylabel("Count")
+    ylim(ymax=.2)
     legend(loc='best')
-    savefig("plots/region_T200.pdf")
+    savefig("plots/region_T200_%s.pdf" % sfx)
 
     figure()
     for k, h, label in zip(kevents, hevents, labels):
@@ -378,38 +391,40 @@ def plot_regions_T200(kevents, hevents, labels):
     xlabel("Temperature $(^\circ\mathrm{C})$")
     ylabel("Ratio")
     legend(loc='best')
-    savefig("plots/region_T200_ratio.pdf")
+    savefig("plots/region_T200_ratio_%s.pdf" % sfx)
 
-def plot_regions_P200(kevents, hevents, labels):
+def plot_regions_P200(kevents, hevents, labels, sfx):
     figure()
     for k, h, label in zip(kevents, hevents, labels):
         subplot(211)
-        hist(k['k_P200'], bins=200,
-             histtype='step', label=label)
+        hist(k['k_P200'], bins=50,
+             histtype='step', label=label, normed=True)
         subplot(212)
-        hist(h['k_P200'], bins=200,
-             histtype='step', label=label)
+        hist(h['k_P200'], bins=50,
+             histtype='step', label=label, normed=True)
     subplot(211)
     title("KASCADE (upper), self-triggered (lower)")
     ylabel("Count")
+    ylim(ymax=.2)
     legend(loc='best')
     subplot(212)
     xlabel("Pressure (hPa)")
     ylabel("Count")
+    ylim(ymax=.2)
     legend(loc='best')
-    savefig("plots/region_P200.pdf")
+    savefig("plots/region_P200_%s.pdf" % sfx)
 
     figure()
     for k, h, label in zip(kevents, hevents, labels):
-        hk, bins = histogram(k['k_P200'], bins=200)
-        hh, bins = histogram(h['k_P200'], bins=200)
+        hk, bins = histogram(k['k_P200'], bins=50)
+        hh, bins = histogram(h['k_P200'], bins=50)
         x = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
         hr = 1. * hh / hk
         plot(x, hr, label=label)
     xlabel("Pressure (hPa)")
     ylabel("Ratio")
     legend(loc='best')
-    savefig("plots/region_P200_ratio.pdf")
+    savefig("plots/region_P200_ratio_%s.pdf" % sfx)
 
 def get_regions_data():
     events = data.getNode(GROUP, 'events')
@@ -424,7 +439,22 @@ def get_regions_data():
         kevents.append(events.readWhere(cond))
         hevents.append(events.readWhere(cond +
                                         ' & (self_triggered == True)'))
-    return kevents, hevents, labels
+    return kevents, hevents, labels, 'R'
+
+def get_p_regions_data():
+    events = data.getNode(GROUP, 'events')
+
+    edges = [995, 1005, 1015]
+    labels = ["%d <= P < %d" % (u, v) for u, v in zip(edges[:-1],
+                                                      edges[1:])]
+    kevents = []
+    hevents = []
+    cond = '(r1 <= k_P200) & (k_P200 < r2)'
+    for r1, r2 in zip(edges[:-1], edges[1:]):
+        kevents.append(events.readWhere(cond))
+        hevents.append(events.readWhere(cond +
+                                        ' & (self_triggered == True)'))
+    return kevents, hevents, labels, 'P'
 
 
 
