@@ -263,23 +263,45 @@ def plot_density_fraction():
     events = data.getNode(GROUP, 'events')
 
     figure()
-    hk, bins = histogram(events[:]['k_dens_e'], bins=linspace(0, 10, 200))
-    hh, bins = histogram(
-            events.readWhere('self_triggered == True')['k_dens_e'],
-            bins=linspace(0, 10, 200))
+    bins = linspace(0, 10, 201)
     x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
-    hr = 1. * hh / hk
-    plot(x, hr, label="Data")
+    for Z in ['k_zenith < %.2f' % deg2rad(40), 'k_zenith < %.2f' %
+              deg2rad(10), 'k_zenith > %.2f' % deg2rad(25)]:
+        kevents = events.readWhere(Z)
+        hevents = events.readWhere('(%s) & (self_triggered == True)' % Z)
+        kdens = median(kevents['k_dens_e'], 1)
+        hdens = median(hevents['k_dens_e'], 1)
+
+        subplot(211)
+        hk, bins = histogram(kdens, bins=bins)
+        hh, bins = histogram(hdens, bins=bins)
+        hr = 1. * hh / hk
+        plot(x, hr, label=Z)
+
+        subplot(212)
+        kdens *= cos(kevents['k_zenith'])
+        hdens *= cos(hevents['k_zenith'])
+        hk, bins = histogram(kdens, bins=bins)
+        hh, bins = histogram(hdens, bins=bins)
+        hr = 1. * hh / hk
+        plot(x, hr, label=Z)
 
     # Poisson probability of zero particles in detector
     p0 = exp(-.5 * x)
     p = 1 - (4 * (1 - p0) * p0 ** 3 + p0 ** 4)
-    plot(x, p, label="Poisson")
 
-    ylim(ymin=0)
-    xlabel("Electron density (m$^{-1}$)")
+    subplot(211)
+    plot(x, p, label="Poisson")
     ylabel("Probability of trigger")
     legend(loc='best')
+    title("Without correction")
+
+    subplot(212)
+    plot(x, p, label="Poisson")
+    ylabel("Probability of trigger")
+    legend(loc='best')
+    xlabel("Electron density (m$^{-1}$)")
+    title(r"$\cos\theta$ correction")
     savefig("plots/density_trigger_probability.pdf")
 
 def plot_regions_core_pos(kevents, hevents, labels, sfx):
