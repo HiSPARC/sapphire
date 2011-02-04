@@ -4,6 +4,7 @@ from build_dataset import DETECTORS
 from plot_utils import *
 
 from pylab import *
+from scipy.optimize import curve_fit
 
 
 DATAFILE = 'kascade.h5'
@@ -20,7 +21,7 @@ def main():
     #plot_T200()
     #plot_P200()
     #plot_particle_density()
-    plot_density_fraction()
+    #plot_density_fraction()
     optimize_trigger_prob()
 
     #kevents, hevents, labels, sfx = get_regions_data()
@@ -339,7 +340,7 @@ def optimize_trigger_prob():
     plot(x, p(x, 0), label="Poisson")
     xlabel("Electron density (m$^{-1}$)")
     ylabel("Probability of trigger")
-    title(r"$\cos\theta$ correction")
+    title(r"$\cos\theta$ correction, shift: %.2f" % popt[0])
     legend(loc='best')
     savefig("plots/optimize_trigger_prob.pdf")
 
