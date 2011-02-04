@@ -19,7 +19,8 @@ def main():
     #plot_azimuth()
     #plot_T200()
     #plot_P200()
-    plot_particle_density()
+    #plot_particle_density()
+    plot_density_fraction()
 
     #kevents, hevents, labels, sfx = get_regions_data()
     #plot_regions_core_pos(kevents, hevents, labels, sfx)
@@ -68,7 +69,6 @@ def plot_core_distance():
     savefig("plots/core_distance.pdf")
     
     figure()
-    global hk, hh, x
     hk, bins = histogram(events[:]['core_dist'], bins=linspace(0, 200,
                                                                200))
     hh, bins = histogram(
@@ -258,6 +258,29 @@ def plot_particle_density():
     ylabel("Median electron density $(\mathrm{m}^{-2})$")
     legend(loc='best')
     savefig("plots/core_dist_pdens.pdf")
+
+def plot_density_fraction():
+    events = data.getNode(GROUP, 'events')
+
+    figure()
+    hk, bins = histogram(events[:]['k_dens_e'], bins=linspace(0, 10, 200))
+    hh, bins = histogram(
+            events.readWhere('self_triggered == True')['k_dens_e'],
+            bins=linspace(0, 10, 200))
+    x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
+    hr = 1. * hh / hk
+    plot(x, hr, label="Data")
+
+    # Poisson probability of zero particles in detector
+    p0 = exp(-.5 * x)
+    p = 1 - (4 * (1 - p0) * p0 ** 3 + p0 ** 4)
+    plot(x, p, label="Poisson")
+
+    ylim(ymin=0)
+    xlabel("Electron density (m$^{-1}$)")
+    ylabel("Probability of trigger")
+    legend(loc='best')
+    savefig("plots/density_trigger_probability.pdf")
 
 def plot_regions_core_pos(kevents, hevents, labels, sfx):
     for i, (k, h, label) in enumerate(zip(kevents, hevents, labels)):
