@@ -21,6 +21,7 @@ def main():
     #plot_P200()
     #plot_particle_density()
     plot_density_fraction()
+    optimize_trigger_prob()
 
     #kevents, hevents, labels, sfx = get_regions_data()
     #plot_regions_core_pos(kevents, hevents, labels, sfx)
@@ -303,6 +304,44 @@ def plot_density_fraction():
     xlabel("Electron density (m$^{-1}$)")
     title(r"$\cos\theta$ correction")
     savefig("plots/density_trigger_probability.pdf")
+
+def optimize_trigger_prob():
+    events = data.getNode(GROUP, 'events')
+
+    global hrs, x, p
+
+    figure()
+    bins = linspace(0, 10, 201)
+    x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
+    hrs = []
+    for Z in ['k_zenith < %.2f' % deg2rad(40), 'k_zenith < %.2f' %
+              deg2rad(10), 'k_zenith > %.2f' % deg2rad(25)]:
+        kevents = events.readWhere(Z)
+        hevents = events.readWhere('(%s) & (self_triggered == True)' % Z)
+        kdens = median(kevents['k_dens_e'], 1) * cos(kevents['k_zenith'])
+        hdens = median(hevents['k_dens_e'], 1) * cos(hevents['k_zenith'])
+
+        hk, bins = histogram(kdens, bins=bins)
+        hh, bins = histogram(hdens, bins=bins)
+        hr = 1. * hh / hk
+        hrs.append(hr)
+
+    # Poisson probability of zero particles in detector
+    p = lambda x, c: 1 - (4 * (1 - exp(-.5 * (x + c))) * \
+                     exp(-.5 * (x + c)) ** 3 + exp(-.5 * (x + c)) ** 4)
+
+    popt, pcov = curve_fit(p, x, hrs[0])
+    for y in hrs:
+        chisq = sum([u ** 2 - v ** 2 for u, v in zip(y, p(x, popt[0])) if
+                     u > .25])
+        plot(x + popt[0], y, label='chisq: %.2f' % chisq)
+
+    plot(x, p(x, 0), label="Poisson")
+    xlabel("Electron density (m$^{-1}$)")
+    ylabel("Probability of trigger")
+    title(r"$\cos\theta$ correction")
+    legend(loc='best')
+    savefig("plots/optimize_trigger_prob.pdf")
 
 def plot_regions_core_pos(kevents, hevents, labels, sfx):
     for i, (k, h, label) in enumerate(zip(kevents, hevents, labels)):
