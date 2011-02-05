@@ -333,9 +333,9 @@ def optimize_trigger_prob():
 
     popt, pcov = curve_fit(p, x, hrs[0])
     for y in hrs:
-        chisq = sum([u ** 2 - v ** 2 for u, v in zip(y, p(x, popt[0])) if
+        chisq = sum([(u - v) ** 2 for u, v in zip(y, p(x, popt[0])) if
                      u > .25])
-        plot(x + popt[0], y, label='chisq: %.2f' % chisq)
+        plot(x + popt[0], y, label='chisq: %.2e' % chisq)
 
     plot(x, p(x, 0), label="Poisson")
     xlabel("Electron density (m$^{-1}$)")
