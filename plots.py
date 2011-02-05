@@ -340,6 +340,7 @@ def optimize_trigger_prob():
     plot(x, p(x, 0), label="Poisson")
     xlabel("Electron density (m$^{-1}$)")
     ylabel("Probability of trigger")
+    ylim(ymax=1.05)
     title(r"$\cos\theta$ correction, shift: %.2f" % popt[0])
     legend(loc='best')
     savefig("plots/optimize_trigger_prob.pdf")
