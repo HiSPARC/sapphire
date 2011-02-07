@@ -118,6 +118,8 @@ class ReconstructedEvent(tables.IsDescription):
     h_theta2 = tables.Float32Col()
     h_phi = tables.Float32Col()
     D = tables.UInt16Col()
+    k_dens_e = tables.Float32Col(shape=4)
+    k_dens_mu = tables.Float32Col(shape=4)
 
 def reconstruct_angle(event, R=10):
     """Reconstruct angles from a single event"""
@@ -338,6 +340,9 @@ def reconstruct_angles(data, dstname, events, timing_data, shifts=None,
             dst_row['h_theta2'] = theta2
             dst_row['h_phi'] = phi
             dst_row['D'] = round(min(event['n1'], event['n3'], event['n4']))
+
+            dst_row['k_dens_e'] = rawevent['k_dens_e']
+            dst_row['k_dens_mu'] = rawevent['k_dens_mu']
             dst_row.append()
     dest.flush()
 
@@ -1280,8 +1285,8 @@ if __name__ == '__main__':
         sim_data = tables.openFile('data-e15.h5', 'r')
 
 
-    #print "Reconstructing events..."
-    #reconstruct_angles(data, 'full', events, timing_data)
+    print "Reconstructing events..."
+    reconstruct_angles(data, 'full', events, timing_data)
     #reconstruct_angles(data, 'full_linear', events, timing_data_linear)
     #reconstruct_angles(data, 'full_shifted', events, timing_data,
     #                   [0.25, 0, 1.17, -0.21])
@@ -1292,4 +1297,4 @@ if __name__ == '__main__':
     #plot_interarrival_times(h, k)
     
     #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=10 * 86400)
-    time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
+    #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
