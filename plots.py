@@ -266,17 +266,15 @@ def plot_particle_density():
 def plot_density_fraction_err():
     events = data.getNode(GROUP, 'events')
 
-    global err, hdens
-
     figure()
     bins = linspace(0, 10, 201)
     x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
     kevents = events[:]
     hevents = events.readWhere('self_triggered == True')
     kdens = kevents['k_dens_e']
-    kdens_m = median(kdens, 1)
+    kdens_m = mean(kdens, 1)
     hdens = hevents['k_dens_e']
-    hdens_m = median(hdens, 1)
+    hdens_m = mean(hdens, 1)
 
     err = [[] for u in xrange(len(bins) - 1)]
     for idx, v in zip(bins.searchsorted(hdens_m), hdens):
@@ -284,12 +282,12 @@ def plot_density_fraction_err():
             err[idx - 1].extend(v.tolist())
         except IndexError:
             pass
-    err = [std(u) for u in err]
+    errb = [std(u) for u in err]
 
     hk, bins = histogram(kdens_m, bins=bins)
     hh, bins = histogram(hdens_m, bins=bins)
     hr = 1. * hh / hk
-    errorbar(x, hr, xerr=err, label="Data", capsize=0)
+    errorbar(x, hr, xerr=errb, label="Data", capsize=0)
     
     # Poisson probability of zero particles in detector
     p0 = exp(-.5 * x)
