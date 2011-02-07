@@ -22,7 +22,8 @@ def main():
     #plot_P200()
     #plot_particle_density()
     #plot_density_fraction()
-    optimize_trigger_prob()
+    #optimize_trigger_prob()
+    plot_theta_phi_corr()
 
     #kevents, hevents, labels, sfx = get_regions_data()
     #plot_regions_core_pos(kevents, hevents, labels, sfx)
@@ -344,6 +345,24 @@ def optimize_trigger_prob():
     title(r"$\cos\theta$ correction, shift: %.2f" % popt[0])
     legend(loc='best')
     savefig("plots/optimize_trigger_prob.pdf")
+
+def plot_theta_phi_corr():
+    global events
+    events = data.root.reconstructions.full_linear[:]
+    events = events.compress(events['k_dens_e'][:,1] < .3)
+
+    figure()
+    plot(rad2deg(events['k_phi']), rad2deg(events['h_phi']), ',')
+    xlabel("KASCADE phi ($^\circ$)")
+    ylabel("HiSPARC phi ($^\circ$)")
+    savefig("plots/low_dens_phi_corr.pdf")
+
+    figure()
+    plot(rad2deg(events['k_theta']), rad2deg(events['h_theta']), ',')
+    xlabel("KASCADE theta ($^\circ$)")
+    ylabel("HiSPARC theta ($^\circ$)")
+    savefig("plots/low_dens_theta_corr.pdf")
+
 
 def plot_regions_core_pos(kevents, hevents, labels, sfx):
     for i, (k, h, label) in enumerate(zip(kevents, hevents, labels)):
