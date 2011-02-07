@@ -21,9 +21,10 @@ def main():
     #plot_T200()
     #plot_P200()
     #plot_particle_density()
+    plot_density_fraction_err()
     #plot_density_fraction()
     #optimize_trigger_prob()
-    plot_theta_phi_corr()
+    #plot_theta_phi_corr()
 
     #kevents, hevents, labels, sfx = get_regions_data()
     #plot_regions_core_pos(kevents, hevents, labels, sfx)
@@ -261,6 +262,46 @@ def plot_particle_density():
     ylabel("Median electron density $(\mathrm{m}^{-2})$")
     legend(loc='best')
     savefig("plots/core_dist_pdens.pdf")
+
+def plot_density_fraction_err():
+    events = data.getNode(GROUP, 'events')
+
+    global err, hdens
+
+    figure()
+    bins = linspace(0, 10, 201)
+    x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
+    kevents = events[:]
+    hevents = events.readWhere('self_triggered == True')
+    kdens = kevents['k_dens_e']
+    kdens_m = median(kdens, 1)
+    hdens = hevents['k_dens_e']
+    hdens_m = median(hdens, 1)
+
+    err = [[] for u in xrange(len(bins) - 1)]
+    for idx, v in zip(bins.searchsorted(hdens_m), hdens):
+        try:
+            err[idx - 1].extend(v.tolist())
+        except IndexError:
+            pass
+    err = [std(u) for u in err]
+
+    hk, bins = histogram(kdens_m, bins=bins)
+    hh, bins = histogram(hdens_m, bins=bins)
+    hr = 1. * hh / hk
+    errorbar(x, hr, xerr=err, label="Data", capsize=0)
+    
+    # Poisson probability of zero particles in detector
+    p0 = exp(-.5 * x)
+    p = 1 - (4 * (1 - p0) * p0 ** 3 + p0 ** 4)
+    plot(x, p, label="Poisson")
+
+    xlabel("Electron density (m$^{-1}$)")
+    ylabel("Probability of trigger")
+    legend(loc='best')
+    xlim(0, 10)
+    ylim(0, 1.05)
+    savefig("plots/density_fraction_err.pdf")
 
 def plot_density_fraction():
     events = data.getNode(GROUP, 'events')
