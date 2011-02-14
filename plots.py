@@ -21,10 +21,13 @@ def main():
     #plot_T200()
     #plot_P200()
     #plot_particle_density()
-    plot_density_fraction_err()
-    #plot_density_fraction()
-    #optimize_trigger_prob()
+    #plot_density_fraction_err()
+    plot_density_fraction()
+    optimize_trigger_prob()
     #plot_theta_phi_corr()
+
+    #plot_density_spread()
+    #plot_density_coredist()
 
     #kevents, hevents, labels, sfx = get_regions_data()
     #plot_regions_core_pos(kevents, hevents, labels, sfx)
@@ -311,6 +314,7 @@ def plot_density_fraction():
               deg2rad(10), 'k_zenith > %.2f' % deg2rad(25)]:
         kevents = events.readWhere(Z)
         hevents = events.readWhere('(%s) & (self_triggered == True)' % Z)
+        #hevents = events.readWhere('(%s) & (n_high >= 3)' % Z)
         kdens = median(kevents['k_dens_e'], 1)
         hdens = median(hevents['k_dens_e'], 1)
 
@@ -331,6 +335,7 @@ def plot_density_fraction():
     # Poisson probability of zero particles in detector
     p0 = exp(-.5 * x)
     p = 1 - (4 * (1 - p0) * p0 ** 3 + p0 ** 4)
+    #p = 1 - (4 * (1 - p0) * p0 ** 3 + p0 ** 4 + 6 * (1 - p0) ** 2 * p0 ** 2)
 
     subplot(211)
     plot(x, p, label="Poisson")
@@ -349,8 +354,6 @@ def plot_density_fraction():
 def optimize_trigger_prob():
     events = data.getNode(GROUP, 'events')
 
-    global hrs, x, p
-
     figure()
     bins = linspace(0, 10, 201)
     x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
@@ -359,6 +362,7 @@ def optimize_trigger_prob():
               deg2rad(10), 'k_zenith > %.2f' % deg2rad(25)]:
         kevents = events.readWhere(Z)
         hevents = events.readWhere('(%s) & (self_triggered == True)' % Z)
+        #hevents = events.readWhere('(%s) & (n_high >= 3)' % Z)
         kdens = median(kevents['k_dens_e'], 1) * cos(kevents['k_zenith'])
         hdens = median(hevents['k_dens_e'], 1) * cos(hevents['k_zenith'])
 
@@ -370,6 +374,8 @@ def optimize_trigger_prob():
     # Poisson probability of zero particles in detector
     p = lambda x, c: 1 - (4 * (1 - exp(-.5 * (x + c))) * \
                      exp(-.5 * (x + c)) ** 3 + exp(-.5 * (x + c)) ** 4)
+                     #+ 6 * (1 - exp(-.5 * (x + c))) ** 2 * \
+                     #exp(-.5 * (x + c)) ** 2)
 
     popt, pcov = curve_fit(p, x, hrs[0])
     for y in hrs:
@@ -386,7 +392,6 @@ def optimize_trigger_prob():
     savefig("plots/optimize_trigger_prob.pdf")
 
 def plot_theta_phi_corr():
-    global events
     events = data.root.reconstructions.full_linear[:]
     events = events.compress(events['k_dens_e'][:,1] < .3)
 
@@ -402,6 +407,45 @@ def plot_theta_phi_corr():
     ylabel("HiSPARC theta ($^\circ$)")
     savefig("plots/low_dens_theta_corr.pdf")
 
+def plot_density_spread():
+    events = data.getNode(GROUP, 'events')
+    events = events.readWhere('(.9e15 <= k_energy) & (k_energy < 1.1e15)')
+
+    dmean = array([mean(u['k_dens_e']) for u in events[:]])
+    dspread = array([max(u['k_dens_e']) - min(u['k_dens_e']) for u in
+                     events[:]])
+
+    bins = linspace(0, 10, 101)
+    xspread = [compress((u <= dmean) & (dmean < v), dspread) for
+                     u, v in zip(bins[:-1], bins[1:])]
+    x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
+    y = array([mean(u) for u in xspread])
+    yerr = array([std(u) for u in xspread])
+
+    figure()
+    errorbar(x, y, yerr=yerr, capsize=0)
+    xlabel("Mean density (m$^{-1}$)")
+    ylabel("Density spread (m$^{-1}$)")
+
+def plot_density_coredist():
+    events = data.getNode(GROUP, 'events')
+    events = events.readWhere('(.9e15 <= k_energy) & (k_energy < 1.1e15)'
+                              ' & (k_zenith < .35)')
+
+    dmean = array([mean(u['k_dens_e']) for u in events[:]])
+    coredist = events[:]['core_dist']
+
+    bins = linspace(0, 10, 101)
+    xcoredist = [compress((u <= dmean) & (dmean < v), coredist) for u, v
+                 in zip(bins[:-1], bins[1:])]
+    x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
+    y = array([mean(u) for u in xcoredist])
+    yerr = array([std(u) for u in xcoredist])
+
+    figure()
+    errorbar(x, y, yerr=yerr, capsize=0)
+    xlabel("Mean density (m$^{-1}$)")
+    ylabel("Mean core distance (m)")
 
 def plot_regions_core_pos(kevents, hevents, labels, sfx):
     for i, (k, h, label) in enumerate(zip(kevents, hevents, labels)):
