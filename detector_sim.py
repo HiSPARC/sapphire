@@ -22,12 +22,14 @@ from multiprocessing import Process
 from pylab import *
 
 DATAFILE = 'data-e15.h5'
+#DATAFILE = 'trigprob.h5'
 
 D = 1.
 MIN = 3
 
 RINGS = [(0, 4, 20, False), (4, 20, 10, False), (20, 40, 16, False),
          (40, 80, 30, False), (80, 80, 30, True)]
+#RINGS = [(0, 100, 3., False)]
 
 DETECTOR_SIZE = (.25, .5)
 
@@ -53,6 +55,10 @@ class StationEvent(tables.IsDescription):
     n2 = tables.UInt16Col()
     n3 = tables.UInt16Col()
     n4 = tables.UInt16Col()
+    d1 = tables.Float32Col()
+    d2 = tables.Float32Col()
+    d3 = tables.Float32Col()
+    d4 = tables.Float32Col()
 
 
 def simulate_positions(r0, r1=1., density=1., iscorner=False):
@@ -305,7 +311,7 @@ def store_results_in_tables(csvfile, hdffile):
     table.flush()
     data.close()
 
-def analyze_results(hdffile, tablename):
+def analyze_results(hdffile, tablename, showertablename):
     """Analyze simulation results and deduce detector pulse times"""
 
     data = tables.openFile(hdffile, 'a')
@@ -319,10 +325,18 @@ def analyze_results(hdffile, tablename):
     except tables.NoSuchNodeError:
         pass
 
+    showertable = data.getNode('/showers', showertablename)
     table = data.createTable('/analysis', tablename, StationEvent,
                              "Analyzed simulation data")
     sim = iter(data.getNode('/simulations', tablename))
     row = table.row
+
+    dR = 3.
+    rs = linspace(0 + dR, 100, 1000)
+    dens = [len(showertable.readWhere('(%f <= core_distance) & '
+                                      '(core_distance < %f)' % (R - dR,
+                                                                R + dR))) /
+            (pi * ((R + dR) ** 2 - (R - dR) ** 2)) for R in rs]
 
     try:
         event = sim.next()
@@ -330,6 +344,7 @@ def analyze_results(hdffile, tablename):
             assert event['id'] % 10 == 0
             row['id'] = event['id']
             row['r'] = event['r']
+            R = event['r']
             row['phi'] = event['phi']
             # header has alpha in place of time
             row['alpha'] = event['time']
@@ -342,6 +357,8 @@ def analyze_results(hdffile, tablename):
                         [min(x) if len(x) else nan for x in t]
                     row['n1'], row['n2'], row['n3'], row['n4'] = \
                         [len(x) for x in t]
+                    D = dens[rs.searchsorted(R) - 1]
+                    row['d1'], row['d2'], row['d3'], row['d4'] = D, D, D, D
                     row.append()
                     break
                 else:
@@ -350,6 +367,8 @@ def analyze_results(hdffile, tablename):
         row['t1'], row['t2'], row['t3'], row['t4'] = [min(x) if len(x)
                                                       else nan for x in t]
         row['n1'], row['n2'], row['n3'], row['n4'] = [len(x) for x in t]
+        D = dens[rs.searchsorted(R) - 1]
+        row['d1'], row['d2'], row['d3'], row['d4'] = D, D, D, D
         row.append()
 
     table.flush()
@@ -393,19 +412,19 @@ def store_full_results():
     store_results_in_tables('detsim-angle-80.csv.gz', DATAFILE)
 
 def analyze_full_results():
-    analyze_results(DATAFILE, 'angle_0')
-    analyze_results(DATAFILE, 'angle_5')
-    analyze_results(DATAFILE, 'angle_23')
-    analyze_results(DATAFILE, 'angle_23_size5')
-    analyze_results(DATAFILE, 'angle_23_size20')
-    analyze_results(DATAFILE, 'angle_35')
-    analyze_results(DATAFILE, 'angle_40')
-    analyze_results(DATAFILE, 'angle_45')
-    analyze_results(DATAFILE, 'angle_60')
-    analyze_results(DATAFILE, 'angle_80')
+    analyze_results(DATAFILE, 'angle_0', 'zenith0/leptons')
+    analyze_results(DATAFILE, 'angle_5', 'zenith5/leptons')
+    analyze_results(DATAFILE, 'angle_23', 'zenith23/leptons')
+    analyze_results(DATAFILE, 'angle_23_size5', 'zenith23/leptons')
+    analyze_results(DATAFILE, 'angle_23_size20', 'zenith23/leptons')
+    analyze_results(DATAFILE, 'angle_35', 'zenith35/leptons')
+    analyze_results(DATAFILE, 'angle_40', 'zenith40/leptons')
+    analyze_results(DATAFILE, 'angle_45', 'zenith45/leptons')
+    analyze_results(DATAFILE, 'angle_60', 'zenith60/leptons')
+    analyze_results(DATAFILE, 'angle_80', 'zenith80/leptons')
 
 
 if __name__ == '__main__':
-    do_full_simulation()
-    store_full_results()
+    #do_full_simulation()
+    #store_full_results()
     analyze_full_results()
