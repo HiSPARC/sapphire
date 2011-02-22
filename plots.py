@@ -6,12 +6,15 @@ from plot_utils import *
 from pylab import *
 from scipy.optimize import curve_fit
 
+from analysis_kascade import std_t
+
 
 DATAFILE = 'kascade.h5'
 GROUP = '/efficiency'
 
 
 def main():
+    #plot_density_histogram()
     #plot_energy_histogram()
     #plot_core_distance()
     #plot_core_alpha()
@@ -22,8 +25,8 @@ def main():
     #plot_P200()
     #plot_particle_density()
     #plot_density_fraction_err()
-    plot_density_fraction()
-    optimize_trigger_prob()
+    #plot_density_fraction()
+    #optimize_trigger_prob()
     #plot_theta_phi_corr()
 
     #plot_density_spread()
@@ -43,6 +46,23 @@ def main():
     #plot_regions_energy_ratio(kevents, hevents, labels, sfx)
     #plot_regions_P200(kevents, hevents, labels, sfx)
     #plot_regions_core_pos(kevents, hevents, labels, sfx)
+
+    #plot_reconstruction_efficiency_zenith()
+    #plot_reconstruction_efficiency_azimuth()
+    plot_reconstruction_efficiency_density()
+    #plot_reconstruction_efficiency_coredist()
+
+    plot_detector_efficiency()
+
+def plot_density_histogram():
+    events = data.getNode(GROUP, 'events')
+
+    figure()
+    hist(events[:]['k_dens_e'], bins=linspace(0, 10, 200),
+         histtype='step')
+    xlabel("Electron density (m$^{-1}$)")
+    ylabel("Count")
+    savefig("plots/density_histogram.pdf")
 
 def plot_energy_histogram():
     events = data.getNode(GROUP, 'events')
@@ -663,7 +683,118 @@ def get_p_regions_data():
                                         ' & (self_triggered == True)'))
     return kevents, hevents, labels, 'P'
 
+def plot_reconstruction_efficiency_zenith():
+    plot_rec_eff('k_theta', bins=linspace(0, deg2rad(40), 50), xf=rad2deg)
+    xlabel("KASCADE zenith (deg)")
+    savefig('plots/rec_eff_zenith.pdf')
 
+def plot_reconstruction_efficiency_azimuth():
+    plot_rec_eff('k_phi', bins=linspace(-pi, pi, 50))
+    xlabel("KASCADE azimuth (deg)")
+    savefig('plots/rec_eff_azimuth.pdf')
+
+def plot_reconstruction_efficiency_density():
+    events = data.root.efficiency.events
+    kevents = events[:]
+    hevents = events.readWhere('self_triggered == True')
+    #hevents = events.readWhere('n_high >= 2')
+    #hevents = kevents.compress((kevents['pulseheights'] >= 400.).sum(1) >= 2)
+    re1 = kevents.compress((kevents['pulseheights'] >= [20, 0, 20, 20]).all(1))
+    re2 = kevents.compress((kevents['pulseheights'] >= [123, 0, 123, 123]).all(1))
+    #re2 = kevents.compress((kevents['pulseheights'] >= [400, 0, 400, 400]).all(1))
+
+    rer1 = re1.compress(re1['reconstructed'] == True)
+    rer2 = re2.compress(re2['reconstructed'] == True)
+
+    figure()
+    bins = linspace(0, 10, 50)
+    DD = .37
+    plot_hist_ratio(hevents['k_cosdens_e'] + DD, kevents['k_cosdens_e'] + DD,
+                    bins=bins, label="trigger")
+    #plot_hist_ratio(re1['k_cosdens_e'], kevents['k_cosdens_e'],
+    #                bins=bins, label="20 ADC")
+    #plot_hist_ratio(rer1['k_cosdens_e'], kevents['k_cosdens_e'],
+    #                bins=linspace(0, 10, 50), label="20 ADC reconstructed")
+    plot_hist_ratio(re2['k_cosdens_e'] + DD, kevents['k_cosdens_e'] + DD,
+                    bins=bins, label="70 mV in corners")
+    #plot_hist_ratio(rer2['k_cosdens_e'], kevents['k_cosdens_e'],
+    #                bins=linspace(0, 10, 50), label="70 mV reconstructed")
+
+    x = bins
+    p0 = exp(-.5 * x)           # zero particles
+    pp = 1 - p0                         # NOT zero particles
+    pd0 = p0 ** 4 * pp ** 0             # 0 detectors hit
+    pd1 = p0 ** 3 * pp ** 1             # 1 detector hit
+    pd2 = p0 ** 2 * pp ** 2             # 2 detectors hit 
+    pd3 = p0 ** 1 * pp ** 3             # 3 detectors hit
+    pd4 = p0 ** 0 * pp ** 4             # 4 detectors hit
+
+    ptrig = 1 - (pd0 + 4 * pd1)
+    pcorn = pd3 + pd4
+    #pcorn = 1 - (pd0 + 4 * pd1 + 6 * pd2 + 3 * pd3)  # for testing
+    plot(x, ptrig, label="Poisson trigger")
+    plot(x, pcorn, label="Poisson corners")
+
+    xlabel("verschoven KASCADE density")
+    ylabel("Probability")
+    legend(loc='best')
+    ylim(0, 1.05)
+    savefig('plots/rec_eff_density-trigger.pdf')
+
+    return
+
+    figure()
+    plot_hist_ratio(rer1['k_dens_e'], re1['k_dens_e'],
+                    bins=linspace(0, 10, 50), label="20 ADC in corners")
+    plot_hist_ratio(rer2['k_dens_e'], re2['k_dens_e'],
+                    bins=linspace(0, 10, 50), label="70 mV in corners")
+    x = linspace(1, 10, 50)
+    plot(x, std_t(x), label="Timing uncertainty")
+    xlabel("KASCADE density")
+    ylabel("Reconstruction efficiency")
+    legend(loc='best')
+    ylim(0, 1.05)
+    savefig('plots/rec_eff_density-reconstruction.pdf')
+
+def plot_reconstruction_efficiency_coredist():
+    plot_rec_eff('core_dist', bins=linspace(0, 200, 200), dens=1.)
+    xlabel("Core distance [m]")
+    savefig('plots/rec_eff_coredist.pdf')
+
+def plot_rec_eff(var, bins, dens=1., xf=None):
+    events = data.root.efficiency.events
+
+    kevents = events[:]
+    hevents = events.readWhere('self_triggered == True')
+    revents = events.readWhere('reconstructed == True')
+
+    kevents = kevents.compress(kevents['k_dens_e'][:,1] >= dens)
+    hevents = hevents.compress(hevents['k_dens_e'][:,1] >= dens)
+    revents = revents.compress(revents['k_dens_e'][:,1] >= dens)
+
+    figure()
+    plot_hist_ratio(hevents[var], kevents[var], bins, xf=xf,
+                    label="trigger efficiency")
+    plot_hist_ratio(revents[var], hevents[var], bins, xf=xf,
+                    label="reconstruction efficiency")
+    plot_hist_ratio(revents[var], kevents[var], bins, xf=xf,
+                    label="combined efficiency")
+    ylim(0, 1.05)
+    ylabel("Count")
+    title("Electron density >= %.1f" % dens)
+    legend(loc='best')
+
+def plot_hist_ratio(events1, events2, bins, xf=None, label=None):
+    x = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
+    if xf:
+        x = xf(x)
+    h1, bins = histogram(events1, bins=bins)
+    h2, bins = histogram(events2, bins=bins)
+    hr = 1. * h1 / h2
+    plot(x, hr, label=label)
+
+def plot_detector_efficiency():
+    pass 
 
 if __name__ == '__main__':
     try:
