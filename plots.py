@@ -1,4 +1,7 @@
+from __future__ import division
+
 import tables
+import progressbar as pb
 
 from build_dataset import DETECTORS
 from plot_utils import *
@@ -6,14 +9,24 @@ from plot_utils import *
 from pylab import *
 from scipy.optimize import curve_fit
 
-from analysis_kascade import std_t
+from analysis_kascade import std_t, calc_phi
 
 
 DATAFILE = 'kascade.h5'
 GROUP = '/efficiency'
 
 
+phi1 = calc_phi(1, 3)
+phi2 = calc_phi(1, 4)
+
+
+def progressbar(*args, **kwargs):
+    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
+    return progress(*args, **kwargs)
+
 def main():
+    #plot_pulseheight_trigger_histogram()
+
     #plot_density_histogram()
     #plot_energy_histogram()
     #plot_core_distance()
@@ -52,7 +65,24 @@ def main():
     plot_reconstruction_efficiency_density()
     #plot_reconstruction_efficiency_coredist()
 
-    plot_detector_efficiency()
+    #plot_detector_efficiency()
+
+    #plot_rec_eff_timings()
+    #plot_rvalue_core()
+
+def plot_pulseheight_trigger_histogram():
+    events = data.root.hisparc.cluster_kascade.station_601.events
+
+    figure()
+    hist(events.col('pulseheights') * .57, bins=linspace(0, 1600, 201),
+         log=True, histtype='step')
+    xlabel("Pulseheight (mV)")
+    ylabel("Count")
+    ylim(ymin=10)
+    legend(['Detector %d' % x for x in range(1, 5)])
+    axvline(30)
+    axvline(70)
+    savefig("plots/pulseheight_trigger_hist.pdf")
 
 def plot_density_histogram():
     events = data.getNode(GROUP, 'events')
@@ -335,8 +365,8 @@ def plot_density_fraction():
         kevents = events.readWhere(Z)
         hevents = events.readWhere('(%s) & (self_triggered == True)' % Z)
         #hevents = events.readWhere('(%s) & (n_high >= 3)' % Z)
-        kdens = median(kevents['k_dens_e'], 1)
-        hdens = median(hevents['k_dens_e'], 1)
+        kdens = mean(kevents['k_dens_e'] + kevents['k_dens_mu'], 1)
+        hdens = mean(hevents['k_dens_e'] + hevents['k_dens_mu'], 1)
 
         subplot(211)
         hk, bins = histogram(kdens, bins=bins)
@@ -692,16 +722,21 @@ def plot_reconstruction_efficiency_azimuth():
     plot_rec_eff('k_phi', bins=linspace(-pi, pi, 50))
     xlabel("KASCADE azimuth (deg)")
     savefig('plots/rec_eff_azimuth.pdf')
+    
+    plot_rec_eff('h_phi', bins=linspace(-pi, pi, 50))
+    xlabel("HiSPARC azimuth (deg)")
+    savefig('plots/rec_eff_azimuth_hisparc.pdf')
 
 def plot_reconstruction_efficiency_density():
     events = data.root.efficiency.events
-    kevents = events[:]
-    hevents = events.readWhere('self_triggered == True')
+    q = '(.5e15 <= k_energy) & (k_energy < 2e15)'
+    kevents = events.readWhere(q)
+    hevents = events.readWhere(q + '& (self_triggered == True)')
     #hevents = events.readWhere('n_high >= 2')
     #hevents = kevents.compress((kevents['pulseheights'] >= 400.).sum(1) >= 2)
     re1 = kevents.compress((kevents['pulseheights'] >= [20, 0, 20, 20]).all(1))
     re2 = kevents.compress((kevents['pulseheights'] >= [123, 0, 123, 123]).all(1))
-    #re2 = kevents.compress((kevents['pulseheights'] >= [400, 0, 400, 400]).all(1))
+    re3 = kevents.compress((kevents['pulseheights'] >= [210, 0, 210, 210]).all(1))
 
     rer1 = re1.compress(re1['reconstructed'] == True)
     rer2 = re2.compress(re2['reconstructed'] == True)
@@ -711,13 +746,15 @@ def plot_reconstruction_efficiency_density():
     DD = .37
     plot_hist_ratio(hevents['k_cosdens_e'] + DD, kevents['k_cosdens_e'] + DD,
                     bins=bins, label="trigger")
-    #plot_hist_ratio(re1['k_cosdens_e'], kevents['k_cosdens_e'],
-    #                bins=bins, label="20 ADC")
+    plot_hist_ratio(re1['k_cosdens_e'] + DD, kevents['k_cosdens_e'] + DD,
+                    bins=bins, label="20 ADC")
     #plot_hist_ratio(rer1['k_cosdens_e'], kevents['k_cosdens_e'],
     #                bins=linspace(0, 10, 50), label="20 ADC reconstructed")
     plot_hist_ratio(re2['k_cosdens_e'] + DD, kevents['k_cosdens_e'] + DD,
                     bins=bins, label="70 mV in corners")
-    #plot_hist_ratio(rer2['k_cosdens_e'], kevents['k_cosdens_e'],
+    plot_hist_ratio(re3['k_cosdens_e'] + DD, kevents['k_cosdens_e'] + DD,
+                    bins=bins, label="120 mV in corners")
+    #plot_hist_ratio(rer2['k_cosdens_e'] + DD, kevents['k_cosdens_e'] + DD,
     #                bins=linspace(0, 10, 50), label="70 mV reconstructed")
 
     x = bins
@@ -739,9 +776,8 @@ def plot_reconstruction_efficiency_density():
     ylabel("Probability")
     legend(loc='best')
     ylim(0, 1.05)
+    title(q)
     savefig('plots/rec_eff_density-trigger.pdf')
-
-    return
 
     figure()
     plot_hist_ratio(rer1['k_dens_e'], re1['k_dens_e'],
@@ -795,6 +831,95 @@ def plot_hist_ratio(events1, events2, bins, xf=None, label=None):
 
 def plot_detector_efficiency():
     pass 
+
+def plot_rec_eff_timings():
+    global sel, dt1, dt2, m, r, rmin
+    events = data.root.efficiency.events
+
+
+    clf()
+
+    sel = events.readWhere('reconstructed == True')
+    r = array([rvalue_from_event(u) for u in progressbar(sel)])
+    r = r.compress(-isnan(r))
+    hist(r, bins=arange(0, 2, .1), histtype='step', label="reconstructed")
+
+    sel = events.readWhere('reconstructed == False')
+    r = array([rvalue_from_event(u) for u in progressbar(sel)])
+    r = r.compress(-isnan(r))
+    hist(r, bins=arange(0, 10, .1), histtype='step',
+         label="max, not reconstructed")
+
+    xlabel("Fraction of station size traversed")
+    ylabel("Count")
+    legend()
+    savefig("plots/rec_eff_timings.pdf")
+
+def rvalue_from_event(event):
+    t1, t2, t3, t4 = event['t']
+    ph1, ph2, ph3, ph4 = event['pulseheights']
+
+    dt1 = t1 - t3
+    dt2 = t1 - t4
+    if isnan(dt1) or isnan(dt2):
+        return nan
+    elif min(ph1, ph3, ph4) <= 70 / .57:
+        return nan
+    else:
+        x1 = 10 * cos(event['h_phi'] - phi1)
+        x2 = 10 * cos(event['h_phi'] - phi2)
+        r1 = 3e-1 * dt1 / x1
+        r2 = 3e-1 * dt2 / x2
+        if r1 != 0.:
+            return r1
+        else:
+            return r2
+    raise RuntimeError("Should not reach this point")
+
+def plot_rvalue_core():
+    events = data.root.efficiency.events
+    q = "(.8e15 <= k_energy) & (k_energy < 2e15)"
+
+    global x, y, yerr, y2
+   
+    figure()
+
+    bins = linspace(0, 100, 21)
+    x, y, yerr = [], [], []
+    y2 = []
+    #for r0, r1 in progressbar(zip(bins[:-1], bins[1:])):
+    print "(r0\tr1)\tcount\t>20 ADC\t>30 mV\t>70 mV\t>120 mV"
+    for r0, r1 in (zip(bins[:-1], bins[1:])):
+        sel = events.readWhere(q + '& (r0 <= core_dist) & (core_dist < r1)')
+        c, c20adc, c30mV, c70mV, c120mV = 0, 0, 0, 0, 0
+        for event in sel:
+            ph1, ph2, ph3, ph4 = event['pulseheights']
+            level = min(ph1, ph3, ph4)
+            c += 1
+            if level >= 20:
+                c20adc += 1
+            if level >= 30 / .57:
+                c30mV += 1
+            if level >= 70 / .57:
+                c70mV += 1
+            if level >= 120 / .57:
+                c120mV += 1
+        print "(%.1f\t%.1f)\t%d\t%d\t%d\t(%.2f)\t%d\t(%.2f)\t%d\t(%.2f)" % (r0, r1, c, c20adc, c30mV, c30mV / c20adc, c70mV, c70mV / c20adc, c120mV, c120mV / c20adc)
+
+        #x.append(mean([r0, r1]))
+        #rvs = array([rvalue_from_event(u) for u in sel])
+        #rvs = rvs.compress(-isnan(rvs))
+        #y.append(median(rvs))
+        #y2.append(rvs)
+        #yerr.append(std(rvs))
+        #print 1. * len(rvs) / len(sel), len(rvs)
+
+    #errorbar(x, y, yerr=yerr)
+    plot(x, y)
+    xlabel("Core distance [m]")
+    ylabel("rvalue")
+    savefig("plots/rvalues-core-dist.pdf")
+
 
 if __name__ == '__main__':
     try:

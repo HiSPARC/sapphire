@@ -1,5 +1,6 @@
 import tables
 from numpy import sqrt, arctan2, seterr, deg2rad, pi, isnan, cos
+import progressbar as pb
 
 from hisparc.containers import KascadeEvent
 from analysis_kascade import reconstruct_angle, ADC_MIP
@@ -52,7 +53,9 @@ def build_efficiency_dataset(data, src_node, dst_group, dst_node):
     table = data.createTable(dst_group, dst_node, table_desc)
 
     dst_row = table.row
-    for row, timing in zip(src_node[:], timing_data[:]):
+    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                       pb.ETA()])
+    for row, timing in progress(zip(src_node[:], timing_data[:])):
         for col in src_node.colnames:
             dst_row[col] = row[col]
         x, y = row['k_core_pos']
