@@ -37,7 +37,7 @@ def main():
     #plot_T200()
     #plot_P200()
     #plot_particle_density()
-    #plot_density_fraction_err()
+    plot_density_fraction_err()
     #plot_density_fraction()
     #optimize_trigger_prob()
     #plot_theta_phi_corr()
@@ -62,13 +62,16 @@ def main():
 
     #plot_reconstruction_efficiency_zenith()
     #plot_reconstruction_efficiency_azimuth()
-    plot_reconstruction_efficiency_density()
+    #plot_reconstruction_efficiency_density()
     #plot_reconstruction_efficiency_coredist()
 
     #plot_detector_efficiency()
 
     #plot_rec_eff_timings()
     #plot_rvalue_core()
+
+    #electron_gamma_trigger()
+    pass
 
 def plot_pulseheight_trigger_histogram():
     events = data.root.hisparc.cluster_kascade.station_601.events
@@ -317,16 +320,19 @@ def plot_particle_density():
     savefig("plots/core_dist_pdens.pdf")
 
 def plot_density_fraction_err():
+    global kevents
     events = data.getNode(GROUP, 'events')
+
+    q = '(k_Num_e > 10 ** 5)'
 
     figure()
     bins = linspace(0, 10, 201)
     x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
-    kevents = events[:]
-    hevents = events.readWhere('self_triggered == True')
-    kdens = kevents['k_dens_e']
+    kevents = events.readWhere(q)
+    hevents = events.readWhere(q + '& (self_triggered == True)')
+    kdens = kevents['k_dens_e'] * cos(kevents['k_zenith'])
     kdens_m = mean(kdens, 1)
-    hdens = hevents['k_dens_e']
+    hdens = hevents['k_dens_e'] * cos(hevents['k_zenith'])
     hdens_m = mean(hdens, 1)
 
     err = [[] for u in xrange(len(bins) - 1)]
@@ -355,15 +361,19 @@ def plot_density_fraction_err():
     savefig("plots/density_fraction_err.pdf")
 
 def plot_density_fraction():
+    global events
     events = data.getNode(GROUP, 'events')
+
+    q = '(k_Num_e > 1e5)'
 
     figure()
     bins = linspace(0, 10, 201)
     x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
     for Z in ['k_zenith < %.2f' % deg2rad(40), 'k_zenith < %.2f' %
-              deg2rad(10), 'k_zenith > %.2f' % deg2rad(25)]:
-        kevents = events.readWhere(Z)
-        hevents = events.readWhere('(%s) & (self_triggered == True)' % Z)
+              deg2rad(5), 'k_zenith > %.2f' % deg2rad(25)]:
+        kevents = events.readWhere(q + '& (%s)' % Z)
+        print Z, mean(log10(kevents['k_energy']))
+        hevents = events.readWhere(q + '& (%s) & (self_triggered == True)' % Z)
         #hevents = events.readWhere('(%s) & (n_high >= 3)' % Z)
         kdens = mean(kevents['k_dens_e'] + kevents['k_dens_mu'], 1)
         hdens = mean(hevents['k_dens_e'] + hevents['k_dens_mu'], 1)
@@ -728,9 +738,12 @@ def plot_reconstruction_efficiency_azimuth():
     savefig('plots/rec_eff_azimuth_hisparc.pdf')
 
 def plot_reconstruction_efficiency_density():
+    global kevents
     events = data.root.efficiency.events
-    q = '(.5e15 <= k_energy) & (k_energy < 2e15)'
+    #q = '(.5e15 <= k_energy) & (k_energy < 2e15)'
+    q = '(k_energy > 2e15)'
     kevents = events.readWhere(q)
+    print len(events), len(kevents), 1. * len(kevents) / len(events)
     hevents = events.readWhere(q + '& (self_triggered == True)')
     #hevents = events.readWhere('n_high >= 2')
     #hevents = kevents.compress((kevents['pulseheights'] >= 400.).sum(1) >= 2)
@@ -919,6 +932,41 @@ def plot_rvalue_core():
     xlabel("Core distance [m]")
     ylabel("rvalue")
     savefig("plots/rvalues-core-dist.pdf")
+
+def electron_gamma_trigger():
+    events = data.root.efficiency.events
+    q = '(.5e15 <= k_energy) & (k_energy < 2e15)'
+    kevents = events.readWhere(q)
+    hevents = events.readWhere(q + '& (self_triggered == True)')
+    re1 = kevents.compress((kevents['pulseheights'] >= [300, 300, 300, 300]).sum(1) >= 2)
+
+    clf()
+    bins = linspace(0, 10, 50)
+    DD = 0
+    plot_hist_ratio(hevents['k_cosdens_e'] + DD, kevents['k_cosdens_e'] + DD,
+                    bins=bins, label="trigger")
+    plot_hist_ratio(re1['k_cosdens_e'] + re1['k_dens_mu'] + DD,
+                    kevents['k_cosdens_e'] + kevents['k_dens_mu'] + DD,
+                    bins=bins, label="300 ADC")
+
+    x = bins
+    p0 = exp(-.5 * x)           # zero particles
+    pp = 1 - p0                         # NOT zero particles
+    pd0 = p0 ** 4 * pp ** 0             # 0 detectors hit
+    pd1 = p0 ** 3 * pp ** 1             # 1 detector hit
+    pd2 = p0 ** 2 * pp ** 2             # 2 detectors hit 
+    pd3 = p0 ** 1 * pp ** 3             # 3 detectors hit
+    pd4 = p0 ** 0 * pp ** 4             # 4 detectors hit
+
+    ptrig = 1 - (pd0 + 4 * pd1)
+    plot(x, ptrig, label="Poisson trigger")
+
+    xlabel("KASCADE density")
+    ylabel("Probability")
+    legend(loc='best')
+    ylim(0, 1.05)
+    title(q)
+    savefig('plots/electron_gamma_trigger.pdf')
 
 
 if __name__ == '__main__':
