@@ -16,8 +16,12 @@ HIGH_THRES = round(70 / .57)
 TRIGGER = lambda l, h: l >= 3 or h >= 2
 
 Event = {'core_dist': tables.FloatCol(),
+         'core_dist_center': tables.FloatCol(),
          'core_alpha': tables.FloatCol(),
-         'k_cosdens_e': tables.FloatCol(shape=4)}
+         'k_cosdens_e': tables.FloatCol(shape=4),
+         'k_cosdens_mu': tables.FloatCol(shape=4),
+         'k_dens_charged': tables.FloatCol(shape=4),
+         'k_cosdens_charged': tables.FloatCol(shape=4),}
 Trigger = {'n_low': tables.UInt8Col(),
            'n_high': tables.UInt8Col(),
            'self_triggered': tables.BoolCol()}
@@ -59,6 +63,7 @@ def build_efficiency_dataset(data, src_node, dst_group, dst_node):
         for col in src_node.colnames:
             dst_row[col] = row[col]
         x, y = row['k_core_pos']
+        dst_row['core_dist_center'] = sqrt(x ** 2 + y ** 2)
         x -= DETECTORS[1][0]
         y -= DETECTORS[1][1]
         dst_row['core_dist'] = sqrt(x ** 2 + y ** 2)
@@ -76,6 +81,11 @@ def build_efficiency_dataset(data, src_node, dst_group, dst_node):
         theta, phi, theta1, theta2 = reconstruct_angle(event)
 
         dst_row['k_cosdens_e'] = row['k_dens_e'] * cos(row['k_zenith'])
+        dst_row['k_cosdens_mu'] = row['k_dens_mu'] * cos(row['k_zenith'])
+        dst_row['k_dens_charged'] = row['k_dens_e'] + row['k_dens_mu']
+        dst_row['k_cosdens_charged'] = (row['k_dens_e'] +
+                                        row['k_dens_mu']) * \
+                                        cos(row['k_zenith'])
         dst_row['k_theta'] = row['k_zenith']
         dst_row['k_phi'] = -(row['k_azimuth'] + deg2rad(75)) % \
                            (2 * pi) - pi

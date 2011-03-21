@@ -71,6 +71,8 @@ def main():
     #plot_rvalue_core()
 
     #electron_gamma_trigger()
+
+    #plot_poisson_trigger_cuts()
     pass
 
 def plot_pulseheight_trigger_histogram():
@@ -323,16 +325,17 @@ def plot_density_fraction_err():
     global kevents
     events = data.getNode(GROUP, 'events')
 
-    q = '(k_Num_e > 10 ** 5)'
+    #q = '(k_Num_e > 10 ** 5)'
+    q = '(k_Num_e > 10 ** 4.6) & (k_Num_e < 10 ** 7) & (core_dist_center <= 90) & (k_theta <= %f)' % deg2rad(30)
 
-    figure()
+    clf()
     bins = linspace(0, 10, 201)
     x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
     kevents = events.readWhere(q)
     hevents = events.readWhere(q + '& (self_triggered == True)')
-    kdens = kevents['k_dens_e'] * cos(kevents['k_zenith'])
+    kdens = kevents['k_dens_e']
     kdens_m = mean(kdens, 1)
-    hdens = hevents['k_dens_e'] * cos(hevents['k_zenith'])
+    hdens = hevents['k_dens_e']
     hdens_m = mean(hdens, 1)
 
     err = [[] for u in xrange(len(bins) - 1)]
@@ -967,6 +970,47 @@ def electron_gamma_trigger():
     ylim(0, 1.05)
     title(q)
     savefig('plots/electron_gamma_trigger.pdf')
+
+def plot_poisson_trigger_cuts():
+    events = data.getNode(GROUP, 'events')
+
+    #q = '(k_Num_e > 10 ** 4.6) & (k_zenith <= %f) & (core_dist_center <= 90)' % deg2rad(30)
+    q = '(k_Num_e > 10 ** 4.6) & (k_Num_e < 10 ** 7) & (k_zenith <= %f) & (core_dist_center <= 90)' % deg2rad(30)
+    #q = '(k_Num_e > 0)'
+
+    clf()
+    bins = linspace(0, 10, 201)
+    x = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
+    kevents = events.readWhere(q)
+    hevents = events.readWhere(q + '& (self_triggered == True)')
+    kdens = mean(kevents['k_dens_e'] + kevents['k_dens_mu'], 1) * \
+            cos(kevents['k_theta'])
+    hdens = mean(hevents['k_dens_e'] + hevents['k_dens_mu'], 1) * \
+            cos(hevents['k_theta'])
+
+    hk, bins = histogram(kdens, bins=bins)
+    hh, bins = histogram(hdens, bins=bins)
+    hr = 1. * hh / hk
+    plot(x, hr, label="Data")
+    
+    # Poisson probabilities
+    p0 = exp(-.5 * x)                   # zero particles
+    pp = 1 - p0                         # NOT zero particles
+    pd0 = p0 ** 4 * pp ** 0             # 0 detectors hit
+    pd1 = p0 ** 3 * pp ** 1             # 1 detector hit
+    pd2 = p0 ** 2 * pp ** 2             # 2 detectors hit 
+    pd3 = p0 ** 1 * pp ** 3             # 3 detectors hit
+    pd4 = p0 ** 0 * pp ** 4             # 4 detectors hit
+
+    ptrig = 1 - (pd0 + 4 * pd1)         # Trigger probability
+    plot(x, ptrig, label="Poisson")
+
+    xlabel("Electron density (m$^{-1}$)")
+    ylabel("Probability of trigger")
+    legend(loc='best')
+    xlim(0, 10)
+    ylim(0, 1.05)
+    savefig("plots/poisson_trigger_cuts.pdf")
 
 
 if __name__ == '__main__':
