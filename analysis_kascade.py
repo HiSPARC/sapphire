@@ -11,6 +11,7 @@ from scipy import integrate
 from scipy.special import erf
 
 from itertools import combinations
+import progressbar
 
 from hisparc.analysis import kascade_coincidences
 from hisparc.containers import Coincidence
@@ -145,12 +146,15 @@ def reconstruct_angle_dt(dt1, dt2, R=10):
     theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
     theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
 
-    e1 = sqrt(rel_theta1_errorsq(theta1, phi, phi1, phi2, R, R))
-    e2 = sqrt(rel_theta2_errorsq(theta2, phi, phi1, phi2, R, R))
+    if not dt1 == 0.:
+        theta = theta1
+    else:
+        theta = theta2
 
-    theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
+    if not dt1 == 0. and not dt2 == 0. and not isnan(theta):
+        assert abs(theta1 - theta2) < 1e-9
 
-    return theta_wgt, phi, theta1, theta2
+    return theta, phi, theta1, theta2
 
 def calc_phi(s1, s2):
     """Calculate angle between detectors (phi1, phi2)"""
@@ -308,7 +312,10 @@ def reconstruct_angles(data, dstname, events, timing_data, shifts=None,
     NT, NS = 0, 0
 
     dst_row = dest.row
-    for rawevent, timing in zip(events[:N], timing_data):
+    progress = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
+                                                progressbar.Bar(),
+                                                progressbar.ETA()])
+    for rawevent, timing in progress(zip(events[:N], timing_data)):
         NT += 1
         n1, n2, n3, n4 = rawevent['pulseheights'] / ADC_MIP
         if shifts:
@@ -317,33 +324,36 @@ def reconstruct_angles(data, dstname, events, timing_data, shifts=None,
         event = dict(n1=n1, n2=n2, n3=n3, n4=n4, t1=timing[0],
                      t2=timing[1], t3=timing[2], t4=timing[3])
 
-        theta, phi, theta1, theta2 = reconstruct_angle(event, R)
+        if not (isnan(event['t1']) or isnan(event['t3']) or
+                isnan(event['t4'])):
+            theta, phi, theta1, theta2 = reconstruct_angle(event, R)
 
-        if not isnan(theta) and not isnan(phi):
-            NS += 1
-            xc, yc = rawevent['k_core_pos'] - DETECTORS[1][:2]
-            dst_row['r'] = sqrt(xc ** 2 + yc ** 2)
-            dst_row['t1'] = event['t1']
-            dst_row['t2'] = event['t2']
-            dst_row['t3'] = event['t3']
-            dst_row['t4'] = event['t4']
-            dst_row['n1'] = event['n1']
-            dst_row['n2'] = event['n2']
-            dst_row['n3'] = event['n3']
-            dst_row['n4'] = event['n4']
-            dst_row['k_theta'] = rawevent['k_zenith']
-            dst_row['k_phi'] = -(rawevent['k_azimuth'] + deg2rad(75)) % \
-                               (2 * pi) - pi
-            dst_row['k_energy'] = rawevent['k_energy']
-            dst_row['h_theta'] = theta
-            dst_row['h_theta1'] = theta1
-            dst_row['h_theta2'] = theta2
-            dst_row['h_phi'] = phi
-            dst_row['D'] = round(min(event['n1'], event['n3'], event['n4']))
+            if not isnan(theta) and not isnan(phi):
+                NS += 1
 
-            dst_row['k_dens_e'] = rawevent['k_dens_e']
-            dst_row['k_dens_mu'] = rawevent['k_dens_mu']
-            dst_row.append()
+                xc, yc = rawevent['k_core_pos'] - DETECTORS[1][:2]
+                dst_row['r'] = sqrt(xc ** 2 + yc ** 2)
+                dst_row['t1'] = event['t1']
+                dst_row['t2'] = event['t2']
+                dst_row['t3'] = event['t3']
+                dst_row['t4'] = event['t4']
+                dst_row['n1'] = event['n1']
+                dst_row['n2'] = event['n2']
+                dst_row['n3'] = event['n3']
+                dst_row['n4'] = event['n4']
+                dst_row['k_theta'] = rawevent['k_zenith']
+                dst_row['k_phi'] = -(rawevent['k_azimuth'] + deg2rad(75)) % \
+                                   (2 * pi) - pi
+                dst_row['k_energy'] = rawevent['k_energy']
+                dst_row['h_theta'] = theta
+                dst_row['h_theta1'] = theta1
+                dst_row['h_theta2'] = theta2
+                dst_row['h_phi'] = phi
+                dst_row['D'] = round(min(event['n1'], event['n3'], event['n4']))
+
+                dst_row['k_dens_e'] = rawevent['k_dens_e']
+                dst_row['k_dens_mu'] = rawevent['k_dens_mu']
+                dst_row.append()
     dest.flush()
 
     print NT, NS
@@ -1286,7 +1296,7 @@ if __name__ == '__main__':
 
 
     print "Reconstructing events..."
-    reconstruct_angles(data, 'full', events, timing_data)
+    #reconstruct_angles(data, 'full', events, timing_data)
     #reconstruct_angles(data, 'full_linear', events, timing_data_linear)
     #reconstruct_angles(data, 'full_shifted', events, timing_data,
     #                   [0.25, 0, 1.17, -0.21])
