@@ -2,6 +2,7 @@ from __future__ import division
 
 import tables
 from scipy.special import gamma
+from numpy import *
 
 data = tables.openFile('kascade.h5', 'r')
 events = data.root.efficiency.events

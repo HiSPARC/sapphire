@@ -31,6 +31,7 @@ Reconstruction = {'n': tables.FloatCol(shape=4),
                   'h_phi': tables.FloatCol(),
                   'k_theta': tables.FloatCol(),
                   'k_phi': tables.FloatCol(),
+                  's': tables.FloatCol(),
                   'reconstructed': tables.BoolCol()}
 
 
