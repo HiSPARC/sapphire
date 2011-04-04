@@ -14,8 +14,8 @@ def main():
     #hist_densities()
     #trigger_levels()
     #cuts_orientation_reconstruction()
-    #poisson_Ne()
-    poisson_s()
+    poisson_Ne()
+    #poisson_s()
     pass
 
 def trig_poisson(x):
@@ -240,6 +240,8 @@ def poisson_Ne():
     ylabel("Trigger probability")
     legend()
     savefig('plots/poisson_Ne.eps')
+
+    axvline(0.2)
 
 def poisson_s():
     events = data.root.efficiency.events
