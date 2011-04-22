@@ -366,16 +366,16 @@ def do_reconstruction_plots(data, tablename, table2name, sim_data,
     table2 = data.getNode('/reconstructions', table2name)
     sim_table = sim_data.getNode('/reconstructions', sim_tablename)
 
-    plot_2d_results_phi(data)
-    plot_2d_results_theta(data)
+    #plot_2d_results_phi(data)
+    #plot_2d_results_theta(data)
 
-    plot_uncertainty_mip(table, sim_table)
+    #plot_uncertainty_mip(table, sim_table)
     plot_uncertainty_zenith(table, sim_table)
-    plot_uncertainty_zenith2(table, table2)
-    plot_uncertainty_energy(table)
-    plot_mip_core_dists_mean(table, sim_table)
-    plot_zenith_core_dists_mean(table, sim_table)
-    plot_uncertainty_core_dist_phi_theta(table, sim_table)
+    #plot_uncertainty_zenith2(table, table2)
+    #plot_uncertainty_energy(table)
+    #plot_mip_core_dists_mean(table, sim_table)
+    #plot_zenith_core_dists_mean(table, sim_table)
+    #plot_uncertainty_core_dist_phi_theta(table, sim_table)
 
 def plot_uncertainty_mip(table, sim_table):
     # constants for uncertainty estimation
@@ -442,8 +442,18 @@ def plot_uncertainty_mip(table, sim_table):
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
-    savefig('plots/auto-results-MIP.pdf')
+    #savefig('plots/auto-results-MIP.pdf')
     print
+
+    with open('plotdata/auto-results-MIP_marks.dat', 'w') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerow(('mip', 'theta', 'theta_sim', 'phi', 'phi_sim'))
+        writer.writerows(zip(x, rad2deg(y), rad2deg(sy), rad2deg(y2),
+                             rad2deg(sy2)))
+    with open('plotdata/auto-results-MIP_lines.dat', 'w') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerow(('mip', 'theta', 'phi'))
+        writer.writerows(zip(cx, rad2deg(cy2), rad2deg(cy)))
 
 def plot_uncertainty_zenith(table, sim_table):
     # constants for uncertainty estimation
@@ -518,6 +528,21 @@ def plot_uncertainty_zenith(table, sim_table):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-zenith.pdf')
     print
+
+    with open('plotdata/auto-results-zenith_marks_theta.dat', 'w') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerow(('zenith', 'theta', 'theta_sim'))
+        writer.writerows(zip(rad2deg(x), rad2deg(y), rad2deg(sy)))
+    with open('plotdata/auto-results-zenith_marks_phi.dat', 'w') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerow(('zenith', 'phi', 'phi_sim'))
+        writer.writerows(zip(rad2deg(x[1:]), rad2deg(y2[1:]),
+                             rad2deg(sy2[1:])))
+    with open('plotdata/auto-results-zenith_lines.dat', 'w') as f:
+        writer = csv.writer(f, delimiter='\t')
+        writer.writerow(('zenith', 'theta', 'phi', 'phi_sintheta'))
+        writer.writerows(zip(rad2deg(cx), rad2deg(cy2), rad2deg(cy),
+                             rad2deg(cy3)))
 
 def plot_uncertainty_zenith2(table, table2):
     # constants for uncertainty estimation
@@ -792,6 +817,19 @@ def plot_uncertainty_core_dist_phi_theta(table, sim_table):
 def plot_interarrival_times(h, k):
     f = lambda x, N, a: N * exp(a * x)
 
+    bins = linspace(0, 1, 200)
+    ns = []
+    for shift in [-12, -13, -13.180220188, -14]:
+        c = array(kascade_coincidences.search_coincidences(h, k, shift))
+        n, bins = histogram(abs(c[:,0]) / 1e9, bins=bins)
+        n = n.tolist() + [n[-1]]
+        n = [u if u else .1 for u in n]
+        ns.append(n)
+    #with open('plotdata/interarrival_times.dat', 'w') as f:
+    #    writer = csv.writer(f, delimiter='\t')
+    #    writer.writerow(('bin', 'n12', 'n13', 'n13x', 'n14'))
+    #    writer.writerows(zip(bins, *ns))
+
     figure()
     rcParams['text.usetex'] = False
     for shift in [-12, -13, -13.180220188, -14]:
@@ -804,6 +842,7 @@ def plot_interarrival_times(h, k):
     b = array([(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])])
     popt, pcov = curve_fit(f, b, n)
     print "Interarrival times rate: %f" % popt[1]
+    print "Scaling factor: %f" % popt[0]
     plot(b, f(b, *popt), label=r"$\lambda = %f$" % popt[1])
 
     xlabel("Time difference (s)")
@@ -814,19 +853,19 @@ def plot_interarrival_times(h, k):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-interarrival-times.pdf')
 
-    figure()
-    rcParams['text.usetex'] = False
-    shift = -13.180220188
-    c = array(kascade_coincidences.search_coincidences(h, k[:20000], shift))
-    l = len(c)
-    n, bins, patches = hist(c[:,0] / 1e3, bins=linspace(-10, -5, 500),
-                            histtype='step')
-    xlabel("Time difference (us)")
-    ylabel("Count")
-    title(r"$\Delta t = %.9f\,\mathrm{s}$" % shift)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    savefig('plots/auto-results-interarrival-times-corr.pdf')
+#    figure()
+#    rcParams['text.usetex'] = False
+#    shift = -13.180220188
+#    c = array(kascade_coincidences.search_coincidences(h, k[:20000], shift))
+#    l = len(c)
+#    n, bins, patches = hist(c[:,0] / 1e3, bins=linspace(-10, -5, 500),
+#                            histtype='step')
+#    xlabel("Time difference (us)")
+#    ylabel("Count")
+#    title(r"$\Delta t = %.9f\,\mathrm{s}$" % shift)
+#    if USE_TEX:
+#        rcParams['text.usetex'] = True
+#    savefig('plots/auto-results-interarrival-times-corr.pdf')
 
 
 
@@ -915,10 +954,30 @@ def plot_2d_results_phi(data):
 
     mylog = vectorize(lambda x: log10(x) if x > 0 else 0)
 
+    global H, x, y
     H, xedges, yedges = histogram2d(rad2deg(events['k_phi']),
-                                    rad2deg(events['h_phi']), bins=200)
+                                    rad2deg(events['h_phi']), bins=20)
     x = (xedges[:-1] + xedges[1:]) / 2
     y = (yedges[:-1] + yedges[1:]) / 2
+
+    # plotdata output
+    m = H.max()
+    wx = x[1] - x[0]
+    wy = y[1] - y[0]
+    with open('plotdata/auto-results-2d-phi.inp', 'w') as f:
+        for cx, u in zip(x, H):
+            for cy, v in zip(y, u):
+                if v != 0:
+                    nv = v / m
+                    rx = wx * nv
+                    ry = wy * nv
+                    x0 = cx - .5 * rx
+                    x1 = cx + .5 * rx
+                    y0 = cy - .5 * ry
+                    y1 = cy + .5 * ry
+                    f.write('\\path[data] (axis cs: %f, %f) rectangle '
+                            '(axis cs: %f, %f);\n' % (x0, y0, x1, y1))
+    return
 
     figure()
     rcParams['text.usetex'] = False
@@ -996,14 +1055,33 @@ def plot_2d_results_theta(data):
 
     H, xedges, yedges = histogram2d(rad2deg(events['k_theta']),
                                     rad2deg(events['h_theta']),
-                                    bins=[linspace(0, 40, 201),
-                                          linspace(0, 40, 201)])
+                                    bins=[linspace(0, 40, 21),
+                                          linspace(0, 40, 21)])
+    x = (xedges[:-1] + xedges[1:]) / 2
+    y = (yedges[:-1] + yedges[1:]) / 2
+
+    # plotdata output
+    m = H.max()
+    wx = x[1] - x[0]
+    wy = y[1] - y[0]
+    with open('plotdata/auto-results-2d-theta.inp', 'w') as f:
+        for cx, u in zip(x, H):
+            for cy, v in zip(y, u):
+                if v != 0:
+                    nv = v / m
+                    rx = wx * nv
+                    ry = wy * nv
+                    x0 = cx - .5 * rx
+                    x1 = cx + .5 * rx
+                    y0 = cy - .5 * ry
+                    y1 = cy + .5 * ry
+                    f.write('\\path[data] (axis cs: %f, %f) rectangle '
+                            '(axis cs: %f, %f);\n' % (x0, y0, x1, y1))
+    return
 
     figure()
     gca().set_axis_bgcolor('b')
     rcParams['text.usetex'] = False
-    x = (xedges[:-1] + xedges[1:]) / 2
-    y = (yedges[:-1] + yedges[1:]) / 2
     contourf(x, y, H.T)
     colorbar()
     xlabel(r"$\theta_K\,(^\circ)$")
@@ -1295,7 +1373,7 @@ if __name__ == '__main__':
         sim_data = tables.openFile('data-e15.h5', 'r')
 
 
-    print "Reconstructing events..."
+    #print "Reconstructing events..."
     #reconstruct_angles(data, 'full', events, timing_data)
     #reconstruct_angles(data, 'full_linear', events, timing_data_linear)
     #reconstruct_angles(data, 'full_shifted', events, timing_data,
@@ -1304,7 +1382,7 @@ if __name__ == '__main__':
     #                   timing_data_linear, [0.26, 0, 1.20, -0.19])
 
     #do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
-    #plot_interarrival_times(h, k)
+    plot_interarrival_times(h, k)
     
     #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=10 * 86400)
     #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
