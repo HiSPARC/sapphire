@@ -7,9 +7,11 @@ from build_dataset import DETECTORS
 from plot_utils import *
 
 from pylab import *
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, fmin
 
 from analysis_kascade import std_t, calc_phi
+
+from landau import Scintillator
 
 
 DATAFILE = 'kascade.h5'
@@ -37,7 +39,7 @@ def main():
     #plot_T200()
     #plot_P200()
     #plot_particle_density()
-    plot_density_fraction_err()
+    #plot_density_fraction_err()
     #plot_density_fraction()
     #optimize_trigger_prob()
     #plot_theta_phi_corr()
@@ -73,6 +75,9 @@ def main():
     #electron_gamma_trigger()
 
     #plot_poisson_trigger_cuts()
+
+    plot_charged_particles_poisson()
+
     pass
 
 def plot_pulseheight_trigger_histogram():
@@ -1012,6 +1017,116 @@ def plot_poisson_trigger_cuts():
     ylim(0, 1.05)
     savefig("plots/poisson_trigger_cuts.pdf")
 
+def plot_charged_particles_poisson():
+    events = data.getNode(GROUP, 'events')
+    s = Scintillator()
+
+    ph = events[:]['pulseheights'][:,1]
+    analyze_charged_particle_spectrum(s, ph)
+
+    bins = linspace(0, 5, 11)
+    x = bins[:-1] + .5 * (bins[1] - bins[0])
+    y = []
+
+    events = events.read()
+    dens = events['k_cosdens_charged'][:,1]     # center detector
+    for u, v in zip(bins[:-1], bins[1:]):
+        print "Analyzing %.2f <= dens < %.2f" % (u, v)
+        sel = events.compress((u <= dens) & (dens < v))
+        ph = sel['pulseheights'][:,1]
+        p = analyze_constrained_spectrum(s, ph)
+        y.append(p)
+
+    figure()
+    plot(x, y, label="Data")
+
+    # Poisson probabilities
+    p0 = exp(-.5 * x)                   # zero particles
+    pp = 1 - p0                         # NOT zero particles
+    pd0 = p0 ** 4 * pp ** 0             # 0 detectors hit
+    pd1 = p0 ** 3 * pp ** 1             # 1 detector hit
+    pd2 = p0 ** 2 * pp ** 2             # 2 detectors hit 
+    pd3 = p0 ** 1 * pp ** 3             # 3 detectors hit
+    pd4 = p0 ** 0 * pp ** 4             # 4 detectors hit
+
+    ptrig = 1 - (pd0 + 4 * pd1)         # Trigger probability
+    plot(x, ptrig, label="Poisson")
+
+    xlabel("Charged particle density (m$^{-1}$)")
+    ylabel("Probability of trigger")
+    legend(loc='best')
+    savefig("plots/charged_particles_poisson.pdf")
+
+def analyze_charged_particle_spectrum(s, ph):
+    figure()
+    # Fit of convoluted Landau
+    n, bins, patches = hist(ph, bins=linspace(0, 2000, 101), histtype='step')
+    nx = bins[:-1] + .5 * (bins[1] - bins[0])
+    x = linspace(-2000, 2000, 200)
+    y = interp(x, nx, n)
+    xopt, fopt, iter, funcalls, warnflag = fmin(s.residuals,
+                                                (10 ** 4, 3.38 / 380., 1),
+                                                (x, y, 350, 500), disp=0,
+                                                full_output=1)
+    plot(x, s.conv_landau(x, *xopt))
+
+    print "Residuals: %.2f" % fopt
+
+    # Charged particle spectrum
+    step(x, y, where='mid')
+    yl = s.conv_landau(x, *xopt)
+    plot(x, yl)
+    i = (y <= yl).argmax()
+    yp = array(yl[:i].tolist() + y[i:].tolist())
+    step(x, yp, where='mid')
+    N_T = sum(y.compress(x >= 0))
+    N_CP = sum(yp.compress(x >= 0))
+    print "Charged particles: %.2f %% of events" % ((N_CP / N_T) * 100)
+
+    xlim(xmin=0)
+    yscale('log')
+    ylim(ymin=1)
+    xlabel("Pulseheight [ADC counts]")
+    ylabel("Counts")
+    title("Charged particle part of spectrum")
+
+    return N_CP / N_T
+
+def analyze_constrained_spectrum(s, ph):
+    figure()
+    # Fit of convoluted Landau
+    n, bins, patches = hist(ph, bins=linspace(0, 2000, 101), histtype='step')
+    nx = bins[:-1] + .5 * (bins[1] - bins[0])
+    x = linspace(-2000, 2000, 200)
+    y = interp(x, nx, n)
+    xopt, fopt, iter, funcalls, warnflag = fmin(s.constrained_residuals,
+                                                (10 ** 1),
+                                                (x, y, 350, 500), disp=0,
+                                                full_output=1)
+    plot(x, s.conv_landau(x, *xopt))
+
+    print "Residuals: %.2f" % fopt
+
+    # Charged particle spectrum
+    step(x, y, where='mid')
+    yl = s.conv_landau(x, *xopt)
+    plot(x, yl)
+    i = (y <= yl).argmax()
+    yp = array(yl[:i].tolist() + y[i:].tolist())
+    step(x, yp, where='mid')
+    N_T = sum(y.compress(x >= 0))
+    N_CP = sum(yp.compress(x >= 0))
+    print "Charged particles: %.2f %% of events" % ((N_CP / N_T) * 100)
+
+    xlim(xmin=0)
+    yscale('log')
+    ylim(ymin=1)
+    xlabel("Pulseheight [ADC counts]")
+    ylabel("Counts")
+    title("Charged particle part of spectrum")
+
+    return N_CP / N_T
+
 
 if __name__ == '__main__':
     try:
@@ -1019,4 +1134,4 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile(DATAFILE, 'r')
 
-    main()
+    #main()
