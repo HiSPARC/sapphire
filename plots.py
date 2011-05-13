@@ -77,8 +77,8 @@ def main():
 
     #plot_poisson_trigger_cuts()
 
-    #plot_charged_particles_poisson()
-    plot_conv_poisson()
+    plot_charged_particles_poisson()
+    #plot_conv_poisson()
 
     pass
 
@@ -1023,6 +1023,9 @@ def plot_charged_particles_poisson(use_known=False):
     events = data.getNode(GROUP, 'events')
     s = Scintillator()
 
+    # With cuts
+    q = '(k_Num_e > 10 ** 4.6) & (k_Num_e < 10 ** 7) & (k_zenith <= %f) & (core_dist_center <= 90)' % deg2rad(30)
+
     if use_known:
         s.mev_scale = 0.0086306040898338834
         s.gauss_scale = 0.84289265239940525
@@ -1034,7 +1037,7 @@ def plot_charged_particles_poisson(use_known=False):
     x = bins[:-1] + .5 * (bins[1] - bins[0])
     y, yerr = [], []
 
-    events = events.read()
+    events = events.readWhere(q)
     dens = events['k_cosdens_charged'][:,1]     # center detector
     for num, (u, v) in enumerate(zip(bins[:-1], bins[1:])):
         print "Analyzing %.2f <= dens < %.2f" % (u, v)
@@ -1061,15 +1064,14 @@ def plot_charged_particles_poisson(use_known=False):
     xlabel("Charged particle density (m$^{-2}$)")
     ylabel("Probability of one or more particles")
     legend(loc='best')
-    savefig("plots/charged_particles_poisson.pdf")
+    savefig("plots/charged_particles_poisson_cuts.pdf")
 
-    if 'poisson' in data.root.datasets:
-        data.removeNode('/datasets', 'poisson', recursive=True)
-
-    data.createGroup('/datasets', 'poisson')
-    data.createArray('/datasets/poisson', 'x', x)
-    data.createArray('/datasets/poisson', 'y', y)
-    data.createArray('/datasets/poisson', 'yerr', yerr)
+    #if 'poisson' in data.root.datasets:
+    #    data.removeNode('/datasets', 'poisson', recursive=True)
+    #data.createGroup('/datasets', 'poisson')
+    #data.createArray('/datasets/poisson', 'x', x)
+    #data.createArray('/datasets/poisson', 'y', y)
+    #data.createArray('/datasets/poisson', 'yerr', yerr)
 
 def analyze_charged_particle_spectrum(s, ph, constrained=False):
     if not constrained:
