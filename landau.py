@@ -46,28 +46,51 @@ class Scintillator:
     delta     = 2.97663
     Euler     = 0.577215665
 
+    mev_scale = 1
+    gauss_scale = 1
+
     _lf0 = log(xi) - log(epsilon) + 1 - Euler - delta
 
     def landau_pdf(self, Delta):
         lf = Delta / self.xi - self._lf0
         return pdf(lf) / self.xi
 
-    def conv_landau(self, x, mev_scale=1, count_scale=1, gauss_scale=1):
+    def conv_landau(self, x, count_scale=1, mev_scale=None,
+                    gauss_scale=None):
+        if not mev_scale:
+            mev_scale = self.mev_scale
+        if not gauss_scale:
+            gauss_scale = self.gauss_scale
+
         f = self.landau_pdf
         g = stats.norm(scale=gauss_scale).pdf
         return count_scale * discrete_convolution(f, g, mev_scale * x)
 
     def residuals(self, p, xdata, ydata, a, b):
-        mev_scale, count_scale, gauss_scale = p
-        yfit = self.conv_landau(xdata, mev_scale, count_scale,
+        count_scale, mev_scale, gauss_scale = p
+        self.mev_scale = mev_scale
+        self.gauss_scale = gauss_scale
+
+        return self._residuals(xdata, ydata, mev_scale, count_scale,
+                               gauss_scale, a, b)
+
+    def constrained_residuals(self, p, xdata, ydata, a, b):
+        count_scale = p
+        mev_scale = self.mev_scale
+        gauss_scale = self.gauss_scale
+
+        return self._residuals(xdata, ydata, mev_scale, count_scale,
+                               gauss_scale, a, b)
+
+    def _residuals(self, xdata, ydata, mev_scale, count_scale,
+                   gauss_scale, a, b):
+        yfit = self.conv_landau(xdata, count_scale, mev_scale,
                                 gauss_scale)
 
         yfit = yfit.compress((a <= xdata) & (xdata < b))
         ydata = ydata.compress((a <= xdata) & (xdata < b))
         weights = 1. / ydata
         return ((weights * (yfit - ydata)) ** 2).sum()
-        #return ((yfit.compress((a <= xdata) & (xdata < b)) -
-        #        ydata.compress((a <= xdata) & (xdata < b))) ** 2).sum()
 
 
 @vectorize

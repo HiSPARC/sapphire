@@ -7,9 +7,12 @@ from build_dataset import DETECTORS
 from plot_utils import *
 
 from pylab import *
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, fmin
+from scipy import stats
 
 from analysis_kascade import std_t, calc_phi
+
+from landau import Scintillator, discrete_convolution
 
 
 DATAFILE = 'kascade.h5'
@@ -37,7 +40,7 @@ def main():
     #plot_T200()
     #plot_P200()
     #plot_particle_density()
-    plot_density_fraction_err()
+    #plot_density_fraction_err()
     #plot_density_fraction()
     #optimize_trigger_prob()
     #plot_theta_phi_corr()
@@ -73,6 +76,10 @@ def main():
     #electron_gamma_trigger()
 
     #plot_poisson_trigger_cuts()
+
+    plot_charged_particles_poisson(use_known=True)
+    #plot_conv_poisson()
+
     pass
 
 def plot_pulseheight_trigger_histogram():
@@ -1012,11 +1019,130 @@ def plot_poisson_trigger_cuts():
     ylim(0, 1.05)
     savefig("plots/poisson_trigger_cuts.pdf")
 
+def plot_charged_particles_poisson(use_known=False):
+    events = data.getNode(GROUP, 'events')
+    s = Scintillator()
+
+    if use_known:
+        s.mev_scale = 0.0086306040898338834
+        s.gauss_scale = 0.84289265239940525
+        s.mev_scale *= 0.9
+    else:
+        ph = events[:]['pulseheights'][:,1]
+        analyze_charged_particle_spectrum(s, ph, constrained=False)
+
+    bins = linspace(0, 5, 41)
+    x = bins[:-1] + .5 * (bins[1] - bins[0])
+    y, yerr = [], []
+
+    events = events.read()
+    dens = events['k_cosdens_charged'][:,1]     # center detector
+    for num, (u, v) in enumerate(zip(bins[:-1], bins[1:])):
+        print "Analyzing %.2f <= dens < %.2f" % (u, v)
+        sel = events.compress((u <= dens) & (dens < v))
+        ph = sel['pulseheights'][:,1]
+        p = analyze_charged_particle_spectrum(s, ph, constrained=True)
+        title("Charged particle part of spectrum (%.2f <= dens < %.2f)" %
+              (u, v))
+        savefig("plots/charged_particles_poisson_bin_%d.pdf" % num)
+        y.append(p[0])
+        yerr.append(p[1])
+    y = array(y)
+    yerr = array(yerr)
+
+    figure()
+    errorbar(x, y, yerr=yerr, fmt='o', label="Data")
+
+    # Poisson probabilities
+    p0 = exp(-.5 * x)                   # zero particles
+    pp = 1 - p0                         # one or more particles
+
+    plot(x, pp, label="Poisson")
+
+    xlabel("Charged particle density (m$^{-2}$)")
+    ylabel("Probability of one or more particles")
+    legend(loc='best')
+    savefig("plots/charged_particles_poisson.pdf")
+
+    if 'poisson' in data.root.datasets:
+        data.removeNode('/datasets', 'poisson', recursive=True)
+
+    data.createGroup('/datasets', 'poisson')
+    data.createArray('/datasets/poisson', 'x', x)
+    data.createArray('/datasets/poisson', 'y', y)
+    data.createArray('/datasets/poisson', 'yerr', yerr)
+
+def analyze_charged_particle_spectrum(s, ph, constrained=False):
+    if not constrained:
+        x0 = (10 ** 4, 3.38 / 380., 1)
+        residuals = s.residuals
+    else:
+        x0 = 10
+        residuals = s.constrained_residuals
+
+    figure()
+    # Fit of convoluted Landau
+    n, bins = histogram(ph, bins=linspace(0, 2000, 101))
+    nx = bins[:-1] + .5 * (bins[1] - bins[0])
+    x = linspace(-2000, 2000, 201)
+    y = interp(x, nx, n)
+    xopt, fopt, iter, funcalls, warnflag = fmin(residuals, x0,
+                                                (x, y, 350, 500), disp=0,
+                                                full_output=1)
+    plot(x, s.conv_landau(x, *xopt))
+
+    print "Residuals: %.2f" % fopt
+
+    # Charged particle spectrum
+    step(x, y, where='mid')
+    yl = s.conv_landau(x, *xopt)
+    plot(x, yl)
+    i = (y <= yl).argmax()
+    yp = array(yl[:i].tolist() + y[i:].tolist())
+    step(x, yp, where='mid')
+    N_T = sum(y.compress(x >= 0))
+    N_CP = sum(yp.compress(x >= 0))
+    print "Charged particles: %.2f %% of events" % ((N_CP / N_T) * 100)
+
+    xlim(xmin=0)
+    yscale('log')
+    ylim(ymin=1)
+    xlabel("Pulseheight [ADC counts]")
+    ylabel("Counts")
+
+    return N_CP / N_T, sqrt(N_CP) / N_T
+
+def plot_conv_poisson():
+    figure()
+
+    x = data.root.datasets.poisson.x.read()
+    y = data.root.datasets.poisson.y.read()
+    yerr = data.root.datasets.poisson.yerr.read()
+    errorbar(x, y, yerr=yerr, fmt='o', label="Data")
+
+    x = linspace(-10, 10, 101)
+    f = vectorize(lambda x: 1 - exp(-.5 * x) if x >= 0 else 0.)
+
+    for s in [0., 0.5, 1., 1.5]:
+        if s == 0.:
+            plot(x, f(x), label="Unconvoluted")
+        else:
+            g = stats.norm(scale=s).pdf
+            plot(x, discrete_convolution(f, g, x),
+                 label="sigma = %.2f m$^{-2}$" % s)
+
+    xlim(0, 5)
+    title("Effect of uncertainty on particle density")
+    xlabel("Charged particle density (m$^{-2}$)")
+    ylabel("Probability of one or more particles")
+    legend(loc='best')
+    savefig("plots/conv_poisson.pdf")
+
 
 if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile(DATAFILE, 'r')
+        data = tables.openFile(DATAFILE, 'a')
 
     main()
