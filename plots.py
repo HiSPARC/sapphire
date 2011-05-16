@@ -1026,7 +1026,7 @@ def plot_charged_particles_poisson(use_known=False):
     if use_known:
         s.mev_scale = 0.0086306040898338834
         s.gauss_scale = 0.84289265239940525
-        s.gauss_scale *= 0.7
+        s.mev_scale *= 0.9
     else:
         ph = events[:]['pulseheights'][:,1]
         analyze_charged_particle_spectrum(s, ph, constrained=False)
