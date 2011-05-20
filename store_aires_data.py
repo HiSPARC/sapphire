@@ -30,7 +30,7 @@ def save_particle(row, p, id):
     row['y'] = 10 ** p.core_distance * sin(p.polar_angle)
     row.append()
 
-def store_simulation_data(data, group, file):
+def store_aires_data(data, group, file):
     sim = aires.SimulationData('sim', file)
     group = data.createGroup('/showers', group, 'Shower Data')
     gammas = data.createTable(group, 'gammas', Particle,
@@ -76,11 +76,4 @@ if __name__ == '__main__':
     raise Exception("Warning!! Overwriting ALL data!!! (comment me)")
     data = tables.openFile(DATA_FILE, 'w')
     data.createGroup('/', 'showers', 'Simulated showers')
-    store_simulation_data(data, 'zenith0', 'showere15.grdpcles')
-    store_simulation_data(data, 'zenith23', 'showere15-angle.grdpcles')
-    store_simulation_data(data, 'zenith5', 'showere15-angle-5.grdpcles')
-    store_simulation_data(data, 'zenith35', 'showere15-angle-35.grdpcles')
-    store_simulation_data(data, 'zenith40', 'showere15-angle-40.grdpcles')
-    store_simulation_data(data, 'zenith45', 'showere15-angle-45.grdpcles')
-    store_simulation_data(data, 'zenith60', 'showere15-angle-60.grdpcles')
-    store_simulation_data(data, 'zenith80', 'showere15-angle-80.grdpcles')
+    store_aires_data(data, 'zenith0', 'showere15-angle-0.grdpcles')
