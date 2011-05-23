@@ -7,42 +7,48 @@
     the effect of the same shower hitting various positions around the
     station is simulated.
 
-    To enhance the statistics, (far) more positions in lower particle
-    density regions are selected.
+    For historical reasons, the detector simulation generates a CSV file
+    as output.  This CSV file is then read and the data is stored in the
+    HDF5 file.  Finally, the simulation results are analyzed to determine
+    observables and these are also stored in the HDF5 file.
 
 """
+from __future__ import division
+
 import tables
 import csv
 import numpy as np
 from math import pi, sqrt, sin, cos, atan2, ceil, isinf
 import gzip
+import progressbar as pb
 
-from multiprocessing import Process
+from cluster_definition import cluster, DETECTOR_SIZE
 
-from pylab import *
 
 DATAFILE = 'data-e15.h5'
-#DATAFILE = 'trigprob.h5'
 
-D = 1.
-MIN = 3
 
-RINGS = [(0, 4, 20, False), (4, 20, 10, False), (20, 40, 16, False),
-         (40, 80, 30, False), (80, 80, 30, True)]
-#RINGS = [(0, 100, 3., False)]
-
-DETECTOR_SIZE = (.25, .5)
-
+class StationEvent(tables.IsDescription):
+    """Store information about the station during an event"""
+    id = tables.UInt32Col()
+    station_id = tables.UInt8Col()
+    r_x = tables.Float32Col()
+    phi_y = tables.Float32Col()
+    alpha = tables.Float32Col()
 
 class ParticleEvent(tables.IsDescription):
+    """Store information about the particles hitting a detector"""
     id = tables.UInt32Col()
+    station_id = tables.UInt8Col()
+    detector_id = tables.UInt8Col()
     pid = tables.Int8Col()
     r = tables.Float32Col()
     phi = tables.Float32Col()
     time = tables.Float32Col()
     energy = tables.Float32Col()
 
-class StationEvent(tables.IsDescription):
+class ObservableEvent(tables.IsDescription):
+    """Store information about the observables of an event"""
     id = tables.UInt32Col()
     r = tables.Float32Col()
     phi = tables.Float32Col()
@@ -61,85 +67,89 @@ class StationEvent(tables.IsDescription):
     d4 = tables.Float32Col()
 
 
-def simulate_positions(r0, r1=1., density=1., iscorner=False):
-    """Simulate station positions on a ring with uniform density"""
+def generate_positions(R, num):
+    """Generate positions and an orientation uniformly on a circle
 
-    if not iscorner:
-        num = ceil(density * pi * (r1 ** 2 - r0 ** 2))
-        if num < MIN:
-            num = MIN
-        print r0, r1, density, num
-        return random_ring(r0, r1, num)
-    else:
-        num = ceil(density * ((2 * r0) ** 2 - pi * r0 ** 2))
-        if num < MIN:
-            num = MIN
-        print r0, "Corner", density, num
-        return random_corner(r0, num)
+    :param R: radius of circle
+    :param num: number of positions to generate
 
-def random_ring(r0, r1, num):
-    """Simulate positions uniformly on a ring"""
+    :return: r, phi, alpha
 
-    phi = np.random.uniform(-pi, pi, num)
-    r = np.sqrt(np.random.uniform(r0 ** 2, r1 ** 2, num))
+    """
+    for i in range(num):
+        phi, alpha = np.random.uniform(-pi, pi, 2)
+        r = np.sqrt(np.random.uniform(0, R ** 2))
+        yield r, phi, alpha
 
-    return r, phi
+def get_station_coordinates(station, r, phi, alpha):
+    """Calculate coordinates of a station given cluster coordinates
 
-def random_corner(R, num):
-    """Simulate positions in a square with an inscribed circle left out"""
+    :param station: station definition
+    :param r, phi: polar coordinates of cluster center
+    :param alpha: rotation of cluster
 
-    r_list, phi_list = [], []
-    while len(r_list) < num:
-        x, y = np.random.uniform(-R, R, 2)
-        r = sqrt(x ** 2 + y ** 2)
-        if r < R:
-            continue
-        else:
-            phi = atan2(y, x)
-            r_list.append(r)
-            phi_list.append(phi)
-    return np.array(r_list), np.array(phi_list)
+    :return: x, y, alpha; coordinates and rotation of station relative to
+        absolute coordinate system
 
-def plot_positions_test():
-    """Test of the position generator"""
-
-    N = 0
-    figure()
-
-    for r0, r1, density, iscorner in RINGS:
-        r, phi = simulate_positions(r0, r1, density * D, iscorner)
-        N += len(r)
-        plot(r * sin(phi), r * cos(phi), '.', ms=1)
-
-    axis('equal')
-    title("Posities in shower")
-    xlabel("Afstand (m)")
-    ylabel("Afstand (m)")
-    legend(["0 - 4 m", "4 - 20 m", "20 - 40 m", "40 - 80 m", "> 80 m"])
-
-    print "Total:", N
-
-def get_station_particles(data, r, phi, alpha=None):
-    """Return all particles hitting a station"""
-
+    """
     X = r * cos(phi)
     Y = r * sin(phi)
+
+    sx, sy = station['position']
+    xp = sx * cos(alpha) - sy * sin(alpha)
+    yp = sx * sin(alpha) + sy * cos(alpha)
+
+    x = X + xp
+    y = Y + yp
+    angle = alpha + station['angle']
+
+    return x, y, angle
+
+def get_station_particles(station, data, X, Y, alpha):
+    """Return all particles hitting a station
+
+    :param station: station definition
+    :param data: HDF5 particle dataset
+    :param X, Y: coordinates of station center
+    :param alpha: rotation angle of station
+
+    :return: list of detectors containing list of particles
+    :rtype: list of lists
+
+    """
     particles = []
 
-    for detector in DETECTORS:
+    for detector in station['detectors']:
         x, y, orientation = detector
         particles.append(get_detector_particles(data, X, Y, x, y,
                                                 orientation, alpha))
     return particles
 
 def get_detector_particles(data, X, Y, x, y, orientation, alpha=None):
-    """Return all particles hitting a single detector"""
+    """Return all particles hitting a single detector
 
+    Given a HDF5 table containing information on all simulated particles
+    and coordinates and orientation of a detector, search for all
+    particles which have hit the detector.
+
+    :param data: table containing particle data
+    :param X, Y: X, Y coordinates of center of station
+    :param x, y: x, y coordinates of center of detector relative to
+        station center 
+    :param orientation: either 'UD' or 'LR', for up-down or left-right
+        detector orientations, relative to station
+    :param alpha: rotation angle of entire station
+
+    :return: list of particles which have hit the detector
+
+    """
     c = get_detector_corners(X, Y, x, y, orientation, alpha)
 
+    # determine equations describing detector edges
     b11, line1, b12 = get_line_boundary_eqs(c[0], c[1], c[2])
     b21, line2, b22 = get_line_boundary_eqs(c[1], c[2], c[3])
 
+    # particles satisfying all equations are inside the detector
     return data.readWhere("(b11 < %s) & (%s < b12) & "
                           "(b21 < %s) & (%s < b22)" % (line1, line1,
                                                        line2, line2))
@@ -153,6 +163,17 @@ def get_line_boundary_eqs(p0, p1, p2):
     line which runs parallel to the first.  The return value is an
     equation and two boundaries which can be used to test if a point is
     between the two lines.
+
+    :param p0, p1: (x, y) tuples on the same line
+    :param p2: (x, y) tuple on the parallel line
+
+    :return: value1, equation, value2, such that points satisfying value1
+        < equation < value2 are between the parallel lines
+
+    Example::
+
+        >>> get_line_boundary_eqs((0, 0), (1, 1), (0, 2))
+        (0.0, 'y - 1.000000 * x', 2.0)
 
     """
     (x0, y0), (x1, y1), (x2, y2) = p0, p1, p2
@@ -179,9 +200,21 @@ def get_line_boundary_eqs(p0, p1, p2):
     return b1, line, b2
 
 def get_detector_corners(X, Y, x, y, orientation, alpha=None):
-    """Get the x, y coordinates of the detector corners"""
+    """Get the x, y coordinates of the detector corners
 
-    dx, dy = DETECTOR_SIZE
+    :param X, Y: X, Y coordinates of center of station
+    :param x, y: x, y coordinates of center of detector relative to
+        station center 
+    :param orientation: either 'UD' or 'LR', for up-down or left-right
+        detector orientations, relative to station
+    :param alpha: rotation angle of entire station
+
+    :return: x, y coordinates of detector corners
+    :rtype: list of (x, y) tuples
+
+    """
+    dx = DETECTOR_SIZE[0] / 2
+    dy = DETECTOR_SIZE[1] / 2
 
     if orientation == 'UD':
         corners = [(x - dx, y - dy), (x + dx, y - dy), (x + dx, y + dy),
@@ -198,118 +231,61 @@ def get_detector_corners(X, Y, x, y, orientation, alpha=None):
         corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
                    corners]
 
-    return [[X + x, Y + y] for x, y in corners]
+    return [(X + x, Y + y) for x, y in corners]
 
-def plot_detectors_test(data, r, phi, alpha=None):
-    """Test the detector and particle positions"""
+def do_simulation(cluster, particles, data, dst, R, N):
+    """Perform a simulation
 
-    figure()
-    X = r * cos(phi)
-    Y = r * sin(phi)
+    :param cluster: definition of all stations in the cluster
+    :param particles: the HDF5 dataset containing the particles
+    :param data: the HDF5 file
+    :param dst: the HDF5 destination to store results
+    :param R: maximum distance of shower to center of cluster
+    :param N: number of simulations to perform
 
-    for x, y, orient in DETECTORS:
-        plot(X + x, Y + y, '.', ms=5.)
-        corners = get_detector_corners(X, Y, x, y, orient, alpha)
-        plot([u for u, v in corners] + [corners[0][0]],
-             [v for u, v in corners] + [corners[0][1]])
+    """
+    s_events = data.createTable(dst, 'stations', StationEvent)
+    p_events = data.createTable(dst, 'particles', ParticleEvent)
 
-    title("HiSPARC detectors")
-    xlabel("Afstand (m)")
-    ylabel("Afstand (m)")
-    axis('equal')
+    progress = pb.ProgressBar(maxval=N, widgets=[pb.Percentage(),
+                                                 pb.Bar(), pb.ETA()])
+    for event_id, (r, phi, alpha) in \
+        progress(enumerate(generate_positions(R, N))):
+        write_header(s_events, event_id, 0, r, phi, alpha)
+        for station_id, station in enumerate(cluster):
+            x, y, beta = get_station_coordinates(station, r, phi, alpha)
+            write_header(s_events, event_id, station_id, x, y, beta)
 
-    for p in get_station_particles(data, r, phi, alpha):
-        plot(p[:]['x'], p[:]['y'], '.', ms=1.)
+            plist = get_station_particles(station, particles, x, y, beta)
+            write_detector_particles(p_events, event_id, station_id,
+                                     plist)
 
-def detector_test(data):
-    """Test the detector positions and measured particles"""
+    s_events.flush()
+    p_events.flush()
 
-    for theta in linspace(-pi, pi, 10):
-        plot_detectors_test(group, 0, 0, theta)
-        plot_detectors_test(group, 5, 0, theta)
-        #plot_detectors_test(group, 5, .5 * pi, theta)
-        #plot_detectors_test(group, 50, .25 * pi, theta)
-
-def do_simulation(data, stationsize, outfile, density, use_alpha=0.):
-    """Perform a full simulation"""
-
-    dataf = tables.openFile(DATAFILE, 'r')
-    data = dataf.getNode('/showers', data)
-
-    global DETECTORS
-    DETECTOR_SPACING = stationsize
-    l = DETECTOR_SPACING / 2.
-    x = l / 3. * sqrt(3)
-    DETECTORS = [(0., 2 * x, 'UD'), (0., 0., 'UD'), (-l, -x, 'LR'),
-                 (l, -x, 'LR')]
-
-    file = gzip.open(outfile, 'w')
-    writer = csv.writer(file, delimiter='\t')
-    N = 0
-    for r0, r1, rel_density, iscorner in RINGS:
-        r_list, phi_list = simulate_positions(r0, r1,
-                                              rel_density * density,
-                                              iscorner)
-        if use_alpha is True:
-            alpha_list = np.random.uniform(-pi, pi, len(r_list))
-        else:
-            alpha_list = len(r_list) * [use_alpha]
-
-        for event_id, (r, phi, alpha) in enumerate(zip(r_list,
-                                                       phi_list,
-                                                       alpha_list),
-                                                   N):
-            save_event_header(writer, event_id, r, phi, alpha)
-            particles = get_station_particles(data, r, phi, alpha)
-            for scint_id, p in enumerate(particles, 1):
-                save_detector_particles(writer, event_id, scint_id, p)
-
-        N = event_id + 1
-    file.close()
-    dataf.close()
-
-def save_event_header(writer, event_id, r, phi, alpha):
-    # ID + 0, 0, r, phi, alpha, 0
-    writer.writerow([event_id * 10, 0, r, phi, alpha, 0])
-
-def save_detector_particles(writer, event_id, scint_id, particles):
-    # ID + scintnum, pid, r, phi, t, E
-    for p in particles:
-        writer.writerow([event_id * 10 + scint_id, p['pid'],
-                         p['core_distance'], p['polar_angle'],
-                         p['arrival_time'], p['energy']])
-
-def store_results_in_tables(csvfile, hdffile):
-    """Read a csv file with simulation data and store in PyTables"""
-
-    data = tables.openFile(hdffile, 'a')
-    try:
-        data.createGroup('/', 'simulations', "Detector simulation data")
-    except tables.NodeError:
-        pass
-
-    tablename = csvfile.replace('detsim-', '').replace(
-                    '.csv.gz', '').replace('-', '_')
-
-    try:
-        data.removeNode('/simulations', tablename)
-    except tables.NoSuchNodeError:
-        pass
-
-    table = data.createTable('/simulations', tablename, ParticleEvent,
-                             "Detector simulation data")
+def write_header(table, event_id, station_id, r_x, phi_y, alpha):
     row = table.row
+    row['id'] = event_id
+    row['station_id'] = station_id
+    row['r_x'] = r_x
+    row['phi_y'] = phi_y
+    row['alpha'] = alpha
+    row.append()
 
-    file = gzip.open(csvfile, 'r')
-    reader = csv.reader(file, delimiter='\t')
-    for line in reader:
-        (row['id'], row['pid'], row['r'], row['phi'], row['time'],
-         row['energy']) = line
-        row.append()
-
-    file.close()
+def write_detector_particles(table, event_id, station_id, plist):
+    row = table.row
+    for detector_id, detector in enumerate(plist):
+        for particle in detector:
+            row['id'] = event_id
+            row['station_id'] = station_id
+            row['detector_id'] = detector_id
+            row['pid'] = particle['pid']
+            row['r'] = particle['core_distance']
+            row['phi'] = particle['polar_angle']
+            row['time'] = particle['arrival_time']
+            row['energy'] = particle['energy']
+            row.append()
     table.flush()
-    data.close()
 
 def analyze_results(hdffile, tablename, showertablename):
     """Analyze simulation results and deduce detector pulse times"""
@@ -374,57 +350,20 @@ def analyze_results(hdffile, tablename, showertablename):
     table.flush()
     data.close()
 
-def do_full_simulation():
-    DENSITY = 1.
-    ps = []
-    for group, stationsize, outfile in [
-        ('zenith0/leptons', 10., 'detsim-angle-0.csv.gz'),
-        ('zenith5/leptons', 10., 'detsim-angle-5.csv.gz'),
-        ('zenith23/leptons', 5., 'detsim-angle-23-size5.csv.gz'),
-        ('zenith23/leptons', 10., 'detsim-angle-23.csv.gz'),
-        ('zenith23/leptons', 20., 'detsim-angle-23-size20.csv.gz'),
-        ('zenith35/leptons', 10., 'detsim-angle-35.csv.gz'),
-        ('zenith40/leptons', 10., 'detsim-angle-40.csv.gz'),
-        ('zenith45/leptons', 10., 'detsim-angle-45.csv.gz'),
-        ('zenith60/leptons', 10., 'detsim-angle-60.csv.gz'),
-        ('zenith80/leptons', 10., 'detsim-angle-80.csv.gz')]:
-
-        p = Process(target=do_simulation, kwargs=dict(data=group,
-                                                      stationsize=stationsize,
-                                                      outfile=outfile,
-                                                      density=DENSITY,
-                                                      use_alpha=True))
-        p.start()
-        ps.append(p)
-    for p in ps:
-        p.join()
-
-def store_full_results():
-    store_results_in_tables('detsim-angle-0.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-5.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-23.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-23-size5.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-23-size20.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-35.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-40.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-45.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-60.csv.gz', DATAFILE)
-    store_results_in_tables('detsim-angle-80.csv.gz', DATAFILE)
-
-def analyze_full_results():
-    analyze_results(DATAFILE, 'angle_0', 'zenith0/leptons')
-    analyze_results(DATAFILE, 'angle_5', 'zenith5/leptons')
-    analyze_results(DATAFILE, 'angle_23', 'zenith23/leptons')
-    analyze_results(DATAFILE, 'angle_23_size5', 'zenith23/leptons')
-    analyze_results(DATAFILE, 'angle_23_size20', 'zenith23/leptons')
-    analyze_results(DATAFILE, 'angle_35', 'zenith35/leptons')
-    analyze_results(DATAFILE, 'angle_40', 'zenith40/leptons')
-    analyze_results(DATAFILE, 'angle_45', 'zenith45/leptons')
-    analyze_results(DATAFILE, 'angle_60', 'zenith60/leptons')
-    analyze_results(DATAFILE, 'angle_80', 'zenith80/leptons')
-
 
 if __name__ == '__main__':
-    #do_full_simulation()
-    #store_full_results()
-    analyze_full_results()
+    try:
+        data
+    except NameError:
+        data = tables.openFile(DATAFILE, 'a')
+
+    if '/simulations' not in data:
+        data.createGroup('/', 'simulations', 'Detector Simulations')
+    if 'zenith0' in data.root.simulations:
+        data.removeNode('/simulations', 'zenith0', recursive=True)
+    data.createGroup('/simulations', 'zenith0')
+
+    particles = data.getNode('/showers/zenith0', 'leptons')
+    dst = data.getNode('/simulations', 'zenith0')
+
+    do_simulation(cluster, particles, data, dst, 100., N=1000)

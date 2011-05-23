@@ -1,7 +1,15 @@
+""" Store AIRES simulation data in HDF5 file
+
+    This module reads the AIRES binary ground particles file and stores
+    each particle individually in a HDF5 file, using PyTables.  This file
+    can then be used as input for the detector simulation.
+
+"""
 import os, sys
 sys.path.append(os.path.expanduser('~/work/HiSPARC/software/bzr/shower'))
 import aires
 import tables
+import os.path
 
 from numpy import *
 
@@ -73,7 +81,9 @@ def store_aires_data(data, group, file):
 
 
 if __name__ == '__main__':
-    raise Exception("Warning!! Overwriting ALL data!!! (comment me)")
-    data = tables.openFile(DATA_FILE, 'w')
-    data.createGroup('/', 'showers', 'Simulated showers')
-    store_aires_data(data, 'zenith0', 'showere15-angle-0.grdpcles')
+    if os.path.exists(DATA_FILE):
+        print "WARNING: data file exists: %s.  Aborting." % DATA_FILE
+    else:
+        data = tables.openFile(DATA_FILE, 'w')
+        data.createGroup('/', 'showers', 'Simulated showers')
+        store_aires_data(data, 'zenith0', 'showere15-angle-0.grdpcles')
