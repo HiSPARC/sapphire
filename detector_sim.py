@@ -32,8 +32,8 @@ class StationEvent(tables.IsDescription):
     """Store information about the station during an event"""
     id = tables.UInt32Col()
     station_id = tables.UInt8Col()
-    r_x = tables.Float32Col()
-    phi_y = tables.Float32Col()
+    r = tables.Float32Col()
+    phi = tables.Float32Col()
     alpha = tables.Float32Col()
 
 class ParticleEvent(tables.IsDescription):
@@ -254,7 +254,10 @@ def do_simulation(cluster, particles, data, dst, R, N):
         write_header(s_events, event_id, 0, r, phi, alpha)
         for station_id, station in enumerate(cluster):
             x, y, beta = get_station_coordinates(station, r, phi, alpha)
-            write_header(s_events, event_id, station_id, x, y, beta)
+            # calculate station r, phi just to save it in header
+            s_r = sqrt(x ** 2 + y ** 2)
+            s_phi = atan2(y, x)
+            write_header(s_events, event_id, station_id, s_r, s_phi, beta)
 
             plist = get_station_particles(station, particles, x, y, beta)
             write_detector_particles(p_events, event_id, station_id,
@@ -263,12 +266,12 @@ def do_simulation(cluster, particles, data, dst, R, N):
     s_events.flush()
     p_events.flush()
 
-def write_header(table, event_id, station_id, r_x, phi_y, alpha):
+def write_header(table, event_id, station_id, r, phi, alpha):
     row = table.row
     row['id'] = event_id
     row['station_id'] = station_id
-    row['r_x'] = r_x
-    row['phi_y'] = phi_y
+    row['r'] = r
+    row['phi'] = phi
     row['alpha'] = alpha
     row.append()
 
