@@ -18,7 +18,8 @@ from __future__ import division
 import tables
 import csv
 import numpy as np
-from math import pi, sqrt, sin, cos, atan2, ceil, isinf
+from numpy import nan
+from math import pi, sqrt, sin, cos, atan2, isinf
 import gzip
 import progressbar as pb
 
@@ -50,6 +51,7 @@ class ParticleEvent(tables.IsDescription):
 class ObservableEvent(tables.IsDescription):
     """Store information about the observables of an event"""
     id = tables.UInt32Col()
+    station_id = tables.UInt8Col()
     r = tables.Float32Col()
     phi = tables.Float32Col()
     alpha = tables.Float32Col()
@@ -61,10 +63,6 @@ class ObservableEvent(tables.IsDescription):
     n2 = tables.UInt16Col()
     n3 = tables.UInt16Col()
     n4 = tables.UInt16Col()
-    d1 = tables.Float32Col()
-    d2 = tables.Float32Col()
-    d3 = tables.Float32Col()
-    d4 = tables.Float32Col()
 
 
 def generate_positions(R, num):
@@ -252,7 +250,7 @@ def do_simulation(cluster, particles, data, dst, R, N):
     for event_id, (r, phi, alpha) in \
         progress(enumerate(generate_positions(R, N))):
         write_header(s_events, event_id, 0, r, phi, alpha)
-        for station_id, station in enumerate(cluster):
+        for station_id, station in enumerate(cluster, 1):
             x, y, beta = get_station_coordinates(station, r, phi, alpha)
             # calculate station r, phi just to save it in header
             s_r = sqrt(x ** 2 + y ** 2)
@@ -267,6 +265,16 @@ def do_simulation(cluster, particles, data, dst, R, N):
     p_events.flush()
 
 def write_header(table, event_id, station_id, r, phi, alpha):
+    """Write simulation event header information to file
+
+    :param table: HDF5 table
+    :param event_id: simulation event id
+    :param station_id: station id inside cluster, 0 for cluster header
+    :param r, phi: r, phi for cluster or station position, both as
+        absolute coordinates
+    :param alpha: cluster rotation angle or station rotation angle
+
+    """
     row = table.row
     row['id'] = event_id
     row['station_id'] = station_id
@@ -274,8 +282,17 @@ def write_header(table, event_id, station_id, r, phi, alpha):
     row['phi'] = phi
     row['alpha'] = alpha
     row.append()
+    table.flush()
 
 def write_detector_particles(table, event_id, station_id, plist):
+    """Write particles to file
+
+    :param table: HDF5 table
+    :param event_id: simulation event id
+    :param station_id: station id inside cluster
+    :param plist: list of detectors, containing list of particles
+
+    """
     row = table.row
     for detector_id, detector in enumerate(plist):
         for particle in detector:
@@ -290,68 +307,43 @@ def write_detector_particles(table, event_id, station_id, plist):
             row.append()
     table.flush()
 
-def analyze_results(hdffile, tablename, showertablename):
+def store_observables(data, group):
     """Analyze simulation results and deduce detector pulse times"""
 
-    data = tables.openFile(hdffile, 'a')
-    try:
-        data.createGroup('/', 'analysis', "Analyzed simulation data")
-    except tables.NodeError:
-        pass
-
-    try:
-        data.removeNode('/analysis', tablename)
-    except tables.NoSuchNodeError:
-        pass
-
-    showertable = data.getNode('/showers', showertablename)
-    table = data.createTable('/analysis', tablename, StationEvent,
-                             "Analyzed simulation data")
-    sim = iter(data.getNode('/simulations', tablename))
+    table = data.createTable(group, 'observables', ObservableEvent)
     row = table.row
 
-    dR = 3.
-    rs = linspace(0 + dR, 100, 1000)
-    dens = [len(showertable.readWhere('(%f <= core_distance) & '
-                                      '(core_distance < %f)' % (R - dR,
-                                                                R + dR))) /
-            (pi * ((R + dR) ** 2 - (R - dR) ** 2)) for R in rs]
+    headers = data.getNode(group, 'stations')
+    particles = data.getNode(group, 'particles')
 
-    try:
-        event = sim.next()
-        while True:
-            assert event['id'] % 10 == 0
-            row['id'] = event['id']
-            row['r'] = event['r']
-            R = event['r']
-            row['phi'] = event['phi']
-            # header has alpha in place of time
-            row['alpha'] = event['time']
-            t = [[], [], [], []]
-            while True:
-                event = sim.next()
-                idx = event['id'] % 10
-                if idx == 0:
-                    row['t1'], row['t2'], row['t3'], row['t4'] = \
-                        [min(x) if len(x) else nan for x in t]
-                    row['n1'], row['n2'], row['n3'], row['n4'] = \
-                        [len(x) for x in t]
-                    D = dens[rs.searchsorted(R) - 1]
-                    row['d1'], row['d2'], row['d3'], row['d4'] = D, D, D, D
-                    row.append()
-                    break
-                else:
-                    t[idx - 1].append(event['time'])
-    except StopIteration:
-        row['t1'], row['t2'], row['t3'], row['t4'] = [min(x) if len(x)
-                                                      else nan for x in t]
-        row['n1'], row['n2'], row['n3'], row['n4'] = [len(x) for x in t]
-        D = dens[rs.searchsorted(R) - 1]
-        row['d1'], row['d2'], row['d3'], row['d4'] = D, D, D, D
-        row.append()
+    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                       pb.ETA()])
+    for header in progress(headers.readWhere('station_id == 0')):
+        for station in headers.readWhere('(id == %d) & (station_id != 0)' %
+                                         header['id']):
+            t = []
+            for detector in range(1, 5):
+                pcles = particles.readWhere('(id == %d) & '
+                                            '(station_id == %d) & '
+                                            '(detector_id == %d)' %
+                                            (header['id'],
+                                            station['station_id'],
+                                            detector))
+                t.append([u['time'] for u in pcles])
+
+            row['id'] = header['id']
+            row['station_id'] = station['station_id']
+            row['r'] = station['r']
+            row['phi'] = station['phi']
+            row['alpha'] = station['alpha']
+            row['t1'], row['t2'], row['t3'], row['t4'] = [min(u) if len(u)
+                                                          else nan for u
+                                                          in t]
+            row['n1'], row['n2'], row['n3'], row['n4'] = [len(u) for u in
+                                                          t]
+            row.append()
 
     table.flush()
-    data.close()
 
 
 if __name__ == '__main__':
@@ -369,4 +361,5 @@ if __name__ == '__main__':
     particles = data.getNode('/showers/zenith0', 'leptons')
     dst = data.getNode('/simulations', 'zenith0')
 
-    do_simulation(cluster, particles, data, dst, 100., N=1000)
+    do_simulation(cluster, particles, data, dst, 100., N=100)
+    store_observables(data, dst)
