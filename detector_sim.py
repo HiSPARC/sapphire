@@ -22,6 +22,7 @@ from numpy import nan
 from math import pi, sqrt, sin, cos, atan2, isinf
 import gzip
 import progressbar as pb
+import os.path
 
 from cluster_definition import cluster, DETECTOR_SIZE
 
@@ -231,19 +232,42 @@ def get_detector_corners(X, Y, x, y, orientation, alpha=None):
 
     return [(X + x, Y + y) for x, y in corners]
 
-def do_simulation(cluster, particles, data, dst, R, N):
+def do_simulation(cluster, data, grdpcles, output, R, N):
     """Perform a simulation
 
     :param cluster: definition of all stations in the cluster
-    :param particles: the HDF5 dataset containing the particles
     :param data: the HDF5 file
-    :param dst: the HDF5 destination to store results
+    :param grdpcles: name of the dataset containing the ground particles
+    :param output: name of the destination to store results
     :param R: maximum distance of shower to center of cluster
     :param N: number of simulations to perform
 
     """
-    s_events = data.createTable(dst, 'stations', StationEvent)
-    p_events = data.createTable(dst, 'particles', ParticleEvent)
+    try:
+        grdpcles = data.getNode('/', grdpcles)
+    except tables.NoSuchNodeError:
+        print "Cancelling simulation; %s not found in tree." % grdpcles
+        return
+
+    head, tail = os.path.split(output)
+    try:
+        data.createGroup(head, tail, createparents=True)
+    except tables.NodeError:
+        print "Cancelling simulation; %s already exists?" % output
+        return
+
+    print 74 * '-'
+    print """Running simulation
+
+Ground particles:   %s
+Output destination: %s
+
+Maximum core distance of cluster center:   %f m
+Number of cluster positions in simulation: %d
+    """ % (grdpcles._v_pathname, output, R, N)
+
+    s_events = data.createTable(output, 'stations', StationEvent)
+    p_events = data.createTable(output, 'particles', ParticleEvent)
 
     progress = pb.ProgressBar(maxval=N, widgets=[pb.Percentage(),
                                                  pb.Bar(), pb.ETA()])
@@ -257,12 +281,15 @@ def do_simulation(cluster, particles, data, dst, R, N):
             s_phi = atan2(y, x)
             write_header(s_events, event_id, station_id, s_r, s_phi, beta)
 
-            plist = get_station_particles(station, particles, x, y, beta)
+            plist = get_station_particles(station, grdpcles, x, y, beta)
             write_detector_particles(p_events, event_id, station_id,
                                      plist)
 
     s_events.flush()
     p_events.flush()
+
+    print 74 * '-'
+    print
 
 def write_header(table, event_id, station_id, r, phi, alpha):
     """Write simulation event header information to file
@@ -310,12 +337,25 @@ def write_detector_particles(table, event_id, station_id, plist):
 def store_observables(data, group):
     """Analyze simulation results and deduce detector pulse times"""
 
-    table = data.createTable(group, 'observables', ObservableEvent)
-    row = table.row
+    try:
+        group = data.getNode('/', group)
+    except tables.NoSuchNodeError:
+        print "Cancelling; %s not found in tree." % group
+        return
+
+    try:
+        table = data.createTable(group, 'observables', ObservableEvent)
+    except tables.NodeError:
+        print "Cancelling; %s already exists?" % \
+            os.path.join(group._v_pathname, 'observables')
+        return
 
     headers = data.getNode(group, 'stations')
     particles = data.getNode(group, 'particles')
 
+    print "Storing observables from %s" % group._v_pathname
+
+    row = table.row
     progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                        pb.ETA()])
     for header in progress(headers.readWhere('station_id == 0')):
@@ -344,6 +384,7 @@ def store_observables(data, group):
             row.append()
 
     table.flush()
+    print
 
 
 if __name__ == '__main__':
@@ -352,14 +393,7 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile(DATAFILE, 'a')
 
-    if '/simulations' not in data:
-        data.createGroup('/', 'simulations', 'Detector Simulations')
-    if 'zenith0' in data.root.simulations:
-        data.removeNode('/simulations', 'zenith0', recursive=True)
-    data.createGroup('/simulations', 'zenith0')
-
-    particles = data.getNode('/showers/zenith0', 'leptons')
-    dst = data.getNode('/simulations', 'zenith0')
-
-    do_simulation(cluster, particles, data, dst, 100., N=100)
-    store_observables(data, dst)
+    sim = 'E_1PeV/zenith_0'
+    do_simulation(cluster, data, os.path.join('/showers', sim, 'leptons'),
+                  os.path.join('/simulations', sim), R=100, N=100)
+    store_observables(data, os.path.join('/simulations', sim))

@@ -39,8 +39,17 @@ def save_particle(row, p, id):
     row.append()
 
 def store_aires_data(data, group, file):
-    sim = aires.SimulationData('sim', file)
-    group = data.createGroup('/showers', group, 'Shower Data')
+    head, tail = os.path.split(group)
+    try:
+        data.createGroup(head, tail, createparents=True)
+    except tables.NodeError:
+        print "Ignoring", group, file
+        print "(%s already exists?)" % group
+        return
+
+    print "Storing AIRES data (%s) in %s" % (file, group)
+
+    sim = aires.SimulationData('', file)
     gammas = data.createTable(group, 'gammas', Particle,
                               'Gammas')
     muons = data.createTable(group, 'muons', Particle,
@@ -81,9 +90,6 @@ def store_aires_data(data, group, file):
 
 
 if __name__ == '__main__':
-    if os.path.exists(DATA_FILE):
-        print "WARNING: data file exists: %s.  Aborting." % DATA_FILE
-    else:
-        data = tables.openFile(DATA_FILE, 'w')
-        data.createGroup('/', 'showers', 'Simulated showers')
-        store_aires_data(data, 'zenith0', 'showere15-angle-0.grdpcles')
+    data = tables.openFile(DATA_FILE, 'a')
+    store_aires_data(data, '/showers/E_1PeV/zenith_0',
+                     'sim/showere15-angle-0.grdpcles')
