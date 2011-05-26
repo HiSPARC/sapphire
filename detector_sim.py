@@ -56,6 +56,7 @@ class ObservableEvent(tables.IsDescription):
     r = tables.Float32Col()
     phi = tables.Float32Col()
     alpha = tables.Float32Col()
+    N = tables.UInt8Col()
     t1 = tables.Float32Col()
     t2 = tables.Float32Col()
     t3 = tables.Float32Col()
@@ -64,6 +65,14 @@ class ObservableEvent(tables.IsDescription):
     n2 = tables.UInt16Col()
     n3 = tables.UInt16Col()
     n4 = tables.UInt16Col()
+
+class CoincidenceEvent(tables.IsDescription):
+    """Store information about a coincidence"""
+    id = tables.UInt32Col()
+    N = tables.UInt8Col()
+    r = tables.Float32Col()
+    phi = tables.Float32Col()
+    alpha = tables.Float32Col()
 
 
 def generate_positions(R, num):
@@ -335,8 +344,24 @@ def write_detector_particles(table, event_id, station_id, plist):
     table.flush()
 
 def store_observables(data, group):
-    """Analyze simulation results and deduce detector pulse times"""
+    """Analyze simulation results and store derived data
 
+    Loop through simulation result tables and find observables like the
+    number of particles which hit detectors, as well as the arrival time
+    of the first particle to hit a detector.  The number of detectors
+    which have particles are also recorded.  Finally the per shower
+    results from all stations are combined and stored as a coincidence
+    event.
+
+    To speed things up, pointers into the two simulation result tables are
+    advanced row by row.  Event and station id's are continually checked
+    to now when to break.  The flow is a bit complicated, but it is fast.
+
+    :param data: the HDF5 file
+    :param group: name of the group which contains the simulation and will
+        hold the observables and coincidence data
+
+    """
     try:
         group = data.getNode('/', group)
     except tables.NoSuchNodeError:
@@ -344,7 +369,8 @@ def store_observables(data, group):
         return
 
     try:
-        table = data.createTable(group, 'observables', ObservableEvent)
+        obs = data.createTable(group, 'observables', ObservableEvent)
+        coinc = data.createTable(group, 'coincidences', CoincidenceEvent)
     except tables.NodeError:
         print "Cancelling; %s already exists?" % \
             os.path.join(group._v_pathname, 'observables')
@@ -355,36 +381,86 @@ def store_observables(data, group):
 
     print "Storing observables from %s" % group._v_pathname
 
-    row = table.row
-    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                       pb.ETA()])
-    for header in progress(headers.readWhere('station_id == 0')):
-        for station in headers.readWhere('(id == %d) & (station_id != 0)' %
-                                         header['id']):
-            t = []
-            for detector in range(1, 5):
-                pcles = particles.readWhere('(id == %d) & '
-                                            '(station_id == %d) & '
-                                            '(detector_id == %d)' %
-                                            (header['id'],
-                                            station['station_id'],
-                                            detector))
-                t.append([u['time'] for u in pcles])
+    obs_row = obs.row
+    coinc_row = coinc.row
+    progress = pb.ProgressBar(maxval=len(headers),
+                              widgets=[pb.Percentage(), pb.Bar(),
+                                       pb.ETA()]).start()
+    headers = iter(headers)
+    particles = iter(particles)
 
-            row['id'] = header['id']
-            row['station_id'] = station['station_id']
-            row['r'] = station['r']
-            row['phi'] = station['phi']
-            row['alpha'] = station['alpha']
-            row['t1'], row['t2'], row['t3'], row['t4'] = [min(u) if len(u)
-                                                          else nan for u
-                                                          in t]
-            row['n1'], row['n2'], row['n3'], row['n4'] = [len(u) for u in
-                                                          t]
-            row.append()
+    # start with first rows initialized
+    header = headers.next()
+    particle = particles.next()
+    # loop over events
+    while True:
+        assert header['station_id'] == 0
+        # freeze header row for later use
+        event = header.fetch_all_fields()
 
-    table.flush()
+        # N = number of stations which trigger
+        N = 0
+        try:
+            # loop over stations
+            while True:
+                header = headers.next()
+                # if station_id == 0, we have a new event, not a station
+                if header['station_id'] == 0:
+                    break
+                else:
+                    t = [[], [], [], []]
+                    # loop over particles
+                    while True:
+                        # check if particle matches current event/station
+                        if particle['id'] != event['id'] or \
+                            particle['station_id'] != \
+                            header['station_id']:
+                            break
+                        else:
+                            t[particle['detector_id']].append(particle['time'])
+                            try:
+                                particle = particles.next()
+                            except StopIteration:
+                                # Ran out of particles. Forcing invalid
+                                # id, so that higher-level loops can
+                                # finish business, but no new particles
+                                # will be processed
+                                particle['id'] = -1
+                    write_observables(obs_row, header, t)
+                    # trigger if Ndet hit >= 2
+                    if sum([1 if u else 0 for u in t]) >= 2:
+                        N += 1
+        # StopIteration when we run out of headers
+        except StopIteration:
+            break
+        finally:
+            write_coincidence(coinc_row, event, N)
+            progress.update(header.nrow + 1)
+
+    obs.flush()
+    coinc.flush()
     print
+
+def write_observables(row, station, t):
+    row['id'] = station['id']
+    row['station_id'] = station['station_id']
+    row['r'] = station['r']
+    row['phi'] = station['phi']
+    row['alpha'] = station['alpha']
+    row['N'] = sum([1 if u else 0 for u in t])
+    row['t1'], row['t2'], row['t3'], row['t4'] = \
+        [min(u) if len(u) else nan for u in t]
+    row['n1'], row['n2'], row['n3'], row['n4'] = \
+        [len(u) for u in t]
+    row.append()
+
+def write_coincidence(row, event, N):
+    row['id'] = event['id']
+    row['N'] = N
+    row['r'] = event['r']
+    row['phi'] = event['phi']
+    row['alpha'] = event['alpha']
+    row.append()
 
 
 if __name__ == '__main__':
