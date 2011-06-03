@@ -1,3 +1,5 @@
 *.swp
 *.pyc
 *.h5
+.project
+.pydevproject
