@@ -7,11 +7,6 @@
     the effect of the same shower hitting various positions around the
     station is simulated.
 
-    For historical reasons, the detector simulation generates a CSV file
-    as output.  This CSV file is then read and the data is stored in the
-    HDF5 file.  Finally, the simulation results are analyzed to determine
-    observables and these are also stored in the HDF5 file.
-
 """
 from __future__ import division
 
@@ -30,7 +25,7 @@ from cluster_definition import cluster, DETECTOR_SIZE
 DATAFILE = 'data-e15.h5'
 
 
-class StationEvent(tables.IsDescription):
+class Header(tables.IsDescription):
     """Store information about the station during an event"""
     id = tables.UInt32Col()
     station_id = tables.UInt8Col()
@@ -275,7 +270,7 @@ Maximum core distance of cluster center:   %f m
 Number of cluster positions in simulation: %d
     """ % (grdpcles._v_pathname, output, R, N)
 
-    s_events = data.createTable(output, 'stations', StationEvent)
+    s_events = data.createTable(output, 'headers', Header)
     p_events = data.createTable(output, 'particles', ParticleEvent)
 
     progress = pb.ProgressBar(maxval=N, widgets=[pb.Percentage(),
@@ -376,7 +371,7 @@ def store_observables(data, group):
             os.path.join(group._v_pathname, 'observables')
         return
 
-    headers = data.getNode(group, 'stations')
+    headers = data.getNode(group, 'headers')
     particles = data.getNode(group, 'particles')
 
     print "Storing observables from %s" % group._v_pathname
@@ -401,7 +396,7 @@ def store_observables(data, group):
         # N = number of stations which trigger
         N = 0
         try:
-            # loop over stations
+            # loop over headers
             while True:
                 header = headers.next()
                 # if station_id == 0, we have a new event, not a station
