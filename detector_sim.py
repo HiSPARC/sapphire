@@ -19,7 +19,7 @@ import gzip
 import progressbar as pb
 import os.path
 
-from cluster_definition import cluster, DETECTOR_SIZE
+import clusters
 
 
 DATAFILE = 'data-e15.h5'
@@ -98,13 +98,13 @@ def get_station_coordinates(station, r, phi, alpha):
     X = r * cos(phi)
     Y = r * sin(phi)
 
-    sx, sy = station['position']
+    sx, sy = station.position
     xp = sx * cos(alpha) - sy * sin(alpha)
     yp = sx * sin(alpha) + sy * cos(alpha)
 
     x = X + xp
     y = Y + yp
-    angle = alpha + station['angle']
+    angle = alpha + station.angle
 
     return x, y, angle
 
@@ -122,13 +122,15 @@ def get_station_particles(station, data, X, Y, alpha):
     """
     particles = []
 
-    for detector in station['detectors']:
+    size = station.detector_size
+    for detector in station.detectors:
         x, y, orientation = detector
-        particles.append(get_detector_particles(data, X, Y, x, y,
+        particles.append(get_detector_particles(data, X, Y, x, y, size,
                                                 orientation, alpha))
     return particles
 
-def get_detector_particles(data, X, Y, x, y, orientation, alpha=None):
+def get_detector_particles(data, X, Y, x, y, size, orientation,
+                           alpha=None):
     """Return all particles hitting a single detector
 
     Given a HDF5 table containing information on all simulated particles
@@ -139,6 +141,7 @@ def get_detector_particles(data, X, Y, x, y, orientation, alpha=None):
     :param X, Y: X, Y coordinates of center of station
     :param x, y: x, y coordinates of center of detector relative to
         station center 
+    :param size: tuple (width, length) giving detector size
     :param orientation: either 'UD' or 'LR', for up-down or left-right
         detector orientations, relative to station
     :param alpha: rotation angle of entire station
@@ -146,7 +149,7 @@ def get_detector_particles(data, X, Y, x, y, orientation, alpha=None):
     :return: list of particles which have hit the detector
 
     """
-    c = get_detector_corners(X, Y, x, y, orientation, alpha)
+    c = get_detector_corners(X, Y, x, y, size, orientation, alpha)
 
     # determine equations describing detector edges
     b11, line1, b12 = get_line_boundary_eqs(c[0], c[1], c[2])
@@ -202,12 +205,13 @@ def get_line_boundary_eqs(p0, p1, p2):
 
     return b1, line, b2
 
-def get_detector_corners(X, Y, x, y, orientation, alpha=None):
+def get_detector_corners(X, Y, x, y, size, orientation, alpha=None):
     """Get the x, y coordinates of the detector corners
 
     :param X, Y: X, Y coordinates of center of station
     :param x, y: x, y coordinates of center of detector relative to
         station center 
+    :param size: tuple (width, length) giving detector size
     :param orientation: either 'UD' or 'LR', for up-down or left-right
         detector orientations, relative to station
     :param alpha: rotation angle of entire station
@@ -216,8 +220,8 @@ def get_detector_corners(X, Y, x, y, orientation, alpha=None):
     :rtype: list of (x, y) tuples
 
     """
-    dx = DETECTOR_SIZE[0] / 2
-    dy = DETECTOR_SIZE[1] / 2
+    dx = size[0] / 2
+    dy = size[1] / 2
 
     if orientation == 'UD':
         corners = [(x - dx, y - dy), (x + dx, y - dy), (x + dx, y + dy),
@@ -239,7 +243,7 @@ def get_detector_corners(X, Y, x, y, orientation, alpha=None):
 def do_simulation(cluster, data, grdpcles, output, R, N):
     """Perform a simulation
 
-    :param cluster: definition of all stations in the cluster
+    :param cluster: BaseCluster (or derived) instance
     :param data: the HDF5 file
     :param grdpcles: name of the dataset containing the ground particles
     :param output: name of the destination to store results
@@ -278,7 +282,7 @@ Number of cluster positions in simulation: %d
     for event_id, (r, phi, alpha) in \
         progress(enumerate(generate_positions(R, N))):
         write_header(s_events, event_id, 0, r, phi, alpha)
-        for station_id, station in enumerate(cluster, 1):
+        for station_id, station in enumerate(cluster.stations, 1):
             x, y, beta = get_station_coordinates(station, r, phi, alpha)
             # calculate station r, phi just to save it in header
             s_r = sqrt(x ** 2 + y ** 2)
@@ -465,6 +469,7 @@ if __name__ == '__main__':
         data = tables.openFile(DATAFILE, 'a')
 
     sim = 'E_1PeV/zenith_0'
+    cluster = clusters.SimpleCluster()
     do_simulation(cluster, data, os.path.join('/showers', sim, 'leptons'),
                   os.path.join('/simulations', sim), R=100, N=100)
     store_observables(data, os.path.join('/simulations', sim))
