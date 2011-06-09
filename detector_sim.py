@@ -20,54 +20,10 @@ import progressbar as pb
 import os.path
 
 import clusters
+import storage
 
 
 DATAFILE = 'data-e15.h5'
-
-
-class Header(tables.IsDescription):
-    """Store information about the station during an event"""
-    id = tables.UInt32Col()
-    station_id = tables.UInt8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    alpha = tables.Float32Col()
-
-class ParticleEvent(tables.IsDescription):
-    """Store information about the particles hitting a detector"""
-    id = tables.UInt32Col()
-    station_id = tables.UInt8Col()
-    detector_id = tables.UInt8Col()
-    pid = tables.Int8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    time = tables.Float32Col()
-    energy = tables.Float32Col()
-
-class ObservableEvent(tables.IsDescription):
-    """Store information about the observables of an event"""
-    id = tables.UInt32Col()
-    station_id = tables.UInt8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    alpha = tables.Float32Col()
-    N = tables.UInt8Col()
-    t1 = tables.Float32Col()
-    t2 = tables.Float32Col()
-    t3 = tables.Float32Col()
-    t4 = tables.Float32Col()
-    n1 = tables.UInt16Col()
-    n2 = tables.UInt16Col()
-    n3 = tables.UInt16Col()
-    n4 = tables.UInt16Col()
-
-class CoincidenceEvent(tables.IsDescription):
-    """Store information about a coincidence"""
-    id = tables.UInt32Col()
-    N = tables.UInt8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    alpha = tables.Float32Col()
 
 
 def generate_positions(R, num):
@@ -274,8 +230,10 @@ Maximum core distance of cluster center:   %f m
 Number of cluster positions in simulation: %d
     """ % (grdpcles._v_pathname, output, R, N)
 
-    s_events = data.createTable(output, 'headers', Header)
-    p_events = data.createTable(output, 'particles', ParticleEvent)
+    s_events = data.createTable(output, 'headers',
+                                storage.SimulationHeader)
+    p_events = data.createTable(output, 'particles',
+                                storage.ParticleEvent)
 
     progress = pb.ProgressBar(maxval=N, widgets=[pb.Percentage(),
                                                  pb.Bar(), pb.ETA()])
@@ -368,8 +326,10 @@ def store_observables(data, group):
         return
 
     try:
-        obs = data.createTable(group, 'observables', ObservableEvent)
-        coinc = data.createTable(group, 'coincidences', CoincidenceEvent)
+        obs = data.createTable(group, 'observables',
+                               storage.ObservableEvent)
+        coinc = data.createTable(group, 'coincidences',
+                                 storage.CoincidenceEvent)
     except tables.NodeError:
         print "Cancelling; %s already exists?" % \
             os.path.join(group._v_pathname, 'observables')

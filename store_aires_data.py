@@ -11,20 +11,11 @@ import aires
 import tables
 import os.path
 
+from storage import Particle
+
 from numpy import *
 
 DATA_FILE = 'data-e15.h5'
-
-
-class Particle(tables.IsDescription):
-    id = tables.UInt32Col()
-    pid = tables.Int8Col()
-    core_distance = tables.Float32Col()
-    polar_angle = tables.Float32Col()
-    x = tables.Float32Col()
-    y = tables.Float32Col()
-    arrival_time = tables.Float32Col()
-    energy = tables.Float32Col()
 
 
 def save_particle(row, p, id):
