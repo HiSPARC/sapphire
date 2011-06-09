@@ -1,3 +1,9 @@
+""" Simulation classes
+
+    Define simulations as a class, so they can be subclassed.  This way,
+    only bits of simulation logic need to be overridden.
+
+"""
 import tables
 import os.path
 import progressbar as pb
@@ -6,6 +12,7 @@ from numpy import nan
 from math import pi, sin, cos, atan2, sqrt, isinf
 
 import storage
+
 
 class BaseSimulation(object):
     def __init__(self, cluster, data, grdpcles, output, R, N):
@@ -219,9 +226,9 @@ Number of cluster positions in simulation: %d
         """ % (self.grdpcles._v_pathname, self.output._v_pathname, self.R,
                self.N)
 
-        s_events = self.data.createTable(self.output, 'headers',
+        headers = self.data.createTable(self.output, 'headers',
                                          storage.SimulationHeader)
-        p_events = self.data.createTable(self.output, 'particles',
+        particles = self.data.createTable(self.output, 'particles',
                                          storage.ParticleEvent)
 
         progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
@@ -229,22 +236,22 @@ Number of cluster positions in simulation: %d
                                                           pb.ETA()])
         for event_id, (r, phi, alpha) in \
             progress(enumerate(self.generate_positions())):
-            self.write_header(s_events, event_id, 0, r, phi, alpha)
+            self.write_header(headers, event_id, 0, r, phi, alpha)
             for station_id, station in enumerate(self.cluster.stations, 1):
                 x, y, beta = self.get_station_coordinates(station, r, phi,
                                                           alpha)
                 # calculate station r, phi just to save it in header
                 s_r = sqrt(x ** 2 + y ** 2)
                 s_phi = atan2(y, x)
-                self.write_header(s_events, event_id, station_id, s_r,
+                self.write_header(headers, event_id, station_id, s_r,
                                   s_phi, beta)
 
                 plist = self.get_station_particles(station, x, y, beta)
-                self.write_detector_particles(p_events, event_id,
+                self.write_detector_particles(particles, event_id,
                                               station_id, plist)
 
-        s_events.flush()
-        p_events.flush()
+        headers.flush()
+        particles.flush()
 
         print 74 * '-'
         print
