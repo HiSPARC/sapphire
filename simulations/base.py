@@ -15,6 +15,13 @@ import storage
 
 
 class BaseSimulation(object):
+    """Base simulation class
+
+    This class defines a detector simulation, taking a shower simulation
+    as input.  This class can be overridden to, for example, parallelize
+    the simulation.
+
+    """
     def __init__(self, cluster, data, grdpcles, output, R, N):
         """Simulation initialization
 
