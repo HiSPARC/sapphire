@@ -28,7 +28,7 @@ class Station(object):
 class BaseCluster(object):
     """Base class for HiSPARC clusters"""
 
-    __stations = []
+    __stations = None
 
     def __init__(self):
         """Override this function to build your cluster"""
@@ -51,6 +51,10 @@ class BaseCluster(object):
             >>> cluster = BaseCluster()
             >>> cluster._add_station((0, 0), pi / 2, [(-5, 0, 'UD'), (5, 0, 'UD')]) 
         """
+        # Need to make __stations an instance variable to be able to
+        # pickle it.  An assignment takes care of that.
+        if self.__stations is None:
+            self.__stations = []
         self.__stations.append(Station(position, angle, detectors))
 
     @property
