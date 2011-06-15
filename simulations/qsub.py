@@ -49,10 +49,14 @@ class QSubSimulation(BaseSimulation):
         for i, batch in enumerate(self._chunks(positions)):
             hash = hashlib.sha1(str(time.time()) + str(i)).hexdigest()[:8]
             hashes.append(hash)
-            print i, len(batch), hash, batch[0][0]
 
             data = tables.openFile(TMP_FILE % hash, 'w')
             data.createArray('/', 'positions', batch)
+            data.root._v_attrs.cluster = self.cluster
+            data.root._v_attrs.data = self.data.filename
+            data.root._v_attrs.grdpcles = self.grdpcles._v_pathname
+            data.root._v_attrs.output = self.output._v_pathname
+            data.root._v_attrs.N = len(batch)
             data.close()
             self._qsub(hash)
 
