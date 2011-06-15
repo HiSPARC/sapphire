@@ -15,13 +15,14 @@ import storage
 
 
 class BaseSimulation(object):
+
     """Base simulation class
 
     This class defines a detector simulation, taking a shower simulation
     as input.  This class can be overridden to, for example, parallelize
     the simulation.
-
     """
+
     def __init__(self, cluster, data, grdpcles, output, R, N):
         """Simulation initialization
 
@@ -220,8 +221,29 @@ class BaseSimulation(object):
         return [(X + x, Y + y) for x, y in corners]
 
     def run(self):
-        """Perform a simulation"""
+        """Run a simulation
 
+        This method is just an entry function.  It can easily be
+        overridden without the need to rewrite parts of the simulation.
+
+        In this form, it just generates positions and calls
+        :meth:`_do_run`.
+
+        """
+        positions = self.generate_positions()
+        self._do_run(positions)
+
+    def _do_run(self, positions):
+        """Perform the actual simulation
+
+        This is the actual code which performs the simulation.  It takes a
+        list or a generator of positions, creates all necessary tables and
+        performs the simulation.
+
+        :param positions: list or generator of the positions to be
+            simulated
+
+        """
         print 74 * '-'
         print """Running simulation
 
@@ -241,8 +263,7 @@ Number of cluster positions in simulation: %d
         progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
                                                           pb.Bar(),
                                                           pb.ETA()])
-        for event_id, (r, phi, alpha) in \
-            progress(enumerate(self.generate_positions())):
+        for event_id, (r, phi, alpha) in progress(enumerate(positions)):
             self.write_header(headers, event_id, 0, r, phi, alpha)
             for station_id, station in enumerate(self.cluster.stations, 1):
                 x, y, beta = self.get_station_coordinates(station, r, phi,
@@ -386,6 +407,7 @@ Number of cluster positions in simulation: %d
             finally:
                 self.write_coincidence(coinc_row, event, N)
                 progress.update(header.nrow + 1)
+        progress.finish()
 
         obs.flush()
         coinc.flush()
