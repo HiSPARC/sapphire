@@ -14,7 +14,7 @@ import tables
 import os.path
 
 import clusters
-from simulations import BaseSimulation
+from simulations import BaseSimulation, QSubSimulation
 
 
 DATAFILE = 'data-e15.h5'
@@ -26,11 +26,15 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile(DATAFILE, 'a')
 
+    if '/simulations' in data:
+        data.removeNode('/simulations', recursive=True)
+
     sim = 'E_1PeV/zenith_0'
     cluster = clusters.SimpleCluster()
-    simulation = BaseSimulation(cluster, data,
+    simulation = QSubSimulation(cluster, data,
+    #simulation = BaseSimulation(cluster, data,
                                 os.path.join('/showers', sim, 'leptons'),
                                 os.path.join('/simulations', sim),
-                                R=100, N=100)
+                                R=100, N=1000, N_cores=11)
     simulation.run()
-    simulation.store_observables()
+    #simulation.store_observables()
