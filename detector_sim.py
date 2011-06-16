@@ -35,6 +35,6 @@ if __name__ == '__main__':
     #simulation = BaseSimulation(cluster, data,
                                 os.path.join('/showers', sim, 'leptons'),
                                 os.path.join('/simulations', sim),
-                                R=100, N=1000, N_cores=11)
+                                R=100, N=100, N_cores=2)
     simulation.run()
-    #simulation.store_observables()
+    simulation.store_observables()

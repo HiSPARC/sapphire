@@ -5,8 +5,10 @@ import os
 import subprocess
 
 from base import BaseSimulation
+import storage
 
-TMP_FILE = '__QSUB_%s.h5'
+JOB_FILE = '__QSUB_%s.h5'
+STATUS_FILE = '__STATUS_%s'
 
 
 class QSubSimulation(BaseSimulation):
@@ -52,7 +54,7 @@ class QSubSimulation(BaseSimulation):
             hash = hashlib.sha1(str(time.time()) + str(i)).hexdigest()[:8]
             hashes.append(hash)
 
-            data = tables.openFile(TMP_FILE % hash, 'w')
+            data = tables.openFile(JOB_FILE % hash, 'w')
             data.createArray('/', 'positions', batch)
             data.root._v_attrs.cluster = self.cluster
             data.root._v_attrs.data = self.data.filename
@@ -93,12 +95,55 @@ class QSubSimulation(BaseSimulation):
     def collect_jobs(self, hashes):
         """Collect all submitted jobs and print status messages"""
 
-        return
+        while True:
+            N = 0
+            for hash in hashes:
+                status = STATUS_FILE % hash
+                if os.path.exists(status):
+                    with open(status, 'r') as f:
+                        status = f.read()
+                else:
+                    status = 'Not yet started'
+
+                if status.find('DONE') >= 0:
+                    # job finished
+                    N += 1
+                    print 'job %s finished' % hash
+                else:
+                    print 'job %s: %s' % (hash, status)
+
+            if N == len(hashes):
+                # all jobs finished
+                return
+
+            print
+            time.sleep(2)
 
     def collect_results(self, hashes):
         """Collect all results into main HDF5 file"""
 
-        return
+        headers = self.data.createTable(self.output, 'headers',
+                                         storage.SimulationHeader)
+        particles = self.data.createTable(self.output, 'particles',
+                                         storage.ParticleEvent)
+
+        base_id = 0
+        for hash in hashes:
+            job_data = tables.openFile(JOB_FILE % hash, 'r')
+            job_headers = job_data.getNode(self.output, 'headers').read()
+            job_particles = job_data.getNode(self.output,
+                                             'particles').read()
+
+            job_headers['id'] += base_id
+            job_particles['id'] += base_id
+            
+            headers.append(job_headers)
+            particles.append(job_particles)
+
+            base_id += job_data.root._v_attrs.N
+            job_data.close()
+            os.remove(JOB_FILE % hash)
+            os.remove(STATUS_FILE % hash)
 
 
 class QSubChild(BaseSimulation):
@@ -108,7 +153,7 @@ class QSubChild(BaseSimulation):
     This class accepts a job submitted through QSubSimulation and runs it.
     """
 
-    def __init__(self, hash):
+    def __init__(self, data, hash):
         """Initialize the simulation
 
         This is a bit different from a regular simulation in that we have
@@ -117,13 +162,14 @@ class QSubChild(BaseSimulation):
         contains several simulation parameters as attributes on the root
         group.
 
+        :param data: job HDF5 file
         :param hash: job hash
 
         """
-        data = tables.openFile(TMP_FILE % hash, 'a')
-        attrs = data.root._v_attrs
-
         self.data = data
+        self.hash = hash
+
+        attrs = data.root._v_attrs
         self.cluster = attrs.cluster
         self.N = attrs.N
         self.R = attrs.R
@@ -133,9 +179,8 @@ class QSubChild(BaseSimulation):
         self.output = self.data.createGroup(head, tail,
                                             createparents=True)
 
-        shower_data = tables.openFile(attrs.data, 'r')
-        self.shower_data = shower_data
-        self.grdpcles = shower_data.getNode(attrs.grdpcles)
+        self.attr_shower_data = attrs.data
+        self.attr_grdpcles = attrs.grdpcles
 
     def run(self):
         """Run the simulation
@@ -144,13 +189,23 @@ class QSubChild(BaseSimulation):
         simulation
 
         """
+        shower_data = tables.openFile(self.attr_shower_data, 'r')
+        self.grdpcles = shower_data.getNode(self.attr_grdpcles)
+
         positions = self.data.root.positions.read()
         self._do_run(positions)
+
+        shower_data.close()
 
 
 if __name__ == '__main__':
     hash = os.environ['JOB_HASH']
     print "Running job", hash
 
-    sim = QSubChild(hash)
+    data = tables.openFile(JOB_FILE % hash, 'a')
+    sim = QSubChild(data, hash)
     sim.run()
+    data.close()
+
+    with open(STATUS_FILE % hash, 'w') as f:
+        f.write('DONE')
