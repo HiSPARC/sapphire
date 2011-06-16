@@ -3,12 +3,15 @@ import hashlib
 import tables
 import os
 import subprocess
+import progressbar as pb
 
 from base import BaseSimulation
 import storage
 
 JOB_FILE = '__QSUB_%s.h5'
 STATUS_FILE = '__STATUS_%s'
+STAT_INTERVAL = 2
+BAR_LENGTH = 40
 
 
 class QSubSimulation(BaseSimulation):
@@ -82,8 +85,9 @@ class QSubSimulation(BaseSimulation):
         environ = os.environ.copy()
         environ['JOB_HASH'] = hash
         try:
-            output = subprocess.check_output(['%s/qsub.sh' % dir],
-                                             env=environ)
+            output = subprocess.check_output(['qsub', '-V',
+                                              '%s/qsub.sh' % dir],
+                                              env=environ)
         except subprocess.CalledProcessError, exc:
             print 80 * '-'
             print exc
@@ -95,28 +99,71 @@ class QSubSimulation(BaseSimulation):
     def collect_jobs(self, hashes):
         """Collect all submitted jobs and print status messages"""
 
+        N_T = len(hashes)
+        progressbar = pb.ProgressBar(maxval=100 * N_T,
+                                     widgets=[pb.Percentage(), pb.Bar(),
+                                              pb.ETA()]).start()
+        old_progress = 0
+
         while True:
-            N = 0
+            N_Q = 0
+            N_R = 0
+            N_C = 0
+            msgs = []
+            progress = 0
+
             for hash in hashes:
                 status = STATUS_FILE % hash
                 if os.path.exists(status):
                     with open(status, 'r') as f:
                         status = f.read()
-                else:
-                    status = 'Not yet started'
+                    if status.find('DONE') >= 0:
+                        # job finished
+                        N_C += 1
+                        progress += 100
+                    else:
+                        # job running
+                        N_R += 1
 
-                if status.find('DONE') >= 0:
-                    # job finished
-                    N += 1
-                    print 'job %s finished' % hash
-                else:
-                    print 'job %s: %s' % (hash, status)
+                        try:
+                            status = int(status)
+                            progress += status
+                        except ValueError:
+                            continue
 
-            if N == len(hashes):
+                        bar = int(BAR_LENGTH * status / 100)
+                        bar = bar * '#' + (BAR_LENGTH - bar) * ' '
+                        msgs.append('job %s: %2d %% |%s|' % (hash, status,
+                                                             bar))
+                else:
+                    # job queued
+                    N_Q += 1
+
+            # ANSI: ED (Erase Data, or: clear screen)
+            print chr(27) + "[2J"
+            # ANSI: CUP (CUrsor Position)
+            print chr(27) + "[;H"
+
+            print "Status Display"
+            print
+            if progress > old_progress:
+                progressbar.update(progress)
+                old_progress = progress
+            print
+            print
+            print "Queued: %d/%d, Running: %d/%d, Completed: %d/%d" % \
+                (N_Q, N_T, N_R, N_T, N_C, N_T)
+            print 80 * '-'
+            for msg in msgs:
+                print msg
+
+            if N_C == N_T:
                 # all jobs finished
+                print "Simulation finished!"
+                progressbar.finish()
+                print
                 return
 
-            print
             time.sleep(2)
 
     def collect_results(self, hashes):
@@ -192,10 +239,30 @@ class QSubChild(BaseSimulation):
         shower_data = tables.openFile(self.attr_shower_data, 'r')
         self.grdpcles = shower_data.getNode(self.attr_grdpcles)
 
+        self._run_welcome_msg()
         positions = self.data.root.positions.read()
-        self._do_run(positions)
 
+        self.headers = self.data.createTable(self.output, 'headers',
+                                             storage.SimulationHeader)
+        self.particles = self.data.createTable(self.output, 'particles',
+                                               storage.ParticleEvent)
+
+        N = 0
+        prev = time.time()
+        for event_id, (r, phi, alpha) in enumerate(positions):
+            self.simulate_event(event_id, r, phi, alpha)
+            N += 1
+            now = time.time()
+            if now - prev > STAT_INTERVAL:
+                prev = now
+                with open(STATUS_FILE % hash, 'w') as f:
+                    f.write("%d" % (100 * N / self.N))
+
+        self.headers.flush()
+        self.particles.flush()
         shower_data.close()
+        
+        self._run_exit_msg()
 
 
 if __name__ == '__main__':

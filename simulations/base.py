@@ -224,27 +224,33 @@ class BaseSimulation(object):
     def run(self):
         """Run a simulation
 
-        This method is just an entry function.  It can easily be
-        overridden without the need to rewrite parts of the simulation.
-
-        In this form, it just generates positions and calls
-        :meth:`_do_run`.
+        This is the code which performs the simulation.  It creates a list
+        of positions, creates all necessary tables and performs the
+        simulation.
 
         """
+        self._run_welcome_msg()
         positions = self.generate_positions()
-        self._do_run(positions)
 
-    def _do_run(self, positions):
-        """Perform the actual simulation
+        self.headers = self.data.createTable(self.output, 'headers',
+                                             storage.SimulationHeader)
+        self.particles = self.data.createTable(self.output, 'particles',
+                                               storage.ParticleEvent)
 
-        This is the actual code which performs the simulation.  It takes a
-        list or a generator of positions, creates all necessary tables and
-        performs the simulation.
+        progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
+                                                          pb.Bar(),
+                                                          pb.ETA()])
+        for event_id, (r, phi, alpha) in progress(enumerate(positions)):
+            self.simulate_event(event_id, r, phi, alpha)
 
-        :param positions: list or generator of the positions to be
-            simulated
+        self.headers.flush()
+        self.particles.flush()
 
-        """
+        self._run_exit_msg()
+
+    def _run_welcome_msg(self):
+        """Print a welcome message at start of simulation run"""
+
         print 74 * '-'
         print """Running simulation
 
@@ -256,40 +262,33 @@ Number of cluster positions in simulation: %d
         """ % (self.grdpcles._v_pathname, self.output._v_pathname, self.R,
                self.N)
 
-        headers = self.data.createTable(self.output, 'headers',
-                                         storage.SimulationHeader)
-        particles = self.data.createTable(self.output, 'particles',
-                                         storage.ParticleEvent)
-
-        progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
-                                                          pb.Bar(),
-                                                          pb.ETA()],
-                                  fd=sys.stdout)
-        for event_id, (r, phi, alpha) in progress(enumerate(positions)):
-            self.write_header(headers, event_id, 0, r, phi, alpha)
-            for station_id, station in enumerate(self.cluster.stations, 1):
-                x, y, beta = self.get_station_coordinates(station, r, phi,
-                                                          alpha)
-                # calculate station r, phi just to save it in header
-                s_r = sqrt(x ** 2 + y ** 2)
-                s_phi = atan2(y, x)
-                self.write_header(headers, event_id, station_id, s_r,
-                                  s_phi, beta)
-
-                plist = self.get_station_particles(station, x, y, beta)
-                self.write_detector_particles(particles, event_id,
-                                              station_id, plist)
-
-        headers.flush()
-        particles.flush()
-
+    def _run_exit_msg(self):
         print 74 * '-'
         print
 
-    def write_header(self, table, event_id, station_id, r, phi, alpha):
+    def simulate_event(self, event_id, r, phi, alpha):
+        """Simulate a single event
+
+        :param event_id: event id
+        :param r, phi: polar coordinates of cluster center
+        :param alpha: rotation of cluster
+
+        """
+        self.write_header(event_id, 0, r, phi, alpha)
+        for station_id, station in enumerate(self.cluster.stations, 1):
+            x, y, beta = self.get_station_coordinates(station, r, phi,
+                                                      alpha)
+            # calculate station r, phi just to save it in header
+            s_r = sqrt(x ** 2 + y ** 2)
+            s_phi = atan2(y, x)
+            self.write_header(event_id, station_id, s_r, s_phi, beta)
+
+            plist = self.get_station_particles(station, x, y, beta)
+            self.write_detector_particles(event_id, station_id, plist)
+
+    def write_header(self, event_id, station_id, r, phi, alpha):
         """Write simulation event header information to file
 
-        :param table: HDF5 table
         :param event_id: simulation event id
         :param station_id: station id inside cluster, 0 for cluster header
         :param r, phi: r, phi for cluster or station position, both as
@@ -297,25 +296,23 @@ Number of cluster positions in simulation: %d
         :param alpha: cluster rotation angle or station rotation angle
 
         """
-        row = table.row
+        row = self.headers.row
         row['id'] = event_id
         row['station_id'] = station_id
         row['r'] = r
         row['phi'] = phi
         row['alpha'] = alpha
         row.append()
-        table.flush()
 
-    def write_detector_particles(self, table, event_id, station_id, plist):
+    def write_detector_particles(self, event_id, station_id, plist):
         """Write particles to file
 
-        :param table: HDF5 table
         :param event_id: simulation event id
         :param station_id: station id inside cluster
         :param plist: list of detectors, containing list of particles
 
         """
-        row = table.row
+        row = self.particles.row
         for detector_id, detector in enumerate(plist):
             for particle in detector:
                 row['id'] = event_id
@@ -327,7 +324,6 @@ Number of cluster positions in simulation: %d
                 row['time'] = particle['arrival_time']
                 row['energy'] = particle['energy']
                 row.append()
-        table.flush()
 
     def store_observables(self):
         """Analyze simulation results and store derived data
@@ -358,8 +354,7 @@ Number of cluster positions in simulation: %d
         coinc_row = coinc.row
         progress = pb.ProgressBar(maxval=len(headers),
                                   widgets=[pb.Percentage(), pb.Bar(),
-                                           pb.ETA()],
-                                  fd=sys.stdout).start()
+                                           pb.ETA()]).start()
         headers = iter(headers)
         particles = iter(particles)
 
