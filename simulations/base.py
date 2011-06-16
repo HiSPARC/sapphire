@@ -10,6 +10,7 @@ import progressbar as pb
 import numpy as np
 from numpy import nan
 from math import pi, sin, cos, atan2, sqrt, isinf
+import sys
 
 import storage
 
@@ -262,7 +263,8 @@ Number of cluster positions in simulation: %d
 
         progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
                                                           pb.Bar(),
-                                                          pb.ETA()])
+                                                          pb.ETA()],
+                                  fd=sys.stdout)
         for event_id, (r, phi, alpha) in progress(enumerate(positions)):
             self.write_header(headers, event_id, 0, r, phi, alpha)
             for station_id, station in enumerate(self.cluster.stations, 1):
@@ -356,7 +358,8 @@ Number of cluster positions in simulation: %d
         coinc_row = coinc.row
         progress = pb.ProgressBar(maxval=len(headers),
                                   widgets=[pb.Percentage(), pb.Bar(),
-                                           pb.ETA()]).start()
+                                           pb.ETA()],
+                                  fd=sys.stdout).start()
         headers = iter(headers)
         particles = iter(particles)
 

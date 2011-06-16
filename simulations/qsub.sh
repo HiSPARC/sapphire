@@ -1,4 +1,7 @@
 #!/bin/bash -l
-cd $PBS_O_WORKDIR
-workon core
-python detector_sim.py
+if [ -n "$PBS_O_WORKDIR" ]; then
+    cd $PBS_O_WORKDIR
+fi
+#workon core
+export JOB_HASH
+python -m simulations.qsub
