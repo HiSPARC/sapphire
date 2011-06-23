@@ -432,10 +432,14 @@ Number of cluster positions in simulation: %d
         print
 
     def write_observables(self, row, station, t):
+        r = station['r']
+        phi = station['phi']
         row['id'] = station['id']
         row['station_id'] = station['station_id']
-        row['r'] = station['r']
-        row['phi'] = station['phi']
+        row['r'] = r
+        row['phi'] = phi
+        row['x'] = r * cos(phi)
+        row['y'] = r * sin(phi)
         row['alpha'] = station['alpha']
         row['N'] = sum([1 if u else 0 for u in t])
         row['t1'], row['t2'], row['t3'], row['t4'] = \
@@ -445,9 +449,13 @@ Number of cluster positions in simulation: %d
         row.append()
 
     def write_coincidence(self, row, event, N):
+        r = event['r']
+        phi = event['phi']
         row['id'] = event['id']
         row['N'] = N
-        row['r'] = event['r']
-        row['phi'] = event['phi']
+        row['r'] = r
+        row['phi'] = phi
+        row['x'] = r * cos(phi)
+        row['y'] = r * sin(phi)
         row['alpha'] = event['alpha']
         row.append()
