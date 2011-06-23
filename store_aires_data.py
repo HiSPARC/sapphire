@@ -83,4 +83,4 @@ def store_aires_data(data, group, file):
 if __name__ == '__main__':
     data = tables.openFile(DATA_FILE, 'a')
     store_aires_data(data, '/showers/E_1PeV/zenith_0',
-                     'sim/showere15-angle-0.grdpcles')
+                     'aires/showere15-angle-0.grdpcles')
