@@ -353,6 +353,8 @@ Number of cluster positions in simulation: %d
                                     storage.ObservableEvent)
         coinc = self.data.createTable(self.output, 'coincidences',
                                       storage.CoincidenceEvent)
+        c_index = self.data.createVLArray(self.output, 'c_index',
+                                          tables.UInt32Atom())
 
         headers = self.data.getNode(self.output, 'headers')
         particles = self.data.getNode(self.output, 'particles')
@@ -360,6 +362,8 @@ Number of cluster positions in simulation: %d
         print "Storing observables from %s" % self.output._v_pathname
 
         obs_row = obs.row
+        # index into the observables table
+        obs_index = 0
         coinc_row = coinc.row
         progress = pb.ProgressBar(maxval=len(headers),
                                   widgets=[pb.Percentage(), pb.Bar(),
@@ -375,6 +379,7 @@ Number of cluster positions in simulation: %d
             assert header['station_id'] == 0
             # freeze header row for later use
             event = header.fetch_all_fields()
+            c_list = []
 
             # N = number of stations which trigger
             N = 0
@@ -408,11 +413,17 @@ Number of cluster positions in simulation: %d
                         # trigger if Ndet hit >= 2
                         if sum([1 if u else 0 for u in t]) >= 2:
                             N += 1
+                            # only add triggered stations to c_list, just
+                            # like real data
+                            c_list.append(obs_index)
+                        # point index to next (empty) slot
+                        obs_index += 1
             # StopIteration when we run out of headers
             except StopIteration:
                 break
             finally:
                 self.write_coincidence(coinc_row, event, N)
+                c_index.append(c_list)
                 progress.update(header.nrow + 1)
         progress.finish()
 
