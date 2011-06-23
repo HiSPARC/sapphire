@@ -24,7 +24,7 @@ class BaseSimulation(object):
     the simulation.
     """
 
-    def __init__(self, cluster, data, grdpcles, output, R, N):
+    def __init__(self, cluster, data, grdpcles, output, R, N, force=False):
         """Simulation initialization
 
         :param cluster: BaseCluster (or derived) instance
@@ -33,6 +33,9 @@ class BaseSimulation(object):
         :param output: name of the destination group to store results
         :param R: maximum distance of shower to center of cluster
         :param N: number of simulations to perform
+        :param force: if True, ignore initialization errors, due to
+            missing ground particles or existing previous simulations.
+            Only use this if you really know what you're doing!
 
         """
         self.cluster = cluster
@@ -43,16 +46,22 @@ class BaseSimulation(object):
         try:
             self.grdpcles = data.getNode('/', grdpcles)
         except tables.NoSuchNodeError:
-            raise RuntimeError("Cancelling simulation; %s not found in "
-                               "tree." % grdpcles)
+            if force:
+                self.grdpcles = None
+            else:
+                raise RuntimeError("Cancelling simulation; %s not found in "
+                                   "tree." % grdpcles)
 
         head, tail = os.path.split(output)
         try:
             self.output = self.data.createGroup(head, tail,
                                                 createparents=True)
         except tables.NodeError:
-            raise RuntimeError("Cancelling simulation; %s already exists?"
-                               % output)
+            if force:
+                self.output = self.data.getNode(head, tail)
+            else:
+                raise RuntimeError("Cancelling simulation; %s already exists?"
+                                   % output)
 
     def generate_positions(self):
         """Generate positions and an orientation uniformly on a circle
