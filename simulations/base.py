@@ -8,7 +8,6 @@ import tables
 import os.path
 import progressbar as pb
 import numpy as np
-from numpy import nan
 from math import pi, sin, cos, atan2, sqrt, isinf
 import sys
 
@@ -443,7 +442,7 @@ Number of cluster positions in simulation: %d
         row['alpha'] = station['alpha']
         row['N'] = sum([1 if u else 0 for u in t])
         row['t1'], row['t2'], row['t3'], row['t4'] = \
-            [min(u) if len(u) else nan for u in t]
+            [min(u) if len(u) else -999 for u in t]
         row['n1'], row['n2'], row['n3'], row['n4'] = \
             [len(u) for u in t]
         row.append()
