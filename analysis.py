@@ -2,6 +2,8 @@ import tables
 import progressbar as pb
 import inspect
 
+from clusters import SimpleCluster
+
 
 def whosparent():
     """Return parent function name of caller"""
@@ -30,6 +32,7 @@ def main(group, suffix):
     hist_mean_Nparticles(group)
     hist2d_stations(group)
     hist2d_clusters(group)
+    scatter_cores_altcs(group)
 
 def hist_Rcluster(group):
     figure()
@@ -109,12 +112,46 @@ def hist2d_clusters(group):
     title("Occurences of triggered clusters (N >= 3)")
     saveplot()
 
+def scatter_cores_altcs(group):
+    figure()
+    coincidences = group.coincidences
+
+    sel = coincidences.readWhere('N >= 3')
+    xp = []
+    yp = []
+    for event in sel:
+        rp = event['r']
+        phip = event['phi'] + pi
+        phip -= event['alpha']
+        phip = (phip + pi) % (2 * pi) - pi
+        xp.append(rp * cos(phip))
+        yp.append(rp * sin(phip))
+    plot(xp, yp, ',')
+
+    draw_simplecluster(0, 0, 0, 'r', draw_pos=True)
+
+    xlabel("Distance [m]")
+    ylabel("Distance [m]")
+    title("Shower core positions (N >= 3)")
+    saveplot()
+
+def draw_simplecluster(r, phi, alpha, spec='r', draw_pos=False):
+    cluster = SimpleCluster(size=150)
+    for station in cluster.stations:
+        x, y, beta = station.get_coordinates(r, phi, alpha)
+        for detector in station.detectors:
+            c = detector.get_corners(x, y, beta)
+            cx, cy = zip(*c)
+            fill(cx, cy, spec, ec='none')
+        if draw_pos:
+            scatter(x, y, c=spec)
+
 
 if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('data-e15.h5', 'r')
+        data = tables.openFile('data-e15-S150.h5', 'r')
 
     sim = data.root.simulations.E_1PeV.zenith_0
     main(sim, 'E-1PeV-S150m')
