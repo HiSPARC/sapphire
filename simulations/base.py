@@ -73,30 +73,6 @@ class BaseSimulation(object):
             r = np.sqrt(np.random.uniform(0, self.R ** 2))
             yield r, phi, alpha
 
-    def get_station_coordinates(self, station, r, phi, alpha):
-        """Calculate coordinates of a station given cluster coordinates
-
-        :param station: station definition
-        :param r, phi: polar coordinates of cluster center
-        :param alpha: rotation of cluster
-
-        :return: x, y, alpha; coordinates and rotation of station relative to
-            absolute coordinate system
-
-        """
-        X = r * cos(phi)
-        Y = r * sin(phi)
-
-        sx, sy = station.position
-        xp = sx * cos(alpha) - sy * sin(alpha)
-        yp = sx * sin(alpha) + sy * cos(alpha)
-
-        x = X + xp
-        y = Y + yp
-        angle = alpha + station.angle
-
-        return x, y, angle
-
     def get_station_particles(self, station, X, Y, alpha):
         """Return all particles hitting a station
 
@@ -110,16 +86,12 @@ class BaseSimulation(object):
         """
         particles = []
 
-        size = station.detector_size
         for detector in station.detectors:
-            x, y, orientation = detector
-            particles.append(self.get_detector_particles(X, Y, x, y, size,
-                                                         orientation,
+            particles.append(self.get_detector_particles(X, Y, detector,
                                                          alpha))
         return particles
 
-    def get_detector_particles(self, X, Y, x, y, size, orientation,
-                               alpha):
+    def get_detector_particles(self, X, Y, detector, alpha):
         """Return all particles hitting a single detector
 
         Given a HDF5 table containing information on all simulated particles
@@ -127,18 +99,12 @@ class BaseSimulation(object):
         particles which have hit the detector.
 
         :param X, Y: X, Y coordinates of center of station
-        :param x, y: x, y coordinates of center of detector relative to
-            station center 
-        :param size: tuple (width, length) giving detector size
-        :param orientation: either 'UD' or 'LR', for up-down or left-right
-            detector orientations, relative to station
         :param alpha: rotation angle of entire station
 
         :return: list of particles which have hit the detector
 
         """
-        c = self.get_detector_corners(X, Y, x, y, size, orientation,
-                                      alpha)
+        c = detector.get_corners(X, Y, alpha)
 
         # determine equations describing detector edges
         b11, line1, b12 = self.get_line_boundary_eqs(c[0], c[1], c[2])
@@ -193,41 +159,6 @@ class BaseSimulation(object):
             b1, b2 = b2, b1
 
         return b1, line, b2
-
-    def get_detector_corners(self, X, Y, x, y, size, orientation, alpha):
-        """Get the x, y coordinates of the detector corners
-
-        :param X, Y: X, Y coordinates of center of station
-        :param x, y: x, y coordinates of center of detector relative to
-            station center 
-        :param size: tuple (width, length) giving detector size
-        :param orientation: either 'UD' or 'LR', for up-down or left-right
-            detector orientations, relative to station
-        :param alpha: rotation angle of entire station
-
-        :return: x, y coordinates of detector corners
-        :rtype: list of (x, y) tuples
-
-        """
-        dx = size[0] / 2
-        dy = size[1] / 2
-
-        if orientation == 'UD':
-            corners = [(x - dx, y - dy), (x + dx, y - dy), (x + dx, y + dy),
-                       (x - dx, y + dy)]
-        elif orientation == 'LR':
-            corners = [(x - dy, y - dx), (x + dy, y - dx), (x + dy, y + dx),
-                       (x - dy, y + dx)]
-        else:
-            raise Exception("Unknown detector orientation: %s" % orientation)
-
-        if alpha is not None:
-            sina = sin(alpha)
-            cosa = cos(alpha)
-            corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
-                       corners]
-
-        return [(X + x, Y + y) for x, y in corners]
 
     def run(self, positions=None):
         """Run a simulation
@@ -289,8 +220,7 @@ Number of cluster positions in simulation: %d
         """
         self.write_header(event_id, 0, r, phi, alpha)
         for station_id, station in enumerate(self.cluster.stations, 1):
-            x, y, beta = self.get_station_coordinates(station, r, phi,
-                                                      alpha)
+            x, y, beta = station.get_coordinates(r, phi, alpha)
             # calculate station r, phi just to save it in header
             s_r = sqrt(x ** 2 + y ** 2)
             s_phi = atan2(y, x)
