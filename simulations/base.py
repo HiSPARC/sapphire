@@ -229,16 +229,21 @@ class BaseSimulation(object):
 
         return [(X + x, Y + y) for x, y in corners]
 
-    def run(self):
+    def run(self, positions=None):
         """Run a simulation
 
         This is the code which performs the simulation.  It creates a list
         of positions, creates all necessary tables and performs the
         simulation.
 
+        :param positions: if given, use these coordinates instead of
+            generating new ones
+
         """
         self._run_welcome_msg()
-        positions = self.generate_positions()
+
+        if not positions:
+            positions = self.generate_positions()
 
         self.headers = self.data.createTable(self.output, 'headers',
                                              storage.SimulationHeader)
