@@ -1,0 +1,7 @@
+In order to use this, just place the whole directory in some directory
+in your PYTHONPATH
+
+Take a look at the example in this directory.
+
+Code documentation is provided as doctype and at
+http://www-ik.fzk.de/~jgonzalez/corsika/
