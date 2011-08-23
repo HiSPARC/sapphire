@@ -2,6 +2,9 @@ import tables
 import progressbar as pb
 import inspect
 
+import sys
+sys.path.append('src/')
+
 from clusters import SimpleCluster
 
 
