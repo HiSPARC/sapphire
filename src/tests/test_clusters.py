@@ -64,7 +64,7 @@ class StationTests(unittest.TestCase):
             mock_detector.return_value = Mock()
             station1 = clusters.Station((0, 1), 2, [(3, 4, 'LR')])
             mock_detector.return_value = Mock()
-            station2 = clusters.Station((0, 1), 2, [(3, 4, 'LR')])
+            station2 = clusters.Station((0, 1), 2, [(0, 1, 'LR')])
             self.assertNotEqual(station1.detectors[0], station2.detectors[0])
 
     def test_detectors(self):
@@ -98,6 +98,45 @@ class StationTests(unittest.TestCase):
         msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
         for actual_value, expected_value in zip(actual, expected):
             self.assertAlmostEqual(actual_value, expected_value, msg=msg)
+
+
+class BaseClusterTests(unittest.TestCase):
+    def test_add_station(self):
+        with patch('clusters.Station') as mock_station:
+            cluster = clusters.BaseCluster()
+            self.assertFalse(mock_station.called)
+
+            pos = Mock(name='pos')
+            angle = Mock(name='angle')
+            detector_list = Mock(name='detector_list')
+            cluster._add_station(pos, angle, detector_list)
+            mock_station.assert_called_with(pos, angle, detector_list)
+
+    def test_attributes(self):
+        with patch('clusters.Station') as mock_station:
+            mock_station_instance = Mock()
+            mock_station.return_value = mock_station_instance
+
+            cluster = clusters.BaseCluster()
+            cluster._add_station(Mock(), Mock(), Mock())
+            self.assertEqual(cluster.stations, [mock_station_instance])
+
+    def test_add_station_for_one_instance(self):
+        """
+        Unfortunately, if you naively declare __stations = [] as a *class*
+        variable, you will share the same list with *all instances*.
+
+        """
+        with patch('clusters.Station') as mock_station:
+            mock_station.return_value = Mock()
+            cluster1 = clusters.BaseCluster()
+            cluster1._add_station((0, 0), 0, [(0, 0, 'LR')])
+
+            mock_station.return_value = Mock()
+            cluster2 = clusters.BaseCluster()
+            cluster2._add_station((1, 2), 0, [(3, 0, 'LR')])
+
+            self.assertNotEqual(cluster1.stations[0], cluster2.stations[0])
 
 
 if __name__ == '__main__':
