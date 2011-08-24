@@ -190,7 +190,7 @@ class SimpleCluster(BaseCluster):
         # four-detector HiSPARC station, but scaled up
         A = size / 2
         B = A / 3 * sqrt(3)
-        self._add_station((0, 0), 0, detectors)
         self._add_station((0, 2 * B), 0, detectors)
+        self._add_station((0, 0), 0, detectors)
         self._add_station((-A, -B), 2 * pi / 3, detectors)
         self._add_station((A, -B), -2 * pi / 3, detectors)
