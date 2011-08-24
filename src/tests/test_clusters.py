@@ -1,9 +1,11 @@
+from math import pi, atan, sqrt
+import textwrap
 import unittest
-from math import pi, atan
 
-from mock import Mock
+from mock import Mock, patch, sentinel
 
 import clusters
+
 
 class DetectorTests(unittest.TestCase):
     def setUp(self):
@@ -35,6 +37,67 @@ class DetectorTests(unittest.TestCase):
     def test_UD_get_corners(self):
         corners = self.detector_2.get_corners(0.25, 3, 0)
         self.assertEqual(corners, [(-1, 4.5), (-.5, 4.5), (-.5, 5.5), (-1, 5.5)])
+
+
+class StationTests(unittest.TestCase):
+    def setUp(self):
+        with patch('clusters.Detector') as mock_detector:
+            self.station_1 = clusters.Station((0, 1), pi / 4, [(3, 4, 'LR')])
+            self.mock_detector_instance = mock_detector.return_value
+
+    def test_detector_called(self):
+        with patch('clusters.Detector') as mock_detector:
+            station = clusters.Station((0, 1), 2, [(3, 4, 'LR')])
+            mock_detector.assert_called_with(station, 3, 4, 'LR')
+
+    def test_attributes(self):
+        self.assertEqual(self.station_1.position, (0, 1))
+        self.assertEqual(self.station_1.angle, pi / 4)
+
+    def test_add_detector_for_one_instance(self):
+        """
+        Unfortunately, if you naively declare __detectors = [] as a *class*
+        variable, you will share the same list with *all instances*.
+
+        """
+        with patch('clusters.Detector') as mock_detector:
+            mock_detector.return_value = Mock()
+            station1 = clusters.Station((0, 1), 2, [(3, 4, 'LR')])
+            mock_detector.return_value = Mock()
+            station2 = clusters.Station((0, 1), 2, [(3, 4, 'LR')])
+            self.assertNotEqual(station1.detectors[0], station2.detectors[0])
+
+    def test_detectors(self):
+        self.assertEqual(self.station_1.detectors, [self.mock_detector_instance])
+
+    def test_get_coordinates(self):
+        with patch('clusters.Detector') as mock_detector:
+            # Trivial
+            station = clusters.Station((0, 0), 0, [(0, 0, 'LR')])
+            coordinates = station.get_coordinates(0, 0, 0)
+            self.assertEqual(coordinates, (0, 0, 0))
+
+            # Cluster not in origin and rotated
+            station = clusters.Station((0, 0), 0, [(0, 0, 'LR')])
+            coordinates = station.get_coordinates(1, pi / 4, pi / 8)
+            self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2, pi / 8))
+
+            # Station *and* cluster not in origin and cluster rotated
+            station = clusters.Station((0, 5), 0, [(0, 0, 'LR')])
+            coordinates = station.get_coordinates(10, pi / 2, pi / 2)
+            self.assertTupleAlmostEqual(coordinates, (-5, 10, pi / 2))
+
+            # Station *and* cluster not in origin and cluster *and* station rotated
+            station = clusters.Station((0, 5), pi / 4, [(0, 0, 'LR')])
+            coordinates = station.get_coordinates(10, pi / 2, pi / 2)
+            self.assertTupleAlmostEqual(coordinates, (-5, 10, 3 * pi / 4))
+
+    def assertTupleAlmostEqual(self, actual, expected):
+        self.assertTrue(type(actual) == type(expected) == tuple)
+
+        msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
+        for actual_value, expected_value in zip(actual, expected):
+            self.assertAlmostEqual(actual_value, expected_value, msg=msg)
 
 
 if __name__ == '__main__':
