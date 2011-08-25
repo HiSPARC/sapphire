@@ -1,8 +1,7 @@
-from math import pi, atan, sqrt
-import textwrap
+from math import pi, sqrt
 import unittest
 
-from mock import Mock, patch, sentinel
+from mock import Mock, patch
 
 import clusters
 

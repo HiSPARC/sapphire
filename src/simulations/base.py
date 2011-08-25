@@ -9,7 +9,6 @@ import os.path
 import progressbar as pb
 import numpy as np
 from math import pi, sin, cos, atan2, sqrt, isinf
-import sys
 
 import storage
 
