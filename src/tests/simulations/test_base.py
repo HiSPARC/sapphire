@@ -1,7 +1,9 @@
 import unittest
+import types
 
 import tables
-from mock import Mock, patch
+from numpy import array, pi
+from mock import Mock, patch, sentinel
 
 from simulations import base
 
@@ -12,12 +14,12 @@ class BaseSimulationTests(unittest.TestCase):
                                               Mock(name='output_tail'))
         os_path_split_mock.return_value = self.output_head, self.output_tail
 
-        self.cluster = Mock(name='cluster')
+        self.cluster = sentinel.cluster
         self.data = Mock(name='data')
-        self.grdpcles = Mock(name='grdpcles')
-        self.output = Mock(name='output')
-        self.R = Mock(name='R')
-        self.N = Mock(name='N')
+        self.grdpcles = sentinel.grdpcles
+        self.output = sentinel.output
+        self.R = sentinel.R
+        self.N = sentinel.N
         self.simulation = base.BaseSimulation(self.cluster, self.data,
                                               self.grdpcles, self.output,
                                               self.R, self.N)
@@ -41,7 +43,7 @@ class BaseSimulationTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             base.BaseSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
 
-    def test_init_creates_output(self):
+    def test_init_creates_output_group(self):
         self.data.createGroup.assert_called_with(self.output_head,
                                                  self.output_tail,
                                                  createparents=True)
@@ -55,3 +57,85 @@ class BaseSimulationTests(unittest.TestCase):
         data.createGroup.side_effect = tables.NodeError
         with self.assertRaises(RuntimeError):
             base.BaseSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
+
+    def test_generate_positions_is_generator(self):
+        self.assertEqual(type(self.simulation.generate_positions()), types.GeneratorType)
+
+    def test_generate_positions_returns_uniform_circle_distribution(self):
+        self.simulation.R = 100
+        self.simulation.N = 10000
+        positions = array(list(self.simulation.generate_positions()))
+        r = positions[:, 0]
+        phi = positions[:, 1]
+        alpha = positions[:, 2]
+
+        self.assertLessEqual(max(r), self.simulation.R)
+        self.assertLessEqual(max(phi), pi)
+        self.assertGreaterEqual(min(phi), -pi)
+        self.assertLessEqual(max(alpha), pi)
+        self.assertGreaterEqual(min(alpha), -pi)
+
+        self.assertAlmostEqual(max(r), self.simulation.R, delta=1)
+        self.assertAlmostEqual(max(phi), pi, delta=.01)
+        self.assertAlmostEqual(min(phi), -pi, delta=.01)
+        self.assertAlmostEqual(max(alpha), pi, delta=.01)
+        self.assertAlmostEqual(min(alpha), -pi, delta=.01)
+
+        # More distribution tests? X and Y, e.g.
+
+    def test_get_station_particles(self):
+        # mock station
+        detectors = [sentinel.detector1, sentinel.detector2]
+        station = Mock()
+        station.detectors = detectors
+
+        # mock simple args
+        X, Y = sentinel.X, sentinel.Y
+        alpha = sentinel.alpha
+
+        # mock get_detector_particles
+        results = [sentinel.result2, sentinel.result1]
+        get_detector_particles = Mock(side_effect=lambda * args: results.pop())
+        self.simulation.get_detector_particles = get_detector_particles
+
+        particles = self.simulation.get_station_particles(station, X, Y, alpha)
+
+        # assertions
+        get_detector_particles.assert_called_with(X, Y, detectors[1], alpha)
+        pop_last_call(get_detector_particles)
+        get_detector_particles.assert_called_with(X, Y, detectors[0], alpha)
+        self.assertEqual(particles, [sentinel.result1, sentinel.result2])
+
+    def test_get_detector_particles(self):
+        # I'm not terribly sure how much this helps...
+
+        X, Y, alpha = sentinel.X, sentinel.Y, sentinel.alpha
+        detector = Mock()
+        corners = [Mock(), Mock(), Mock(), Mock()]
+        detector.get_corners.return_value = corners
+
+        get_line_boundary_eqs = Mock()
+        eqs_results = [(0., 'y - x', 1.), (2., 'y + x', 3.)]
+        get_line_boundary_eqs.side_effect = lambda * args: eqs_results.pop()
+        self.simulation.get_line_boundary_eqs = get_line_boundary_eqs
+
+        results = self.simulation.get_detector_particles(X, Y, detector, alpha)
+        self.assertIs(results, self.simulation.grdpcles.readWhere.return_value)
+        self.simulation.grdpcles.readWhere.assert_called_with(
+            "(b11 < y + x) & (y + x < b12) & (b21 < y - x) & (y - x < b22)")
+
+        get_line_boundary_eqs.assert_called_with(corners[1], corners[2], corners[3])
+        pop_last_call(get_line_boundary_eqs)
+        get_line_boundary_eqs.assert_called_with(corners[0], corners[1], corners[2])
+
+
+def pop_last_call(mock):
+    if not mock.call_count:
+        raise AssertionError("Cannot pop last call: call_count is 0")
+    mock.call_args_list.pop()
+    try:
+        mock.call_args = mock.call_args_list[-1]
+    except IndexError:
+        mock.call_args = None
+        mock.called = False
+    mock.call_count -= 1
