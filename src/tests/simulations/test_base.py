@@ -187,6 +187,27 @@ class BaseSimulationTests(unittest.TestCase):
         row['polar_angle'] = atan2(y, x)
         row.append()
 
+    @patch('progressbar.ProgressBar')
+    def test_run_without_positions(self, patch_progressbar):
+        # make progressbar(list) do nothing (i.e., return list)
+        patch_progressbar.return_value.side_effect = lambda x: x
+
+        my_tables = [Mock(), Mock()]
+        self.data.createTable.side_effect = lambda * args: my_tables.pop()
+
+        self.simulation._run_welcome_msg = Mock()
+        self.simulation.generate_positions = Mock()
+        self.simulation.generate_positions.return_value = [(0, 0, 0), (1, 1, 1)]
+        self.simulation.simulate_event = Mock()
+        self.simulation.run()
+
+        self.data.createTable.assert_called_with(self.simulation.output, 'particles', storage.ParticleEvent)
+        pop_last_call(self.data.createTable)
+        self.data.createTable.assert_called_with(self.simulation.output, 'headers', storage.SimulationHeader)
+        self.simulation.headers.flush.assert_called_with()
+        self.simulation.particles.flush.assert_called_with()
+
+
 
 def pop_last_call(mock):
     if not mock.call_count:
