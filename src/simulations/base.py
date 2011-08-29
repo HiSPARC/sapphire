@@ -138,15 +138,15 @@ class BaseSimulation(object):
         """
         (x0, y0), (x1, y1), (x2, y2) = p0, p1, p2
 
-        # First, compute the slope
-        a = (y1 - y0) / (x1 - x0)
-
-        # Calculate the y-intercepts of both lines
-        b1 = y0 - a * x0
-        b2 = y2 - a * x2
-
         # Compute the general equation for the lines
-        if not isinf(a):
+        if not (x0 == x1):
+            # First, compute the slope
+            a = (y1 - y0) / (x1 - x0)
+
+            # Calculate the y-intercepts of both lines
+            b1 = y0 - a * x0
+            b2 = y2 - a * x2
+
             line = "y - %f * x" % a
         else:
             # line is exactly vertical

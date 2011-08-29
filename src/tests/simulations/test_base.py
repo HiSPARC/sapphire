@@ -2,10 +2,13 @@ import unittest
 import types
 
 import tables
-from numpy import array, pi
+from numpy import array
+from math import pi, atan2, sqrt
 from mock import Mock, patch, sentinel
 
 from simulations import base
+import clusters
+import storage
 
 class BaseSimulationTests(unittest.TestCase):
     @patch('os.path.split')
@@ -120,13 +123,69 @@ class BaseSimulationTests(unittest.TestCase):
         self.simulation.get_line_boundary_eqs = get_line_boundary_eqs
 
         results = self.simulation.get_detector_particles(X, Y, detector, alpha)
-        self.assertIs(results, self.simulation.grdpcles.readWhere.return_value)
         self.simulation.grdpcles.readWhere.assert_called_with(
             "(b11 < y + x) & (y + x < b12) & (b21 < y - x) & (y - x < b22)")
+        self.assertIs(results, self.simulation.grdpcles.readWhere.return_value)
 
         get_line_boundary_eqs.assert_called_with(corners[1], corners[2], corners[3])
         pop_last_call(get_line_boundary_eqs)
         get_line_boundary_eqs.assert_called_with(corners[0], corners[1], corners[2])
+
+    def test_get_line_boundary_eqs(self):
+        func = self.simulation.get_line_boundary_eqs
+        self.assertEqual(func((0, 0), (1, 0), (1, 1)), (0, 'y - 0.000000 * x', 1))
+        self.assertEqual(func((1, 0), (0, 0), (1, 1)), (0, 'y - 0.000000 * x', 1))
+        self.assertEqual(func((1, 0), (0, 0), (1, -1)), (-1, 'y - 0.000000 * x', 0))
+
+        self.assertEqual(func((0, 0), (1, 1), (0, 2)), (0, 'y - 1.000000 * x', 2))
+        self.assertEqual(func((1, 1), (0, 0), (0, 2)), (0, 'y - 1.000000 * x', 2))
+
+        self.assertEqual(func((0, 0), (0, 1), (2, 2)), (0, 'x', 2))
+        self.assertEqual(func((0, 0), (0, 1), (-2, 2)), (-2, 'x', 0))
+
+    def test_get_detector_particles_with_real_data(self):
+        simulation = self.setup_simulation_with_real_data()
+        detector = clusters.Detector(sentinel.station, 0, 0, 'UD')
+
+        particles = simulation.get_detector_particles(0, 0, detector, 0)
+        ids = [x['id'] for x in particles]
+        self.assertEqual(ids, [0, 1, 2, 5])
+
+        particles = simulation.get_detector_particles(.2, 0, detector, 0)
+        ids = [x['id'] for x in particles]
+        self.assertEqual(ids, [0, 1, 3, 5])
+
+        particles = simulation.get_detector_particles(.2, 0, detector, -pi / 4)
+        ids = [x['id'] for x in particles]
+        self.assertEqual(ids, [0, 3, 5])
+
+        self.simulation.data.close()
+
+    def setup_simulation_with_real_data(self):
+        data = self.setup_datafile_with_real_data()
+        return base.BaseSimulation(sentinel.cluster, data, '/grdpcles',
+                                   '/output', sentinel.R, sentinel.N)
+
+    def setup_datafile_with_real_data(self):
+        data = tables.openFile('/tmp/tmp.h5', 'w')
+        grdpcles = data.createTable('/', 'grdpcles', storage.Particle)
+        self.create_particle(grdpcles, 0, 0., 0.)
+        self.create_particle(grdpcles, 1, .24, .49)
+        self.create_particle(grdpcles, 2, -.24, -.49)
+        self.create_particle(grdpcles, 3, .26, 0.)
+        self.create_particle(grdpcles, 4, 0., .51)
+        self.create_particle(grdpcles, 5, .2, .2)
+        grdpcles.flush()
+        return data
+
+    def create_particle(self, table, id, x, y):
+        row = table.row
+        row['id'] = id
+        row['x'] = x
+        row['y'] = y
+        row['core_distance'] = sqrt(x ** 2 + y ** 2)
+        row['polar_angle'] = atan2(y, x)
+        row.append()
 
 
 def pop_last_call(mock):
