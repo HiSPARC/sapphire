@@ -43,7 +43,8 @@ def hist_Rcluster(group):
 
     for Ntrig in range(1, 5):
         sel = coincidences.readWhere('N == Ntrig')
-        hist(sel['r'], bins=200, histtype='step', label="N=%d" % Ntrig)
+        if len(sel) > 0:
+            hist(sel['r'], bins=200, histtype='step', label="N=%d" % Ntrig)
 
     xlabel("R_cluster [m]")
     ylabel("Count")
@@ -60,11 +61,12 @@ def hist_Rstation(group):
     for Ntrig in range(1, 5):
         R = []
         sel = coincidences.readWhere('N == Ntrig')
-        progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                           pb.ETA()])
-        for event_id in progress(sel['id']):
-            R.extend([observables[u]['r'] for u in c_index[event_id]])
-        hist(R, bins=200, histtype='step', label="N=%d" % Ntrig)
+        if len(sel) > 0:
+            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                               pb.ETA()])
+            for event_id in progress(sel['id']):
+                R.extend([observables[u]['r'] for u in c_index[event_id]])
+            hist(R, bins=200, histtype='step', label="N=%d" % Ntrig)
 
     xlabel("R_station [m]")
     ylabel("Count")
@@ -154,7 +156,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('data-e15-S150.h5', 'r')
+        data = tables.openFile('data-e15-S250.h5', 'r')
 
     sim = data.root.simulations.E_1PeV.zenith_0
-    main(sim, 'E-1PeV-S150m')
+    main(sim, 'E-1PeV-S250m')
