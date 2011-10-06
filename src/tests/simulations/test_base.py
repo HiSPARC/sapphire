@@ -188,7 +188,7 @@ class BaseSimulationTests(unittest.TestCase):
         row.append()
 
     @patch('progressbar.ProgressBar')
-    def test_run_without_positions(self, patch_progressbar):
+    def test_run_without_arguments(self, patch_progressbar):
         # make progressbar(list) do nothing (i.e., return list)
         patch_progressbar.return_value.side_effect = lambda x: x
 
