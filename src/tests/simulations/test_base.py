@@ -159,7 +159,7 @@ class BaseSimulationTests(unittest.TestCase):
         ids = [x['id'] for x in particles]
         self.assertEqual(ids, [0, 3, 5])
 
-        self.simulation.data.close()
+        simulation.data.close()
 
     def setup_simulation_with_real_data(self):
         data = self.setup_datafile_with_real_data()
