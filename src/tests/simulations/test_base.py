@@ -27,6 +27,14 @@ class BaseSimulationTests(unittest.TestCase):
                                               self.grdpcles, self.output,
                                               self.R, self.N)
 
+        # make progressbar(list) do nothing (i.e., return list)
+        self.progressbar_patcher = patch('progressbar.ProgressBar')
+        self.progressbar_mock = self.progressbar_patcher.start()
+        self.progressbar_mock.return_value.side_effect = lambda x: x
+
+    def tearDown(self):
+        self.progressbar_patcher.stop()
+
     def test_init_sets_attributes(self):
         self.assertIs(self.simulation.cluster, self.cluster)
         self.assertIs(self.simulation.data, self.data)
@@ -187,11 +195,8 @@ class BaseSimulationTests(unittest.TestCase):
         row['polar_angle'] = atan2(y, x)
         row.append()
 
-    @patch('progressbar.ProgressBar')
-    def test_run_without_arguments(self, patch_progressbar):
-        # make progressbar(list) do nothing (i.e., return list)
-        patch_progressbar.return_value.side_effect = lambda x: x
 
+    def test_run_without_arguments(self):
         my_tables = [Mock(), Mock()]
         self.data.createTable.side_effect = lambda * args: my_tables.pop()
 
@@ -206,7 +211,6 @@ class BaseSimulationTests(unittest.TestCase):
         self.data.createTable.assert_called_with(self.simulation.output, 'headers', storage.SimulationHeader)
         self.simulation.headers.flush.assert_called_with()
         self.simulation.particles.flush.assert_called_with()
-
 
 
 def pop_last_call(mock):
