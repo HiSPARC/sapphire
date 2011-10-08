@@ -204,13 +204,15 @@ class BaseSimulationTests(unittest.TestCase):
         self.simulation.generate_positions = Mock()
         self.simulation.generate_positions.return_value = [(0, 0, 0), (1, 1, 1)]
         self.simulation.simulate_event = Mock()
+        self.simulation.store_observables = Mock()
         self.simulation.run()
 
-        self.data.createTable.assert_called_with(self.simulation.output, 'particles', storage.ParticleEvent)
+        self.data.createTable.assert_called_with(self.simulation.output, '_particles', storage.ParticleEvent)
         pop_last_call(self.data.createTable)
-        self.data.createTable.assert_called_with(self.simulation.output, 'headers', storage.SimulationHeader)
+        self.data.createTable.assert_called_with(self.simulation.output, '_headers', storage.SimulationHeader)
         self.simulation.headers.flush.assert_called_with()
         self.simulation.particles.flush.assert_called_with()
+        self.simulation.store_observables.assert_called_with()
 
 
 def pop_last_call(mock):

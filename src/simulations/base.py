@@ -175,9 +175,9 @@ class BaseSimulation(object):
         if not positions:
             positions = self.generate_positions()
 
-        self.headers = self.data.createTable(self.output, 'headers',
+        self.headers = self.data.createTable(self.output, '_headers',
                                              storage.SimulationHeader)
-        self.particles = self.data.createTable(self.output, 'particles',
+        self.particles = self.data.createTable(self.output, '_particles',
                                                storage.ParticleEvent)
 
         progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
@@ -188,6 +188,8 @@ class BaseSimulation(object):
 
         self.headers.flush()
         self.particles.flush()
+
+        self.store_observables()
 
         self._run_exit_msg()
 
@@ -289,8 +291,6 @@ Number of cluster positions in simulation: %d
         c_index = self.data.createVLArray(self.output, 'c_index',
                                           tables.UInt32Atom())
 
-        headers = self.data.getNode(self.output, 'headers')
-        particles = self.data.getNode(self.output, 'particles')
 
         print "Storing observables from %s" % self.output._v_pathname
 
@@ -298,11 +298,11 @@ Number of cluster positions in simulation: %d
         # index into the observables table
         obs_index = 0
         coinc_row = coinc.row
-        progress = pb.ProgressBar(maxval=len(headers),
+        progress = pb.ProgressBar(maxval=len(self.headers),
                                   widgets=[pb.Percentage(), pb.Bar(),
                                            pb.ETA()]).start()
-        headers = iter(headers)
-        particles = iter(particles)
+        headers = iter(self.headers)
+        particles = iter(self.particles)
 
         # start with first rows initialized
         header = headers.next()
