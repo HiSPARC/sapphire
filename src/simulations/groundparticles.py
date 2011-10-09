@@ -13,7 +13,7 @@ from math import pi, sin, cos, atan2, sqrt, isinf
 import storage
 
 
-class BaseSimulation(object):
+class GroundParticlesSimulation(object):
 
     """Base simulation class
 

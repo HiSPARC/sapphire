@@ -6,7 +6,7 @@ from numpy import array
 from math import pi, atan2, sqrt
 from mock import Mock, patch, sentinel
 
-from simulations import base
+from simulations import groundparticles
 import clusters
 import storage
 
@@ -23,7 +23,7 @@ class BaseSimulationTests(unittest.TestCase):
         self.output = sentinel.output
         self.R = sentinel.R
         self.N = sentinel.N
-        self.simulation = base.BaseSimulation(self.cluster, self.data,
+        self.simulation = groundparticles.GroundParticlesSimulation(self.cluster, self.data,
                                               self.grdpcles, self.output,
                                               self.R, self.N)
 
@@ -52,7 +52,7 @@ class BaseSimulationTests(unittest.TestCase):
         data = Mock()
         data.getNode.side_effect = tables.NoSuchNodeError
         with self.assertRaises(RuntimeError):
-            base.BaseSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
+            groundparticles.GroundParticlesSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
 
     def test_init_creates_output_group(self):
         self.data.createGroup.assert_called_with(self.output_head,
@@ -67,7 +67,7 @@ class BaseSimulationTests(unittest.TestCase):
         data = Mock()
         data.createGroup.side_effect = tables.NodeError
         with self.assertRaises(RuntimeError):
-            base.BaseSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
+            groundparticles.GroundParticlesSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
 
     def test_generate_positions_is_generator(self):
         self.assertEqual(type(self.simulation.generate_positions()), types.GeneratorType)
@@ -171,7 +171,7 @@ class BaseSimulationTests(unittest.TestCase):
 
     def setup_simulation_with_real_data(self):
         data = self.setup_datafile_with_real_data()
-        return base.BaseSimulation(sentinel.cluster, data, '/grdpcles',
+        return groundparticles.GroundParticlesSimulation(sentinel.cluster, data, '/grdpcles',
                                    '/output', sentinel.R, sentinel.N)
 
     def setup_datafile_with_real_data(self):

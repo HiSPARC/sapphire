@@ -4,7 +4,7 @@ import os
 import tables
 
 import clusters
-from simulations import BaseSimulation, QSubSimulation
+from simulations import GroundParticlesSimulation, QSubSimulation
 
 
 DATAFILE = 'data-e15.h5'
@@ -19,8 +19,9 @@ if __name__ == '__main__':
 
     sim = 'E_1PeV/zenith_0'
     cluster = clusters.SimpleCluster()
-    simulation = BaseSimulation(cluster, data,
-                                os.path.join('/showers', sim, 'leptons'),
-                                os.path.join('/simulations', sim),
-                                R=100, N=10)
+    simulation = GroundParticlesSimulation(cluster, data,
+                                           os.path.join('/showers', sim,
+                                                        'leptons'),
+                                           os.path.join('/simulations', sim),
+                                           R=100, N=10)
     simulation.run()
