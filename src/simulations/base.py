@@ -6,10 +6,9 @@
 """
 import tables
 import os.path
-import progressbar as pb
 import textwrap
+from math import pi, sin, cos
 import numpy as np
-from math import pi, sin, cos, atan2, sqrt, isinf
 
 import storage
 
@@ -31,9 +30,8 @@ class BaseSimulation(object):
         :param output: name of the destination group to store results
         :param R: maximum distance of shower to center of cluster
         :param N: number of simulations to perform
-        :param force: if True, ignore initialization errors, due to
-            missing ground particles or existing previous simulations.
-            Only use this if you really know what you're doing!
+        :param force: if True, ignore pre-existing simulations; they will be
+            overwritten!
 
         """
         self.cluster = cluster
@@ -41,16 +39,20 @@ class BaseSimulation(object):
         self.R = R
         self.N = N
 
+        if output in data and not force:
+            raise RuntimeError("Cancelling simulation; %s already exists?"
+                               % output)
+        elif output in data:
+            data.removeNode(output, recursive=True)
+
         head, tail = os.path.split(output)
-        try:
-            self.output = self.data.createGroup(head, tail,
-                                                createparents=True)
-        except tables.NodeError:
-            if force:
-                self.output = self.data.getNode(head, tail)
-            else:
-                raise RuntimeError("Cancelling simulation; %s already exists?"
-                                   % output)
+        self.output = data.createGroup(head, tail, createparents=True)
+        self.observables = self.data.createTable(self.output, 'observables',
+                                                 storage.ObservableEvent)
+        self.coincidences = self.data.createTable(self.output, 'coincidences',
+                                                  storage.CoincidenceEvent)
+        self.c_index = self.data.createVLArray(self.output, 'c_index',
+                                               tables.UInt32Atom())
 
     def run(self, positions=None):
         """Run a simulation
@@ -79,17 +81,29 @@ class BaseSimulation(object):
         """Print a welcome message at start of simulation run"""
 
         print 74 * '-'
-        print textwrap.dedent("""Running simulation
+        print textwrap.dedent("""\
+            Running simulation
 
-                              Output destination: %s
+            Output destination: %s
 
-                              Maximum core distance of cluster center:   %f m
-                              Number of cluster positions in simulation: %d
-                              """ % (self.output._v_pathname, self.R, self.N))
+            Maximum core distance of cluster center:   %f m
+            Number of cluster positions in simulation: %d
+            """ % (self.output._v_pathname, self.R, self.N))
 
     def _run_exit_msg(self):
         print 74 * '-'
         print
+
+    def generate_positions(self):
+        """Generate positions and an orientation uniformly on a circle
+
+        :return: r, phi, alpha
+
+        """
+        for i in range(self.N):
+            phi, alpha = np.random.uniform(-pi, pi, 2)
+            r = np.sqrt(np.random.uniform(0, self.R ** 2))
+            yield r, phi, alpha
 
     def write_observables(self, row, station, t):
         """Write observables from a single event
