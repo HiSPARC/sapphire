@@ -72,8 +72,8 @@ class BaseSimulation(object):
 
         # Example simulation loop
         #
-        #for event_id, (r, phi, alpha) in enumerate(positions):
-        #    self.simulate_event(event_id, r, phi, alpha)
+        #for event_id, (r, phi) in enumerate(positions):
+        #    self.simulate_event(event_id, r, phi)
 
         self._run_exit_msg()
 
@@ -101,20 +101,21 @@ class BaseSimulation(object):
 
         """
         for i in range(self.N):
-            phi, alpha = np.random.uniform(-pi, pi, 2)
+            phi = np.random.uniform(-pi, pi)
             r = np.sqrt(np.random.uniform(0, self.R ** 2))
-            yield r, phi, alpha
+            yield r, phi
 
-    def write_observables(self, row, station, t):
+    def write_observables(self, station, t):
         """Write observables from a single event
 
-        :param row: PyTables row object
         :param station: station object
         :param t: 4-tuple of lists containing the arrival times of the
                   particles in the four detectors, e.g.
                   ([13.3, 8.6, 33.2], [], [3.4], [8.7, 3.6])
 
         """
+        row = self.observables.row
+
         r = station['r']
         phi = station['phi']
         row['id'] = station['id']
@@ -131,14 +132,15 @@ class BaseSimulation(object):
             [len(u) for u in t]
         row.append()
 
-    def write_coincidence(self, row, event, N):
+    def write_coincidence(self, event, N):
         """Write coincidence information
 
-        :param row: PyTables row object
         :param event: simulated shower event information
         :param N: number of stations which triggered
 
         """
+        row = self.coincidences.row
+
         r = event['r']
         phi = event['phi']
         row['id'] = event['id']

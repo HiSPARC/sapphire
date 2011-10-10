@@ -54,10 +54,10 @@ class ObservableEvent(tables.IsDescription):
     t2 = tables.Float32Col()
     t3 = tables.Float32Col()
     t4 = tables.Float32Col()
-    n1 = tables.UInt16Col()
-    n2 = tables.UInt16Col()
-    n3 = tables.UInt16Col()
-    n4 = tables.UInt16Col()
+    n1 = tables.Float32Col()
+    n2 = tables.Float32Col()
+    n3 = tables.Float32Col()
+    n4 = tables.Float32Col()
 
 
 class CoincidenceEvent(tables.IsDescription):
