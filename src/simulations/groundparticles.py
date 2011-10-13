@@ -16,7 +16,7 @@ import storage
 
 class GroundParticlesSimulation(object):
 
-    """Base simulation class
+    """Simulation based on a groundparticles table
 
     This class defines a detector simulation, taking a shower simulation
     as input.  This class can be overridden to, for example, parallelize
