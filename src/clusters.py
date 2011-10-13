@@ -114,37 +114,14 @@ class Station(object):
     def detectors(self):
         return self.__detectors
 
-    def get_coordinates(self, r, phi, alpha):
-        """Calculate coordinates of a station given cluster coordinates
-
-        :param r, phi: polar coordinates of cluster center
-        :param alpha: rotation of cluster
-
-        :return: x, y, alpha; coordinates and rotation of station relative to
-            absolute coordinate system
-
-        """
-        X = r * cos(phi)
-        Y = r * sin(phi)
-
-        sx, sy = self.position
-        xp = sx * cos(alpha) - sy * sin(alpha)
-        yp = sx * sin(alpha) + sy * cos(alpha)
-
-        x = X + xp
-        y = Y + yp
-        angle = alpha + self.angle
-
-        return x, y, angle
-
-    def new_get_coordinates(self):
+    def get_xyalpha_coordinates(self):
         """Calculate coordinates of a station
 
         :return: x, y, alpha; coordinates and rotation of station relative to
             absolute coordinate system
 
         """
-        r, phi, alpha = self.cluster.get_coordinates()
+        r, phi, alpha = self.cluster.get_xyalpha_coordinates()
         X = r * cos(phi)
         Y = r * sin(phi)
 
@@ -196,11 +173,16 @@ class BaseCluster(object):
     def stations(self):
         return self.__stations
 
-    def get_coordinates(self):
+    def get_xyalpha_coordinates(self):
         return self._x, self._y, self._alpha
 
-    def set_coordinates(self, position):
+    def set_xyalpha_coordinates(self, position):
         self._x, self._y, self._alpha = position
+
+    def set_rphialpha_coordinates(self, position):
+        r, phi, self._alpha = position
+        self._x = r * cos(phi)
+        self._y = r * sin(phi)
 
 
 class SimpleCluster(BaseCluster):
