@@ -7,10 +7,10 @@ import shutil
 import sys
 
 import clusters
-from simulations.base import BaseSimulation
+from simulations.groundparticles import GroundParticlesSimulation
 
 
-class BaseSimulationAcceptanceTest(unittest.TestCase):
+class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
     def test_simulation_results(self):
         data_path = self.create_tempfile_from_testdata()
         self.data = tables.openFile(data_path, 'a')
@@ -25,11 +25,11 @@ class BaseSimulationAcceptanceTest(unittest.TestCase):
         np.random.seed(1)
         self.sim = 'E_100TeV/zenith_0'
         cluster = clusters.SimpleCluster(size=50)
-        simulation = BaseSimulation(cluster, self.data,
-                                    os.path.join('/showers', self.sim, 'leptons'),
-                                    #os.path.join('/simulations', self.sim),
-                                    os.path.join('/test_output', self.sim),
-                                    R=10, N=20)
+        simulation = GroundParticlesSimulation(cluster, self.data,
+                                               os.path.join('/showers', self.sim, 'leptons'),
+                                               #os.path.join('/simulations', self.sim),
+                                               os.path.join('/test_output', self.sim),
+                                               R=10, N=20)
         self.redirect_stdout_stderr_to_devnull()
         simulation.run()
         self.restore_stdout_stderr()
