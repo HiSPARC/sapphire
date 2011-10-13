@@ -21,9 +21,10 @@ class SimpleClusterTest(unittest.TestCase):
             self.assertTupleAlmostEqual(actual_value, expected_value)
 
     @unittest.expectedFailure
-    def test_get_detector_corners(self):
-        #FIXME: the thing is, this is a mess.  Think about this.  Hard.
-        self.cluster.stations[1].detectors[1].get_detector_coordinates
+    def test_get_detector_coordinates(self):
+        for station in self.cluster.stations:
+            for detector in station.detectors:
+                coords = detector.get_coordinates()
 
     def assertTupleAlmostEqual(self, actual, expected):
         self.assertTrue(type(actual) == type(expected) == tuple)

@@ -76,9 +76,10 @@ class Station(object):
 
     __detectors = None
 
-    def __init__(self, position, angle, detectors):
+    def __init__(self, cluster, position, angle, detectors):
         """Initialize station
 
+        :param cluster: cluster this station is a part of
         :param position: tuple of (x, y) values
         :param angle: angle of rotation of the station in radians
         :param detectors: list of tuples.  Each tuple consists of (dx, dy,
@@ -89,6 +90,7 @@ class Station(object):
             respectively.
 
         """
+        self.cluster = cluster
         self.position = position
         self.angle = angle
         for x, y, orientation in detectors:
@@ -135,15 +137,37 @@ class Station(object):
 
         return x, y, angle
 
+    def new_get_coordinates(self):
+        """Calculate coordinates of a station
+
+        :return: x, y, alpha; coordinates and rotation of station relative to
+            absolute coordinate system
+
+        """
+        r, phi, alpha = self.cluster.get_coordinates()
+        X = r * cos(phi)
+        Y = r * sin(phi)
+
+        sx, sy = self.position
+        xp = sx * cos(alpha) - sy * sin(alpha)
+        yp = sx * sin(alpha) + sy * cos(alpha)
+
+        x = X + xp
+        y = Y + yp
+        angle = alpha + self.angle
+
+        return x, y, angle
+
 
 class BaseCluster(object):
     """Base class for HiSPARC clusters"""
 
     __stations = None
 
-    def __init__(self):
+    def __init__(self, position=(0., 0.), angle=0.):
         """Override this function to build your cluster"""
-        pass
+        self._x, self._y = position
+        self._alpha = angle
 
     def _add_station(self, position, angle, detectors):
         """Add a station to the cluster
@@ -166,11 +190,17 @@ class BaseCluster(object):
         # pickle it.  An assignment takes care of that.
         if self.__stations is None:
             self.__stations = []
-        self.__stations.append(Station(position, angle, detectors))
+        self.__stations.append(Station(self, position, angle, detectors))
 
     @property
     def stations(self):
         return self.__stations
+
+    def get_coordinates(self):
+        return self._x, self._y, self._alpha
+
+    def set_coordinates(self, position):
+        self._x, self._y, self._alpha = position
 
 
 class SimpleCluster(BaseCluster):
