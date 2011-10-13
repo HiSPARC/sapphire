@@ -85,19 +85,19 @@ class StationTests(unittest.TestCase):
             self.assertEqual(coordinates, (0, 0, 0))
 
             # Cluster not in origin and rotated
-            cluster.get_xyalpha_coordinates.return_value = (1, pi / 4, pi / 8)
+            cluster.get_xyalpha_coordinates.return_value = (sqrt(2) / 2, sqrt(2) / 2, pi / 8)
             station = clusters.Station(cluster, (0, 0), 0, [(0, 0, 'LR')])
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2, pi / 8))
 
             # Station *and* cluster not in origin and cluster rotated
-            cluster.get_xyalpha_coordinates.return_value = (10, pi / 2, pi / 2)
+            cluster.get_xyalpha_coordinates.return_value = (0, 10, pi / 2)
             station = clusters.Station(cluster, (0, 5), 0, [(0, 0, 'LR')])
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (-5, 10, pi / 2))
 
             # Station *and* cluster not in origin and cluster *and* station rotated
-            cluster.get_xyalpha_coordinates.return_value = (10, pi / 2, pi / 2)
+            cluster.get_xyalpha_coordinates.return_value = (0, 10, pi / 2)
             station = clusters.Station(cluster, (0, 5), pi / 4, [(0, 0, 'LR')])
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (-5, 10, 3 * pi / 4))

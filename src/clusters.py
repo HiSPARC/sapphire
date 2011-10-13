@@ -121,9 +121,7 @@ class Station(object):
             absolute coordinate system
 
         """
-        r, phi, alpha = self.cluster.get_xyalpha_coordinates()
-        X = r * cos(phi)
-        Y = r * sin(phi)
+        X, Y, alpha = self.cluster.get_xyalpha_coordinates()
 
         sx, sy = self.position
         xp = sx * cos(alpha) - sy * sin(alpha)

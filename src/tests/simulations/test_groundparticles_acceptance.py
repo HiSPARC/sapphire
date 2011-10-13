@@ -11,7 +11,6 @@ from simulations.groundparticles import GroundParticlesSimulation
 
 
 class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
-    @unittest.expectedFailure
     def test_simulation_results(self):
         data_path = self.create_tempfile_from_testdata()
         self.data = tables.openFile(data_path, 'a')
