@@ -32,7 +32,6 @@ class BaseSimulationAcceptanceTest(unittest.TestCase):
                                     R=10, N=20)
         self.redirect_stdout_stderr_to_devnull()
         simulation.run()
-        simulation.store_observables()
         self.restore_stdout_stderr()
 
     def validate_simulation_results(self):
