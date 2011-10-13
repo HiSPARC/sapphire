@@ -7,6 +7,7 @@
 import tables
 import os.path
 import progressbar as pb
+import sys
 import numpy as np
 from math import pi, sin, cos, atan2, sqrt, isinf
 
@@ -182,7 +183,8 @@ class BaseSimulation(object):
 
         progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
                                                           pb.Bar(),
-                                                          pb.ETA()])
+                                                          pb.ETA()],
+                                  fd=sys.stderr)
         for event_id, (r, phi, alpha) in progress(enumerate(positions)):
             self.simulate_event(event_id, r, phi, alpha)
 
@@ -300,7 +302,8 @@ Number of cluster positions in simulation: %d
         coinc_row = coinc.row
         progress = pb.ProgressBar(maxval=len(headers),
                                   widgets=[pb.Percentage(), pb.Bar(),
-                                           pb.ETA()]).start()
+                                           pb.ETA()],
+                                  fd=sys.stderr).start()
         headers = iter(headers)
         particles = iter(particles)
 
