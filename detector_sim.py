@@ -52,4 +52,3 @@ if __name__ == '__main__':
                                 os.path.join('/simulations', sim),
                                 R=100, N=100)
     simulation.run()
-    simulation.store_observables()
