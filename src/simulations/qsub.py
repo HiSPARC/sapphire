@@ -5,7 +5,7 @@ import os
 import subprocess
 import progressbar as pb
 
-from base import BaseSimulation
+from groundparticles import GroundParticlesSimulation
 import storage
 
 JOB_FILE = '__QSUB_%s.h5'
@@ -14,7 +14,7 @@ STAT_INTERVAL = 2
 BAR_LENGTH = 40
 
 
-class QSubSimulation(BaseSimulation):
+class QSubSimulation(GroundParticlesSimulation):
 
     """Submit a simulation in multiple jobs
 
@@ -193,7 +193,7 @@ class QSubSimulation(BaseSimulation):
             os.remove(STATUS_FILE % hash)
 
 
-class QSubChild(BaseSimulation):
+class QSubChild(GroundParticlesSimulation):
 
     """Accept a job from QSubSimulation and run it
 
