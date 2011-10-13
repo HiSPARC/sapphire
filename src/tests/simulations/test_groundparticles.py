@@ -201,6 +201,7 @@ class BaseSimulationTests(unittest.TestCase):
         self.data.createTable.side_effect = lambda * args: my_tables.pop()
 
         self.simulation._run_welcome_msg = Mock()
+        self.simulation._run_exit_msg = Mock()
         self.simulation.generate_positions = Mock()
         self.simulation.generate_positions.return_value = [(0, 0, 0), (1, 1, 1)]
         self.simulation.simulate_event = Mock()
