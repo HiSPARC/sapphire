@@ -44,12 +44,21 @@ class BaseSimulationAcceptanceTest(unittest.TestCase):
 
         self.validate_column_data(expected.observables, actual.observables)
         self.validate_column_data(expected.coincidences, actual.coincidences)
+        self.validate_cindex(expected, actual)
 
     def validate_column_data(self, expected, actual):
         for colname in expected.colnames:
             expected_col = expected.col(colname)
             actual_col = actual.col(colname)
             self.assertTrue((expected_col == actual_col).all())
+
+    def validate_cindex(self, expected, actual):
+        expected = expected.c_index.read()
+        actual = actual.c_index.read()
+
+        # c_index is a list of arrays, so test accordingly
+        for i, j in zip(expected, actual):
+            self.assertTrue((i == j).all())
 
     def create_tempfile_from_testdata(self):
         tmp_path = self.create_tempfile_path()
