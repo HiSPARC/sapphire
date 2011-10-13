@@ -221,7 +221,7 @@ Number of cluster positions in simulation: %d
         :param alpha: rotation of cluster
 
         """
-        self.cluster.set_rphialpha_coordinates((r, phi, alpha))
+        self.cluster.set_rphialpha_coordinates(r, phi, alpha)
         self.write_header(event_id, 0, r, phi, alpha)
         for station_id, station in enumerate(self.cluster.stations, 1):
             x, y, beta = station.get_xyalpha_coordinates()

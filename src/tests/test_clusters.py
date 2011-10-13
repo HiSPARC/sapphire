@@ -161,13 +161,13 @@ class BaseClusterTests(unittest.TestCase):
 
     def test_set_xyalpha_coordinates(self):
         cluster = clusters.BaseCluster()
-        cluster.set_xyalpha_coordinates((5., 7., pi / 2))
+        cluster.set_xyalpha_coordinates(5., 7., pi / 2)
         self.assertEqual((cluster._x, cluster._y, cluster._alpha),
                          (5., 7., pi / 2))
 
     def test_set_rphialpha_coordinates(self):
         cluster = clusters.BaseCluster()
-        cluster.set_rphialpha_coordinates((10., pi / 2, 0.))
+        cluster.set_rphialpha_coordinates(10., pi / 2, 0.)
         self.assertAlmostEqual(cluster._x, 0.)
         self.assertAlmostEqual(cluster._y, 10.)
         self.assertAlmostEqual(cluster._alpha, 0.)

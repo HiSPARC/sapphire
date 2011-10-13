@@ -174,13 +174,13 @@ class BaseCluster(object):
     def get_xyalpha_coordinates(self):
         return self._x, self._y, self._alpha
 
-    def set_xyalpha_coordinates(self, position):
-        self._x, self._y, self._alpha = position
+    def set_xyalpha_coordinates(self, x, y, alpha):
+        self._x, self._y, self._alpha = x, y, alpha
 
-    def set_rphialpha_coordinates(self, position):
-        r, phi, self._alpha = position
+    def set_rphialpha_coordinates(self, r, phi, alpha):
         self._x = r * cos(phi)
         self._y = r * sin(phi)
+        self._alpha = alpha
 
 
 class SimpleCluster(BaseCluster):
