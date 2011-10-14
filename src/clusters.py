@@ -7,7 +7,7 @@
 """
 from __future__ import division
 
-from math import sqrt, pi, sin, cos
+from math import sqrt, pi, sin, cos, atan2
 
 
 class Detector(object):
@@ -132,6 +132,12 @@ class Station(object):
 
         return x, y, angle
 
+    def get_rphialpha_coordinates(self):
+        x, y, alpha = self.get_xyalpha_coordinates()
+        r = sqrt(x ** 2 + y ** 2)
+        phi = atan2(y, x)
+        return r, phi, alpha
+
 
 class BaseCluster(object):
     """Base class for HiSPARC clusters"""
@@ -173,6 +179,11 @@ class BaseCluster(object):
     def get_xyalpha_coordinates(self):
         return self._x, self._y, self._alpha
 
+    def get_rphialpha_coordinates(self):
+        r = sqrt(self._x ** 2 + self._y ** 2)
+        phi = atan2(self._y, self._x)
+        return r, phi, self._alpha
+
     def set_xyalpha_coordinates(self, x, y, alpha):
         self._x, self._y, self._alpha = x, y, alpha
 
@@ -187,6 +198,8 @@ class SimpleCluster(BaseCluster):
 
     def __init__(self, size=250):
         """Build the cluster"""
+
+        super(SimpleCluster, self).__init__()
 
         # calculate detector positions for a four-detector station
         station_size = 10
