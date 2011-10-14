@@ -79,10 +79,11 @@ class Station(object):
 
     __detectors = None
 
-    def __init__(self, cluster, position, angle, detectors):
+    def __init__(self, cluster, station_id, position, angle, detectors):
         """Initialize station
 
         :param cluster: cluster this station is a part of
+        :param station_id: int (unique identifier)
         :param position: tuple of (x, y) values
         :param angle: angle of rotation of the station in radians
         :param detectors: list of tuples.  Each tuple consists of (dx, dy,
@@ -94,6 +95,7 @@ class Station(object):
 
         """
         self.cluster = cluster
+        self.station_id = station_id
         self.position = position
         self.angle = angle
         for x, y, orientation in detectors:
@@ -174,7 +176,10 @@ class BaseCluster(object):
         # pickle it.  An assignment takes care of that.
         if self.__stations is None:
             self.__stations = []
-        self.__stations.append(Station(self, position, angle, detectors))
+        # 1-based (0 is reserved, see e.g. use of headers in groundparticlesim)
+        station_id = len(self.__stations) + 1
+        self.__stations.append(Station(self, station_id, position, angle,
+                                       detectors))
 
     @property
     def stations(self):

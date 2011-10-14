@@ -56,14 +56,14 @@ class StationTests(unittest.TestCase):
     def setUp(self):
         with patch('clusters.Detector') as mock_detector:
             self.cluster = Mock()
-            self.station_1 = clusters.Station(self.cluster, (0, 1), pi / 4,
+            self.station_1 = clusters.Station(self.cluster, 1, (0, 1), pi / 4,
                                               [(3, 4, 'LR')])
             self.mock_detector_instance = mock_detector.return_value
 
     def test_detector_called(self):
         with patch('clusters.Detector') as mock_detector:
             cluster = Mock()
-            station = clusters.Station(cluster, (0, 1), 2, [(3, 4, 'LR')])
+            station = clusters.Station(cluster, 1, (0, 1), 2, [(3, 4, 'LR')])
             mock_detector.assert_called_with(station, 3, 4, 'LR')
 
     def test_attributes(self):
@@ -79,9 +79,9 @@ class StationTests(unittest.TestCase):
         with patch('clusters.Detector') as mock_detector:
             cluster = Mock()
             mock_detector.return_value = Mock()
-            station1 = clusters.Station(cluster, (0, 1), 2, [(3, 4, 'LR')])
+            station1 = clusters.Station(cluster, 1, (0, 1), 2, [(3, 4, 'LR')])
             mock_detector.return_value = Mock()
-            station2 = clusters.Station(cluster, (0, 1), 2, [(0, 1, 'LR')])
+            station2 = clusters.Station(cluster, 2, (0, 1), 2, [(0, 1, 'LR')])
             self.assertNotEqual(station1.detectors[0], station2.detectors[0])
 
     def test_detectors(self):
@@ -93,26 +93,26 @@ class StationTests(unittest.TestCase):
 
             # Trivial
             cluster.get_xyalpha_coordinates.return_value = (0, 0, 0)
-            station = clusters.Station(cluster, position=(0, 0), angle=0,
+            station = clusters.Station(cluster, 1, position=(0, 0), angle=0,
                                        detectors=[(0, 0, 'LR')])
             coordinates = station.get_xyalpha_coordinates()
             self.assertEqual(coordinates, (0, 0, 0))
 
             # Cluster not in origin and rotated
             cluster.get_xyalpha_coordinates.return_value = (sqrt(2) / 2, sqrt(2) / 2, pi / 8)
-            station = clusters.Station(cluster, (0, 0), 0, [(0, 0, 'LR')])
+            station = clusters.Station(cluster, 1, (0, 0), 0, [(0, 0, 'LR')])
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2, pi / 8))
 
             # Station *and* cluster not in origin and cluster rotated
             cluster.get_xyalpha_coordinates.return_value = (0, 10, pi / 2)
-            station = clusters.Station(cluster, (0, 5), 0, [(0, 0, 'LR')])
+            station = clusters.Station(cluster, 1, (0, 5), 0, [(0, 0, 'LR')])
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (-5, 10, pi / 2))
 
             # Station *and* cluster not in origin and cluster *and* station rotated
             cluster.get_xyalpha_coordinates.return_value = (0, 10, pi / 2)
-            station = clusters.Station(cluster, (0, 5), pi / 4, [(0, 0, 'LR')])
+            station = clusters.Station(cluster, 1, (0, 5), pi / 4, [(0, 0, 'LR')])
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (-5, 10, 3 * pi / 4))
 
@@ -120,7 +120,7 @@ class StationTests(unittest.TestCase):
         station_xyalpha = (sqrt(2), sqrt(2), pi / 4)
 
         cluster = Mock()
-        station = clusters.Station(cluster, Mock(), Mock(), [])
+        station = clusters.Station(cluster, 1, Mock(), Mock(), [])
 
         with patch.object(clusters.Station, 'get_xyalpha_coordinates') as mock_xyalpha:
             mock_xyalpha.return_value = station_xyalpha
@@ -136,26 +136,26 @@ class StationTests(unittest.TestCase):
 
         # Trivial
         cluster.get_xyalpha_coordinates.return_value = (0, 0, 0)
-        station = clusters.Station(cluster, position=(0, 0), angle=0,
+        station = clusters.Station(cluster, 1, position=(0, 0), angle=0,
                                    detectors=[(0, 0, 'LR')])
         coordinates = station.get_rphialpha_coordinates()
         self.assertEqual(coordinates, (0, 0, 0))
 
         # Cluster not in origin and rotated
         cluster.get_xyalpha_coordinates.return_value = (sqrt(2) / 2, sqrt(2) / 2, pi / 8)
-        station = clusters.Station(cluster, (0, 0), 0, [(0, 0, 'LR')])
+        station = clusters.Station(cluster, 1, (0, 0), 0, [(0, 0, 'LR')])
         coordinates = station.get_rphialpha_coordinates()
         self.assertTupleAlmostEqual(coordinates, (1, pi / 4, pi / 8))
 
         # Station *and* cluster not in origin and cluster rotated
         cluster.get_xyalpha_coordinates.return_value = (0, 10, pi / 2)
-        station = clusters.Station(cluster, (0, 5), 0, [(0, 0, 'LR')])
+        station = clusters.Station(cluster, 1, (0, 5), 0, [(0, 0, 'LR')])
         coordinates = station.get_rphialpha_coordinates()
         self.assertTupleAlmostEqual(coordinates, (sqrt(125), 2.0344439357957027, pi / 2))
 
         # Station *and* cluster not in origin and cluster *and* station rotated
         cluster.get_xyalpha_coordinates.return_value = (0, 10, pi / 2)
-        station = clusters.Station(cluster, (0, 5), pi / 4, [(0, 0, 'LR')])
+        station = clusters.Station(cluster, 1, (0, 5), pi / 4, [(0, 0, 'LR')])
         coordinates = station.get_rphialpha_coordinates()
         self.assertTupleAlmostEqual(coordinates, (sqrt(125), 2.0344439357957027, 3 * pi / 4))
 
@@ -177,7 +177,7 @@ class BaseClusterTests(unittest.TestCase):
             angle = Mock(name='angle')
             detector_list = Mock(name='detector_list')
             cluster._add_station(pos, angle, detector_list)
-            mock_station.assert_called_with(cluster, pos, angle, detector_list)
+            mock_station.assert_called_with(cluster, 1, pos, angle, detector_list)
 
     def test_attributes(self):
         with patch('clusters.Station') as mock_station:
