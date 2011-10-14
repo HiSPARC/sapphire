@@ -23,18 +23,21 @@ class DetectorTests(unittest.TestCase):
         self.assertEqual(self.detector_1.orientation, 'LR')
 
     def test_LR_get_corners(self):
-        corners = self.detector_1.get_corners(0.25, 3, 0)
+        self.mock_station.get_xyalpha_coordinates.return_value = (.25, 3, 0)
+        corners = self.detector_1.get_corners()
         self.assertEqual(corners, [(.75, 2.75), (1.75, 2.75), (1.75, 3.25), (.75, 3.25)])
 
     def test_LR_get_corners_rotated(self):
-        corners = self.detector_1.get_corners(0, 0, pi / 2)
+        self.mock_station.get_xyalpha_coordinates.return_value = (0, 0, pi / 2)
+        corners = self.detector_1.get_corners()
         expected_corners = [(.25, .5), (.25, 1.5), (-.25, 1.5), (-.25, .5)]
         for (x, y), (expected_x, expected_y) in zip(corners, expected_corners):
             self.assertAlmostEqual(x, expected_x)
             self.assertAlmostEqual(y, expected_y)
 
     def test_UD_get_corners(self):
-        corners = self.detector_2.get_corners(0.25, 3, 0)
+        self.mock_station.get_xyalpha_coordinates.return_value = (.25, 3, 0)
+        corners = self.detector_2.get_corners()
         self.assertEqual(corners, [(-1, 4.5), (-.5, 4.5), (-.5, 5.5), (-1, 5.5)])
 
 

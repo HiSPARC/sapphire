@@ -73,12 +73,10 @@ class GroundParticlesSimulation(object):
             r = np.sqrt(np.random.uniform(0, self.R ** 2))
             yield r, phi, alpha
 
-    def get_station_particles(self, station, X, Y, alpha):
+    def get_station_particles(self, station):
         """Return all particles hitting a station
 
         :param station: station definition
-        :param X, Y: coordinates of station center
-        :param alpha: rotation angle of station
 
         :return: list of detectors containing list of particles
         :rtype: list of lists
@@ -87,24 +85,22 @@ class GroundParticlesSimulation(object):
         particles = []
 
         for detector in station.detectors:
-            particles.append(self.get_detector_particles(X, Y, detector,
-                                                         alpha))
+            particles.append(self.get_detector_particles(detector))
         return particles
 
-    def get_detector_particles(self, X, Y, detector, alpha):
+    def get_detector_particles(self, detector):
         """Return all particles hitting a single detector
 
         Given a HDF5 table containing information on all simulated particles
         and coordinates and orientation of a detector, search for all
         particles which have hit the detector.
 
-        :param X, Y: X, Y coordinates of center of station
-        :param alpha: rotation angle of entire station
+        :param detector: Detector instance
 
         :return: list of particles which have hit the detector
 
         """
-        c = detector.get_corners(X, Y, alpha)
+        c = detector.get_corners()
 
         # determine equations describing detector edges
         b11, line1, b12 = self.get_line_boundary_eqs(c[0], c[1], c[2])
@@ -230,7 +226,7 @@ Number of cluster positions in simulation: %d
             s_phi = atan2(y, x)
             self.write_header(event_id, station_id, s_r, s_phi, beta)
 
-            plist = self.get_station_particles(station, x, y, beta)
+            plist = self.get_station_particles(station)
             self.write_detector_particles(event_id, station_id, plist)
 
     def write_header(self, event_id, station_id, r, phi, alpha):

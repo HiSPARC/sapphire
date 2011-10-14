@@ -100,27 +100,22 @@ class BaseSimulationTests(unittest.TestCase):
         station = Mock()
         station.detectors = detectors
 
-        # mock simple args
-        X, Y = sentinel.X, sentinel.Y
-        alpha = sentinel.alpha
-
         # mock get_detector_particles
         results = [sentinel.result2, sentinel.result1]
         get_detector_particles = Mock(side_effect=lambda * args: results.pop())
         self.simulation.get_detector_particles = get_detector_particles
 
-        particles = self.simulation.get_station_particles(station, X, Y, alpha)
+        particles = self.simulation.get_station_particles(station)
 
         # assertions
-        get_detector_particles.assert_called_with(X, Y, detectors[1], alpha)
+        get_detector_particles.assert_called_with(detectors[1])
         pop_last_call(get_detector_particles)
-        get_detector_particles.assert_called_with(X, Y, detectors[0], alpha)
+        get_detector_particles.assert_called_with(detectors[0])
         self.assertEqual(particles, [sentinel.result1, sentinel.result2])
 
     def test_get_detector_particles(self):
         # I'm not terribly sure how much this helps...
 
-        X, Y, alpha = sentinel.X, sentinel.Y, sentinel.alpha
         detector = Mock()
         corners = [Mock(), Mock(), Mock(), Mock()]
         detector.get_corners.return_value = corners
@@ -130,7 +125,7 @@ class BaseSimulationTests(unittest.TestCase):
         get_line_boundary_eqs.side_effect = lambda * args: eqs_results.pop()
         self.simulation.get_line_boundary_eqs = get_line_boundary_eqs
 
-        results = self.simulation.get_detector_particles(X, Y, detector, alpha)
+        results = self.simulation.get_detector_particles(detector)
         self.simulation.grdpcles.readWhere.assert_called_with(
             "(b11 < y + x) & (y + x < b12) & (b21 < y - x) & (y - x < b22)")
         self.assertIs(results, self.simulation.grdpcles.readWhere.return_value)
@@ -153,17 +148,22 @@ class BaseSimulationTests(unittest.TestCase):
 
     def test_get_detector_particles_with_real_data(self):
         simulation = self.setup_simulation_with_real_data()
-        detector = clusters.Detector(sentinel.station, 0, 0, 'UD')
 
-        particles = simulation.get_detector_particles(0, 0, detector, 0)
+        station = Mock()
+        detector = clusters.Detector(station, 0, 0, 'UD')
+
+        station.get_xyalpha_coordinates.return_value = (0, 0, 0)
+        particles = simulation.get_detector_particles(detector)
         ids = [x['id'] for x in particles]
         self.assertEqual(ids, [0, 1, 2, 5])
 
-        particles = simulation.get_detector_particles(.2, 0, detector, 0)
+        station.get_xyalpha_coordinates.return_value = (.2, 0, 0)
+        particles = simulation.get_detector_particles(detector)
         ids = [x['id'] for x in particles]
         self.assertEqual(ids, [0, 1, 3, 5])
 
-        particles = simulation.get_detector_particles(.2, 0, detector, -pi / 4)
+        station.get_xyalpha_coordinates.return_value = (.2, 0, -pi / 4)
+        particles = simulation.get_detector_particles(detector)
         ids = [x['id'] for x in particles]
         self.assertEqual(ids, [0, 3, 5])
 

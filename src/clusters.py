@@ -35,16 +35,15 @@ class Detector(object):
     def detector_size(self):
         return self.__detector_size
 
-    def get_corners(self, X, Y, alpha):
+    def get_corners(self):
         """Get the x, y coordinates of the detector corners
-
-        :param X, Y: X, Y coordinates of center of station
-        :param alpha: rotation angle of entire station
 
         :return: x, y coordinates of detector corners
         :rtype: list of (x, y) tuples
 
         """
+        X, Y, alpha = self.station.get_xyalpha_coordinates()
+
         x = self.x
         y = self.y
         orientation = self.orientation
