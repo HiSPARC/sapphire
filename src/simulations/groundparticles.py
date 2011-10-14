@@ -220,10 +220,7 @@ Number of cluster positions in simulation: %d
         self.cluster.set_rphialpha_coordinates(r, phi, alpha)
         self.write_header(event_id, 0, r, phi, alpha)
         for station_id, station in enumerate(self.cluster.stations, 1):
-            x, y, beta = station.get_xyalpha_coordinates()
-            # calculate station r, phi just to save it in header
-            s_r = sqrt(x ** 2 + y ** 2)
-            s_phi = atan2(y, x)
+            s_r, s_phi, beta = station.get_rphialpha_coordinates()
             self.write_header(event_id, station_id, s_r, s_phi, beta)
 
             plist = self.get_station_particles(station)
