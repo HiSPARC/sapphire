@@ -35,6 +35,9 @@ class Detector(object):
     def detector_size(self):
         return self.__detector_size
 
+    def get_area(self):
+        return self.__detector_size[0] * self.__detector_size[1]
+
     def get_xy_coordinates(self):
         X, Y, alpha = self.station.get_xyalpha_coordinates()
         return X + self.x, Y + self.y

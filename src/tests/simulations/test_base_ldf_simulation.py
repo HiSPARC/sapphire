@@ -1,8 +1,10 @@
 from mock import sentinel, Mock, patch, MagicMock
 import unittest
+from math import pi, sqrt
 
 from simulations.ldf import BaseLdfSimulation
 from simulations.base import BaseSimulation
+import clusters
 
 
 class BaseLdfSimulationTest(unittest.TestCase):
@@ -77,9 +79,42 @@ class BaseLdfSimulationTest(unittest.TestCase):
         self.simulation.simulate_detector_observables.assert_called_once_with(sentinel.detector1, sentinel.event)
         self.simulation.write_observables.assert_called_with(station, sentinel.n1, sentinel.n2, sentinel.n3, sentinel.n4)
 
-    @unittest.skip("WIP")
     def test_simulate_detector_observables(self):
-        pass
+        area = .5
+        detector = Mock()
+        detector.get_area.return_value = area
+
+        N = 4.2
+        self.simulation.calculate_core_distance = Mock()
+        self.simulation.calculate_core_distance.return_value = sentinel.R
+        self.simulation.calculate_ldf_value = Mock()
+        self.simulation.calculate_ldf_value.return_value = N
+
+        event = sentinel.event
+
+        num_particles = self.simulation.simulate_detector_observables(detector, event)
+
+        self.assertEqual(num_particles, N * area)
+        self.simulation.calculate_core_distance.assert_called_once_with(detector, event)
+        self.simulation.calculate_ldf_value.assert_called_once_with(sentinel.R)
+        detector.get_area.assert_called_once_with()
+
+    def test_calculate_core_distance(self):
+        detector = Mock()
+        detector.get_position.return_value = (4, 5)
+        event = {'r': sqrt(2), 'phi': 3 * pi / 4}
+
+        distance = sqrt((4 - -1) ** 2 + (5 - 1) ** 2)
+
+        R = self.simulation.calculate_core_distance(detector, event)
+
+        self.assertEqual(R, distance)
+
+    def test_calculate_ldf_value(self):
+        """The base class should NOT return particles"""
+
+        value = self.simulation.calculate_ldf_value(sentinel.R)
+        self.assertEqual(value, 0.)
 
     def test_write_observables(self):
         station = Mock()

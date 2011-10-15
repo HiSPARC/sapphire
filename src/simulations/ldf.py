@@ -1,4 +1,4 @@
-from math import sin, cos
+from math import sin, cos, sqrt
 
 from base import BaseSimulation
 
@@ -8,6 +8,9 @@ class BaseLdfSimulation(BaseSimulation):
         Not using an EAS simulation but rather a lateral distribution function
         as the model for the detector simulation considerably speeds up the
         complete process.  However, we will have to validate the use of an LDF.
+
+        This is the base class, so there is no LDF defined.  Override
+        calculate_ldf_value to complete an implementation.
 
     """
     def run(self, positions=None):
@@ -52,7 +55,21 @@ class BaseLdfSimulation(BaseSimulation):
         return sum([True if u >= 1 else False for u in num_particles])
 
     def simulate_detector_observables(self, detector, event):
-        x, y = detector.get_position()
+        R = self.calculate_core_distance(detector, event)
+        N = self.calculate_ldf_value(R)
+        return N * detector.get_area()
+
+    def calculate_core_distance(self, detector, event):
+        r, phi = event['r'], event['phi']
+        x = r * cos(phi)
+        y = r * sin(phi)
+
+        X, Y = detector.get_position()
+
+        return sqrt((x - X) ** 2 + (y - Y) ** 2)
+
+    def calculate_ldf_value(self, R):
+        return 0.
 
     def write_observables(self, station, event, n1, n2, n3, n4):
         """Write observables from a single event

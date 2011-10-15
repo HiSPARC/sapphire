@@ -16,6 +16,9 @@ class DetectorTests(unittest.TestCase):
         self.assertEqual(self.detector_1.detector_size, (.5, 1.))
         self.assertEqual(self.detector_2.detector_size, (.5, 1.))
 
+    def test_get_area(self):
+        self.assertEqual(self.detector_1.get_area(), .5)
+
     def test_attributes(self):
         self.assertIs(self.detector_1.station, self.mock_station)
         self.assertEqual(self.detector_1.x, 1)
