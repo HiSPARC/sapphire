@@ -33,8 +33,8 @@ class DetectorTests(unittest.TestCase):
         self.mock_station.get_xyalpha_coordinates.return_value = (5, 6, pi / 2)
         coordinates_1 = self.detector_1.get_xy_coordinates()
         coordinates_2 = self.detector_2.get_xy_coordinates()
-        self.assertEqual(coordinates_1, (6, 6))
-        self.assertEqual(coordinates_2, (4, 8))
+        self.assertEqual(coordinates_1, (5, 7))
+        self.assertEqual(coordinates_2, (3, 5))
 
     def test_LR_get_corners(self):
         self.mock_station.get_xyalpha_coordinates.return_value = (.25, 3, 0)

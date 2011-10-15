@@ -40,7 +40,12 @@ class Detector(object):
 
     def get_xy_coordinates(self):
         X, Y, alpha = self.station.get_xyalpha_coordinates()
-        return X + self.x, Y + self.y
+
+        sina = sin(alpha)
+        cosa = cos(alpha)
+        x, y = self.x * cosa - self.y * sina, self.x * sina + self.y * cosa
+
+        return X + x, Y + y
 
     def get_corners(self):
         """Get the x, y coordinates of the detector corners
@@ -68,11 +73,10 @@ class Detector(object):
         else:
             raise Exception("Unknown detector orientation: %s" % orientation)
 
-        if alpha is not None:
-            sina = sin(alpha)
-            cosa = cos(alpha)
-            corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
-                       corners]
+        sina = sin(alpha)
+        cosa = cos(alpha)
+        corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
+                   corners]
 
         return [(X + x, Y + y) for x, y in corners]
 
