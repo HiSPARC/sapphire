@@ -48,27 +48,29 @@ class BaseLdfSimulationTest(unittest.TestCase):
 
         self.simulation.cluster.stations = [sentinel.station]
         event = MagicMock()
-        event.__getitem__.return_value = sentinel.event_id
 
         self.simulation.simulate_event(event)
 
         self.simulation.simulate_station_observables_and_return_has_triggered_and_eventid.assert_called_with(sentinel.station, event)
         self.simulation.write_coincidence.assert_called_with(event, 1)
-        event.__getitem__.assert_called_with('id')
-        self.simulation.c_index.append.assert_called_with((sentinel.event_id, [sentinel.station_event_id]))
+        self.simulation.c_index.append.assert_called_with([sentinel.station_event_id])
 
     def test_simulate_station_observables_and_return_has_triggered_and_eventid(self):
         self.simulation.simulate_detector_observables = Mock()
         num_particles = SideEffects([sentinel.n1, sentinel.n2, sentinel.n3, sentinel.n4])
         self.simulation.simulate_detector_observables.side_effect = num_particles
-        self.simulation.write_observables = Mock()
+        self.simulation.write_observables_and_return_id = Mock()
+        self.simulation.write_observables_and_return_id.return_value = 28
 
         station = Mock()
         station.detectors = [sentinel.detector1, sentinel.detector2,
                              sentinel.detector3, sentinel.detector4]
         event = sentinel.event
 
-        self.simulation.simulate_station_observables_and_return_has_triggered_and_eventid(station, event)
+        has_triggered, observables_id = self.simulation.simulate_station_observables_and_return_has_triggered_and_eventid(station, event)
+
+        self.assertEqual(has_triggered, True)
+        self.assertEqual(observables_id, 28)
 
         self.simulation.simulate_detector_observables.assert_called_with(sentinel.detector4, sentinel.event)
         pop_last_call(self.simulation.simulate_detector_observables)
@@ -77,7 +79,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
         self.simulation.simulate_detector_observables.assert_called_with(sentinel.detector2, sentinel.event)
         pop_last_call(self.simulation.simulate_detector_observables)
         self.simulation.simulate_detector_observables.assert_called_once_with(sentinel.detector1, sentinel.event)
-        self.simulation.write_observables.assert_called_with(station, sentinel.n1, sentinel.n2, sentinel.n3, sentinel.n4)
+        self.simulation.write_observables_and_return_id.assert_called_with(station, event, sentinel.n1, sentinel.n2, sentinel.n3, sentinel.n4)
 
     def test_simulate_detector_observables(self):
         area = .5
@@ -101,7 +103,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
 
     def test_calculate_core_distance(self):
         detector = Mock()
-        detector.get_position.return_value = (4, 5)
+        detector.get_xy_coordinates.return_value = (4, 5)
         event = {'r': sqrt(2), 'phi': 3 * pi / 4}
 
         distance = sqrt((4 - -1) ** 2 + (5 - 1) ** 2)
@@ -109,6 +111,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
         R = self.simulation.calculate_core_distance(detector, event)
 
         self.assertEqual(R, distance)
+        detector.get_xy_coordinates.assert_called_once_with()
 
     def test_calculate_ldf_value(self):
         """The base class should NOT return particles"""
@@ -116,18 +119,22 @@ class BaseLdfSimulationTest(unittest.TestCase):
         value = self.simulation.calculate_ldf_value(sentinel.R)
         self.assertEqual(value, 0.)
 
-    def test_write_observables(self):
+    @unittest.expectedFailure
+    def test_write_observables_and_return_id(self):
         station = Mock()
         station.station_id = sentinel.station_id
         station.get_xyalpha_coordinates.return_value = sentinel.x, sentinel.y, sentinel.alpha
         station.get_rphialpha_coordinates.return_value = sentinel.r, sentinel.phi, sentinel.alpha
         event = MagicMock()
         event.__getitem__.return_value = sentinel.event_id
-        n1, n2, n3, n4 = 5, 6, 7, 8
-
-        self.simulation.write_observables(station, event, n1, n2, n3, n4)
+        n1, n2, n3, n4 = 5, 6, 0, 8
 
         row = self.simulation.observables.row
+        row.__len__.return_value = 28
+
+        id = self.simulation.write_observables_and_return_id(station, event, n1, n2, n3, n4)
+
+        self.assertEqual(id, 27)
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'id', sentinel.event_id))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'station_id', sentinel.station_id))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'r', sentinel.r))
@@ -135,14 +142,14 @@ class BaseLdfSimulationTest(unittest.TestCase):
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'x', sentinel.x))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'y', sentinel.y))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'alpha', sentinel.alpha))
-        self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'N', 26))
+        self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'N', 3))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 't1', 0))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 't2', 0))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 't3', 0))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 't4', 0))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'n1', 5))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'n2', 6))
-        self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'n3', 7))
+        self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'n3', 0))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'n4', 8))
         self.simulation.observables.row.append.assert_called_once_with()
 
