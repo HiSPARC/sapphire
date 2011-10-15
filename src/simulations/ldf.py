@@ -17,6 +17,10 @@ class BaseLdfSimulation(BaseSimulation):
     # Number of MIPs required to go over threshold
     trig_threshold = .8
 
+    # Alternative for observables.nrows, which is only updated with a flush()
+    # We don't want to flush often, so we use (and update!) this instead
+    _observables_nrows = 0
+
 
     def run(self, positions=None):
         """Run a simulation
@@ -40,6 +44,8 @@ class BaseLdfSimulation(BaseSimulation):
 
         self.coincidences.flush()
         self.observables.flush()
+        # integrity check
+        assert(self._observables_nrows == self.observables.nrows)
         self.c_index.flush()
 
         self._run_exit_msg()
@@ -112,5 +118,6 @@ class BaseLdfSimulation(BaseSimulation):
         row['t1'], row['t2'], row['t3'], row['t4'] = 0, 0, 0, 0
         row['n1'], row['n2'], row['n3'], row['n4'] = n1, n2, n3, n4
         row.append()
+        self._observables_nrows += 1
 
-        return 0
+        return self._observables_nrows - 1

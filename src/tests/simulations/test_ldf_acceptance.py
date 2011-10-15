@@ -19,10 +19,6 @@ class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
         self.data.close()
         os.remove(data_path)
 
-    @unittest.skip("WIP")
-    def test_simulation_has_correct_c_index_indexes(self):
-        pass
-
     def create_tempfile_path(self):
         fd, path = tempfile.mkstemp('.h5')
         os.close(fd)

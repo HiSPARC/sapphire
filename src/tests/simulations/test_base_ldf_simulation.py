@@ -20,6 +20,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
     def test_run_generates_positions(self):
         self.simulation._run_welcome_msg = Mock()
         self.simulation._run_exit_msg = Mock()
+        self.simulation.observables.nrows = 0
         self.simulation.generate_positions = Mock()
         self.simulation.generate_positions.return_value = MagicMock()
         self.simulation.run()
@@ -28,6 +29,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
     def test_run_uses_positions(self):
         self.simulation._run_welcome_msg = Mock()
         self.simulation._run_exit_msg = Mock()
+        self.simulation.observables.nrows = 0
         self.simulation.generate_positions = Mock()
         self.simulation.run(MagicMock())
         self.assertFalse(self.simulation.generate_positions.called)
@@ -35,10 +37,12 @@ class BaseLdfSimulationTest(unittest.TestCase):
     def test_run(self):
         self.simulation._run_welcome_msg = Mock()
         self.simulation._run_exit_msg = Mock()
+        self.simulation.observables.nrows = 0
         self.simulation.simulate_event = Mock()
 
-        event = {'id': 0, 'r': sentinel.r, 'phi': sentinel.phi}
         self.simulation.run([(sentinel.r, sentinel.phi)])
+
+        event = {'id': 0, 'r': sentinel.r, 'phi': sentinel.phi}
         self.simulation.simulate_event.assert_called_with(event)
 
     def test_simulate_event(self):
@@ -119,7 +123,6 @@ class BaseLdfSimulationTest(unittest.TestCase):
         value = self.simulation.calculate_ldf_value(sentinel.R)
         self.assertEqual(value, 0.)
 
-    @unittest.expectedFailure
     def test_write_observables_and_return_id(self):
         station = Mock()
         station.station_id = sentinel.station_id
@@ -130,7 +133,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
         n1, n2, n3, n4 = 5, 6, 0, 8
 
         row = self.simulation.observables.row
-        row.__len__.return_value = 28
+        self.simulation._observables_nrows = 27
 
         id = self.simulation.write_observables_and_return_id(station, event, n1, n2, n3, n4)
 
@@ -152,6 +155,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'n3', 0))
         self.assertTrue(is_mock_previously_called_with(row.__setitem__, 'n4', 8))
         self.simulation.observables.row.append.assert_called_once_with()
+        self.assertEqual(self.simulation._observables_nrows, 28)
 
 class SideEffects:
     def __init__(self, response_list):
