@@ -1,4 +1,7 @@
-from math import sin, cos, sqrt
+from math import pi, sin, cos, sqrt
+from scipy.special import gamma
+import progressbar as pb
+import sys
 
 from base import BaseSimulation
 
@@ -38,7 +41,12 @@ class BaseLdfSimulation(BaseSimulation):
         if not positions:
             positions = self.generate_positions()
 
-        for event_id, (r, phi) in enumerate(positions):
+        progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
+                                                          pb.Bar(),
+                                                          pb.ETA()],
+                                  fd=sys.stderr)
+
+        for event_id, (r, phi) in progress(enumerate(positions)):
             event = {'id': event_id, 'r': r, 'phi': phi}
             self.simulate_event(event)
 
@@ -121,3 +129,41 @@ class BaseLdfSimulation(BaseSimulation):
         self._observables_nrows += 1
 
         return self._observables_nrows - 1
+
+
+class KascadeLdfSimulation(BaseLdfSimulation):
+    # shower parameters
+    _Ne = 10 ** 4.8
+    _s = .94
+    _r0 = 40.
+    _alpha = 1.5
+    _beta = 3.6
+
+    def __init__(self, *args, **kwargs):
+        self.cache_c_s_value()
+
+        super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
+
+    def cache_c_s_value(self):
+        self._c_s = self._c(self._s)
+
+    def run(self):
+        self.cache_c_s_value()
+
+        super(KascadeLdfSimulation, self).run()
+
+    def calculate_ldf_value(self, r):
+        Ne = self._Ne
+        s = self._s
+        c_s = self._c_s
+        r0 = self._r0
+        alpha = self._alpha
+        beta = self._beta
+
+        return Ne * c_s * (r / r0) ** (s - alpha) * (1 + r / r0) ** (s - beta)
+
+    def _c(self, s):
+        r0 = self._r0
+        beta = self._beta
+        alpha = self._alpha
+        return gamma(beta - s) / (2 * pi * r0 ** 2 * gamma(s - alpha + 2) * gamma(alpha + beta - 2 * s - 2))

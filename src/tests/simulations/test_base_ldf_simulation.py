@@ -17,6 +17,11 @@ class BaseLdfSimulationTest(unittest.TestCase):
 
         self.simulation = BaseLdfSimulation(cluster, data, output, R, N)
 
+        # make progressbar(list) do nothing (i.e., return list)
+        self.progressbar_patcher = patch('progressbar.ProgressBar')
+        self.progressbar_mock = self.progressbar_patcher.start()
+        self.progressbar_mock.return_value.side_effect = lambda x: x
+
     def test_run_generates_positions(self):
         self.simulation._run_welcome_msg = Mock()
         self.simulation._run_exit_msg = Mock()
