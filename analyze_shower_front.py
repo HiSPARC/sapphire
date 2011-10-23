@@ -23,8 +23,8 @@ def scatterplot_core_distance_vs_time():
     electrons = sim.electrons
 
     plt.loglog(electrons[:]['core_distance'], electrons[:]['arrival_time'], ',')
-    plt.xlim(xmin=1e0)
-    plt.ylim(ymin=1e-3)
+    plt.xlim(1e0, 1e2)
+    plt.ylim(1e-3, 1e3)
 
     plt.xlabel("Core distance [m]")
     plt.ylabel("Arrival time [ns]")
@@ -38,7 +38,7 @@ def median_core_distance_vs_time():
     sim = data.root.showers.E_1PeV.zenith_0
     electrons = sim.electrons
 
-    bins = np.logspace(0, 3, 25)
+    bins = np.logspace(0, 2, 25)
     x, y = [], []
     for low, high in zip(bins[:-1], bins[1:]):
         sel = electrons.readWhere('(low < core_distance) & (core_distance <= high)')
@@ -60,7 +60,7 @@ def boxplot_core_distance_vs_time():
     sim = data.root.showers.E_1PeV.zenith_0
     electrons = sim.electrons
 
-    bins = np.logspace(0, 3, 25)
+    bins = np.logspace(0, 2, 25)
     x, arrival_time, widths = [], [], []
     for low, high in zip(bins[:-1], bins[1:]):
         sel = electrons.readWhere('(low < core_distance) & (core_distance <= high)')
@@ -73,7 +73,7 @@ def boxplot_core_distance_vs_time():
     plt.xscale('log')
     plt.yscale('log')
 
-    plt.xlim(1e0, 1e3)
+    plt.xlim(1e0, 1e2)
 
     plt.xlabel("Core distance [m]")
     plt.ylabel("Arrival time [ns]")
@@ -87,7 +87,7 @@ def hists_core_distance_vs_time():
     sim = data.root.showers.E_1PeV.zenith_0
     electrons = sim.electrons
 
-    bins = np.logspace(0, 3, 5)
+    bins = np.logspace(0, 2, 5)
     for low, high in zip(bins[:-1], bins[1:]):
         sel = electrons.readWhere('(low < core_distance) & (core_distance <= high)')
         arrival_time = sel[:]['arrival_time']
