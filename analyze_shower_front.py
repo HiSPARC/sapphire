@@ -1,6 +1,7 @@
 import tables
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 
 import utils
 
@@ -48,8 +49,17 @@ def median_core_distance_vs_time():
 
     plt.loglog(x, y)
 
+    logx = log10(x)
+    logy = log10(y)
+    logf = lambda x, a, b: a * x + b
+    g = lambda x, a, b: 10 ** logf(log10(x), a, b)
+    popt, pcov = curve_fit(logf, logx, logy)
+    plot(x, g(x, *popt), label="f(x) = %.2f * x ^ %.2f" % (10 ** popt[1],
+                                                           popt[0]))
+
     plt.xlabel("Core distance [m]")
     plt.ylabel("Median arrival time [ns]")
+    legend()
 
     utils.title("Shower front timing structure")
     utils.saveplot()
