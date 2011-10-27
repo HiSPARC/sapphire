@@ -2,6 +2,7 @@ import tables
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from scipy.stats import scoreatpercentile
 
 import utils
 
@@ -11,10 +12,10 @@ def main():
     data = tables.openFile('data-e15-S250.h5', 'r')
     utils.set_suffix('E_1PeV')
 
-    scatterplot_core_distance_vs_time()
+    #scatterplot_core_distance_vs_time()
     median_core_distance_vs_time()
-    boxplot_core_distance_vs_time()
-    hists_core_distance_vs_time()
+    #boxplot_core_distance_vs_time()
+    #hists_core_distance_vs_time()
 
 
 def scatterplot_core_distance_vs_time():
@@ -35,7 +36,16 @@ def scatterplot_core_distance_vs_time():
 
 def median_core_distance_vs_time():
     plt.figure()
+    plot_and_fit_statistic(lambda a: scoreatpercentile(a, 25))
+    plot_and_fit_statistic(lambda a: scoreatpercentile(a, 75))
 
+    utils.title("Shower front timing structure (25, 75 %)")
+    utils.saveplot()
+    plt.xlabel("Core distance [m]")
+    plt.ylabel("Median arrival time [ns]")
+    legend(loc='lower right')
+
+def plot_and_fit_statistic(func):
     sim = data.root.showers.E_1PeV.zenith_0
     electrons = sim.electrons
 
@@ -43,9 +53,9 @@ def median_core_distance_vs_time():
     x, y = [], []
     for low, high in zip(bins[:-1], bins[1:]):
         sel = electrons.readWhere('(low < core_distance) & (core_distance <= high)')
-        median_arrival_time = np.median(sel[:]['arrival_time'])
+        statistic = func(sel[:]['arrival_time'])
         x.append(np.mean([low, high]))
-        y.append(median_arrival_time)
+        y.append(statistic)
 
     plt.loglog(x, y)
 
@@ -54,15 +64,8 @@ def median_core_distance_vs_time():
     logf = lambda x, a, b: a * x + b
     g = lambda x, a, b: 10 ** logf(log10(x), a, b)
     popt, pcov = curve_fit(logf, logx, logy)
-    plot(x, g(x, *popt), label="f(x) = %.2f * x ^ %.2f" % (10 ** popt[1],
+    plot(x, g(x, *popt), label="f(x) = %.2e * x ^ %.2e" % (10 ** popt[1],
                                                            popt[0]))
-
-    plt.xlabel("Core distance [m]")
-    plt.ylabel("Median arrival time [ns]")
-    legend()
-
-    utils.title("Shower front timing structure")
-    utils.saveplot()
 
 def boxplot_core_distance_vs_time():
     plt.figure()
