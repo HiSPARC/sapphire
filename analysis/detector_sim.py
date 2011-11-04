@@ -19,7 +19,7 @@ import clusters
 from simulations import GroundParticlesSimulation, QSubSimulation
 
 
-DATAFILE = 'data-e15.h5'
+DATAFILE = 'data.h5'
 
 
 if __name__ == '__main__':

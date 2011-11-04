@@ -15,7 +15,7 @@ from storage import Particle
 
 from numpy import *
 
-DATA_FILE = 'data-e15-S250.h5'
+DATA_FILE = 'data.h5'
 
 
 def save_particle(row, p, id):
@@ -82,5 +82,5 @@ def store_aires_data(data, group, file):
 
 if __name__ == '__main__':
     data = tables.openFile(DATA_FILE, 'a')
-    store_aires_data(data, '/showers/E_1PeV/zenith_0_2',
-                     'aires/showere15-angle-0-2.grdpcles')
+    store_aires_data(data, '/showers/E_1PeV/zenith_0',
+                     '../aires/showere15-angle-0.grdpcles')
