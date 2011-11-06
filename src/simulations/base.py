@@ -54,6 +54,8 @@ class BaseSimulation(object):
         self.c_index = self.data.createVLArray(self.output, 'c_index',
                                                tables.UInt32Atom())
 
+        self.output._v_attrs.cluster = cluster
+
     def run(self, positions=None):
         """Run a simulation
 
