@@ -18,16 +18,32 @@ class CoreReconstruction(object):
             x, y, alpha = station.get_xyalpha_coordinates()
             scatter(x, y, c='orange', s=10, edgecolor='none')
 
-    def plot_coincidence(self, index=0, multiplicity=3):
+    def plot_coincidence_twice(self, index=0, multiplicity=3):
         clf()
+        subplot(121)
+        self.do_plot_coincidence(index, multiplicity, use_detectors=False)
+        subplot(122)
+        self.do_plot_coincidence(index, multiplicity, use_detectors=True)
+
+    def plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
+        clf()
+        self.do_plot_coincidence(index, multiplicity, use_detectors)
+
+    def do_plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
         coincidence = self.get_coincidence_with_multiplicity(index,
                                                              multiplicity)
 
-        self.plot_chi_squared_on_map(coincidence)
+        self.plot_chi_squared_on_map(coincidence, use_detectors)
         self.plot_coincidence_on_map(coincidence)
 
         for event in self.get_events_from_coincidence(coincidence):
             self.plot_event_on_map(event)
+
+        if use_detectors:
+            method = "individual detector signal"
+        else:
+            method = "station-averaged signal"
+        title("Coincidence (%d-fold) #%d\n%s" % (multiplicity, index, method))
 
     def get_coincidence_with_multiplicity(self, index, multiplicity):
         coincidences = self.simulation.coincidences.read()
@@ -43,21 +59,40 @@ class CoreReconstruction(object):
 
         return events
 
-    def plot_chi_squared_on_map(self, coincidence):
+    def plot_chi_squared_on_map(self, coincidence, use_detectors=False):
         solver = CorePositionSolver(KascadeLdf())
-        for event in self.get_events_from_coincidence(coincidence):
-            if self.station_has_triggered(event):
-                value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
-                solver.add_value_at_xy(event['x'], event['y'], value)
 
-        x = linspace(-200, 200, 100)
-        y = linspace(-200, 200, 100)
+        if use_detectors:
+            self.add_detector_measurements_to_solver(solver, coincidence)
+        else:
+            self.add_station_measurements_to_solver(solver, coincidence)
+
+        self.plot_chi_squared_contours(solver)
+
+    def plot_chi_squared_contours(self, solver):
+        x = linspace(-400, 400, 100)
+        y = linspace(-400, 400, 100)
         chi_squared = zeros((len(x), len(y)))
         for i in range(len(x)):
             for j in range(len(y)):
                 chi_squared[j][i] = solver.calculate_chi_squared_for_xy(x[i], y[j])
         contourf(x, y, log10(chi_squared), 50, cmap=cm.rainbow)
         colorbar()
+
+    def add_station_measurements_to_solver(self, solver, coincidence):
+        for event in self.get_events_from_coincidence(coincidence):
+            if self.station_has_triggered(event):
+                value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
+                solver.add_value_at_xy(event['x'], event['y'], value)
+
+    def add_detector_measurements_to_solver(self, solver, coincidence):
+        for event in self.get_events_from_coincidence(coincidence):
+            station = self.get_station_from_event(event)
+            if self.station_has_triggered(event):
+                for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
+                    x, y = detector.get_xy_coordinates()
+                    value = event[idx] / .5
+                    solver.add_value_at_xy(x, y, value)
 
     def plot_coincidence_on_map(self, coincidence):
         scatter(coincidence['x'], coincidence['y'], c='b', s=10)
@@ -82,6 +117,10 @@ class CoreReconstruction(object):
             return True
         else:
             return False
+
+    def get_station_from_event(self, event):
+        station_id = event['station_id']
+        return self.cluster.stations[station_id - 1]
 
 
 class CorePositionSolver(object):
