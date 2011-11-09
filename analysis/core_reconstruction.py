@@ -132,9 +132,9 @@ class CorePositionSolver(object):
         self.values.append((x, y, value))
 
     def calculate_chi_squared_for_xy(self, guess_x, guess_y):
-        chi_squared = 0
+        chi_squared = 1
         for expected, observed in self.get_expected_observed(guess_x, guess_y):
-            chi_squared += (expected - observed) ** 2 / expected
+            chi_squared *= (expected - observed) ** 2 / expected
         return chi_squared
 
     def get_expected_observed(self, guess_x, guess_y):
