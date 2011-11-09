@@ -1,14 +1,20 @@
 import tables
+from itertools import combinations
 
 
 DATAFILE = 'data.h5'
 
 
 class CoreReconstruction(object):
-    def __init__(self, data, simulation_path):
+    def __init__(self, data, simulation_path, solver=None):
         self.data = data
         self.simulation = data.getNode(simulation_path)
         self.cluster = self.simulation._v_attrs.cluster
+
+        if solver is None:
+            self.solver = CorePositionSolver(KascadeLdf())
+        else:
+            self.solver = solver
 
     def draw_cluster(self):
         for station in self.cluster.stations:
@@ -60,7 +66,7 @@ class CoreReconstruction(object):
         return events
 
     def plot_chi_squared_on_map(self, coincidence, use_detectors=False):
-        solver = CorePositionSolver(KascadeLdf())
+        solver = self.solver
 
         if use_detectors:
             self.add_detector_measurements_to_solver(solver, coincidence)
@@ -70,13 +76,14 @@ class CoreReconstruction(object):
         self.plot_chi_squared_contours(solver)
 
     def plot_chi_squared_contours(self, solver):
+        mylog = vectorize(lambda x: log10(x) if x > 0 else -999.)
         x = linspace(-400, 400, 100)
         y = linspace(-400, 400, 100)
         chi_squared = zeros((len(x), len(y)))
         for i in range(len(x)):
             for j in range(len(y)):
                 chi_squared[j][i] = solver.calculate_chi_squared_for_xy(x[i], y[j])
-        contourf(x, y, log10(chi_squared), 50, cmap=cm.rainbow)
+        contourf(x, y, mylog(chi_squared), 50, cmap=cm.rainbow)
         colorbar()
 
     def add_station_measurements_to_solver(self, solver, coincidence):
@@ -132,9 +139,9 @@ class CorePositionSolver(object):
         self.values.append((x, y, value))
 
     def calculate_chi_squared_for_xy(self, guess_x, guess_y):
-        chi_squared = 1
+        chi_squared = 0
         for expected, observed in self.get_expected_observed(guess_x, guess_y):
-            chi_squared *= (expected - observed) ** 2 / expected
+            chi_squared += (expected - observed) ** 2 / expected
         return chi_squared
 
     def get_expected_observed(self, guess_x, guess_y):
@@ -150,6 +157,22 @@ class CorePositionSolver(object):
     def calculate_ldf_value_for_xy_xy(self, x0, y0, x1, y1):
         r = sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
         return self.ldf.calculate_ldf_value(r)
+
+
+class CorePositionCirclesSolver(CorePositionSolver):
+    def calculate_chi_squared_for_xy(self, guess_x, guess_y):
+        chi_squared = 1
+        for expected, observed in self.get_expected_observed(guess_x, guess_y):
+            chi_squared *= (expected - observed) ** 2 / expected
+        return chi_squared
+
+    def get_expected_observed(self, guess_x, guess_y):
+        for (x1, y1, value1), (x2, y2, value2) in combinations(self.values, 2):
+            ldf_value1 = self.calculate_ldf_value_for_xy_xy(x1, y1, guess_x, guess_y)
+            ldf_value2 = self.calculate_ldf_value_for_xy_xy(x2, y2, guess_x, guess_y)
+            expected = ldf_value1 / ldf_value2
+            observed = value1 / value2
+            yield expected, observed
 
 
 class KascadeLdf(object):
