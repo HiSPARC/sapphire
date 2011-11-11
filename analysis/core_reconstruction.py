@@ -32,7 +32,6 @@ class CoreReconstruction(object):
         self.do_plot_coincidence(index, multiplicity, use_detectors=True)
 
     def plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
-        clf()
         self.do_plot_coincidence(index, multiplicity, use_detectors)
 
     def do_plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
@@ -49,7 +48,7 @@ class CoreReconstruction(object):
             method = "individual detector signal"
         else:
             method = "station-averaged signal"
-        title("Coincidence (%d-fold) #%d\n%s" % (multiplicity, index, method))
+        title("Coincidence (%d-fold) #%d\n%s\n%s" % (multiplicity, index, method, type(self.solver).__name__))
 
     def get_coincidence_with_multiplicity(self, index, multiplicity):
         coincidences = self.simulation.coincidences.read()
@@ -163,13 +162,7 @@ class CorePositionSolver(object):
         return self._ldf.calculate_ldf_value(r)
 
 
-class CorePositionCirclesSolver(CorePositionSolver):
-    def calculate_chi_squared_for_xy(self, guess_x, guess_y):
-        chi_squared = 1
-        for expected, observed in self._get_expected_observed(guess_x, guess_y):
-            chi_squared *= (expected - observed) ** 2 / expected
-        return chi_squared
-
+class OverdeterminedCorePositionSolver(CorePositionSolver):
     def _get_expected_observed(self, guess_x, guess_y):
         for (x1, y1, value1), (x2, y2, value2) in combinations(self._measurements, 2):
             ldf_value1 = self._calculate_ldf_value_for_xy_xy(x1, y1, guess_x, guess_y)
@@ -177,6 +170,17 @@ class CorePositionCirclesSolver(CorePositionSolver):
             expected = ldf_value1 / ldf_value2
             observed = value1 / value2
             yield expected, observed
+
+
+class CorePositionCirclesSolver(CorePositionSolver):
+    def calculate_chi_squared_for_xy(self, guess_x, guess_y):
+        chi_squared = 1
+        for expected, observed in self._get_expected_observed(guess_x, guess_y):
+            chi_squared *= (expected - observed) ** 2 / expected
+        return chi_squared
+
+class OverdeterminedCorePositionCirclesSolver(CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
+    pass
 
 
 class KascadeLdf(object):
@@ -213,6 +217,25 @@ class KascadeLdf(object):
         beta = self._beta
         alpha = self._alpha
         return gamma(beta - s) / (2 * pi * r0 ** 2 * gamma(s - alpha + 2) * gamma(alpha + beta - 2 * s - 2))
+
+
+def plot_minimal_and_overdetermined_solver(index, multiplicity, use_detectors=False, use_circles=False):
+    ldf = KascadeLdf()
+
+    if not use_circles:
+        minimal_solver = CorePositionSolver(ldf)
+        overdetermined_solver = OverdeterminedCorePositionSolver(ldf)
+    else:
+        minimal_solver = CorePositionCirclesSolver(ldf)
+        overdetermined_solver = OverdeterminedCorePositionCirclesSolver(ldf)
+
+    minimal_solver_reconstruction = CoreReconstruction(data, '/ldfsim', solver=minimal_solver)
+    overdetermined_solver_reconstruction = CoreReconstruction(data, '/ldfsim', solver=overdetermined_solver)
+
+    subplot(121)
+    minimal_solver_reconstruction.plot_coincidence(index, multiplicity, use_detectors)
+    subplot(122)
+    overdetermined_solver_reconstruction.plot_coincidence(index, multiplicity, use_detectors)
 
 
 if __name__ == '__main__':
