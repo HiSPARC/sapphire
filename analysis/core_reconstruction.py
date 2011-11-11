@@ -67,6 +67,7 @@ class CoreReconstruction(object):
 
     def plot_chi_squared_on_map(self, coincidence, use_detectors=False):
         solver = self.solver
+        solver.reset_measurements()
 
         if use_detectors:
             self.add_detector_measurements_to_solver(solver, coincidence)
@@ -90,7 +91,7 @@ class CoreReconstruction(object):
         for event in self.get_events_from_coincidence(coincidence):
             if self.station_has_triggered(event):
                 value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
-                solver.add_value_at_xy(event['x'], event['y'], value)
+                solver.add_measurement_at_xy(event['x'], event['y'], value)
 
     def add_detector_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
@@ -99,7 +100,7 @@ class CoreReconstruction(object):
                 for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
                     x, y = detector.get_xy_coordinates()
                     value = event[idx] / .5
-                    solver.add_value_at_xy(x, y, value)
+                    solver.add_measurement_at_xy(x, y, value)
 
     def plot_coincidence_on_map(self, coincidence):
         scatter(coincidence['x'], coincidence['y'], c='b', s=10)
@@ -132,44 +133,47 @@ class CoreReconstruction(object):
 
 class CorePositionSolver(object):
     def __init__(self, ldf):
-        self.values = []
-        self.ldf = ldf
+        self._measurements = []
+        self._ldf = ldf
 
-    def add_value_at_xy(self, x, y, value):
-        self.values.append((x, y, value))
+    def add_measurement_at_xy(self, x, y, value):
+        self._measurements.append((x, y, value))
+
+    def reset_measurements(self):
+        self._measurements = []
 
     def calculate_chi_squared_for_xy(self, guess_x, guess_y):
         chi_squared = 0
-        for expected, observed in self.get_expected_observed(guess_x, guess_y):
+        for expected, observed in self._get_expected_observed(guess_x, guess_y):
             chi_squared += (expected - observed) ** 2 / expected
         return chi_squared
 
-    def get_expected_observed(self, guess_x, guess_y):
-        x0, y0, value0 = self.values[0]
-        ldf_value0 = self.calculate_ldf_value_for_xy_xy(x0, y0, guess_x, guess_y)
+    def _get_expected_observed(self, guess_x, guess_y):
+        x0, y0, value0 = self._measurements[0]
+        ldf_value0 = self._calculate_ldf_value_for_xy_xy(x0, y0, guess_x, guess_y)
 
-        for x, y, value in self.values[1:]:
-            ldf_value = self.calculate_ldf_value_for_xy_xy(x, y, guess_x, guess_y)
+        for x, y, value in self._measurements[1:]:
+            ldf_value = self._calculate_ldf_value_for_xy_xy(x, y, guess_x, guess_y)
             expected = ldf_value / ldf_value0
             observed = value / value0
             yield expected, observed
 
-    def calculate_ldf_value_for_xy_xy(self, x0, y0, x1, y1):
+    def _calculate_ldf_value_for_xy_xy(self, x0, y0, x1, y1):
         r = sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
-        return self.ldf.calculate_ldf_value(r)
+        return self._ldf.calculate_ldf_value(r)
 
 
 class CorePositionCirclesSolver(CorePositionSolver):
     def calculate_chi_squared_for_xy(self, guess_x, guess_y):
         chi_squared = 1
-        for expected, observed in self.get_expected_observed(guess_x, guess_y):
+        for expected, observed in self._get_expected_observed(guess_x, guess_y):
             chi_squared *= (expected - observed) ** 2 / expected
         return chi_squared
 
-    def get_expected_observed(self, guess_x, guess_y):
-        for (x1, y1, value1), (x2, y2, value2) in combinations(self.values, 2):
-            ldf_value1 = self.calculate_ldf_value_for_xy_xy(x1, y1, guess_x, guess_y)
-            ldf_value2 = self.calculate_ldf_value_for_xy_xy(x2, y2, guess_x, guess_y)
+    def _get_expected_observed(self, guess_x, guess_y):
+        for (x1, y1, value1), (x2, y2, value2) in combinations(self._measurements, 2):
+            ldf_value1 = self._calculate_ldf_value_for_xy_xy(x1, y1, guess_x, guess_y)
+            ldf_value2 = self._calculate_ldf_value_for_xy_xy(x2, y2, guess_x, guess_y)
             expected = ldf_value1 / ldf_value2
             observed = value1 / value2
             yield expected, observed
