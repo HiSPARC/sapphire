@@ -232,3 +232,20 @@ class SimpleCluster(BaseCluster):
         self._add_station((0, 0), 0, detectors)
         self._add_station((-A, -B), 2 * pi / 3, detectors)
         self._add_station((A, -B), -2 * pi / 3, detectors)
+
+class SingleStation(BaseCluster):
+    """Define a cluster containing a single station"""
+
+    def __init__(self):
+        """Build the cluster"""
+
+        super(SingleStation, self).__init__()
+
+        # calculate detector positions for a four-detector station
+        station_size = 10
+        a = station_size / 2
+        b = a / 3 * sqrt(3)
+        detectors = [(0., 2 * b, 'UD'), (0., 0., 'UD'),
+                     (-a, -b, 'LR'), (a, -b, 'LR')]
+
+        self._add_station((0, 0), 0, detectors)
