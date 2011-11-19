@@ -48,9 +48,9 @@ class BaseSimulation(object):
         head, tail = os.path.split(output)
         self.output = data.createGroup(head, tail, createparents=True)
         self.observables = self.data.createTable(self.output, 'observables',
-                                                 storage.ObservableEvent)
+                                                 storage.SimulationEventObservables)
         self.coincidences = self.data.createTable(self.output, 'coincidences',
-                                                  storage.CoincidenceEvent)
+                                                  storage.Coincidence)
         self.c_index = self.data.createVLArray(self.output, 'c_index',
                                                tables.UInt32Atom())
 

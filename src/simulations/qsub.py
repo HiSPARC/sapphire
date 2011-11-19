@@ -170,9 +170,9 @@ class QSubSimulation(GroundParticlesSimulation):
         """Collect all results into main HDF5 file"""
 
         headers = self.data.createTable(self.output, 'headers',
-                                         storage.SimulationHeader)
+                                         storage.SimulationEventHeader)
         particles = self.data.createTable(self.output, 'particles',
-                                         storage.ParticleEvent)
+                                         storage.SimulationParticle)
 
         base_id = 0
         for hash in hashes:
@@ -243,9 +243,9 @@ class QSubChild(GroundParticlesSimulation):
         positions = self.data.root.positions.read()
 
         self.headers = self.data.createTable(self.output, 'headers',
-                                             storage.SimulationHeader)
+                                             storage.SimulationEventHeader)
         self.particles = self.data.createTable(self.output, 'particles',
-                                               storage.ParticleEvent)
+                                               storage.SimulationParticle)
 
         N = 0
         prev = time.time()

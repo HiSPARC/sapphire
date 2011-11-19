@@ -173,9 +173,9 @@ class GroundParticlesSimulation(object):
             positions = self.generate_positions()
 
         self.headers = self.data.createTable(self.output, '_headers',
-                                             storage.SimulationHeader)
+                                             storage.SimulationEventHeader)
         self.particles = self.data.createTable(self.output, '_particles',
-                                               storage.ParticleEvent)
+                                               storage.SimulationParticle)
 
         progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),
                                                           pb.Bar(),
@@ -281,9 +281,9 @@ Number of cluster positions in simulation: %d
 
         """
         obs = self.data.createTable(self.output, 'observables',
-                                    storage.ObservableEvent)
+                                    storage.SimulationEventObservables)
         coinc = self.data.createTable(self.output, 'coincidences',
-                                      storage.CoincidenceEvent)
+                                      storage.Coincidence)
         c_index = self.data.createVLArray(self.output, 'c_index',
                                           tables.UInt32Atom())
 

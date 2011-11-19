@@ -176,7 +176,7 @@ class BaseSimulationTests(unittest.TestCase):
 
     def setup_datafile_with_real_data(self):
         data = tables.openFile('/tmp/tmp.h5', 'w')
-        grdpcles = data.createTable('/', 'grdpcles', storage.Particle)
+        grdpcles = data.createTable('/', 'grdpcles', storage.ShowerParticle)
         self.create_particle(grdpcles, 0, 0., 0.)
         self.create_particle(grdpcles, 1, .24, .49)
         self.create_particle(grdpcles, 2, -.24, -.49)
@@ -208,9 +208,9 @@ class BaseSimulationTests(unittest.TestCase):
         self.simulation.store_observables = Mock()
         self.simulation.run()
 
-        self.data.createTable.assert_called_with(self.simulation.output, '_particles', storage.ParticleEvent)
+        self.data.createTable.assert_called_with(self.simulation.output, '_particles', storage.SimulationParticle)
         pop_last_call(self.data.createTable)
-        self.data.createTable.assert_called_with(self.simulation.output, '_headers', storage.SimulationHeader)
+        self.data.createTable.assert_called_with(self.simulation.output, '_headers', storage.SimulationEventHeader)
         self.simulation.headers.flush.assert_called_with()
         self.simulation.particles.flush.assert_called_with()
         self.simulation.store_observables.assert_called_with()
