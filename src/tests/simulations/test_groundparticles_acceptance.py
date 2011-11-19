@@ -12,6 +12,8 @@ from simulations.groundparticles import GroundParticlesSimulation
 
 class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
     def test_simulation_results(self):
+        """Verify that simulation output matches prerecorded output"""
+
         data_path = self.create_tempfile_from_testdata()
         self.data = tables.openFile(data_path, 'a')
 

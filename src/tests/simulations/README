@@ -6,7 +6,7 @@ test.  So:
         2. Use store_aires_data.py to create a .h5 file containing ground
            particles data
         3. Copy that file to this directory as testdata.h5
-        4. In test_base_acceptance.BaseSimulationAcceptanceTest.create_test_simulation_output
+        4. In test_groundparticles_acceptance.GroundParticlesSimulationAcceptanceTest.create_test_simulation_output
            uncomment the line with '/simulations' and comment the line
            with '/test_output'.
         5. Run the test, which crashes because of missing test_output.
