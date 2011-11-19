@@ -4,21 +4,21 @@ import types
 import tables
 from numpy import array
 from math import pi, atan2, sqrt
-from mock import Mock, patch, sentinel
+from mock import Mock, MagicMock, patch, sentinel
 
 from simulations import groundparticles
 import clusters
 import storage
 
-class BaseSimulationTests(unittest.TestCase):
+class GroundParticleSimulationTests(unittest.TestCase):
     @patch('os.path.split')
     def setUp(self, os_path_split_mock):
-        self.output_head, self.output_tail = (Mock(name='output_head'),
-                                              Mock(name='output_tail'))
+        self.output_head, self.output_tail = (sentinel.output_head,
+                                              sentinel.output_tail)
         os_path_split_mock.return_value = self.output_head, self.output_tail
 
         self.cluster = sentinel.cluster
-        self.data = Mock(name='data')
+        self.data = MagicMock(name='data')
         self.grdpcles = sentinel.grdpcles
         self.output = sentinel.output
         self.R = sentinel.R
@@ -49,7 +49,7 @@ class BaseSimulationTests(unittest.TestCase):
     def test_init_raises_runtimeerror_if_grdpcles_not_found(self, os_path_split_mock):
         os_path_split_mock.return_value = Mock(), Mock()
 
-        data = Mock()
+        data = MagicMock()
         data.getNode.side_effect = tables.NoSuchNodeError
         with self.assertRaises(RuntimeError):
             groundparticles.GroundParticlesSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
@@ -59,15 +59,6 @@ class BaseSimulationTests(unittest.TestCase):
                                                  self.output_tail,
                                                  createparents=True)
         self.assertIs(self.simulation.output, self.data.createGroup.return_value)
-
-    @patch('os.path.split')
-    def test_init_raises_runtimeerror_if_creategroup_error(self, os_path_split_mock):
-        os_path_split_mock.return_value = Mock(), Mock()
-
-        data = Mock()
-        data.createGroup.side_effect = tables.NodeError
-        with self.assertRaises(RuntimeError):
-            groundparticles.GroundParticlesSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
 
     def test_generate_positions_is_generator(self):
         self.assertEqual(type(self.simulation.generate_positions()), types.GeneratorType)

@@ -12,9 +12,10 @@ import numpy as np
 from math import pi, sin, cos, atan2, sqrt, isinf
 
 import storage
+from base import BaseSimulation
 
 
-class GroundParticlesSimulation(object):
+class GroundParticlesSimulation(BaseSimulation):
 
     """Simulation based on a groundparticles table
 
@@ -37,30 +38,14 @@ class GroundParticlesSimulation(object):
             Only use this if you really know what you're doing!
 
         """
-        self.cluster = cluster
-        self.data = data
-        self.R = R
-        self.N = N
+
+        super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force)
 
         try:
             self.grdpcles = data.getNode('/', grdpcles)
         except tables.NoSuchNodeError:
-            if force:
-                self.grdpcles = None
-            else:
-                raise RuntimeError("Cancelling simulation; %s not found in "
-                                   "tree." % grdpcles)
-
-        head, tail = os.path.split(output)
-        try:
-            self.output = self.data.createGroup(head, tail,
-                                                createparents=True)
-        except tables.NodeError:
-            if force:
-                self.output = self.data.getNode(head, tail)
-            else:
-                raise RuntimeError("Cancelling simulation; %s already exists?"
-                                   % output)
+            raise RuntimeError("Cancelling simulation; %s not found in "
+                                "tree." % grdpcles)
 
     def generate_positions(self):
         """Generate positions and an orientation uniformly on a circle
@@ -280,13 +265,9 @@ Number of cluster positions in simulation: %d
         to now when to break.  The flow is a bit complicated, but it is fast.
 
         """
-        obs = self.data.createTable(self.output, 'observables',
-                                    storage.SimulationEventObservables)
-        coinc = self.data.createTable(self.output, 'coincidences',
-                                      storage.Coincidence)
-        c_index = self.data.createVLArray(self.output, 'c_index',
-                                          tables.UInt32Atom())
-
+        obs = self.observables
+        coinc = self.coincidences
+        c_index = self.c_index
 
         print "Storing observables from %s" % self.output._v_pathname
 
