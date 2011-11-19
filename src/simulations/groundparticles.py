@@ -320,7 +320,7 @@ Number of cluster positions in simulation: %d
                                     # finish business, but no new particles
                                     # will be processed
                                     particle['id'] = -1
-                        self.write_observables(obs_row, header, t)
+                        self.write_observables(header, t)
                         # trigger if Ndet hit >= 2
                         if sum([1 if u else 0 for u in t]) >= 2:
                             N += 1
@@ -333,7 +333,7 @@ Number of cluster positions in simulation: %d
             except StopIteration:
                 break
             finally:
-                self.write_coincidence(coinc_row, event, N)
+                self.write_coincidence(event, N)
                 c_index.append(c_list)
                 progress.update(header.nrow + 1)
         progress.finish()
@@ -341,32 +341,3 @@ Number of cluster positions in simulation: %d
         obs.flush()
         coinc.flush()
         print
-
-    def write_observables(self, row, station, t):
-        r = station['r']
-        phi = station['phi']
-        row['id'] = station['id']
-        row['station_id'] = station['station_id']
-        row['r'] = r
-        row['phi'] = phi
-        row['x'] = r * cos(phi)
-        row['y'] = r * sin(phi)
-        row['alpha'] = station['alpha']
-        row['N'] = sum([1 if u else 0 for u in t])
-        row['t1'], row['t2'], row['t3'], row['t4'] = \
-            [min(u) if len(u) else -999 for u in t]
-        row['n1'], row['n2'], row['n3'], row['n4'] = \
-            [len(u) for u in t]
-        row.append()
-
-    def write_coincidence(self, row, event, N):
-        r = event['r']
-        phi = event['phi']
-        row['id'] = event['id']
-        row['N'] = N
-        row['r'] = r
-        row['phi'] = phi
-        row['x'] = r * cos(phi)
-        row['y'] = r * sin(phi)
-        row['alpha'] = event['alpha']
-        row.append()

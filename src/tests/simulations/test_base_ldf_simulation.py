@@ -47,7 +47,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
 
         self.simulation.run([(sentinel.r, sentinel.phi)])
 
-        event = {'id': 0, 'r': sentinel.r, 'phi': sentinel.phi}
+        event = {'id': 0, 'r': sentinel.r, 'phi': sentinel.phi, 'alpha': 0.}
         self.simulation.simulate_event.assert_called_with(event)
 
     def test_simulate_event(self):
