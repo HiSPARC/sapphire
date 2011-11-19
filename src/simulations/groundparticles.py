@@ -39,13 +39,13 @@ class GroundParticlesSimulation(BaseSimulation):
 
         """
 
-        super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force)
-
         try:
             self.grdpcles = data.getNode('/', grdpcles)
         except tables.NoSuchNodeError:
             raise RuntimeError("Cancelling simulation; %s not found in "
                                 "tree." % grdpcles)
+
+        super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force)
 
     def generate_positions(self):
         """Generate positions and an orientation uniformly on a circle
