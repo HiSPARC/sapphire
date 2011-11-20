@@ -57,6 +57,7 @@ class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
         expected = expected.c_index.read()
         actual = actual.c_index.read()
 
+        self.assertEqual(len(expected), len(actual))
         # c_index is a list of arrays, so test accordingly
         for i, j in zip(expected, actual):
             self.assertTrue((i == j).all())
