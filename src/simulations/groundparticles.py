@@ -341,3 +341,51 @@ Number of cluster positions in simulation: %d
         obs.flush()
         coinc.flush()
         print
+
+    def write_observables(self, observables, t):
+        """Transform coordinates before calling super
+
+        Until now, the simulation has set new cluster coordinates for each
+        event.  Using that, it has sampled a static shower by using many cluster
+        positions and rotations.  This is equivalent to simulation a static
+        cluster by using many shower core positions and rotations.
+
+        Now, we will transform to the coordinate system of the cluster.  We make
+        the simple assumption that the transformation from cluster coordinates
+        to shower coordinates and back again will simply result in cluster
+        coordinates.  Thus::
+
+            T^{-1}(T(x, y)) = (x, y).
+
+        In this method, we will simply lookup the station coordinates in the
+        cluster coordinate system.
+
+        """
+        self.cluster.set_xyalpha_coordinates(0., 0., 0.)
+        station_id = observables['station_id'] - 1
+        station = self.cluster.stations[station_id]
+        r, phi, alpha = station.get_rphialpha_coordinates()
+
+        observables['r'] = r
+        observables['phi'] = phi
+        observables['alpha'] = alpha
+
+        super(GroundParticlesSimulation, self).write_observables(observables, t)
+
+    def write_coincidence(self, event, N):
+        """Transform coordinates before calling super
+
+        Until now, the simulation has set new cluster coordinates for each
+        event.  Using that, it has sampled a static shower by using many cluster
+        positions and rotations.  This is equivalent to simulation a static
+        cluster by using many shower core positions and rotations.
+
+        This change of coordinates will transform the cluster center coordinate
+        (relative to the shower core) to the shower core coordinate (relative to
+        the cluster center).
+
+        """
+        event['phi'] += pi - event['alpha']
+        event['alpha'] = 0
+
+        super(GroundParticlesSimulation, self).write_coincidence(event, N)
