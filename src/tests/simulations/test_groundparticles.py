@@ -6,7 +6,7 @@ from numpy import array
 from math import pi, atan2, sqrt
 from mock import Mock, MagicMock, patch, sentinel
 
-from simulations import groundparticles
+from simulations import groundparticles, BaseSimulation
 import clusters
 import storage
 
@@ -205,6 +205,40 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.simulation.headers.flush.assert_called_with()
         self.simulation.particles.flush.assert_called_with()
         self.simulation.store_observables.assert_called_with()
+
+    def test_write_observables_uses_station_coordinates(self):
+        observables = {'station_id': 1}
+        t = sentinel.t
+
+        cluster = Mock(name='cluster')
+        cluster.stations = MagicMock(name='stations')
+        station = Mock(name='station')
+        station.get_rphialpha_coordinates.return_value = sentinel.r, sentinel.phi, sentinel.alpha
+        cluster.stations.__getitem__.return_value = station
+        self.simulation.cluster = cluster
+
+        with patch.object(BaseSimulation, 'write_observables') as mock_parent:
+            self.simulation.write_observables(observables, t)
+
+        # list index must be zero-based
+        cluster.stations.__getitem__.assert_called_once_with(0)
+        # must get station coordinates
+        station.get_rphialpha_coordinates.assert_called_once_with()
+        # coordinates must be the station coordinates
+        self.assertIs(observables['r'], sentinel.r)
+        self.assertIs(observables['phi'], sentinel.phi)
+        self.assertIs(observables['alpha'], sentinel.alpha)
+        # must call parent method
+        mock_parent.assert_called_once_with(observables, t)
+
+    def test_write_coincidence_calls_super_with_transformed_coordinates(self):
+        event = {'phi': 1., 'alpha': 2.}
+        transformed_event = {'phi': 1. + pi - 2., 'alpha': 0.}
+
+        with patch.object(BaseSimulation, 'write_coincidence') as mock_parent:
+            self.simulation.write_coincidence(event, sentinel.N)
+
+        mock_parent.assert_called_once_with(transformed_event, sentinel.N)
 
 
 def pop_last_call(mock):

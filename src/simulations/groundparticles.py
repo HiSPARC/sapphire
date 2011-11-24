@@ -386,6 +386,6 @@ Number of cluster positions in simulation: %d
 
         """
         event['phi'] += pi - event['alpha']
-        event['alpha'] = 0
+        event['alpha'] = 0.
 
         super(GroundParticlesSimulation, self).write_coincidence(event, N)
