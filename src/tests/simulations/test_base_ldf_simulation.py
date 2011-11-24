@@ -64,9 +64,18 @@ class BaseLdfSimulationTest(unittest.TestCase):
         self.simulation.write_coincidence.assert_called_with(event, 1)
         self.simulation.c_index.append.assert_called_with([sentinel.station_event_id])
 
-    @unittest.skip("no test yet")
     def test_simulate_event_calculates_correct_multiplicity(self):
-        pass
+        event = MagicMock()
+        self.simulation.cluster.stations = MagicMock()
+        self.simulation.write_coincidence = Mock()
+        self.simulation.cluster.stations = [Mock(), Mock(), Mock()]
+        has_triggered = SideEffects([(1, 1), (0, 2), (1, 3)])
+        self.simulation.simulate_station_observables_and_return_has_triggered_and_eventid = Mock()
+        self.simulation.simulate_station_observables_and_return_has_triggered_and_eventid.side_effect = has_triggered
+
+        self.simulation.simulate_event(event)
+
+        self.simulation.write_coincidence.assert_called_once_with(event, 2)
 
     def test_simulate_station_observables_and_return_has_triggered_and_eventid(self):
         self.simulation.simulate_detector_observables = Mock()
