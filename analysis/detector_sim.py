@@ -19,7 +19,7 @@ import clusters
 from simulations import GroundParticlesSimulation, QSubSimulation
 
 
-DATAFILE = 'data-station.h5'
+DATAFILE = 'data-e15.h5'
 
 
 if __name__ == '__main__':
@@ -52,5 +52,5 @@ if __name__ == '__main__':
                                                         'leptons'),
                                            os.path.join('/simulations',
                                                         sim),
-                                           R=100, N=100000)
+                                           R=50, N=10000)
     simulation.run()
