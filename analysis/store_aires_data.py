@@ -11,11 +11,11 @@ import aires
 import tables
 import os.path
 
-from storage import Particle
+from storage import ShowerParticle
 
 from numpy import *
 
-DATA_FILE = 'data.h5'
+DATA_FILE = 'data-e15.h5'
 
 
 def save_particle(row, p, id):
@@ -41,15 +41,15 @@ def store_aires_data(data, group, file):
     print "Storing AIRES data (%s) in %s" % (file, group)
 
     sim = aires.SimulationData('', file)
-    gammas = data.createTable(group, 'gammas', Particle,
+    gammas = data.createTable(group, 'gammas', ShowerParticle,
                               'Gammas')
-    muons = data.createTable(group, 'muons', Particle,
+    muons = data.createTable(group, 'muons', ShowerParticle,
                              'Muons and anti-muons')
-    electrons = data.createTable(group, 'electrons', Particle,
+    electrons = data.createTable(group, 'electrons', ShowerParticle,
                                  'Electrons and positrons')
-    leptons = data.createTable(group, 'leptons', Particle,
+    leptons = data.createTable(group, 'leptons', ShowerParticle,
                                'Electrons, positrons, muons and anti-muons')
-    lepgammas = data.createTable(group, 'lepgammas', Particle,
+    lepgammas = data.createTable(group, 'lepgammas', ShowerParticle,
                                  'Electrons, positrons, muons, '
                                  'anti-muons and gammas')
 
