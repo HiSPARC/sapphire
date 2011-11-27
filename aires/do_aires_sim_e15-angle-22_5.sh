@@ -2,4 +2,4 @@
 if [ -n "$PBS_O_WORKDIR" ]; then
     cd $PBS_O_WORKDIR
 fi
-Aires < sime15.inp
+Aires < sime15-angle-22_5.inp
