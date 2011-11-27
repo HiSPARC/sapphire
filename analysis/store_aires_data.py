@@ -15,7 +15,7 @@ from storage import ShowerParticle
 
 from numpy import *
 
-DATA_FILE = 'data-e15.h5'
+DATA_FILE = 'data.h5'
 
 
 def save_particle(row, p, id):
@@ -29,58 +29,41 @@ def save_particle(row, p, id):
     row['y'] = 10 ** p.core_distance * sin(p.polar_angle)
     row.append()
 
-def store_aires_data(data, group, file):
-    head, tail = os.path.split(group)
+
+def store_aires_data(data, group_name, file):
     try:
-        data.createGroup(head, tail, createparents=True)
+        group = create_group(data, group_name)
     except tables.NodeError:
-        print "Ignoring", group, file
-        print "(%s already exists?)" % group
+        print '%s already exists, doing nothing' % group_name
         return
 
     print "Storing AIRES data (%s) in %s" % (file, group)
 
     sim = aires.SimulationData('', file)
-    gammas = data.createTable(group, 'gammas', ShowerParticle,
-                              'Gammas')
-    muons = data.createTable(group, 'muons', ShowerParticle,
-                             'Muons and anti-muons')
-    electrons = data.createTable(group, 'electrons', ShowerParticle,
-                                 'Electrons and positrons')
-    leptons = data.createTable(group, 'leptons', ShowerParticle,
-                               'Electrons, positrons, muons and anti-muons')
-    lepgammas = data.createTable(group, 'lepgammas', ShowerParticle,
-                                 'Electrons, positrons, muons, '
-                                 'anti-muons and gammas')
 
-    shower = [x for x in sim.showers()][0]
+    for shower_num, shower in enumerate(sim.showers()):
+        shower_group = data.createGroup(group, 'shower_%d' % shower_num)
+        print shower_group
 
-    muons_row = muons.row
-    gammas_row = gammas.row
-    electrons_row = electrons.row
-    leptons_row = leptons.row
-    lepgammas_row = lepgammas.row
+        leptons = data.createTable(shower_group, 'leptons', ShowerParticle,
+                                   'Electrons, positrons, muons and anti-muons')
 
-    for id, p in enumerate(shower.particles()):
-        if p.name == 'gamma':
-            save_particle(gammas_row, p, id)
-            save_particle(lepgammas_row, p, id)
-        elif p.name == 'muon' or p.name == 'anti-muon':
-            save_particle(muons_row, p, id)
-            save_particle(leptons_row, p, id)
-            save_particle(lepgammas_row, p, id)
-        elif p.name == 'electron' or p.name == 'positron':
-            save_particle(electrons_row, p, id)
-            save_particle(leptons_row, p, id)
-            save_particle(lepgammas_row, p, id)
-    muons.flush()
-    gammas.flush()
-    electrons.flush()
-    leptons.flush()
-    lepgammas.flush()
+        leptons_row = leptons.row
+        for id, p in enumerate(shower.particles()):
+            if p.name == 'muon' or p.name == 'anti-muon' or \
+                p.name == 'electron' or p.name == 'positron':
+                save_particle(leptons_row, p, id)
+        leptons.flush()
+
+def create_group(data, group_name):
+    head, tail = os.path.split(group_name)
+    group = data.createGroup(head, tail, createparents=True)
+    return group
 
 
 if __name__ == '__main__':
     data = tables.openFile(DATA_FILE, 'a')
     store_aires_data(data, '/showers/E_1PeV/zenith_0',
-                     '../aires/showere15-angle-0.grdpcles')
+                           '../aires/showere15-angle-0.grdpcles')
+    store_aires_data(data, '/showers/E_100TeV/zenith_0',
+                           '../aires/test.grdpcles')
