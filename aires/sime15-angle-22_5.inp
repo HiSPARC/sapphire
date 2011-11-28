@@ -1,7 +1,7 @@
 Task showere15-angle-22_5
 Primary         proton
 PrimaryEnergy   1e15 eV
-TotalShowers    2
+TotalShowers    10
 PrimaryZenAngle 22.5 deg
 
 RLimsFile       grdpcles        0.01 m     1 km
