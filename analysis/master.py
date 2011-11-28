@@ -39,13 +39,17 @@ class Master(object):
         output_path = shower._v_pathname.replace('/showers/', '/simulations/')
         shower_path = shower.leptons._v_pathname
 
+        args = [cluster, self.data, shower_path, output_path]
+        kwargs = {'R': 100, 'N': 100000}
+
         if self.is_qsub_available():
             Simulation = QSubSimulation
+            kwargs['N_cores'] = 50
         else:
             Simulation = GroundParticlesSimulation
 
         try:
-            sim = Simulation(cluster, self.data, shower_path, output_path, R=100, N=100)
+            sim = Simulation(*args, **kwargs)
         except RuntimeError, msg:
             print msg
             return
