@@ -8,6 +8,11 @@ from simulations import GroundParticlesSimulation, QSubSimulation
 import clusters
 
 
+R = 100
+N = 100000
+N_CORES = 16
+
+
 class Master(object):
     def __init__(self, data_filename):
         if os.path.exists(data_filename):
@@ -40,11 +45,11 @@ class Master(object):
         shower_path = shower.leptons._v_pathname
 
         args = [cluster, self.data, shower_path, output_path]
-        kwargs = {'R': 100, 'N': 100000}
+        kwargs = {'R': R, 'N': N}
 
         if self.is_qsub_available():
             Simulation = QSubSimulation
-            kwargs['N_cores'] = 16
+            kwargs['N_cores'] = N_CORES
         else:
             Simulation = GroundParticlesSimulation
 
