@@ -5,15 +5,18 @@ import utils
 
 def plot_coordinate_systems():
     figure()
+    suptitle('positions and orientations')
 
     x, y, alpha = generate_random_coordinates_in_circle(10, 1000)
     xp, yp, alphap = transform_coordinates(x, y, alpha)
 
     subplot('121', aspect='equal')
     draw_coordinates(x, y, alpha)
+    title('shower-centered coordinates')
 
     subplot('122', aspect='equal')
     draw_coordinates(xp, yp, alphap)
+    title('cluster-centered coordinates')
 
     utils.saveplot()
 
@@ -55,15 +58,18 @@ def draw_coordinates(x, y, alpha):
 
 def plot_coordinate_density():
     figure()
+    suptitle('densities')
 
     x, y, alpha = generate_random_coordinates_in_circle(10, 100000)
     xp, yp, alphap = transform_coordinates(x, y, alpha)
 
     subplot('121', aspect='equal')
     draw_coordinate_density(x, y)
+    title('shower-centered coordinates')
 
     subplot('122', aspect='equal')
     draw_coordinate_density(xp, yp)
+    title('cluster-centered coordinates')
 
     utils.saveplot()
 
