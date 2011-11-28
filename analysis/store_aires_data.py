@@ -39,7 +39,10 @@ def store_aires_data(data, group_name, file):
 
     print "Storing AIRES data (%s) in %s" % (file, group)
 
-    sim = aires.SimulationData('', file)
+    if not os.path.exists(file):
+        raise RuntimeError("File %s does not exist" % file)
+    else:
+        sim = aires.SimulationData('', file)
 
     for shower_num, shower in enumerate(sim.showers()):
         shower_group = data.createGroup(group, 'shower_%d' % shower_num)
