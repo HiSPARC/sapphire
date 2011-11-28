@@ -5,7 +5,7 @@ import csv
 
 from pylab import *
 from scipy.optimize import curve_fit
-from tikz_plot import tikz_2dhist
+#from tikz_plot import tikz_2dhist
 
 from scipy import integrate
 from scipy.special import erf
@@ -24,7 +24,7 @@ if USE_TEX:
     rcParams['font.serif'] = 'Computer Modern'
     rcParams['font.sans-serif'] = 'Computer Modern'
     rcParams['font.family'] = 'sans-serif'
-    rcParams['figure.figsize'] = [5 * x for x in (1, 2./3)]
+    rcParams['figure.figsize'] = [5 * x for x in (1, 2. / 3)]
     rcParams['figure.subplot.left'] = 0.125
     rcParams['figure.subplot.bottom'] = 0.125
     rcParams['font.size'] = 11
@@ -67,7 +67,7 @@ def reconstruct_angle_dt(dt1, dt2, R=10):
     c = 3.00e+8
 
     r1 = R
-    r2 = R 
+    r2 = R
 
     phi1 = calc_phi(1, 3)
     phi2 = calc_phi(1, 4)
@@ -235,32 +235,28 @@ def do_full_reconstruction(data, tablename):
                              ReconstructedEvent, "Reconstruction data")
 
     kwargs = dict(data=data, dest=table, D=1)
-    reconstruct_angles(tablename='angle_0', THETA=0, **kwargs)
-    reconstruct_angles(tablename='angle_5', THETA=deg2rad(5), **kwargs)
-    reconstruct_angles(tablename='angle_23', THETA=pi / 8, **kwargs)
-    reconstruct_angles(tablename='angle_35', THETA=deg2rad(35), **kwargs)
-    reconstruct_angles(tablename='angle_40', THETA=deg2rad(40), **kwargs)
-    reconstruct_angles(tablename='angle_45', THETA=deg2rad(45), **kwargs)
-    reconstruct_angles(tablename='angle_60', THETA=deg2rad(60), **kwargs)
-    reconstruct_angles(tablename='angle_80', THETA=deg2rad(80), **kwargs)
+#    reconstruct_angles(tablename='zenith_0', THETA=0, **kwargs)
+#    reconstruct_angles(tablename='zenith_5', THETA=deg2rad(5), **kwargs)
+    reconstruct_angles(tablename='zenith_22_5', THETA=pi / 8, **kwargs)
+#    reconstruct_angles(tablename='zenith_35', THETA=deg2rad(35), **kwargs)
 
     # SPECIALS
     # Station sizes
-    reconstruct_angles(tablename='angle_23_size5', THETA=pi / 8, **kwargs)
-    reconstruct_angles(tablename='angle_23_size20', THETA=pi / 8, **kwargs)
+#    reconstruct_angles(tablename='zenith_23_size5', THETA=pi / 8, **kwargs)
+#    reconstruct_angles(tablename='zenith_23_size20', THETA=pi / 8, **kwargs)
 
     # SPECIALS
     # Binnings
-    kwargs = dict(data=data, tablename='angle_23', dest=table,
-                  THETA=pi / 8, D=1)
-    kwargs['randomize_binning'] = False
-    reconstruct_angles(binning=1, **kwargs)
-    reconstruct_angles(binning=2.5, **kwargs)
-    reconstruct_angles(binning=5, **kwargs)
-    kwargs['randomize_binning'] = True
-    reconstruct_angles(binning=1, **kwargs)
-    reconstruct_angles(binning=2.5, **kwargs)
-    reconstruct_angles(binning=5, **kwargs)
+#    kwargs = dict(data=data, tablename='zenith_22_5', dest=table,
+#                  THETA=pi / 8, D=1)
+#    kwargs['randomize_binning'] = False
+#    reconstruct_angles(binning=1, **kwargs)
+#    reconstruct_angles(binning=2.5, **kwargs)
+#    reconstruct_angles(binning=5, **kwargs)
+#    kwargs['randomize_binning'] = True
+#    reconstruct_angles(binning=1, **kwargs)
+#    reconstruct_angles(binning=2.5, **kwargs)
+#    reconstruct_angles(binning=5, **kwargs)
 
 def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
                        randomize_binning=False, N=None):
@@ -272,55 +268,61 @@ def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
     else:
         R = 10
 
-    table = data.getNode('/analysis', tablename)
-    dst_row = dest.row
-    for event in table[:N]:
-        if min(event['n1'], event['n3'], event['n4']) >= D:
-            # Do we need to bin timing data?
-            if binning is not False:
-                event['t1'] = floor(event['t1'] / binning) * binning 
-                event['t2'] = floor(event['t2'] / binning) * binning 
-                event['t3'] = floor(event['t3'] / binning) * binning 
-                event['t4'] = floor(event['t4'] / binning) * binning 
-                # Do we need to randomize inside a bin?
-                if randomize_binning is True:
-                    event['t1'] += uniform(0, binning)
-                    event['t2'] += uniform(0, binning)
-                    event['t3'] += uniform(0, binning)
-                    event['t4'] += uniform(0, binning)
+    shower_group = data.getNode('/simulations/E_1PeV', tablename)
 
-            theta, phi = reconstruct_angle(event, R)
-            alpha = event['alpha']
+    for shower in data.listNodes(shower_group):
+        shower_table = shower.observables
+        coincidence_table = shower.coincidences
+        dst_row = dest.row
+        for event, coincidence in zip(shower_table[:N], coincidence_table[:N]):
+            assert event['id'] == coincidence['id']
+            if min(event['n1'], event['n3'], event['n4']) >= D:
+                # Do we need to bin timing data?
+                if binning is not False:
+                    event['t1'] = floor(event['t1'] / binning) * binning
+                    event['t2'] = floor(event['t2'] / binning) * binning
+                    event['t3'] = floor(event['t3'] / binning) * binning
+                    event['t4'] = floor(event['t4'] / binning) * binning
+                    # Do we need to randomize inside a bin?
+                    if randomize_binning is True:
+                        event['t1'] += uniform(0, binning)
+                        event['t2'] += uniform(0, binning)
+                        event['t3'] += uniform(0, binning)
+                        event['t4'] += uniform(0, binning)
 
-            if not isnan(theta) and not isnan(phi):
-                ang_dist = arccos(sin(theta) * sin(THETA) *
-                                  cos(phi - -alpha) + cos(theta) *
-                                  cos(THETA))
+                theta, phi = reconstruct_angle(event, R)
 
-                dst_row['r'] = event['r']
-                dst_row['phi'] = event['phi']
-                dst_row['alpha'] = alpha
-                dst_row['t1'] = event['t1']
-                dst_row['t2'] = event['t2']
-                dst_row['t3'] = event['t3']
-                dst_row['t4'] = event['t4']
-                dst_row['n1'] = event['n1']
-                dst_row['n2'] = event['n2']
-                dst_row['n3'] = event['n3']
-                dst_row['n4'] = event['n4']
-                dst_row['sim_theta'] = THETA
-                dst_row['sim_phi'] = -alpha
-                dst_row['r_theta'] = theta
-                dst_row['r_phi'] = phi
-                dst_row['D'] = min(event['n1'], event['n3'], event['n4'])
-                dst_row['size'] = R
-                if binning is False:
-                    bin_size = 0
-                else:
-                    bin_size = binning
-                dst_row['bin'] = bin_size
-                dst_row['bin_r'] = randomize_binning
-                dst_row.append()
+                alpha = event['alpha']
+
+                if not isnan(theta) and not isnan(phi):
+#                    ang_dist = arccos(sin(theta) * sin(THETA) *
+#                                      cos(phi - -alpha) + cos(theta) *
+#                                      cos(THETA))
+
+                    dst_row['r'] = event['r']
+                    dst_row['phi'] = event['phi']
+                    dst_row['alpha'] = alpha
+                    dst_row['t1'] = event['t1']
+                    dst_row['t2'] = event['t2']
+                    dst_row['t3'] = event['t3']
+                    dst_row['t4'] = event['t4']
+                    dst_row['n1'] = event['n1']
+                    dst_row['n2'] = event['n2']
+                    dst_row['n3'] = event['n3']
+                    dst_row['n4'] = event['n4']
+                    dst_row['sim_theta'] = THETA
+                    dst_row['sim_phi'] = coincidence['phi']
+                    dst_row['r_theta'] = theta
+                    dst_row['r_phi'] = phi
+                    dst_row['D'] = min(event['n1'], event['n3'], event['n4'])
+                    dst_row['size'] = R
+                    if binning is False:
+                        bin_size = 0
+                    else:
+                        bin_size = binning
+                    dst_row['bin'] = bin_size
+                    dst_row['bin_r'] = randomize_binning
+                    dst_row.append()
     dest.flush()
 
 def do_reconstruction_plots(data, tablename):
@@ -398,7 +400,7 @@ def plot_uncertainty_zenith(table):
     for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
         x.append(THETA)
         events = table.readWhere(
-            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
             float32(THETA))
         MYT.append((events['t1'], events['t3'], events['t4']))
         print rad2deg(THETA), len(events),
@@ -482,7 +484,7 @@ def plot_uncertainty_size(table):
         x.append(size)
         events = table.readWhere(
             '(D==2) & (sim_theta==%.40f) & (size==%d) & (bin==0)' %
-            (float32(pi/ 8), size))
+            (float32(pi / 8), size))
         print len(events),
         errors = events['sim_theta'] - events['r_theta']
         # Make sure -pi < errors < pi
@@ -584,11 +586,11 @@ Q = lambda t, n: ((.5 * (1 - erf(t / sqrt(2)))) ** (n - 1)
 
 expv_t = vectorize(lambda n: integrate.quad(lambda t: t * Q(t, n)
                                                       / n ** -1,
-                                            -inf, +inf))
+                                            - inf, +inf))
 expv_tv = lambda n: expv_t(n)[0]
 expv_tsq = vectorize(lambda n: integrate.quad(lambda t: t ** 2 * Q(t, n)
                                                         / n ** -1,
-                                              -inf, +inf))
+                                              - inf, +inf))
 expv_tsqv = lambda n: expv_tsq(n)[0]
 
 std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
@@ -608,7 +610,7 @@ def plot_shower_front_timings(data, tablename):
     xlabel("Arrival time difference (ns)")
     ylabel("Count")
     title(r"Shower front thickness ($\theta = %s^\circ$)" %
-          tablename.replace('angle_',''))
+          tablename.replace('zenith_', ''))
     legend()
     if USE_TEX:
         rcParams['text.usetex'] = True
@@ -627,7 +629,7 @@ def plot_shower_front_density(data, tablename):
     xlabel("Number of particles per scintillator")
     ylabel("Count")
     title(r"Shower front density ($\theta = %s^\circ$)" %
-          tablename.replace('angle_',''))
+          tablename.replace('zenith_', ''))
     legend()
     if USE_TEX:
         rcParams['text.usetex'] = True
@@ -636,11 +638,11 @@ def plot_shower_front_density(data, tablename):
 def plot_zenith_core_dists(data):
     figure()
     rcParams['text.usetex'] = False
-    for t in ['angle_0', 'angle_5', 'angle_23', 'angle_35']:
+    for t in ['zenith_0', 'zenith_5', 'zenith_23', 'zenith_35']:
         table = data.getNode('/analysis', t)
         events = table.readWhere('(n1==2) & (n3==2) & (n4==2)')
         hist(events['r'], bins=linspace(0, 100, 50), histtype='step',
-             label=r'$\theta = %s^\circ$' % t.replace('angle_', ''))
+             label=r'$\theta = %s^\circ$' % t.replace('zenith_', ''))
     xlabel("Core distance (m)")
     ylabel("Count")
     title("Core distances ($N_{MIP} = 2$)")
@@ -676,7 +678,7 @@ def plot_mip_core_dists_mean(table):
         x, y, yerr = [], [], []
         for N in range(1, 6):
             events = table.readWhere(
-                '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+                '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
                 (N, float32(THETA)))
             x.append(N)
             y.append(mean(events['r']))
@@ -703,7 +705,7 @@ def plot_mip_core_dists_mean(table):
     x, y, yerr = [], [], []
     for N in range(1, 6):
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
             (N, float32(THETA)))
         x.append(N)
         y.append(mean(events['r']))
@@ -759,7 +761,7 @@ def plot_uncertainty_core_dist_phi(table):
     bins = linspace(0, 80, 6)
     for N in range(1, 6):
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
             (N, float32(THETA)))
         x, y, yerr, l = [], [], [], []
         for r0, r1 in zip(bins[:-1], bins[1:]):
@@ -791,7 +793,7 @@ def plot_uncertainty_core_dist_theta(table):
     bins = linspace(0, 80, 6)
     for N in range(1, 6):
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' % 
+            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
             (N, float32(THETA)))
         x, y, yerr, l = [], [], [], []
         for r0, r1 in zip(bins[:-1], bins[1:]):
@@ -825,14 +827,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('data-e15.h5', 'a')
+        data = tables.openFile('master.h5', 'a')
 
-    #do_full_reconstruction(data, 'full')
-    do_reconstruction_plots(data, 'full')
-
-    plot_sim_shower_timings('analysis-e15.h5')
-
-    plot_zenith_core_dists(data)
-    plot_mip_core_dists(data, 'angle_23')
-    plot_shower_front_timings(data, 'angle_0')
-    plot_shower_front_density(data, 'angle_0')
+    do_full_reconstruction(data, 'full')
+    #do_reconstruction_plots(data, 'full')
