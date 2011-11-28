@@ -87,7 +87,7 @@ class QSubSimulation(GroundParticlesSimulation):
         environ = os.environ.copy()
         environ['JOB_HASH'] = hash
         try:
-            output = subprocess.check_output(['qsub', '-V',
+            output = subprocess.check_output(['qsub', '-V', '-q', 'short',
                                               '%s/qsub.sh' % dir],
                                               env=environ)
         except subprocess.CalledProcessError, exc:

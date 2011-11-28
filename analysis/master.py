@@ -44,7 +44,7 @@ class Master(object):
 
         if self.is_qsub_available():
             Simulation = QSubSimulation
-            kwargs['N_cores'] = 50
+            kwargs['N_cores'] = 16
         else:
             Simulation = GroundParticlesSimulation
 
