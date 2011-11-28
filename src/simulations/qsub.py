@@ -71,6 +71,8 @@ class QSubSimulation(GroundParticlesSimulation):
         self.collect_jobs(hashes)
         self.collect_results(hashes)
 
+        self.store_observables()
+
     def _chunks(self, data):
         """Split data into chunks max N_cores + 1 chunks"""
 
@@ -169,21 +171,21 @@ class QSubSimulation(GroundParticlesSimulation):
     def collect_results(self, hashes):
         """Collect all results into main HDF5 file"""
 
-        headers = self.data.createTable(self.output, 'headers',
+        headers = self.data.createTable(self.output, '_headers',
                                          storage.SimulationEventHeader)
-        particles = self.data.createTable(self.output, 'particles',
+        particles = self.data.createTable(self.output, '_particles',
                                          storage.SimulationParticle)
 
         base_id = 0
         for hash in hashes:
             job_data = tables.openFile(JOB_FILE % hash, 'r')
-            job_headers = job_data.getNode(self.output, 'headers').read()
+            job_headers = job_data.getNode(self.output, '_headers').read()
             job_particles = job_data.getNode(self.output,
-                                             'particles').read()
+                                             '_particles').read()
 
             job_headers['id'] += base_id
             job_particles['id'] += base_id
-            
+
             headers.append(job_headers)
             particles.append(job_particles)
 
@@ -191,6 +193,9 @@ class QSubSimulation(GroundParticlesSimulation):
             job_data.close()
             os.remove(JOB_FILE % hash)
             os.remove(STATUS_FILE % hash)
+
+        self.headers = headers
+        self.particles = particles
 
 
 class QSubChild(GroundParticlesSimulation):
@@ -242,9 +247,9 @@ class QSubChild(GroundParticlesSimulation):
         self._run_welcome_msg()
         positions = self.data.root.positions.read()
 
-        self.headers = self.data.createTable(self.output, 'headers',
+        self.headers = self.data.createTable(self.output, '_headers',
                                              storage.SimulationEventHeader)
-        self.particles = self.data.createTable(self.output, 'particles',
+        self.particles = self.data.createTable(self.output, '_particles',
                                                storage.SimulationParticle)
 
         N = 0
@@ -261,7 +266,7 @@ class QSubChild(GroundParticlesSimulation):
         self.headers.flush()
         self.particles.flush()
         shower_data.close()
-        
+
         self._run_exit_msg()
 
 
