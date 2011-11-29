@@ -233,7 +233,7 @@ class GroundParticleSimulationTests(unittest.TestCase):
 
     def test_write_coincidence_calls_super_with_transformed_coordinates(self):
         event = {'phi': 1., 'alpha': 2.}
-        transformed_event = {'phi': 1. + pi - 2., 'alpha': 0.}
+        transformed_event = {'phi': 1. + pi - 2., 'alpha':-2.}
 
         with patch.object(BaseSimulation, 'write_coincidence') as mock_parent:
             self.simulation.write_coincidence(event, sentinel.N)

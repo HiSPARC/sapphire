@@ -382,10 +382,20 @@ Number of cluster positions in simulation: %d
 
         This change of coordinates will transform the cluster center coordinate
         (relative to the shower core) to the shower core coordinate (relative to
-        the cluster center).
+        the cluster center), and stores it in the range [-pi, pi).
+
+        The shower azimuthal angle is always zero in the simulation.  If the
+        cluster is rotated over an angle alpha, the observed azimuthal angle is
+        -alpha.
 
         """
-        event['phi'] += pi - event['alpha']
-        event['alpha'] = 0.
+        phi, alpha = event['phi'], event['alpha']
+
+        new_phi = phi + pi - alpha
+
+        # Store phi in range [-pi, pi)
+        event['phi'] = (new_phi + pi) % (2 * pi) - pi
+
+        event['alpha'] = -alpha
 
         super(GroundParticlesSimulation, self).write_coincidence(event, N)
