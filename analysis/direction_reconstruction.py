@@ -235,10 +235,10 @@ def do_full_reconstruction(data, tablename):
                              ReconstructedEvent, "Reconstruction data")
 
     kwargs = dict(data=data, dest=table, D=1)
-#    reconstruct_angles(tablename='zenith_0', THETA=0, **kwargs)
-#    reconstruct_angles(tablename='zenith_5', THETA=deg2rad(5), **kwargs)
+    reconstruct_angles(tablename='zenith_0', THETA=0, **kwargs)
+    reconstruct_angles(tablename='zenith_5', THETA=deg2rad(5), **kwargs)
     reconstruct_angles(tablename='zenith_22_5', THETA=pi / 8, **kwargs)
-#    reconstruct_angles(tablename='zenith_35', THETA=deg2rad(35), **kwargs)
+    reconstruct_angles(tablename='zenith_35', THETA=deg2rad(35), **kwargs)
 
     # SPECIALS
     # Station sizes
@@ -247,16 +247,16 @@ def do_full_reconstruction(data, tablename):
 
     # SPECIALS
     # Binnings
-#    kwargs = dict(data=data, tablename='zenith_22_5', dest=table,
-#                  THETA=pi / 8, D=1)
-#    kwargs['randomize_binning'] = False
-#    reconstruct_angles(binning=1, **kwargs)
-#    reconstruct_angles(binning=2.5, **kwargs)
-#    reconstruct_angles(binning=5, **kwargs)
-#    kwargs['randomize_binning'] = True
-#    reconstruct_angles(binning=1, **kwargs)
-#    reconstruct_angles(binning=2.5, **kwargs)
-#    reconstruct_angles(binning=5, **kwargs)
+    kwargs = dict(data=data, tablename='zenith_22_5', dest=table,
+                  THETA=pi / 8, D=1)
+    kwargs['randomize_binning'] = False
+    reconstruct_angles(binning=1, **kwargs)
+    reconstruct_angles(binning=2.5, **kwargs)
+    reconstruct_angles(binning=5, **kwargs)
+    kwargs['randomize_binning'] = True
+    reconstruct_angles(binning=1, **kwargs)
+    reconstruct_angles(binning=2.5, **kwargs)
+    reconstruct_angles(binning=5, **kwargs)
 
 def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
                        randomize_binning=False, N=None):
@@ -829,5 +829,8 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile('master.h5', 'a')
 
-    do_full_reconstruction(data, 'full')
-    #do_reconstruction_plots(data, 'full')
+    if '/reconstructions/full' not in data:
+        print "Reconstructing shower direction..."
+        do_full_reconstruction(data, 'full')
+
+    do_reconstruction_plots(data, 'full')
