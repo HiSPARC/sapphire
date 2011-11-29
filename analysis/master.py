@@ -9,7 +9,7 @@ import clusters
 
 
 R = 100
-N = 100000
+N = 500000
 N_CORES = 16
 
 
