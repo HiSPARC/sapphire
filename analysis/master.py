@@ -1,5 +1,6 @@
 import os
 import warnings
+import re
 
 import tables
 
@@ -22,6 +23,7 @@ class Master(object):
     def main(self):
         self.store_shower_data()
         self.do_station_simulations()
+        self.do_custom_simulations()
 
     def store_shower_data(self):
         for angle in [0, 5, 22.5, 35]:
@@ -40,8 +42,21 @@ class Master(object):
             for shower in self.get_showers_in_group(angle):
                 self.perform_simulation(cluster, shower)
 
-    def perform_simulation(self, cluster, shower):
-        output_path = shower._v_pathname.replace('/showers/', '/simulations/')
+    def do_custom_simulations(self):
+        angle = '/showers/E_1PeV/zenith_22_5'
+        for station_size in [5, 20]:
+            cluster = clusters.SingleStation(station_size)
+            for shower in self.get_showers_in_group(angle):
+                output_path = self.make_output_path_for_station_size_simulation(shower, station_size)
+                self.perform_simulation(cluster, shower, output_path)
+
+    def make_output_path_for_station_size_simulation(self, shower, station_size):
+        path = shower._v_pathname.replace('/showers/', '/simulations/')
+        return re.sub('(/zenith_[0-9_]+)/', r'\1_size%d/' % station_size, path)
+
+    def perform_simulation(self, cluster, shower, output_path=None):
+        if not output_path:
+            output_path = shower._v_pathname.replace('/showers/', '/simulations/')
         shower_path = shower.leptons._v_pathname
 
         args = [cluster, self.data, shower_path, output_path]

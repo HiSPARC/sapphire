@@ -253,5 +253,18 @@ class SimpleClusterTests(unittest.TestCase):
         self.assertEqual(coordinates, (0., 0., 0.))
 
 
+class SingleStationTests(unittest.TestCase):
+    def test_init_calls_super_init(self):
+        with patch.object(clusters.BaseCluster, '__init__',
+                          mocksignature=True) as mock_base_init:
+            clusters.SingleStation()
+            self.assertTrue(mock_base_init.called)
+
+    def test_get_coordinates_after_init(self):
+        cluster = clusters.SingleStation()
+        coordinates = cluster.get_xyalpha_coordinates()
+        self.assertEqual(coordinates, (0., 0., 0.))
+
+
 if __name__ == '__main__':
     unittest.main()
