@@ -332,12 +332,8 @@ def do_reconstruction_plots(data, tablename):
 
     plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
-    plot_uncertainty_phi(table)
     plot_uncertainty_size(table)
     plot_uncertainty_binsize(table)
-    plot_mip_core_dists_mean(table)
-    plot_uncertainty_core_dist_phi(table)
-    plot_uncertainty_core_dist_theta(table)
 
 def plot_uncertainty_mip(table):
     # constants for uncertainty estimation
