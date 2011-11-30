@@ -242,8 +242,8 @@ def do_full_reconstruction(data, tablename):
 
     # SPECIALS
     # Station sizes
-#    reconstruct_angles(tablename='zenith_23_size5', THETA=pi / 8, **kwargs)
-#    reconstruct_angles(tablename='zenith_23_size20', THETA=pi / 8, **kwargs)
+    reconstruct_angles(tablename='zenith_22_5_size5', THETA=pi / 8, **kwargs)
+    reconstruct_angles(tablename='zenith_22_5_size20', THETA=pi / 8, **kwargs)
 
     # SPECIALS
     # Binnings
@@ -299,9 +299,9 @@ def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
 #                                      cos(phi - -alpha) + cos(theta) *
 #                                      cos(THETA))
 
-                    dst_row['r'] = event['r']
-                    dst_row['phi'] = event['phi']
-                    dst_row['alpha'] = alpha
+                    dst_row['r'] = coincidence['r']
+                    dst_row['phi'] = coincidence['phi']
+                    dst_row['alpha'] = event['alpha']
                     dst_row['t1'] = event['t1']
                     dst_row['t2'] = event['t2']
                     dst_row['t3'] = event['t3']
@@ -832,5 +832,7 @@ if __name__ == '__main__':
     if '/reconstructions/full' not in data:
         print "Reconstructing shower direction..."
         do_full_reconstruction(data, 'full')
+    else:
+        print "Skipping reconstruction!"
 
     do_reconstruction_plots(data, 'full')
