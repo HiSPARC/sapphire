@@ -11,7 +11,7 @@ import clusters
 
 R = 100
 N = 100000
-N_CORES = 32
+N_CORES = 16
 
 
 class Master(object):
