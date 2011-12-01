@@ -341,6 +341,8 @@ def do_reconstruction_plots(data, tablename):
     boxplot_theta_reconstruction_results_for_MIP(table, 2)
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
     boxplot_phi_reconstruction_results_for_MIP(table, 2)
+    boxplot_arrival_times(table, 1)
+    boxplot_arrival_times(table, 2)
 
 def plot_uncertainty_mip(table):
     # constants for uncertainty estimation
@@ -891,6 +893,28 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
 
     savefig("plots/auto-results-phi-reconstruction-box-%d.pdf" % N)
 
+def boxplot_arrival_times(table, N):
+    figure()
+    query = '(D>=%d) & (size==10) & (bin==0) & (sim_theta == 0)' % N
+
+    bin_edges = linspace(0, 100, 10)
+    x, arrival_times = [], []
+    for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+        sel_query = query + '& (low <= r) & (r < high)'
+        sel = table.readWhere(sel_query)
+        t2 = sel[:]['t2']
+        arrival_times.append(t2.compress(t2 > -999))
+        x.append((low + high) / 2)
+
+    boxplot(arrival_times, positions=x, widths=.7 * (high - low), sym='')
+
+    xlabel("Core distance [m]")
+    ylabel("Arrival time [ns]")
+    title(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ$" % N)
+
+    xticks(arange(0, 100.5, 10))
+
+    savefig("plots/auto-results-boxplot-arrival-times-%d.pdf" % N)
 
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
