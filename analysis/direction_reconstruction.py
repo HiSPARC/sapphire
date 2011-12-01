@@ -335,6 +335,13 @@ def do_reconstruction_plots(data, tablename):
     plot_uncertainty_size(table)
     plot_uncertainty_binsize(table)
 
+    plot_phi_reconstruction_results_for_MIP(table, 1)
+    plot_phi_reconstruction_results_for_MIP(table, 2)
+    boxplot_theta_reconstruction_results_for_MIP(table, 1)
+    boxplot_theta_reconstruction_results_for_MIP(table, 2)
+    boxplot_phi_reconstruction_results_for_MIP(table, 1)
+    boxplot_phi_reconstruction_results_for_MIP(table, 2)
+
 def plot_uncertainty_mip(table):
     # constants for uncertainty estimation
     phi1 = calc_phi(1, 3)
@@ -813,6 +820,83 @@ def plot_uncertainty_core_dist_theta(table):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-core-dist-theta.pdf')
     print
+
+def plot_phi_reconstruction_results_for_MIP(table, N):
+    min_theta = 1
+    query = '(D>=%d) & (size==10) & (bin==0) & (sim_theta > %.5f)' % \
+            (N, deg2rad(min_theta))
+
+    events = table.readWhere(query)
+    sim_phi = events['sim_phi']
+    r_phi = events['r_phi']
+
+    figure()
+    plot_2d_histogram(rad2deg(sim_phi), rad2deg(r_phi), 180)
+    xlabel(r"$\phi_{simulated}$")
+    ylabel(r"$\phi_{reconstructed}$")
+    title(r"$N_{MIP} \geq %d, \quad \theta > 0^\circ$" % N)
+
+    savefig("plots/auto-results-phi-reconstruction-%d.pdf" % N)
+
+def boxplot_theta_reconstruction_results_for_MIP(table, N):
+    figure()
+    query = '(D>=%d) & (size==10) & (bin==0)' % N
+
+    angles = [0, 5, 22.5, 35]
+    r_dtheta = []
+    for angle in angles:
+        low, high = deg2rad(angle - 1), deg2rad(angle + 1)
+        sel_query = query + '& (low < sim_theta) & (sim_theta < high)'
+        sel = table.readWhere(sel_query)
+        r_dtheta.append(rad2deg(sel[:]['r_theta'] - sel[:]['sim_theta']))
+
+    boxplot(r_dtheta, sym='')
+    xticks(range(1, len(angles) + 1), [str(u) for u in angles])
+
+    xlabel(r"$\theta_{simulated}$")
+    ylabel(r"$\theta_{reconstructed} - \theta_{simulated}$")
+    title(r"$N_{MIP} \geq %d$" % N)
+
+    axhline(0)
+    ylim(-20, 20)
+
+    savefig("plots/auto-results-theta-reconstruction-%d.pdf" % N)
+
+def boxplot_phi_reconstruction_results_for_MIP(table, N):
+    figure()
+    min_theta = 1
+    query = '(D>=%d) & (size==10) & (bin==0) & (sim_theta > %.5f)' % \
+            (N, deg2rad(min_theta))
+
+    bin_edges = linspace(-180, 180, 18)
+    x, r_dphi = [], []
+    for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+        rad_low = deg2rad(low)
+        rad_high = deg2rad(high)
+        sel_query = query + '& (rad_low < sim_phi) & (sim_phi < rad_high)'
+        sel = table.readWhere(sel_query)
+        dphi = sel[:]['r_phi'] - sel[:]['sim_phi']
+        dphi = (dphi + pi) % (2 * pi) - pi
+        r_dphi.append(rad2deg(dphi))
+        x.append((low + high) / 2)
+
+    boxplot(r_dphi, positions=x, widths=.7 * (high - low), sym='')
+
+    xlabel(r"$\phi_{simulated}$")
+    ylabel(r"$\phi_{reconstructed} - \phi_{simulated}$")
+    title(r"$N_{MIP} \geq %d, \quad \theta > 0^\circ$" % N)
+
+    xticks(linspace(-180, 180, 9))
+    axhline(0)
+
+    savefig("plots/auto-results-phi-reconstruction-box-%d.pdf" % N)
+
+
+def plot_2d_histogram(x, y, bins):
+    H, xedges, yedges = histogram2d(x, y, bins)
+    imshow(H.T, extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
+           origin='lower left', interpolation='lanczos', aspect='auto')
+    colorbar()
 
 
 if __name__ == '__main__':
