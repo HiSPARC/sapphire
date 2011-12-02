@@ -11,7 +11,7 @@ import clusters
 
 R = 100
 N = 100000
-N_CORES = 16
+N_CORES = 64
 
 
 class Master(object):
@@ -23,17 +23,25 @@ class Master(object):
     def main(self):
         self.store_shower_data()
         self.do_station_simulations()
-        self.do_custom_simulations()
+        self.do_station_size_simulations()
+        self.do_energies_simulations()
 
     def store_shower_data(self):
         for angle in [0, 5, 22.5, 35]:
             self.store_1PeV_data_for_angle(angle)
+        for energy, group_name in [('e14', 'E_100TeV'),
+                                   ('e16', 'E_10PeV')]:
+            self.store_data_for_energy(energy, group_name)
 
     def store_1PeV_data_for_angle(self, angle):
         angle_string = str(angle).replace('.', '_')
         group_name = '/showers/E_1PeV/zenith_%s' % angle_string
         filename = '../aires/showere15-angle-%s.grdpcles' % angle_string
+        store_aires_data.store_aires_data(self.data, group_name, filename)
 
+    def store_data_for_energy(self, energy, group_name):
+        group_name = '/showers/%s/zenith_22_5' % group_name
+        filename = '../aires/shower%s-angle-22_5.grdpcles' % energy
         store_aires_data.store_aires_data(self.data, group_name, filename)
 
     def do_station_simulations(self):
@@ -42,13 +50,20 @@ class Master(object):
             for shower in self.get_showers_in_group(angle):
                 self.perform_simulation(cluster, shower)
 
-    def do_custom_simulations(self):
+    def do_station_size_simulations(self):
         angle = '/showers/E_1PeV/zenith_22_5'
         for station_size in [5, 20]:
             cluster = clusters.SingleStation(station_size)
             for shower in self.get_showers_in_group(angle):
                 output_path = self.make_output_path_for_station_size_simulation(shower, station_size)
                 self.perform_simulation(cluster, shower, output_path)
+
+    def do_energies_simulations(self):
+        cluster = clusters.SingleStation()
+        for energy in ['100TeV', '10PeV']:
+            shower_group = '/showers/E_%s/zenith_22_5' % energy
+            for shower in self.get_showers_in_group(shower_group):
+                self.perform_simulation(cluster, shower)
 
     def make_output_path_for_station_size_simulation(self, shower, station_size):
         path = shower._v_pathname.replace('/showers/', '/simulations/')
