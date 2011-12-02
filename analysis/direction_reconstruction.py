@@ -348,6 +348,7 @@ def do_reconstruction_plots(data, tablename):
     boxplot_core_distances_for_mips(table)
     plot_reconstruction_efficiency_vs_R_for_angles(1)
     plot_reconstruction_efficiency_vs_R_for_angles(2)
+    plot_reconstruction_efficiency_vs_R_for_mips()
 
 def plot_uncertainty_mip(table):
     # constants for uncertainty estimation
@@ -975,6 +976,43 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     legend()
 
     savefig('plots/plot_reconstruction_efficiency_vs_R_for_angles-%dMIP.pdf' % N)
+
+def plot_reconstruction_efficiency_vs_R_for_mips():
+    figure()
+
+    bin_edges = linspace(0, 100, 10)
+    x = (bin_edges[:-1] + bin_edges[1:]) / 2.
+
+    for N in range(1, 5):
+        shower_group = '/simulations/E_1PeV/zenith_22_5'
+
+        efficiencies = []
+        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
+            shower_results = []
+            for shower in data.listNodes(shower_group):
+                sel_query = '(low <= r) & (r < high)'
+                coinc_sel = shower.coincidences.readWhere(sel_query)
+                ids = coinc_sel['id']
+                obs_sel = shower.observables.readCoordinates(ids)
+                assert (obs_sel['id'] == ids).all()
+
+                o = obs_sel
+                sel = o.compress(amin(array([o['n1'], o['n3'], o['n4']]), 0) == N)
+
+                shower_results.append(len(sel))
+            query = "(size == 10) & (bin == 0) & (sim_theta == %.40f) & (low <= r) & (r < high) & (D == N)" % float32(deg2rad(22.5))
+            ssel = data.root.reconstructions.full.readWhere(query)
+            print sum(shower_results), len(ssel), len(ssel) / sum(shower_results)
+            efficiencies.append(len(ssel) / sum(shower_results))
+
+        plot(x, efficiencies, label=r'$N_{MIP} = %d' % N)
+
+    xlabel("Core distance [m]")
+    ylabel("Reconstruction efficiency")
+    title(r"$\theta = 22.5^\circ$")
+    legend()
+
+    savefig('plots/plot_reconstruction_efficiency_vs_R_for_mips.pdf')
 
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
