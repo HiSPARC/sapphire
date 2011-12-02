@@ -343,6 +343,7 @@ def do_reconstruction_plots(data, tablename):
     boxplot_phi_reconstruction_results_for_MIP(table, 2)
     boxplot_arrival_times(table, 1)
     boxplot_arrival_times(table, 2)
+    boxplot_core_distances_for_mips(table)
 
 def plot_uncertainty_mip(table):
     # constants for uncertainty estimation
@@ -915,6 +916,26 @@ def boxplot_arrival_times(table, N):
     xticks(arange(0, 100.5, 10))
 
     savefig("plots/auto-results-boxplot-arrival-times-%d.pdf" % N)
+
+def boxplot_core_distances_for_mips(table):
+    query = ('(size==10) & (bin==0) & (sim_theta == %.40f)' %
+             float32(deg2rad(22.5)))
+
+    r_list = []
+    for D in range(1, 5):
+        sel_query = query + '& (D == %d)' % D
+        sel = table.readWhere(sel_query)
+        r = sel[:]['r']
+        r_list.append(r)
+
+    figure()
+    boxplot(r_list)
+    xticks(range(1, 5))
+    xlabel("Minimum number of particles")
+    ylabel("Core distance [m]")
+    title(r"$\theta = 22.5^\circ$")
+
+    savefig("plots/auto-results-boxplot-core-distances-for-mips.pdf")
 
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
