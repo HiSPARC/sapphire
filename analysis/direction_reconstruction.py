@@ -977,7 +977,7 @@ def plot_detection_efficiency_vs_R_for_angles(N):
     title(r"$N_{MIP} \geq %d$" % N)
     legend()
 
-    savefig('plots/plot_detection_efficiency_vs_R_for_angles-%dMIP.pdf' % N)
+    savefig('plots/auto-results_detection_efficiency_vs_R_for_angles-%dMIP.pdf' % N)
 
 def plot_reconstruction_efficiency_vs_R_for_angles(N):
     figure()
@@ -1014,7 +1014,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     title(r"$N_{MIP} \geq %d$" % N)
     legend()
 
-    savefig('plots/plot_reconstruction_efficiency_vs_R_for_angles-%dMIP.pdf' % N)
+    savefig('plots/auto-results_reconstruction_efficiency_vs_R_for_angles-%dMIP.pdf' % N)
 
 def plot_reconstruction_efficiency_vs_R_for_mips():
     figure()
@@ -1051,7 +1051,7 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
     title(r"$\theta = 22.5^\circ$")
     legend()
 
-    savefig('plots/plot_reconstruction_efficiency_vs_R_for_mips.pdf')
+    savefig('plots/auto-results_reconstruction_efficiency_vs_R_for_mips.pdf')
 
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
