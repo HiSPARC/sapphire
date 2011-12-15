@@ -6,11 +6,16 @@ import numpy as np
 
 
 __suffix = ''
+__prefix = ''
 
 
 def set_suffix(suffix):
     global __suffix
     __suffix = suffix
+
+def set_prefix(prefix):
+    global __prefix
+    __prefix = prefix
 
 def whosparent():
     """Return parent function name of caller"""
@@ -21,8 +26,8 @@ def saveplot(suffix=''):
     """Save a plot using caller's name"""
 
     if suffix:
-        suffix = '-' + suffix
-    plt.savefig('plots/%s%s%s.pdf' % (whosparent(), suffix, __suffix))
+        suffix = '-%s' % suffix
+    plt.savefig('plots/%s%s%s%s.pdf' % (__prefix, whosparent(), suffix, __suffix))
 
 def title(text):
     plt.title(text + '\n(%s)' % __suffix)
