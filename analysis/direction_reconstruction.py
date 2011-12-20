@@ -1,9 +1,11 @@
 from __future__ import division
 
 import tables
-from itertools import combinations
+from itertools import combinations, izip
 import re
 import csv
+
+import progressbar as pb
 
 from pylab import *
 from scipy.optimize import curve_fit
@@ -824,6 +826,104 @@ def plot_2d_histogram(x, y, bins):
            origin='lower left', interpolation='lanczos', aspect='auto')
     colorbar()
 
+def do_jos_plots(data):
+    make_datasets_failed_reconstructions_scatter(data)
+    plot_failed_and_successful_scatter_plots()
+    plot_failed_histograms()
+
+def make_datasets_failed_reconstructions_scatter(data):
+    global dt1, dt2, phis_sim, phis_rec
+    global gdt1, gdt2, gphis_sim, gphis_rec
+
+    group = data.root.simulations.E_1PeV.zenith_22_5.shower_0
+    observables = group.observables
+    coincidences = group.coincidences
+
+    progressbar = pb.ProgressBar(maxval=len(observables))
+    dt1, dt2, phis_sim, phis_rec = [], [], [], []
+    gdt1, gdt2, gphis_sim, gphis_rec = [], [], [], []
+
+    for event, coincidence in progressbar(izip(observables, coincidences)):
+        assert event['id'] == coincidence['id']
+        if min(event['n1'], event['n3'], event['n4']) >= 1.:
+            theta, phi = reconstruct_angle(event, 10.)
+            assert not isnan(phi)
+
+            if isnan(theta):
+                dt1.append(event['t1'] - event['t3'])
+                dt2.append(event['t1'] - event['t4'])
+                phis_sim.append(coincidence['phi'])
+                phis_rec.append(phi)
+            else:
+                gdt1.append(event['t1'] - event['t3'])
+                gdt2.append(event['t1'] - event['t4'])
+                gphis_sim.append(coincidence['phi'])
+                gphis_rec.append(phi)
+
+def plot_failed_and_successful_scatter_plots():
+    figure(figsize=(20., 11.5))
+
+    subplot(231)
+    plot(gdt1, rad2deg(gphis_sim), ',', c='green')
+    plot(dt1, rad2deg(phis_sim), ',', c='red')
+    xlabel(r"$t_1 - t_3$ [ns]")
+    ylabel(r"$\phi_{sim}$")
+    xlim(-200, 200)
+
+    subplot(232)
+    plot(gdt2, rad2deg(gphis_sim), ',', c='green')
+    plot(dt2, rad2deg(phis_sim), ',', c='red')
+    xlabel(r"$t_1 - t_4$ [ns]")
+    ylabel(r"$\phi_{sim}$")
+    xlim(-200, 200)
+
+    subplot(234)
+    plot(gdt1, rad2deg(gphis_rec), ',', c='green')
+    plot(dt1, rad2deg(phis_rec), ',', c='red')
+    xlabel(r"$t_1 - t_3$ [ns]")
+    ylabel(r"$\phi_{rec}$")
+    xlim(-200, 200)
+
+    subplot(235)
+    plot(gdt2, rad2deg(gphis_rec), ',', c='green')
+    plot(dt2, rad2deg(phis_rec), ',', c='red')
+    xlabel(r"$t_1 - t_4$ [ns]")
+    ylabel(r"$\phi_{rec}$")
+    xlim(-200, 200)
+
+    subplot(233)
+    plot(gdt1, gdt2, ',', c='green')
+    plot(dt1, dt2, ',', c='red')
+    xlabel(r"$t_1 - t_3$ [ns]")
+    ylabel(r"$t_1 - t_4$ [ns]")
+    xlim(-200, 200)
+    ylim(-200, 200)
+
+    utils.saveplot()
+
+def plot_failed_histograms():
+    figure()
+
+    global dt1, dt2, phis
+
+    c = 3e8 * 1e-9
+    phi1 = calc_phi(1, 3)
+    phi2 = calc_phi(1, 4)
+
+    dt1 = array(dt1)
+    dt2 = array(dt2)
+    phis = array(phis)
+
+    subplot(121)
+    hist(c * dt1 / (10 * cos(phis - phi1)), bins=linspace(-20, 20, 100))
+    xlabel(r"$c \, \Delta t_1 / (r_1 \cos(\phi - \phi_1))$")
+
+    subplot(122)
+    hist(c * dt2 / (10 * cos(phis - phi2)), bins=linspace(-20, 20, 100))
+    xlabel(r"$c \, \Delta t_2 / (r_2 \cos(\phi - \phi_2))$")
+
+    utils.saveplot()
+
 
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
@@ -841,5 +941,8 @@ if __name__ == '__main__':
     else:
         print "Skipping reconstruction!"
 
-    utils.set_prefix("DIR-")
-    do_reconstruction_plots(data, 'full')
+    #utils.set_prefix("DIR-")
+    #do_reconstruction_plots(data, 'full')
+
+    utils.set_prefix("WIP-")
+    do_jos_plots(data)
