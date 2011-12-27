@@ -402,7 +402,6 @@ def plot_uncertainty_mip(table):
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
-    #savefig('plots/auto-results-MIP.pdf')
     utils.saveplot()
     print
 
@@ -461,7 +460,6 @@ def plot_uncertainty_zenith(table):
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
-    #savefig('plots/auto-results-zenith.pdf')
     utils.saveplot()
     print
 
@@ -512,7 +510,6 @@ def plot_uncertainty_size(table):
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
-    #savefig('plots/auto-results-size.pdf')
     utils.saveplot()
     print
 
@@ -571,7 +568,6 @@ def plot_uncertainty_binsize(table):
     ylim(ymin=0)
     if USE_TEX:
         rcParams['text.usetex'] = True
-    #savefig('plots/auto-results-binsize.pdf')
     utils.saveplot()
     print
 
@@ -605,7 +601,6 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
     ylabel(r"$\phi_{reconstructed}$")
     title(r"$N_{MIP} \geq %d, \quad \theta > 0^\circ$" % N)
 
-    #savefig("plots/auto-results-phi-reconstruction-%d.pdf" % N)
     utils.saveplot(N)
 
 def boxplot_theta_reconstruction_results_for_MIP(table, N):
@@ -630,7 +625,6 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
     axhline(0)
     ylim(-20, 20)
 
-    #savefig("plots/auto-results-theta-reconstruction-%d.pdf" % N)
     utils.saveplot(N)
 
 def boxplot_phi_reconstruction_results_for_MIP(table, N):
@@ -660,7 +654,6 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
     xticks(linspace(-180, 180, 9))
     axhline(0)
 
-    #savefig("plots/auto-results-phi-reconstruction-box-%d.pdf" % N)
     utils.saveplot(N)
 
 def boxplot_arrival_times(table, N):
@@ -684,7 +677,6 @@ def boxplot_arrival_times(table, N):
 
     xticks(arange(0, 100.5, 10))
 
-    #savefig("plots/auto-results-boxplot-arrival-times-%d.pdf" % N)
     utils.saveplot(N)
 
 def boxplot_core_distances_for_mips(table):
@@ -705,7 +697,6 @@ def boxplot_core_distances_for_mips(table):
     ylabel("Core distance [m]")
     title(r"$\theta = 22.5^\circ$")
 
-    #savefig("plots/auto-results-boxplot-core-distances-for-mips.pdf")
     utils.saveplot()
 
 def plot_detection_efficiency_vs_R_for_angles(N):
@@ -741,7 +732,6 @@ def plot_detection_efficiency_vs_R_for_angles(N):
     title(r"$N_{MIP} \geq %d$" % N)
     legend()
 
-    #savefig('plots/auto-results_detection_efficiency_vs_R_for_angles-%dMIP.pdf' % N)
     utils.saveplot(N)
 
 def plot_reconstruction_efficiency_vs_R_for_angles(N):
@@ -779,7 +769,6 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     title(r"$N_{MIP} \geq %d$" % N)
     legend()
 
-    #savefig('plots/auto-results_reconstruction_efficiency_vs_R_for_angles-%dMIP.pdf' % N)
     utils.saveplot(N)
 
 def plot_reconstruction_efficiency_vs_R_for_mips():
@@ -817,7 +806,6 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
     title(r"$\theta = 22.5^\circ$")
     legend()
 
-    #savefig('plots/auto-results_reconstruction_efficiency_vs_R_for_mips.pdf')
     utils.saveplot()
 
 def plot_2d_histogram(x, y, bins):
