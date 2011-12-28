@@ -61,11 +61,14 @@ class ReconstructedEvent(tables.IsDescription):
 
 
 class DirectionReconstruction():
-    def __init__(self):
-        pass
+    def __init__(self, datafile, results_table, D=1., N=None):
+        self.data = datafile
+        self.results_table = results_table
+        self.D = D
+        self.N = N
 
-    def reconstruct_angles(self, data, tablename, dest, THETA, D, binning=False,
-                           randomize_binning=False, N=None):
+    def reconstruct_angles(self, tablename, THETA, binning=False,
+                           randomize_binning=False):
         """Reconstruct angles from simulation for minimum particle density"""
 
         match = re.search('_size([0-9]+)', tablename)
@@ -74,15 +77,19 @@ class DirectionReconstruction():
         else:
             R = 10
 
-        shower_group = data.getNode('/simulations/E_1PeV', tablename)
+        shower_group = self.data.getNode('/simulations/E_1PeV', tablename)
 
-        for shower in data.listNodes(shower_group):
+        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                              pb.ETA()],
+                                     fd=sys.stderr)
+
+        for shower in progressbar(self.data.listNodes(shower_group)):
             shower_table = shower.observables
             coincidence_table = shower.coincidences
-            dst_row = dest.row
-            for event, coincidence in zip(shower_table[:N], coincidence_table[:N]):
+            dst_row = self.results_table.row
+            for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
                 assert event['id'] == coincidence['id']
-                if min(event['n1'], event['n3'], event['n4']) >= D:
+                if min(event['n1'], event['n3'], event['n4']) >= self.D:
                     # Do we need to bin timing data?
                     if binning is not False:
                         event['t1'] = floor(event['t1'] / binning) * binning
@@ -129,7 +136,7 @@ class DirectionReconstruction():
                         dst_row['bin'] = bin_size
                         dst_row['bin_r'] = randomize_binning
                         dst_row.append()
-        dest.flush()
+            self.results_table.flush()
 
     def reconstruct_angle(self, event, R=10):
         """Reconstruct angles from a single event"""
@@ -289,13 +296,6 @@ class DirectionReconstruction():
 
         return num / den
 
-def rel_theta_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
-    e1 = rel_theta1_errorsq(theta, phi, phi1, phi2, r1, r2)
-    e2 = rel_theta2_errorsq(theta, phi, phi1, phi2, r1, r2)
-
-    #return minimum(e1, e2)
-    return e1
-
 def do_full_reconstruction(data, tablename):
     """Do a reconstruction of all simulated data and store results"""
 
@@ -312,29 +312,30 @@ def do_full_reconstruction(data, tablename):
     table = data.createTable('/reconstructions', tablename,
                              ReconstructedEvent, "Reconstruction data")
 
-    kwargs = dict(data=data, dest=table, D=1)
-    reconstruct_angles(tablename='zenith_0', THETA=0, **kwargs)
-    reconstruct_angles(tablename='zenith_5', THETA=deg2rad(5), **kwargs)
-    reconstruct_angles(tablename='zenith_22_5', THETA=pi / 8, **kwargs)
-    reconstruct_angles(tablename='zenith_35', THETA=deg2rad(35), **kwargs)
+    rec = DirectionReconstruction(data, table, D=1, N=100)
+
+    rec.reconstruct_angles(tablename='zenith_0', THETA=0)
+    rec.reconstruct_angles(tablename='zenith_5', THETA=deg2rad(5))
+    rec.reconstruct_angles(tablename='zenith_22_5', THETA=pi / 8)
+    rec.reconstruct_angles(tablename='zenith_35', THETA=deg2rad(35))
 
     # SPECIALS
     # Station sizes
-    reconstruct_angles(tablename='zenith_22_5_size5', THETA=pi / 8, **kwargs)
-    reconstruct_angles(tablename='zenith_22_5_size20', THETA=pi / 8, **kwargs)
+    rec.reconstruct_angles(tablename='zenith_22_5_size5', THETA=pi / 8)
+    rec.reconstruct_angles(tablename='zenith_22_5_size20', THETA=pi / 8)
 
     # SPECIALS
     # Binnings
-    kwargs = dict(data=data, tablename='zenith_22_5', dest=table,
-                  THETA=pi / 8, D=1)
+    kwargs = dict(tablename='zenith_22_5',
+                  THETA=pi / 8)
     kwargs['randomize_binning'] = False
-    reconstruct_angles(binning=1, **kwargs)
-    reconstruct_angles(binning=2.5, **kwargs)
-    reconstruct_angles(binning=5, **kwargs)
+    rec.reconstruct_angles(binning=1, **kwargs)
+    rec.reconstruct_angles(binning=2.5, **kwargs)
+    rec.reconstruct_angles(binning=5, **kwargs)
     kwargs['randomize_binning'] = True
-    reconstruct_angles(binning=1, **kwargs)
-    reconstruct_angles(binning=2.5, **kwargs)
-    reconstruct_angles(binning=5, **kwargs)
+    rec.reconstruct_angles(binning=1, **kwargs)
+    rec.reconstruct_angles(binning=2.5, **kwargs)
+    rec.reconstruct_angles(binning=5, **kwargs)
 
 def do_reconstruction_plots(data, tablename):
     """Make plots based upon earlier reconstructions"""
@@ -920,18 +921,21 @@ def plot_failed_histograms():
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
     # quite well)
-    np.seterr(invalid='ignore')
+    np.seterr(invalid='ignore', divide='ignore')
 
     try:
         data
     except NameError:
         data = tables.openFile('master.h5', 'a')
 
-    if '/reconstructions/full' not in data:
-        print "Reconstructing shower direction..."
-        do_full_reconstruction(data, 'full')
-    else:
-        print "Skipping reconstruction!"
+#    if '/reconstructions/full' not in data:
+#        print "Reconstructing shower direction..."
+#        do_full_reconstruction(data, 'full')
+#    else:
+#        print "Skipping reconstruction!"
+
+    print "Reconstructing shower direction..."
+    do_full_reconstruction(data, 'fulltest')
 
     #utils.set_prefix("DIR-")
     #do_reconstruction_plots(data, 'full')
