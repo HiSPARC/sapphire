@@ -60,6 +60,78 @@ class ReconstructedEvent(tables.IsDescription):
     bin_r = tables.BoolCol()
 
 
+class DirectionReconstruction():
+    def __init__(self):
+        pass
+
+    def reconstruct_angles(self, data, tablename, dest, THETA, D, binning=False,
+                           randomize_binning=False, N=None):
+        """Reconstruct angles from simulation for minimum particle density"""
+
+        match = re.search('_size([0-9]+)', tablename)
+        if match:
+            R = int(match.group(1))
+        else:
+            R = 10
+
+        shower_group = data.getNode('/simulations/E_1PeV', tablename)
+
+        for shower in data.listNodes(shower_group):
+            shower_table = shower.observables
+            coincidence_table = shower.coincidences
+            dst_row = dest.row
+            for event, coincidence in zip(shower_table[:N], coincidence_table[:N]):
+                assert event['id'] == coincidence['id']
+                if min(event['n1'], event['n3'], event['n4']) >= D:
+                    # Do we need to bin timing data?
+                    if binning is not False:
+                        event['t1'] = floor(event['t1'] / binning) * binning
+                        event['t2'] = floor(event['t2'] / binning) * binning
+                        event['t3'] = floor(event['t3'] / binning) * binning
+                        event['t4'] = floor(event['t4'] / binning) * binning
+                        # Do we need to randomize inside a bin?
+                        if randomize_binning is True:
+                            event['t1'] += uniform(0, binning)
+                            event['t2'] += uniform(0, binning)
+                            event['t3'] += uniform(0, binning)
+                            event['t4'] += uniform(0, binning)
+
+                    theta, phi = reconstruct_angle(event, R)
+
+                    alpha = event['alpha']
+
+                    if not isnan(theta) and not isnan(phi):
+    #                    ang_dist = arccos(sin(theta) * sin(THETA) *
+    #                                      cos(phi - -alpha) + cos(theta) *
+    #                                      cos(THETA))
+
+                        dst_row['r'] = coincidence['r']
+                        dst_row['phi'] = coincidence['phi']
+                        dst_row['alpha'] = event['alpha']
+                        dst_row['t1'] = event['t1']
+                        dst_row['t2'] = event['t2']
+                        dst_row['t3'] = event['t3']
+                        dst_row['t4'] = event['t4']
+                        dst_row['n1'] = event['n1']
+                        dst_row['n2'] = event['n2']
+                        dst_row['n3'] = event['n3']
+                        dst_row['n4'] = event['n4']
+                        dst_row['sim_theta'] = THETA
+                        dst_row['sim_phi'] = coincidence['alpha']
+                        dst_row['r_theta'] = theta
+                        dst_row['r_phi'] = phi
+                        dst_row['D'] = min(event['n1'], event['n3'], event['n4'])
+                        dst_row['size'] = R
+                        if binning is False:
+                            bin_size = 0
+                        else:
+                            bin_size = binning
+                        dst_row['bin'] = bin_size
+                        dst_row['bin_r'] = randomize_binning
+                        dst_row.append()
+        dest.flush()
+
+
 def reconstruct_angle(event, R=10):
     """Reconstruct angles from a single event"""
 
@@ -264,73 +336,6 @@ def do_full_reconstruction(data, tablename):
     reconstruct_angles(binning=1, **kwargs)
     reconstruct_angles(binning=2.5, **kwargs)
     reconstruct_angles(binning=5, **kwargs)
-
-def reconstruct_angles(data, tablename, dest, THETA, D, binning=False,
-                       randomize_binning=False, N=None):
-    """Reconstruct angles from simulation for minimum particle density"""
-
-    match = re.search('_size([0-9]+)', tablename)
-    if match:
-        R = int(match.group(1))
-    else:
-        R = 10
-
-    shower_group = data.getNode('/simulations/E_1PeV', tablename)
-
-    for shower in data.listNodes(shower_group):
-        shower_table = shower.observables
-        coincidence_table = shower.coincidences
-        dst_row = dest.row
-        for event, coincidence in zip(shower_table[:N], coincidence_table[:N]):
-            assert event['id'] == coincidence['id']
-            if min(event['n1'], event['n3'], event['n4']) >= D:
-                # Do we need to bin timing data?
-                if binning is not False:
-                    event['t1'] = floor(event['t1'] / binning) * binning
-                    event['t2'] = floor(event['t2'] / binning) * binning
-                    event['t3'] = floor(event['t3'] / binning) * binning
-                    event['t4'] = floor(event['t4'] / binning) * binning
-                    # Do we need to randomize inside a bin?
-                    if randomize_binning is True:
-                        event['t1'] += uniform(0, binning)
-                        event['t2'] += uniform(0, binning)
-                        event['t3'] += uniform(0, binning)
-                        event['t4'] += uniform(0, binning)
-
-                theta, phi = reconstruct_angle(event, R)
-
-                alpha = event['alpha']
-
-                if not isnan(theta) and not isnan(phi):
-#                    ang_dist = arccos(sin(theta) * sin(THETA) *
-#                                      cos(phi - -alpha) + cos(theta) *
-#                                      cos(THETA))
-
-                    dst_row['r'] = coincidence['r']
-                    dst_row['phi'] = coincidence['phi']
-                    dst_row['alpha'] = event['alpha']
-                    dst_row['t1'] = event['t1']
-                    dst_row['t2'] = event['t2']
-                    dst_row['t3'] = event['t3']
-                    dst_row['t4'] = event['t4']
-                    dst_row['n1'] = event['n1']
-                    dst_row['n2'] = event['n2']
-                    dst_row['n3'] = event['n3']
-                    dst_row['n4'] = event['n4']
-                    dst_row['sim_theta'] = THETA
-                    dst_row['sim_phi'] = coincidence['alpha']
-                    dst_row['r_theta'] = theta
-                    dst_row['r_phi'] = phi
-                    dst_row['D'] = min(event['n1'], event['n3'], event['n4'])
-                    dst_row['size'] = R
-                    if binning is False:
-                        bin_size = 0
-                    else:
-                        bin_size = binning
-                    dst_row['bin'] = bin_size
-                    dst_row['bin_r'] = randomize_binning
-                    dst_row.append()
-    dest.flush()
 
 def do_reconstruction_plots(data, tablename):
     """Make plots based upon earlier reconstructions"""
@@ -932,5 +937,5 @@ if __name__ == '__main__':
     #utils.set_prefix("DIR-")
     #do_reconstruction_plots(data, 'full')
 
-    utils.set_prefix("WIP-")
-    do_jos_plots(data)
+#    utils.set_prefix("WIP-")
+#    do_jos_plots(data)

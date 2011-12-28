@@ -6,7 +6,7 @@ import tables
 
 from numpy import deg2rad
 
-import direction_reconstruction as rec
+import direction_reconstruction
 
 
 class DirectionReconstructionTests(unittest.TestCase):
@@ -26,8 +26,10 @@ class DirectionReconstructionTests(unittest.TestCase):
         output = self.data.createTable('/reconstructions',
                                        'test',
 #                                       'prerecorded',
-                                       rec.ReconstructedEvent, createparents=True)
-        rec.reconstruct_angles(self.data, 'zenith_22_5', output, deg2rad(22.5), 1)
+                                       direction_reconstruction.ReconstructedEvent,
+                                       createparents=True)
+        reconstruction = direction_reconstruction.DirectionReconstruction()
+        reconstruction.reconstruct_angles(self.data, 'zenith_22_5', output, deg2rad(22.5), 1)
 
     def validate_reconstruction_results(self):
         expected = self.data.root.reconstructions.prerecorded
