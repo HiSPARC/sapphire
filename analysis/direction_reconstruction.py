@@ -96,7 +96,7 @@ class DirectionReconstruction():
                             event['t3'] += uniform(0, binning)
                             event['t4'] += uniform(0, binning)
 
-                    theta, phi = reconstruct_angle(event, R)
+                    theta, phi = self.reconstruct_angle(event, R)
 
                     alpha = event['alpha']
 
@@ -131,124 +131,163 @@ class DirectionReconstruction():
                         dst_row.append()
         dest.flush()
 
+    def reconstruct_angle(self, event, R=10):
+        """Reconstruct angles from a single event"""
 
-def reconstruct_angle(event, R=10):
-    """Reconstruct angles from a single event"""
+        dt1 = event['t1'] - event['t3']
+        dt2 = event['t1'] - event['t4']
 
-    dt1 = event['t1'] - event['t3']
-    dt2 = event['t1'] - event['t4']
+        return self.reconstruct_angle_dt(dt1, dt2, R)
 
-    return reconstruct_angle_dt(dt1, dt2, R)
+    def reconstruct_angle_dt(self, dt1, dt2, R=10):
+        """Reconstruct angle given time differences"""
 
-def reconstruct_angle_dt(dt1, dt2, R=10):
-    """Reconstruct angle given time differences"""
+        c = 3.00e+8
 
-    c = 3.00e+8
+        r1 = R
+        r2 = R
 
-    r1 = R
-    r2 = R
+        phi1 = self.calc_phi(1, 3)
+        phi2 = self.calc_phi(1, 4)
 
-    phi1 = calc_phi(1, 3)
-    phi2 = calc_phi(1, 4)
+        phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
+                      (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
+        theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
+        theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
 
-    phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
-                  (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
-    theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
-    theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
+        e1 = sqrt(self.rel_theta1_errorsq(theta1, phi, phi1, phi2, R, R))
+        e2 = sqrt(self.rel_theta2_errorsq(theta2, phi, phi1, phi2, R, R))
 
-    e1 = sqrt(rel_theta1_errorsq(theta1, phi, phi1, phi2, R, R))
-    e2 = sqrt(rel_theta2_errorsq(theta2, phi, phi1, phi2, R, R))
+        theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
-    theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
+        return theta_wgt, phi
 
-    return theta_wgt, phi
+    def calc_phi(self, s1, s2):
+        """Calculate angle between detectors (phi1, phi2)"""
 
-def calc_phi(s1, s2):
-    """Calculate angle between detectors (phi1, phi2)"""
+        x1, y1 = DETECTORS[s1 - 1][:2]
+        x2, y2 = DETECTORS[s2 - 1][:2]
 
-    x1, y1 = DETECTORS[s1 - 1][:2]
-    x2, y2 = DETECTORS[s2 - 1][:2]
+        return arctan2((y2 - y1), (x2 - x1))
 
-    return arctan2((y2 - y1), (x2 - x1))
+    def rel_theta1_errorsq(self, theta, phi, phi1, phi2, r1=10, r2=10):
+        # speed of light in m / ns
+        c = .3
 
-def rel_phi_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
+        sintheta = sin(theta)
+        sinphiphi1 = sin(phi - phi1)
 
-    tanphi = tan(phi)
-    sinphi1 = sin(phi1)
-    cosphi1 = cos(phi1)
-    sinphi2 = sin(phi2)
-    cosphi2 = cos(phi2)
+        den = (1 - sintheta ** 2) * r1 ** 2 * cos(phi - phi1) ** 2
 
-    den = ((1 + tanphi ** 2) ** 2 * r1 ** 2 * r2 ** 2 * sin(theta) ** 2
-       * (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2
-       / c ** 2)
+        A = (r1 ** 2 * sinphiphi1 ** 2
+             * self.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+        B = (r1 * c * sinphiphi1
+             * (self.dphi_dt0(theta, phi, phi1, phi2, r1, r2)
+                - self.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
+        C = 2 * c ** 2
 
-    A = (r1 ** 2 * sinphi1 ** 2
-         + r2 ** 2 * sinphi2 ** 2
-         - r1 * r2 * sinphi1 * sinphi2)
-    B = (2 * r1 ** 2 * sinphi1 * cosphi1
-         + 2 * r2 ** 2 * sinphi2 * cosphi2
-         - r1 * r2 * sinphi2 * cosphi1
-         - r1 * r2 * sinphi1 * cosphi2)
-    C = (r1 ** 2 * cosphi1 ** 2
-         + r2 ** 2 * cosphi2 ** 2
-         - r1 * r2 * cosphi1 * cosphi2)
+        errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
 
-    return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
+        return where(isnan(errsq), inf, errsq)
 
-def dphi_dt0(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
+    def rel_theta2_errorsq(self, theta, phi, phi1, phi2, r1=10, r2=10):
+        # speed of light in m / ns
+        c = .3
 
-    tanphi = tan(phi)
-    sinphi1 = sin(phi1)
-    cosphi1 = cos(phi1)
-    sinphi2 = sin(phi2)
-    cosphi2 = cos(phi2)
+        sintheta = sin(theta)
+        sinphiphi2 = sin(phi - phi2)
 
-    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
-           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
-           / c)
-    num = (r2 * cosphi2 - r1 * cosphi1
-           + tanphi * (r2 * sinphi2 - r1 * sinphi1))
+        den = (1 - sintheta ** 2) * r2 ** 2 * cos(phi - phi2) ** 2
 
-    return num / den
+        A = (r2 ** 2 * sinphiphi2 ** 2
+             * self.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+        B = (r2 * c * sinphiphi2
+             * (self.dphi_dt0(theta, phi, phi1, phi2, r1, r2)
+                - self.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
+        C = 2 * c ** 2
 
-def dphi_dt1(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
+        errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
 
-    tanphi = tan(phi)
-    sinphi1 = sin(phi1)
-    cosphi1 = cos(phi1)
-    sinphi2 = sin(phi2)
-    cosphi2 = cos(phi2)
+        return where(isnan(errsq), inf, errsq)
 
-    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
-           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
-           / c)
-    num = -r2 * (sinphi2 * tanphi + cosphi2)
+    def rel_phi_errorsq(self, theta, phi, phi1, phi2, r1=10, r2=10):
+        # speed of light in m / ns
+        c = .3
 
-    return num / den
+        tanphi = tan(phi)
+        sinphi1 = sin(phi1)
+        cosphi1 = cos(phi1)
+        sinphi2 = sin(phi2)
+        cosphi2 = cos(phi2)
 
-def dphi_dt2(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
+        den = ((1 + tanphi ** 2) ** 2 * r1 ** 2 * r2 ** 2 * sin(theta) ** 2
+           * (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2
+           / c ** 2)
 
-    tanphi = tan(phi)
-    sinphi1 = sin(phi1)
-    cosphi1 = cos(phi1)
-    sinphi2 = sin(phi2)
-    cosphi2 = cos(phi2)
+        A = (r1 ** 2 * sinphi1 ** 2
+             + r2 ** 2 * sinphi2 ** 2
+             - r1 * r2 * sinphi1 * sinphi2)
+        B = (2 * r1 ** 2 * sinphi1 * cosphi1
+             + 2 * r2 ** 2 * sinphi2 * cosphi2
+             - r1 * r2 * sinphi2 * cosphi1
+             - r1 * r2 * sinphi1 * cosphi2)
+        C = (r1 ** 2 * cosphi1 ** 2
+             + r2 ** 2 * cosphi2 ** 2
+             - r1 * r2 * cosphi1 * cosphi2)
 
-    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
-           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
-           / c)
-    num = r1 * (sinphi1 * tanphi + cosphi1)
+        return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
 
-    return num / den
+    def dphi_dt0(self, theta, phi, phi1, phi2, r1=10, r2=10):
+        # speed of light in m / ns
+        c = .3
+
+        tanphi = tan(phi)
+        sinphi1 = sin(phi1)
+        cosphi1 = cos(phi1)
+        sinphi2 = sin(phi2)
+        cosphi2 = cos(phi2)
+
+        den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
+               * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
+               / c)
+        num = (r2 * cosphi2 - r1 * cosphi1
+               + tanphi * (r2 * sinphi2 - r1 * sinphi1))
+
+        return num / den
+
+    def dphi_dt1(self, theta, phi, phi1, phi2, r1=10, r2=10):
+        # speed of light in m / ns
+        c = .3
+
+        tanphi = tan(phi)
+        sinphi1 = sin(phi1)
+        cosphi1 = cos(phi1)
+        sinphi2 = sin(phi2)
+        cosphi2 = cos(phi2)
+
+        den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
+               * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
+               / c)
+        num = -r2 * (sinphi2 * tanphi + cosphi2)
+
+        return num / den
+
+    def dphi_dt2(self, theta, phi, phi1, phi2, r1=10, r2=10):
+        # speed of light in m / ns
+        c = .3
+
+        tanphi = tan(phi)
+        sinphi1 = sin(phi1)
+        cosphi1 = cos(phi1)
+        sinphi2 = sin(phi2)
+        cosphi2 = cos(phi2)
+
+        den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
+               * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
+               / c)
+        num = r1 * (sinphi1 * tanphi + cosphi1)
+
+        return num / den
 
 def rel_theta_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
     e1 = rel_theta1_errorsq(theta, phi, phi1, phi2, r1, r2)
@@ -256,46 +295,6 @@ def rel_theta_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
 
     #return minimum(e1, e2)
     return e1
-
-def rel_theta1_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
-
-    sintheta = sin(theta)
-    sinphiphi1 = sin(phi - phi1)
-
-    den = (1 - sintheta ** 2) * r1 ** 2 * cos(phi - phi1) ** 2
-
-    A = (r1 ** 2 * sinphiphi1 ** 2
-         * rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-    B = (r1 * c * sinphiphi1
-         * (dphi_dt0(theta, phi, phi1, phi2, r1, r2)
-            - dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
-    C = 2 * c ** 2
-
-    errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
-
-    return where(isnan(errsq), inf, errsq)
-
-def rel_theta2_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
-
-    sintheta = sin(theta)
-    sinphiphi2 = sin(phi - phi2)
-
-    den = (1 - sintheta ** 2) * r2 ** 2 * cos(phi - phi2) ** 2
-
-    A = (r2 ** 2 * sinphiphi2 ** 2
-         * rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-    B = (r2 * c * sinphiphi2
-         * (dphi_dt0(theta, phi, phi1, phi2, r1, r2)
-            - dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
-    C = 2 * c ** 2
-
-    errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
-
-    return where(isnan(errsq), inf, errsq)
 
 def do_full_reconstruction(data, tablename):
     """Do a reconstruction of all simulated data and store results"""
