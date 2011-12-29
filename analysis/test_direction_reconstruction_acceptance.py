@@ -24,6 +24,7 @@ class DirectionReconstructionTests(unittest.TestCase):
         os.remove(data_path)
 
     def create_reconstruction_output(self):
+#        self.data.removeNode('/reconstructions/prerecorded')
         output = self.data.createTable('/reconstructions',
                                        'test',
 #                                       'prerecorded',

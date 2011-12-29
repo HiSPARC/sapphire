@@ -19,10 +19,6 @@ import utils
 
 USE_TEX = False
 
-
-DETECTORS = [(0., 5.77, 'UD'), (0., 0., 'UD'), (-5., -2.89, 'LR'),
-             (5., -2.89, 'LR')]
-
 TIMING_ERROR = 4
 #TIMING_ERROR = 7
 
@@ -71,12 +67,6 @@ class DirectionReconstruction():
                            randomize_binning=False):
         """Reconstruct angles from simulation for minimum particle density"""
 
-        match = re.search('_size([0-9]+)', tablename)
-        if match:
-            R = int(match.group(1))
-        else:
-            R = 10
-
         shower_group = self.data.getNode('/simulations/E_1PeV', tablename)
 
         progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
@@ -86,7 +76,9 @@ class DirectionReconstruction():
         for shower in progressbar(self.data.listNodes(shower_group)):
             shower_table = shower.observables
             coincidence_table = shower.coincidences
+            self.station, = shower._v_attrs.cluster.stations
             dst_row = self.results_table.row
+
             for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
                 assert event['id'] == coincidence['id']
                 if min(event['n1'], event['n3'], event['n4']) >= self.D:
@@ -103,7 +95,7 @@ class DirectionReconstruction():
                             event['t3'] += uniform(0, binning)
                             event['t4'] += uniform(0, binning)
 
-                    theta, phi = self.reconstruct_angle(event, R)
+                    theta, phi = self.reconstruct_angle(event)
 
                     alpha = event['alpha']
 
@@ -128,7 +120,8 @@ class DirectionReconstruction():
                         dst_row['r_theta'] = theta
                         dst_row['r_phi'] = phi
                         dst_row['D'] = min(event['n1'], event['n3'], event['n4'])
-                        dst_row['size'] = R
+                        r, phi = self.calc_r_and_phi(1, 3)
+                        dst_row['size'] = r
                         if binning is False:
                             bin_size = 0
                         else:
@@ -138,44 +131,44 @@ class DirectionReconstruction():
                         dst_row.append()
             self.results_table.flush()
 
-    def reconstruct_angle(self, event, R=10):
+    def reconstruct_angle(self, event):
         """Reconstruct angles from a single event"""
 
         dt1 = event['t1'] - event['t3']
         dt2 = event['t1'] - event['t4']
 
-        return self.reconstruct_angle_dt(dt1, dt2, R)
+        return self.reconstruct_angle_dt(dt1, dt2)
 
-    def reconstruct_angle_dt(self, dt1, dt2, R=10):
+    def reconstruct_angle_dt(self, dt1, dt2):
         """Reconstruct angle given time differences"""
 
         c = 3.00e+8
 
-        r1 = R
-        r2 = R
-
-        phi1 = self.calc_phi(1, 3)
-        phi2 = self.calc_phi(1, 4)
+        r1, phi1 = self.calc_r_and_phi(1, 3)
+        r2, phi2 = self.calc_r_and_phi(1, 4)
 
         phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
                       (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
         theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
         theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
 
-        e1 = sqrt(self.rel_theta1_errorsq(theta1, phi, phi1, phi2, R, R))
-        e2 = sqrt(self.rel_theta2_errorsq(theta2, phi, phi1, phi2, R, R))
+        e1 = sqrt(self.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
+        e2 = sqrt(self.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
 
         theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
         return theta_wgt, phi
 
-    def calc_phi(self, s1, s2):
+    def calc_r_and_phi(self, s1, s2):
         """Calculate angle between detectors (phi1, phi2)"""
 
-        x1, y1 = DETECTORS[s1 - 1][:2]
-        x2, y2 = DETECTORS[s2 - 1][:2]
+        x1, y1 = self.station.detectors[s1 - 1].get_xy_coordinates()
+        x2, y2 = self.station.detectors[s2 - 1].get_xy_coordinates()
 
-        return arctan2((y2 - y1), (x2 - x1))
+        r = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        phi = arctan2((y2 - y1), (x2 - x1))
+
+        return r, phi
 
     def rel_theta1_errorsq(self, theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
