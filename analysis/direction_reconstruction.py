@@ -4,6 +4,7 @@ import tables
 from itertools import combinations, izip
 import re
 import csv
+import os.path
 
 import progressbar as pb
 
@@ -66,11 +67,11 @@ class DirectionReconstruction():
         self.N = N
 
 
-    def reconstruct_angles_for_group(self, tablename, THETA, binning=False,
+    def reconstruct_angles_for_group(self, groupname, THETA, binning=False,
                            randomize_binning=False):
         """Reconstruct angles from simulation for minimum particle density"""
 
-        shower_group = self.data.getNode('/simulations/E_1PeV', tablename)
+        shower_group = self.data.getNode(groupname)
 
         progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                               pb.ETA()],
@@ -312,21 +313,22 @@ def do_full_reconstruction(data, tablename):
     table = data.createTable('/reconstructions', tablename,
                              ReconstructedEvent, "Reconstruction data")
 
+    group = '/simulations/E_1PeV'
     rec = DirectionReconstruction(data, table, min_n134=1, N=100)
 
-    rec.reconstruct_angles_for_group(tablename='zenith_0', THETA=0)
-    rec.reconstruct_angles_for_group(tablename='zenith_5', THETA=deg2rad(5))
-    rec.reconstruct_angles_for_group(tablename='zenith_22_5', THETA=pi / 8)
-    rec.reconstruct_angles_for_group(tablename='zenith_35', THETA=deg2rad(35))
+    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_0'), THETA=0)
+    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_5'), THETA=deg2rad(5))
+    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_22_5'), THETA=pi / 8)
+    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_35'), THETA=deg2rad(35))
 
     # SPECIALS
     # Station sizes
-    rec.reconstruct_angles_for_group(tablename='zenith_22_5_size5', THETA=pi / 8)
-    rec.reconstruct_angles_for_group(tablename='zenith_22_5_size20', THETA=pi / 8)
+    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_22_5_size5'), THETA=pi / 8)
+    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_22_5_size20'), THETA=pi / 8)
 
     # SPECIALS
     # Binnings
-    kwargs = dict(tablename='zenith_22_5',
+    kwargs = dict(groupname=os.path.join(group, 'zenith_22_5'),
                   THETA=pi / 8)
     kwargs['randomize_binning'] = False
     rec.reconstruct_angles_for_group(binning=1, **kwargs)
