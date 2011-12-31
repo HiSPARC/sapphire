@@ -57,6 +57,7 @@ class DirectionReconstructionTests(unittest.TestCase):
             expected_col = expected.col(colname)
             actual_col = actual.col(colname)
             self.assertTrue((expected_col == actual_col).all())
+            self.assertIs(expected_col.dtype, actual_col.dtype)
 
     def create_tempfile_from_testdata(self):
         tmp_path = self.create_tempfile_path()
