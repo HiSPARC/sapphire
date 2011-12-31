@@ -28,36 +28,42 @@ class DirectionReconstructionTests(unittest.TestCase):
     def test_reconstruction_results(self):
         """Verify that reconstruction output matches prerecorded output"""
 
-        # For prerecording output, swap comments in following two lines
-#        self.create_prerecorded_output()
-        self.create_reconstruction_output()
+        expected = '/reconstructions/prerecorded'
+        actual = '/reconstructions/test'
 
-        self.validate_reconstruction_results()
+        # For prerecording output, swap comments in following two lines
+#        self.create_prerecorded_output(expected)
+        self.create_reconstruction_output(actual)
+
+        self.validate_reconstruction_results(expected, actual)
 
     def test_binned_reconstruction_results(self):
         """Verify binned reconstruction results"""
 
         pass
 
-    def create_prerecorded_output(self):
-        if not 'reconstructions' in self.data.root:
-            self.data.createGroup('/', 'reconstructions')
 
-        if 'prerecorded' in self.data.root.reconstructions:
-            self.data.removeNode('/reconstructions/prerecorded')
-
-        output = self.data.createTable('/reconstructions',
-                                       'prerecorded',
-                                       direction_reconstruction.ReconstructedEvent,
-                                       createparents=True)
+    def create_prerecorded_output(self, table_path):
+        output = self.create_empty_output_table(table_path)
         self.reconstruct_direction(output)
 
-    def create_reconstruction_output(self):
-        output = self.data.createTable('/reconstructions',
-                                       'test',
-                                       direction_reconstruction.ReconstructedEvent,
-                                       createparents=True)
+    def create_reconstruction_output(self, table_path):
+        output = self.create_empty_output_table(table_path)
         self.reconstruct_direction(output)
+
+    def create_empty_output_table(self, table_path):
+        group, tablename = os.path.split(table_path)
+
+        if not group in self.data.root:
+            base, groupname = os.path.split(group)
+            self.data.createGroup(base, groupname, createparents=True)
+        group = self.data.getNode(group)
+
+        if tablename in group:
+            self.data.removeNode(table_path)
+
+        output = self.data.createTable(group, tablename, direction_reconstruction.ReconstructedEvent)
+        return output
 
     def reconstruct_direction(self, output):
         reconstruction = direction_reconstruction.DirectionReconstruction(
@@ -66,9 +72,9 @@ class DirectionReconstructionTests(unittest.TestCase):
         reconstruction.reconstruct_angles('zenith_22_5', deg2rad(22.5))
         self.restore_stdout_stderr()
 
-    def validate_reconstruction_results(self):
-        expected = self.data.root.reconstructions.prerecorded
-        actual = self.data.root.reconstructions.test
+    def validate_reconstruction_results(self, expected, actual):
+        expected = self.data.getNode(expected)
+        actual = self.data.getNode(actual)
         self.validate_column_data(expected, actual)
 
     def validate_column_data(self, expected, actual):
