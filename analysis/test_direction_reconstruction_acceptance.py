@@ -10,23 +10,42 @@ from numpy import deg2rad
 import direction_reconstruction
 
 
+TEST_DATA_FILE = 'DIR-testdata.h5'
+
+
 class DirectionReconstructionTests(unittest.TestCase):
+    def setUp(self):
+        self.data_path = self.create_tempfile_from_testdata()
+        self.data = tables.openFile(self.data_path, 'a')
+
+    def tearDown(self):
+        self.data.close()
+
+        # For prerecording output, swap comments in following two lines
+#        os.rename(self.data_path, self.get_testdata_path())
+        os.remove(self.data_path)
+
     def test_reconstruction_results(self):
         """Verify that reconstruction output matches prerecorded output"""
 
-        data_path = self.create_tempfile_from_testdata()
-        self.data = tables.openFile(data_path, 'a')
-
+        # For prerecording output, swap comments in following two lines
 #        self.create_prerecorded_output()
         self.create_reconstruction_output()
+
         self.validate_reconstruction_results()
 
-        self.data.close()
-        os.remove(data_path)
+    def test_binned_reconstruction_results(self):
+        """Verify binned reconstruction results"""
+
+        pass
 
     def create_prerecorded_output(self):
+        if not 'reconstructions' in self.data.root:
+            self.data.createGroup('/', 'reconstructions')
+
         if 'prerecorded' in self.data.root.reconstructions:
             self.data.removeNode('/reconstructions/prerecorded')
+
         output = self.data.createTable('/reconstructions',
                                        'prerecorded',
                                        direction_reconstruction.ReconstructedEvent,
@@ -72,7 +91,7 @@ class DirectionReconstructionTests(unittest.TestCase):
 
     def get_testdata_path(self):
         dir_path = os.path.dirname(__file__)
-        return os.path.join(dir_path, 'DIR-testdata.h5')
+        return os.path.join(dir_path, TEST_DATA_FILE)
 
     def redirect_stdout_stderr_to_devnull(self):
         self.__stdout = sys.stdout
