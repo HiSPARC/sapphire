@@ -46,21 +46,21 @@ class ReconstructedEvent(tables.IsDescription):
     n2 = tables.UInt16Col()
     n3 = tables.UInt16Col()
     n4 = tables.UInt16Col()
-    sim_theta = tables.Float32Col()
-    sim_phi = tables.Float32Col()
-    r_theta = tables.Float32Col()
-    r_phi = tables.Float32Col()
-    D = tables.UInt16Col()
+    reference_theta = tables.Float32Col()
+    reference_phi = tables.Float32Col()
+    reconstructed_theta = tables.Float32Col()
+    reconstructed_phi = tables.Float32Col()
+    min_n134 = tables.UInt16Col()
     size = tables.UInt8Col()
     bin = tables.Float32Col()
     bin_r = tables.BoolCol()
 
 
 class DirectionReconstruction():
-    def __init__(self, datafile, results_table, D=1., N=None):
+    def __init__(self, datafile, results_table, min_n134=1., N=None):
         self.data = datafile
         self.results_table = results_table
-        self.D = D
+        self.min_n134 = min_n134
         self.N = N
 
     def reconstruct_angles(self, tablename, THETA, binning=False,
@@ -81,7 +81,7 @@ class DirectionReconstruction():
 
             for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
                 assert event['id'] == coincidence['id']
-                if min(event['n1'], event['n3'], event['n4']) >= self.D:
+                if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
                     # Do we need to bin timing data?
                     if binning is not False:
                         event['t1'] = floor(event['t1'] / binning) * binning
@@ -115,11 +115,11 @@ class DirectionReconstruction():
                         dst_row['n2'] = event['n2']
                         dst_row['n3'] = event['n3']
                         dst_row['n4'] = event['n4']
-                        dst_row['sim_theta'] = THETA
-                        dst_row['sim_phi'] = coincidence['alpha']
-                        dst_row['r_theta'] = theta
-                        dst_row['r_phi'] = phi
-                        dst_row['D'] = min(event['n1'], event['n3'], event['n4'])
+                        dst_row['reference_theta'] = THETA
+                        dst_row['reference_phi'] = coincidence['alpha']
+                        dst_row['reconstructed_theta'] = theta
+                        dst_row['reconstructed_phi'] = phi
+                        dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
                         r, phi = self.calc_r_and_phi(1, 3)
                         dst_row['size'] = r
                         if binning is False:
@@ -305,7 +305,7 @@ def do_full_reconstruction(data, tablename):
     table = data.createTable('/reconstructions', tablename,
                              ReconstructedEvent, "Reconstruction data")
 
-    rec = DirectionReconstruction(data, table, D=1, N=100)
+    rec = DirectionReconstruction(data, table, min_n134=1, N=100)
 
     rec.reconstruct_angles(tablename='zenith_0', THETA=0)
     rec.reconstruct_angles(tablename='zenith_5', THETA=deg2rad(5))
@@ -366,13 +366,13 @@ def plot_uncertainty_mip(table):
     for D in range(1, 6):
         x.append(D)
         events = table.readWhere(
-            '(D==%d) & (sim_theta==%.40f) & (size==10) & (bin==0) & '
+            '(min_n134==%d) & (reference_theta==%.40f) & (size==10) & (bin==0) & '
             '(0 < r) & (r <= 100)' % (D, float32(pi / 8)))
         print len(events),
-        errors = events['sim_theta'] - events['r_theta']
+        errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['sim_phi'] - events['r_phi']
+        errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
@@ -380,7 +380,7 @@ def plot_uncertainty_mip(table):
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
     print
-    print "mip: D, theta_std, phi_std"
+    print "mip: min_n134, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
@@ -416,14 +416,14 @@ def plot_uncertainty_zenith(table):
     for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
         x.append(THETA)
         events = table.readWhere(
-            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==0)' %
+            '(min_n134==2) & (reference_theta==%.40f) & (size==10) & (bin==0)' %
             float32(THETA))
         MYT.append((events['t1'], events['t3'], events['t4']))
         print rad2deg(THETA), len(events),
-        errors = events['sim_theta'] - events['r_theta']
+        errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['sim_phi'] - events['r_phi']
+        errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
@@ -472,13 +472,13 @@ def plot_uncertainty_size(table):
     for size in [5, 10, 20]:
         x.append(size)
         events = table.readWhere(
-            '(D==2) & (sim_theta==%.40f) & (size==%d) & (bin==0)' %
+            '(min_n134==2) & (reference_theta==%.40f) & (size==%d) & (bin==0)' %
             (float32(pi / 8), size))
         print len(events),
-        errors = events['sim_theta'] - events['r_theta']
+        errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['sim_phi'] - events['r_phi']
+        errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
@@ -526,14 +526,14 @@ def plot_uncertainty_binsize(table):
             is_randomized = True
         x.append(bin_size)
         events = table.readWhere(
-            '(D==2) & (sim_theta==%.40f) & (size==10) & (bin==%.40f) & '
+            '(min_n134==2) & (reference_theta==%.40f) & (size==10) & (bin==%.40f) & '
             '(bin_r==%s)' %
             (float32(pi / 8), bin_size, is_randomized))
         print len(events),
-        errors = events['sim_theta'] - events['r_theta']
+        errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['sim_phi'] - events['r_phi']
+        errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
@@ -586,12 +586,12 @@ std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
 
 def plot_phi_reconstruction_results_for_MIP(table, N):
     min_theta = 1
-    query = '(D>=%d) & (size==10) & (bin==0) & (sim_theta > %.5f)' % \
+    query = '(min_n134>=%d) & (size==10) & (bin==0) & (reference_theta > %.5f)' % \
             (N, deg2rad(min_theta))
 
     events = table.readWhere(query)
-    sim_phi = events['sim_phi']
-    r_phi = events['r_phi']
+    sim_phi = events['reference_phi']
+    r_phi = events['reconstructed_phi']
 
     figure()
     plot_2d_histogram(rad2deg(sim_phi), rad2deg(r_phi), 180)
@@ -603,15 +603,15 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
 
 def boxplot_theta_reconstruction_results_for_MIP(table, N):
     figure()
-    query = '(D>=%d) & (size==10) & (bin==0)' % N
+    query = '(min_n134>=%d) & (size==10) & (bin==0)' % N
 
     angles = [0, 5, 22.5, 35]
     r_dtheta = []
     for angle in angles:
         low, high = deg2rad(angle - 1), deg2rad(angle + 1)
-        sel_query = query + '& (low < sim_theta) & (sim_theta < high)'
+        sel_query = query + '& (low < reference_theta) & (reference_theta < high)'
         sel = table.readWhere(sel_query)
-        r_dtheta.append(rad2deg(sel[:]['r_theta'] - sel[:]['sim_theta']))
+        r_dtheta.append(rad2deg(sel[:]['reconstructed_theta'] - sel[:]['reference_theta']))
 
     boxplot(r_dtheta, sym='')
     xticks(range(1, len(angles) + 1), [str(u) for u in angles])
@@ -628,7 +628,7 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
 def boxplot_phi_reconstruction_results_for_MIP(table, N):
     figure()
     min_theta = 1
-    query = '(D>=%d) & (size==10) & (bin==0) & (sim_theta > %.5f)' % \
+    query = '(min_n134>=%d) & (size==10) & (bin==0) & (reference_theta > %.5f)' % \
             (N, deg2rad(min_theta))
 
     bin_edges = linspace(-180, 180, 18)
@@ -636,9 +636,9 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         rad_low = deg2rad(low)
         rad_high = deg2rad(high)
-        sel_query = query + '& (rad_low < sim_phi) & (sim_phi < rad_high)'
+        sel_query = query + '& (rad_low < reference_phi) & (reference_phi < rad_high)'
         sel = table.readWhere(sel_query)
-        dphi = sel[:]['r_phi'] - sel[:]['sim_phi']
+        dphi = sel[:]['reconstructed_phi'] - sel[:]['reference_phi']
         dphi = (dphi + pi) % (2 * pi) - pi
         r_dphi.append(rad2deg(dphi))
         x.append((low + high) / 2)
@@ -656,7 +656,7 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
 
 def boxplot_arrival_times(table, N):
     figure()
-    query = '(D>=%d) & (size==10) & (bin==0) & (sim_theta == 0)' % N
+    query = '(min_n134>=%d) & (size==10) & (bin==0) & (reference_theta == 0)' % N
 
     bin_edges = linspace(0, 100, 10)
     x, arrival_times = [], []
@@ -678,12 +678,12 @@ def boxplot_arrival_times(table, N):
     utils.saveplot(N)
 
 def boxplot_core_distances_for_mips(table):
-    query = ('(size==10) & (bin==0) & (sim_theta == %.40f)' %
+    query = ('(size==10) & (bin==0) & (reference_theta == %.40f)' %
              float32(deg2rad(22.5)))
 
     r_list = []
     for D in range(1, 5):
-        sel_query = query + '& (D == %d)' % D
+        sel_query = query + '& (min_n134 == %d)' % D
         sel = table.readWhere(sel_query)
         r = sel[:]['r']
         r_list.append(r)
@@ -756,7 +756,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
                 sel = obs_sel.compress((o['n1'] >= N) & (o['n3'] >= N) &
                                        (o['n4'] >= N))
                 shower_results.append(len(sel))
-            query = "(size == 10) & (bin == 0) & (sim_theta == %.40f) & (low <= r) & (r < high) & (D >= N)" % float32(deg2rad(angle))
+            query = "(size == 10) & (bin == 0) & (reference_theta == %.40f) & (low <= r) & (r < high) & (min_n134 >= N)" % float32(deg2rad(angle))
             ssel = data.root.reconstructions.full.readWhere(query)
             efficiencies.append(len(ssel) / sum(shower_results))
 
@@ -792,7 +792,7 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
                 sel = o.compress(amin(array([o['n1'], o['n3'], o['n4']]), 0) == N)
 
                 shower_results.append(len(sel))
-            query = "(size == 10) & (bin == 0) & (sim_theta == %.40f) & (low <= r) & (r < high) & (D == N)" % float32(deg2rad(22.5))
+            query = "(size == 10) & (bin == 0) & (reference_theta == %.40f) & (low <= r) & (r < high) & (min_n134 == N)" % float32(deg2rad(22.5))
             ssel = data.root.reconstructions.full.readWhere(query)
             print sum(shower_results), len(ssel), len(ssel) / sum(shower_results)
             efficiencies.append(len(ssel) / sum(shower_results))

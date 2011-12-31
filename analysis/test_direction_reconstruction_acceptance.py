@@ -30,7 +30,7 @@ class DirectionReconstructionTests(unittest.TestCase):
 #                                       'prerecorded',
                                        direction_reconstruction.ReconstructedEvent,
                                        createparents=True)
-        reconstruction = direction_reconstruction.DirectionReconstruction(self.data, output, D=1, N=100)
+        reconstruction = direction_reconstruction.DirectionReconstruction(self.data, output, min_n134=1, N=100)
 
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles('zenith_22_5', deg2rad(22.5))
@@ -43,8 +43,21 @@ class DirectionReconstructionTests(unittest.TestCase):
 
     def validate_column_data(self, expected, actual):
         for colname in expected.colnames:
+            if colname == 'sim_theta':
+                actual_colname = 'reference_theta'
+            elif colname == 'sim_phi':
+                actual_colname = 'reference_phi'
+            elif colname == 'r_theta':
+                actual_colname = 'reconstructed_theta'
+            elif colname == 'r_phi':
+                actual_colname = 'reconstructed_phi'
+            elif colname == 'D':
+                actual_colname = 'min_n134'
+            else:
+                actual_colname = colname
+
             expected_col = expected.col(colname)
-            actual_col = actual.col(colname)
+            actual_col = actual.col(actual_colname)
             self.assertTrue((expected_col == actual_col).all())
 
     def create_tempfile_from_testdata(self):
