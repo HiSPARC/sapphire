@@ -6,6 +6,7 @@ import tables
 import sys
 
 from numpy import deg2rad
+import numpy as np
 
 import direction_reconstruction
 
@@ -40,8 +41,28 @@ class DirectionReconstructionTests(unittest.TestCase):
     def test_binned_reconstruction_results(self):
         """Verify binned reconstruction results"""
 
-        pass
+        expected = '/reconstructions/prerecorded_binned'
+        actual = '/reconstructions/test_binned'
 
+        # For prerecording output, swap comments in following two lines
+#        self.create_binned_prerecorded_output(expected)
+        self.create_binned_reconstruction_output(actual)
+
+        self.validate_reconstruction_results(expected, actual)
+
+    def test_randomized_binned_reconstruction_results(self):
+        """Verify binned reconstruction results"""
+
+        np.random.seed(1)
+
+        expected = '/reconstructions/prerecorded_ran_binned'
+        actual = '/reconstructions/test_ran_binned'
+
+        # For prerecording output, swap comments in following two lines
+#        self.create_randomized_binned_prerecorded_output(expected)
+        self.create_randomized_binned_reconstruction_output(actual)
+
+        self.validate_reconstruction_results(expected, actual)
 
     def create_prerecorded_output(self, table_path):
         output = self.create_empty_output_table(table_path)
@@ -50,6 +71,22 @@ class DirectionReconstructionTests(unittest.TestCase):
     def create_reconstruction_output(self, table_path):
         output = self.create_empty_output_table(table_path)
         self.reconstruct_direction(output)
+
+    def create_binned_prerecorded_output(self, table_path):
+        output = self.create_empty_output_table(table_path)
+        self.reconstruct_direction_binned(output)
+
+    def create_binned_reconstruction_output(self, table_path):
+        output = self.create_empty_output_table(table_path)
+        self.reconstruct_direction_binned(output)
+
+    def create_randomized_binned_prerecorded_output(self, table_path):
+        output = self.create_empty_output_table(table_path)
+        self.reconstruct_direction_randomized_binned(output)
+
+    def create_randomized_binned_reconstruction_output(self, table_path):
+        output = self.create_empty_output_table(table_path)
+        self.reconstruct_direction_randomized_binned(output)
 
     def create_empty_output_table(self, table_path):
         group, tablename = os.path.split(table_path)
@@ -70,6 +107,20 @@ class DirectionReconstructionTests(unittest.TestCase):
                             self.data, output, min_n134=1, N=100)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles('zenith_22_5', deg2rad(22.5))
+        self.restore_stdout_stderr()
+
+    def reconstruct_direction_binned(self, output):
+        reconstruction = direction_reconstruction.DirectionReconstruction(
+                            self.data, output, min_n134=1, N=100)
+        self.redirect_stdout_stderr_to_devnull()
+        reconstruction.reconstruct_angles('zenith_22_5', deg2rad(22.5), binning=2.5)
+        self.restore_stdout_stderr()
+
+    def reconstruct_direction_randomized_binned(self, output):
+        reconstruction = direction_reconstruction.DirectionReconstruction(
+                            self.data, output, min_n134=1, N=100)
+        self.redirect_stdout_stderr_to_devnull()
+        reconstruction.reconstruct_angles('zenith_22_5', deg2rad(22.5), binning=2.5, randomize_binning=True)
         self.restore_stdout_stderr()
 
     def validate_reconstruction_results(self, expected, actual):
