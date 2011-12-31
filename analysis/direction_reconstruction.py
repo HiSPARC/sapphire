@@ -51,6 +51,8 @@ class ReconstructedEvent(tables.IsDescription):
     reconstructed_theta = tables.Float32Col()
     reconstructed_phi = tables.Float32Col()
     min_n134 = tables.Float32Col()
+
+    # remove following
     size = tables.UInt8Col()
     bin = tables.Float32Col()
     bin_r = tables.BoolCol()
@@ -63,7 +65,8 @@ class DirectionReconstruction():
         self.min_n134 = min_n134
         self.N = N
 
-    def reconstruct_angles(self, tablename, THETA, binning=False,
+
+    def reconstruct_angles_for_group(self, tablename, THETA, binning=False,
                            randomize_binning=False):
         """Reconstruct angles from simulation for minimum particle density"""
 
@@ -74,62 +77,66 @@ class DirectionReconstruction():
                                      fd=sys.stderr)
 
         for shower in progressbar(self.data.listNodes(shower_group)):
-            shower_table = shower.observables
-            coincidence_table = shower.coincidences
-            self.station, = shower._v_attrs.cluster.stations
-            dst_row = self.results_table.row
+            self.reconstruct_angles(THETA, binning, randomize_binning, shower)
 
-            for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
-                assert event['id'] == coincidence['id']
-                if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
-                    # Do we need to bin timing data?
-                    if binning is not False:
-                        event['t1'] = floor(event['t1'] / binning) * binning
-                        event['t2'] = floor(event['t2'] / binning) * binning
-                        event['t3'] = floor(event['t3'] / binning) * binning
-                        event['t4'] = floor(event['t4'] / binning) * binning
-                        # Do we need to randomize inside a bin?
-                        if randomize_binning is True:
-                            event['t1'] += uniform(0, binning)
-                            event['t2'] += uniform(0, binning)
-                            event['t3'] += uniform(0, binning)
-                            event['t4'] += uniform(0, binning)
+    def reconstruct_angles(self, THETA, binning, randomize_binning, shower):
+        shower_table = shower.observables
+        coincidence_table = shower.coincidences
+        self.station, = shower._v_attrs.cluster.stations
+        dst_row = self.results_table.row
 
-                    theta, phi = self.reconstruct_angle(event)
+        for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
+            assert event['id'] == coincidence['id']
+            if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
+                # Do we need to bin timing data?
+                if binning is not False:
+                    event['t1'] = floor(event['t1'] / binning) * binning
+                    event['t2'] = floor(event['t2'] / binning) * binning
+                    event['t3'] = floor(event['t3'] / binning) * binning
+                    event['t4'] = floor(event['t4'] / binning) * binning
+                    # Do we need to randomize inside a bin?
+                    if randomize_binning is True:
+                        event['t1'] += uniform(0, binning)
+                        event['t2'] += uniform(0, binning)
+                        event['t3'] += uniform(0, binning)
+                        event['t4'] += uniform(0, binning)
 
-                    alpha = event['alpha']
+                theta, phi = self.reconstruct_angle(event)
 
-                    if not isnan(theta) and not isnan(phi):
-    #                    ang_dist = arccos(sin(theta) * sin(THETA) *
-    #                                      cos(phi - -alpha) + cos(theta) *
-    #                                      cos(THETA))
+                alpha = event['alpha']
 
-                        dst_row['r'] = coincidence['r']
-                        dst_row['phi'] = coincidence['phi']
-                        dst_row['alpha'] = event['alpha']
-                        dst_row['t1'] = event['t1']
-                        dst_row['t2'] = event['t2']
-                        dst_row['t3'] = event['t3']
-                        dst_row['t4'] = event['t4']
-                        dst_row['n1'] = event['n1']
-                        dst_row['n2'] = event['n2']
-                        dst_row['n3'] = event['n3']
-                        dst_row['n4'] = event['n4']
-                        dst_row['reference_theta'] = THETA
-                        dst_row['reference_phi'] = coincidence['alpha']
-                        dst_row['reconstructed_theta'] = theta
-                        dst_row['reconstructed_phi'] = phi
-                        dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
-                        r, phi = self.calc_r_and_phi(1, 3)
-                        dst_row['size'] = r
-                        if binning is False:
-                            bin_size = 0
-                        else:
-                            bin_size = binning
-                        dst_row['bin'] = bin_size
-                        dst_row['bin_r'] = randomize_binning
-                        dst_row.append()
-            self.results_table.flush()
+                if not isnan(theta) and not isnan(phi):
+            #                    ang_dist = arccos(sin(theta) * sin(THETA) *
+            #                                      cos(phi - -alpha) + cos(theta) *
+            #                                      cos(THETA))
+
+                    dst_row['r'] = coincidence['r']
+                    dst_row['phi'] = coincidence['phi']
+                    dst_row['alpha'] = event['alpha']
+                    dst_row['t1'] = event['t1']
+                    dst_row['t2'] = event['t2']
+                    dst_row['t3'] = event['t3']
+                    dst_row['t4'] = event['t4']
+                    dst_row['n1'] = event['n1']
+                    dst_row['n2'] = event['n2']
+                    dst_row['n3'] = event['n3']
+                    dst_row['n4'] = event['n4']
+                    dst_row['reference_theta'] = THETA
+                    dst_row['reference_phi'] = coincidence['alpha']
+                    dst_row['reconstructed_theta'] = theta
+                    dst_row['reconstructed_phi'] = phi
+                    dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
+                    r, phi = self.calc_r_and_phi(1, 3)
+                    dst_row['size'] = r
+                    if binning is False:
+                        bin_size = 0
+                    else:
+                        bin_size = binning
+                    dst_row['bin'] = bin_size
+                    dst_row['bin_r'] = randomize_binning
+                    dst_row.append()
+
+        self.results_table.flush()
 
     def reconstruct_angle(self, event):
         """Reconstruct angles from a single event"""
@@ -307,28 +314,28 @@ def do_full_reconstruction(data, tablename):
 
     rec = DirectionReconstruction(data, table, min_n134=1, N=100)
 
-    rec.reconstruct_angles(tablename='zenith_0', THETA=0)
-    rec.reconstruct_angles(tablename='zenith_5', THETA=deg2rad(5))
-    rec.reconstruct_angles(tablename='zenith_22_5', THETA=pi / 8)
-    rec.reconstruct_angles(tablename='zenith_35', THETA=deg2rad(35))
+    rec.reconstruct_angles_for_group(tablename='zenith_0', THETA=0)
+    rec.reconstruct_angles_for_group(tablename='zenith_5', THETA=deg2rad(5))
+    rec.reconstruct_angles_for_group(tablename='zenith_22_5', THETA=pi / 8)
+    rec.reconstruct_angles_for_group(tablename='zenith_35', THETA=deg2rad(35))
 
     # SPECIALS
     # Station sizes
-    rec.reconstruct_angles(tablename='zenith_22_5_size5', THETA=pi / 8)
-    rec.reconstruct_angles(tablename='zenith_22_5_size20', THETA=pi / 8)
+    rec.reconstruct_angles_for_group(tablename='zenith_22_5_size5', THETA=pi / 8)
+    rec.reconstruct_angles_for_group(tablename='zenith_22_5_size20', THETA=pi / 8)
 
     # SPECIALS
     # Binnings
     kwargs = dict(tablename='zenith_22_5',
                   THETA=pi / 8)
     kwargs['randomize_binning'] = False
-    rec.reconstruct_angles(binning=1, **kwargs)
-    rec.reconstruct_angles(binning=2.5, **kwargs)
-    rec.reconstruct_angles(binning=5, **kwargs)
+    rec.reconstruct_angles_for_group(binning=1, **kwargs)
+    rec.reconstruct_angles_for_group(binning=2.5, **kwargs)
+    rec.reconstruct_angles_for_group(binning=5, **kwargs)
     kwargs['randomize_binning'] = True
-    rec.reconstruct_angles(binning=1, **kwargs)
-    rec.reconstruct_angles(binning=2.5, **kwargs)
-    rec.reconstruct_angles(binning=5, **kwargs)
+    rec.reconstruct_angles_for_group(binning=1, **kwargs)
+    rec.reconstruct_angles_for_group(binning=2.5, **kwargs)
+    rec.reconstruct_angles_for_group(binning=5, **kwargs)
 
 def do_reconstruction_plots(data, tablename):
     """Make plots based upon earlier reconstructions"""
