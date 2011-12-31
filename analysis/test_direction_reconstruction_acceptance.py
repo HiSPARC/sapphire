@@ -17,21 +17,32 @@ class DirectionReconstructionTests(unittest.TestCase):
         data_path = self.create_tempfile_from_testdata()
         self.data = tables.openFile(data_path, 'a')
 
+#        self.create_prerecorded_output()
         self.create_reconstruction_output()
         self.validate_reconstruction_results()
 
         self.data.close()
         os.remove(data_path)
 
-    def create_reconstruction_output(self):
-#        self.data.removeNode('/reconstructions/prerecorded')
+    def create_prerecorded_output(self):
+        if 'prerecorded' in self.data.root.reconstructions:
+            self.data.removeNode('/reconstructions/prerecorded')
         output = self.data.createTable('/reconstructions',
-                                       'test',
-#                                       'prerecorded',
+                                       'prerecorded',
                                        direction_reconstruction.ReconstructedEvent,
                                        createparents=True)
-        reconstruction = direction_reconstruction.DirectionReconstruction(self.data, output, min_n134=1, N=100)
+        self.reconstruct_direction(output)
 
+    def create_reconstruction_output(self):
+        output = self.data.createTable('/reconstructions',
+                                       'test',
+                                       direction_reconstruction.ReconstructedEvent,
+                                       createparents=True)
+        self.reconstruct_direction(output)
+
+    def reconstruct_direction(self, output):
+        reconstruction = direction_reconstruction.DirectionReconstruction(
+                            self.data, output, min_n134=1, N=100)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles('zenith_22_5', deg2rad(22.5))
         self.restore_stdout_stderr()
