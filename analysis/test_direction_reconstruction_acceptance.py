@@ -33,7 +33,7 @@ class DirectionReconstructionTests(unittest.TestCase):
         actual = '/reconstructions/test'
 
         # For prerecording output, swap comments in following two lines
-#        self.create_prerecorded_output(expected)
+#        self.create_reconstruction_output(expected)
         self.create_reconstruction_output(actual)
 
         self.validate_reconstruction_results(expected, actual)
@@ -45,7 +45,7 @@ class DirectionReconstructionTests(unittest.TestCase):
         actual = '/reconstructions/test_binned'
 
         # For prerecording output, swap comments in following two lines
-#        self.create_binned_prerecorded_output(expected)
+#        self.create_binned_reconstruction_output(expected)
         self.create_binned_reconstruction_output(actual)
 
         self.validate_reconstruction_results(expected, actual)
@@ -59,30 +59,18 @@ class DirectionReconstructionTests(unittest.TestCase):
         actual = '/reconstructions/test_ran_binned'
 
         # For prerecording output, swap comments in following two lines
-#        self.create_randomized_binned_prerecorded_output(expected)
+#        self.create_randomized_binned_reconstruction_output(expected)
         self.create_randomized_binned_reconstruction_output(actual)
 
         self.validate_reconstruction_results(expected, actual)
-
-    def create_prerecorded_output(self, table_path):
-        output = self.create_empty_output_table(table_path)
-        self.reconstruct_direction(output)
 
     def create_reconstruction_output(self, table_path):
         output = self.create_empty_output_table(table_path)
         self.reconstruct_direction(output)
 
-    def create_binned_prerecorded_output(self, table_path):
-        output = self.create_empty_output_table(table_path)
-        self.reconstruct_direction_binned(output)
-
     def create_binned_reconstruction_output(self, table_path):
         output = self.create_empty_output_table(table_path)
         self.reconstruct_direction_binned(output)
-
-    def create_randomized_binned_prerecorded_output(self, table_path):
-        output = self.create_empty_output_table(table_path)
-        self.reconstruct_direction_randomized_binned(output)
 
     def create_randomized_binned_reconstruction_output(self, table_path):
         output = self.create_empty_output_table(table_path)
