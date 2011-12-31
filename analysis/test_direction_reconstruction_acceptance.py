@@ -43,21 +43,8 @@ class DirectionReconstructionTests(unittest.TestCase):
 
     def validate_column_data(self, expected, actual):
         for colname in expected.colnames:
-            if colname == 'sim_theta':
-                actual_colname = 'reference_theta'
-            elif colname == 'sim_phi':
-                actual_colname = 'reference_phi'
-            elif colname == 'r_theta':
-                actual_colname = 'reconstructed_theta'
-            elif colname == 'r_phi':
-                actual_colname = 'reconstructed_phi'
-            elif colname == 'D':
-                actual_colname = 'min_n134'
-            else:
-                actual_colname = colname
-
             expected_col = expected.col(colname)
-            actual_col = actual.col(actual_colname)
+            actual_col = actual.col(colname)
             self.assertTrue((expected_col == actual_col).all())
 
     def create_tempfile_from_testdata(self):
