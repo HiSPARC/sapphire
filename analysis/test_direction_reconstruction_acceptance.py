@@ -99,17 +99,17 @@ class DirectionReconstructionTests(unittest.TestCase):
         self.restore_stdout_stderr()
 
     def reconstruct_direction_binned(self, output):
-        reconstruction = direction_reconstruction.DirectionReconstruction(
-                            self.data, output, min_n134=1, N=100)
+        reconstruction = direction_reconstruction.BinnedDirectionReconstruction(
+                            self.data, output, min_n134=1, N=100, binning=2.5)
         self.redirect_stdout_stderr_to_devnull()
-        reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5), binning=2.5)
+        reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5))
         self.restore_stdout_stderr()
 
     def reconstruct_direction_randomized_binned(self, output):
-        reconstruction = direction_reconstruction.DirectionReconstruction(
-                            self.data, output, min_n134=1, N=100)
+        reconstruction = direction_reconstruction.BinnedDirectionReconstruction(
+                            self.data, output, min_n134=1, N=100, binning=2.5, randomize_binning=True)
         self.redirect_stdout_stderr_to_devnull()
-        reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5), binning=2.5, randomize_binning=True)
+        reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5))
         self.restore_stdout_stderr()
 
     def validate_reconstruction_results(self, expected, actual):
