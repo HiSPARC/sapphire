@@ -87,11 +87,13 @@ class DirectionReconstruction(object):
                 alpha = event['alpha']
 
                 if not isnan(theta) and not isnan(phi):
-                    self.store_reconstructed_event(THETA, event, coincidence, theta, phi)
+                    self.store_reconstructed_event(coincidence, event, THETA,
+                                                   theta, phi)
 
         self.results_table.flush()
 
-    def store_reconstructed_event(self, reference_theta, event, coincidence, reconstructed_theta, reconstructed_phi):
+    def store_reconstructed_event(self, coincidence, event, reference_theta,
+                                  reconstructed_theta, reconstructed_phi):
         dst_row = self.results_table.row
 
         dst_row['r'] = coincidence['r']
@@ -299,7 +301,8 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
                 alpha = event['alpha']
 
                 if not isnan(theta) and not isnan(phi):
-                    self.store_reconstructed_event(THETA, event, coincidence, theta, phi)
+                    self.store_reconstructed_event(coincidence, event, THETA,
+                                                   theta, phi)
 
         self.results_table.flush()
 
