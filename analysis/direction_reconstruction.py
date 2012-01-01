@@ -303,27 +303,6 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
 
         self.results_table.flush()
 
-    def store_reconstructed_event(self, reference_theta, event, coincidence, reconstructed_theta, reconstructed_phi):
-        dst_row = self.results_table.row
-
-        dst_row['r'] = coincidence['r']
-        dst_row['phi'] = coincidence['phi']
-        dst_row['alpha'] = event['alpha']
-        dst_row['t1'] = event['t1']
-        dst_row['t2'] = event['t2']
-        dst_row['t3'] = event['t3']
-        dst_row['t4'] = event['t4']
-        dst_row['n1'] = event['n1']
-        dst_row['n2'] = event['n2']
-        dst_row['n3'] = event['n3']
-        dst_row['n4'] = event['n4']
-        dst_row['reference_theta'] = reference_theta
-        dst_row['reference_phi'] = coincidence['alpha']
-        dst_row['reconstructed_theta'] = reconstructed_theta
-        dst_row['reconstructed_phi'] = reconstructed_phi
-        dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
-        dst_row.append()
-
 
 def do_full_reconstruction(data, tablename):
     """Do a reconstruction of all simulated data and store results"""
