@@ -53,11 +53,6 @@ class ReconstructedEvent(tables.IsDescription):
     reconstructed_phi = tables.Float32Col()
     min_n134 = tables.Float32Col()
 
-    # remove following
-    size = tables.UInt8Col()
-    bin = tables.Float32Col()
-    bin_r = tables.BoolCol()
-
 
 class DirectionReconstruction(object):
     def __init__(self, datafile, results_table, min_n134=1., N=None):
@@ -115,11 +110,6 @@ class DirectionReconstruction(object):
         dst_row['reconstructed_theta'] = reconstructed_theta
         dst_row['reconstructed_phi'] = reconstructed_phi
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
-
-        r1, phi1 = self.calc_r_and_phi(1, 3)
-        dst_row['size'] = r1
-        dst_row['bin'] = 0
-        dst_row['bin_r'] = False
         dst_row.append()
 
     def reconstruct_angle(self, event):
@@ -332,11 +322,6 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
         dst_row['reconstructed_theta'] = reconstructed_theta
         dst_row['reconstructed_phi'] = reconstructed_phi
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
-
-        r1, phi1 = self.calc_r_and_phi(1, 3)
-        dst_row['size'] = r1
-        dst_row['bin'] = self.binning
-        dst_row['bin_r'] = self.randomize_binning
         dst_row.append()
 
 
