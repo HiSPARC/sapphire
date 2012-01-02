@@ -9,13 +9,13 @@ import storage
 
 
 class DirectionReconstruction(object):
-    def __init__(self, datafile, results_table, min_n134=1., N=None):
+    def __init__(self, datafile, results_table, min_n134=1., N=None, overwrite=False):
         self.data = datafile
-        self.results_table = self.create_empty_output_table(results_table)
+        self.results_table = self.create_empty_output_table(results_table, overwrite)
         self.min_n134 = min_n134
         self.N = N
 
-    def create_empty_output_table(self, table_path):
+    def create_empty_output_table(self, table_path, overwrite=False):
         group, tablename = os.path.split(table_path)
 
         if not group in self.data.root:
@@ -24,7 +24,10 @@ class DirectionReconstruction(object):
         group = self.data.getNode(group)
 
         if tablename in group:
-            raise RuntimeError("Reconstruction table %s already exists" % table_path)
+            if not overwrite:
+                raise RuntimeError("Reconstruction table %s already exists" % table_path)
+            else:
+                self.data.removeNode(group, tablename)
 
         table = self.data.createTable(group, tablename, storage.ReconstructedEvent)
         return table
@@ -237,8 +240,8 @@ class DirectionReconstruction(object):
 
 
 class BinnedDirectionReconstruction(DirectionReconstruction):
-    def __init__(self, datafile, results_table, min_n134=1., binning=2.5, randomize_binning=False, N=None):
-        super(BinnedDirectionReconstruction, self).__init__(datafile, results_table, min_n134, N)
+    def __init__(self, datafile, results_table, min_n134=1., binning=2.5, randomize_binning=False, N=None, overwrite=False):
+        super(BinnedDirectionReconstruction, self).__init__(datafile, results_table, min_n134, N, overwrite)
         self.binning = binning
         self.randomize_binning = randomize_binning
 

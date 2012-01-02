@@ -35,7 +35,7 @@ class DirectionReconstructionTests(unittest.TestCase):
         actual = '/reconstructions/test'
 
         # For prerecording output, swap comments in following two lines
-#        self.create_reconstruction_output(expected)
+#        self.create_reconstruction_output(expected, overwrite=True)
         self.create_reconstruction_output(actual)
 
         self.validate_reconstruction_results(expected, actual)
@@ -47,7 +47,7 @@ class DirectionReconstructionTests(unittest.TestCase):
         actual = '/reconstructions/test_binned'
 
         # For prerecording output, swap comments in following two lines
-#        self.create_binned_reconstruction_output(expected)
+#        self.create_binned_reconstruction_output(expected, overwrite=True)
         self.create_binned_reconstruction_output(actual)
 
         self.validate_reconstruction_results(expected, actual)
@@ -61,28 +61,28 @@ class DirectionReconstructionTests(unittest.TestCase):
         actual = '/reconstructions/test_ran_binned'
 
         # For prerecording output, swap comments in following two lines
-#        self.create_randomized_binned_reconstruction_output(expected)
+#        self.create_randomized_binned_reconstruction_output(expected, overwrite=True)
         self.create_randomized_binned_reconstruction_output(actual)
 
         self.validate_reconstruction_results(expected, actual)
 
-    def create_reconstruction_output(self, output):
+    def create_reconstruction_output(self, output, overwrite=False):
         reconstruction = direction_reconstruction.DirectionReconstruction(
-                            self.data, output, min_n134=1, N=100)
+                            self.data, output, min_n134=1, N=100, overwrite=overwrite)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5))
         self.restore_stdout_stderr()
 
-    def create_binned_reconstruction_output(self, output):
+    def create_binned_reconstruction_output(self, output, overwrite=False):
         reconstruction = direction_reconstruction.BinnedDirectionReconstruction(
-                            self.data, output, min_n134=1, N=100, binning=2.5)
+                            self.data, output, min_n134=1, N=100, binning=2.5, overwrite=overwrite)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5))
         self.restore_stdout_stderr()
 
-    def create_randomized_binned_reconstruction_output(self, output):
+    def create_randomized_binned_reconstruction_output(self, output, overwrite=False):
         reconstruction = direction_reconstruction.BinnedDirectionReconstruction(
-                            self.data, output, min_n134=1, N=100, binning=2.5, randomize_binning=True)
+                            self.data, output, min_n134=1, N=100, binning=2.5, randomize_binning=True, overwrite=overwrite)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5))
         self.restore_stdout_stderr()
