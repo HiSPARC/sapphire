@@ -274,37 +274,22 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
         self.binning = binning
         self.randomize_binning = randomize_binning
 
-    def reconstruct_angles(self, THETA, shower):
+    def reconstruct_angle(self, event):
         binning = self.binning
         randomize_binning = self.randomize_binning
 
-        shower_table = shower.observables
-        coincidence_table = shower.coincidences
-        self.station, = shower._v_attrs.cluster.stations
+        event['t1'] = floor(event['t1'] / binning) * binning
+        event['t2'] = floor(event['t2'] / binning) * binning
+        event['t3'] = floor(event['t3'] / binning) * binning
+        event['t4'] = floor(event['t4'] / binning) * binning
+        # Do we need to randomize inside a bin?
+        if randomize_binning is True:
+            event['t1'] += uniform(0, binning)
+            event['t2'] += uniform(0, binning)
+            event['t3'] += uniform(0, binning)
+            event['t4'] += uniform(0, binning)
 
-        for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
-            assert event['id'] == coincidence['id']
-            if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
-                event['t1'] = floor(event['t1'] / binning) * binning
-                event['t2'] = floor(event['t2'] / binning) * binning
-                event['t3'] = floor(event['t3'] / binning) * binning
-                event['t4'] = floor(event['t4'] / binning) * binning
-                # Do we need to randomize inside a bin?
-                if randomize_binning is True:
-                    event['t1'] += uniform(0, binning)
-                    event['t2'] += uniform(0, binning)
-                    event['t3'] += uniform(0, binning)
-                    event['t4'] += uniform(0, binning)
-
-                theta, phi = self.reconstruct_angle(event)
-
-                alpha = event['alpha']
-
-                if not isnan(theta) and not isnan(phi):
-                    self.store_reconstructed_event(coincidence, event, THETA,
-                                                   theta, phi)
-
-        self.results_table.flush()
+        return super(BinnedDirectionReconstruction, self).reconstruct_angle(event)
 
 
 def do_full_reconstruction(data, tablename):
