@@ -90,8 +90,8 @@ def do_reconstruction_plots(data):
     plot_uncertainty_size(group)
     plot_uncertainty_binsize(group)
 
-    plot_phi_reconstruction_results_for_MIP(table, 1)
-    plot_phi_reconstruction_results_for_MIP(table, 2)
+    plot_phi_reconstruction_results_for_MIP(group, 1)
+    plot_phi_reconstruction_results_for_MIP(group, 2)
     boxplot_theta_reconstruction_results_for_MIP(table, 1)
     boxplot_theta_reconstruction_results_for_MIP(table, 2)
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
@@ -356,12 +356,10 @@ expv_tsqv = lambda n: expv_tsq(n)[0]
 
 std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
 
-def plot_phi_reconstruction_results_for_MIP(table, N):
-    min_theta = 1
-    query = '(min_n134>=%d) & (size==10) & (bin==0) & (reference_theta > %.5f)' % \
-            (N, deg2rad(min_theta))
+def plot_phi_reconstruction_results_for_MIP(group, N):
+    table = group.E_1PeV.zenith_22_5
 
-    events = table.readWhere(query)
+    events = table.readWhere('min_n134 >= %d' % N)
     sim_phi = events['reference_phi']
     r_phi = events['reconstructed_phi']
 
@@ -369,7 +367,7 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
     plot_2d_histogram(rad2deg(sim_phi), rad2deg(r_phi), 180)
     xlabel(r"$\phi_{simulated}$")
     ylabel(r"$\phi_{reconstructed}$")
-    title(r"$N_{MIP} \geq %d, \quad \theta > 0^\circ$" % N)
+    title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     utils.saveplot(N)
 
