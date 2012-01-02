@@ -111,7 +111,8 @@ class DirectionReconstruction(object):
 
         return theta_wgt, phi
 
-    def rel_theta1_errorsq(self, theta, phi, phi1, phi2, r1=10, r2=10):
+    @classmethod
+    def rel_theta1_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
         c = .3
 
@@ -121,17 +122,18 @@ class DirectionReconstruction(object):
         den = (1 - sintheta ** 2) * r1 ** 2 * cos(phi - phi1) ** 2
 
         A = (r1 ** 2 * sinphiphi1 ** 2
-             * self.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+             * cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
         B = (r1 * c * sinphiphi1
-             * (self.dphi_dt0(theta, phi, phi1, phi2, r1, r2)
-                - self.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
+             * (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2)
+                - cls.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
         C = 2 * c ** 2
 
         errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
 
         return where(isnan(errsq), inf, errsq)
 
-    def rel_theta2_errorsq(self, theta, phi, phi1, phi2, r1=10, r2=10):
+    @classmethod
+    def rel_theta2_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
         c = .3
 
@@ -141,17 +143,18 @@ class DirectionReconstruction(object):
         den = (1 - sintheta ** 2) * r2 ** 2 * cos(phi - phi2) ** 2
 
         A = (r2 ** 2 * sinphiphi2 ** 2
-             * self.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+             * cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
         B = (r2 * c * sinphiphi2
-             * (self.dphi_dt0(theta, phi, phi1, phi2, r1, r2)
-                - self.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
+             * (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2)
+                - cls.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
         C = 2 * c ** 2
 
         errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
 
         return where(isnan(errsq), inf, errsq)
 
-    def rel_phi_errorsq(self, theta, phi, phi1, phi2, r1=10, r2=10):
+    @staticmethod
+    def rel_phi_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
         c = .3
 
@@ -178,7 +181,8 @@ class DirectionReconstruction(object):
 
         return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
 
-    def dphi_dt0(self, theta, phi, phi1, phi2, r1=10, r2=10):
+    @staticmethod
+    def dphi_dt0(theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
         c = .3
 
@@ -196,7 +200,8 @@ class DirectionReconstruction(object):
 
         return num / den
 
-    def dphi_dt1(self, theta, phi, phi1, phi2, r1=10, r2=10):
+    @staticmethod
+    def dphi_dt1(theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
         c = .3
 
@@ -213,7 +218,8 @@ class DirectionReconstruction(object):
 
         return num / den
 
-    def dphi_dt2(self, theta, phi, phi1, phi2, r1=10, r2=10):
+    @staticmethod
+    def dphi_dt2(theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
         c = .3
 
