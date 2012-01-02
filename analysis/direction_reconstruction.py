@@ -691,14 +691,11 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile('master.h5', 'a')
 
-#    if '/reconstructions' not in data:
-#        print "Reconstructing shower direction..."
-#        do_full_reconstruction(data)
-#    else:
-#        print "Skipping reconstruction!"
-
-#    print "Reconstructing shower direction..."
-#    do_full_reconstruction(data, N=10000)
+    if '/reconstructions' not in data:
+        print "Reconstructing shower direction..."
+        do_full_reconstruction(data)
+    else:
+        print "Skipping reconstruction!"
 
     utils.set_prefix("DIR-")
     do_reconstruction_plots(data)
