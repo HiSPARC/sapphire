@@ -278,16 +278,12 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
         binning = self.binning
         randomize_binning = self.randomize_binning
 
-        event['t1'] = floor(event['t1'] / binning) * binning
-        event['t2'] = floor(event['t2'] / binning) * binning
-        event['t3'] = floor(event['t3'] / binning) * binning
-        event['t4'] = floor(event['t4'] / binning) * binning
-        # Do we need to randomize inside a bin?
+        for idx in 't1', 't2', 't3', 't4':
+            event[idx] = floor(event[idx] / binning) * binning
+
         if randomize_binning is True:
-            event['t1'] += uniform(0, binning)
-            event['t2'] += uniform(0, binning)
-            event['t3'] += uniform(0, binning)
-            event['t4'] += uniform(0, binning)
+            for idx in 't1', 't2', 't3', 't4':
+                event[idx] += uniform(0, binning)
 
         return super(BinnedDirectionReconstruction, self).reconstruct_angle(event)
 
