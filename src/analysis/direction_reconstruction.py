@@ -96,8 +96,8 @@ class DirectionReconstruction(object):
         dt1 = event['t1'] - event['t3']
         dt2 = event['t1'] - event['t4']
 
-        r1, phi1 = self.calc_r_and_phi(1, 3)
-        r2, phi2 = self.calc_r_and_phi(1, 4)
+        r1, phi1 = self.station.calc_r_and_phi_for_detectors(1, 3)
+        r2, phi2 = self.station.calc_r_and_phi_for_detectors(1, 4)
 
         phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
                       (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
@@ -110,17 +110,6 @@ class DirectionReconstruction(object):
         theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
         return theta_wgt, phi
-
-    def calc_r_and_phi(self, s1, s2):
-        """Calculate angle between detectors (phi1, phi2)"""
-
-        x1, y1 = self.station.detectors[s1 - 1].get_xy_coordinates()
-        x2, y2 = self.station.detectors[s2 - 1].get_xy_coordinates()
-
-        r = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-        phi = arctan2((y2 - y1), (x2 - x1))
-
-        return r, phi
 
     def rel_theta1_errorsq(self, theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns

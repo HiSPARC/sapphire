@@ -151,6 +151,17 @@ class Station(object):
         phi = atan2(y, x)
         return r, phi, alpha
 
+    def calc_r_and_phi_for_detectors(self, s1, s2):
+        """Calculate angle between detectors (phi1, phi2)"""
+
+        x1, y1 = self.detectors[s1 - 1].get_xy_coordinates()
+        x2, y2 = self.detectors[s2 - 1].get_xy_coordinates()
+
+        r = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        phi = atan2((y2 - y1), (x2 - x1))
+
+        return r, phi
+
 
 class BaseCluster(object):
     """Base class for HiSPARC clusters"""

@@ -162,6 +162,16 @@ class StationTests(unittest.TestCase):
         coordinates = station.get_rphialpha_coordinates()
         self.assertTupleAlmostEqual(coordinates, (sqrt(125), 2.0344439357957027, 3 * pi / 4))
 
+    def test_calc_r_and_phi_for_detectors(self):
+        cluster = Mock()
+        cluster.get_xyalpha_coordinates.return_value = (0, 0, 0)
+        station = clusters.Station(cluster, 1, position=(0, 0), angle=0,
+                                   detectors=[(0, 0, 'LR'), (10., 10., 'LR')])
+
+        r, phi = station.calc_r_and_phi_for_detectors(1, 2)
+        self.assertAlmostEqual(r ** 2, 10 ** 2 + 10 ** 2)
+        self.assertAlmostEqual(phi, pi / 4)
+
     def assertTupleAlmostEqual(self, actual, expected):
         self.assertTrue(type(actual) == type(expected) == tuple)
 
