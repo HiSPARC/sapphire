@@ -86,7 +86,7 @@ def do_reconstruction_plots(data):
     group = data.root.reconstructions
 
     plot_uncertainty_mip(group)
-    plot_uncertainty_zenith(table)
+    plot_uncertainty_zenith(group)
     plot_uncertainty_size(table)
     plot_uncertainty_binsize(table)
 
@@ -156,23 +156,24 @@ def plot_uncertainty_mip(group):
     utils.saveplot()
     print
 
-def plot_uncertainty_zenith(table):
+def plot_uncertainty_zenith(group):
+    group = group.E_1PeV
+    rec = DirectionReconstruction
+
     # constants for uncertainty estimation
-    phi1 = calc_phi(1, 3)
-    phi2 = calc_phi(1, 4)
+    # BEWARE: stations must be the same over all reconstruction tables used
+    station = group.zenith_0.attrs.cluster.stations[0]
+    r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
+    r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
-    global MYT
-    MYT = []
-    for THETA in [0, deg2rad(5), pi / 8, deg2rad(35)]:
+    for THETA in 0, 5, 22.5, 35:
         x.append(THETA)
-        events = table.readWhere(
-            '(min_n134==2) & (reference_theta==%.40f) & (size==10) & (bin==0)' %
-            float32(THETA))
-        MYT.append((events['t1'], events['t3'], events['t4']))
-        print rad2deg(THETA), len(events),
+        table = group._f_getChild('zenith_%s' % str(THETA).replace('.', '_'))
+        events = table.readWhere('min_n134 == 2')
+        print THETA, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
@@ -181,28 +182,30 @@ def plot_uncertainty_zenith(table):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
-    plot(rad2deg(x), rad2deg(y), '^', label="Theta")
+    plot(x, rad2deg(y), '^', label="Theta")
     # Azimuthal angle undefined for zenith = 0
-    plot(rad2deg(x[1:]), rad2deg(y2[1:]), 'v', label="Phi")
+    plot(x[1:], rad2deg(y2[1:]), 'v', label="Phi")
     print
     print "zenith: theta, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
+
     # Uncertainty estimate
     x = linspace(0, deg2rad(35), 50)
     phis = linspace(-pi, pi, 50)
     y, y2, y3 = [], [], []
     for t in x:
-        y.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)))
-        y3.append(mean(rel_phi_errorsq(t, phis, phi1, phi2)) * sin(t) ** 2)
-        y2.append(mean(rel_theta_errorsq(t, phis, phi1, phi2)))
+        y.append(mean(rec.rel_phi_errorsq(t, phis, phi1, phi2, r1, r2)))
+        y3.append(mean(rec.rel_phi_errorsq(t, phis, phi1, phi2, r1, r2)) * sin(t) ** 2)
+        y2.append(mean(rec.rel_theta1_errorsq(t, phis, phi1, phi2, r1, r2)))
     y = TIMING_ERROR * sqrt(array(y))
     y3 = TIMING_ERROR * sqrt(array(y3))
     y2 = TIMING_ERROR * sqrt(array(y2))
     plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
     plot(rad2deg(x), rad2deg(y3), label="Estimate Phi * sin(Theta)")
     plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
+
     # Labels etc.
     xlabel("Shower zenith angle (degrees)")
     ylabel("Uncertainty in angle reconstruction (deg)")
