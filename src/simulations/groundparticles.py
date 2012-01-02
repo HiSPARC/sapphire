@@ -40,7 +40,7 @@ class GroundParticlesSimulation(BaseSimulation):
         """
 
         try:
-            self.grdpcles = data.getNode('/', grdpcles)
+            self.grdpcles = data.getNode(grdpcles)
         except tables.NoSuchNodeError:
             raise RuntimeError("Cancelling simulation; %s not found in "
                                 "tree." % grdpcles)

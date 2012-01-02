@@ -255,3 +255,26 @@ class Coincidence(tables.IsDescription):
     x = tables.Float32Col()
     y = tables.Float32Col()
     alpha = tables.Float32Col()
+
+
+class ReconstructedEvent(tables.IsDescription):
+
+    """Store information about reconstructed events"""
+
+    station_id = tables.UInt8Col()
+    r = tables.Float32Col()
+    phi = tables.Float32Col()
+    alpha = tables.Float32Col()
+    t1 = tables.Float32Col()
+    t2 = tables.Float32Col()
+    t3 = tables.Float32Col()
+    t4 = tables.Float32Col()
+    n1 = tables.Float32Col()
+    n2 = tables.Float32Col()
+    n3 = tables.Float32Col()
+    n4 = tables.Float32Col()
+    reference_theta = tables.Float32Col()
+    reference_phi = tables.Float32Col()
+    reconstructed_theta = tables.Float32Col()
+    reconstructed_phi = tables.Float32Col()
+    min_n134 = tables.Float32Col()
