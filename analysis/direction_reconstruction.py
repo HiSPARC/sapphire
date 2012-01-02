@@ -92,8 +92,8 @@ def do_reconstruction_plots(data):
 
     plot_phi_reconstruction_results_for_MIP(group, 1)
     plot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_theta_reconstruction_results_for_MIP(table, 1)
-    boxplot_theta_reconstruction_results_for_MIP(table, 2)
+    boxplot_theta_reconstruction_results_for_MIP(group, 1)
+    boxplot_theta_reconstruction_results_for_MIP(group, 2)
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
     boxplot_phi_reconstruction_results_for_MIP(table, 2)
     boxplot_arrival_times(table, 1)
@@ -371,20 +371,19 @@ def plot_phi_reconstruction_results_for_MIP(group, N):
 
     utils.saveplot(N)
 
-def boxplot_theta_reconstruction_results_for_MIP(table, N):
+def boxplot_theta_reconstruction_results_for_MIP(group, N):
+    group = group.E_1PeV
+
     figure()
-    query = '(min_n134>=%d) & (size==10) & (bin==0)' % N
 
     angles = [0, 5, 22.5, 35]
     r_dtheta = []
     for angle in angles:
-        low, high = deg2rad(angle - 1), deg2rad(angle + 1)
-        sel_query = query + '& (low < reference_theta) & (reference_theta < high)'
-        sel = table.readWhere(sel_query)
+        table = group._f_getChild('zenith_%s' % str(angle).replace('.', '_'))
+        sel = table.readWhere('min_n134 >= %d' % N)
         r_dtheta.append(rad2deg(sel[:]['reconstructed_theta'] - sel[:]['reference_theta']))
 
-    boxplot(r_dtheta, sym='')
-    xticks(range(1, len(angles) + 1), [str(u) for u in angles])
+    boxplot(r_dtheta, sym='', positions=angles, widths=2.)
 
     xlabel(r"$\theta_{simulated}$")
     ylabel(r"$\theta_{reconstructed} - \theta_{simulated}$")
