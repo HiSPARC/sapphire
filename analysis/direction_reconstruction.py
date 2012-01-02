@@ -38,56 +38,47 @@ if USE_TEX:
     rcParams['legend.fontsize'] = 'small'
 
 
-def do_full_reconstruction(data, tablename):
+def do_full_reconstruction(data, N=None):
     """Do a reconstruction of all simulated data and store results"""
 
-    try:
-        data.createGroup('/', 'reconstructions', "Angle reconstructions")
-    except tables.NodeError:
-        pass
+    if '/reconstructions' in data:
+        data.removeNode('/reconstructions', recursive=True)
 
-    try:
-        data.removeNode('/reconstructions', tablename)
-    except tables.NoSuchNodeError:
-        pass
+    simulation_group = '/simulations/E_1PeV'
+    reconstruction_group = simulation_group.replace('simulations', 'reconstructions')
 
-    table = data.createTable('/reconstructions', tablename,
-                             ReconstructedEvent, "Reconstruction data")
+    for theta in 0, 5, 22.5, 35:
+        tablename = 'zenith_%s' % str(theta).replace('.', '_')
+        source = os.path.join(simulation_group, tablename)
+        dest = os.path.join(reconstruction_group, tablename)
+        theta = deg2rad(theta)
 
-    group = '/simulations/E_1PeV'
-    rec = DirectionReconstruction(data, table, min_n134=1, N=100)
-
-    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_0'), THETA=0)
-    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_5'), THETA=deg2rad(5))
-    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_22_5'), THETA=pi / 8)
-    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_35'), THETA=deg2rad(35))
+        rec = DirectionReconstruction(data, dest, min_n134=1, N=N)
+        rec.reconstruct_angles_for_group(source, theta)
 
     # SPECIALS
     # Station sizes
-    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_22_5_size5'), THETA=pi / 8)
-    rec.reconstruct_angles_for_group(os.path.join(group, 'zenith_22_5_size20'), THETA=pi / 8)
+    for size in 5, 20:
+        tablename = 'zenith_22_5_size%d' % size
+        source = os.path.join(simulation_group, tablename)
+        dest = os.path.join(reconstruction_group, tablename)
+
+        rec = DirectionReconstruction(data, dest, min_n134=1, N=N)
+        rec.reconstruct_angles_for_group(source, deg2rad(22.5))
 
     # SPECIALS
     # Binnings
-    init_kwargs = dict(datafile=data, results_table=table, min_n134=1, N=100)
-    kwargs = dict(groupname=os.path.join(group, 'zenith_22_5'),
-                  THETA=pi / 8)
 
-    init_kwargs['randomize_binning'] = False
-    rec = BinnedDirectionReconstruction(binning=1, **init_kwargs)
-    rec.reconstruct_angles_for_group(**kwargs)
-    rec = BinnedDirectionReconstruction(binning=2.5, **init_kwargs)
-    rec.reconstruct_angles_for_group(**kwargs)
-    rec = BinnedDirectionReconstruction(binning=5, **init_kwargs)
-    rec.reconstruct_angles_for_group(**kwargs)
+    source = os.path.join(simulation_group, 'zenith_22_5')
+    for randomize in False, True:
+        dest = os.path.join(reconstruction_group, 'zenith_22_5_binned')
+        if randomize:
+            dest += '_randomized'
 
-    init_kwargs['randomize_binning'] = True
-    rec = BinnedDirectionReconstruction(binning=1, **init_kwargs)
-    rec.reconstruct_angles_for_group(**kwargs)
-    rec = BinnedDirectionReconstruction(binning=2.5, **init_kwargs)
-    rec.reconstruct_angles_for_group(**kwargs)
-    rec = BinnedDirectionReconstruction(binning=5, **init_kwargs)
-    rec.reconstruct_angles_for_group(**kwargs)
+        for binning in 1, 2.5, 5:
+            dest_table = dest + '_%s' % str(binning).replace('.', '_')
+            rec = BinnedDirectionReconstruction(data, dest_table, min_n134=1, binning=binning, randomize_binning=randomize, N=N)
+            rec.reconstruct_angles_for_group(source, deg2rad(22.5))
 
 def do_reconstruction_plots(data, tablename):
     """Make plots based upon earlier reconstructions"""
@@ -680,14 +671,14 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile('master.h5', 'a')
 
-#    if '/reconstructions/full' not in data:
+#    if '/reconstructions' not in data:
 #        print "Reconstructing shower direction..."
-#        do_full_reconstruction(data, 'full')
+#        do_full_reconstruction(data)
 #    else:
 #        print "Skipping reconstruction!"
 
     print "Reconstructing shower direction..."
-    do_full_reconstruction(data, 'fulltest')
+    do_full_reconstruction(data, N=100)
 
     #utils.set_prefix("DIR-")
     #do_reconstruction_plots(data, 'full')
