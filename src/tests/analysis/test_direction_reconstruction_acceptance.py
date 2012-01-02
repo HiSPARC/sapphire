@@ -4,12 +4,14 @@ import os
 import shutil
 import tables
 import sys
+import cPickle as pickle
 
 from numpy import deg2rad
 import numpy as np
 
 import storage
 from analysis import direction_reconstruction
+import clusters
 
 
 TEST_DATA_FILE = 'DIR-testdata.h5'
@@ -91,6 +93,9 @@ class DirectionReconstructionTests(unittest.TestCase):
         expected = self.data.getNode(expected)
         actual = self.data.getNode(actual)
         self.validate_column_data(expected, actual)
+        self.assertIn('cluster', actual.attrs)
+        self.assertEqual(pickle.dumps(expected.attrs.cluster),
+                         pickle.dumps(actual.attrs.cluster))
 
     def validate_column_data(self, expected, actual):
         for colname in expected.colnames:

@@ -49,6 +49,8 @@ class DirectionReconstruction(object):
         shower_table = shower.observables
         coincidence_table = shower.coincidences
         self.station, = shower._v_attrs.cluster.stations
+        if not 'cluster' in self.results_table.attrs:
+            self.results_table.attrs.cluster = shower._v_attrs.cluster
 
         for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
             assert event['id'] == coincidence['id']
@@ -67,6 +69,7 @@ class DirectionReconstruction(object):
                                   reconstructed_theta, reconstructed_phi):
         dst_row = self.results_table.row
 
+        dst_row['station_id'] = event['station_id']
         dst_row['r'] = coincidence['r']
         dst_row['phi'] = coincidence['phi']
         dst_row['alpha'] = event['alpha']

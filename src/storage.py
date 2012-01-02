@@ -261,6 +261,7 @@ class ReconstructedEvent(tables.IsDescription):
 
     """Store information about reconstructed events"""
 
+    station_id = tables.UInt8Col()
     r = tables.Float32Col()
     phi = tables.Float32Col()
     alpha = tables.Float32Col()
