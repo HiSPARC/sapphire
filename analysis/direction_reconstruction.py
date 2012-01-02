@@ -80,12 +80,12 @@ def do_full_reconstruction(data, N=None):
             rec = BinnedDirectionReconstruction(data, dest_table, min_n134=1, binning=binning, randomize_binning=randomize, N=N)
             rec.reconstruct_angles_for_group(source, deg2rad(22.5))
 
-def do_reconstruction_plots(data, tablename):
+def do_reconstruction_plots(data):
     """Make plots based upon earlier reconstructions"""
 
-    table = data.getNode('/reconstructions', tablename)
+    group = data.root.reconstructions
 
-    plot_uncertainty_mip(table)
+    plot_uncertainty_mip(group)
     plot_uncertainty_zenith(table)
     plot_uncertainty_size(table)
     plot_uncertainty_binsize(table)
@@ -105,19 +105,21 @@ def do_reconstruction_plots(data, tablename):
     plot_reconstruction_efficiency_vs_R_for_angles(2)
     plot_reconstruction_efficiency_vs_R_for_mips()
 
-def plot_uncertainty_mip(table):
+def plot_uncertainty_mip(group):
+    table = group.E_1PeV.zenith_22_5
+    rec = DirectionReconstruction
+
     # constants for uncertainty estimation
-    phi1 = calc_phi(1, 3)
-    phi2 = calc_phi(1, 4)
+    station = table.attrs.cluster.stations[0]
+    r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
+    r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
-    for D in range(1, 6):
-        x.append(D)
-        events = table.readWhere(
-            '(min_n134==%d) & (reference_theta==%.40f) & (size==10) & (bin==0) & '
-            '(0 < r) & (r <= 100)' % (D, float32(pi / 8)))
+    for N in range(1, 6):
+        x.append(N)
+        events = table.readWhere('min_n134==%d' % N)
         print len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -127,6 +129,7 @@ def plot_uncertainty_mip(table):
         errors2 = (errors2 + pi) % (2 * pi) - pi
         y.append(std(errors))
         y2.append(std(errors2))
+
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
     print
@@ -137,8 +140,8 @@ def plot_uncertainty_mip(table):
     # Uncertainty estimate
     x = linspace(1, 5, 50)
     phis = linspace(-pi, pi, 50)
-    phi_errsq = mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2))
-    theta_errsq = mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2))
+    phi_errsq = mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
+    theta_errsq = mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
     y = TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
     y2 = TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
     plot(x, rad2deg(y), label="Estimate Phi")
@@ -677,11 +680,11 @@ if __name__ == '__main__':
 #    else:
 #        print "Skipping reconstruction!"
 
-    print "Reconstructing shower direction..."
-    do_full_reconstruction(data, N=100)
+#    print "Reconstructing shower direction..."
+#    do_full_reconstruction(data, N=10000)
 
-    #utils.set_prefix("DIR-")
-    #do_reconstruction_plots(data, 'full')
+    utils.set_prefix("DIR-")
+    do_reconstruction_plots(data)
 
 #    utils.set_prefix("WIP-")
 #    do_jos_plots(data)
