@@ -8,7 +8,8 @@ import sys
 from numpy import deg2rad
 import numpy as np
 
-import direction_reconstruction
+import storage
+from analysis import direction_reconstruction
 
 
 TEST_DATA_FILE = 'DIR-testdata.h5'
@@ -88,7 +89,7 @@ class DirectionReconstructionTests(unittest.TestCase):
         if tablename in group:
             self.data.removeNode(table_path)
 
-        output = self.data.createTable(group, tablename, direction_reconstruction.ReconstructedEvent)
+        output = self.data.createTable(group, tablename, storage.ReconstructedEvent)
         return output
 
     def reconstruct_direction(self, output):
