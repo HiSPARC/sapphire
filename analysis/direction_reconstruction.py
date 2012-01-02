@@ -98,7 +98,7 @@ def do_reconstruction_plots(data):
     boxplot_phi_reconstruction_results_for_MIP(group, 2)
     boxplot_arrival_times(group, 1)
     boxplot_arrival_times(group, 2)
-    boxplot_core_distances_for_mips(table)
+    boxplot_core_distances_for_mips(group)
     plot_detection_efficiency_vs_R_for_angles(1)
     plot_detection_efficiency_vs_R_for_angles(2)
     plot_reconstruction_efficiency_vs_R_for_angles(1)
@@ -446,14 +446,12 @@ def boxplot_arrival_times(group, N):
 
     utils.saveplot(N)
 
-def boxplot_core_distances_for_mips(table):
-    query = ('(size==10) & (bin==0) & (reference_theta == %.40f)' %
-             float32(deg2rad(22.5)))
+def boxplot_core_distances_for_mips(group):
+    table = group.E_1PeV.zenith_22_5
 
     r_list = []
-    for D in range(1, 5):
-        sel_query = query + '& (min_n134 == %d)' % D
-        sel = table.readWhere(sel_query)
+    for N in range(1, 5):
+        sel = table.readWhere('min_n134 == N')
         r = sel[:]['r']
         r_list.append(r)
 
