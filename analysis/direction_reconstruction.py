@@ -94,8 +94,8 @@ def do_reconstruction_plots(data):
     plot_phi_reconstruction_results_for_MIP(group, 2)
     boxplot_theta_reconstruction_results_for_MIP(group, 1)
     boxplot_theta_reconstruction_results_for_MIP(group, 2)
-    boxplot_phi_reconstruction_results_for_MIP(table, 1)
-    boxplot_phi_reconstruction_results_for_MIP(table, 2)
+    boxplot_phi_reconstruction_results_for_MIP(group, 1)
+    boxplot_phi_reconstruction_results_for_MIP(group, 2)
     boxplot_arrival_times(table, 1)
     boxplot_arrival_times(table, 2)
     boxplot_core_distances_for_mips(table)
@@ -394,19 +394,18 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
 
     utils.saveplot(N)
 
-def boxplot_phi_reconstruction_results_for_MIP(table, N):
+def boxplot_phi_reconstruction_results_for_MIP(group, N):
+    table = group.E_1PeV.zenith_22_5
+
     figure()
-    min_theta = 1
-    query = '(min_n134>=%d) & (size==10) & (bin==0) & (reference_theta > %.5f)' % \
-            (N, deg2rad(min_theta))
 
     bin_edges = linspace(-180, 180, 18)
     x, r_dphi = [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         rad_low = deg2rad(low)
         rad_high = deg2rad(high)
-        sel_query = query + '& (rad_low < reference_phi) & (reference_phi < rad_high)'
-        sel = table.readWhere(sel_query)
+        query = '(min_n134 >= N) & (rad_low < reference_phi) & (reference_phi < rad_high)'
+        sel = table.readWhere(query)
         dphi = sel[:]['reconstructed_phi'] - sel[:]['reference_phi']
         dphi = (dphi + pi) % (2 * pi) - pi
         r_dphi.append(rad2deg(dphi))
@@ -416,7 +415,7 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
 
     xlabel(r"$\phi_{simulated}$")
     ylabel(r"$\phi_{reconstructed} - \phi_{simulated}$")
-    title(r"$N_{MIP} \geq %d, \quad \theta > 0^\circ$" % N)
+    title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     xticks(linspace(-180, 180, 9))
     axhline(0)
