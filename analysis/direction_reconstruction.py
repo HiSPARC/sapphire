@@ -500,6 +500,8 @@ def plot_detection_efficiency_vs_R_for_angles(N):
     utils.saveplot(N)
 
 def plot_reconstruction_efficiency_vs_R_for_angles(N):
+    group = data.root.reconstructions.E_1PeV
+
     figure()
 
     bin_edges = linspace(0, 100, 10)
@@ -508,6 +510,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     for angle in [0, 5, 22.5, 35]:
         angle_str = str(angle).replace('.', '_')
         shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
+        reconstructions = group._f_getChild('zenith_%s' % angle_str)
 
         efficiencies = []
         for low, high in zip(bin_edges[:-1], bin_edges[1:]):
@@ -523,8 +526,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
                 sel = obs_sel.compress((o['n1'] >= N) & (o['n3'] >= N) &
                                        (o['n4'] >= N))
                 shower_results.append(len(sel))
-            query = "(size == 10) & (bin == 0) & (reference_theta == %.40f) & (low <= r) & (r < high) & (min_n134 >= N)" % float32(deg2rad(angle))
-            ssel = data.root.reconstructions.full.readWhere(query)
+            ssel = reconstructions.readWhere('(min_n134 >= N) & (low <= r) & (r < high)')
             efficiencies.append(len(ssel) / sum(shower_results))
 
         plot(x, efficiencies, label=r'$\theta = %s^\circ$' % angle)
@@ -537,6 +539,8 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     utils.saveplot(N)
 
 def plot_reconstruction_efficiency_vs_R_for_mips():
+    reconstructions = data.root.reconstructions.E_1PeV.zenith_22_5
+
     figure()
 
     bin_edges = linspace(0, 100, 10)
@@ -559,8 +563,7 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
                 sel = o.compress(amin(array([o['n1'], o['n3'], o['n4']]), 0) == N)
 
                 shower_results.append(len(sel))
-            query = "(size == 10) & (bin == 0) & (reference_theta == %.40f) & (low <= r) & (r < high) & (min_n134 == N)" % float32(deg2rad(22.5))
-            ssel = data.root.reconstructions.full.readWhere(query)
+            ssel = reconstructions.readWhere('(min_n134 == N) & (low <= r) & (r < high)')
             print sum(shower_results), len(ssel), len(ssel) / sum(shower_results)
             efficiencies.append(len(ssel) / sum(shower_results))
 
