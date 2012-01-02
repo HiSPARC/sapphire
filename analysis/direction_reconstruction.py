@@ -88,7 +88,7 @@ def do_reconstruction_plots(data):
     plot_uncertainty_mip(group)
     plot_uncertainty_zenith(group)
     plot_uncertainty_size(group)
-    plot_uncertainty_binsize(table)
+    plot_uncertainty_binsize(group)
 
     plot_phi_reconstruction_results_for_MIP(table, 1)
     plot_phi_reconstruction_results_for_MIP(table, 2)
@@ -278,25 +278,28 @@ def plot_uncertainty_size(group):
     utils.saveplot()
     print
 
-def plot_uncertainty_binsize(table):
+def plot_uncertainty_binsize(group):
+    group = group.E_1PeV
+    rec = DirectionReconstruction
+
     # constants for uncertainty estimation
-    phi1 = calc_phi(1, 3)
-    phi2 = calc_phi(1, 4)
+    # BEWARE: stations must be the same over all reconstruction tables used
+    station = group.zenith_22_5.attrs.cluster.stations[0]
+    r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
+    r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for bin_size in [0, 1, 2.5, 5]:
-        if bin_size == 0:
-            is_randomized = False
-        else:
-            is_randomized = True
         x.append(bin_size)
-        events = table.readWhere(
-            '(min_n134==2) & (reference_theta==%.40f) & (size==10) & (bin==%.40f) & '
-            '(bin_r==%s)' %
-            (float32(pi / 8), bin_size, is_randomized))
-        print len(events),
+        if bin_size != 0:
+            table = group._f_getChild('zenith_22_5_binned_randomized_%s' % str(bin_size).replace('.', '_'))
+        else:
+            table = group.zenith_22_5
+        events = table.readWhere('min_n134 == 2')
+
+        print bin_size, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
@@ -312,12 +315,13 @@ def plot_uncertainty_binsize(table):
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
+
     # Uncertainty estimate
     x = linspace(0, 5, 50)
     phis = linspace(-pi, pi, 50)
     y, y2 = [], []
-    phi_errorsq = mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2))
-    theta_errorsq = mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2))
+    phi_errorsq = mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
+    theta_errorsq = mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
     for t in x:
         y.append(sqrt((TIMING_ERROR ** 2 + t ** 2 / 12) * phi_errorsq))
         y2.append(sqrt((TIMING_ERROR ** 2 + t ** 2 / 12) * theta_errorsq))
@@ -325,6 +329,7 @@ def plot_uncertainty_binsize(table):
     y2 = array(y2)
     plot(x, rad2deg(y), label="Estimate Phi")
     plot(x, rad2deg(y2), label="Estimate Theta")
+
     # Labels etc.
     xlabel("Bin size (ns)")
     ylabel("Uncertainty in angle reconstruction (deg)")
