@@ -42,7 +42,7 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.assertIs(self.simulation.N, self.N)
 
     def test_init_gets_grdpcles_node(self):
-        self.data.getNode.assert_called_with('/', self.grdpcles)
+        self.data.getNode.assert_called_with(self.grdpcles)
         self.assertIs(self.simulation.grdpcles, self.data.getNode.return_value)
 
     @patch('os.path.split')
