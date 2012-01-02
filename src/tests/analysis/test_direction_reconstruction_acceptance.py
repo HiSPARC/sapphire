@@ -66,47 +66,21 @@ class DirectionReconstructionTests(unittest.TestCase):
 
         self.validate_reconstruction_results(expected, actual)
 
-    def create_reconstruction_output(self, table_path):
-        output = self.create_empty_output_table(table_path)
-        self.reconstruct_direction(output)
-
-    def create_binned_reconstruction_output(self, table_path):
-        output = self.create_empty_output_table(table_path)
-        self.reconstruct_direction_binned(output)
-
-    def create_randomized_binned_reconstruction_output(self, table_path):
-        output = self.create_empty_output_table(table_path)
-        self.reconstruct_direction_randomized_binned(output)
-
-    def create_empty_output_table(self, table_path):
-        group, tablename = os.path.split(table_path)
-
-        if not group in self.data.root:
-            base, groupname = os.path.split(group)
-            self.data.createGroup(base, groupname, createparents=True)
-        group = self.data.getNode(group)
-
-        if tablename in group:
-            self.data.removeNode(table_path)
-
-        output = self.data.createTable(group, tablename, storage.ReconstructedEvent)
-        return output
-
-    def reconstruct_direction(self, output):
+    def create_reconstruction_output(self, output):
         reconstruction = direction_reconstruction.DirectionReconstruction(
                             self.data, output, min_n134=1, N=100)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5))
         self.restore_stdout_stderr()
 
-    def reconstruct_direction_binned(self, output):
+    def create_binned_reconstruction_output(self, output):
         reconstruction = direction_reconstruction.BinnedDirectionReconstruction(
                             self.data, output, min_n134=1, N=100, binning=2.5)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles_for_group(SIMULATION_GROUP, deg2rad(22.5))
         self.restore_stdout_stderr()
 
-    def reconstruct_direction_randomized_binned(self, output):
+    def create_randomized_binned_reconstruction_output(self, output):
         reconstruction = direction_reconstruction.BinnedDirectionReconstruction(
                             self.data, output, min_n134=1, N=100, binning=2.5, randomize_binning=True)
         self.redirect_stdout_stderr_to_devnull()

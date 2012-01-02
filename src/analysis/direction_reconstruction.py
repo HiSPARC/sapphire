@@ -1,15 +1,33 @@
-import progressbar as pb
 import sys
+import os
+
+import progressbar as pb
 from numpy import isnan, arcsin, arctan2, cos, floor, inf, sin, sqrt, tan, where
 from numpy.random import uniform
+
+import storage
 
 
 class DirectionReconstruction(object):
     def __init__(self, datafile, results_table, min_n134=1., N=None):
         self.data = datafile
-        self.results_table = results_table
+        self.results_table = self.create_empty_output_table(results_table)
         self.min_n134 = min_n134
         self.N = N
+
+    def create_empty_output_table(self, table_path):
+        group, tablename = os.path.split(table_path)
+
+        if not group in self.data.root:
+            base, groupname = os.path.split(group)
+            self.data.createGroup(base, groupname, createparents=True)
+        group = self.data.getNode(group)
+
+        if tablename in group:
+            raise RuntimeError("Reconstruction table %s already exists" % table_path)
+
+        table = self.data.createTable(group, tablename, storage.ReconstructedEvent)
+        return table
 
     def reconstruct_angles_for_group(self, groupname, THETA):
         """Reconstruct angles from simulation for minimum particle density"""
