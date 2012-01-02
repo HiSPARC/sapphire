@@ -87,7 +87,7 @@ def do_reconstruction_plots(data):
 
     plot_uncertainty_mip(group)
     plot_uncertainty_zenith(group)
-    plot_uncertainty_size(table)
+    plot_uncertainty_size(group)
     plot_uncertainty_binsize(table)
 
     plot_phi_reconstruction_results_for_MIP(table, 1)
@@ -217,20 +217,29 @@ def plot_uncertainty_zenith(group):
     utils.saveplot()
     print
 
-def plot_uncertainty_size(table):
+def plot_uncertainty_size(group):
+    group = group.E_1PeV
+    rec = DirectionReconstruction
+
     # constants for uncertainty estimation
-    phi1 = calc_phi(1, 3)
-    phi2 = calc_phi(1, 4)
+    # BEWARE: stations must be the same shape(!) over all reconstruction tables used
+    station = group.zenith_22_5.attrs.cluster.stations[0]
+    r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
+    r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
+    del r1, r2
 
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for size in [5, 10, 20]:
         x.append(size)
-        events = table.readWhere(
-            '(min_n134==2) & (reference_theta==%.40f) & (size==%d) & (bin==0)' %
-            (float32(pi / 8), size))
-        print len(events),
+        if size != 10:
+            table = group._f_getChild('zenith_22_5_size%d' % size)
+        else:
+            table = group._f_getChild('zenith_22_5')
+
+        events = table.readWhere('min_n134 == 2')
+        print size, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
@@ -246,17 +255,19 @@ def plot_uncertainty_size(table):
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
+
     # Uncertainty estimate
     x = linspace(5, 20, 50)
     phis = linspace(-pi, pi, 50)
     y, y2 = [], []
     for s in x:
-        y.append(mean(rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
-        y2.append(mean(rel_theta_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
+        y.append(mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
+        y2.append(mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
     y = TIMING_ERROR * sqrt(array(y))
     y2 = TIMING_ERROR * sqrt(array(y2))
     plot(x, rad2deg(y), label="Estimate Phi")
     plot(x, rad2deg(y2), label="Estimate Theta")
+
     # Labels etc.
     xlabel("Station size (m)")
     ylabel("Uncertainty in angle reconstruction (deg)")
