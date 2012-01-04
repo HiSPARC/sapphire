@@ -5,28 +5,37 @@
 
 """
 import tables
+import logging
 from hisparc import kascade
 from hisparc.containers import KascadeEvent
 
 
-DATAFILE = 'kascade.h5'
-KASCADEFILE = 'HiSparc-new.dat.gz'
+class Master(object):
+    def __init__(self, data_filename, kascade_filename):
+        self.data = tables.openFile(data_filename, 'a')
+        self.kascade_filename = kascade_filename
 
+    def main(self):
+        self.read_and_store_kascade_data()
 
-def read_kascade_data():
-    """Read KASCADE data into analysis file"""
+    def read_and_store_kascade_data(self):
+        """Read KASCADE data into analysis file"""
 
-    data = tables.openFile(DATAFILE, 'a')
-
-    if 'kascade' in data.root:
-        raise RuntimeError("KASCADE event group already exists!")
-    else:
-        data.createGroup('/', 'kascade', "KASCADE data")
-        data.createTable('/kascade', 'events', KascadeEvent,
-                         "KASCADE events")
-        kascade.helper(data.root.hisparc.cluster_kascade.station_601.events,
-                       data.root.kascade.events, KASCADEFILE)
+        if 'kascade' in self.data.root:
+            logging.info("KASCADE event group already exists, skipping "
+                         "reconstruction")
+            return
+        else:
+            self.data.createGroup('/', 'kascade', "KASCADE data")
+            self.data.createTable('/kascade', 'events', KascadeEvent,
+                                  "KASCADE events")
+            kascade.helper(self.data.root.hisparc.cluster_kascade.station_601.events,
+                           self.data.root.kascade.events,
+                           self.kascade_filename)
 
 
 if __name__ == '__main__':
-    read_kascade_data()
+    logging.basicConfig(level=logging.INFO)
+
+    master = Master('kascade.h5', 'HiSparc-new.dat.gz')
+    master.main()
