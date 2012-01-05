@@ -11,7 +11,7 @@ import sys
 import numpy as np
 from math import pi, sin, cos, atan2, sqrt, isinf
 
-import storage
+from sapphire import storage
 from base import BaseSimulation
 
 

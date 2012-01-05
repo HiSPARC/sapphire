@@ -2,9 +2,9 @@ from mock import sentinel, Mock, patch, MagicMock
 import unittest
 from math import pi, sqrt
 
-from simulations.ldf import BaseLdfSimulation
-from simulations.base import BaseSimulation
-import clusters
+from sapphire.simulations.ldf import BaseLdfSimulation
+from sapphire.simulations.base import BaseSimulation
+import sapphire.clusters
 
 
 class BaseLdfSimulationTest(unittest.TestCase):

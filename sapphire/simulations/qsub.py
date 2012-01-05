@@ -6,7 +6,7 @@ import subprocess
 import progressbar as pb
 
 from groundparticles import GroundParticlesSimulation
-import storage
+from sapphire import storage
 
 JOB_FILE = '__QSUB_%s.h5'
 STATUS_FILE = '__STATUS_%s'

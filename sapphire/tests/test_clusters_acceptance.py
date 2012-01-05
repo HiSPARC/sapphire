@@ -3,7 +3,7 @@ from __future__ import division
 from math import sqrt, pi
 import unittest
 
-import clusters
+from sapphire import clusters
 
 
 class SimpleClusterTest(unittest.TestCase):
