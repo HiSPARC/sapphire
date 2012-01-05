@@ -11,7 +11,7 @@ from sapphire import clusters
 
 R = 100
 N = 100000
-N_CORES = 64
+N_CORES = 32
 
 
 class Master(object):
