@@ -2,7 +2,7 @@ import unittest
 from mock import Mock, MagicMock, sentinel, patch
 from numpy import logspace, array
 
-from simulations.ldf import KascadeLdfSimulation, BaseLdfSimulation
+from sapphire.simulations.ldf import KascadeLdfSimulation, BaseLdfSimulation
 
 class BaseLdfSimulationTest(unittest.TestCase):
     def setUp(self):

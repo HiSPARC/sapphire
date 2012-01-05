@@ -10,7 +10,7 @@ import textwrap
 from math import pi, sin, cos
 import numpy as np
 
-import storage
+from sapphire import storage
 
 
 class BaseSimulation(object):

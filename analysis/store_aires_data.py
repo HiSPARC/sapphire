@@ -11,7 +11,7 @@ import aires
 import tables
 import os.path
 
-from storage import ShowerParticle
+from sapphire.storage import ShowerParticle
 
 from numpy import *
 

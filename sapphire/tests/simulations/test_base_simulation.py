@@ -1,8 +1,8 @@
 from mock import sentinel, Mock, patch, MagicMock
 import unittest
 
-from simulations.base import BaseSimulation
-import clusters
+from sapphire.simulations.base import BaseSimulation
+import sapphire.clusters
 
 
 class BaseSimulationTest(unittest.TestCase):

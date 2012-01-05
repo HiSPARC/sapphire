@@ -5,7 +5,7 @@ import progressbar as pb
 from numpy import isnan, arcsin, arctan2, cos, floor, inf, sin, sqrt, tan, where
 from numpy.random import uniform
 
-import storage
+from sapphire import storage
 
 
 class DirectionReconstruction(object):

@@ -17,8 +17,8 @@ from scipy.special import erf
 
 import utils
 
-from analysis import DirectionReconstruction, BinnedDirectionReconstruction
-from storage import ReconstructedEvent
+from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
+from sapphire.storage import ReconstructedEvent
 
 
 USE_TEX = False

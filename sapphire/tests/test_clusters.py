@@ -3,7 +3,7 @@ import unittest
 
 from mock import Mock, patch, sentinel
 
-import clusters
+from sapphire import clusters
 
 
 class DetectorTests(unittest.TestCase):
@@ -57,14 +57,14 @@ class DetectorTests(unittest.TestCase):
 
 class StationTests(unittest.TestCase):
     def setUp(self):
-        with patch('clusters.Detector') as mock_detector:
+        with patch('sapphire.clusters.Detector') as mock_detector:
             self.cluster = Mock()
             self.station_1 = clusters.Station(self.cluster, 1, (0, 1), pi / 4,
                                               [(3, 4, 'LR')])
             self.mock_detector_instance = mock_detector.return_value
 
     def test_detector_called(self):
-        with patch('clusters.Detector') as mock_detector:
+        with patch('sapphire.clusters.Detector') as mock_detector:
             cluster = Mock()
             station = clusters.Station(cluster, 1, (0, 1), 2, [(3, 4, 'LR')])
             mock_detector.assert_called_with(station, 3, 4, 'LR')
@@ -79,7 +79,7 @@ class StationTests(unittest.TestCase):
         variable, you will share the same list with *all instances*.
 
         """
-        with patch('clusters.Detector') as mock_detector:
+        with patch('sapphire.clusters.Detector') as mock_detector:
             cluster = Mock()
             mock_detector.return_value = Mock()
             station1 = clusters.Station(cluster, 1, (0, 1), 2, [(3, 4, 'LR')])
@@ -91,7 +91,7 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station_1.detectors, [self.mock_detector_instance])
 
     def test_get_xyalpha_coordinates(self):
-        with patch('clusters.Detector') as mock_detector:
+        with patch('sapphire.clusters.Detector') as mock_detector:
             cluster = Mock()
 
             # Trivial
@@ -182,7 +182,7 @@ class StationTests(unittest.TestCase):
 
 class BaseClusterTests(unittest.TestCase):
     def test_add_station(self):
-        with patch('clusters.Station') as mock_station:
+        with patch('sapphire.clusters.Station') as mock_station:
             cluster = clusters.BaseCluster()
             self.assertFalse(mock_station.called)
 
@@ -193,7 +193,7 @@ class BaseClusterTests(unittest.TestCase):
             mock_station.assert_called_with(cluster, 1, pos, angle, detector_list)
 
     def test_attributes(self):
-        with patch('clusters.Station') as mock_station:
+        with patch('sapphire.clusters.Station') as mock_station:
             mock_station_instance = Mock()
             mock_station.return_value = mock_station_instance
 
@@ -207,7 +207,7 @@ class BaseClusterTests(unittest.TestCase):
         variable, you will share the same list with *all instances*.
 
         """
-        with patch('clusters.Station') as mock_station:
+        with patch('sapphire.clusters.Station') as mock_station:
             mock_station.return_value = Mock()
             cluster1 = clusters.BaseCluster()
             cluster1._add_station((0, 0), 0, [(0, 0, 'LR')])

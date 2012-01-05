@@ -5,8 +5,8 @@ import os
 import numpy as np
 import sys
 
-from simulations.ldf import BaseLdfSimulation
-import clusters
+from sapphire.simulations.ldf import BaseLdfSimulation
+from sapphire import clusters
 
 
 class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):

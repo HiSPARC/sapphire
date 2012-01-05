@@ -9,9 +9,9 @@ import cPickle as pickle
 from numpy import deg2rad
 import numpy as np
 
-import storage
-from analysis import direction_reconstruction
-import clusters
+from sapphire import storage
+from sapphire.analysis import direction_reconstruction
+from sapphire import clusters
 
 
 TEST_DATA_FILE = 'DIR-testdata.h5'

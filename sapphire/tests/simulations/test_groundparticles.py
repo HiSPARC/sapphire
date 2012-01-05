@@ -6,9 +6,9 @@ from numpy import array
 from math import pi, atan2, sqrt
 from mock import Mock, MagicMock, patch, sentinel
 
-from simulations import groundparticles, BaseSimulation
-import clusters
-import storage
+from sapphire.simulations import groundparticles, BaseSimulation
+from sapphire import clusters
+from sapphire import storage
 
 class GroundParticleSimulationTests(unittest.TestCase):
     @patch('os.path.split')
