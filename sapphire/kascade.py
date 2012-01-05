@@ -17,9 +17,19 @@ from sapphire.storage import KascadeEvent
 
 
 class StoreKascadeData():
-    def __init__(self, data, hisparc_path, kascade_path, kascade_filename):
+    def __init__(self, data, hisparc_path, kascade_path, kascade_filename,
+                 force=False):
+
         self.data = data
         self.hisparc = data.getNode(hisparc_path, 'events')
+
+        if kascade_path in data:
+            if not force:
+                raise RuntimeError("Cancelling simulation; %s already exists?"
+                                   % kascade_path)
+            else:
+                data.removeNode(kascade_path, recursive=True)
+
         self.kascade = data.createTable(kascade_path, 'events', KascadeEvent,
                                         "KASCADE events", createparents=True)
         self.kascade_filename = kascade_filename

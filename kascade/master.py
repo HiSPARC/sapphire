@@ -15,14 +15,14 @@ class Master(object):
     def read_and_store_kascade_data(self):
         """Read KASCADE data into analysis file"""
 
-        if 'kascade' in self.data.root:
-            logging.info("KASCADE event group already exists, skipping "
-                         "reconstruction")
-            return
-        else:
+        try:
             kascade = StoreKascadeData(self.data,
                                        '/hisparc/cluster_kascade/station_601',
                                        '/kascade', self.kascade_filename)
+        except RuntimeError, msg:
+            print msg
+            return
+        else:
             kascade.read_and_store_data()
 
 
