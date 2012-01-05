@@ -1,7 +1,7 @@
 import tables
 import logging
-import kascade
-from storage import KascadeEvent
+from sapphire import kascade
+from sapphire.storage import KascadeEvent
 
 
 class Master(object):
