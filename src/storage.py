@@ -278,3 +278,24 @@ class ReconstructedEvent(tables.IsDescription):
     reconstructed_theta = tables.Float32Col()
     reconstructed_phi = tables.Float32Col()
     min_n134 = tables.Float32Col()
+
+
+class KascadeEvent(tables.IsDescription):
+
+    """Store events from KASCADE"""
+
+    run_id = tables.IntCol()
+    event_id = tables.Int64Col()
+    timestamp = tables.Time32Col()
+    nanoseconds = tables.UInt32Col()
+    ext_timestamp = tables.UInt64Col()
+    energy = tables.FloatCol()
+    core_pos = tables.FloatCol(shape=2)
+    zenith = tables.FloatCol()
+    azimuth = tables.FloatCol()
+    Num_e = tables.FloatCol()
+    Num_mu = tables.FloatCol()
+    dens_e = tables.FloatCol(shape=4)
+    dens_mu = tables.FloatCol(shape=4)
+    P200 = tables.FloatCol()
+    T200 = tables.FloatCol()

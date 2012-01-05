@@ -5,8 +5,7 @@
     the KASCADE array, with calculated particle densities at the location
     of our detectors.
 
-    You probably want to use the :func:`helper` function, and then move on
-    to the :mod:`~hisparc.analysis` package.
+    You probably want to use the :func:`read_and_store_data` function.
 
 """
 import gzip
@@ -74,7 +73,7 @@ def process_events(filename, table, start=None, stop=None):
     # flush the table buffers and write them to disk
     table.flush()
 
-def helper(hisparc, kascade, kascadefile):
+def read_and_store_data(hisparc, kascade, kascadefile):
     """Helper for quickly processing KASCADE data
 
     This function looks at the HiSPARC event data in the specified datafile
@@ -86,7 +85,7 @@ def helper(hisparc, kascade, kascadefile):
     :param kascade: KASCADE event table
     :param kascadefile: KASCADE data file
 
-    Example::
+    Example (FIXME)::
 
         >>> import tables
         >>> import hisparc
@@ -114,7 +113,7 @@ def helper(hisparc, kascade, kascadefile):
           "T200": Float64Col(shape=(), dflt=0.0, pos=14)}
           byteorder := 'little'
           chunkshape := (399,)
-        >>> hisparc.kascade.helper(data.root.hisparc.cluster_kascade.station_601.events, data.root.kascade.events, 'HiSparc.dat.gz')
+        >>> hisparc.kascade.read_and_store_data(data.root.hisparc.cluster_kascade.station_601.events, data.root.kascade.events, 'HiSparc.dat.gz')
         Processing data from Tue Jul  1 16:29:31 2008 to Tue Jul  1 17:15:06 2008
 
     """
@@ -126,7 +125,7 @@ def helper(hisparc, kascade, kascadefile):
     except IndexError:
         print "There is no HiSPARC data yet."
         return
-    
+
     # Determine start and stop timestamps from KASCADE data
     try:
         ts = kascade[:]['timestamp']
