@@ -4,4 +4,4 @@ if [ -n "$PBS_O_WORKDIR" ]; then
 fi
 workon core
 export JOB_HASH
-python -m simulations.qsub
+python -m sapphire.simulations.qsub
