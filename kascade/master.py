@@ -1,6 +1,6 @@
 import tables
 import logging
-from sapphire import kascade
+from sapphire.kascade import StoreKascadeData
 from sapphire.storage import KascadeEvent
 
 
@@ -20,13 +20,10 @@ class Master(object):
                          "reconstruction")
             return
         else:
-            self.data.createGroup('/', 'kascade', "KASCADE data")
-            self.data.createTable('/kascade', 'events', KascadeEvent,
-                                  "KASCADE events")
-            kascade.read_and_store_data(
-                self.data.root.hisparc.cluster_kascade.station_601.events,
-                self.data.root.kascade.events,
-                self.kascade_filename)
+            kascade = StoreKascadeData(self.data,
+                                       '/hisparc/cluster_kascade/station_601',
+                                       '/kascade', self.kascade_filename)
+            kascade.read_and_store_data()
 
 
 if __name__ == '__main__':
