@@ -1,15 +1,9 @@
-""" Store data from the KASCADE data file using pytables
-
-    This module processes data read from the gzipped data file, provided by
-    KASCADE as a courtesy to HiSPARC. The data consists of events taken by
-    the KASCADE array, with calculated particle densities at the location
-    of our detectors.
-
-    You probably want to use the :func:`read_and_store_data` function.
-
-"""
 import gzip
 import time
+import operator
+
+import numpy as np
+import tables
 
 import gpstime
 
@@ -52,9 +46,9 @@ class StoreKascadeData():
 
         print "Processing data from %s to %s" % (time.ctime(start),
                                                  time.ctime(stop))
-        self.process_events_in_range(start, stop)
+        self._process_events_in_range(start, stop)
 
-    def process_events_in_range(self, start=None, stop=None):
+    def _process_events_in_range(self, start=None, stop=None):
         """Process KASCADE events in timestamp range
 
         This function unzips the data file on the fly, reads the data and
@@ -117,3 +111,102 @@ class StoreKascadeData():
         tablerow['T200'] = T200
 
         tablerow.append()
+
+
+class KascadeCoincidences():
+    def __init__(self, data, hisparc_group, kascade_group, overwrite=False):
+        self.data = data
+        self.hisparc_group = data.getNode(hisparc_group)
+        self.kascade_group = data.getNode(kascade_group)
+
+        if 'c_index' in self.kascade_group:
+            if not overwrite:
+                raise RuntimeError("I found existing coincidences stored in the KASCADE group")
+            else:
+                data.removeNode(kascade_group, 'c_index')
+
+    def search_coincidences(self, timeshift=0, dtlimit=None):
+        """Search for coincidences
+
+        This function does the actual searching of coincidences. It uses a
+        timeshift to shift the HiSPARC data (we know that these employ GPS
+        time, so not taking UTC leap seconds into account). The shift will also
+        compensate for delays in the experimental setup.
+
+        The coincidences are stored as an instance variable (self.coincidences).
+        Final storage can be done by calling :meth:`store_coincidences`.
+
+        :param timeshift: the amount of time the HiSPARC data are shifted (in
+            seconds).  Default: 0.
+        :param dtlimit: limit on the time difference between hisparc and
+            kascade events in seconds.  If this limit is exceeded,
+            coincidences are not stored.  Default: None.
+
+        """
+        h = self._get_sorted_id_and_timestamp_array(self.hisparc_group)
+        k = self._get_sorted_id_and_timestamp_array(self.kascade_group)
+
+        # Shift the kascade data instead of the hisparc data. There is less of
+        # it, so this is much faster.
+        k['ext_timestamp'] += -1e9 * timeshift
+
+        # dtlimit in ns
+        dtlimit *= 1e9
+
+        coincidences = []
+
+        # First loop through kascade data until we have the first event that
+        # occurs _after_ the first hisparc event.
+        h_idx = 0
+        for k_idx in range(len(k)):
+            if k[k_idx][1] > h[h_idx][1]:
+                break
+
+        while True:
+            # Try to get the timestamps of the kascade event and the
+            # neighbouring hisparc events.
+            try:
+                h_t = int(h[h_idx][1])
+                k_t = int(k[k_idx][1])
+                h_t_next = int(h[h_idx + 1][1])
+            except IndexError:
+                # Reached beyond the event list.
+                break
+
+            # Make sure that while the current hisparc event is _before_ the
+            # kascade event, the next hisparc event should occur _after_ the
+            # kascade event.  That way, the kascade event is enclosed by
+            # hisparc events.
+            if k_t > h_t_next:
+                h_idx += 1
+                continue
+
+            # Calculate the time differences for both neighbors. Make sure to
+            # get the sign right. Negative sign: the hisparc event is 'left'.
+            # Positive sign: the hisparc event is 'right'.
+            dt_left = h_t - k_t
+            dt_right = h_t_next - k_t
+
+            # Determine the nearest neighbor and add that to the coincidence
+            # list, if dtlimit is not exceeded
+            if dtlimit is None or min(abs(dt_left), abs(dt_right)) < dtlimit:
+                if abs(dt_left) < abs(dt_right):
+                    coincidences.append((dt_left, h_idx, k_idx))
+                else:
+                    coincidences.append((dt_right, h_idx + 1, k_idx))
+
+            # Found a match for this kascade event, so continue with the next
+            # one.
+            k_idx += 1
+
+        self.coincidences = coincidences
+
+    def store_coincidences(self):
+        self.data.createArray(self.kascade_group, 'c_index', self.coincidences)
+
+    def _get_sorted_id_and_timestamp_array(self, group):
+        timestamps = group.events.col('ext_timestamp')
+        ids = group.events.col('event_id')
+        data = np.rec.fromarrays([ids, timestamps], names='event_id, ext_timestamp')
+        data.sort(order='ext_timestamp')
+        return data

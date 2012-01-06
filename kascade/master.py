@@ -1,6 +1,6 @@
 import tables
 import logging
-from sapphire.kascade import StoreKascadeData
+from sapphire.kascade import StoreKascadeData, KascadeCoincidences
 from sapphire.storage import KascadeEvent
 
 
@@ -11,6 +11,7 @@ class Master(object):
 
     def main(self):
         self.read_and_store_kascade_data()
+        self.search_for_coincidences()
 
     def read_and_store_kascade_data(self):
         """Read KASCADE data into analysis file"""
@@ -24,6 +25,19 @@ class Master(object):
             return
         else:
             kascade.read_and_store_data()
+
+    def search_for_coincidences(self):
+        hisparc = '/hisparc/cluster_kascade/station_601'
+        kascade = '/kascade'
+
+        try:
+            coincidences = KascadeCoincidences(self.data, hisparc, kascade)
+        except RuntimeError, msg:
+            print msg
+            return
+        else:
+            coincidences.search_coincidences(timeshift= -13.180220188, dtlimit=1e-3)
+            coincidences.store_coincidences()
 
 
 if __name__ == '__main__':
