@@ -5,13 +5,13 @@ import re
 import tables
 
 import store_aires_data
-from simulations import GroundParticlesSimulation, QSubSimulation
-import clusters
+from sapphire.simulations import GroundParticlesSimulation, QSubSimulation
+from sapphire import clusters
 
 
 R = 100
 N = 100000
-N_CORES = 64
+N_CORES = 32
 
 
 class Master(object):
