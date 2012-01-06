@@ -199,7 +199,7 @@ class KascadeCoincidences():
             # one.
             k_idx += 1
 
-        self.coincidences = coincidences
+        self.coincidences = np.array(coincidences)
 
     def store_coincidences(self):
         self.data.createArray(self.kascade_group, 'c_index', self.coincidences)
