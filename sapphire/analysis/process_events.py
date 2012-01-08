@@ -4,6 +4,8 @@ import tables
 import numpy as np
 import progressbar as pb
 
+from sapphire.storage import ProcessedHisparcEvent
+
 
 ADC_THRESHOLD = 20
 ADC_TIME_PER_SAMPLE = 2.5e-9
@@ -14,6 +16,46 @@ class ProcessEvents(object):
         self.data = data
         self.group = data.getNode(group)
         self.limit = limit
+
+    def process_and_store_results(self):
+        self._create_results_table()
+        self._store_results_from_traces()
+
+    def _create_results_table(self):
+        self._tmp_events = self._create_empty_results_table()
+        self._copy_events_into_table()
+
+    def _create_empty_results_table(self):
+        table = self.data.createTable(self.group, '_t_events',
+                                      ProcessedHisparcEvent)
+        if self.limit:
+            length = self.limit
+        else:
+            length = len(self.group.events)
+
+        for x in xrange(length):
+            table.row.append()
+        table.flush()
+
+        return table
+
+    def _copy_events_into_table(self):
+        table = self._tmp_events
+        events = self.group.events
+
+        for col in events.colnames:
+            getattr(table.cols, col)[:self.limit] = getattr(events.cols,
+                                                            col)[:self.limit]
+        table.flush()
+
+    def _store_results_from_traces(self):
+        table = self._tmp_events
+
+        timings = self.process_traces()
+        for idx in range(4):
+            col = 't%d' % (idx + 1)
+            getattr(table.cols, col)[:] = timings[:, idx]
+        table.flush()
 
     def process_traces(self):
         """Process traces to yield pulse timing information"""
