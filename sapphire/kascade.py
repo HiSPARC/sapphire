@@ -19,7 +19,7 @@ class StoreKascadeData():
 
         if kascade_path in data:
             if not force:
-                raise RuntimeError("Cancelling simulation; %s already exists?"
+                raise RuntimeError("Cancelling data storage; %s already exists?"
                                    % kascade_path)
             else:
                 data.removeNode(kascade_path, recursive=True)
