@@ -12,14 +12,24 @@ ADC_TIME_PER_SAMPLE = 2.5e-9
 
 
 class ProcessEvents(object):
-    def __init__(self, data, group, limit=None):
+    def __init__(self, data, group, limit=None, overwrite=False):
         self.data = data
         self.group = data.getNode(group)
         self.limit = limit
+        self.overwrite = overwrite
 
     def process_and_store_results(self):
+        if '_events' in self.group:
+            if not self.overwrite:
+                raise RuntimeError("I found an _events node.  Will not overwrite previous results")
+            else:
+                self.group.events.remove()
+                self.group._events.rename('events'
+                                          )
         self._create_results_table()
         self._store_results_from_traces()
+        self._store_number_of_particles()
+        self._move_results_table()
 
     def _create_results_table(self):
         self._tmp_events = self._create_empty_results_table()
@@ -128,6 +138,29 @@ class ProcessEvents(object):
                 break
 
         return value * ADC_TIME_PER_SAMPLE
+
+    def _store_number_of_particles(self):
+        table = self._tmp_events
+
+        n_particles = self.process_pulseheights()
+        for idx in range(4):
+            col = 'n%d' % (idx + 1)
+            getattr(table.cols, col)[:] = n_particles[:, idx]
+        table.flush()
+
+    def process_pulseheights(self):
+        #FIXME Much too simplistic!  Need fits
+
+        n_particles = []
+
+        for event in self.group.events[:self.limit]:
+            n_particles.append(event['pulseheights'] / 380.)
+
+        return np.array(n_particles)
+
+    def _move_results_table(self):
+        self.group.events.rename('_events')
+        self._tmp_events.rename('events')
 
 
 class ProcessIndexedEvents(ProcessEvents):

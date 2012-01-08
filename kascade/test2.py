@@ -6,7 +6,7 @@ import time
 from sapphire.analysis import process_events
 
 
-N = 1000
+N = None
 
 
 def show_processing_time(events, dt, limit):
@@ -26,9 +26,9 @@ if __name__ == '__main__':
         data = tables.openFile('kascade.h5', 'a')
 
     group = data.root.hisparc.cluster_kascade.station_601
-    if '_t_events' in group:
-        data.removeNode(group, '_t_events')
-    cls = process_events.ProcessEvents(data, group, limit=N)
+
+    cls = process_events.ProcessEvents(data, group, limit=N,
+                                       overwrite=True)
 
     t0 = time.time()
     ts = cls.process_and_store_results()
