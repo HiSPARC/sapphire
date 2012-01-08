@@ -27,11 +27,18 @@ if __name__ == '__main__':
 
     group = data.root.hisparc.cluster_kascade.station_601
 
-    cls = process_events.ProcessEvents(data, group, limit=N,
-                                       overwrite=True)
+    if '_t_events' in group:
+        group._t_events.remove()
+
+    indexes = data.root.kascade.c_index[:,1]
+    cls = process_events.ProcessIndexedEvents(data, group, indexes,
+                                              overwrite=True)
 
     t0 = time.time()
-    ts = cls.process_and_store_results()
+    cls.process_and_store_results()
     dt = time.time() - t0
     show_processing_time(data.root.hisparc.cluster_kascade.station_601.events,
                          dt, N)
+
+    event = group.events[indexes[0]]
+    print [event['t%d' % u] for u in 1, 2, 3, 4]

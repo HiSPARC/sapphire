@@ -1,4 +1,5 @@
 import zlib
+from itertools import izip
 
 import tables
 import numpy as np
@@ -164,9 +165,25 @@ class ProcessEvents(object):
 
 
 class ProcessIndexedEvents(ProcessEvents):
-    def __init__(self, data, group, indexes):
-        super(ProcessIndexedEvents, self).__init__(data, group)
+    def __init__(self, data, group, indexes, overwrite=False):
+        super(ProcessIndexedEvents, self).__init__(data, group,
+                                                   overwrite=overwrite)
         self.indexes = indexes
+
+    def _store_results_from_traces(self):
+        table = self._tmp_events
+
+        timings = self.process_traces()
+
+        for event, (t1, t2, t3, t4) in izip(table.itersequence(self.indexes),
+                                            timings):
+            event['t1'] = t1
+            event['t2'] = t2
+            event['t3'] = t3
+            event['t4'] = t4
+            event.update()
+
+        table.flush()
 
     def process_traces(self):
         events = self.group.events.itersequence(self.indexes)
