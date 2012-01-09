@@ -25,8 +25,8 @@ class ProcessEvents(object):
                 raise RuntimeError("I found an _events node.  Will not overwrite previous results")
             else:
                 self.group.events.remove()
-                self.group._events.rename('events'
-                                          )
+                self.group._events.rename('events')
+
         self._create_results_table()
         self._store_results_from_traces()
         self._store_number_of_particles()
