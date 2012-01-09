@@ -29,7 +29,7 @@ class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
         cluster = clusters.SimpleCluster(size=50)
         simulation = GroundParticlesSimulation(cluster, self.data,
                                                os.path.join('/showers', self.sim, 'leptons'),
-                                               #os.path.join('/simulations', self.sim),
+#                                               os.path.join('/simulations', self.sim), force=True,
                                                os.path.join('/test_output', self.sim),
                                                R=10, N=20)
         self.redirect_stdout_stderr_to_devnull()

@@ -238,9 +238,7 @@ class Coincidence(tables.IsDescription):
 
     .. attribute:: r, phi, x, y
 
-        dataset-specific.  This might be the coordinates of the shower core in
-        a simulation, or the location of the cluster center.  Consult the
-        documentation provided by the simulation code.
+        The coordinates of the shower core in a simulation.
 
     .. attribute:: alpha
 
@@ -254,7 +252,7 @@ class Coincidence(tables.IsDescription):
     phi = tables.Float32Col()
     x = tables.Float32Col()
     y = tables.Float32Col()
-    alpha = tables.Float32Col()
+    shower_phi = tables.Float32Col()
 
 
 class ReconstructedEvent(tables.IsDescription):
