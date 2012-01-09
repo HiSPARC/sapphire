@@ -1,159 +1,212 @@
-""" Store data from the KASCADE data file using pytables
-
-    This module processes data read from the gzipped data file, provided by
-    KASCADE as a courtesy to HiSPARC. The data consists of events taken by
-    the KASCADE array, with calculated particle densities at the location
-    of our detectors.
-
-    You probably want to use the :func:`read_and_store_data` function.
-
-"""
 import gzip
 import time
+import operator
+
+import numpy as np
+import tables
 
 import gpstime
 
-def process_events(filename, table, start=None, stop=None):
-    """Do the actual data processing.
+from sapphire.storage import KascadeEvent
 
-    This function unzips the data file on the fly, reads the data and
-    stores it in a pytables table.
 
-    :param filename: the KASCADE data filename
-    :param table: the destination table
+class StoreKascadeData():
+    def __init__(self, data, hisparc_path, kascade_path, kascade_filename,
+                 force=False):
 
-    """
-    f = gzip.open(filename)
-    tablerow = table.row
+        self.data = data
+        self.hisparc = data.getNode(hisparc_path, 'events')
 
-    while True:
-        line = f.readline()
-        if not line:
-            # no more lines left, EOF
-            break
+        if kascade_path in data:
+            if not force:
+                raise RuntimeError("Cancelling data storage; %s already exists?"
+                                   % kascade_path)
+            else:
+                data.removeNode(kascade_path, recursive=True)
 
-        # break up the line into an array of floats
-        data = line.split(' ')
-        data = [int(x) for x in data[:4]] + [float(x) for x in data[4:]]
+        self.kascade = data.createTable(kascade_path, 'events', KascadeEvent,
+                                        "KASCADE events", createparents=True)
+        self.kascade_filename = kascade_filename
+
+    def read_and_store_data(self):
+        """Read and store KASCADE data matching HiSPARC data
+
+        This function looks at the HiSPARC event data in the specified datafile
+        and then processes and adds KASCADE data surrounding those events, for
+        later coincidence processing.
+
+        """
+        # Determine start and end timestamps from HiSPARC data
+        try:
+            timestamps = self.hisparc.col('timestamp')
+            start = gpstime.gps_to_utc(min(timestamps))
+            stop = gpstime.gps_to_utc(max(timestamps))
+        except IndexError:
+            raise RuntimeError("HiSPARC event table is empty")
+
+        print "Processing data from %s to %s" % (time.ctime(start),
+                                                 time.ctime(stop))
+        self._process_events_in_range(start, stop)
+
+    def _process_events_in_range(self, start=None, stop=None):
+        """Process KASCADE events in timestamp range
+
+        This function unzips the data file on the fly, reads the data and
+        stores it in a pytables table.
+
+        :param start: start of range (timestamp)
+        :param stop: end of range (timestamp)
+
+        """
+        f = gzip.open(self.kascade_filename)
+
+        while True:
+            line = f.readline()
+            if not line:
+                # no more lines left, EOF
+                break
+
+            # break up the line into an array of floats
+            data = line.split(' ')
+            data = [int(x) for x in data[:4]] + [float(x) for x in data[4:]]
+
+            # KASCADE timestamp
+            Gt = data[2]
+
+            # if start and stop are specified, the following boils down to:
+            #     start <= Gt < stop
+            # but also take start is None and/or stop is None into
+            # consideration
+            if (start is None or start <= Gt) and (stop is None or Gt < stop):
+                self._store_kascade_event(data)
+            elif stop is not None and Gt >= stop:
+                # timestamp is after explicitly specified stop time, so no need
+                # to process the rest of the data
+                break
+
+        # flush the table buffers and write them to disk
+        self.kascade.flush()
+
+    def _store_kascade_event(self, data):
+        tablerow = self.kascade.row
 
         # read all columns into KASCADE-named variables
         Irun, Ieve, Gt, Mmn, EnergyArray, Xc, Yc, Ze, Az, Size, Nmu, He0, \
         Hmu0, He1, Hmu1, He2, Hmu2, He3, Hmu3, T200, P200 = data
 
-        # if start and stop are specified, the following boils down to:
-        #     start < Gt < stop
-        # but also take start is None and/or stop is None into
-        # consideration
-        if (start is None or start <= Gt) and (stop is None or Gt < stop):
-            # condition matched, so process event
+        tablerow['run_id'] = Irun
+        tablerow['event_id'] = Ieve
+        tablerow['timestamp'] = Gt
+        tablerow['nanoseconds'] = Mmn
+        tablerow['ext_timestamp'] = Gt * long(1e9) + Mmn
+        tablerow['energy'] = EnergyArray
+        tablerow['core_pos'] = [Xc, Yc]
+        tablerow['zenith'] = Ze
+        tablerow['azimuth'] = Az
+        tablerow['Num_e'] = Size
+        tablerow['Num_mu'] = Nmu
+        tablerow['dens_e'] = [He0, He1, He2, He3]
+        tablerow['dens_mu'] = [Hmu0, Hmu1, Hmu2, Hmu3]
+        tablerow['P200'] = P200
+        tablerow['T200'] = T200
 
-            # construct a pytables table row of all the data...
-            tablerow['run_id'] = Irun
-            tablerow['event_id'] = Ieve
-            tablerow['timestamp'] = Gt
-            tablerow['nanoseconds'] = Mmn
-            tablerow['ext_timestamp'] = Gt * long(1e9) + Mmn
-            tablerow['energy'] = EnergyArray
-            tablerow['core_pos'] = [Xc, Yc]
-            tablerow['zenith'] = Ze
-            tablerow['azimuth'] = Az
-            tablerow['Num_e'] = Size
-            tablerow['Num_mu'] = Nmu
-            tablerow['dens_e'] = [He0, He1, He2, He3]
-            tablerow['dens_mu'] = [Hmu0, Hmu1, Hmu2, Hmu3]
-            tablerow['P200'] = P200
-            tablerow['T200'] = T200
-            # ...and store it
-            tablerow.append()
-        elif stop is not None and Gt >= stop:
-            # timestamp is after explicitly specified stop time, so no need
-            # to process the rest of the data
-            break
+        tablerow.append()
 
-    # flush the table buffers and write them to disk
-    table.flush()
 
-def read_and_store_data(hisparc, kascade, kascadefile):
-    """Helper for quickly processing KASCADE data
+class KascadeCoincidences():
+    def __init__(self, data, hisparc_group, kascade_group, overwrite=False):
+        self.data = data
+        self.hisparc_group = data.getNode(hisparc_group)
+        self.kascade_group = data.getNode(kascade_group)
 
-    This function looks at the HiSPARC event data in the specified datafile
-    and then processes and adds KASCADE data surrounding those events, for
-    later coincidence processing.  Also, existing KASCADE data rows are
-    inspected to determine the time window.
+        if 'c_index' in self.kascade_group:
+            if not overwrite:
+                raise RuntimeError("I found existing coincidences stored in the KASCADE group")
+            else:
+                data.removeNode(kascade_group, 'c_index')
 
-    :param hisparc: HiSPARC event table
-    :param kascade: KASCADE event table
-    :param kascadefile: KASCADE data file
+    def search_coincidences(self, timeshift=0, dtlimit=None):
+        """Search for coincidences
 
-    Example (FIXME)::
+        This function does the actual searching of coincidences. It uses a
+        timeshift to shift the HiSPARC data (we know that these employ GPS
+        time, so not taking UTC leap seconds into account). The shift will also
+        compensate for delays in the experimental setup.
 
-        >>> import tables
-        >>> import hisparc
-        >>> data = tables.openFile('kascade.h5', 'a')
-        >>> data.createGroup('/', 'kascade', "KASCADE data")
-        /kascade (Group) 'KASCADE data'
-          children := []
-        >>> data.createTable('/kascade', 'events', hisparc.containers.KascadeEvent, "KASCADE events")
-        /kascade/events (Table(0,)) 'KASCADE events'
-          description := {
-          "run_id": Int32Col(shape=(), dflt=0, pos=0),
-          "event_id": Int64Col(shape=(), dflt=0, pos=1),
-          "timestamp": Time32Col(shape=(), dflt=0, pos=2),
-          "nanoseconds": UInt32Col(shape=(), dflt=0, pos=3),
-          "ext_timestamp": UInt64Col(shape=(), dflt=0, pos=4),
-          "energy": Float64Col(shape=(), dflt=0.0, pos=5),
-          "core_pos": Float64Col(shape=(2,), dflt=0.0, pos=6),
-          "zenith": Float64Col(shape=(), dflt=0.0, pos=7),
-          "azimuth": Float64Col(shape=(), dflt=0.0, pos=8),
-          "Num_e": Float64Col(shape=(), dflt=0.0, pos=9),
-          "Num_mu": Float64Col(shape=(), dflt=0.0, pos=10),
-          "dens_e": Float64Col(shape=(4,), dflt=0.0, pos=11),
-          "dens_mu": Float64Col(shape=(4,), dflt=0.0, pos=12),
-          "P200": Float64Col(shape=(), dflt=0.0, pos=13),
-          "T200": Float64Col(shape=(), dflt=0.0, pos=14)}
-          byteorder := 'little'
-          chunkshape := (399,)
-        >>> hisparc.kascade.read_and_store_data(data.root.hisparc.cluster_kascade.station_601.events, data.root.kascade.events, 'HiSparc.dat.gz')
-        Processing data from Tue Jul  1 16:29:31 2008 to Tue Jul  1 17:15:06 2008
+        The coincidences are stored as an instance variable (self.coincidences).
+        Final storage can be done by calling :meth:`store_coincidences`.
 
-    """
-    # Determine start and end timestamps from HiSPARC data
-    try:
-        ts = hisparc[:]['timestamp']
-        hstart = gpstime.gps_to_utc(min(ts))
-        hstop = gpstime.gps_to_utc(max(ts))
-    except IndexError:
-        print "There is no HiSPARC data yet."
-        return
+        :param timeshift: the amount of time the HiSPARC data are shifted (in
+            seconds).  Default: 0.
+        :param dtlimit: limit on the time difference between hisparc and
+            kascade events in seconds.  If this limit is exceeded,
+            coincidences are not stored.  Default: None.
 
-    # Determine start and stop timestamps from KASCADE data
-    try:
-        ts = kascade[:]['timestamp']
-        kstart = min(ts)
-        kstop = max(ts)
-    except ValueError:
-        kstart = None
-        kstop = None
+        """
+        h = self._get_sorted_id_and_timestamp_array(self.hisparc_group)
+        k = self._get_sorted_id_and_timestamp_array(self.kascade_group)
 
-    if hstart < kstart and kstart is not None:
-        # This should never happen
-        print "WARNING: HiSPARC data found which is earlier than KASCADE"
-        print "data.  Please check your timestamps:"
-        print "First HiSPARC data:", hstart
-        print "First KASCADE data:", kstart
-        print "The timestamps should not differ by much."
+        # Shift the kascade data instead of the hisparc data. There is less of
+        # it, so this is much faster.
+        k['ext_timestamp'] += -1e9 * timeshift
 
-    if kstart is None:
-        # There is no KASCADE data yet
-        start, stop = hstart, hstop
-    else:
-        # To avoid duplicates in the case of an aborted previous run,
-        # remove rows which share the latest timestamp, because we want to
-        # reprocess that timestamp
-        l = kascade.getWhereList('timestamp==%d' % kstop)
-        kascade.removeRows(start=l[0], stop=l[-1] + 1)
-        start, stop = kstop, hstop
+        # dtlimit in ns
+        dtlimit *= 1e9
 
-    print "Processing data from %s to %s" % (time.ctime(start),
-                                             time.ctime(stop))
-    process_events(kascadefile, kascade, start, stop)
+        coincidences = []
+
+        # First loop through kascade data until we have the first event that
+        # occurs _after_ the first hisparc event.
+        h_idx = 0
+        for k_idx in range(len(k)):
+            if k[k_idx][1] > h[h_idx][1]:
+                break
+
+        while True:
+            # Try to get the timestamps of the kascade event and the
+            # neighbouring hisparc events.
+            try:
+                h_t = int(h[h_idx][1])
+                k_t = int(k[k_idx][1])
+                h_t_next = int(h[h_idx + 1][1])
+            except IndexError:
+                # Reached beyond the event list.
+                break
+
+            # Make sure that while the current hisparc event is _before_ the
+            # kascade event, the next hisparc event should occur _after_ the
+            # kascade event.  That way, the kascade event is enclosed by
+            # hisparc events.
+            if k_t > h_t_next:
+                h_idx += 1
+                continue
+
+            # Calculate the time differences for both neighbors. Make sure to
+            # get the sign right. Negative sign: the hisparc event is 'left'.
+            # Positive sign: the hisparc event is 'right'.
+            dt_left = h_t - k_t
+            dt_right = h_t_next - k_t
+
+            # Determine the nearest neighbor and add that to the coincidence
+            # list, if dtlimit is not exceeded
+            if dtlimit is None or min(abs(dt_left), abs(dt_right)) < dtlimit:
+                if abs(dt_left) < abs(dt_right):
+                    coincidences.append((dt_left, h_idx, k_idx))
+                else:
+                    coincidences.append((dt_right, h_idx + 1, k_idx))
+
+            # Found a match for this kascade event, so continue with the next
+            # one.
+            k_idx += 1
+
+        self.coincidences = np.array(coincidences)
+
+    def store_coincidences(self):
+        self.data.createArray(self.kascade_group, 'c_index', self.coincidences)
+
+    def _get_sorted_id_and_timestamp_array(self, group):
+        timestamps = group.events.col('ext_timestamp')
+        ids = group.events.col('event_id')
+        data = np.rec.fromarrays([ids, timestamps], names='event_id, ext_timestamp')
+        data.sort(order='ext_timestamp')
+        return data

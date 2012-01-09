@@ -238,9 +238,7 @@ class Coincidence(tables.IsDescription):
 
     .. attribute:: r, phi, x, y
 
-        dataset-specific.  This might be the coordinates of the shower core in
-        a simulation, or the location of the cluster center.  Consult the
-        documentation provided by the simulation code.
+        The coordinates of the shower core in a simulation.
 
     .. attribute:: alpha
 
@@ -254,7 +252,7 @@ class Coincidence(tables.IsDescription):
     phi = tables.Float32Col()
     x = tables.Float32Col()
     y = tables.Float32Col()
-    alpha = tables.Float32Col()
+    shower_phi = tables.Float32Col()
 
 
 class ReconstructedEvent(tables.IsDescription):
@@ -299,3 +297,26 @@ class KascadeEvent(tables.IsDescription):
     dens_mu = tables.FloatCol(shape=4)
     P200 = tables.FloatCol()
     T200 = tables.FloatCol()
+
+class ProcessedHisparcEvent(tables.IsDescription):
+    event_id = tables.UInt32Col()
+    timestamp = tables.Time32Col()
+    nanoseconds = tables.UInt32Col()
+    ext_timestamp = tables.UInt64Col()
+    data_reduction = tables.BoolCol()
+    trigger_pattern = tables.UInt32Col()
+    baseline = tables.Int16Col(shape=4, dflt= -1)
+    std_dev = tables.Int16Col(shape=4, dflt= -1)
+    n_peaks = tables.Int16Col(shape=4, dflt= -1)
+    pulseheights = tables.Int16Col(shape=4, dflt= -1)
+    integrals = tables.Int32Col(shape=4, dflt= -1)
+    traces = tables.Int32Col(shape=4, dflt= -1)
+    event_rate = tables.Float32Col()
+    t1 = tables.Float32Col(dflt= -1)
+    t2 = tables.Float32Col(dflt= -1)
+    t3 = tables.Float32Col(dflt= -1)
+    t4 = tables.Float32Col(dflt= -1)
+    n1 = tables.Float32Col(dflt= -1)
+    n2 = tables.Float32Col(dflt= -1)
+    n3 = tables.Float32Col(dflt= -1)
+    n4 = tables.Float32Col(dflt= -1)

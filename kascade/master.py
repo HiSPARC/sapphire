@@ -1,32 +1,64 @@
 import tables
 import logging
-import kascade
-from storage import KascadeEvent
+from sapphire.kascade import StoreKascadeData, KascadeCoincidences
+from sapphire.storage import KascadeEvent
+from sapphire.analysis.process_events import ProcessIndexedEvents
 
 
 class Master(object):
+    hisparc_group = '/hisparc/cluster_kascade/station_601'
+    kascade_group = '/kascade'
+
     def __init__(self, data_filename, kascade_filename):
         self.data = tables.openFile(data_filename, 'a')
         self.kascade_filename = kascade_filename
 
     def main(self):
         self.read_and_store_kascade_data()
+        self.search_for_coincidences()
+        self.process_events()
 
     def read_and_store_kascade_data(self):
         """Read KASCADE data into analysis file"""
 
-        if 'kascade' in self.data.root:
-            logging.info("KASCADE event group already exists, skipping "
-                         "reconstruction")
+        try:
+            kascade = StoreKascadeData(self.data, self.hisparc_group,
+                                       self.kascade_group,
+                                       self.kascade_filename)
+        except RuntimeError, msg:
+            print msg
             return
         else:
-            self.data.createGroup('/', 'kascade', "KASCADE data")
-            self.data.createTable('/kascade', 'events', KascadeEvent,
-                                  "KASCADE events")
-            kascade.read_and_store_data(
-                self.data.root.hisparc.cluster_kascade.station_601.events,
-                self.data.root.kascade.events,
-                self.kascade_filename)
+            kascade.read_and_store_data()
+
+    def search_for_coincidences(self):
+        hisparc = self.hisparc_group
+        kascade = self.kascade_group
+
+        try:
+            coincidences = KascadeCoincidences(self.data, hisparc, kascade)
+        except RuntimeError, msg:
+            print msg
+            return
+        else:
+            print "Searching for coincidences"
+            coincidences.search_coincidences(timeshift= -13.180220188,
+                                             dtlimit=1e-3)
+            print "Storing coincidences"
+            coincidences.store_coincidences()
+            print "Done."
+
+    def process_events(self):
+        c_index = self.data.getNode(self.kascade_group, 'c_index')
+        index = c_index[:, 1]
+
+        process = ProcessIndexedEvents(self.data, self.hisparc_group,
+                                       index)
+        try:
+            process.process_and_store_results()
+        except RuntimeError, msg:
+            print msg
+            return
 
 
 if __name__ == '__main__':

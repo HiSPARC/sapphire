@@ -32,7 +32,7 @@ class DirectionReconstruction(object):
         table = self.data.createTable(group, tablename, storage.ReconstructedEvent)
         return table
 
-    def reconstruct_angles_for_group(self, groupname, THETA):
+    def reconstruct_angles_for_shower_group(self, groupname, THETA):
         """Reconstruct angles from simulation for minimum particle density"""
 
         shower_group = self.data.getNode(groupname)
@@ -82,7 +82,7 @@ class DirectionReconstruction(object):
         dst_row['n3'] = event['n3']
         dst_row['n4'] = event['n4']
         dst_row['reference_theta'] = reference_theta
-        dst_row['reference_phi'] = coincidence['alpha']
+        dst_row['reference_phi'] = coincidence['shower_phi']
         dst_row['reconstructed_theta'] = reconstructed_theta
         dst_row['reconstructed_phi'] = reconstructed_phi
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
