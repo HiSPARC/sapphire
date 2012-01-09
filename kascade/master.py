@@ -41,17 +41,24 @@ class Master(object):
             print msg
             return
         else:
+            print "Searching for coincidences"
             coincidences.search_coincidences(timeshift= -13.180220188,
                                              dtlimit=1e-3)
+            print "Storing coincidences"
             coincidences.store_coincidences()
+            print "Done."
 
     def process_events(self):
         c_index = self.data.getNode(self.kascade_group, 'c_index')
-        index = c_index[:,1]
+        index = c_index[:, 1]
 
         process = ProcessIndexedEvents(self.data, self.hisparc_group,
                                        index)
-        process.process_and_store_results()
+        try:
+            process.process_and_store_results()
+        except RuntimeError, msg:
+            print msg
+            return
 
 
 if __name__ == '__main__':
