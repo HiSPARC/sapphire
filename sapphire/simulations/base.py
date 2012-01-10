@@ -151,5 +151,6 @@ class BaseSimulation(object):
         row['phi'] = phi
         row['x'] = r * cos(phi)
         row['y'] = r * sin(phi)
-        row['shower_phi'] = event['alpha']
+        row['shower_theta'] = event['shower_theta']
+        row['shower_phi'] = event['shower_phi']
         row.append()

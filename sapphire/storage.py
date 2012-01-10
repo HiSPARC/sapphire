@@ -240,10 +240,9 @@ class Coincidence(tables.IsDescription):
 
         The coordinates of the shower core in a simulation.
 
-    .. attribute:: alpha
+    .. attribute:: shower_theta, shower_phi
 
-        dataset-specific.  This might be the rotation of the cluster around
-        its center.  Consult the documentation provided by the simulation code.
+        The direction of the (simulated) shower.
 
     """
     id = tables.UInt32Col()
@@ -252,6 +251,7 @@ class Coincidence(tables.IsDescription):
     phi = tables.Float32Col()
     x = tables.Float32Col()
     y = tables.Float32Col()
+    shower_theta = tables.Float32Col()
     shower_phi = tables.Float32Col()
 
 
