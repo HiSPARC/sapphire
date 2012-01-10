@@ -10,6 +10,7 @@ import progressbar as pb
 import sys
 import numpy as np
 from math import pi, sin, cos, atan2, sqrt, isinf
+import re
 
 from sapphire import storage
 from base import BaseSimulation
@@ -45,7 +46,15 @@ class GroundParticlesSimulation(BaseSimulation):
             raise RuntimeError("Cancelling simulation; %s not found in "
                                 "tree." % grdpcles)
 
+        self.shower_theta = self.get_shower_theta_from_grdpcles_group()
+
         super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force)
+
+    def get_shower_theta_from_grdpcles_group(self):
+        group_name = self.grdpcles._v_pathname
+        angle_str = re.search('zenith_([0-9_]+)', group_name).group(1)
+        angle = float(angle_str.replace('_', '.'))
+        return np.deg2rad(angle)
 
     def generate_positions(self):
         """Generate positions and an orientation uniformly on a circle
@@ -289,7 +298,7 @@ Number of cluster positions in simulation: %d
         while True:
             assert header['station_id'] == 0
             # freeze header row for later use
-            event = header.fetch_all_fields()
+            event = self._get_row_as_dict(header)
             c_list = []
 
             # N = number of stations which trigger
@@ -341,6 +350,12 @@ Number of cluster positions in simulation: %d
         obs.flush()
         coinc.flush()
         print
+
+    def _get_row_as_dict(self, row):
+        data = {}
+        for col in row.table.colnames:
+            data[col] = row[col]
+        return data
 
     def write_observables(self, observables, t):
         """Transform coordinates before calling super
@@ -396,6 +411,8 @@ Number of cluster positions in simulation: %d
         # Store phi in range [-pi, pi)
         event['phi'] = (new_phi + pi) % (2 * pi) - pi
 
-        event['alpha'] = -alpha
+        event['shower_theta'] = self.shower_theta
+        event['shower_phi'] = -alpha
+        event.pop('alpha')
 
         super(GroundParticlesSimulation, self).write_coincidence(event, N)

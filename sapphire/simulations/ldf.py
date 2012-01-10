@@ -47,7 +47,8 @@ class BaseLdfSimulation(BaseSimulation):
                                   fd=sys.stderr)
 
         for event_id, (r, phi) in progress(enumerate(positions)):
-            event = {'id': event_id, 'r': r, 'phi': phi, 'alpha': 0.}
+            event = {'id': event_id, 'r': r, 'phi': phi, 'alpha': 0.,
+                     'shower_theta': 0., 'shower_phi': 0.}
             self.simulate_event(event)
 
         self.coincidences.flush()

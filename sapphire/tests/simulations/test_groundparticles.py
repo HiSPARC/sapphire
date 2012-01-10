@@ -2,7 +2,7 @@ import unittest
 import types
 
 import tables
-from numpy import array
+from numpy import array, deg2rad
 from math import pi, atan2, sqrt
 from mock import Mock, MagicMock, patch, sentinel
 
@@ -19,12 +19,14 @@ class GroundParticleSimulationTests(unittest.TestCase):
 
         self.cluster = sentinel.cluster
         self.data = MagicMock(name='data')
-        self.grdpcles = sentinel.grdpcles
+        self.grdpcles = Mock(name='grdpcles')
+        self.grdpcles._v_pathname = '/E_1PeV/zenith_22_5/shower_0'
+        self.data.getNode.return_value = self.grdpcles
         self.output = sentinel.output
         self.R = sentinel.R
         self.N = sentinel.N
         self.simulation = groundparticles.GroundParticlesSimulation(self.cluster, self.data,
-                                              self.grdpcles, self.output,
+                                              self.grdpcles._v_pathname, self.output,
                                               self.R, self.N)
 
         # make progressbar(list) do nothing (i.e., return list)
@@ -42,7 +44,7 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.assertIs(self.simulation.N, self.N)
 
     def test_init_gets_grdpcles_node(self):
-        self.data.getNode.assert_called_with(self.grdpcles)
+        self.data.getNode.assert_called_with(self.grdpcles._v_pathname)
         self.assertIs(self.simulation.grdpcles, self.data.getNode.return_value)
 
     @patch('os.path.split')
@@ -162,12 +164,14 @@ class GroundParticleSimulationTests(unittest.TestCase):
 
     def setup_simulation_with_real_data(self):
         data = self.setup_datafile_with_real_data()
-        return groundparticles.GroundParticlesSimulation(sentinel.cluster, data, '/grdpcles',
-                                   '/output', sentinel.R, sentinel.N)
+        return groundparticles.GroundParticlesSimulation(sentinel.cluster, data,
+                                                         '/zenith_22_5/grdpcles',
+                                                         '/output', sentinel.R, sentinel.N)
 
     def setup_datafile_with_real_data(self):
         data = tables.openFile('/tmp/tmp.h5', 'w')
-        grdpcles = data.createTable('/', 'grdpcles', storage.ShowerParticle)
+        grdpcles = data.createTable('/zenith_22_5', 'grdpcles', storage.ShowerParticle,
+                                    createparents=True)
         self.create_particle(grdpcles, 0, 0., 0.)
         self.create_particle(grdpcles, 1, .24, .49)
         self.create_particle(grdpcles, 2, -.24, -.49)
@@ -233,7 +237,8 @@ class GroundParticleSimulationTests(unittest.TestCase):
 
     def test_write_coincidence_calls_super_with_transformed_coordinates(self):
         event = {'phi': 1., 'alpha': 2.}
-        transformed_event = {'phi': 1. + pi - 2., 'alpha':-2.}
+        transformed_event = {'phi': 1. + pi - 2., 'shower_theta': deg2rad(22.5),
+                             'shower_phi':-2.}
 
         with patch.object(BaseSimulation, 'write_coincidence') as mock_parent:
             self.simulation.write_coincidence(event, sentinel.N)
