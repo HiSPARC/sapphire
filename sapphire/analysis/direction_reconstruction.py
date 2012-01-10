@@ -32,7 +32,7 @@ class DirectionReconstruction(object):
         table = self.data.createTable(group, tablename, storage.ReconstructedEvent)
         return table
 
-    def reconstruct_angles_for_shower_group(self, groupname, THETA):
+    def reconstruct_angles_for_shower_group(self, groupname):
         """Reconstruct angles from simulation for minimum particle density"""
 
         shower_group = self.data.getNode(groupname)
@@ -42,10 +42,10 @@ class DirectionReconstruction(object):
                                      fd=sys.stderr)
 
         for shower in progressbar(self.data.listNodes(shower_group)):
-            self.reconstruct_angles(THETA, shower)
+            self.reconstruct_angles(shower)
 
 
-    def reconstruct_angles(self, THETA, shower):
+    def reconstruct_angles(self, shower):
         shower_table = shower.observables
         coincidence_table = shower.coincidences
         self.station, = shower._v_attrs.cluster.stations
@@ -60,13 +60,12 @@ class DirectionReconstruction(object):
                 alpha = event['alpha']
 
                 if not isnan(theta) and not isnan(phi):
-                    self.store_reconstructed_event(coincidence, event, THETA,
-                                                   theta, phi)
+                    self.store_reconstructed_event(coincidence, event, theta, phi)
 
         self.results_table.flush()
 
-    def store_reconstructed_event(self, coincidence, event, reference_theta,
-                                  reconstructed_theta, reconstructed_phi):
+    def store_reconstructed_event(self, coincidence, event, reconstructed_theta,
+                                  reconstructed_phi):
         dst_row = self.results_table.row
 
         dst_row['station_id'] = event['station_id']
@@ -81,7 +80,7 @@ class DirectionReconstruction(object):
         dst_row['n2'] = event['n2']
         dst_row['n3'] = event['n3']
         dst_row['n4'] = event['n4']
-        dst_row['reference_theta'] = reference_theta
+        dst_row['reference_theta'] = coincidence['shower_theta']
         dst_row['reference_phi'] = coincidence['shower_phi']
         dst_row['reconstructed_theta'] = reconstructed_theta
         dst_row['reconstructed_phi'] = reconstructed_phi

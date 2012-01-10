@@ -51,10 +51,9 @@ def do_full_reconstruction(data, N=None):
         tablename = 'zenith_%s' % str(theta).replace('.', '_')
         source = os.path.join(simulation_group, tablename)
         dest = os.path.join(reconstruction_group, tablename)
-        theta = deg2rad(theta)
 
         rec = DirectionReconstruction(data, dest, min_n134=1, N=N)
-        rec.reconstruct_angles_for_shower_group(source, theta)
+        rec.reconstruct_angles_for_shower_group(source)
 
     # SPECIALS
     # Station sizes
@@ -64,7 +63,7 @@ def do_full_reconstruction(data, N=None):
         dest = os.path.join(reconstruction_group, tablename)
 
         rec = DirectionReconstruction(data, dest, min_n134=1, N=N)
-        rec.reconstruct_angles_for_shower_group(source, deg2rad(22.5))
+        rec.reconstruct_angles_for_shower_group(source)
 
     # SPECIALS
     # Binnings
@@ -78,7 +77,7 @@ def do_full_reconstruction(data, N=None):
         for binning in 1, 2.5, 5:
             dest_table = dest + '_%s' % str(binning).replace('.', '_')
             rec = BinnedDirectionReconstruction(data, dest_table, min_n134=1, binning=binning, randomize_binning=randomize, N=N)
-            rec.reconstruct_angles_for_shower_group(source, deg2rad(22.5))
+            rec.reconstruct_angles_for_shower_group(source)
 
 def do_reconstruction_plots(data):
     """Make plots based upon earlier reconstructions"""
