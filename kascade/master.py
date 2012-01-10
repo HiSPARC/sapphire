@@ -2,6 +2,7 @@ import logging
 from math import pi
 
 import tables
+import numpy as np
 
 from sapphire.kascade import StoreKascadeData, KascadeCoincidences
 from sapphire.storage import KascadeEvent
@@ -77,12 +78,14 @@ class Master(object):
             return
 
     def reconstruct_direction(self):
-        reconstruction = KascadeDirectionReconstruction(self.data, '/reconstructions', overwrite=True)
+        reconstruction = KascadeDirectionReconstruction(self.data, '/reconstructions', min_n134=0., overwrite=True)
         reconstruction.reconstruct_angles(self.hisparc_group, self.kascade_group)
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+
+    np.seterr(invalid='ignore', divide='ignore')
 
     master = Master('kascade.h5', 'HiSparc-new.dat.gz')
     master.main()
