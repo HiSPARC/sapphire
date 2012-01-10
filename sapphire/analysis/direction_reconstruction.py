@@ -266,7 +266,11 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         if not 'cluster' in self.results_table.attrs:
             self.results_table.attrs.cluster = hisparc_group._v_attrs.cluster
 
-        for idx in c_index[:self.N]:
+        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                              pb.ETA()],
+                                     fd=sys.stderr)
+
+        for idx in progressbar(c_index[:self.N]):
             h_idx, k_idx = idx[1:]
             hisparc_event = hisparc_table[h_idx]
             kascade_event = kascade_table[k_idx]
