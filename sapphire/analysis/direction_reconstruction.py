@@ -18,18 +18,19 @@ class DirectionReconstruction(object):
     def create_empty_output_table(self, table_path, overwrite=False):
         group, tablename = os.path.split(table_path)
 
-        if not group in self.data.root:
-            base, groupname = os.path.split(group)
-            self.data.createGroup(base, groupname, createparents=True)
-        group = self.data.getNode(group)
-
-        if tablename in group:
+        if table_path in self.data:
             if not overwrite:
                 raise RuntimeError("Reconstruction table %s already exists" % table_path)
             else:
                 self.data.removeNode(group, tablename)
 
-        table = self.data.createTable(group, tablename, storage.ReconstructedEvent)
+        table = self._create_output_table(group, tablename)
+        return table
+
+    def _create_output_table(self, group, tablename):
+        table = self.data.createTable(group, tablename,
+                                      storage.ReconstructedEvent,
+                                      createparents=True)
         return table
 
     def reconstruct_angles_for_shower_group(self, groupname):
@@ -255,6 +256,12 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
 
 
 class KascadeDirectionReconstruction(DirectionReconstruction):
+    def _create_output_table(self, group, tablename):
+        table = self.data.createTable(group, tablename,
+                                      storage.ReconstructedKascadeEvent,
+                                      createparents=True)
+        return table
+
     def reconstruct_angles(self, hisparc_group, kascade_group):
         hisparc_group = self.data.getNode(hisparc_group)
 
@@ -310,6 +317,15 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         dst_row['reconstructed_theta'] = reconstructed_theta
         dst_row['reconstructed_phi'] = reconstructed_phi
         dst_row['min_n134'] = min(hisparc_event['n1'], hisparc_event['n3'], hisparc_event['n4'])
+
+        dst_row['k_energy'] = kascade_event['energy']
+        dst_row['k_core_pos'] = kascade_event['core_pos']
+        dst_row['k_Num_e'] = kascade_event['Num_e']
+        dst_row['k_Num_mu'] = kascade_event['Num_mu']
+        dst_row['k_dens_e'] = kascade_event['dens_e']
+        dst_row['k_dens_mu'] = kascade_event['dens_mu']
+        dst_row['k_P200'] = kascade_event['P200']
+        dst_row['k_T200'] = kascade_event['T200']
         dst_row.append()
 
     def _calc_core_position_rphi_for_kascade_event(self, kascade_event):

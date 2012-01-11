@@ -5,7 +5,6 @@ import tables
 import numpy as np
 
 from sapphire.kascade import StoreKascadeData, KascadeCoincidences
-from sapphire.storage import KascadeEvent
 from sapphire.analysis.process_events import ProcessIndexedEvents
 from sapphire import clusters
 from sapphire.analysis.direction_reconstruction import KascadeDirectionReconstruction
@@ -78,7 +77,9 @@ class Master(object):
             return
 
     def reconstruct_direction(self):
-        reconstruction = KascadeDirectionReconstruction(self.data, '/reconstructions', min_n134=0., overwrite=True)
+        reconstruction = KascadeDirectionReconstruction(
+                            self.data, '/reconstructions', min_n134=0.,
+                            overwrite=True)
         reconstruction.reconstruct_angles(self.hisparc_group, self.kascade_group)
 
 
