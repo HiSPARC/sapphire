@@ -1,6 +1,4 @@
 import tables
-from itertools import combinations
-import re
 import csv
 import zlib
 
@@ -10,25 +8,14 @@ from scipy.optimize import curve_fit
 from scipy import integrate
 from scipy.special import erf
 
-from itertools import combinations
 import progressbar
-
-from hisparc.analysis import kascade_coincidences
-from hisparc.containers import Coincidence
 
 DATAFILE = 'kascade.h5'
 
 USE_TEX = False
 
 
-ADC_THRESHOLD = 20
-ADC_TIME_PER_SAMPLE = 2.5e-9
-ADC_MIP = 400.
-
 D_Z = 1 # Delta zenith (used in data selection)
-
-DETECTORS = [(65., 15.05, 'UD'), (65., 20.82, 'UD'), (70., 23.71, 'LR'),
-             (60., 23.71, 'LR')]
 
 TIMING_ERROR = 4
 #TIMING_ERROR = 7
@@ -38,325 +25,12 @@ if USE_TEX:
     rcParams['font.serif'] = 'Computer Modern'
     rcParams['font.sans-serif'] = 'Computer Modern'
     rcParams['font.family'] = 'sans-serif'
-    rcParams['figure.figsize'] = [5 * x for x in (1, 2./3)]
+    rcParams['figure.figsize'] = [5 * x for x in (1, 2. / 3)]
     rcParams['figure.subplot.left'] = 0.125
     rcParams['figure.subplot.bottom'] = 0.125
     rcParams['font.size'] = 11
     rcParams['legend.fontsize'] = 'small'
 
-
-def process_traces(events, traces_table, limit=None):
-    """Process traces to yield pulse timing information"""
-
-    result = []
-    result2 = []
-    for event in events[:limit]:
-        trace = get_traces(traces_table, event)
-        timings, timings2 = zip(*[reconstruct_time_from_trace(x) for x in
-                                  trace])
-        result.append(timings)
-        result2.append(timings2)
-    return 1e9 * array(result), 1e9 * array(result2)
-
-def get_traces(traces_table, event):
-    """Retrieve traces from table and reconstruct them"""
-
-    if type(event) != list:
-        idxs = event['traces']
-    else:
-        idxs = event
-
-    traces = []
-    for idx in idxs:
-        trace = zlib.decompress(traces_table[idx]).split(',')
-        if trace[-1] == '':
-            del trace[-1]
-        trace = array([int(x) for x in trace])
-        traces.append(trace)
-    return traces
-
-def reconstruct_time_from_trace(trace):
-    """Reconstruct time of measurement from a trace"""
-
-    t = trace[:100]
-    baseline = mean(t)
-    stdev = std(t)
-
-    trace = trace - baseline
-    threshold = ADC_THRESHOLD
-
-    value = nan
-    for i, t in enumerate(trace):
-        if t >= threshold:
-            value = i
-            break
-
-    # Better value, interpolation
-    if not isnan(value):
-        x0, x1 = i - 1, i
-        y0, y1 = trace[x0], trace[x1]
-        v2 = 1. * (threshold - y0) / (y1 - y0) + x0
-    else:
-        v2 = nan
-
-    return value * ADC_TIME_PER_SAMPLE, v2 * ADC_TIME_PER_SAMPLE
-
-class ReconstructedEvent(tables.IsDescription):
-    r = tables.Float32Col()
-    t1 = tables.Float32Col()
-    t2 = tables.Float32Col()
-    t3 = tables.Float32Col()
-    t4 = tables.Float32Col()
-    n1 = tables.UInt16Col()
-    n2 = tables.UInt16Col()
-    n3 = tables.UInt16Col()
-    n4 = tables.UInt16Col()
-    k_theta = tables.Float32Col()
-    k_phi = tables.Float32Col()
-    k_energy = tables.Float32Col()
-    h_theta = tables.Float32Col()
-    h_theta1 = tables.Float32Col()
-    h_theta2 = tables.Float32Col()
-    h_phi = tables.Float32Col()
-    D = tables.UInt16Col()
-    k_dens_e = tables.Float32Col(shape=4)
-    k_dens_mu = tables.Float32Col(shape=4)
-
-def reconstruct_angle(event, R=10):
-    """Reconstruct angles from a single event"""
-
-    dt1 = event['t1'] - event['t3']
-    dt2 = event['t1'] - event['t4']
-
-    return reconstruct_angle_dt(dt1, dt2, R)
-
-def reconstruct_angle_dt(dt1, dt2, R=10):
-    """Reconstruct angle given time differences"""
-
-    c = 3.00e+8
-
-    r1 = R
-    r2 = R 
-
-    phi1 = calc_phi(1, 3)
-    phi2 = calc_phi(1, 4)
-
-    phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
-                  (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
-    theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
-    theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
-
-    if not dt1 == 0.:
-        theta = theta1
-    else:
-        theta = theta2
-
-    if not dt1 == 0. and not dt2 == 0. and not isnan(theta):
-        assert abs(theta1 - theta2) < 1e-9
-
-    return theta, phi, theta1, theta2
-
-def calc_phi(s1, s2):
-    """Calculate angle between detectors (phi1, phi2)"""
-
-    x1, y1 = DETECTORS[s1 - 1][:2]
-    x2, y2 = DETECTORS[s2 - 1][:2]
-
-    return arctan2((y2 - y1), (x2 - x1))
-
-def rel_phi_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
-
-    tanphi = tan(phi)
-    sinphi1 = sin(phi1)
-    cosphi1 = cos(phi1)
-    sinphi2 = sin(phi2)
-    cosphi2 = cos(phi2)
-
-    den = ((1 + tanphi ** 2) ** 2 * r1 ** 2 * r2 ** 2 * sin(theta) ** 2
-       * (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2
-       / c ** 2)
-
-    A = (r1 ** 2 * sinphi1 ** 2
-         + r2 ** 2 * sinphi2 ** 2
-         - r1 * r2 * sinphi1 * sinphi2)
-    B = (2 * r1 ** 2 * sinphi1 * cosphi1
-         + 2 * r2 ** 2 * sinphi2 * cosphi2
-         - r1 * r2 * sinphi2 * cosphi1
-         - r1 * r2 * sinphi1 * cosphi2)
-    C = (r1 ** 2 * cosphi1 ** 2
-         + r2 ** 2 * cosphi2 ** 2
-         - r1 * r2 * cosphi1 * cosphi2)
-
-    return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
-
-def dphi_dt0(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
-
-    tanphi = tan(phi)
-    sinphi1 = sin(phi1)
-    cosphi1 = cos(phi1)
-    sinphi2 = sin(phi2)
-    cosphi2 = cos(phi2)
-
-    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
-           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
-           / c)
-    num = (r2 * cosphi2 - r1 * cosphi1
-           + tanphi * (r2 * sinphi2 - r1 * sinphi1))
-
-    return num / den
-
-def dphi_dt1(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
-
-    tanphi = tan(phi)
-    sinphi1 = sin(phi1)
-    cosphi1 = cos(phi1)
-    sinphi2 = sin(phi2)
-    cosphi2 = cos(phi2)
-
-    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
-           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
-           / c)
-    num = -r2 * (sinphi2 * tanphi + cosphi2)
-
-    return num / den
-
-def dphi_dt2(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
-
-    tanphi = tan(phi)
-    sinphi1 = sin(phi1)
-    cosphi1 = cos(phi1)
-    sinphi2 = sin(phi2)
-    cosphi2 = cos(phi2)
-
-    den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
-           * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
-           / c)
-    num = r1 * (sinphi1 * tanphi + cosphi1)
-
-    return num / den
-
-def rel_theta_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
-    e1 = rel_theta1_errorsq(theta, phi, phi1, phi2, r1, r2)
-    e2 = rel_theta2_errorsq(theta, phi, phi1, phi2, r1, r2)
-
-    #return minimum(e1, e2)
-    return e1
-
-def rel_theta1_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
-
-    sintheta = sin(theta)
-    sinphiphi1 = sin(phi - phi1)
-
-    den = (1 - sintheta ** 2) * r1 ** 2 * cos(phi - phi1) ** 2
-
-    A = (r1 ** 2 * sinphiphi1 ** 2
-         * rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-    B = (r1 * c * sinphiphi1
-         * (dphi_dt0(theta, phi, phi1, phi2, r1, r2)
-            - dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
-    C = 2 * c ** 2
-
-    errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
-
-    return where(isnan(errsq), inf, errsq)
-
-def rel_theta2_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
-    # speed of light in m / ns
-    c = .3
-
-    sintheta = sin(theta)
-    sinphiphi2 = sin(phi - phi2)
-
-    den = (1 - sintheta ** 2) * r2 ** 2 * cos(phi - phi2) ** 2
-
-    A = (r2 ** 2 * sinphiphi2 ** 2
-         * rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-    B = (r2 * c * sinphiphi2
-         * (dphi_dt0(theta, phi, phi1, phi2, r1, r2)
-            - dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
-    C = 2 * c ** 2
-
-    errsq = (A * sintheta ** 2 - 2 * B * sintheta + C) / den
-
-    return where(isnan(errsq), inf, errsq)
-
-def reconstruct_angles(data, dstname, events, timing_data, shifts=None,
-                       N=None):
-    """Reconstruct angles"""
-
-    try:
-        data.createGroup('/', 'reconstructions', "Angle reconstructions")
-    except tables.NodeError:
-        pass
-
-    try:
-        data.removeNode('/reconstructions', dstname)
-    except tables.NoSuchNodeError:
-        pass
-
-    dest = data.createTable('/reconstructions', dstname,
-                            ReconstructedEvent, "Reconstruction data")
-
-    R = 10
-
-    NT, NS = 0, 0
-
-    dst_row = dest.row
-    progress = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
-                                                progressbar.Bar(),
-                                                progressbar.ETA()])
-    for rawevent, timing in progress(zip(events[:N], timing_data)):
-        NT += 1
-        n1, n2, n3, n4 = rawevent['pulseheights'] / ADC_MIP
-        if shifts:
-            timing += shifts
-
-        event = dict(n1=n1, n2=n2, n3=n3, n4=n4, t1=timing[0],
-                     t2=timing[1], t3=timing[2], t4=timing[3])
-
-        if not (isnan(event['t1']) or isnan(event['t3']) or
-                isnan(event['t4'])):
-            theta, phi, theta1, theta2 = reconstruct_angle(event, R)
-
-            if not isnan(theta) and not isnan(phi):
-                NS += 1
-
-                xc, yc = rawevent['k_core_pos'] - DETECTORS[1][:2]
-                dst_row['r'] = sqrt(xc ** 2 + yc ** 2)
-                dst_row['t1'] = event['t1']
-                dst_row['t2'] = event['t2']
-                dst_row['t3'] = event['t3']
-                dst_row['t4'] = event['t4']
-                dst_row['n1'] = event['n1']
-                dst_row['n2'] = event['n2']
-                dst_row['n3'] = event['n3']
-                dst_row['n4'] = event['n4']
-                dst_row['k_theta'] = rawevent['k_zenith']
-                dst_row['k_phi'] = -(rawevent['k_azimuth'] + deg2rad(75)) % \
-                                   (2 * pi) - pi
-                dst_row['k_energy'] = rawevent['k_energy']
-                dst_row['h_theta'] = theta
-                dst_row['h_theta1'] = theta1
-                dst_row['h_theta2'] = theta2
-                dst_row['h_phi'] = phi
-                dst_row['D'] = round(min(event['n1'], event['n3'], event['n4']))
-
-                dst_row['k_dens_e'] = rawevent['k_dens_e']
-                dst_row['k_dens_mu'] = rawevent['k_dens_mu']
-                dst_row.append()
-    dest.flush()
-
-    print NT, NS
 
 def do_reconstruction_plots(data, tablename, table2name, sim_data,
                             sim_tablename):
@@ -586,7 +260,7 @@ def plot_uncertainty_zenith2(table, table2):
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
-    
+
     errorbar(rad2deg(x), rad2deg(y), xerr=D_Z, fmt='^', label="Theta (FSOT)")
     errorbar(rad2deg(x), rad2deg(ty), xerr=D_Z, fmt='^', label="Theta (LINT)")
     # Azimuthal angle undefined for zenith = 0
@@ -669,21 +343,6 @@ def plot_uncertainty_energy(table):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-energy.pdf')
     print
-
-# Time of first hit pamflet functions
-Q = lambda t, n: ((.5 * (1 - erf(t / sqrt(2)))) ** (n - 1)
-                  * exp(-.5 * t ** 2) / sqrt(2 * pi))
-
-expv_t = vectorize(lambda n: integrate.quad(lambda t: t * Q(t, n)
-                                                      / n ** -1,
-                                            -inf, +inf))
-expv_tv = lambda n: expv_t(n)[0]
-expv_tsq = vectorize(lambda n: integrate.quad(lambda t: t ** 2 * Q(t, n)
-                                                        / n ** -1,
-                                              -inf, +inf))
-expv_tsqv = lambda n: expv_tsq(n)[0]
-
-std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
 
 def plot_mip_core_dists_mean(table, sim_table):
     figure()
@@ -782,7 +441,7 @@ def plot_uncertainty_core_dist_phi_theta(table, sim_table):
             y2.append(std(errors2))
             l.append(len(e))
 
-        e = sim_events.compress((r0 <= sim_events['r']) & 
+        e = sim_events.compress((r0 <= sim_events['r']) &
                                 (sim_events['r'] < r1))
         if len(e) > 10:
             errors = e['sim_phi'] - e['r_phi']
@@ -821,7 +480,7 @@ def plot_interarrival_times(h, k):
     ns = []
     for shift in [-12, -13, -13.180220188, -14]:
         c = array(kascade_coincidences.search_coincidences(h, k, shift))
-        n, bins = histogram(abs(c[:,0]) / 1e9, bins=bins)
+        n, bins = histogram(abs(c[:, 0]) / 1e9, bins=bins)
         n = n.tolist() + [n[-1]]
         n = [u if u else .1 for u in n]
         ns.append(n)
@@ -834,7 +493,7 @@ def plot_interarrival_times(h, k):
     rcParams['text.usetex'] = False
     for shift in [-12, -13, -13.180220188, -14]:
         c = array(kascade_coincidences.search_coincidences(h, k, shift))
-        n, bins, patches = hist(abs(c[:,0]) / 1e9, bins=linspace(0, 1, 200),
+        n, bins, patches = hist(abs(c[:, 0]) / 1e9, bins=linspace(0, 1, 200),
                                 histtype='step', log=True,
                                 label=r'$\Delta t = %.4f\,\mathrm{ns}$'
                                       % shift)
@@ -1141,7 +800,7 @@ def plot_energy_zenith_bin(data, tablename):
 
     figure()
     rcParams['text.usetex'] = False
-   
+
     energies = arange(14, 17.1, 1.)
     thetas = linspace(0, deg2rad(40), 21)
 
@@ -1206,7 +865,7 @@ def reconstruct_optimal_coincidences(h, k, initial, start=None, limit=None):
 
     t0 = max(h[0][1], k[0][1])
 
-    if start: 
+    if start:
         start *= int(1e9)
         for i, t in enumerate([x[1] for x in h]):
             if t - t0 > start:
@@ -1216,7 +875,7 @@ def reconstruct_optimal_coincidences(h, k, initial, start=None, limit=None):
             if t - t0 > start:
                 break
         k = k[i:]
-    
+
     t0 += start
 
     if limit:
@@ -1285,7 +944,7 @@ def time_plot(h, k, initial, batchsize=5000, limit=None):
     figure()
     for i in range(0, len(c), batchsize):
         tc = c[i:i + batchsize]
-        
+
         print array([x[0] for x in tc])
         m = median([x[0] for x in tc])
         #t = [x[0] - m for x in tc]
@@ -1317,72 +976,3 @@ if __name__ == '__main__':
         data
     except NameError:
         data = tables.openFile(DATAFILE, 'a')
-
-    try:
-        h, k
-    except NameError:
-        try:
-            print "Reading timing datasets from disk"
-            h = data.root.datasets.h.read()
-            k = data.root.datasets.k.read()
-        except tables.NoSuchNodeError:
-            print "Building timing datasets from disk"
-            h, k = kascade_coincidences.get_arrays_from_tables(
-                        data.root.hisparc.cluster_kascade.station_601.events,
-                        data.root.kascade.events)
-            data.createGroup('/', 'datasets')
-            data.createArray('/datasets', 'h', h)
-            data.createArray('/datasets', 'k', k)
-
-    if 'coincidences' in data.root:
-        print "Reading coincidences from disk"
-        events = data.root.coincidences.events
-    else:
-        print "Searching for coincidences"
-        c = kascade_coincidences.search_coincidences(h, k, -13.180220188,
-                                                     dtlimit=1e9)
-        print "Storing data on disk"
-        data.createGroup('/', 'coincidences',
-                         "HiSPARC / KASCADE coincidences")
-        events = data.createTable('/coincidences', 'events', Coincidence)
-        kascade_coincidences.store_coincidences(events,
-                                data.root.hisparc.cluster_kascade.station_601.events,
-                                data.root.kascade.events, c)
-
-    try:
-        timing_data
-        timing_data_linear
-    except NameError:
-        try:
-            print "Reading timing data from disk"
-            timing_data = data.root.analysis.timing_data.read()
-            timing_data_linear = data.root.analysis.timing_data_linear.read()
-        except tables.NoSuchNodeError:
-            print "Analysing timing data"
-            timing_data, timing_data_linear = process_traces(events,
-                        data.root.hisparc.cluster_kascade.station_601.blobs)
-            print "Writing timing data to disk"
-            data.createGroup('/', 'analysis')
-            data.createArray('/analysis', 'timing_data', timing_data)
-            data.createArray('/analysis', 'timing_data_linear',
-                             timing_data_linear)
-
-    try:
-        sim_data
-    except NameError:
-        sim_data = tables.openFile('data-e15.h5', 'r')
-
-
-    #print "Reconstructing events..."
-    #reconstruct_angles(data, 'full', events, timing_data)
-    #reconstruct_angles(data, 'full_linear', events, timing_data_linear)
-    #reconstruct_angles(data, 'full_shifted', events, timing_data,
-    #                   [0.25, 0, 1.17, -0.21])
-    #reconstruct_angles(data, 'full_shifted_linear', events,
-    #                   timing_data_linear, [0.26, 0, 1.20, -0.19])
-
-    #do_reconstruction_plots(data, 'full', 'full_linear', sim_data, 'full')
-    plot_interarrival_times(h, k)
-    
-    #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=10 * 86400)
-    #time_plot(h, k, initial=-13.180212844, batchsize=5000, limit=86400)
