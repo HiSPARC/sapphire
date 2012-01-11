@@ -1,16 +1,12 @@
 from __future__ import division
 
 import tables
-from itertools import combinations, izip
-import re
-import csv
+from itertools import izip
 import os.path
 
 import progressbar as pb
 
 from pylab import *
-from scipy.optimize import curve_fit
-#from tikz_plot import tikz_2dhist
 
 from scipy import integrate
 from scipy.special import erf
@@ -18,7 +14,6 @@ from scipy.special import erf
 import utils
 
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
-from sapphire.storage import ReconstructedEvent
 
 
 USE_TEX = False
@@ -699,5 +694,6 @@ if __name__ == '__main__':
     utils.set_prefix("DIR-")
     do_reconstruction_plots(data)
 
+    # These currently don't work
 #    utils.set_prefix("WIP-")
 #    do_jos_plots(data)
