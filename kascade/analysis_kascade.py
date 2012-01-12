@@ -43,11 +43,9 @@ def do_reconstruction_plots(data):
 
     plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
-#    plot_uncertainty_size(group)
-#    plot_uncertainty_binsize(group)
 #
-#    plot_phi_reconstruction_results_for_MIP(group, 1)
-#    plot_phi_reconstruction_results_for_MIP(group, 2)
+    plot_phi_reconstruction_results_for_MIP(table, 1)
+    plot_phi_reconstruction_results_for_MIP(table, 2)
 #    boxplot_theta_reconstruction_results_for_MIP(group, 1)
 #    boxplot_theta_reconstruction_results_for_MIP(group, 2)
 #    boxplot_phi_reconstruction_results_for_MIP(group, 1)
@@ -191,130 +189,6 @@ def plot_uncertainty_zenith(table):
     utils.saveplot()
     print
 
-def plot_uncertainty_size(group):
-    group = group.E_1PeV
-    rec = DirectionReconstruction
-
-    # constants for uncertainty estimation
-    # BEWARE: stations must be the same shape(!) over all reconstruction tables used
-    station = group.zenith_22_5.attrs.cluster.stations[0]
-    r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
-    r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
-    del r1, r2
-
-    figure()
-    rcParams['text.usetex'] = False
-    x, y, y2 = [], [], []
-    for size in [5, 10, 20]:
-        x.append(size)
-        if size != 10:
-            table = group._f_getChild('zenith_22_5_size%d' % size)
-        else:
-            table = group._f_getChild('zenith_22_5')
-
-        events = table.readWhere('min_n134 == 2')
-        print size, len(events),
-        errors = events['reference_theta'] - events['reconstructed_theta']
-        # Make sure -pi < errors < pi
-        errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['reference_phi'] - events['reconstructed_phi']
-        # Make sure -pi < errors2 < pi
-        errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
-    plot(x, rad2deg(y), '^', label="Theta")
-    plot(x, rad2deg(y2), 'v', label="Phi")
-    print
-    print "stationsize: size, theta_std, phi_std"
-    for u, v, w in zip(x, y, y2):
-        print u, v, w
-    print
-
-    # Uncertainty estimate
-    x = linspace(5, 20, 50)
-    phis = linspace(-pi, pi, 50)
-    y, y2 = [], []
-    for s in x:
-        y.append(mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
-        y2.append(mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1=s, r2=s)))
-    y = TIMING_ERROR * sqrt(array(y))
-    y2 = TIMING_ERROR * sqrt(array(y2))
-    plot(x, rad2deg(y), label="Estimate Phi")
-    plot(x, rad2deg(y2), label="Estimate Theta")
-
-    # Labels etc.
-    xlabel("Station size (m)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
-    legend(numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    utils.saveplot()
-    print
-
-def plot_uncertainty_binsize(group):
-    group = group.E_1PeV
-    rec = DirectionReconstruction
-
-    # constants for uncertainty estimation
-    # BEWARE: stations must be the same over all reconstruction tables used
-    station = group.zenith_22_5.attrs.cluster.stations[0]
-    r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
-    r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
-
-    figure()
-    rcParams['text.usetex'] = False
-    x, y, y2 = [], [], []
-    for bin_size in [0, 1, 2.5, 5]:
-        x.append(bin_size)
-        if bin_size != 0:
-            table = group._f_getChild('zenith_22_5_binned_randomized_%s' % str(bin_size).replace('.', '_'))
-        else:
-            table = group.zenith_22_5
-        events = table.readWhere('min_n134 == 2')
-
-        print bin_size, len(events),
-        errors = events['reference_theta'] - events['reconstructed_theta']
-        # Make sure -pi < errors < pi
-        errors = (errors + pi) % (2 * pi) - pi
-        errors2 = events['reference_phi'] - events['reconstructed_phi']
-        # Make sure -pi < errors2 < pi
-        errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
-    plot(x, rad2deg(y), '^', label="Theta")
-    plot(x, rad2deg(y2), 'v', label="Phi")
-    print
-    print "binsize: size, theta_std, phi_std"
-    for u, v, w in zip(x, y, y2):
-        print u, v, w
-    print
-
-    # Uncertainty estimate
-    x = linspace(0, 5, 50)
-    phis = linspace(-pi, pi, 50)
-    y, y2 = [], []
-    phi_errorsq = mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
-    theta_errorsq = mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
-    for t in x:
-        y.append(sqrt((TIMING_ERROR ** 2 + t ** 2 / 12) * phi_errorsq))
-        y2.append(sqrt((TIMING_ERROR ** 2 + t ** 2 / 12) * theta_errorsq))
-    y = array(y)
-    y2 = array(y2)
-    plot(x, rad2deg(y), label="Estimate Phi")
-    plot(x, rad2deg(y2), label="Estimate Theta")
-
-    # Labels etc.
-    xlabel("Bin size (ns)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
-    legend(loc='best', numpoints=1)
-    ylim(ymin=0)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
-    utils.saveplot()
-    print
-
 # Time of first hit pamflet functions
 Q = lambda t, n: ((.5 * (1 - erf(t / sqrt(2)))) ** (n - 1)
                   * exp(-.5 * t ** 2) / sqrt(2 * pi))
@@ -330,10 +204,11 @@ expv_tsqv = lambda n: expv_tsq(n)[0]
 
 std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
 
-def plot_phi_reconstruction_results_for_MIP(group, N):
-    table = group.E_1PeV.zenith_22_5
+def plot_phi_reconstruction_results_for_MIP(table, N):
+    THETA = deg2rad(22.5)
+    DTHETA = deg2rad(5.)
 
-    events = table.readWhere('min_n134 >= %d' % N)
+    events = table.readWhere('(min_n134 >= N) & (abs(reference_theta - THETA) <= DTHETA)')
     sim_phi = events['reference_phi']
     r_phi = events['reconstructed_phi']
 
@@ -341,7 +216,7 @@ def plot_phi_reconstruction_results_for_MIP(group, N):
     plot_2d_histogram(rad2deg(sim_phi), rad2deg(r_phi), 180)
     xlabel(r"$\phi_{simulated}$")
     ylabel(r"$\phi_{reconstructed}$")
-    title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
+    title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ \pm %d^\circ$" % (N, rad2deg(DTHETA)))
 
     utils.saveplot(N)
 
