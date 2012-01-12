@@ -48,8 +48,8 @@ def do_reconstruction_plots(data):
     plot_phi_reconstruction_results_for_MIP(table, 2)
     boxplot_theta_reconstruction_results_for_MIP(table, 1)
     boxplot_theta_reconstruction_results_for_MIP(table, 2)
-#    boxplot_phi_reconstruction_results_for_MIP(group, 1)
-#    boxplot_phi_reconstruction_results_for_MIP(group, 2)
+    boxplot_phi_reconstruction_results_for_MIP(table, 1)
+    boxplot_phi_reconstruction_results_for_MIP(table, 2)
 #    boxplot_arrival_times(group, 1)
 #    boxplot_arrival_times(group, 2)
 #    boxplot_core_distances_for_mips(group)
@@ -243,9 +243,7 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
 
     utils.saveplot(N)
 
-def boxplot_phi_reconstruction_results_for_MIP(group, N):
-    table = group.E_1PeV.zenith_22_5
-
+def boxplot_phi_reconstruction_results_for_MIP(table, N):
     figure()
 
     bin_edges = linspace(-180, 180, 18)
@@ -260,10 +258,10 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
         r_dphi.append(rad2deg(dphi))
         x.append((low + high) / 2)
 
-    boxplot(r_dphi, positions=x, widths=.7 * (high - low), sym='')
+    boxplot(r_dphi, positions=x, widths=1 * (high - low), sym='')
 
-    xlabel(r"$\phi_{simulated}$")
-    ylabel(r"$\phi_{reconstructed} - \phi_{simulated}$")
+    xlabel(r"$\phi_{KASCADE}$ [deg]")
+    ylabel(r"$\phi_{reconstructed} - \phi_{KASCADE}$ [deg]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     xticks(linspace(-180, 180, 9))
