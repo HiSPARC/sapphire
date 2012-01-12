@@ -246,12 +246,15 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
 def boxplot_phi_reconstruction_results_for_MIP(table, N):
     figure()
 
+    THETA = deg2rad(22.5)
+    DTHETA = deg2rad(5.)
+
     bin_edges = linspace(-180, 180, 18)
     x, r_dphi = [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         rad_low = deg2rad(low)
         rad_high = deg2rad(high)
-        query = '(min_n134 >= N) & (rad_low < reference_phi) & (reference_phi < rad_high)'
+        query = '(min_n134 >= N) & (rad_low < reference_phi) & (reference_phi < rad_high) & (abs(reference_theta - THETA) <= DTHETA)'
         sel = table.readWhere(query)
         dphi = sel[:]['reconstructed_phi'] - sel[:]['reference_phi']
         dphi = (dphi + pi) % (2 * pi) - pi
@@ -262,7 +265,7 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
 
     xlabel(r"$\phi_{KASCADE}$ [deg]")
     ylabel(r"$\phi_{reconstructed} - \phi_{KASCADE}$ [deg]")
-    title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
+    title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ \pm %d^\circ$" % (N, rad2deg(DTHETA)))
 
     xticks(linspace(-180, 180, 9))
     axhline(0)
