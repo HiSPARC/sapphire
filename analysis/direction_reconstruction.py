@@ -362,8 +362,8 @@ def plot_phi_reconstruction_results_for_MIP(group, N):
 
     figure()
     plot_2d_histogram(rad2deg(sim_phi), rad2deg(r_phi), 180)
-    xlabel(r"$\phi_{simulated}$")
-    ylabel(r"$\phi_{reconstructed}$")
+    xlabel(r"$\phi_{simulated}$ [deg]")
+    ylabel(r"$\phi_{reconstructed}$ [deg]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     utils.saveplot(N)
@@ -382,8 +382,8 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
 
     boxplot(r_dtheta, sym='', positions=angles, widths=2.)
 
-    xlabel(r"$\theta_{simulated}$")
-    ylabel(r"$\theta_{reconstructed} - \theta_{simulated}$")
+    xlabel(r"$\theta_{simulated}$ [deg]")
+    ylabel(r"$\theta_{reconstructed} - \theta_{simulated}$ [deg]")
     title(r"$N_{MIP} \geq %d$" % N)
 
     axhline(0)
@@ -408,10 +408,10 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
         r_dphi.append(rad2deg(dphi))
         x.append((low + high) / 2)
 
-    boxplot(r_dphi, positions=x, widths=.7 * (high - low), sym='')
+    boxplot(r_dphi, positions=x, widths=1 * (high - low), sym='')
 
-    xlabel(r"$\phi_{simulated}$")
-    ylabel(r"$\phi_{reconstructed} - \phi_{simulated}$")
+    xlabel(r"$\phi_{simulated}$ [deg]")
+    ylabel(r"$\phi_{reconstructed} - \phi_{simulated}$ [deg]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     xticks(linspace(-180, 180, 9))
