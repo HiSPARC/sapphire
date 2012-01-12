@@ -28,10 +28,10 @@ if USE_TEX:
     rcParams['font.serif'] = 'Computer Modern'
     rcParams['font.sans-serif'] = 'Computer Modern'
     rcParams['font.family'] = 'sans-serif'
-    rcParams['figure.figsize'] = [5 * x for x in (1, 2. / 3)]
-    rcParams['figure.subplot.left'] = 0.125
-    rcParams['figure.subplot.bottom'] = 0.125
-    rcParams['font.size'] = 11
+    rcParams['figure.figsize'] = [4 * x for x in (1, 2. / 3)]
+    rcParams['figure.subplot.left'] = 0.175
+    rcParams['figure.subplot.bottom'] = 0.175
+    rcParams['font.size'] = 10
     rcParams['legend.fontsize'] = 'small'
     rcParams['text.usetex'] = True
 
@@ -113,7 +113,7 @@ def plot_uncertainty_mip(table):
 
     # Labels etc.
     xlabel("$N_{MIP} \pm %.1f$" % DN)
-    ylabel("Uncertainty in angle reconstruction [deg]")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
     legend(numpoints=1)
     utils.saveplot()
@@ -180,7 +180,7 @@ def plot_uncertainty_zenith(table):
 
     # Labels etc.
     xlabel(r"Shower zenith angle [deg $\pm %d^\circ$]" % rad2deg(DTHETA))
-    ylabel("Uncertainty in angle reconstruction [deg]")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$N_{MIP} = 2 \pm %.1f$" % DN)
     ylim(0, 100)
     legend(numpoints=1)
