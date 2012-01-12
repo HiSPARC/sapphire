@@ -16,7 +16,7 @@ import utils
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
 
 
-USE_TEX = False
+USE_TEX = True
 
 TIMING_ERROR = 4
 #TIMING_ERROR = 7
@@ -31,6 +31,7 @@ if USE_TEX:
     rcParams['figure.subplot.bottom'] = 0.125
     rcParams['font.size'] = 11
     rcParams['legend.fontsize'] = 'small'
+    rcParams['text.usetex'] = True
 
 
 def do_full_reconstruction(data, N=None):
@@ -109,7 +110,6 @@ def plot_uncertainty_mip(group):
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for N in range(1, 6):
         x.append(N)
@@ -147,8 +147,6 @@ def plot_uncertainty_mip(group):
     ylabel("Uncertainty in angle reconstruction (deg)")
     title(r"$\theta = 22.5^\circ$")
     legend(numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 
@@ -163,7 +161,6 @@ def plot_uncertainty_zenith(group):
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for THETA in 0, 5, 22.5, 35:
         x.append(THETA)
@@ -209,8 +206,6 @@ def plot_uncertainty_zenith(group):
     title(r"$N_{MIP} = 2$")
     ylim(0, 100)
     legend(numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 
@@ -226,7 +221,6 @@ def plot_uncertainty_size(group):
     del r1, r2
 
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for size in [5, 10, 20]:
         x.append(size)
@@ -270,8 +264,6 @@ def plot_uncertainty_size(group):
     ylabel("Uncertainty in angle reconstruction (deg)")
     title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
     legend(numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 
@@ -286,7 +278,6 @@ def plot_uncertainty_binsize(group):
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for bin_size in [0, 1, 2.5, 5]:
         x.append(bin_size)
@@ -333,8 +324,6 @@ def plot_uncertainty_binsize(group):
     title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
     legend(loc='best', numpoints=1)
     ylim(ymin=0)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 
@@ -564,7 +553,7 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
             print sum(shower_results), len(ssel), len(ssel) / sum(shower_results)
             efficiencies.append(len(ssel) / sum(shower_results))
 
-        plot(x, efficiencies, label=r'$N_{MIP} = %d' % N)
+        plot(x, efficiencies, label=r'$N_{MIP} = %d$' % N)
 
     xlabel("Core distance [m]")
     ylabel("Reconstruction efficiency")
