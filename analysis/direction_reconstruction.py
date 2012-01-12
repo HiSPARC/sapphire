@@ -26,10 +26,10 @@ if USE_TEX:
     rcParams['font.serif'] = 'Computer Modern'
     rcParams['font.sans-serif'] = 'Computer Modern'
     rcParams['font.family'] = 'sans-serif'
-    rcParams['figure.figsize'] = [5 * x for x in (1, 2. / 3)]
-    rcParams['figure.subplot.left'] = 0.125
-    rcParams['figure.subplot.bottom'] = 0.125
-    rcParams['font.size'] = 11
+    rcParams['figure.figsize'] = [4 * x for x in (1, 2. / 3)]
+    rcParams['figure.subplot.left'] = 0.175
+    rcParams['figure.subplot.bottom'] = 0.175
+    rcParams['font.size'] = 10
     rcParams['legend.fontsize'] = 'small'
     rcParams['text.usetex'] = True
 
@@ -144,7 +144,7 @@ def plot_uncertainty_mip(group):
     plot(x, rad2deg(y2), label="Estimate Theta")
     # Labels etc.
     xlabel("Minimum number of particles")
-    ylabel("Uncertainty in angle reconstruction (deg)")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ$")
     legend(numpoints=1)
     utils.saveplot()
@@ -201,8 +201,8 @@ def plot_uncertainty_zenith(group):
     plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
 
     # Labels etc.
-    xlabel("Shower zenith angle (degrees)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
+    xlabel("Shower zenith angle [deg]")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$N_{MIP} = 2$")
     ylim(0, 100)
     legend(numpoints=1)
@@ -260,8 +260,8 @@ def plot_uncertainty_size(group):
     plot(x, rad2deg(y2), label="Estimate Theta")
 
     # Labels etc.
-    xlabel("Station size (m)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
+    xlabel("Station size [m]")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
     legend(numpoints=1)
     utils.saveplot()
@@ -319,8 +319,8 @@ def plot_uncertainty_binsize(group):
     plot(x, rad2deg(y2), label="Estimate Theta")
 
     # Labels etc.
-    xlabel("Bin size (ns)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
+    xlabel("Bin size [ns]")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
     legend(loc='best', numpoints=1)
     ylim(ymin=0)
