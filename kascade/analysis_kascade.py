@@ -128,7 +128,7 @@ def plot_uncertainty_zenith(table):
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     N = 2
-    DTHETA = deg2rad(5.)
+    DTHETA = deg2rad(1.)
     DN = .1
 
     figure()
