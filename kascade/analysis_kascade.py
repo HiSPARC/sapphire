@@ -52,7 +52,7 @@ def do_reconstruction_plots(data):
     boxplot_phi_reconstruction_results_for_MIP(table, 2)
     boxplot_arrival_times(table, 1)
     boxplot_arrival_times(table, 2)
-#    boxplot_core_distances_for_mips(group)
+    boxplot_core_distances_for_mips(table)
 #    plot_detection_efficiency_vs_R_for_angles(1)
 #    plot_detection_efficiency_vs_R_for_angles(2)
 #    plot_reconstruction_efficiency_vs_R_for_angles(1)
@@ -301,21 +301,25 @@ def boxplot_arrival_times(table, N):
 
     utils.saveplot(N)
 
-def boxplot_core_distances_for_mips(group):
-    table = group.E_1PeV.zenith_22_5
+def boxplot_core_distances_for_mips(table):
+    THETA = deg2rad(22.5)
+    DTHETA = deg2rad(5.)
+    DN = .1
 
     r_list = []
     for N in range(1, 5):
-        sel = table.readWhere('min_n134 == N')
+        sel = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
         r = sel[:]['r']
         r_list.append(r)
 
     figure()
     boxplot(r_list)
     xticks(range(1, 5))
-    xlabel("Minimum number of particles")
+    xlabel("Minimum number of particles $\pm %.1f$" % DN)
     ylabel("Core distance [m]")
-    title(r"$\theta = 22.5^\circ$")
+    title(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
+
+    ylim(0, 100)
 
     utils.saveplot()
 
