@@ -29,6 +29,14 @@ def saveplot(suffix=''):
         suffix = '-%s' % suffix
     plt.savefig('plots/%s%s%s%s.pdf' % (__prefix, whosparent(), suffix, __suffix))
 
+def savedata(data, suffix=''):
+    """Save a plot using caller's name"""
+
+    if suffix:
+        suffix = '-%s' % suffix
+    filename = 'plots/%s%s%s%s.txt' % (__prefix, whosparent(), suffix, __suffix)
+    np.savetxt(filename, data)
+
 def title(text):
     plt.title(text + '\n(%s)' % __suffix)
 

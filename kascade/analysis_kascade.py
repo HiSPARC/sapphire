@@ -16,7 +16,9 @@ import utils
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
 
 
-USE_TEX = False
+DATADIR = '../analysis/plots'
+
+USE_TEX = True
 
 TIMING_ERROR = 4
 #TIMING_ERROR = 7
@@ -31,35 +33,35 @@ if USE_TEX:
     rcParams['figure.subplot.bottom'] = 0.125
     rcParams['font.size'] = 11
     rcParams['legend.fontsize'] = 'small'
+    rcParams['text.usetex'] = True
 
 
 def do_reconstruction_plots(data):
     """Make plots based upon earlier reconstructions"""
 
-    group = data.root.reconstructions
+    table = data.root.reconstructions
 
-    plot_uncertainty_mip(group)
-    plot_uncertainty_zenith(group)
-    plot_uncertainty_size(group)
-    plot_uncertainty_binsize(group)
+    plot_uncertainty_mip(table)
+#    plot_uncertainty_zenith(group)
+#    plot_uncertainty_size(group)
+#    plot_uncertainty_binsize(group)
+#
+#    plot_phi_reconstruction_results_for_MIP(group, 1)
+#    plot_phi_reconstruction_results_for_MIP(group, 2)
+#    boxplot_theta_reconstruction_results_for_MIP(group, 1)
+#    boxplot_theta_reconstruction_results_for_MIP(group, 2)
+#    boxplot_phi_reconstruction_results_for_MIP(group, 1)
+#    boxplot_phi_reconstruction_results_for_MIP(group, 2)
+#    boxplot_arrival_times(group, 1)
+#    boxplot_arrival_times(group, 2)
+#    boxplot_core_distances_for_mips(group)
+#    plot_detection_efficiency_vs_R_for_angles(1)
+#    plot_detection_efficiency_vs_R_for_angles(2)
+#    plot_reconstruction_efficiency_vs_R_for_angles(1)
+#    plot_reconstruction_efficiency_vs_R_for_angles(2)
+#    plot_reconstruction_efficiency_vs_R_for_mips()
 
-    plot_phi_reconstruction_results_for_MIP(group, 1)
-    plot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_theta_reconstruction_results_for_MIP(group, 1)
-    boxplot_theta_reconstruction_results_for_MIP(group, 2)
-    boxplot_phi_reconstruction_results_for_MIP(group, 1)
-    boxplot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_arrival_times(group, 1)
-    boxplot_arrival_times(group, 2)
-    boxplot_core_distances_for_mips(group)
-    plot_detection_efficiency_vs_R_for_angles(1)
-    plot_detection_efficiency_vs_R_for_angles(2)
-    plot_reconstruction_efficiency_vs_R_for_angles(1)
-    plot_reconstruction_efficiency_vs_R_for_angles(2)
-    plot_reconstruction_efficiency_vs_R_for_mips()
-
-def plot_uncertainty_mip(group):
-    table = group.E_1PeV.zenith_22_5
+def plot_uncertainty_mip(table):
     rec = DirectionReconstruction
 
     # constants for uncertainty estimation
@@ -67,12 +69,15 @@ def plot_uncertainty_mip(group):
     r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
+    THETA = deg2rad(22.5)
+    DTHETA = deg2rad(5.)
+    DN = .1
+
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for N in range(1, 6):
         x.append(N)
-        events = table.readWhere('min_n134==%d' % N)
+        events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
         print len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -83,29 +88,36 @@ def plot_uncertainty_mip(group):
         y.append(std(errors))
         y2.append(std(errors2))
 
-    plot(x, rad2deg(y), '^', label="Theta")
-    plot(x, rad2deg(y2), 'v', label="Phi")
     print
     print "mip: min_n134, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
+
+    # Simulation data
+    sx, sy, sy2 = loadtxt(os.path.join(DATADIR, 'DIR-plot_uncertainty_mip.txt'))
+
     # Uncertainty estimate
-    x = linspace(1, 5, 50)
+    ex = linspace(1, 5, 50)
     phis = linspace(-pi, pi, 50)
     phi_errsq = mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
     theta_errsq = mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
-    y = TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
-    y2 = TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
-    plot(x, rad2deg(y), label="Estimate Phi")
-    plot(x, rad2deg(y2), label="Estimate Theta")
+    ey = TIMING_ERROR * std_t(ex) * sqrt(phi_errsq)
+    ey2 = TIMING_ERROR * std_t(ex) * sqrt(theta_errsq)
+
+    # Plots
+    plot(x, rad2deg(y), '^', label="Theta")
+    plot(sx, rad2deg(sy), '^', label="Theta (sim)")
+    plot(ex, rad2deg(ey2), label="Estimate Theta")
+    plot(x, rad2deg(y2), 'v', label="Phi")
+    plot(sx, rad2deg(sy2), 'v', label="Phi (sim)")
+    plot(ex, rad2deg(ey), label="Estimate Phi")
+
     # Labels etc.
-    xlabel("Minimum number of particles")
+    xlabel("$N_{MIP} \pm %.1f$" % DN)
     ylabel("Uncertainty in angle reconstruction (deg)")
-    title(r"$\theta = 22.5^\circ$")
+    title(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
     legend(numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 

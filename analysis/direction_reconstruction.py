@@ -131,6 +131,8 @@ def plot_uncertainty_mip(group):
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
+    utils.savedata((x, y, y2))
+
     # Uncertainty estimate
     x = linspace(1, 5, 50)
     phis = linspace(-pi, pi, 50)
