@@ -186,6 +186,7 @@ def plot_uncertainty_zenith(group):
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
+    utils.savedata((x, y, y2))
 
     # Uncertainty estimate
     x = linspace(0, deg2rad(35), 50)
