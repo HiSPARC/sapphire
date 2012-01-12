@@ -50,8 +50,8 @@ def do_reconstruction_plots(data):
     boxplot_theta_reconstruction_results_for_MIP(table, 2)
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
     boxplot_phi_reconstruction_results_for_MIP(table, 2)
-#    boxplot_arrival_times(group, 1)
-#    boxplot_arrival_times(group, 2)
+    boxplot_arrival_times(table, 1)
+    boxplot_arrival_times(table, 2)
 #    boxplot_core_distances_for_mips(group)
 #    plot_detection_efficiency_vs_R_for_angles(1)
 #    plot_detection_efficiency_vs_R_for_angles(2)
@@ -272,25 +272,30 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
 
     utils.saveplot(N)
 
-def boxplot_arrival_times(group, N):
-    table = group.E_1PeV.zenith_0
-
+def boxplot_arrival_times(table, N):
     figure()
+
+    THETA = deg2rad(0)
+    DTHETA = deg2rad(5.)
 
     bin_edges = linspace(0, 100, 10)
     x, arrival_times = [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
-        query = '(min_n134 >= N) & (low <= r) & (r < high)'
+        query = '(min_n134 >= N) & (low <= r) & (r < high) & (abs(reference_theta - THETA) <= DTHETA)'
         sel = table.readWhere(query)
         t2 = sel[:]['t2']
-        arrival_times.append(t2.compress(t2 > -999))
+        t1 = sel[:]['t1']
+        ct1 = t1.compress((t1 > -999) & (t2 > -999))
+        ct2 = t2.compress((t1 > -999) & (t2 > -999))
+        print len(t1), len(t2), len(ct1), len(ct2)
+        arrival_times.append(ct2 - ct1)
         x.append((low + high) / 2)
 
-    boxplot(arrival_times, positions=x, widths=.7 * (high - low), sym='')
+    boxplot(arrival_times, positions=x, widths=1 * (high - low), sym='')
 
     xlabel("Core distance [m]")
-    ylabel("Arrival time [ns]")
-    title(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ$" % N)
+    ylabel("Arrival time difference $t_2 - t_1$ [ns]")
+    title(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ \pm %d^\circ$" % (N, rad2deg(DTHETA)))
 
     xticks(arange(0, 100.5, 10))
 
