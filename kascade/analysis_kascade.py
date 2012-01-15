@@ -230,7 +230,7 @@ def plot_theta_reconstruction_results_for_MIP(table, N):
 
     figure()
     x_edges = linspace(0, 40, 81)
-    y_edges = linspace(0, 90, 91)
+    y_edges = linspace(0, 40, 81)
     plot_2d_histogram(rad2deg(sim_theta), rad2deg(r_theta), (x_edges, y_edges))
     xlabel(r"$\theta_{KASCADE}$ [deg]")
     ylabel(r"$\theta_{reconstructed}$ [deg]")
