@@ -47,6 +47,8 @@ def do_reconstruction_plots(data):
 #
     plot_phi_reconstruction_results_for_MIP(table, 1)
     plot_phi_reconstruction_results_for_MIP(table, 2)
+    plot_theta_reconstruction_results_for_MIP(table, 1)
+    plot_theta_reconstruction_results_for_MIP(table, 2)
     boxplot_theta_reconstruction_results_for_MIP(table, 1)
     boxplot_theta_reconstruction_results_for_MIP(table, 2)
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
@@ -218,6 +220,21 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
     xlabel(r"$\phi_{KASCADE}$ [deg]")
     ylabel(r"$\phi_{reconstructed}$ [deg]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ \pm %d^\circ$" % (N, rad2deg(DTHETA)))
+
+    utils.saveplot(N)
+
+def plot_theta_reconstruction_results_for_MIP(table, N):
+    events = table.readWhere('min_n134 >= N')
+    sim_theta = events['reference_theta']
+    r_theta = events['reconstructed_theta']
+
+    figure()
+    x_edges = linspace(0, 40, 81)
+    y_edges = linspace(0, 90, 91)
+    plot_2d_histogram(rad2deg(sim_theta), rad2deg(r_theta), (x_edges, y_edges))
+    xlabel(r"$\theta_{KASCADE}$ [deg]")
+    ylabel(r"$\theta_{reconstructed}$ [deg]")
+    title(r"$N_{MIP} \geq %d$" % N)
 
     utils.saveplot(N)
 
