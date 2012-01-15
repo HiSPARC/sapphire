@@ -277,29 +277,52 @@ def boxplot_arrival_times(table, N):
     figure()
 
     THETA = deg2rad(0)
-    DTHETA = deg2rad(5.)
+    DTHETA = deg2rad(10.)
 
-    bin_edges = linspace(0, 100, 10)
-    x, arrival_times = [], []
+    LOGENERGY = 15
+    DLOGENERGY = .5
+
+    bin_edges = linspace(0, 100, 6)
+    x = []
+    t25, t50, t75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
-        query = '(min_n134 >= N) & (low <= r) & (r < high) & (abs(reference_theta - THETA) <= DTHETA)'
+        query = '(min_n134 >= N) & (low <= r) & (r < high) & (abs(reference_theta - THETA) <= DTHETA) & (log10(k_energy) - LOGENERGY <= DLOGENERGY)'
         sel = table.readWhere(query)
         t2 = sel[:]['t2']
         t1 = sel[:]['t1']
         ct1 = t1.compress((t1 > -999) & (t2 > -999))
         ct2 = t2.compress((t1 > -999) & (t2 > -999))
         print len(t1), len(t2), len(ct1), len(ct2)
-        arrival_times.append(ct2 - ct1)
+        t25.append(scoreatpercentile(abs(ct2 - ct1), 25))
+        t50.append(scoreatpercentile(abs(ct2 - ct1), 50))
+        t75.append(scoreatpercentile(abs(ct2 - ct1), 75))
         x.append((low + high) / 2)
 
-    boxplot(arrival_times, positions=x, widths=1 * (high - low), sym='')
+    sx, st25, st50, st75 = loadtxt(os.path.join(DATADIR, 'DIR-boxplot_arrival_times-1.txt'))
 
-    xlabel("Core distance [m]")
-    ylabel("Arrival time difference $t_2 - t_1$ [ns]")
-    title(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ \pm %d^\circ$" % (N, rad2deg(DTHETA)))
+    fig = figure()
 
-    xticks(arange(0, 100.5, 10))
+    ax1 = subplot(131)
+    fill_between(sx, st25, st75, color='0.75')
+    plot(sx, st50, 'o-', color='black', markerfacecolor='none')
 
+    ax2 = subplot(132, sharex=ax1, sharey=ax1)
+    fill_between(x, t25, t75, color='0.75')
+    plot(x, t50, 'o-', color='black')
+
+    ax3 = subplot(133, sharex=ax1, sharey=ax1)
+    plot(sx, st50, 'o-', color='black', markerfacecolor='none')
+    plot(x, t50, 'o-', color='black')
+
+    ax2.xaxis.set_label_text("Core distance [m]")
+    ax1.yaxis.set_label_text("Arrival time difference $|t_2 - t_1|$ [ns]")
+    fig.suptitle(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ \pm %d^\circ, \quad %.1f \leq \log(E) \leq %.1f$" % (N, rad2deg(DTHETA), LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
+
+    ylim(ymax=20)
+
+    fig.subplots_adjust(left=.1, right=.95)
+
+    fig.set_size_inches(5, 2.67)
     utils.saveplot(N)
 
 def boxplot_core_distances_for_mips(table):

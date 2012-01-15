@@ -414,13 +414,22 @@ def boxplot_arrival_times(group, N):
 
     figure()
 
-    bin_edges = linspace(0, 100, 10)
+    bin_edges = linspace(0, 100, 11)
     x, arrival_times = [], []
+    t25, t50, t75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         query = '(min_n134 >= N) & (low <= r) & (r < high)'
         sel = table.readWhere(query)
         t2 = sel[:]['t2']
         arrival_times.append(t2.compress(t2 > -999))
+
+        # For KASCADE plots
+        t1 = sel[:]['t1']
+        ct1 = t1.compress((t1 > -999) & (t2 > -999))
+        ct2 = t2.compress((t1 > -999) & (t2 > -999))
+        t25.append(scoreatpercentile(abs(ct2 - ct1), 25))
+        t50.append(scoreatpercentile(abs(ct2 - ct1), 50))
+        t75.append(scoreatpercentile(abs(ct2 - ct1), 75))
         x.append((low + high) / 2)
 
     boxplot(arrival_times, positions=x, widths=.7 * (high - low), sym='')
@@ -431,6 +440,7 @@ def boxplot_arrival_times(group, N):
 
     xticks(arange(0, 100.5, 10))
 
+    utils.savedata((x, t25, t50, t75), N)
     utils.saveplot(N)
 
 def boxplot_core_distances_for_mips(group):
