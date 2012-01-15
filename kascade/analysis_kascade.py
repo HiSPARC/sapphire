@@ -10,6 +10,7 @@ from pylab import *
 
 from scipy import integrate
 from scipy.special import erf
+from scipy.stats import scoreatpercentile
 
 import utils
 
@@ -306,21 +307,45 @@ def boxplot_core_distances_for_mips(table):
     DTHETA = deg2rad(5.)
     DN = .1
 
-    r_list = []
+    r25_list = []
+    r50_list = []
+    r75_list = []
+    x = []
     for N in range(1, 5):
         sel = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
         r = sel[:]['r']
-        r_list.append(r)
+        r25_list.append(scoreatpercentile(r, 25))
+        r50_list.append(scoreatpercentile(r, 50))
+        r75_list.append(scoreatpercentile(r, 75))
+        x.append(N)
 
-    figure()
-    boxplot(r_list)
-    xticks(range(1, 5))
-    xlabel("Minimum number of particles $\pm %.1f$" % DN)
-    ylabel("Core distance [m]")
-    title(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
+    sx, sr25, sr50, sr75 = loadtxt(os.path.join(DATADIR, 'DIR-boxplot_core_distances_for_mips.txt'))
 
-    ylim(0, 100)
+    fig = figure()
 
+    ax1 = subplot(131)
+    fill_between(sx, sr25, sr75, color='0.75')
+    plot(sx, sr50, 'o-', color='black', markerfacecolor='none')
+
+    ax2 = subplot(132, sharex=ax1, sharey=ax1)
+    fill_between(x, r25_list, r75_list, color='0.75')
+    plot(x, r50_list, 'o-', color='black')
+
+    ax3 = subplot(133, sharex=ax1, sharey=ax1)
+    plot(x, sr50, 'o-', color='black', markerfacecolor='none')
+    plot(x, r50_list, 'o-', color='black')
+
+    ax2.xaxis.set_label_text("Minimum number of particles $\pm %.1f$" % DN)
+    ax1.yaxis.set_label_text("Core distance [m]")
+    fig.suptitle(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
+
+    ax1.xaxis.set_ticks([1, 2, 3, 4])
+    fig.subplots_adjust(left=.1, right=.95)
+
+    ylim(ymin=0)
+    xlim(.8, 4.2)
+
+    fig.set_size_inches(5, 2.67)
     utils.saveplot()
 
 def plot_detection_efficiency_vs_R_for_angles(N):

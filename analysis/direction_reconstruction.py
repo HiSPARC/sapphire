@@ -10,6 +10,7 @@ from pylab import *
 
 from scipy import integrate
 from scipy.special import erf
+from scipy.stats import scoreatpercentile
 
 import utils
 
@@ -436,10 +437,18 @@ def boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
 
     r_list = []
+    r25_list = []
+    r50_list = []
+    r75_list = []
+    x = []
     for N in range(1, 5):
         sel = table.readWhere('min_n134 == N')
         r = sel[:]['r']
         r_list.append(r)
+        r25_list.append(scoreatpercentile(r, 25))
+        r50_list.append(scoreatpercentile(r, 50))
+        r75_list.append(scoreatpercentile(r, 75))
+        x.append(N)
 
     figure()
     boxplot(r_list)
@@ -448,6 +457,7 @@ def boxplot_core_distances_for_mips(group):
     ylabel("Core distance [m]")
     title(r"$\theta = 22.5^\circ$")
 
+    utils.savedata((x, r25_list, r50_list, r75_list))
     utils.saveplot()
 
 def plot_detection_efficiency_vs_R_for_angles(N):
