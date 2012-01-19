@@ -13,9 +13,9 @@ def plot_landau_fit():
     global x, n, bins, p_gamma, p_landau
 
     events = data.root.hisparc.cluster_kascade.station_601.events
-    ph0 = events.col('pulseheights')[:, 0]
+    ph0 = events.col('integrals')[:, 0]
 
-    bins = np.linspace(0, 2000, 101)
+    bins = np.linspace(0, 20000, 101)
     n, bins = np.histogram(ph0, bins=bins)
     x = (bins[:-1] + bins[1:]) / 2
 
@@ -35,7 +35,7 @@ def plot_landau_and_gamma(x, p_gamma, p_landau):
     gammas = gamma_func(x, *p_gamma)
     plot(x, gammas)
 
-    nx = linspace(-2000, 2000, 201)
+    nx = linspace(-20000, 20000, 201)
     nlandaus = scintillator.conv_landau(nx, *p_landau)
     landaus = interp(x, nx, nlandaus)
     plot(x, landaus)
@@ -43,7 +43,7 @@ def plot_landau_and_gamma(x, p_gamma, p_landau):
     plot(x, gammas + landaus)
 
 def fit_gammas_to_data(x, y):
-    condition = (50 <= x) & (x < 200)
+    condition = (500 <= x) & (x < 2000)
     x_trunc = x.compress(condition)
     y_trunc = y.compress(condition)
     popt, pcov = optimize.curve_fit(gamma_func, x_trunc, y_trunc)
@@ -51,19 +51,19 @@ def fit_gammas_to_data(x, y):
 
 gamma_func = lambda x, N, a: N * x ** -a
 
-def fit_conv_landau_to_data(x, y, p0=(1e4 / .32, 3.38 / 400, 1)):
-    x_symm = np.linspace(-2000, 2000, 201)
+def fit_conv_landau_to_data(x, y, p0=(1e4 / .32, 3.38 / 5000, 1)):
+    x_symm = np.linspace(-20000, 20000, 201)
     y_symm = np.interp(x_symm, x, y)
     popt = optimize.fmin(scintillator.residuals, p0,
-                         (x_symm, y_symm, 300, 500))
+                         (x_symm, y_symm, 4500, 5500))
     return popt
 
 def fit_complete(x, y, p_gamma, p_landau):
-    x_symm = np.linspace(-2000, 2000, 201)
+    x_symm = np.linspace(-20000, 20000, 201)
     y_symm = np.interp(x_symm, x, y)
     p0 = list(p_gamma) + list(p_landau)
     popt = optimize.fmin(complete_residuals, p0,
-                         (scintillator, x_symm, y_symm, 50, 500),
+                         (scintillator, x_symm, y_symm, 500, 6000),
                          maxfun=100000)
     print popt
     return popt[:2], popt[2:]
