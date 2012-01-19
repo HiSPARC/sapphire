@@ -205,3 +205,7 @@ class ProcessIndexedEvents(ProcessEvents):
         timings = self._process_traces_from_event_list(events,
                                                        length=len(self.indexes))
         return timings
+
+    def get_traces_for_indexed_event_index(self, idx):
+        idx = self.indexes[idx]
+        return self.get_traces_for_event_index(idx)
