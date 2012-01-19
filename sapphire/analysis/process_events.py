@@ -32,6 +32,20 @@ class ProcessEvents(object):
         self._store_number_of_particles()
         self._move_results_table()
 
+    def get_traces_for_event(self, event):
+        traces = []
+        for idx in event['traces']:
+            if not idx < 0:
+                traces.append(self._get_trace(idx))
+
+        # Make traces follow NumPy conventions
+        traces = np.array(traces).T
+        return traces
+
+    def get_traces_for_event_index(self, idx):
+        event = self.group.events[idx]
+        return self.get_traces_for_event(event)
+
     def _create_results_table(self):
         self._tmp_events = self._create_empty_results_table()
         self._copy_events_into_table()
