@@ -10,14 +10,9 @@
     doing serious work arises.
 
 """
-import numpy as  np
-from numpy import pi, Inf, sin, cos, exp, log, sqrt, arctan, vectorize, \
-                  convolve
+from numpy import pi, Inf, sin, cos, exp, log, arctan, vectorize, \
+                  convolve, linspace, interp
 from scipy import integrate, stats
-
-#def residuals(p, y, x):
-#    N, location, scale = p
-#    return y - N * pdf(x, location, scale)
 
 @vectorize
 def pdf(lf):
@@ -41,19 +36,31 @@ def pdf_kernel2(u, lf):
 
 class Scintillator:
     thickness = .02 # m
-    xi        = 0.172018 # MeV
-    epsilon   = 3.10756e-11
-    delta     = 2.97663
-    Euler     = 0.577215665
+    xi = 0.172018 # MeV
+    epsilon = 3.10756e-11
+    delta = 2.97663
+    Euler = 0.577215665
 
     mev_scale = 1
     gauss_scale = 1
 
     _lf0 = log(xi) - log(epsilon) + 1 - Euler - delta
 
+    pdf_values = None
+    pdf_domain = linspace(-5, 50, 1000)
+
+
     def landau_pdf(self, Delta):
         lf = Delta / self.xi - self._lf0
-        return pdf(lf) / self.xi
+        return self.pdf(lf) / self.xi
+
+    def pdf(self, lf):
+        if self.pdf_values is not None:
+            return interp(lf, self.pdf_domain, self.pdf_values)
+        else:
+            print "Generating pre-computed values for Landau PDF..."
+            self.pdf_values = pdf(self.pdf_domain)
+            return self.pdf(lf)
 
     def conv_landau(self, x, count_scale=1, mev_scale=None,
                     gauss_scale=None):
@@ -92,17 +99,6 @@ class Scintillator:
         weights = 1. / ydata
         return ((weights * (yfit - ydata)) ** 2).sum()
 
-
-@vectorize
-def fixed_convolution(f, g, t, a=-10, b=10, N=50):
-    func = lambda tau: f(tau) * g(t - tau)
-    tau = linspace(a, b, N)
-    return integrate.trapz(func(tau), tau)
-
-@vectorize
-def convolution(f, g, t):
-    func = lambda tau: f(tau) * g(t - tau)
-    return integrate.quad(func, -integrate.Inf, integrate.Inf)[0]
 
 def discrete_convolution(f, g, t):
     if -min(t) != max(t):
