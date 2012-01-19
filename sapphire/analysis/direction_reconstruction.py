@@ -2,7 +2,7 @@ import sys
 import os
 
 import progressbar as pb
-from numpy import isnan, arcsin, arctan2, cos, floor, inf, sin, sqrt, tan, where
+from numpy import isnan, arcsin, arctan2, cos, floor, inf, sin, sqrt, tan, where, deg2rad, pi
 from numpy.random import uniform
 
 from sapphire import storage
@@ -18,18 +18,19 @@ class DirectionReconstruction(object):
     def create_empty_output_table(self, table_path, overwrite=False):
         group, tablename = os.path.split(table_path)
 
-        if not group in self.data.root:
-            base, groupname = os.path.split(group)
-            self.data.createGroup(base, groupname, createparents=True)
-        group = self.data.getNode(group)
-
-        if tablename in group:
+        if table_path in self.data:
             if not overwrite:
                 raise RuntimeError("Reconstruction table %s already exists" % table_path)
             else:
                 self.data.removeNode(group, tablename)
 
-        table = self.data.createTable(group, tablename, storage.ReconstructedEvent)
+        table = self._create_output_table(group, tablename)
+        return table
+
+    def _create_output_table(self, group, tablename):
+        table = self.data.createTable(group, tablename,
+                                      storage.ReconstructedEvent,
+                                      createparents=True)
         return table
 
     def reconstruct_angles_for_shower_group(self, groupname):
@@ -56,8 +57,6 @@ class DirectionReconstruction(object):
             assert event['id'] == coincidence['id']
             if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
                 theta, phi = self.reconstruct_angle(event)
-
-                alpha = event['alpha']
 
                 if not isnan(theta) and not isnan(phi):
                     self.store_reconstructed_event(coincidence, event, theta, phi)
@@ -254,3 +253,89 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
                 event[idx] += uniform(0, binning)
 
         return super(BinnedDirectionReconstruction, self).reconstruct_angle(event)
+
+
+class KascadeDirectionReconstruction(DirectionReconstruction):
+    def _create_output_table(self, group, tablename):
+        table = self.data.createTable(group, tablename,
+                                      storage.ReconstructedKascadeEvent,
+                                      createparents=True)
+        return table
+
+    def reconstruct_angles(self, hisparc_group, kascade_group):
+        hisparc_group = self.data.getNode(hisparc_group)
+
+        hisparc_table = self.data.getNode(hisparc_group, 'events')
+        c_index = self.data.getNode(kascade_group, 'c_index')
+        kascade_table = self.data.getNode(kascade_group, 'events')
+
+        self.station, = hisparc_group._v_attrs.cluster.stations
+        if not 'cluster' in self.results_table.attrs:
+            self.results_table.attrs.cluster = hisparc_group._v_attrs.cluster
+
+        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                              pb.ETA()],
+                                     fd=sys.stderr)
+
+        for idx in progressbar(c_index[:self.N]):
+            h_idx, k_idx = idx[1:]
+            hisparc_event = hisparc_table[h_idx]
+            kascade_event = kascade_table[k_idx]
+
+            if min(hisparc_event['n1'], hisparc_event['n3'],
+                   hisparc_event['n4']) >= self.min_n134:
+                theta, phi = self.reconstruct_angle(hisparc_event)
+
+                if not isnan(theta) and not isnan(phi):
+                    self.store_reconstructed_event(hisparc_event, kascade_event,
+                                                   theta, phi)
+
+        self.results_table.flush()
+
+    def store_reconstructed_event(self, hisparc_event, kascade_event,
+                                  reconstructed_theta, reconstructed_phi):
+        dst_row = self.results_table.row
+
+        r, phi, alpha = self.station.get_rphialpha_coordinates()
+        core_r, core_phi = self._calc_core_position_rphi_for_kascade_event(kascade_event)
+        reference_phi = self._calc_reference_phi_for_kascade_event(kascade_event)
+
+        dst_row['station_id'] = 0
+        dst_row['r'] = core_r
+        dst_row['phi'] = core_phi
+        dst_row['alpha'] = alpha
+        dst_row['t1'] = hisparc_event['t1']
+        dst_row['t2'] = hisparc_event['t2']
+        dst_row['t3'] = hisparc_event['t3']
+        dst_row['t4'] = hisparc_event['t4']
+        dst_row['n1'] = hisparc_event['n1']
+        dst_row['n2'] = hisparc_event['n2']
+        dst_row['n3'] = hisparc_event['n3']
+        dst_row['n4'] = hisparc_event['n4']
+        dst_row['reference_theta'] = kascade_event['zenith']
+        dst_row['reference_phi'] = reference_phi
+        dst_row['reconstructed_theta'] = reconstructed_theta
+        dst_row['reconstructed_phi'] = reconstructed_phi
+        dst_row['min_n134'] = min(hisparc_event['n1'], hisparc_event['n3'], hisparc_event['n4'])
+
+        dst_row['k_energy'] = kascade_event['energy']
+        dst_row['k_core_pos'] = kascade_event['core_pos']
+        dst_row['k_Num_e'] = kascade_event['Num_e']
+        dst_row['k_Num_mu'] = kascade_event['Num_mu']
+        dst_row['k_dens_e'] = kascade_event['dens_e']
+        dst_row['k_dens_mu'] = kascade_event['dens_mu']
+        dst_row['k_P200'] = kascade_event['P200']
+        dst_row['k_T200'] = kascade_event['T200']
+        dst_row.append()
+
+    def _calc_core_position_rphi_for_kascade_event(self, kascade_event):
+        x0, y0, alpha = self.station.get_xyalpha_coordinates()
+        x1, y1 = kascade_event['core_pos']
+        dx, dy = (x1 - x0), (y1 - y0)
+
+        r = sqrt(dx ** 2 + dy ** 2)
+        phi = arctan2(dy, dx)
+        return r, phi
+
+    def _calc_reference_phi_for_kascade_event(self, kascade_event):
+        return -(kascade_event['azimuth'] + deg2rad(75)) % (2 * pi) - pi

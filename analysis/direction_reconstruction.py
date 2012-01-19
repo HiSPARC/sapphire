@@ -1,27 +1,23 @@
 from __future__ import division
 
 import tables
-from itertools import combinations, izip
-import re
-import csv
+from itertools import izip
 import os.path
 
 import progressbar as pb
 
 from pylab import *
-from scipy.optimize import curve_fit
-#from tikz_plot import tikz_2dhist
 
 from scipy import integrate
 from scipy.special import erf
+from scipy.stats import scoreatpercentile
 
 import utils
 
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
-from sapphire.storage import ReconstructedEvent
 
 
-USE_TEX = False
+USE_TEX = True
 
 TIMING_ERROR = 4
 #TIMING_ERROR = 7
@@ -31,11 +27,12 @@ if USE_TEX:
     rcParams['font.serif'] = 'Computer Modern'
     rcParams['font.sans-serif'] = 'Computer Modern'
     rcParams['font.family'] = 'sans-serif'
-    rcParams['figure.figsize'] = [5 * x for x in (1, 2. / 3)]
-    rcParams['figure.subplot.left'] = 0.125
-    rcParams['figure.subplot.bottom'] = 0.125
-    rcParams['font.size'] = 11
+    rcParams['figure.figsize'] = [4 * x for x in (1, 2. / 3)]
+    rcParams['figure.subplot.left'] = 0.175
+    rcParams['figure.subplot.bottom'] = 0.175
+    rcParams['font.size'] = 10
     rcParams['legend.fontsize'] = 'small'
+    rcParams['text.usetex'] = True
 
 
 def do_full_reconstruction(data, N=None):
@@ -114,7 +111,6 @@ def plot_uncertainty_mip(group):
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for N in range(1, 6):
         x.append(N)
@@ -136,6 +132,8 @@ def plot_uncertainty_mip(group):
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
+    utils.savedata((x, y, y2))
+
     # Uncertainty estimate
     x = linspace(1, 5, 50)
     phis = linspace(-pi, pi, 50)
@@ -147,11 +145,9 @@ def plot_uncertainty_mip(group):
     plot(x, rad2deg(y2), label="Estimate Theta")
     # Labels etc.
     xlabel("Minimum number of particles")
-    ylabel("Uncertainty in angle reconstruction (deg)")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ$")
     legend(numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 
@@ -166,7 +162,6 @@ def plot_uncertainty_zenith(group):
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for THETA in 0, 5, 22.5, 35:
         x.append(THETA)
@@ -189,6 +184,7 @@ def plot_uncertainty_zenith(group):
     for u, v, w in zip(x, y, y2):
         print u, v, w
     print
+    utils.savedata((x, y, y2))
 
     # Uncertainty estimate
     x = linspace(0, deg2rad(35), 50)
@@ -206,13 +202,11 @@ def plot_uncertainty_zenith(group):
     plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
 
     # Labels etc.
-    xlabel("Shower zenith angle (degrees)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
+    xlabel("Shower zenith angle [deg]")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$N_{MIP} = 2$")
     ylim(0, 100)
     legend(numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 
@@ -228,7 +222,6 @@ def plot_uncertainty_size(group):
     del r1, r2
 
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for size in [5, 10, 20]:
         x.append(size)
@@ -268,12 +261,10 @@ def plot_uncertainty_size(group):
     plot(x, rad2deg(y2), label="Estimate Theta")
 
     # Labels etc.
-    xlabel("Station size (m)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
+    xlabel("Station size [m]")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
     legend(numpoints=1)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 
@@ -288,7 +279,6 @@ def plot_uncertainty_binsize(group):
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
-    rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
     for bin_size in [0, 1, 2.5, 5]:
         x.append(bin_size)
@@ -330,13 +320,11 @@ def plot_uncertainty_binsize(group):
     plot(x, rad2deg(y2), label="Estimate Theta")
 
     # Labels etc.
-    xlabel("Bin size (ns)")
-    ylabel("Uncertainty in angle reconstruction (deg)")
+    xlabel("Bin size [ns]")
+    ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
     legend(loc='best', numpoints=1)
     ylim(ymin=0)
-    if USE_TEX:
-        rcParams['text.usetex'] = True
     utils.saveplot()
     print
 
@@ -364,8 +352,8 @@ def plot_phi_reconstruction_results_for_MIP(group, N):
 
     figure()
     plot_2d_histogram(rad2deg(sim_phi), rad2deg(r_phi), 180)
-    xlabel(r"$\phi_{simulated}$")
-    ylabel(r"$\phi_{reconstructed}$")
+    xlabel(r"$\phi_{simulated}$ [deg]")
+    ylabel(r"$\phi_{reconstructed}$ [deg]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     utils.saveplot(N)
@@ -384,8 +372,8 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
 
     boxplot(r_dtheta, sym='', positions=angles, widths=2.)
 
-    xlabel(r"$\theta_{simulated}$")
-    ylabel(r"$\theta_{reconstructed} - \theta_{simulated}$")
+    xlabel(r"$\theta_{simulated}$ [deg]")
+    ylabel(r"$\theta_{reconstructed} - \theta_{simulated}$ [deg]")
     title(r"$N_{MIP} \geq %d$" % N)
 
     axhline(0)
@@ -410,10 +398,10 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
         r_dphi.append(rad2deg(dphi))
         x.append((low + high) / 2)
 
-    boxplot(r_dphi, positions=x, widths=.7 * (high - low), sym='')
+    boxplot(r_dphi, positions=x, widths=1 * (high - low), sym='')
 
-    xlabel(r"$\phi_{simulated}$")
-    ylabel(r"$\phi_{reconstructed} - \phi_{simulated}$")
+    xlabel(r"$\phi_{simulated}$ [deg]")
+    ylabel(r"$\phi_{reconstructed} - \phi_{simulated}$ [deg]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     xticks(linspace(-180, 180, 9))
@@ -426,13 +414,22 @@ def boxplot_arrival_times(group, N):
 
     figure()
 
-    bin_edges = linspace(0, 100, 10)
+    bin_edges = linspace(0, 100, 11)
     x, arrival_times = [], []
+    t25, t50, t75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         query = '(min_n134 >= N) & (low <= r) & (r < high)'
         sel = table.readWhere(query)
         t2 = sel[:]['t2']
         arrival_times.append(t2.compress(t2 > -999))
+
+        # For KASCADE plots
+        t1 = sel[:]['t1']
+        ct1 = t1.compress((t1 > -999) & (t2 > -999))
+        ct2 = t2.compress((t1 > -999) & (t2 > -999))
+        t25.append(scoreatpercentile(abs(ct2 - ct1), 25))
+        t50.append(scoreatpercentile(abs(ct2 - ct1), 50))
+        t75.append(scoreatpercentile(abs(ct2 - ct1), 75))
         x.append((low + high) / 2)
 
     boxplot(arrival_times, positions=x, widths=.7 * (high - low), sym='')
@@ -443,16 +440,25 @@ def boxplot_arrival_times(group, N):
 
     xticks(arange(0, 100.5, 10))
 
+    utils.savedata((x, t25, t50, t75), N)
     utils.saveplot(N)
 
 def boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
 
     r_list = []
+    r25_list = []
+    r50_list = []
+    r75_list = []
+    x = []
     for N in range(1, 5):
         sel = table.readWhere('min_n134 == N')
         r = sel[:]['r']
         r_list.append(r)
+        r25_list.append(scoreatpercentile(r, 25))
+        r50_list.append(scoreatpercentile(r, 50))
+        r75_list.append(scoreatpercentile(r, 75))
+        x.append(N)
 
     figure()
     boxplot(r_list)
@@ -461,6 +467,7 @@ def boxplot_core_distances_for_mips(group):
     ylabel("Core distance [m]")
     title(r"$\theta = 22.5^\circ$")
 
+    utils.savedata((x, r25_list, r50_list, r75_list))
     utils.saveplot()
 
 def plot_detection_efficiency_vs_R_for_angles(N):
@@ -566,7 +573,7 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
             print sum(shower_results), len(ssel), len(ssel) / sum(shower_results)
             efficiencies.append(len(ssel) / sum(shower_results))
 
-        plot(x, efficiencies, label=r'$N_{MIP} = %d' % N)
+        plot(x, efficiencies, label=r'$N_{MIP} = %d$' % N)
 
     xlabel("Core distance [m]")
     ylabel("Reconstruction efficiency")
@@ -699,5 +706,6 @@ if __name__ == '__main__':
     utils.set_prefix("DIR-")
     do_reconstruction_plots(data)
 
+    # These currently don't work
 #    utils.set_prefix("WIP-")
 #    do_jos_plots(data)

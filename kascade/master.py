@@ -1,8 +1,13 @@
-import tables
 import logging
+from math import pi
+
+import tables
+import numpy as np
+
 from sapphire.kascade import StoreKascadeData, KascadeCoincidences
-from sapphire.storage import KascadeEvent
 from sapphire.analysis.process_events import ProcessIndexedEvents
+from sapphire import clusters
+from sapphire.analysis.direction_reconstruction import KascadeDirectionReconstruction
 
 
 class Master(object):
@@ -14,9 +19,20 @@ class Master(object):
         self.kascade_filename = kascade_filename
 
     def main(self):
+        self.store_cluster_instance()
         self.read_and_store_kascade_data()
         self.search_for_coincidences()
         self.process_events()
+        self.reconstruct_direction()
+
+    def store_cluster_instance(self):
+        group = self.data.getNode(self.hisparc_group)
+
+        if 'cluster' not in group._v_attrs:
+            cluster = clusters.SingleStation()
+            cluster.set_xyalpha_coordinates(65., 20.82, pi)
+
+            group._v_attrs.cluster = cluster
 
     def read_and_store_kascade_data(self):
         """Read KASCADE data into analysis file"""
@@ -60,9 +76,17 @@ class Master(object):
             print msg
             return
 
+    def reconstruct_direction(self):
+        reconstruction = KascadeDirectionReconstruction(
+                            self.data, '/reconstructions', min_n134=0.,
+                            overwrite=True)
+        reconstruction.reconstruct_angles(self.hisparc_group, self.kascade_group)
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+
+    np.seterr(invalid='ignore', divide='ignore')
 
     master = Master('kascade.h5', 'HiSparc-new.dat.gz')
     master.main()
