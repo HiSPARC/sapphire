@@ -11,7 +11,7 @@
 
 """
 from numpy import pi, Inf, sin, cos, exp, log, arctan, vectorize, \
-                  convolve, linspace, interp
+                  convolve, linspace, interp, arange
 from scipy import integrate, stats
 
 @vectorize
@@ -61,6 +61,15 @@ class Scintillator:
             print "Generating pre-computed values for Landau PDF..."
             self.pdf_values = pdf(self.pdf_domain)
             return self.pdf(lf)
+
+    def conv_landau_for_x(self, x, count_scale=1, mev_scale=None,
+                          gauss_scale=None):
+        x_step = x[-1] - x[-2]
+        x_symm = arange(-max(x), max(x) + x_step / 2, x_step)
+        y_symm = self.conv_landau(x_symm, count_scale, mev_scale, gauss_scale)
+
+        y = interp(x, x_symm, y_symm)
+        return y
 
     def conv_landau(self, x, count_scale=1, mev_scale=None,
                     gauss_scale=None):
