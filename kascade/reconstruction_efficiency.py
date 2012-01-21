@@ -7,9 +7,25 @@ from scipy import optimize, stats
 
 from sapphire.analysis import landau
 
+import utils
+
 
 RANGE_MAX = 40000
 N_BINS = 400
+
+USE_TEX = True
+
+# For matplotlib plots
+if USE_TEX:
+    plt.rcParams['font.serif'] = 'Computer Modern'
+    plt.rcParams['font.sans-serif'] = 'Computer Modern'
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['figure.figsize'] = [4 * x for x in (1, 2. / 3)]
+    plt.rcParams['figure.subplot.left'] = 0.175
+    plt.rcParams['figure.subplot.bottom'] = 0.175
+    plt.rcParams['font.size'] = 10
+    plt.rcParams['legend.fontsize'] = 'small'
+    plt.rcParams['text.usetex'] = True
 
 
 class ReconstructionEfficiency(object):
@@ -18,7 +34,7 @@ class ReconstructionEfficiency(object):
         self.scintillator = landau.Scintillator()
 
     def main(self):
-        #self.plot_landau_fit()
+        self.plot_gamma_landau_fit()
         self.plot_detection_efficiency()
 
     def calc_charged_fraction(self, x, y, p_gamma, p_landau):
@@ -30,8 +46,8 @@ class ReconstructionEfficiency(object):
         y_landau = self.scintillator.conv_landau_for_x(x, *p_landau)
         y_charged_left = y_landau.compress(x <= max_pos)
         y_charged_right = y_reduced.compress(max_pos < x)
-        y_charged = array(y_charged_left.tolist() +
-                          y_charged_right.tolist())
+        y_charged = np.array(y_charged_left.tolist() +
+                             y_charged_right.tolist())
 
         N_full = y.sum()
         N_charged = y_charged.sum()
@@ -49,14 +65,14 @@ class ReconstructionEfficiency(object):
         p_gamma, p_landau = self.constrained_fit_complete(x, y, p0_gamma, p0_landau)
         return p_gamma, p_landau
 
-    def plot_landau_fit(self):
+    def plot_gamma_landau_fit(self):
         events = self.data.root.hisparc.cluster_kascade.station_601.events
         ph0 = events.col('integrals')[:, 0]
 
         bins = np.linspace(0, RANGE_MAX, N_BINS + 1)
         n, bins = np.histogram(ph0, bins=bins)
         x = (bins[:-1] + bins[1:]) / 2
-    
+
         p_gamma, p_landau = self.full_spectrum_fit(x, n, (1., 1.),
                                                    (5e3 / .32, 3.38 / 5000, 1.))
         print "FULL FIT"
@@ -67,26 +83,27 @@ class ReconstructionEfficiency(object):
         print "CONSTRAINED FIT"
         print p_gamma, p_landau
 
-        clf()
+        plt.figure()
         print self.calc_charged_fraction(x, n, p_gamma, p_landau)
 
         plt.plot(x, n)
         self.plot_landau_and_gamma(x, p_gamma, p_landau)
         #plt.plot(x, n - self.gamma_func(x, *p_gamma))
         plt.yscale('log')
-        plt.xlim(xmin=0)
-        plt.ylim(ymin=1e1)
+        plt.xlim(0, 30000)
+        plt.ylim(1e1, 1e4)
+        utils.saveplot()
 
     def plot_landau_and_gamma(self, x, p_gamma, p_landau):
         gammas = self.gamma_func(x, *p_gamma)
-        plt.plot(x, gammas)
+        plt.plot(x, gammas, label='gamma')
 
         nx = np.linspace(-RANGE_MAX, RANGE_MAX, N_BINS * 2 + 1)
         nlandaus = self.scintillator.conv_landau(nx, *p_landau)
         landaus = np.interp(x, nx, nlandaus)
-        plt.plot(x, landaus)
+        plt.plot(x, landaus, label='landau/gauss')
 
-        plt.plot(x, gammas + landaus)
+        plt.plot(x, gammas + landaus, label='gamma + landau/gauss')
 
 
     def fit_gammas_to_data(self, x, y, p0):
@@ -176,35 +193,70 @@ class ReconstructionEfficiency(object):
     def plot_detection_efficiency(self):
         integrals, dens = self.get_integrals_and_densities()
 
-        popt =  self.full_fit_on_data(integrals,
+        popt = self.full_fit_on_data(integrals,
                                       (1., 1., 5e3 / .32, 3.38 / 5000, 1.))
 
         x, y, yerr = [], [], []
-        dens_bins = linspace(0, 10, 51)
+        dens_bins = np.linspace(0, 10, 51)
         for low, high in zip(dens_bins[:-1], dens_bins[1:]):
             sel = integrals.compress((low <= dens) & (dens < high))
             x.append((low + high) / 2)
             frac = self.determine_charged_fraction(sel, popt)
             y.append(frac)
-            yerr.append(sqrt(frac * len(sel)) / len(sel))
+            yerr.append(np.sqrt(frac * len(sel)) / len(sel))
             print len(sel),
+            self.plot_full_spectrum_fit_in_density_range(sel, popt, low, high)
         print
 
-        clf()
-        plt.errorbar(x, y, yerr, fmt='o')
+        plt.figure()
+        plt.errorbar(x, y, yerr, fmt='o', label='data')
 
         popt, pcov = optimize.curve_fit(self.conv_p_detection, x, y, p0=(1.,))
         print "Sigma Gauss:", popt
 
-        x = linspace(0, 10, 101)
-        plt.plot(x, self.p_detection(x))
-        plt.plot(x, self.conv_p_detection(x, *popt))
+        x = plt.linspace(0, 10, 101)
+        plt.plot(x, self.p_detection(x), label='poisson')
+        plt.plot(x, self.conv_p_detection(x, *popt), label='poisson/gauss')
 
-        xlabel("Charged particle density [$m^{-2}$]")
-        ylabel("Detection probability")
-        ylim(0, 1.)
+        plt.xlabel("Charged particle density [$m^{-2}$]")
+        plt.ylabel("Detection probability")
+        plt.ylim(0, 1.)
+        plt.legend(loc='best')
+        utils.saveplot()
 
-    p_detection = np.vectorize(lambda x: 1 - exp(-.5 * x) if x >= 0 else 0.)
+    def plot_full_spectrum_fit_in_density_range(self, sel, popt, low, high):
+        bins = np.linspace(0, RANGE_MAX, N_BINS + 1)
+        n, bins = np.histogram(sel, bins=bins)
+        x = (bins[:-1] + bins[1:]) / 2
+
+        p_gamma, p_landau = self.constrained_full_spectrum_fit(x, n, popt[:2], popt[2:])
+
+        plt.figure()
+        plt.plot(x, n, label='data')
+        self.plot_landau_and_gamma(x, p_gamma, p_landau)
+
+        y_reduced = n - self.gamma_func(x, *p_gamma)
+
+        mev_scale = p_landau[1]
+        max_pos = 3.38 / mev_scale
+
+        y_landau = self.scintillator.conv_landau_for_x(x, *p_landau)
+        y_charged_left = y_landau.compress(x <= max_pos)
+        y_charged_right = y_reduced.compress(max_pos < x)
+        y_charged = np.array(y_charged_left.tolist() +
+                             y_charged_right.tolist())
+        plt.plot(x, y_charged, label='charged particles')
+
+        plt.yscale('log')
+        plt.ylim(ymin=1)
+        plt.xlabel("Pulse integral [mV ns]")
+        plt.ylabel("Count")
+        plt.legend()
+        suffix = '%.1f-%.1f' % (low, high)
+        suffix.replace('.', '_')
+        utils.saveplot(suffix)
+
+    p_detection = np.vectorize(lambda x: 1 - np.exp(-.5 * x) if x >= 0 else 0.)
 
     def conv_p_detection(self, x, sigma):
         x_step = x[-1] - x[-2]
@@ -221,5 +273,6 @@ if __name__ == '__main__':
     if 'data' not in globals():
         data = tables.openFile('kascade.h5', 'r')
 
+    utils.set_prefix('EFF-')
     efficiency = ReconstructionEfficiency(data)
     efficiency.main()
