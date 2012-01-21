@@ -1,3 +1,5 @@
+from __future__ import division
+
 import tables
 import numpy as np
 import pylab as plt
@@ -17,6 +19,27 @@ class ReconstructionEfficiency(object):
 
     def main(self):
         self.plot_landau_fit()
+
+    def calc_charged_fraction(self, x, y, p_gamma, p_landau):
+        y_reduced = y - self.gamma_func(x, *p_gamma)
+
+        mev_scale = p_landau[1]
+        max_pos = 3.38 / mev_scale
+        print "max_pos", max_pos
+
+        y_landau = self.scintillator.conv_landau_for_x(x, *p_landau)
+        y_charged_left = y_landau.compress(x <= max_pos)
+        y_charged_right = y_reduced.compress(max_pos < x)
+        y_charged = array(y_charged_left.tolist() +
+                          y_charged_right.tolist())
+
+        plt.plot(x, y_charged, '-')
+
+        N_full = y.sum()
+        N_charged = y_charged.sum()
+
+        print "full, charged, fraction:", N_full, N_charged, N_full / N_charged
+        return N_charged / N_full
 
     def full_spectrum_fit(self, x, y, p0_gamma, p0_landau):
         p_gamma = self.fit_gammas_to_data(x, y, p0_gamma)
@@ -50,9 +73,11 @@ class ReconstructionEfficiency(object):
         print p_gamma, p_landau
 
         clf()
+        print self.calc_charged_fraction(x, n, p_gamma, p_landau)
+
         plt.plot(x, n)
         self.plot_landau_and_gamma(x, p_gamma, p_landau)
-        plt.plot(x, n - self.gamma_func(x, *p_gamma))
+        #plt.plot(x, n - self.gamma_func(x, *p_gamma))
         plt.yscale('log')
         plt.xlim(xmin=0)
         plt.ylim(ymin=1e1)
