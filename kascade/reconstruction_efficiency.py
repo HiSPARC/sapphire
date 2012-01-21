@@ -179,17 +179,19 @@ class ReconstructionEfficiency(object):
         popt =  self.full_fit_on_data(integrals,
                                       (1., 1., 5e3 / .32, 3.38 / 5000, 1.))
 
-        x, y = [], []
+        x, y, yerr = [], [], []
         dens_bins = linspace(0, 10, 51)
         for low, high in zip(dens_bins[:-1], dens_bins[1:]):
             sel = integrals.compress((low <= dens) & (dens < high))
             x.append((low + high) / 2)
-            y.append(self.determine_charged_fraction(sel, popt))
+            frac = self.determine_charged_fraction(sel, popt)
+            y.append(frac)
+            yerr.append(sqrt(frac * len(sel)) / len(sel))
             print len(sel),
         print
 
         clf()
-        plt.plot(x, y, 'o')
+        plt.errorbar(x, y, yerr, fmt='o')
 
         popt, pcov = optimize.curve_fit(self.conv_p_detection, x, y, p0=(1.,))
         print "Sigma Gauss:", popt
@@ -200,7 +202,7 @@ class ReconstructionEfficiency(object):
 
         xlabel("Charged particle density [$m^{-2}$]")
         ylabel("Detection probability")
-        xlim(0, 10)
+        ylim(0, 1.)
 
     p_detection = np.vectorize(lambda x: 1 - exp(-.5 * x) if x >= 0 else 0.)
 
