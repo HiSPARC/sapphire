@@ -110,7 +110,7 @@ class Scintillator:
 
 
 def discrete_convolution(f, g, t):
-    if -min(t) != max(t):
+    if abs(-min(t) - max(t)) > 1e-6:
         raise RuntimeError("Range needs to be symmetrical around zero.")
 
     dt = t[1] - t[0]

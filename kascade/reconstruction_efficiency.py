@@ -3,7 +3,7 @@ from __future__ import division
 import tables
 import numpy as np
 import pylab as plt
-from scipy import optimize
+from scipy import optimize, stats
 
 from sapphire.analysis import landau
 
@@ -18,14 +18,14 @@ class ReconstructionEfficiency(object):
         self.scintillator = landau.Scintillator()
 
     def main(self):
-        self.plot_landau_fit()
+        #self.plot_landau_fit()
+        self.plot_detection_efficiency()
 
     def calc_charged_fraction(self, x, y, p_gamma, p_landau):
         y_reduced = y - self.gamma_func(x, *p_gamma)
 
         mev_scale = p_landau[1]
         max_pos = 3.38 / mev_scale
-        print "max_pos", max_pos
 
         y_landau = self.scintillator.conv_landau_for_x(x, *p_landau)
         y_charged_left = y_landau.compress(x <= max_pos)
@@ -33,12 +33,9 @@ class ReconstructionEfficiency(object):
         y_charged = array(y_charged_left.tolist() +
                           y_charged_right.tolist())
 
-        plt.plot(x, y_charged, '-')
-
         N_full = y.sum()
         N_charged = y_charged.sum()
 
-        print "full, charged, fraction:", N_full, N_charged, N_full / N_charged
         return N_charged / N_full
 
     def full_spectrum_fit(self, x, y, p0_gamma, p0_landau):
@@ -53,8 +50,6 @@ class ReconstructionEfficiency(object):
         return p_gamma, p_landau
 
     def plot_landau_fit(self):
-        global x, n, bins, p_gamma, p_landau
-
         events = self.data.root.hisparc.cluster_kascade.station_601.events
         ph0 = events.col('integrals')[:, 0]
 
@@ -108,7 +103,7 @@ class ReconstructionEfficiency(object):
         x_symm = np.linspace(-RANGE_MAX, RANGE_MAX, N_BINS * 2 + 1)
         y_symm = np.interp(x_symm, x, y)
         popt = optimize.fmin(self.scintillator.residuals, p0,
-                             (x_symm, y_symm, 4500, 5500))
+                             (x_symm, y_symm, 4500, 5500), disp=0)
         return popt
 
     def fit_complete(self, x, y, p_gamma, p_landau):
@@ -117,7 +112,7 @@ class ReconstructionEfficiency(object):
         p0 = list(p_gamma) + list(p_landau)
         popt = optimize.fmin(self.complete_residuals, p0,
                              (self.scintillator, x_symm, y_symm, 500, 6000),
-                             maxfun=100000)
+                             maxfun=100000, disp=0)
         return popt[:2], popt[2:]
 
     def constrained_fit_complete(self, x, y, p_gamma, p_landau):
@@ -129,7 +124,7 @@ class ReconstructionEfficiency(object):
                              (N_gamma, N_landau),
                              (self.scintillator, x_symm, y_symm, p_gamma,
                               p_landau, 500, 6000),
-                             maxfun=100000)
+                             maxfun=100000, disp=0)
         p_gamma[0] = popt[0]
         p_landau[0] = popt[1]
         return p_gamma, p_landau
@@ -146,6 +141,76 @@ class ReconstructionEfficiency(object):
                                        p_gamma, p_landau, a, b):
         full_par = (par[0], p_gamma[1], par[1], p_landau[1], p_landau[2])
         return self.complete_residuals(full_par, scintillator, x, y, a, b)
+
+    def get_integrals_and_densities(self):
+        hisparc = self.data.root.hisparc.cluster_kascade.station_601.events
+        kascade = self.data.root.kascade.events
+        c_index = self.data.root.kascade.c_index
+        h_index = c_index[:, 1]
+        k_index = c_index[:, 2]
+
+        intg = hisparc.readCoordinates(h_index, 'integrals')[:, 0]
+
+        dens_e = kascade.readCoordinates(k_index, 'dens_e')[:, 0]
+        dens_mu = kascade.readCoordinates(k_index, 'dens_mu')[:, 0]
+        dens = dens_e + dens_mu
+
+        return intg, dens
+
+    def full_fit_on_data(self, integrals, p0):
+        bins = np.linspace(0, RANGE_MAX, N_BINS + 1)
+        n, bins = np.histogram(integrals, bins=bins)
+        x = (bins[:-1] + bins[1:]) / 2
+
+        p_gamma, p_landau = self.full_spectrum_fit(x, n, p0[:2], p0[2:])
+        return list(p_gamma) + list(p_landau)
+
+    def determine_charged_fraction(self, integrals, p0):
+        bins = np.linspace(0, RANGE_MAX, N_BINS + 1)
+        n, bins = np.histogram(integrals, bins=bins)
+        x = (bins[:-1] + bins[1:]) / 2
+
+        p_gamma, p_landau = self.constrained_full_spectrum_fit(x, n, p0[:2], p0[2:])
+        return self.calc_charged_fraction(x, n, p_gamma, p_landau)
+
+    def plot_detection_efficiency(self):
+        integrals, dens = self.get_integrals_and_densities()
+
+        popt =  self.full_fit_on_data(integrals,
+                                      (1., 1., 5e3 / .32, 3.38 / 5000, 1.))
+
+        x, y = [], []
+        dens_bins = linspace(0, 10, 51)
+        for low, high in zip(dens_bins[:-1], dens_bins[1:]):
+            sel = integrals.compress((low <= dens) & (dens < high))
+            x.append((low + high) / 2)
+            y.append(self.determine_charged_fraction(sel, popt))
+            print len(sel),
+        print
+
+        clf()
+        plt.plot(x, y, 'o')
+
+        popt, pcov = optimize.curve_fit(self.conv_p_detection, x, y, p0=(1.,))
+        print "Sigma Gauss:", popt
+
+        x = linspace(0, 10, 101)
+        plt.plot(x, self.p_detection(x))
+        plt.plot(x, self.conv_p_detection(x, *popt))
+
+        xlabel("Charged particle density [$m^{-2}$]")
+        ylabel("Detection probability")
+        xlim(0, 10)
+
+    p_detection = np.vectorize(lambda x: 1 - exp(-.5 * x) if x >= 0 else 0.)
+
+    def conv_p_detection(self, x, sigma):
+        x_step = x[-1] - x[-2]
+        x2 = np.arange(-2 * max(x), 2 * max(x) + x_step / 2, x_step)
+        g = stats.norm(scale=sigma).pdf
+        y2 = landau.discrete_convolution(self.p_detection, g, x2)
+        y = np.interp(x, x2, y2)
+        return y
 
 
 if __name__ == '__main__':
