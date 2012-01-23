@@ -47,7 +47,7 @@ class Scintillator:
     _lf0 = log(xi) - log(epsilon) + 1 - Euler - delta
 
     pdf_values = None
-    pdf_domain = linspace(-5, 50, 1000)
+    pdf_domain = linspace(-5, 100, 5000)
 
 
     def landau_pdf(self, Delta):
