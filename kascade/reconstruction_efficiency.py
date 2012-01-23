@@ -38,21 +38,30 @@ class ReconstructionEfficiency(object):
         self.plot_detection_efficiency()
 
     def calc_charged_fraction(self, x, y, p_gamma, p_landau):
-        y_reduced = y - self.gamma_func(x, *p_gamma)
-
-        mev_scale = p_landau[1]
-        max_pos = 3.38 / mev_scale
-
-        y_landau = self.scintillator.conv_landau_for_x(x, *p_landau)
-        y_charged_left = y_landau.compress(x <= max_pos)
-        y_charged_right = y_reduced.compress(max_pos < x)
-        y_charged = np.array(y_charged_left.tolist() +
-                             y_charged_right.tolist())
+        y_charged = self.calc_charged_spectrum(x, y, p_gamma, p_landau)
 
         N_full = y.sum()
         N_charged = y_charged.sum()
 
         return N_charged / N_full
+
+    def calc_charged_spectrum(self, x, y, p_gamma, p_landau):
+        y_landau = self.scintillator.conv_landau_for_x(x, *p_landau)
+        max_pos = x[y_landau.argmax()]
+
+        y_gamma = self.gamma_func(x, *p_gamma)
+        y_gamma_trunc = np.where(x <= 3 * max_pos, y_gamma, 0.)
+
+        y_reduced = y - y_gamma_trunc
+
+        mev_scale = p_landau[1]
+
+        y_charged_left = y_landau.compress(x <= max_pos)
+        y_charged_right = y_reduced.compress(max_pos < x)
+        y_charged = np.array(y_charged_left.tolist() +
+                             y_charged_right.tolist())
+
+        return y_charged
 
     def full_spectrum_fit(self, x, y, p0_gamma, p0_landau):
         p_gamma = self.fit_gammas_to_data(x, y, p0_gamma)
@@ -89,6 +98,8 @@ class ReconstructionEfficiency(object):
         plt.plot(x, n)
         self.plot_landau_and_gamma(x, p_gamma, p_landau)
         #plt.plot(x, n - self.gamma_func(x, *p_gamma))
+        plt.xlabel("Pulse integral [ADC sample]")
+        plt.ylabel("Count")
         plt.yscale('log')
         plt.xlim(0, 30000)
         plt.ylim(1e1, 1e4)
@@ -214,9 +225,9 @@ class ReconstructionEfficiency(object):
         popt, pcov = optimize.curve_fit(self.conv_p_detection, x, y, p0=(1.,))
         print "Sigma Gauss:", popt
 
-        x = plt.linspace(0, 10, 101)
-        plt.plot(x, self.p_detection(x), label='poisson')
-        plt.plot(x, self.conv_p_detection(x, *popt), label='poisson/gauss')
+        x2 = plt.linspace(0, 10, 101)
+        plt.plot(x2, self.p_detection(x2), label='poisson')
+        plt.plot(x2, self.conv_p_detection(x2, *popt), label='poisson/gauss')
 
         plt.xlabel("Charged particle density [$m^{-2}$]")
         plt.ylabel("Detection probability")
@@ -235,21 +246,12 @@ class ReconstructionEfficiency(object):
         plt.plot(x, n, label='data')
         self.plot_landau_and_gamma(x, p_gamma, p_landau)
 
-        y_reduced = n - self.gamma_func(x, *p_gamma)
-
-        mev_scale = p_landau[1]
-        max_pos = 3.38 / mev_scale
-
-        y_landau = self.scintillator.conv_landau_for_x(x, *p_landau)
-        y_charged_left = y_landau.compress(x <= max_pos)
-        y_charged_right = y_reduced.compress(max_pos < x)
-        y_charged = np.array(y_charged_left.tolist() +
-                             y_charged_right.tolist())
+        y_charged = self.calc_charged_spectrum(x, n, p_gamma, p_landau)
         plt.plot(x, y_charged, label='charged particles')
 
         plt.yscale('log')
         plt.ylim(ymin=1)
-        plt.xlabel("Pulse integral [mV ns]")
+        plt.xlabel("Pulse integral [ADC sample]")
         plt.ylabel("Count")
         plt.legend()
         suffix = '%.1f-%.1f' % (low, high)
