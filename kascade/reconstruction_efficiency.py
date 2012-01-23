@@ -95,26 +95,26 @@ class ReconstructionEfficiency(object):
         plt.figure()
         print self.calc_charged_fraction(x, n, p_gamma, p_landau)
 
-        plt.plot(x, n)
+        plt.plot(x * .57e-3 * 2.5, n)
         self.plot_landau_and_gamma(x, p_gamma, p_landau)
         #plt.plot(x, n - self.gamma_func(x, *p_gamma))
-        plt.xlabel("Pulse integral [ADC sample]")
+        plt.xlabel("Pulse integral [V ns]")
         plt.ylabel("Count")
         plt.yscale('log')
-        plt.xlim(0, 30000)
+        plt.xlim(0, 50)
         plt.ylim(1e1, 1e4)
         utils.saveplot()
 
     def plot_landau_and_gamma(self, x, p_gamma, p_landau):
         gammas = self.gamma_func(x, *p_gamma)
-        plt.plot(x, gammas, label='gamma')
+        plt.plot(x * .57e-3 * 2.5, gammas, label='gamma')
 
         nx = np.linspace(-RANGE_MAX, RANGE_MAX, N_BINS * 2 + 1)
         nlandaus = self.scintillator.conv_landau(nx, *p_landau)
         landaus = np.interp(x, nx, nlandaus)
-        plt.plot(x, landaus, label='landau/gauss')
+        plt.plot(x * .57e-3 * 2.5, landaus, label='landau/gauss')
 
-        plt.plot(x, gammas + landaus, label='gamma + landau/gauss')
+        plt.plot(x * .57e-3 * 2.5, gammas + landaus, label='gamma + landau/gauss')
 
 
     def fit_gammas_to_data(self, x, y, p0):
@@ -243,15 +243,16 @@ class ReconstructionEfficiency(object):
         p_gamma, p_landau = self.constrained_full_spectrum_fit(x, n, popt[:2], popt[2:])
 
         plt.figure()
-        plt.plot(x, n, label='data')
+        plt.plot(x * .57e-3 * 2.5, n, label='data')
         self.plot_landau_and_gamma(x, p_gamma, p_landau)
 
         y_charged = self.calc_charged_spectrum(x, n, p_gamma, p_landau)
-        plt.plot(x, y_charged, label='charged particles')
+        plt.plot(x * .57e-3 * 2.5, y_charged, label='charged particles')
 
         plt.yscale('log')
+        plt.xlim(0, 50)
         plt.ylim(ymin=1)
-        plt.xlabel("Pulse integral [ADC sample]")
+        plt.xlabel("Pulse integral [V ns]")
         plt.ylabel("Count")
         plt.legend()
         suffix = '%.1f-%.1f' % (low, high)
