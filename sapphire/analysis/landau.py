@@ -105,8 +105,7 @@ class Scintillator:
 
         yfit = yfit.compress((a <= xdata) & (xdata < b))
         ydata = ydata.compress((a <= xdata) & (xdata < b))
-        weights = 1. / ydata
-        return ((weights * (yfit - ydata)) ** 2).sum()
+        return ((yfit - ydata) ** 2 / ydata).sum()
 
 
 def discrete_convolution(f, g, t):

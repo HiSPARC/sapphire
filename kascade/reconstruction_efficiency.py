@@ -13,7 +13,11 @@ import utils
 RANGE_MAX = 40000
 N_BINS = 400
 
-USE_TEX = True
+LOW, HIGH = 500, 5500
+
+VNS = .57e-3 * 2.5
+
+USE_TEX = False
 
 # For matplotlib plots
 if USE_TEX:
@@ -30,12 +34,19 @@ if USE_TEX:
 
 class ReconstructionEfficiency(object):
     def __init__(self, data):
+        global scintillator
         self.data = data
-        self.scintillator = landau.Scintillator()
+
+        if 'scintillator' in globals():
+            self.scintillator = scintillator
+        else:
+            self.scintillator = landau.Scintillator()
+            scintillator = self.scintillator
 
     def main(self):
-        self.plot_gamma_landau_fit()
-        self.plot_detection_efficiency()
+        self.plot_spectrum_fit_chisq()
+        #self.plot_gamma_landau_fit()
+        #self.plot_detection_efficiency()
 
     def calc_charged_fraction(self, x, y, p_gamma, p_landau):
         y_charged = self.calc_charged_spectrum(x, y, p_gamma, p_landau)
@@ -95,7 +106,7 @@ class ReconstructionEfficiency(object):
         plt.figure()
         print self.calc_charged_fraction(x, n, p_gamma, p_landau)
 
-        plt.plot(x * .57e-3 * 2.5, n)
+        plt.plot(x * VNS, n)
         self.plot_landau_and_gamma(x, p_gamma, p_landau)
         #plt.plot(x, n - self.gamma_func(x, *p_gamma))
         plt.xlabel("Pulse integral [V ns]")
@@ -105,23 +116,78 @@ class ReconstructionEfficiency(object):
         plt.ylim(1e1, 1e4)
         utils.saveplot()
 
+    def plot_spectrum_fit_chisq(self):
+        global integrals
+
+        if 'integrals' not in globals():
+            events = self.data.root.hisparc.cluster_kascade.station_601.events
+            integrals = events.col('integrals')[:, 0]
+
+        bins = np.linspace(0, RANGE_MAX, N_BINS + 1)
+        n, bins = np.histogram(integrals, bins=bins)
+        x = (bins[:-1] + bins[1:]) / 2
+
+        p_gamma, p_landau = self.full_spectrum_fit(x, n, (1., 1.),
+                                                   (5e3 / .32, 3.38 / 5000, 1.))
+        print "FULL FIT"
+        print p_gamma, p_landau
+
+        print "charged fraction:", self.calc_charged_fraction(x, n, p_gamma, p_landau)
+        landaus = scintillator.conv_landau_for_x(x, *p_landau)
+        gammas = self.gamma_func(x, *p_gamma)
+        fit = landaus + gammas
+
+        x_trunc = x.compress((LOW <= x) & (x < HIGH))
+        n_trunc = n.compress((LOW <= x) & (x < HIGH))
+        fit_trunc = fit.compress((LOW <= x) & (x < HIGH))
+
+        chisq, pvalue = stats.chisquare(n_trunc, fit_trunc, ddof=5)
+        chisq /= (len(n_trunc) - 1 - 5)
+        print "Chi-square statistic:", chisq, pvalue
+
+        plt.figure()
+
+        plt.plot(x * VNS, n)
+        self.plot_landau_and_gamma(x, p_gamma, p_landau)
+        #plt.plot(x_trunc * VNS, fit_trunc, linewidth=4)
+
+        plt.axvline(LOW * VNS)
+        plt.axvline(HIGH * VNS)
+
+        plt.xlabel("Pulse integral [V ns]")
+        plt.ylabel("Count")
+        plt.yscale('log')
+        plt.xlim(0, 20)
+        plt.ylim(1e2, 1e5)
+        plt.title(r"$\chi^2_{red}$: %.2f, p-value: %.2e" % (chisq, pvalue))
+        utils.saveplot()
+
+        plt.figure()
+        plt.plot(x_trunc * VNS, n_trunc - fit_trunc)
+        plt.axhline(0)
+        plt.xlabel("Pulse integral [V ns]")
+        plt.ylabel("Data - Fit")
+        plt.title(r"$\chi^2_{red}$: %.2f, p-value: %.2e" % (chisq, pvalue))
+        utils.saveplot(suffix='residuals')
+
     def plot_landau_and_gamma(self, x, p_gamma, p_landau):
         gammas = self.gamma_func(x, *p_gamma)
-        plt.plot(x * .57e-3 * 2.5, gammas, label='gamma')
+        plt.plot(x * VNS, gammas, label='gamma')
 
         nx = np.linspace(-RANGE_MAX, RANGE_MAX, N_BINS * 2 + 1)
         nlandaus = self.scintillator.conv_landau(nx, *p_landau)
         landaus = np.interp(x, nx, nlandaus)
-        plt.plot(x * .57e-3 * 2.5, landaus, label='landau/gauss')
+        plt.plot(x * VNS, landaus, label='landau/gauss')
 
-        plt.plot(x * .57e-3 * 2.5, gammas + landaus, label='gamma + landau/gauss')
+        plt.plot(x * VNS, gammas + landaus, label='gamma + landau/gauss')
 
 
     def fit_gammas_to_data(self, x, y, p0):
-        condition = (500 <= x) & (x < 2000)
+        condition = (LOW <= x) & (x < 2000)
         x_trunc = x.compress(condition)
         y_trunc = y.compress(condition)
-        popt, pcov = optimize.curve_fit(self.gamma_func, x_trunc, y_trunc, p0=p0)
+        popt, pcov = optimize.curve_fit(self.gamma_func, x_trunc, y_trunc,
+                                        p0=p0, sigma=sqrt(y_trunc))
         return popt
 
     def gamma_func(self, x, N, a):
@@ -135,11 +201,9 @@ class ReconstructionEfficiency(object):
         return popt
 
     def fit_complete(self, x, y, p_gamma, p_landau):
-        x_symm = np.linspace(-RANGE_MAX, RANGE_MAX, N_BINS * 2 + 1)
-        y_symm = np.interp(x_symm, x, y)
         p0 = list(p_gamma) + list(p_landau)
         popt = optimize.fmin(self.complete_residuals, p0,
-                             (self.scintillator, x_symm, y_symm, 500, 6000),
+                             (self.scintillator, x, y, LOW, HIGH),
                              maxfun=100000, disp=0)
         return popt[:2], popt[2:]
 
@@ -151,19 +215,22 @@ class ReconstructionEfficiency(object):
         popt = optimize.fmin(self.constrained_complete_residuals,
                              (N_gamma, N_landau),
                              (self.scintillator, x_symm, y_symm, p_gamma,
-                              p_landau, 500, 6000),
+                              p_landau, LOW, HIGH),
                              maxfun=100000, disp=0)
         p_gamma[0] = popt[0]
         p_landau[0] = popt[1]
         return p_gamma, p_landau
 
     def complete_residuals(self, par, scintillator, x, y, a, b):
-        landaus = scintillator.conv_landau(x, *par[2:])
+        landaus = scintillator.conv_landau_for_x(x, *par[2:])
         gammas = self.gamma_func(x, *par[:2])
-        residuals = (y - (gammas + landaus)) ** 2
-        residuals = residuals.compress((a <= x) & (x < b))
-        residuals = residuals.sum()
-        return residuals
+        y_exp = landaus + gammas
+
+        y_trunc = y.compress((a <= x) & (x < b))
+        y_exp_trunc = y_exp.compress((a <= x) & (x < b))
+
+        chisquared = ((y_trunc - y_exp_trunc) ** 2 / y_trunc).sum()
+        return chisquared
 
     def constrained_complete_residuals(self, par, scintillator, x, y,
                                        p_gamma, p_landau, a, b):
@@ -243,11 +310,11 @@ class ReconstructionEfficiency(object):
         p_gamma, p_landau = self.constrained_full_spectrum_fit(x, n, popt[:2], popt[2:])
 
         plt.figure()
-        plt.plot(x * .57e-3 * 2.5, n, label='data')
+        plt.plot(x * VNS, n, label='data')
         self.plot_landau_and_gamma(x, p_gamma, p_landau)
 
         y_charged = self.calc_charged_spectrum(x, n, p_gamma, p_landau)
-        plt.plot(x * .57e-3 * 2.5, y_charged, label='charged particles')
+        plt.plot(x * VNS, y_charged, label='charged particles')
 
         plt.yscale('log')
         plt.xlim(0, 50)
