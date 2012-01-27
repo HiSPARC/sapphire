@@ -1,4 +1,7 @@
+*.h5
+
 # QSubSimulation temporary / output files
 __*
 *.[oe][0-9]*
+
 .DS_Store
