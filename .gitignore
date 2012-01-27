@@ -1,5 +1,4 @@
 *.swp
 *.pyc
-analysis/*.h5
 .project
 .pydevproject
