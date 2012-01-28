@@ -66,7 +66,7 @@ class Master(object):
 
     def process_events(self):
         c_index = self.data.getNode(self.kascade_group, 'c_index')
-        index = c_index[:, 1]
+        index = c_index.col('h_idx')
 
         process = ProcessIndexedEvents(self.data, self.hisparc_group,
                                        index)

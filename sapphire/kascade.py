@@ -114,18 +114,19 @@ class StoreKascadeData():
 
 
 class KascadeCoincidences():
-    def __init__(self, data, hisparc_group, kascade_group, overwrite=False):
+    def __init__(self, data, hisparc_group, kascade_group, overwrite=False,
+                 ignore_existing=False):
         self.data = data
         self.hisparc_group = data.getNode(hisparc_group)
         self.kascade_group = data.getNode(kascade_group)
 
         if 'c_index' in self.kascade_group:
-            if not overwrite:
+            if not overwrite and not ignore_existing:
                 raise RuntimeError("I found existing coincidences stored in the KASCADE group")
-            else:
+            elif overwrite:
                 data.removeNode(kascade_group, 'c_index')
 
-    def search_coincidences(self, timeshift=0, dtlimit=None):
+    def search_coincidences(self, timeshift=0, dtlimit=None, limit=None):
         """Search for coincidences
 
         This function does the actual searching of coincidences. It uses a
@@ -141,19 +142,20 @@ class KascadeCoincidences():
         :param dtlimit: limit on the time difference between hisparc and
             kascade events in seconds.  If this limit is exceeded,
             coincidences are not stored.  Default: None.
+        :param limit: limit on the number of KASCADE events investigated.
 
         """
-        h = self._get_sorted_id_and_timestamp_array(self.hisparc_group)
-        k = self._get_sorted_id_and_timestamp_array(self.kascade_group)
+        h, k = self._get_cached_sorted_id_and_timestamp_arrays()
 
         # Shift the kascade data instead of the hisparc data. There is less of
         # it, so this is much faster.
         k['ext_timestamp'] += -1e9 * timeshift
 
-        # dtlimit in ns
-        dtlimit *= 1e9
+        if dtlimit:
+            # dtlimit in ns
+            dtlimit *= 1e9
 
-        coincidences = []
+        coinc_dt, coinc_h_idx, coinc_k_idx = [], [], []
 
         # First loop through kascade data until we have the first event that
         # occurs _after_ the first hisparc event.
@@ -162,7 +164,13 @@ class KascadeCoincidences():
             if k[k_idx][1] > h[h_idx][1]:
                 break
 
-        while True:
+        # Limit number of KASCADE events investigated
+        if limit:
+            max_k_idx = k_idx + limit - 1
+        else:
+            max_k_idx = np.Inf
+
+        while k_idx <= max_k_idx:
             # Try to get the timestamps of the kascade event and the
             # neighbouring hisparc events.
             try:
@@ -191,18 +199,29 @@ class KascadeCoincidences():
             # list, if dtlimit is not exceeded
             if dtlimit is None or min(abs(dt_left), abs(dt_right)) < dtlimit:
                 if abs(dt_left) < abs(dt_right):
-                    coincidences.append((dt_left, h_idx, k_idx))
+                    coinc_dt.append(dt_left)
+                    coinc_h_idx.append(h_idx)
                 else:
-                    coincidences.append((dt_right, h_idx + 1, k_idx))
+                    coinc_dt.append(dt_right)
+                    coinc_h_idx.append(h_idx + 1)
+                coinc_k_idx.append(k_idx)
 
             # Found a match for this kascade event, so continue with the next
             # one.
             k_idx += 1
 
-        self.coincidences = np.array(coincidences)
+        self.coincidences = np.rec.fromarrays([coinc_dt, coinc_h_idx, coinc_k_idx],
+                                              names='dt, h_idx, k_idx')
 
     def store_coincidences(self):
-        self.data.createArray(self.kascade_group, 'c_index', self.coincidences)
+        self.data.createTable(self.kascade_group, 'c_index', self.coincidences)
+
+    def _get_cached_sorted_id_and_timestamp_arrays(self):
+        if not hasattr(self, '_h'):
+            self._h = self._get_sorted_id_and_timestamp_array(self.hisparc_group)
+        if not hasattr(self, '_k'):
+            self._k = self._get_sorted_id_and_timestamp_array(self.kascade_group)
+        return self._h.copy(), self._k.copy()
 
     def _get_sorted_id_and_timestamp_array(self, group):
         timestamps = group.events.col('ext_timestamp')

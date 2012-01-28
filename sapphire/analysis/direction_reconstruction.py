@@ -278,9 +278,8 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
                                      fd=sys.stderr)
 
         for idx in progressbar(c_index[:self.N]):
-            h_idx, k_idx = idx[1:]
-            hisparc_event = hisparc_table[h_idx]
-            kascade_event = kascade_table[k_idx]
+            hisparc_event = hisparc_table[idx['h_idx']]
+            kascade_event = kascade_table[idx['k_idx']]
 
             if min(hisparc_event['n1'], hisparc_event['n3'],
                    hisparc_event['n4']) >= self.min_n134:
