@@ -37,6 +37,8 @@ class Master(object):
     def read_and_store_kascade_data(self):
         """Read KASCADE data into analysis file"""
 
+        print "Reading KASCADE data"
+
         try:
             kascade = StoreKascadeData(self.data, self.hisparc_group,
                                        self.kascade_group,
@@ -65,6 +67,8 @@ class Master(object):
             print "Done."
 
     def process_events(self):
+        print "Processing HiSPARC events"
+
         c_index = self.data.getNode(self.kascade_group, 'c_index')
         index = c_index.col('h_idx')
 
@@ -77,10 +81,18 @@ class Master(object):
             return
 
     def reconstruct_direction(self):
-        reconstruction = KascadeDirectionReconstruction(
-                            self.data, '/reconstructions', min_n134=0.,
-                            overwrite=True)
-        reconstruction.reconstruct_angles(self.hisparc_group, self.kascade_group)
+        print "Reconstructing shower directions"
+
+        try:
+            reconstruction = KascadeDirectionReconstruction(self.data,
+                                                            '/reconstructions',
+                                                            min_n134=0.)
+        except RuntimeError, msg:
+            print msg
+            return
+        else:
+            reconstruction.reconstruct_angles(self.hisparc_group,
+                                              self.kascade_group)
 
 
 if __name__ == '__main__':
