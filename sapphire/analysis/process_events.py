@@ -51,12 +51,16 @@ class ProcessEvents(object):
         self._copy_events_into_table()
 
     def _create_empty_results_table(self):
-        table = self.data.createTable(self.group, '_t_events',
-                                      ProcessedHisparcEvent)
         if self.limit:
             length = self.limit
         else:
             length = len(self.group.events)
+
+        if '_t_events' in self.group:
+            self.data.removeNode(self.group, '_t_events')
+        table = self.data.createTable(self.group, '_t_events',
+                                      ProcessedHisparcEvent,
+                                      expectedrows=length)
 
         for x in xrange(length):
             table.row.append()
@@ -68,7 +72,9 @@ class ProcessEvents(object):
         table = self._tmp_events
         events = self.group.events
 
-        for col in events.colnames:
+        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
+
+        for col in progressbar(events.colnames):
             getattr(table.cols, col)[:self.limit] = getattr(events.cols,
                                                             col)[:self.limit]
         table.flush()
