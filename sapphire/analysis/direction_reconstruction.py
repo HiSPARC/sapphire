@@ -67,6 +67,7 @@ class DirectionReconstruction(object):
                                   reconstructed_phi):
         dst_row = self.results_table.row
 
+        dst_row['id'] = event['id']
         dst_row['station_id'] = event['station_id']
         dst_row['r'] = coincidence['r']
         dst_row['phi'] = coincidence['phi']
@@ -299,6 +300,7 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         core_r, core_phi = self._calc_core_position_rphi_for_kascade_event(kascade_event)
         reference_phi = self._calc_reference_phi_for_kascade_event(kascade_event)
 
+        dst_row['id'] = hisparc_event['id']
         dst_row['station_id'] = 0
         dst_row['r'] = core_r
         dst_row['phi'] = core_phi
