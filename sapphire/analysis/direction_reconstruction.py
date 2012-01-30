@@ -9,9 +9,12 @@ from sapphire import storage
 
 
 class DirectionReconstruction(object):
-    def __init__(self, datafile, results_table, min_n134=1., N=None, overwrite=False):
+    def __init__(self, datafile, results_table=None, min_n134=1., N=None, overwrite=False):
         self.data = datafile
-        self.results_table = self.create_empty_output_table(results_table, overwrite)
+        if results_table:
+            self.results_table = self.create_empty_output_table(results_table, overwrite)
+        else:
+            self.results_table = None
         self.min_n134 = min_n134
         self.N = N
 
