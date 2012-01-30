@@ -3,6 +3,7 @@ import calendar
 
 import tables
 from pylab import *
+from scipy.optimize import curve_fit
 
 from sapphire.kascade import KascadeCoincidences
 
@@ -39,11 +40,23 @@ def plot_nearest_neighbors(data, limit=None):
     dt_opt = find_optimum_dt(coincidences, p0=-13, limit=1000)
     print dt_opt
 
+    uncorrelated = None
     figure()
     for shift in -12, -13, dt_opt, -14:
+        print "Shifting", shift
         coincidences.search_coincidences(shift, dtlimit=1, limit=limit)
+        print "."
         dts = coincidences.coincidences['dt']
-        hist(abs(dts) / 1e9, bins=100, histtype='step', label='%.3f' % shift)
+        n, bins, p = hist(abs(dts) / 1e9, bins=100, histtype='step',
+                          label='%.3f s' % shift)
+        if uncorrelated is None:
+            uncorrelated = n, bins
+
+    y, bins = uncorrelated
+    x = (bins[:-1] + bins[1:]) / 2
+    f = lambda x, N, a: N * exp(-a * x)
+    popt, pcov = curve_fit(f, x, y)
+    plot(x, f(x, *popt), label=r"$\lambda = %.2f$ Hz" % popt[1])
 
     yscale('log')
     xlabel("Time difference [s]")
