@@ -17,7 +17,7 @@ LOW, HIGH = 500, 5500
 
 VNS = .57e-3 * 2.5
 
-USE_TEX = False
+USE_TEX = True
 
 # For matplotlib plots
 if USE_TEX:
@@ -45,8 +45,8 @@ class ReconstructionEfficiency(object):
 
     def main(self):
         self.plot_spectrum_fit_chisq()
-        #self.plot_gamma_landau_fit()
-        #self.plot_detection_efficiency()
+        self.plot_gamma_landau_fit()
+        self.plot_detection_efficiency()
 
     def calc_charged_fraction(self, x, y, p_gamma, p_landau):
         y_charged = self.calc_charged_spectrum(x, y, p_gamma, p_landau)
@@ -187,7 +187,7 @@ class ReconstructionEfficiency(object):
         x_trunc = x.compress(condition)
         y_trunc = y.compress(condition)
         popt, pcov = optimize.curve_fit(self.gamma_func, x_trunc, y_trunc,
-                                        p0=p0, sigma=sqrt(y_trunc))
+                                        p0=p0, sigma=np.sqrt(y_trunc))
         return popt
 
     def gamma_func(self, x, N, a):
@@ -229,6 +229,9 @@ class ReconstructionEfficiency(object):
         y_trunc = y.compress((a <= x) & (x < b))
         y_exp_trunc = y_exp.compress((a <= x) & (x < b))
 
+        # Make sure no zeroes end up in denominator of chi_squared
+        y_trunc = np.where(y_trunc != 0., y_trunc, 1.)
+
         chisquared = ((y_trunc - y_exp_trunc) ** 2 / y_trunc).sum()
         return chisquared
 
@@ -241,16 +244,18 @@ class ReconstructionEfficiency(object):
         hisparc = self.data.root.hisparc.cluster_kascade.station_601.events
         kascade = self.data.root.kascade.events
         c_index = self.data.root.kascade.c_index
-        h_index = c_index[:, 1]
-        k_index = c_index[:, 2]
+        h_index = c_index.col('h_idx')
+        k_index = c_index.col('k_idx')
 
         intg = hisparc.readCoordinates(h_index, 'integrals')[:, 0]
 
         dens_e = kascade.readCoordinates(k_index, 'dens_e')[:, 0]
         dens_mu = kascade.readCoordinates(k_index, 'dens_mu')[:, 0]
+        theta = kascade.readCoordinates(k_index, 'zenith')
         dens = dens_e + dens_mu
+        dens_on_ground = dens * np.cos(theta)
 
-        return intg, dens
+        return intg, dens_on_ground
 
     def full_fit_on_data(self, integrals, p0):
         bins = np.linspace(0, RANGE_MAX, N_BINS + 1)
@@ -282,7 +287,7 @@ class ReconstructionEfficiency(object):
             frac = self.determine_charged_fraction(sel, popt)
             y.append(frac)
             yerr.append(np.sqrt(frac * len(sel)) / len(sel))
-            print len(sel),
+            print (low + high) / 2, len(sel)
             self.plot_full_spectrum_fit_in_density_range(sel, popt, low, high)
         print
 
