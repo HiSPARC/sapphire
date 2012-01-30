@@ -300,7 +300,7 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         core_r, core_phi = self._calc_core_position_rphi_for_kascade_event(kascade_event)
         reference_phi = self._calc_reference_phi_for_kascade_event(kascade_event)
 
-        dst_row['id'] = hisparc_event['id']
+        dst_row['id'] = hisparc_event['event_id']
         dst_row['station_id'] = 0
         dst_row['r'] = core_r
         dst_row['phi'] = core_phi
