@@ -110,5 +110,5 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile('kascade.h5', 'r')
 
-    utils.set_prefix('MAT')
+    utils.set_prefix('MAT-')
     do_matching_plots(data)
