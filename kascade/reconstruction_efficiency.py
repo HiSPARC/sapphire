@@ -328,7 +328,7 @@ class ReconstructionEfficiency(object):
         plt.ylabel("Count")
         plt.legend()
         suffix = '%.1f-%.1f' % (low, high)
-        suffix.replace('.', '_')
+        suffix = suffix.replace('.', '_')
         utils.saveplot(suffix)
 
     p_detection = np.vectorize(lambda x: 1 - np.exp(-.5 * x) if x >= 0 else 0.)
