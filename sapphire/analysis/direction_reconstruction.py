@@ -209,7 +209,6 @@ class DirectionReconstruction(object):
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
-        cosphi1 = cos(phi1)
         sinphi2 = sin(phi2)
         cosphi2 = cos(phi2)
 
@@ -229,7 +228,6 @@ class DirectionReconstruction(object):
         sinphi1 = sin(phi1)
         cosphi1 = cos(phi1)
         sinphi2 = sin(phi2)
-        cosphi2 = cos(phi2)
 
         den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
                * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
