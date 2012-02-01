@@ -264,10 +264,11 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
                                       createparents=True)
         return table
 
-    def reconstruct_angles(self, hisparc_group, kascade_group):
+    def reconstruct_angles(self, hisparc_group, kascade_group,
+                           hisparc_table='events'):
         hisparc_group = self.data.getNode(hisparc_group)
 
-        hisparc_table = self.data.getNode(hisparc_group, 'events')
+        hisparc_table = self.data.getNode(hisparc_group, hisparc_table)
         c_index = self.data.getNode(kascade_group, 'c_index')
         kascade_table = self.data.getNode(kascade_group, 'events')
 
