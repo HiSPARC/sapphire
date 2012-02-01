@@ -5,7 +5,7 @@ import tables
 import numpy as np
 
 from sapphire.kascade import StoreKascadeData, KascadeCoincidences
-from sapphire.analysis.process_events import ProcessIndexedEvents
+from sapphire.analysis import process_events
 from sapphire import clusters
 from sapphire.analysis.direction_reconstruction import KascadeDirectionReconstruction
 
@@ -22,7 +22,9 @@ class Master(object):
         self.store_cluster_instance()
         self.read_and_store_kascade_data()
         self.search_for_coincidences()
-        self.process_events()
+        self.process_events(process_events.ProcessIndexedEvents)
+        self.process_events(process_events.ProcessIndexedEventsWithLINT,
+                            'lint_events')
         self.reconstruct_direction()
 
     def store_cluster_instance(self):
@@ -66,16 +68,15 @@ class Master(object):
             coincidences.store_coincidences()
             print "Done."
 
-    def process_events(self):
+    def process_events(self, process_cls, destination=None):
         print "Processing HiSPARC events"
 
         c_index = self.data.getNode(self.kascade_group, 'c_index')
         index = c_index.col('h_idx')
 
-        process = ProcessIndexedEvents(self.data, self.hisparc_group,
-                                       index)
+        process = process_cls(self.data, self.hisparc_group, index)
         try:
-            process.process_and_store_results()
+            process.process_and_store_results(destination)
         except RuntimeError, msg:
             print msg
             return
