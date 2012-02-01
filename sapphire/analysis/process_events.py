@@ -213,8 +213,8 @@ class ProcessEvents(object):
 
 
 class ProcessIndexedEvents(ProcessEvents):
-    def __init__(self, data, group, indexes):
-        super(ProcessIndexedEvents, self).__init__(data, group)
+    def __init__(self, data, group, indexes, source=None):
+        super(ProcessIndexedEvents, self).__init__(data, group, source)
         self.indexes = indexes
 
     def _store_results_from_traces(self):
