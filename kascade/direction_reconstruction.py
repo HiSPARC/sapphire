@@ -17,7 +17,7 @@ import utils
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
 
 
-DATADIR = '../analysis/plots'
+DATADIR = '../simulations/plots'
 
 USE_TEX = True
 
@@ -37,14 +37,12 @@ if USE_TEX:
     rcParams['text.usetex'] = True
 
 
-def do_reconstruction_plots(data):
+def do_reconstruction_plots(data, table):
     """Make plots based upon earlier reconstructions"""
-
-    table = data.root.reconstructions
 
     plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
-#
+
     plot_phi_reconstruction_results_for_MIP(table, 1)
     plot_phi_reconstruction_results_for_MIP(table, 2)
     plot_theta_reconstruction_results_for_MIP(table, 1)
@@ -54,7 +52,6 @@ def do_reconstruction_plots(data):
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
     boxplot_phi_reconstruction_results_for_MIP(table, 2)
     boxplot_arrival_times(table, 1)
-    boxplot_arrival_times(table, 2)
     boxplot_core_distances_for_mips(table)
 #    plot_detection_efficiency_vs_R_for_angles(1)
 #    plot_detection_efficiency_vs_R_for_angles(2)
@@ -519,4 +516,6 @@ if __name__ == '__main__':
         data = tables.openFile('kascade.h5', 'r')
 
     utils.set_prefix("KAS-")
-    do_reconstruction_plots(data)
+    do_reconstruction_plots(data, data.root.reconstructions)
+    utils.set_prefix("KAS-LINT-")
+    do_reconstruction_plots(data, data.root.lint_reconstructions)
