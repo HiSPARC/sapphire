@@ -519,3 +519,7 @@ if __name__ == '__main__':
     do_reconstruction_plots(data, data.root.reconstructions)
     utils.set_prefix("KAS-LINT-")
     do_reconstruction_plots(data, data.root.lint_reconstructions)
+    utils.set_prefix("KAS-OFFSETS-")
+    do_reconstruction_plots(data, data.root.reconstructions_offsets)
+    utils.set_prefix("KAS-LINT-OFFSETS-")
+    do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)

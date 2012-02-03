@@ -90,10 +90,13 @@ class DirectionReconstruction(object):
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
         dst_row.append()
 
-    def reconstruct_angle(self, event):
+    def reconstruct_angle(self, event, offsets=None):
         """Reconstruct angles from a single event"""
 
         c = 3.00e+8
+
+        if offsets is not None:
+            self._correct_offsets(event, offsets)
 
         dt1 = event['t1'] - event['t3']
         dt2 = event['t1'] - event['t4']
@@ -112,6 +115,10 @@ class DirectionReconstruction(object):
         theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
         return theta_wgt, phi
+
+    def _correct_offsets(self, event, offsets):
+        for offset, timing in zip(offsets, ['t1', 't2', 't3', 't4']):
+            event[timing] -= offset
 
     @classmethod
     def rel_theta1_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
@@ -265,7 +272,7 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         return table
 
     def reconstruct_angles(self, hisparc_group, kascade_group,
-                           hisparc_table='events'):
+                           hisparc_table='events', offsets=None):
         hisparc_group = self.data.getNode(hisparc_group)
 
         hisparc_table = self.data.getNode(hisparc_group, hisparc_table)
@@ -286,7 +293,7 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
 
             if min(hisparc_event['n1'], hisparc_event['n3'],
                    hisparc_event['n4']) >= self.min_n134:
-                theta, phi = self.reconstruct_angle(hisparc_event)
+                theta, phi = self.reconstruct_angle(hisparc_event, offsets)
 
                 if not isnan(theta) and not isnan(phi):
                     self.store_reconstructed_event(hisparc_event, kascade_event,

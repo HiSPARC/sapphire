@@ -26,7 +26,11 @@ class Master(object):
         self.process_events(process_events.ProcessIndexedEventsWithLINT,
                             'lint_events')
         self.reconstruct_direction('events', '/reconstructions')
+        self.reconstruct_direction('events', '/reconstructions_offsets',
+                                   correct_offsets=True)
         self.reconstruct_direction('lint_events', '/lint_reconstructions')
+        self.reconstruct_direction('lint_events', '/lint_reconstructions_offsets',
+                                   correct_offsets=True)
 
     def store_cluster_instance(self):
         group = self.data.getNode(self.hisparc_group)
@@ -82,8 +86,13 @@ class Master(object):
             print msg
             return
 
-    def reconstruct_direction(self, source, destination):
+    def reconstruct_direction(self, source, destination, correct_offsets=False):
         print "Reconstructing shower directions"
+
+        offsets = None
+        if correct_offsets:
+            process = process_events.ProcessEvents(self.data, self.hisparc_group)
+            offsets = process.determine_detector_timing_offsets()
 
         try:
             reconstruction = KascadeDirectionReconstruction(self.data,
@@ -94,7 +103,8 @@ class Master(object):
             return
         else:
             reconstruction.reconstruct_angles(self.hisparc_group,
-                                              self.kascade_group, source)
+                                              self.kascade_group, source,
+                                              offsets)
 
 
 if __name__ == '__main__':

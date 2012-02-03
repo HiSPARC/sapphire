@@ -3,6 +3,8 @@ from itertools import izip
 
 import tables
 import numpy as np
+from scipy.stats import norm
+from scipy.optimize import curve_fit
 import progressbar as pb
 
 from sapphire.storage import ProcessedHisparcEvent
@@ -104,6 +106,7 @@ class ProcessEvents(object):
         table = self._tmp_events
 
         timings = self.process_traces()
+
         for idx in range(4):
             col = 't%d' % (idx + 1)
             getattr(table.cols, col)[:] = timings[:, idx]
@@ -206,10 +209,29 @@ class ProcessEvents(object):
     def _move_results_table_into_destination(self):
         if self.source.name == 'events':
             self.source.rename('_events')
+            self.source = self.group._events
 
         if self.destination in self.group:
             self.removeNode(self.group, self.destination)
         self._tmp_events.rename(self.destination)
+
+    def determine_detector_timing_offsets(self, timings_table='events'):
+        table = self.data.getNode(self.group, timings_table)
+        t2 = table.col('t2')
+
+        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
+        bins = np.arange(-100 + 1.25, 100, 2.5)
+
+        offsets = []
+        for timings in 't1', 't3', 't4':
+            timings = table.col(timings)
+            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
+            y, bins = np.histogram(dt, bins=bins)
+            x = (bins[:-1] + bins[1:]) / 2
+            popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
+            offsets.append(popt[1])
+
+        return [offsets[0]] + [0.] + offsets[1:]
 
 
 class ProcessIndexedEvents(ProcessEvents):
