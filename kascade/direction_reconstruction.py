@@ -181,7 +181,7 @@ def plot_uncertainty_zenith(table):
     # Labels etc.
     xlabel(r"Shower zenith angle [deg $\pm %d^\circ$]" % rad2deg(DTHETA))
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$N_{MIP} = 2 \pm %.1f$" % DN)
+    title(r"$N_{MIP} = %d \pm %.1f$" % (N, DN))
     ylim(0, 100)
     legend(numpoints=1)
     if USE_TEX:
@@ -300,7 +300,7 @@ def boxplot_arrival_times(table, N):
     x = []
     t25, t50, t75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
-        query = '(min_n134 >= N) & (low <= r) & (r < high) & (abs(reference_theta - THETA) <= DTHETA) & (log10(k_energy) - LOGENERGY <= DLOGENERGY)'
+        query = '(min_n134 >= N) & (low <= r) & (r < high) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)'
         sel = table.readWhere(query)
         t2 = sel[:]['t2']
         t1 = sel[:]['t1']
@@ -341,22 +341,28 @@ def boxplot_arrival_times(table, N):
 
 def boxplot_core_distances_for_mips(table):
     THETA = deg2rad(22.5)
-    DTHETA = deg2rad(5.)
-    DN = .1
+    DTHETA = deg2rad(1.)
+    DN = .5
+
+    ENERGY = 1e15
+    DENERGY = 2e14
+
+    MAX_R = 80
 
     r25_list = []
     r50_list = []
     r75_list = []
     x = []
     for N in range(1, 5):
-        sel = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
+        sel = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(k_energy - ENERGY) <= DENERGY) & (r <= MAX_R)')
         r = sel[:]['r']
         r25_list.append(scoreatpercentile(r, 25))
         r50_list.append(scoreatpercentile(r, 50))
         r75_list.append(scoreatpercentile(r, 75))
         x.append(N)
+        print len(r)
 
-    sx, sr25, sr50, sr75 = loadtxt(os.path.join(DATADIR, 'DIR-boxplot_core_distances_for_mips.txt'))
+    sx, sr25, sr50, sr75 = loadtxt(os.path.join(DATADIR, 'DIR-save_for_kascade_boxplot_core_distances_for_mips.txt'))
 
     fig = figure()
 
@@ -374,7 +380,7 @@ def boxplot_core_distances_for_mips(table):
 
     ax2.xaxis.set_label_text("Minimum number of particles $\pm %.1f$" % DN)
     ax1.yaxis.set_label_text("Core distance [m]")
-    fig.suptitle(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
+    fig.suptitle(r"$\theta = 22.5^\circ \pm %d^\circ, \quad %.1f \leq \log(E) \leq %.1f$" % (rad2deg(DTHETA), log10(ENERGY - DENERGY), log10(ENERGY + DENERGY)))
 
     ax1.xaxis.set_ticks([1, 2, 3, 4])
     fig.subplots_adjust(left=.1, right=.95)
