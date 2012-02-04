@@ -42,6 +42,7 @@ def do_reconstruction_plots(data, table):
 
     plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
+    plot_uncertainty_core_distance(table)
 
     plot_phi_reconstruction_results_for_MIP(table, 1)
     plot_phi_reconstruction_results_for_MIP(table, 2)
@@ -186,6 +187,54 @@ def plot_uncertainty_zenith(table):
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
+    utils.saveplot()
+    print
+
+def plot_uncertainty_core_distance(table):
+    N = 2
+    THETA = deg2rad(22.5)
+    DTHETA = deg2rad(5.)
+    DN = .5
+    DR = 10
+    LOGENERGY = 15
+    DLOGENERGY = .5
+
+    figure()
+    x, y, y2 = [], [], []
+    for R in range(0, 81, 20):
+        x.append(R)
+        events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(r - R) <= DR) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
+        print len(events),
+        errors = events['reference_theta'] - events['reconstructed_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['reference_phi'] - events['reconstructed_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        y.append(std(errors))
+        y2.append(std(errors2))
+
+    print
+    print "R: theta_std, phi_std"
+    for u, v, w in zip(x, y, y2):
+        print u, v, w
+    print
+
+#    # Simulation data
+    sx, sy, sy2 = loadtxt(os.path.join(DATADIR, 'DIR-plot_uncertainty_core_distance.txt'))
+
+    # Plots
+    plot(x, rad2deg(y), '^-', label="Theta")
+    plot(sx, rad2deg(sy), '^-', label="Theta (sim)")
+    plot(x, rad2deg(y2), 'v-', label="Phi")
+    plot(sx, rad2deg(sy2), 'v-', label="Phi (sim)")
+
+    # Labels etc.
+    xlabel("Core distance [m] $\pm %d$" % DR)
+    ylabel("Angle reconstruction uncertainty [deg]")
+    title(r"$N_{MIP} = %d \pm %.1f, \theta = 22.5^\circ \pm %d^\circ, %.1f \leq \log(E) \leq %.1f$" % (N, DN, rad2deg(DTHETA), LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
+    ylim(ymin=0)
+    legend(numpoints=1, loc='best')
     utils.saveplot()
     print
 

@@ -83,6 +83,7 @@ def do_reconstruction_plots(data):
 
     plot_uncertainty_mip(group)
     plot_uncertainty_zenith(group)
+    plot_uncertainty_core_distance(group)
     plot_uncertainty_size(group)
     plot_uncertainty_binsize(group)
 
@@ -208,6 +209,47 @@ def plot_uncertainty_zenith(group):
     title(r"$N_{MIP} = 2$")
     ylim(0, 100)
     legend(numpoints=1)
+    utils.saveplot()
+    print
+
+def plot_uncertainty_core_distance(group):
+    table = group.E_1PeV.zenith_22_5
+
+    N = 2
+    DR = 10
+
+    figure()
+    x, y, y2 = [], [], []
+    for R in range(0, 81, 20):
+        x.append(R)
+        events = table.readWhere('(min_n134 == N) & (abs(r - R) <= DR)')
+        print len(events),
+        errors = events['reference_theta'] - events['reconstructed_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['reference_phi'] - events['reconstructed_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        y.append(std(errors))
+        y2.append(std(errors2))
+
+    print
+    print "R: theta_std, phi_std"
+    for u, v, w in zip(x, y, y2):
+        print u, v, w
+    print
+    utils.savedata((x, y, y2))
+
+    # Plots
+    plot(x, rad2deg(y), '^-', label="Theta")
+    plot(x, rad2deg(y2), 'v-', label="Phi")
+
+    # Labels etc.
+    xlabel("Core distance [m] $\pm %d$" % DR)
+    ylabel("Angle reconstruction uncertainty [deg]")
+    title(r"$N_{MIP} = %d, \theta = 22.5^\circ$" % N)
+    ylim(ymin=0)
+    legend(numpoints=1, loc='best')
     utils.saveplot()
     print
 
