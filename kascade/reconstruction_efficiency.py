@@ -112,8 +112,9 @@ class ReconstructionEfficiency(object):
         plt.xlabel("Pulse integral [V ns]")
         plt.ylabel("Count")
         plt.yscale('log')
-        plt.xlim(0, 50)
+        plt.xlim(0, 30)
         plt.ylim(1e1, 1e4)
+        plt.legend()
         utils.saveplot()
 
     def plot_spectrum_fit_chisq(self):
