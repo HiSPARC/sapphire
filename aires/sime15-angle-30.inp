@@ -1,0 +1,9 @@
+Task showere15-angle-30
+Primary         proton
+PrimaryEnergy   1e15 eV
+TotalShowers    10
+PrimaryZenAngle 30 deg
+
+RLimsFile       grdpcles        0.01 m     1 km
+
+End
