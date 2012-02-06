@@ -17,7 +17,7 @@ import utils
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
 
 
-DATADIR = '../analysis/plots'
+DATADIR = '../simulations/plots'
 
 USE_TEX = True
 
@@ -37,14 +37,13 @@ if USE_TEX:
     rcParams['text.usetex'] = True
 
 
-def do_reconstruction_plots(data):
+def do_reconstruction_plots(data, table):
     """Make plots based upon earlier reconstructions"""
-
-    table = data.root.reconstructions
 
     plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
-#
+    plot_uncertainty_core_distance(table)
+
     plot_phi_reconstruction_results_for_MIP(table, 1)
     plot_phi_reconstruction_results_for_MIP(table, 2)
     plot_theta_reconstruction_results_for_MIP(table, 1)
@@ -54,13 +53,18 @@ def do_reconstruction_plots(data):
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
     boxplot_phi_reconstruction_results_for_MIP(table, 2)
     boxplot_arrival_times(table, 1)
-    boxplot_arrival_times(table, 2)
     boxplot_core_distances_for_mips(table)
 #    plot_detection_efficiency_vs_R_for_angles(1)
 #    plot_detection_efficiency_vs_R_for_angles(2)
 #    plot_reconstruction_efficiency_vs_R_for_angles(1)
 #    plot_reconstruction_efficiency_vs_R_for_angles(2)
 #    plot_reconstruction_efficiency_vs_R_for_mips()
+
+def do_lint_comparison(data):
+    fsot = data.root.reconstructions_offsets
+    lint = data.root.lint_reconstructions_offsets
+
+    plot_fsot_vs_lint_for_zenith(fsot, lint)
 
 def plot_uncertainty_mip(table):
     rec = DirectionReconstruction
@@ -184,11 +188,59 @@ def plot_uncertainty_zenith(table):
     # Labels etc.
     xlabel(r"Shower zenith angle [deg $\pm %d^\circ$]" % rad2deg(DTHETA))
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$N_{MIP} = 2 \pm %.1f$" % DN)
+    title(r"$N_{MIP} = %d \pm %.1f$" % (N, DN))
     ylim(0, 100)
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
+    utils.saveplot()
+    print
+
+def plot_uncertainty_core_distance(table):
+    N = 2
+    THETA = deg2rad(22.5)
+    DTHETA = deg2rad(5.)
+    DN = .5
+    DR = 10
+    LOGENERGY = 15
+    DLOGENERGY = .5
+
+    figure()
+    x, y, y2 = [], [], []
+    for R in range(0, 81, 20):
+        x.append(R)
+        events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(r - R) <= DR) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
+        print len(events),
+        errors = events['reference_theta'] - events['reconstructed_theta']
+        # Make sure -pi < errors < pi
+        errors = (errors + pi) % (2 * pi) - pi
+        errors2 = events['reference_phi'] - events['reconstructed_phi']
+        # Make sure -pi < errors2 < pi
+        errors2 = (errors2 + pi) % (2 * pi) - pi
+        y.append(std(errors))
+        y2.append(std(errors2))
+
+    print
+    print "R: theta_std, phi_std"
+    for u, v, w in zip(x, y, y2):
+        print u, v, w
+    print
+
+#    # Simulation data
+    sx, sy, sy2 = loadtxt(os.path.join(DATADIR, 'DIR-plot_uncertainty_core_distance.txt'))
+
+    # Plots
+    plot(x, rad2deg(y), '^-', label="Theta")
+    plot(sx, rad2deg(sy), '^-', label="Theta (sim)")
+    plot(x, rad2deg(y2), 'v-', label="Phi")
+    plot(sx, rad2deg(sy2), 'v-', label="Phi (sim)")
+
+    # Labels etc.
+    xlabel("Core distance [m] $\pm %d$" % DR)
+    ylabel("Angle reconstruction uncertainty [deg]")
+    title(r"$N_{MIP} = %d \pm %.1f, \theta = 22.5^\circ \pm %d^\circ, %.1f \leq \log(E) \leq %.1f$" % (N, DN, rad2deg(DTHETA), LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
+    ylim(ymin=0)
+    legend(numpoints=1, loc='best')
     utils.saveplot()
     print
 
@@ -303,7 +355,7 @@ def boxplot_arrival_times(table, N):
     x = []
     t25, t50, t75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
-        query = '(min_n134 >= N) & (low <= r) & (r < high) & (abs(reference_theta - THETA) <= DTHETA) & (log10(k_energy) - LOGENERGY <= DLOGENERGY)'
+        query = '(min_n134 >= N) & (low <= r) & (r < high) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)'
         sel = table.readWhere(query)
         t2 = sel[:]['t2']
         t1 = sel[:]['t1']
@@ -344,22 +396,28 @@ def boxplot_arrival_times(table, N):
 
 def boxplot_core_distances_for_mips(table):
     THETA = deg2rad(22.5)
-    DTHETA = deg2rad(5.)
-    DN = .1
+    DTHETA = deg2rad(1.)
+    DN = .5
+
+    ENERGY = 1e15
+    DENERGY = 2e14
+
+    MAX_R = 80
 
     r25_list = []
     r50_list = []
     r75_list = []
     x = []
     for N in range(1, 5):
-        sel = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
+        sel = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(k_energy - ENERGY) <= DENERGY) & (r <= MAX_R)')
         r = sel[:]['r']
         r25_list.append(scoreatpercentile(r, 25))
         r50_list.append(scoreatpercentile(r, 50))
         r75_list.append(scoreatpercentile(r, 75))
         x.append(N)
+        print len(r)
 
-    sx, sr25, sr50, sr75 = loadtxt(os.path.join(DATADIR, 'DIR-boxplot_core_distances_for_mips.txt'))
+    sx, sr25, sr50, sr75 = loadtxt(os.path.join(DATADIR, 'DIR-save_for_kascade_boxplot_core_distances_for_mips.txt'))
 
     fig = figure()
 
@@ -377,7 +435,7 @@ def boxplot_core_distances_for_mips(table):
 
     ax2.xaxis.set_label_text("Minimum number of particles $\pm %.1f$" % DN)
     ax1.yaxis.set_label_text("Core distance [m]")
-    fig.suptitle(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
+    fig.suptitle(r"$\theta = 22.5^\circ \pm %d^\circ, \quad %.1f \leq \log(E) \leq %.1f$" % (rad2deg(DTHETA), log10(ENERGY - DENERGY), log10(ENERGY + DENERGY)))
 
     ax1.xaxis.set_ticks([1, 2, 3, 4])
     fig.subplots_adjust(left=.1, right=.95)
@@ -507,6 +565,45 @@ def plot_2d_histogram(x, y, bins):
            cmap=cm.Greys)
     colorbar()
 
+def plot_fsot_vs_lint_for_zenith(fsot, lint):
+    bins = linspace(0, 35, 21)
+
+    min_N = 1
+
+    x, f_y, f_y2, l_y, l_y2 = [], [], [], [], []
+    for low, high in zip(bins[:-1], bins[1:]):
+        rad_low = deg2rad(low)
+        rad_high = deg2rad(high)
+
+        query = '(min_n134 >= min_N) & (rad_low <= reference_theta) & (reference_theta < rad_high)'
+        f_sel = fsot.readWhere(query)
+        l_sel = lint.readWhere(query)
+
+        errors = f_sel['reconstructed_phi'] - f_sel['reference_phi']
+        errors2 = f_sel['reconstructed_theta'] - f_sel['reference_theta']
+        f_y.append(std(errors))
+        f_y2.append(std(errors2))
+
+        errors = l_sel['reconstructed_phi'] - l_sel['reference_phi']
+        errors2 = l_sel['reconstructed_theta'] - l_sel['reference_theta']
+        l_y.append(std(errors))
+        l_y2.append(std(errors2))
+
+        x.append((low + high) / 2)
+
+        print x[-1], len(f_sel), len(l_sel)
+
+    clf()
+    plot(x, rad2deg(f_y), label="FSOT phi")
+    plot(x, rad2deg(f_y2), label="FSOT theta")
+    plot(x, rad2deg(l_y), label="LINT phi")
+    plot(x, rad2deg(l_y2), label="LINT theta")
+    legend()
+    xlabel("Shower zenith angle [deg]")
+    ylabel("Angle reconstruction uncertainty [deg]")
+    title(r"$N_{MIP} \geq %d$" % min_N)
+    utils.saveplot()
+
 
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
@@ -519,4 +616,11 @@ if __name__ == '__main__':
         data = tables.openFile('kascade.h5', 'r')
 
     utils.set_prefix("KAS-")
-    do_reconstruction_plots(data)
+    do_reconstruction_plots(data, data.root.reconstructions)
+    do_lint_comparison(data)
+    utils.set_prefix("KAS-LINT-")
+    do_reconstruction_plots(data, data.root.lint_reconstructions)
+    utils.set_prefix("KAS-OFFSETS-")
+    do_reconstruction_plots(data, data.root.reconstructions_offsets)
+    utils.set_prefix("KAS-LINT-OFFSETS-")
+    do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)

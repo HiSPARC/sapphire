@@ -9,9 +9,12 @@ from sapphire import storage
 
 
 class DirectionReconstruction(object):
-    def __init__(self, datafile, results_table, min_n134=1., N=None, overwrite=False):
+    def __init__(self, datafile, results_table=None, min_n134=1., N=None, overwrite=False):
         self.data = datafile
-        self.results_table = self.create_empty_output_table(results_table, overwrite)
+        if results_table:
+            self.results_table = self.create_empty_output_table(results_table, overwrite)
+        else:
+            self.results_table = None
         self.min_n134 = min_n134
         self.N = N
 
@@ -67,6 +70,7 @@ class DirectionReconstruction(object):
                                   reconstructed_phi):
         dst_row = self.results_table.row
 
+        dst_row['id'] = event['id']
         dst_row['station_id'] = event['station_id']
         dst_row['r'] = coincidence['r']
         dst_row['phi'] = coincidence['phi']
@@ -86,10 +90,13 @@ class DirectionReconstruction(object):
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
         dst_row.append()
 
-    def reconstruct_angle(self, event):
+    def reconstruct_angle(self, event, offsets=None):
         """Reconstruct angles from a single event"""
 
         c = 3.00e+8
+
+        if offsets is not None:
+            self._correct_offsets(event, offsets)
 
         dt1 = event['t1'] - event['t3']
         dt2 = event['t1'] - event['t4']
@@ -108,6 +115,10 @@ class DirectionReconstruction(object):
         theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
         return theta_wgt, phi
+
+    def _correct_offsets(self, event, offsets):
+        for offset, timing in zip(offsets, ['t1', 't2', 't3', 't4']):
+            event[timing] -= offset
 
     @classmethod
     def rel_theta1_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
@@ -205,7 +216,6 @@ class DirectionReconstruction(object):
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
-        cosphi1 = cos(phi1)
         sinphi2 = sin(phi2)
         cosphi2 = cos(phi2)
 
@@ -225,7 +235,6 @@ class DirectionReconstruction(object):
         sinphi1 = sin(phi1)
         cosphi1 = cos(phi1)
         sinphi2 = sin(phi2)
-        cosphi2 = cos(phi2)
 
         den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta)
                * (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2))
@@ -262,10 +271,11 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
                                       createparents=True)
         return table
 
-    def reconstruct_angles(self, hisparc_group, kascade_group):
+    def reconstruct_angles(self, hisparc_group, kascade_group,
+                           hisparc_table='events', offsets=None):
         hisparc_group = self.data.getNode(hisparc_group)
 
-        hisparc_table = self.data.getNode(hisparc_group, 'events')
+        hisparc_table = self.data.getNode(hisparc_group, hisparc_table)
         c_index = self.data.getNode(kascade_group, 'c_index')
         kascade_table = self.data.getNode(kascade_group, 'events')
 
@@ -278,13 +288,12 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
                                      fd=sys.stderr)
 
         for idx in progressbar(c_index[:self.N]):
-            h_idx, k_idx = idx[1:]
-            hisparc_event = hisparc_table[h_idx]
-            kascade_event = kascade_table[k_idx]
+            hisparc_event = hisparc_table[idx['h_idx']]
+            kascade_event = kascade_table[idx['k_idx']]
 
             if min(hisparc_event['n1'], hisparc_event['n3'],
                    hisparc_event['n4']) >= self.min_n134:
-                theta, phi = self.reconstruct_angle(hisparc_event)
+                theta, phi = self.reconstruct_angle(hisparc_event, offsets)
 
                 if not isnan(theta) and not isnan(phi):
                     self.store_reconstructed_event(hisparc_event, kascade_event,
@@ -300,6 +309,7 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         core_r, core_phi = self._calc_core_position_rphi_for_kascade_event(kascade_event)
         reference_phi = self._calc_reference_phi_for_kascade_event(kascade_event)
 
+        dst_row['id'] = hisparc_event['event_id']
         dst_row['station_id'] = 0
         dst_row['r'] = core_r
         dst_row['phi'] = core_phi

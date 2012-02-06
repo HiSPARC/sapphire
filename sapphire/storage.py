@@ -259,6 +259,7 @@ class ReconstructedEvent(tables.IsDescription):
 
     """Store information about reconstructed events"""
 
+    id = tables.UInt32Col()
     station_id = tables.UInt8Col()
     r = tables.Float32Col()
     phi = tables.Float32Col()
@@ -303,6 +304,7 @@ class ReconstructedKascadeEvent(tables.IsDescription):
 
     """Store information about reconstructed events"""
 
+    id = tables.UInt32Col()
     station_id = tables.UInt8Col()
     r = tables.Float32Col()
     phi = tables.Float32Col()

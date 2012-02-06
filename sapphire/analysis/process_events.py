@@ -3,6 +3,8 @@ from itertools import izip
 
 import tables
 import numpy as np
+from scipy.stats import norm
+from scipy.optimize import curve_fit
 import progressbar as pb
 
 from sapphire.storage import ProcessedHisparcEvent
@@ -13,24 +15,21 @@ ADC_TIME_PER_SAMPLE = 2.5e-9
 
 
 class ProcessEvents(object):
-    def __init__(self, data, group, limit=None, overwrite=False):
+    def __init__(self, data, group, source=None):
         self.data = data
         self.group = data.getNode(group)
-        self.limit = limit
-        self.overwrite = overwrite
+        self.source = self._get_source(source)
 
-    def process_and_store_results(self):
-        if '_events' in self.group:
-            if not self.overwrite:
-                raise RuntimeError("I found an _events node.  Will not overwrite previous results")
-            else:
-                self.group.events.remove()
-                self.group._events.rename('events')
+    def process_and_store_results(self, destination=None, overwrite=False,
+                                  limit=None):
+        self.limit = limit
+
+        self._check_destination(destination, overwrite)
 
         self._create_results_table()
         self._store_results_from_traces()
         self._store_number_of_particles()
-        self._move_results_table()
+        self._move_results_table_into_destination()
 
     def get_traces_for_event(self, event):
         traces = []
@@ -43,20 +42,48 @@ class ProcessEvents(object):
         return traces
 
     def get_traces_for_event_index(self, idx):
-        event = self.group.events[idx]
+        event = self.source[idx]
         return self.get_traces_for_event(event)
+
+    def _get_source(self, source):
+        if source is None:
+            if '_events' in self.group:
+                source = self.group._events
+            else:
+                source = self.group.events
+        else:
+            source = self.data.getNode(self.group, source)
+        return source
+
+    def _check_destination(self, destination, overwrite):
+        if destination == '_events':
+            raise RuntimeError("The _events table is reserved for internal use.  Choose another destination.")
+        elif destination is None:
+            destination = 'events'
+
+        # If destination == source, source will be moved out of the way.  Don't
+        # worry.  Otherwise, destination may not exist or will be overwritten
+        if self.source.name != destination:
+            if destination in self.group and not overwrite:
+                raise RuntimeError("I will not overwrite previous results (unless you specify overwrite=True)")
+
+        self.destination = destination
 
     def _create_results_table(self):
         self._tmp_events = self._create_empty_results_table()
         self._copy_events_into_table()
 
     def _create_empty_results_table(self):
-        table = self.data.createTable(self.group, '_t_events',
-                                      ProcessedHisparcEvent)
         if self.limit:
             length = self.limit
         else:
-            length = len(self.group.events)
+            length = len(self.source)
+
+        if '_t_events' in self.group:
+            self.data.removeNode(self.group, '_t_events')
+        table = self.data.createTable(self.group, '_t_events',
+                                      ProcessedHisparcEvent,
+                                      expectedrows=length)
 
         for x in xrange(length):
             table.row.append()
@@ -66,10 +93,12 @@ class ProcessEvents(object):
 
     def _copy_events_into_table(self):
         table = self._tmp_events
-        events = self.group.events
+        source = self.source
 
-        for col in events.colnames:
-            getattr(table.cols, col)[:self.limit] = getattr(events.cols,
+        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
+
+        for col in progressbar(source.colnames):
+            getattr(table.cols, col)[:self.limit] = getattr(source.cols,
                                                             col)[:self.limit]
         table.flush()
 
@@ -77,18 +106,22 @@ class ProcessEvents(object):
         table = self._tmp_events
 
         timings = self.process_traces()
+
         for idx in range(4):
             col = 't%d' % (idx + 1)
             getattr(table.cols, col)[:] = timings[:, idx]
         table.flush()
 
-    def process_traces(self):
+    def process_traces(self, limit=None):
         """Process traces to yield pulse timing information"""
 
+        if limit:
+            self.limit = limit
+
         if self.limit:
-            events = self.group.events.iterrows(stop=self.limit)
+            events = self.source.iterrows(stop=self.limit)
         else:
-            events = self.group.events
+            events = self.source
 
         timings = self._process_traces_from_event_list(events,
                                                        length=self.limit)
@@ -168,20 +201,42 @@ class ProcessEvents(object):
 
         n_particles = []
 
-        for event in self.group.events[:self.limit]:
+        for event in self.source[:self.limit]:
             n_particles.append(event['pulseheights'] / 380.)
 
         return np.array(n_particles)
 
-    def _move_results_table(self):
-        self.group.events.rename('_events')
-        self._tmp_events.rename('events')
+    def _move_results_table_into_destination(self):
+        if self.source.name == 'events':
+            self.source.rename('_events')
+            self.source = self.group._events
+
+        if self.destination in self.group:
+            self.removeNode(self.group, self.destination)
+        self._tmp_events.rename(self.destination)
+
+    def determine_detector_timing_offsets(self, timings_table='events'):
+        table = self.data.getNode(self.group, timings_table)
+        t2 = table.col('t2')
+
+        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
+        bins = np.arange(-100 + 1.25, 100, 2.5)
+
+        offsets = []
+        for timings in 't1', 't3', 't4':
+            timings = table.col(timings)
+            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
+            y, bins = np.histogram(dt, bins=bins)
+            x = (bins[:-1] + bins[1:]) / 2
+            popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
+            offsets.append(popt[1])
+
+        return [offsets[0]] + [0.] + offsets[1:]
 
 
 class ProcessIndexedEvents(ProcessEvents):
-    def __init__(self, data, group, indexes, overwrite=False):
-        super(ProcessIndexedEvents, self).__init__(data, group,
-                                                   overwrite=overwrite)
+    def __init__(self, data, group, indexes, source=None):
+        super(ProcessIndexedEvents, self).__init__(data, group, source)
         self.indexes = indexes
 
     def _store_results_from_traces(self):
@@ -200,7 +255,7 @@ class ProcessIndexedEvents(ProcessEvents):
         table.flush()
 
     def process_traces(self):
-        events = self.group.events.itersequence(self.indexes)
+        events = self.source.itersequence(self.indexes)
 
         timings = self._process_traces_from_event_list(events,
                                                        length=len(self.indexes))
@@ -209,3 +264,28 @@ class ProcessIndexedEvents(ProcessEvents):
     def get_traces_for_indexed_event_index(self, idx):
         idx = self.indexes[idx]
         return self.get_traces_for_event_index(idx)
+
+
+class ProcessEventsWithLINT(ProcessEvents):
+    def _reconstruct_time_from_trace(self, trace):
+        """Reconstruct time of measurement from a trace (LINT timings)"""
+
+        t = trace[:100]
+        baseline = np.mean(t)
+
+        trace = trace - baseline
+        threshold = ADC_THRESHOLD
+
+        value = np.nan
+        for i, t in enumerate(trace):
+            if t >= threshold:
+                x0, x1 = i - 1, i
+                y0, y1 = trace[x0], trace[x1]
+                value = 1. * (threshold - y0) / (y1 - y0) + x0
+                break
+
+        return value * ADC_TIME_PER_SAMPLE
+
+
+class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
+    pass
