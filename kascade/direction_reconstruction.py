@@ -60,6 +60,12 @@ def do_reconstruction_plots(data, table):
 #    plot_reconstruction_efficiency_vs_R_for_angles(2)
 #    plot_reconstruction_efficiency_vs_R_for_mips()
 
+def do_lint_comparison(data):
+    fsot = data.root.reconstructions_offsets
+    lint = data.root.lint_reconstructions_offsets
+
+    plot_fsot_vs_lint_for_zenith(fsot, lint)
+
 def plot_uncertainty_mip(table):
     rec = DirectionReconstruction
 
@@ -559,6 +565,45 @@ def plot_2d_histogram(x, y, bins):
            cmap=cm.Greys)
     colorbar()
 
+def plot_fsot_vs_lint_for_zenith(fsot, lint):
+    bins = linspace(0, 35, 21)
+
+    min_N = 1
+
+    x, f_y, f_y2, l_y, l_y2 = [], [], [], [], []
+    for low, high in zip(bins[:-1], bins[1:]):
+        rad_low = deg2rad(low)
+        rad_high = deg2rad(high)
+
+        query = '(min_n134 >= min_N) & (rad_low <= reference_theta) & (reference_theta < rad_high)'
+        f_sel = fsot.readWhere(query)
+        l_sel = lint.readWhere(query)
+
+        errors = f_sel['reconstructed_phi'] - f_sel['reference_phi']
+        errors2 = f_sel['reconstructed_theta'] - f_sel['reference_theta']
+        f_y.append(std(errors))
+        f_y2.append(std(errors2))
+
+        errors = l_sel['reconstructed_phi'] - l_sel['reference_phi']
+        errors2 = l_sel['reconstructed_theta'] - l_sel['reference_theta']
+        l_y.append(std(errors))
+        l_y2.append(std(errors2))
+
+        x.append((low + high) / 2)
+
+        print x[-1], len(f_sel), len(l_sel)
+
+    clf()
+    plot(x, rad2deg(f_y), label="FSOT phi")
+    plot(x, rad2deg(f_y2), label="FSOT theta")
+    plot(x, rad2deg(l_y), label="LINT phi")
+    plot(x, rad2deg(l_y2), label="LINT theta")
+    legend()
+    xlabel("Shower zenith angle [deg]")
+    ylabel("Angle reconstruction uncertainty [deg]")
+    title(r"$N_{MIP} \geq %d$" % min_N)
+    utils.saveplot()
+
 
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
@@ -572,6 +617,7 @@ if __name__ == '__main__':
 
     utils.set_prefix("KAS-")
     do_reconstruction_plots(data, data.root.reconstructions)
+    do_lint_comparison(data)
     utils.set_prefix("KAS-LINT-")
     do_reconstruction_plots(data, data.root.lint_reconstructions)
     utils.set_prefix("KAS-OFFSETS-")
