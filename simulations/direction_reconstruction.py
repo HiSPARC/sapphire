@@ -455,6 +455,13 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
 def boxplot_arrival_times(group, N):
     table = group.E_1PeV.zenith_0
 
+    sel = table.readWhere('min_n134 >= 1')
+    t1 = sel[:]['t1']
+    t3 = sel[:]['t3']
+    t4 = sel[:]['t4']
+    ts = concatenate([t1, t3, t4])
+    print "Median arrival time delay over all detected events", median(ts)
+
     figure()
 
     bin_edges = linspace(0, 100, 11)
