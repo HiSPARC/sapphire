@@ -19,7 +19,7 @@ from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruc
 
 USE_TEX = True
 
-TIMING_ERROR = 4
+TIMING_ERROR = 2.6
 #TIMING_ERROR = 7
 
 # For matplotlib plots
