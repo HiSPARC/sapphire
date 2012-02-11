@@ -118,6 +118,8 @@ class BaseSimulation(object):
         """
         row = self.observables.row
 
+        timings = self.simulate_timings(t)
+
         r = station['r']
         phi = station['phi']
         row['id'] = station['id']
@@ -128,11 +130,33 @@ class BaseSimulation(object):
         row['y'] = r * sin(phi)
         row['alpha'] = station['alpha']
         row['N'] = sum([1 if u else 0 for u in t])
-        row['t1'], row['t2'], row['t3'], row['t4'] = \
-            [min(u) if len(u) else -999 for u in t]
+        row['t1'], row['t2'], row['t3'], row['t4'] = timings
         row['n1'], row['n2'], row['n3'], row['n4'] = \
             [len(u) for u in t]
         row.append()
+
+    def simulate_timings(self, t):
+        timings = []
+        for detector_arrival_times in t:
+            if len(detector_arrival_times) == 0:
+                timings.append(-999)
+            else:
+                t = np.array(detector_arrival_times)
+                t += self.simulate_signal_transport_time(len(t))
+                timings.append(min(t))
+        return timings
+
+    def simulate_signal_transport_time(self, size):
+        numbers = np.random.random(size)
+        dt = []
+
+        for x in numbers:
+            if  x < 0.3516:
+                dt.append((x + 1.2362) / 0.4391)
+            else:
+                dt.append((x + 0.3781) / 0.2018)
+
+        return dt
 
     def write_coincidence(self, event, N):
         """Write coincidence information
