@@ -535,7 +535,7 @@ def plot_detection_efficiency_vs_R_for_angles(N):
     bin_edges = linspace(0, 100, 20)
     x = (bin_edges[:-1] + bin_edges[1:]) / 2.
 
-    for angle in [0, 5, 22.5, 35]:
+    for angle in [0, 22.5, 35]:
         angle_str = str(angle).replace('.', '_')
         shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
 
@@ -572,7 +572,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     bin_edges = linspace(0, 100, 10)
     x = (bin_edges[:-1] + bin_edges[1:]) / 2.
 
-    for angle in [0, 5, 22.5, 35]:
+    for angle in [0, 22.5, 35]:
         angle_str = str(angle).replace('.', '_')
         shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
         reconstructions = group._f_getChild('zenith_%s' % angle_str)
