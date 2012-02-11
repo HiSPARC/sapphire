@@ -463,22 +463,21 @@ def boxplot_arrival_times(group, N):
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         query = '(min_n134 >= N) & (low <= r) & (r < high)'
         sel = table.readWhere(query)
-        t2 = sel[:]['t2']
-        arrival_times.append(t2.compress(t2 > -999))
-
-        # For KASCADE plots
         t1 = sel[:]['t1']
-        ct1 = t1.compress((t1 > -999) & (t2 > -999))
-        ct2 = t2.compress((t1 > -999) & (t2 > -999))
-        t25.append(scoreatpercentile(abs(ct2 - ct1), 25))
-        t50.append(scoreatpercentile(abs(ct2 - ct1), 50))
-        t75.append(scoreatpercentile(abs(ct2 - ct1), 75))
+        t3 = sel[:]['t3']
+        t4 = sel[:]['t4']
+        ts = concatenate([t1, t3, t4])
+
+        t25.append(scoreatpercentile(ts, 25))
+        t50.append(scoreatpercentile(ts, 50))
+        t75.append(scoreatpercentile(ts, 75))
         x.append((low + high) / 2)
 
-    boxplot(arrival_times, positions=x, widths=.7 * (high - low), sym='')
+    fill_between(x, t25, t75, color='0.75')
+    plot(x, t50, 'o-', color='black')
 
     xlabel("Core distance [m]")
-    ylabel("Arrival time [ns]")
+    ylabel("Arrival time delay [ns]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ$" % N)
 
     xticks(arange(0, 100.5, 10))
