@@ -19,8 +19,7 @@ from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruc
 
 USE_TEX = True
 
-TIMING_ERROR = 2.6
-#TIMING_ERROR = 7
+TIMING_ERROR = 2.8
 
 # For matplotlib plots
 if USE_TEX:
@@ -167,7 +166,7 @@ def plot_uncertainty_zenith(group):
 
     figure()
     x, y, y2 = [], [], []
-    for THETA in 0, 5, 10, 15, 22.5, 35, 45:
+    for THETA in 0, 5, 10, 15, 22.5, 30, 35, 45:
         x.append(THETA)
         table = group._f_getChild('zenith_%s' % str(THETA).replace('.', '_'))
         events = table.readWhere('min_n134 >= N')
@@ -409,7 +408,7 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
 
     figure()
 
-    angles = [0, 5, 10, 15, 22.5, 35, 45]
+    angles = [0, 5, 10, 15, 22.5, 30, 35, 45]
     r_dtheta = []
     d25, d50, d75 = [], [], []
     for angle in angles:
@@ -471,7 +470,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
 def boxplot_arrival_times(group, N):
     table = group.E_1PeV.zenith_0
 
-    sel = table.readWhere('min_n134 >= 1')
+    sel = table.readWhere('min_n134 >= N')
     t1 = sel[:]['t1']
     t3 = sel[:]['t3']
     t4 = sel[:]['t4']
