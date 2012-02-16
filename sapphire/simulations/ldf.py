@@ -135,7 +135,10 @@ class BaseLdfSimulation(BaseSimulation):
 class KascadeLdfSimulation(BaseLdfSimulation):
     def __init__(self, *args, **kwargs):
         super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
-        self.ldf = KascadeLdf()
+
+        Ne = kwargs.get('Ne', None)
+        s = kwargs.get('s', None)
+        self.ldf = KascadeLdf(Ne, s)
 
     def calculate_ldf_value(self, r):
         return self.ldf.calculate_ldf_value(r)
@@ -149,15 +152,21 @@ class KascadeLdf():
     _alpha = 1.5
     _beta = 3.6
 
-    def __init__(self, *args, **kwargs):
-        self.cache_c_s_value()
+    def __init__(self, Ne=None, s=None):
+        if Ne is not None:
+            self._Ne = Ne
+        if s is not None:
+            self._s = s
 
-    def cache_c_s_value(self):
+        self._cache_c_s_value()
+
+    def _cache_c_s_value(self):
         self._c_s = self._c(self._s)
 
     def calculate_ldf_value(self, r):
-        Ne = self._Ne
-        s = self._s
+        return self.get_ldf_value_for_size_and_shape(r, self._Ne, self._s)
+
+    def get_ldf_value_for_size_and_shape(self, r, Ne, s):
         c_s = self._c_s
         r0 = self._r0
         alpha = self._alpha

@@ -2,9 +2,9 @@ import unittest
 from mock import Mock, MagicMock, sentinel, patch
 from numpy import logspace, array
 
-from sapphire.simulations.ldf import KascadeLdfSimulation, BaseLdfSimulation
+from sapphire.simulations.ldf import KascadeLdfSimulation, BaseLdfSimulation, KascadeLdf
 
-class BaseLdfSimulationTest(unittest.TestCase):
+class KascadeLdfSimulationTest(unittest.TestCase):
     def setUp(self):
         cluster = Mock()
         data = MagicMock()
@@ -19,20 +19,6 @@ class BaseLdfSimulationTest(unittest.TestCase):
         self.progressbar_mock = self.progressbar_patcher.start()
         self.progressbar_mock.return_value.side_effect = lambda x: x
 
-    def test_cache_c_s_value(self):
-        # change s value
-        self.simulation._s += .1
-
-        self.simulation.cache_c_s_value()
-        expected = self.simulation._c(self.simulation._s)
-
-        self.assertEqual(expected, self.simulation._c_s)
-
-    def test_init_calls_cache_c_s_value(self):
-        with patch.object(KascadeLdfSimulation, 'cache_c_s_value') as mock_cache:
-            sim = KascadeLdfSimulation(Mock(), MagicMock(), '/mock', Mock(), Mock())
-            mock_cache.assert_called_once_with()
-
     def test_init_calls_super_init_with_all_args(self):
         with patch.object(BaseLdfSimulation, '__init__') as mock_base_init:
             cluster = sentinel.cluster
@@ -45,23 +31,6 @@ class BaseLdfSimulationTest(unittest.TestCase):
 
     def test_calculate_ldf_value_useful_immediately_after_init(self):
         self.simulation.calculate_ldf_value(1.)
-
-    def test_run_updates_cached_c_s_value(self):
-        sim = self.simulation
-
-        sim._s += .1
-        expected = sim._c(self.simulation._s)
-
-        sim._run_welcome_msg = Mock()
-        sim._run_exit_msg = Mock()
-        sim.generate_positions = Mock()
-        sim.generate_positions.return_value = MagicMock()
-        sim.simulate_event = Mock()
-        sim.observables.nrows = sim._observables_nrows
-
-        sim.run()
-
-        self.assertEqual(expected, sim._c_s)
 
     def test_run_calls_super_run(self):
         with patch.object(BaseLdfSimulation, 'run') as mock_run:
@@ -77,3 +46,31 @@ class BaseLdfSimulationTest(unittest.TestCase):
         actual = self.simulation.calculate_ldf_value(r)
 
         self.assertTrue(((expected - actual) / expected < 1e-8).all())
+
+class KascadeLdfTest(unittest.TestCase):
+    def setUp(self):
+        self.ldf = KascadeLdf()
+
+    def test_cache_c_s_value(self):
+        # change s value
+        self.ldf._s += .1
+
+        self.ldf._cache_c_s_value()
+        expected = self.ldf._c(self.ldf._s)
+
+        self.assertEqual(expected, self.ldf._c_s)
+
+    def test_init_stores_Ne_and_s(self):
+        Ne = sentinel.Ne
+        s = sentinel.s
+
+        with patch.object(KascadeLdf, '_cache_c_s_value') as mock_cache:
+            ldf = KascadeLdf(Ne, s)
+
+        self.assertIs(ldf._Ne, Ne)
+        self.assertIs(ldf._s, s)
+
+    def test_init_calls_cache_c_s_value(self):
+        with patch.object(KascadeLdf, '_cache_c_s_value') as mock_cache:
+            sim = KascadeLdf()
+            mock_cache.assert_called_once_with()
