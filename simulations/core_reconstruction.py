@@ -3,8 +3,9 @@ from itertools import combinations
 
 import numpy as np
 import pylab as plt
+from scipy import optimize
 
-from sapphire.simulations.ldf import KascadeLdf
+from sapphire.simulations import ldf
 
 
 DATAFILE = 'data.h5'
@@ -17,9 +18,28 @@ class CoreReconstruction(object):
         self.cluster = self.simulation._v_attrs.cluster
 
         if solver is None:
-            self.solver = CorePositionSolver(KascadeLdf())
+            self.solver = CorePositionSolver(ldf.KascadeLdf())
         else:
             self.solver = solver
+
+    def reconstruct_core_position(self, coincidence):
+        solver = self.solver
+
+        solver.reset_measurements()
+        self._add_detector_measurements_to_solver(solver, coincidence)
+
+        x0, y0 = solver.get_center_of_mass_of_measurements()
+        xopt, yopt = optimize.fmin(solver.calculate_chi_squared_for_xy, (x0, y0))
+
+        return xopt, yopt
+
+    def plot_reconstruct_core_position(self, coincidence):
+        xopt, yopt = self.reconstruct_core_position(coincidence)
+
+        self._do_do_plot_coincidence(coincidence, use_detectors=True)
+        x0, y0 = self.solver.get_center_of_mass_of_measurements()
+        plt.scatter(x0, y0, color='green')
+        plt.scatter(xopt, yopt, color='yellow')
 
     def draw_cluster(self):
         for station in self.cluster.stations:
@@ -43,6 +63,9 @@ class CoreReconstruction(object):
         coincidence = self.get_coincidence_with_multiplicity(index,
                                                              multiplicity)
 
+        self._do_do_plot_coincidence(coincidence, use_detectors)
+
+    def _do_do_plot_coincidence(self, coincidence, use_detectors, index=0):
         self._plot_chi_squared_on_map(coincidence, use_detectors)
         self._plot_coincidence_on_map(coincidence)
 
@@ -53,7 +76,7 @@ class CoreReconstruction(object):
             method = "individual detector signal"
         else:
             method = "station-averaged signal"
-        plt.title("Coincidence (%d-fold) #%d\n%s\n%s" % (multiplicity, index, method, type(self.solver).__name__))
+        plt.title("Coincidence (%d-fold) #%d\n%s\n%s" % (coincidence['N'], index, method, type(self.solver).__name__))
 
     def get_coincidence_with_multiplicity(self, index, multiplicity):
         coincidences = self.simulation.coincidences.read()
@@ -82,12 +105,12 @@ class CoreReconstruction(object):
 
     def _plot_chi_squared_contours(self, solver):
         mylog = np.vectorize(lambda x: np.log10(x) if x > 0 else -999.)
-        x = np.linspace(-400, 400, 100)
-        y = np.linspace(-400, 400, 100)
+        x = np.linspace(-100, 100, 100)
+        y = np.linspace(-100, 100, 100)
         chi_squared = np.zeros((len(x), len(y)))
         for i in range(len(x)):
             for j in range(len(y)):
-                chi_squared[j][i] = solver.calculate_chi_squared_for_xy(x[i], y[j])
+                chi_squared[j][i] = solver.calculate_chi_squared_for_xy((x[i], y[j]))
         plt.contourf(x, y, mylog(chi_squared), 50, cmap=plt.cm.rainbow)
         plt.colorbar()
 
@@ -146,7 +169,7 @@ class CorePositionSolver(object):
     def reset_measurements(self):
         self._measurements = []
 
-    def calculate_chi_squared_for_xy(self, guess_x, guess_y):
+    def calculate_chi_squared_for_xy(self, (guess_x, guess_y)):
         chi_squared = 0
         for expected, observed in self._get_expected_observed(guess_x, guess_y):
             chi_squared += (expected - observed) ** 2 / expected
@@ -166,6 +189,15 @@ class CorePositionSolver(object):
         r = np.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
         return self._ldf.calculate_ldf_value(r)
 
+    def get_center_of_mass_of_measurements(self):
+        measurements = np.array(self._measurements)
+        x, y, value = measurements.T
+
+        x0 = (value * x).sum() / value.sum()
+        y0 = (value * y).sum() / value.sum()
+
+        return x0, y0
+
 
 class OverdeterminedCorePositionSolver(CorePositionSolver):
     def _get_expected_observed(self, guess_x, guess_y):
@@ -178,7 +210,7 @@ class OverdeterminedCorePositionSolver(CorePositionSolver):
 
 
 class CorePositionCirclesSolver(CorePositionSolver):
-    def calculate_chi_squared_for_xy(self, guess_x, guess_y):
+    def calculate_chi_squared_for_xy(self, (guess_x, guess_y)):
         chi_squared = 1
         for expected, observed in self._get_expected_observed(guess_x, guess_y):
             chi_squared *= (expected - observed) ** 2 / expected
