@@ -11,12 +11,9 @@
 from __future__ import division
 
 import tables
-import os.path
-import sys
-import textwrap
 
-import clusters
-from simulations import KascadeLdfSimulation
+from sapphire import clusters
+from sapphire.simulations import KascadeLdfSimulation
 
 
 DATAFILE = 'data.h5'
@@ -28,8 +25,8 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile(DATAFILE, 'w')
 
-    cluster = clusters.SimpleCluster()
-    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim', R=200,
-                                      N=100000)
-    simulation._Ne = 10 ** 6
+    cluster = clusters.SingleStation()
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim', R=100,
+                                      N=1000000)
+#    simulation._Ne = 10 ** 6
     simulation.run()
