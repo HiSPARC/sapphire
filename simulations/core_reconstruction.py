@@ -27,22 +27,22 @@ class CoreReconstruction(object):
     def plot_coincidence_twice(self, index=0, multiplicity=3):
         clf()
         subplot(121)
-        self.do_plot_coincidence(index, multiplicity, use_detectors=False)
+        self._do_plot_coincidence(index, multiplicity, use_detectors=False)
         subplot(122)
-        self.do_plot_coincidence(index, multiplicity, use_detectors=True)
+        self._do_plot_coincidence(index, multiplicity, use_detectors=True)
 
     def plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
-        self.do_plot_coincidence(index, multiplicity, use_detectors)
+        self._do_plot_coincidence(index, multiplicity, use_detectors)
 
-    def do_plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
+    def _do_plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
         coincidence = self.get_coincidence_with_multiplicity(index,
                                                              multiplicity)
 
-        self.plot_chi_squared_on_map(coincidence, use_detectors)
-        self.plot_coincidence_on_map(coincidence)
+        self._plot_chi_squared_on_map(coincidence, use_detectors)
+        self._plot_coincidence_on_map(coincidence)
 
         for event in self.get_events_from_coincidence(coincidence):
-            self.plot_event_on_map(event)
+            self._plot_event_on_map(event)
 
         if use_detectors:
             method = "individual detector signal"
@@ -64,18 +64,18 @@ class CoreReconstruction(object):
 
         return events
 
-    def plot_chi_squared_on_map(self, coincidence, use_detectors=False):
+    def _plot_chi_squared_on_map(self, coincidence, use_detectors=False):
         solver = self.solver
         solver.reset_measurements()
 
         if use_detectors:
-            self.add_detector_measurements_to_solver(solver, coincidence)
+            self._add_detector_measurements_to_solver(solver, coincidence)
         else:
-            self.add_station_measurements_to_solver(solver, coincidence)
+            self._add_station_measurements_to_solver(solver, coincidence)
 
-        self.plot_chi_squared_contours(solver)
+        self._plot_chi_squared_contours(solver)
 
-    def plot_chi_squared_contours(self, solver):
+    def _plot_chi_squared_contours(self, solver):
         mylog = vectorize(lambda x: log10(x) if x > 0 else -999.)
         x = linspace(-400, 400, 100)
         y = linspace(-400, 400, 100)
@@ -86,25 +86,25 @@ class CoreReconstruction(object):
         contourf(x, y, mylog(chi_squared), 50, cmap=cm.rainbow)
         colorbar()
 
-    def add_station_measurements_to_solver(self, solver, coincidence):
+    def _add_station_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
-            if self.station_has_triggered(event):
+            if self._station_has_triggered(event):
                 value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
                 solver.add_measurement_at_xy(event['x'], event['y'], value)
 
-    def add_detector_measurements_to_solver(self, solver, coincidence):
+    def _add_detector_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
-            station = self.get_station_from_event(event)
-            if self.station_has_triggered(event):
+            station = self._get_station_from_event(event)
+            if self._station_has_triggered(event):
                 for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
                     x, y = detector.get_xy_coordinates()
                     value = event[idx] / .5
                     solver.add_measurement_at_xy(x, y, value)
 
-    def plot_coincidence_on_map(self, coincidence):
+    def _plot_coincidence_on_map(self, coincidence):
         scatter(coincidence['x'], coincidence['y'], c='b', s=10)
 
-    def plot_event_on_map(self, event):
+    def _plot_event_on_map(self, event):
         station_id = event['station_id']
         station = self.cluster.stations[station_id - 1]
 
@@ -112,20 +112,20 @@ class CoreReconstruction(object):
         num_particles = [event[u] for u in ['n1', 'n2', 'n3', 'n4']]
 
         for detector, num in zip(detectors, num_particles):
-            self.plot_detector_on_map(detector, num)
+            self._plot_detector_on_map(detector, num)
 
-    def plot_detector_on_map(self, detector, num_particles):
+    def _plot_detector_on_map(self, detector, num_particles):
         x, y = detector.get_xy_coordinates()
         size = num_particles * 10
         scatter(x, y, c='r', s=size)
 
-    def station_has_triggered(self, event):
+    def _station_has_triggered(self, event):
         if event['N'] >= 2:
             return True
         else:
             return False
 
-    def get_station_from_event(self, event):
+    def _get_station_from_event(self, event):
         station_id = event['station_id']
         return self.cluster.stations[station_id - 1]
 
@@ -178,6 +178,7 @@ class CorePositionCirclesSolver(CorePositionSolver):
         for expected, observed in self._get_expected_observed(guess_x, guess_y):
             chi_squared *= (expected - observed) ** 2 / expected
         return chi_squared
+
 
 class OverdeterminedCorePositionCirclesSolver(CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
     pass
