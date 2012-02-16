@@ -1,6 +1,11 @@
 import tables
 from itertools import combinations
 
+import numpy as np
+import pylab as plt
+
+from sapphire.simulations.ldf import KascadeLdf
+
 
 DATAFILE = 'data.h5'
 
@@ -20,15 +25,15 @@ class CoreReconstruction(object):
         for station in self.cluster.stations:
             for detector in station.detectors:
                 x, y = detector.get_xy_coordinates()
-                scatter(x, y, c='r', s=5, edgecolor='none')
+                plt.scatter(x, y, c='r', s=5, edgecolor='none')
             x, y, alpha = station.get_xyalpha_coordinates()
-            scatter(x, y, c='orange', s=10, edgecolor='none')
+            plt.scatter(x, y, c='orange', s=10, edgecolor='none')
 
     def plot_coincidence_twice(self, index=0, multiplicity=3):
-        clf()
-        subplot(121)
+        plt.clf()
+        plt.subplot(121)
         self._do_plot_coincidence(index, multiplicity, use_detectors=False)
-        subplot(122)
+        plt.subplot(122)
         self._do_plot_coincidence(index, multiplicity, use_detectors=True)
 
     def plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
@@ -48,7 +53,7 @@ class CoreReconstruction(object):
             method = "individual detector signal"
         else:
             method = "station-averaged signal"
-        title("Coincidence (%d-fold) #%d\n%s\n%s" % (multiplicity, index, method, type(self.solver).__name__))
+        plt.title("Coincidence (%d-fold) #%d\n%s\n%s" % (multiplicity, index, method, type(self.solver).__name__))
 
     def get_coincidence_with_multiplicity(self, index, multiplicity):
         coincidences = self.simulation.coincidences.read()
@@ -76,15 +81,15 @@ class CoreReconstruction(object):
         self._plot_chi_squared_contours(solver)
 
     def _plot_chi_squared_contours(self, solver):
-        mylog = vectorize(lambda x: log10(x) if x > 0 else -999.)
-        x = linspace(-400, 400, 100)
-        y = linspace(-400, 400, 100)
-        chi_squared = zeros((len(x), len(y)))
+        mylog = np.vectorize(lambda x: np.log10(x) if x > 0 else -999.)
+        x = np.linspace(-400, 400, 100)
+        y = np.linspace(-400, 400, 100)
+        chi_squared = np.zeros((len(x), len(y)))
         for i in range(len(x)):
             for j in range(len(y)):
                 chi_squared[j][i] = solver.calculate_chi_squared_for_xy(x[i], y[j])
-        contourf(x, y, mylog(chi_squared), 50, cmap=cm.rainbow)
-        colorbar()
+        plt.contourf(x, y, mylog(chi_squared), 50, cmap=plt.cm.rainbow)
+        plt.colorbar()
 
     def _add_station_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
@@ -102,7 +107,7 @@ class CoreReconstruction(object):
                     solver.add_measurement_at_xy(x, y, value)
 
     def _plot_coincidence_on_map(self, coincidence):
-        scatter(coincidence['x'], coincidence['y'], c='b', s=10)
+        plt.scatter(coincidence['x'], coincidence['y'], c='b', s=10)
 
     def _plot_event_on_map(self, event):
         station_id = event['station_id']
@@ -117,7 +122,7 @@ class CoreReconstruction(object):
     def _plot_detector_on_map(self, detector, num_particles):
         x, y = detector.get_xy_coordinates()
         size = num_particles * 10
-        scatter(x, y, c='r', s=size)
+        plt.scatter(x, y, c='r', s=size)
 
     def _station_has_triggered(self, event):
         if event['N'] >= 2:
@@ -158,7 +163,7 @@ class CorePositionSolver(object):
             yield expected, observed
 
     def _calculate_ldf_value_for_xy_xy(self, x0, y0, x1, y1):
-        r = sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
+        r = np.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
         return self._ldf.calculate_ldf_value(r)
 
 
@@ -182,61 +187,6 @@ class CorePositionCirclesSolver(CorePositionSolver):
 
 class OverdeterminedCorePositionCirclesSolver(CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
     pass
-
-
-class KascadeLdf(object):
-    # shower parameters
-    _Ne = 10 ** 4.8
-    _s = .94
-    _r0 = 40.
-    _alpha = 1.5
-    _beta = 3.6
-
-    def __init__(self, *args, **kwargs):
-        self.cache_c_s_value()
-
-    def cache_c_s_value(self):
-        self._c_s = self._c(self._s)
-
-    def run(self):
-        self.cache_c_s_value()
-
-        super(KascadeLdfSimulation, self).run()
-
-    def calculate_ldf_value(self, r):
-        Ne = self._Ne
-        s = self._s
-        c_s = self._c_s
-        r0 = self._r0
-        alpha = self._alpha
-        beta = self._beta
-
-        return Ne * c_s * (r / r0) ** (s - alpha) * (1 + r / r0) ** (s - beta)
-
-    def _c(self, s):
-        r0 = self._r0
-        beta = self._beta
-        alpha = self._alpha
-        return gamma(beta - s) / (2 * pi * r0 ** 2 * gamma(s - alpha + 2) * gamma(alpha + beta - 2 * s - 2))
-
-
-def plot_minimal_and_overdetermined_solver(index, multiplicity, use_detectors=False, use_circles=False):
-    ldf = KascadeLdf()
-
-    if not use_circles:
-        minimal_solver = CorePositionSolver(ldf)
-        overdetermined_solver = OverdeterminedCorePositionSolver(ldf)
-    else:
-        minimal_solver = CorePositionCirclesSolver(ldf)
-        overdetermined_solver = OverdeterminedCorePositionCirclesSolver(ldf)
-
-    minimal_solver_reconstruction = CoreReconstruction(data, '/ldfsim', solver=minimal_solver)
-    overdetermined_solver_reconstruction = CoreReconstruction(data, '/ldfsim', solver=overdetermined_solver)
-
-    subplot(121)
-    minimal_solver_reconstruction.plot_coincidence(index, multiplicity, use_detectors)
-    subplot(122)
-    overdetermined_solver_reconstruction.plot_coincidence(index, multiplicity, use_detectors)
 
 
 if __name__ == '__main__':

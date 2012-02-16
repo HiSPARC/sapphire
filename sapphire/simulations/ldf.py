@@ -133,6 +133,15 @@ class BaseLdfSimulation(BaseSimulation):
 
 
 class KascadeLdfSimulation(BaseLdfSimulation):
+    def __init__(self, *args, **kwargs):
+        super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
+        self.ldf = KascadeLdf()
+
+    def calculate_ldf_value(self, r):
+        return self.ldf.calculate_ldf_value(r)
+
+
+class KascadeLdf():
     # shower parameters
     _Ne = 10 ** 4.8
     _s = .94
@@ -143,15 +152,8 @@ class KascadeLdfSimulation(BaseLdfSimulation):
     def __init__(self, *args, **kwargs):
         self.cache_c_s_value()
 
-        super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
-
     def cache_c_s_value(self):
         self._c_s = self._c(self._s)
-
-    def run(self):
-        self.cache_c_s_value()
-
-        super(KascadeLdfSimulation, self).run()
 
     def calculate_ldf_value(self, r):
         Ne = self._Ne
