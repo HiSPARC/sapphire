@@ -3,6 +3,8 @@ from scipy.special import gamma
 import progressbar as pb
 import sys
 
+import numpy as np
+
 from base import BaseSimulation
 
 
@@ -24,6 +26,19 @@ class BaseLdfSimulation(BaseSimulation):
     # We don't want to flush often, so we use (and update!) this instead
     _observables_nrows = 0
 
+
+    def __init__(self, *args, **kwargs):
+        if 'gauss' in kwargs:
+            self.gauss = kwargs.pop('gauss')
+        else:
+            self.gauss = None
+
+        if 'use_poisson' in kwargs:
+            self.use_poisson = kwargs.pop('use_poisson')
+        else:
+            self.use_poisson = False
+
+        super(BaseLdfSimulation, self).__init__(*args, **kwargs)
 
     def run(self, positions=None):
         """Run a simulation
@@ -87,8 +102,18 @@ class BaseLdfSimulation(BaseSimulation):
 
     def simulate_detector_observables(self, detector, event):
         R = self.calculate_core_distance(detector, event)
-        N = self.calculate_ldf_value(R)
-        return N * detector.get_area()
+        density = self.calculate_ldf_value(R)
+        num_particles = density * detector.get_area()
+
+        if self.gauss is not None:
+            N = num_particles * np.random.normal(loc=1., scale=self.gauss)
+        else:
+            N = num_particles
+
+        if self.use_poisson:
+            N = np.random.poisson(N)
+
+        return N
 
     def calculate_core_distance(self, detector, event):
         r, phi = event['r'], event['phi']

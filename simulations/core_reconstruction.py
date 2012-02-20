@@ -1,3 +1,5 @@
+from __future__ import division
+
 import tables
 from itertools import combinations
 import os
@@ -313,46 +315,43 @@ class OverdeterminedCorePositionCirclesSolver(CorePositionCirclesSolver, Overdet
     pass
 
 
-def do_reconstruction_plots(data):
+def do_reconstruction_plots(table):
     """Make plots based upon earlier reconstructions"""
 
-    group = data.root.reconstructions
-
-    plot_N_reconstructions_vs_R(group)
+    plot_N_reconstructions_vs_R(table)
 
 
-def plot_N_reconstructions_vs_R(group):
+def plot_N_reconstructions_vs_R(table):
     figure()
 
-    table = group
     station = table.attrs.cluster.stations[0]
 
     x, y, alpha = station.get_xyalpha_coordinates()
 
+    sim_path = table._v_pathname.replace('reconstructions', 'ldfsim')
+    sim = data.getNode(sim_path)
+
     # core distance for simulated events
-    x2 = data.root.ldfsim.coincidences.col('x')
-    y2 = data.root.ldfsim.coincidences.col('y')
+    x2 = sim.coincidences.col('x')
+    y2 = sim.coincidences.col('y')
     r = sqrt((x - x2) ** 2 + (y - y2) ** 2)
 
     # core distance for reconstructed events
     x2, y2 = table.col('reference_core_pos').T
     r2 = sqrt((x - x2) ** 2 + (y - y2) ** 2)
 
-    bins = linspace(0, 50, 21)
-    x, y, y2 = [], [], []
+    bins = linspace(0, 50, 41)
+    x, y = [], []
     for low, high in zip(bins[:-1], bins[1:]):
         sel = r.compress((low <= r) & (r < high))
         sel2 = r2.compress((low <= r2) & (r2 < high))
 
         x.append((low + high) / 2)
-        y.append(len(sel))
-        y2.append(len(sel2))
+        y.append(len(sel2) / len(sel))
 
-    plot(x, y, label="simulation")
-    plot(x, y2, label="reconstructed")
-    legend()
+    plot(x, y)
     xlabel("Core distance [m]")
-    ylabel("Count")
+    ylabel("Reconstruction efficiency")
     utils.saveplot()
 
 
@@ -363,9 +362,29 @@ if __name__ == '__main__':
         data = tables.openFile(DATAFILE, 'a')
 
     if '/reconstructions' not in data:
-        c = CoreReconstruction(data, '/ldfsim', '/reconstructions',
-                               overwrite=True)
-        c.reconstruct_core_positions('/ldfsim')
+        c = CoreReconstruction(data, '/ldfsim/exact', '/reconstructions/exact')
+        c.reconstruct_core_positions('/ldfsim/exact')
+
+        c = CoreReconstruction(data, '/ldfsim/gauss_10', '/reconstructions/gauss_10')
+        c.reconstruct_core_positions('/ldfsim/gauss_10')
+
+        c = CoreReconstruction(data, '/ldfsim/gauss_20', '/reconstructions/gauss_20')
+        c.reconstruct_core_positions('/ldfsim/gauss_20')
+
+        c = CoreReconstruction(data, '/ldfsim/poisson', '/reconstructions/poisson')
+        c.reconstruct_core_positions('/ldfsim/poisson')
+
 
     utils.set_prefix("COR-")
-    do_reconstruction_plots(data)
+
+    utils.set_suffix("-EXACT")
+    do_reconstruction_plots(data.root.reconstructions.exact)
+
+    utils.set_suffix("-GAUSS_10")
+    do_reconstruction_plots(data.root.reconstructions.gauss_10)
+
+    utils.set_suffix("-GAUSS_20")
+    do_reconstruction_plots(data.root.reconstructions.gauss_20)
+
+    utils.set_suffix("-POISSON")
+    do_reconstruction_plots(data.root.reconstructions.poisson)

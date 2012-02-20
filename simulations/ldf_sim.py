@@ -18,6 +18,8 @@ from sapphire.simulations import KascadeLdfSimulation
 
 DATAFILE = 'data.h5'
 
+N = 10000
+
 
 if __name__ == '__main__':
     try:
@@ -26,7 +28,14 @@ if __name__ == '__main__':
         data = tables.openFile(DATAFILE, 'w')
 
     cluster = clusters.SingleStation()
-    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim', R=100,
-                                      N=1000000)
-#    simulation._Ne = 10 ** 6
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/exact', R=60, N=N)
+    simulation.run()
+
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/gauss_10', R=60, N=N, gauss=.1)
+    simulation.run()
+
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/gauss_20', R=60, N=N, gauss=.2)
+    simulation.run()
+
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/poisson', R=60, N=N, use_poisson=True)
     simulation.run()
