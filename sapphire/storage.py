@@ -259,6 +259,8 @@ class ReconstructedEvent(tables.IsDescription):
 
     """Store information about reconstructed events"""
 
+    # r, phi is core position
+
     id = tables.UInt32Col()
     station_id = tables.UInt8Col()
     r = tables.Float32Col()
@@ -276,6 +278,8 @@ class ReconstructedEvent(tables.IsDescription):
     reference_phi = tables.Float32Col()
     reconstructed_theta = tables.Float32Col()
     reconstructed_phi = tables.Float32Col()
+    reference_core_pos = tables.Float32Col(shape=2)
+    reconstructed_core_pos = tables.Float32Col(shape=2)
     min_n134 = tables.Float32Col()
 
 
@@ -303,6 +307,8 @@ class KascadeEvent(tables.IsDescription):
 class ReconstructedKascadeEvent(tables.IsDescription):
 
     """Store information about reconstructed events"""
+
+    # r, phi is core position
 
     id = tables.UInt32Col()
     station_id = tables.UInt8Col()

@@ -1,26 +1,100 @@
 import tables
 from itertools import combinations
+import os
+import sys
 
 import numpy as np
 import pylab as plt
 from scipy import optimize
+import progressbar as pb
 
 from sapphire.simulations import ldf
+from sapphire import storage
 
 
 DATAFILE = 'data.h5'
 
 
 class CoreReconstruction(object):
-    def __init__(self, data, simulation_path, solver=None):
+    def __init__(self, data, simulation_path, results_table=None, solver=None, N=None, overwrite=False):
         self.data = data
         self.simulation = data.getNode(simulation_path)
         self.cluster = self.simulation._v_attrs.cluster
+
+        if results_table:
+            self.results_table = self.create_empty_output_table(results_table, overwrite)
+        else:
+            self.results_table = None
 
         if solver is None:
             self.solver = CorePositionSolver(ldf.KascadeLdf())
         else:
             self.solver = solver
+
+        self.N = N
+
+    def create_empty_output_table(self, table_path, overwrite=False):
+        group, tablename = os.path.split(table_path)
+
+        if table_path in self.data:
+            if not overwrite:
+                raise RuntimeError("Reconstruction table %s already exists" % table_path)
+            else:
+                self.data.removeNode(group, tablename)
+
+        table = self._create_output_table(group, tablename)
+        return table
+
+    def _create_output_table(self, group, tablename):
+        table = self.data.createTable(group, tablename,
+                                      storage.ReconstructedEvent,
+                                      createparents=True)
+        return table
+
+    def store_reconstructed_event(self, coincidence, event, reconstructed_core_x,
+                                  reconstructed_core_y):
+        dst_row = self.results_table.row
+
+        dst_row['id'] = event['id']
+        dst_row['station_id'] = event['station_id']
+        dst_row['r'] = coincidence['r']
+        dst_row['phi'] = coincidence['phi']
+        dst_row['alpha'] = event['alpha']
+        dst_row['t1'] = event['t1']
+        dst_row['t2'] = event['t2']
+        dst_row['t3'] = event['t3']
+        dst_row['t4'] = event['t4']
+        dst_row['n1'] = event['n1']
+        dst_row['n2'] = event['n2']
+        dst_row['n3'] = event['n3']
+        dst_row['n4'] = event['n4']
+        dst_row['reference_theta'] = coincidence['shower_theta']
+        dst_row['reference_phi'] = coincidence['shower_phi']
+        dst_row['reference_core_pos'] = coincidence['x'], coincidence['y']
+        dst_row['reconstructed_core_pos'] = reconstructed_core_x, reconstructed_core_y
+        dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
+        dst_row.append()
+
+    def reconstruct_core_positions(self, group):
+        group = self.data.getNode(group)
+        observables = group.observables
+        coincidence_table = group.coincidences
+        self.station, = group._v_attrs.cluster.stations
+        if not 'cluster' in self.results_table.attrs:
+            self.results_table.attrs.cluster = group._v_attrs.cluster
+
+        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                              pb.ETA()],
+                                     fd=sys.stderr)
+
+        for event, coincidence in progressbar(zip(observables[:self.N], coincidence_table[:self.N])):
+            assert event['id'] == coincidence['id']
+
+            if coincidence['N'] >= 1:
+                x, y = self.reconstruct_core_position(coincidence)
+                self.store_reconstructed_event(coincidence, event, x, y)
+
+        self.results_table.flush()
 
     def reconstruct_core_position(self, coincidence):
         solver = self.solver
@@ -29,7 +103,7 @@ class CoreReconstruction(object):
         self._add_detector_measurements_to_solver(solver, coincidence)
 
         x0, y0 = solver.get_center_of_mass_of_measurements()
-        xopt, yopt = optimize.fmin(solver.calculate_chi_squared_for_xy, (x0, y0))
+        xopt, yopt = optimize.fmin(solver.calculate_chi_squared_for_xy, (x0, y0), disp=0)
 
         return xopt, yopt
 
@@ -225,6 +299,11 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile(DATAFILE, 'r')
+        data = tables.openFile(DATAFILE, 'a')
+
+    if '/reconstructions' not in data:
+        c = CoreReconstruction(data, '/ldfsim', '/reconstructions',
+                               overwrite=True)
+        c.reconstruct_core_positions('/ldfsim')
 
     c = CoreReconstruction(data, '/ldfsim')
