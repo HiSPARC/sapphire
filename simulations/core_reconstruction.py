@@ -11,8 +11,26 @@ import progressbar as pb
 from sapphire.simulations import ldf
 from sapphire import storage
 
+import utils
+
+from pylab import *
+
 
 DATAFILE = 'data.h5'
+
+USE_TEX = False
+
+# For matplotlib plots
+if USE_TEX:
+    rcParams['font.serif'] = 'Computer Modern'
+    rcParams['font.sans-serif'] = 'Computer Modern'
+    rcParams['font.family'] = 'sans-serif'
+    rcParams['figure.figsize'] = [4 * x for x in (1, 2. / 3)]
+    rcParams['figure.subplot.left'] = 0.175
+    rcParams['figure.subplot.bottom'] = 0.175
+    rcParams['font.size'] = 10
+    rcParams['legend.fontsize'] = 'small'
+    rcParams['text.usetex'] = True
 
 
 class CoreReconstruction(object):
@@ -295,6 +313,49 @@ class OverdeterminedCorePositionCirclesSolver(CorePositionCirclesSolver, Overdet
     pass
 
 
+def do_reconstruction_plots(data):
+    """Make plots based upon earlier reconstructions"""
+
+    group = data.root.reconstructions
+
+    plot_N_reconstructions_vs_R(group)
+
+
+def plot_N_reconstructions_vs_R(group):
+    figure()
+
+    table = group
+    station = table.attrs.cluster.stations[0]
+
+    x, y, alpha = station.get_xyalpha_coordinates()
+
+    # core distance for simulated events
+    x2 = data.root.ldfsim.coincidences.col('x')
+    y2 = data.root.ldfsim.coincidences.col('y')
+    r = sqrt((x - x2) ** 2 + (y - y2) ** 2)
+
+    # core distance for reconstructed events
+    x2, y2 = table.col('reference_core_pos').T
+    r2 = sqrt((x - x2) ** 2 + (y - y2) ** 2)
+
+    bins = linspace(0, 50, 21)
+    x, y, y2 = [], [], []
+    for low, high in zip(bins[:-1], bins[1:]):
+        sel = r.compress((low <= r) & (r < high))
+        sel2 = r2.compress((low <= r2) & (r2 < high))
+
+        x.append((low + high) / 2)
+        y.append(len(sel))
+        y2.append(len(sel2))
+
+    plot(x, y, label="simulation")
+    plot(x, y2, label="reconstructed")
+    legend()
+    xlabel("Core distance [m]")
+    ylabel("Count")
+    utils.saveplot()
+
+
 if __name__ == '__main__':
     try:
         data
@@ -306,4 +367,5 @@ if __name__ == '__main__':
                                overwrite=True)
         c.reconstruct_core_positions('/ldfsim')
 
-    c = CoreReconstruction(data, '/ldfsim')
+    utils.set_prefix("COR-")
+    do_reconstruction_plots(data)
