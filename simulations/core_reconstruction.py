@@ -9,6 +9,7 @@ import numpy as np
 import pylab as plt
 from scipy import optimize
 from scipy.misc import comb
+from scipy.stats import scoreatpercentile
 import progressbar as pb
 
 from sapphire.simulations import ldf
@@ -320,7 +321,7 @@ def do_reconstruction_plots(table):
     """Make plots based upon earlier reconstructions"""
 
     plot_N_reconstructions_vs_R(table)
-
+    plot_core_pos_uncertainty_vs_R(table)
 
 Pnil = lambda x: exp(-0.5 * x)
 Pp = lambda x: 1 - Pnil(x)
@@ -367,6 +368,33 @@ def plot_N_reconstructions_vs_R(table):
     legend()
     xlabel("Core distance [m]")
     ylabel("Reconstruction efficiency")
+    utils.saveplot()
+
+def plot_core_pos_uncertainty_vs_R(table):
+    figure()
+
+    x, y = table.col('reference_core_pos').T
+    x2, y2 = table.col('reconstructed_core_pos').T
+    d = sqrt((x - x2) ** 2 + (y - y2) ** 2)
+
+    r = table.col('r')
+
+    bins = linspace(0, 50, 41)
+    x, d25, d50, d75 = [], [], [], []
+    for low, high in zip(bins[:-1], bins[1:]):
+        sel = d.compress((low <= r) & (r < high))
+
+        if len(sel) > 0:
+            x.append((low + high) / 2)
+            d25.append(scoreatpercentile(sel, 25))
+            d50.append(scoreatpercentile(sel, 50))
+            d75.append(scoreatpercentile(sel, 75))
+
+    fill_between(x, d25, d75, color='0.75')
+    plot(x, d50, 'o-', color='black')
+
+    xlabel("Core distance [m]")
+    ylabel("Core position uncertainty [m]")
     utils.saveplot()
 
 
