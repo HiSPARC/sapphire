@@ -8,6 +8,7 @@ import sys
 import numpy as np
 import pylab as plt
 from scipy import optimize
+from scipy.misc import comb
 import progressbar as pb
 
 from sapphire.simulations import ldf
@@ -321,6 +322,12 @@ def do_reconstruction_plots(table):
     plot_N_reconstructions_vs_R(table)
 
 
+Pnil = lambda x: exp(-0.5 * x)
+Pp = lambda x: 1 - Pnil(x)
+Ptrig = lambda x: comb(4, 2) * Pp(x) ** 2 * Pnil(x) ** 2 + \
+                  comb(4, 3) * Pp(x) ** 3 * Pnil(x) + \
+                  comb(4, 4) * Pp(x) ** 4
+
 def plot_N_reconstructions_vs_R(table):
     figure()
 
@@ -348,8 +355,16 @@ def plot_N_reconstructions_vs_R(table):
 
         x.append((low + high) / 2)
         y.append(len(sel2) / len(sel))
+    x = array(x)
+    y = array(y)
 
-    plot(x, y)
+    plot(x, y, label="sim")
+
+    kldf = ldf.KascadeLdf()
+    dens = kldf.calculate_ldf_value(x)
+
+    plot(x, Ptrig(dens), label="calc")
+    legend()
     xlabel("Core distance [m]")
     ylabel("Reconstruction efficiency")
     utils.saveplot()
