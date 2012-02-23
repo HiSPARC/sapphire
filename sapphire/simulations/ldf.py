@@ -19,26 +19,17 @@ class BaseLdfSimulation(BaseSimulation):
         calculate_ldf_value to complete an implementation.
 
     """
-    # Number of MIPs required to go over threshold
-    trig_threshold = .5
-
     # Alternative for observables.nrows, which is only updated with a flush()
     # We don't want to flush often, so we use (and update!) this instead
     _observables_nrows = 0
 
 
-    def __init__(self, *args, **kwargs):
-        if 'gauss' in kwargs:
-            self.gauss = kwargs.pop('gauss')
-        else:
-            self.gauss = None
+    def __init__(self, cluster, data, output, R, N, use_poisson=None, gauss=None, trig_threshold=1., **kwargs):
+        self.use_poisson = use_poisson
+        self.gauss = gauss
+        self.trig_threshold = trig_threshold
 
-        if 'use_poisson' in kwargs:
-            self.use_poisson = kwargs.pop('use_poisson')
-        else:
-            self.use_poisson = False
-
-        super(BaseLdfSimulation, self).__init__(*args, **kwargs)
+        super(BaseLdfSimulation, self).__init__(cluster, data, output, R, N, **kwargs)
 
     def run(self, positions=None):
         """Run a simulation
