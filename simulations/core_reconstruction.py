@@ -130,12 +130,16 @@ class CoreReconstruction(object):
         return xopt, yopt
 
     def plot_reconstruct_core_position(self, coincidence):
+        figure()
         xopt, yopt = self.reconstruct_core_position(coincidence)
 
         self._do_do_plot_coincidence(coincidence, use_detectors=True)
         x0, y0 = self.solver.get_center_of_mass_of_measurements()
         plt.scatter(x0, y0, color='green')
         plt.scatter(xopt, yopt, color='yellow')
+
+        xlim(-50, 50)
+        ylim(-50, 50)
 
     def draw_cluster(self):
         for station in self.cluster.stations:
@@ -354,8 +358,9 @@ def plot_N_reconstructions_vs_R(table):
         sel = r.compress((low <= r) & (r < high))
         sel2 = r2.compress((low <= r2) & (r2 < high))
 
-        x.append((low + high) / 2)
-        y.append(len(sel2) / len(sel))
+        if len(sel) > 0:
+            x.append((low + high) / 2)
+            y.append(len(sel2) / len(sel))
     x = array(x)
     y = array(y)
 
@@ -417,6 +422,8 @@ if __name__ == '__main__':
         c = CoreReconstruction(data, '/ldfsim/poisson', '/reconstructions/poisson')
         c.reconstruct_core_positions('/ldfsim/poisson')
 
+        c = CoreReconstruction(data, '/ldfsim/poisson_gauss_20', '/reconstructions/poisson_gauss_20')
+        c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
     utils.set_prefix("COR-")
 
@@ -431,3 +438,6 @@ if __name__ == '__main__':
 
     utils.set_suffix("-POISSON")
     do_reconstruction_plots(data.root.reconstructions.poisson)
+
+    utils.set_suffix("-POISSON-GAUSS_20")
+    do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20)

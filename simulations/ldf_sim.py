@@ -39,3 +39,6 @@ if __name__ == '__main__':
 
     simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/poisson', R=60, N=N, use_poisson=True)
     simulation.run()
+
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/poisson_gauss_20', R=60, N=N, use_poisson=True, gauss=.2)
+    simulation.run()

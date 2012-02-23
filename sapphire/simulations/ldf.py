@@ -20,7 +20,7 @@ class BaseLdfSimulation(BaseSimulation):
 
     """
     # Number of MIPs required to go over threshold
-    trig_threshold = .8
+    trig_threshold = .5
 
     # Alternative for observables.nrows, which is only updated with a flush()
     # We don't want to flush often, so we use (and update!) this instead
@@ -91,7 +91,7 @@ class BaseLdfSimulation(BaseSimulation):
             num_particles.append(self.simulate_detector_observables(detector, event))
         id = self.write_observables_and_return_id(station, event, *num_particles)
 
-        num_detectors_over_threshold = sum([True if u >= 1 else False for u
+        num_detectors_over_threshold = sum([True if u >= self.trig_threshold else False for u
                                             in num_particles])
         if num_detectors_over_threshold >= 2:
             has_triggered = True
@@ -105,13 +105,13 @@ class BaseLdfSimulation(BaseSimulation):
         density = self.calculate_ldf_value(R)
         num_particles = density * detector.get_area()
 
-        if self.gauss is not None:
-            N = num_particles * np.random.normal(loc=1., scale=self.gauss)
+        if self.use_poisson:
+            N = np.random.poisson(num_particles)
         else:
             N = num_particles
 
-        if self.use_poisson:
-            N = np.random.poisson(N)
+        if self.gauss is not None and N > 0:
+            N = np.random.normal(loc=N, scale=sqrt(N) * self.gauss)
 
         return N
 
