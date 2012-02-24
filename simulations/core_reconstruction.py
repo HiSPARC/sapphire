@@ -417,6 +417,8 @@ def do_reconstruction_plots(table):
 
     plot_N_reconstructions_vs_R(table)
     plot_core_pos_uncertainty_vs_R(table)
+    plot_shower_size_hist(table)
+
 
 Pnil = lambda x: exp(-0.5 * x)
 Pp = lambda x: 1 - Pnil(x)
@@ -432,7 +434,10 @@ def plot_N_reconstructions_vs_R(table):
     x, y, alpha = station.get_xyalpha_coordinates()
 
     sim_path = table._v_pathname.replace('reconstructions', 'ldfsim')
-    sim = data.getNode(sim_path)
+    try:
+        sim = data.getNode(sim_path)
+    except tables.NoSuchNodeError:
+        return
 
     # core distance for simulated events
     x2 = sim.coincidences.col('x')
@@ -493,6 +498,18 @@ def plot_core_pos_uncertainty_vs_R(table):
     ylabel("Core position uncertainty [m]")
     utils.saveplot()
 
+def plot_shower_size_hist(table):
+    figure()
+
+    reconstructed = table.col('reconstructed_shower_size')
+
+    hist(log10(reconstructed), bins=200, histtype='step')
+    axvline(log10(table[0]['reference_shower_size']))
+
+    xlabel("log shower size")
+    ylabel("count")
+    utils.saveplot()
+
 
 if __name__ == '__main__':
     np.seterr(divide='ignore')
@@ -518,6 +535,9 @@ if __name__ == '__main__':
         c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20')
         c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
+        c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20_nonull', solver=CorePositionSolverWithoutNullMeasurements(ldf.KascadeLdf()))
+        c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
+
     utils.set_prefix("COR-")
 
     utils.set_suffix("-EXACT")
@@ -534,3 +554,6 @@ if __name__ == '__main__':
 
     utils.set_suffix("-POISSON-GAUSS_20")
     do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20)
+
+    utils.set_suffix("-POISSON-GAUSS_20_NONULL")
+    do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20_nonull)
