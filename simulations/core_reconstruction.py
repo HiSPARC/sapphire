@@ -264,6 +264,8 @@ class CoreReconstruction(object):
 
 
 class CorePositionSolver(object):
+    _normalizing_idx = None
+
     def __init__(self, ldf):
         self._measurements = []
         self._ldf = ldf
@@ -273,22 +275,48 @@ class CorePositionSolver(object):
 
     def reset_measurements(self):
         self._measurements = []
+        self._normalizing_idx = None
 
     def calculate_chi_squared_for_xy(self, (guess_x, guess_y)):
         chi_squared = 0
         for expected, observed in self._get_expected_observed(guess_x, guess_y):
-            chi_squared += (expected - observed) ** 2 / expected
+            if expected == np.Inf:
+                return np.Inf
+            else:
+                chi_squared += (expected - observed) ** 2 / expected
         return chi_squared
 
     def _get_expected_observed(self, guess_x, guess_y):
-        x0, y0, value0 = self._measurements[0]
+        normalizing_measurement, other_measurements = self._get_normalizing_and_other_measurements()
+
+        x0, y0, value0 = normalizing_measurement
         ldf_value0 = self._calculate_ldf_value_for_xy_xy(x0, y0, guess_x, guess_y)
 
-        for x, y, value in self._measurements[1:]:
+        for x, y, value in other_measurements:
             ldf_value = self._calculate_ldf_value_for_xy_xy(x, y, guess_x, guess_y)
             expected = ldf_value / ldf_value0
             observed = value / value0
             yield expected, observed
+
+    def _get_normalizing_and_other_measurements(self):
+        if self._normalizing_idx is not None:
+            return self._split_out_measurement_at_idx(self._normalizing_idx)
+        else:
+            for idx, (x, y, value) in enumerate(self._measurements):
+                if value > 0:
+                    break
+
+            self._normalizing_idx = idx
+
+            if value <= 0:
+                raise RuntimeError("BUG: serious problem with detector measurements!")
+            else:
+                return self._split_out_measurement_at_idx(idx)
+
+    def _split_out_measurement_at_idx(self, idx):
+        measurement = self._measurements[idx]
+        other_measurements = self._measurements[:idx] + self._measurements[idx + 1:]
+        return measurement, other_measurements
 
     def _calculate_ldf_value_for_xy_xy(self, x0, y0, x1, y1):
         r = np.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
@@ -409,6 +437,8 @@ def plot_core_pos_uncertainty_vs_R(table):
 
 
 if __name__ == '__main__':
+    np.seterr(divide='ignore')
+
     try:
         data
     except NameError:
