@@ -30,7 +30,7 @@ class KascadeLdfSimulationTest(unittest.TestCase):
             mock_base_init.assert_called_once_with(cluster, data, output, R, N=N)
 
     def test_calculate_ldf_value_useful_immediately_after_init(self):
-        self.simulation.calculate_ldf_value(1.)
+        self.simulation.calculate_ldf_value(1., 10 ** 4.8)
 
     def test_run_calls_super_run(self):
         with patch.object(BaseLdfSimulation, 'run') as mock_run:
@@ -43,7 +43,7 @@ class KascadeLdfSimulationTest(unittest.TestCase):
                             1.37707188e+00, 4.57377254e-01, 1.30067636e-01,
                             3.26255672e-02, 7.46150200e-03, 1.60164385e-03,
                             3.29852843e-04])
-        actual = self.simulation.calculate_ldf_value(r)
+        actual = self.simulation.calculate_ldf_value(r, 10 ** 4.8)
 
         self.assertTrue(((expected - actual) / expected < 1e-8).all())
 

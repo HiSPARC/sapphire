@@ -92,6 +92,7 @@ class CoreReconstruction(object):
         dst_row['reference_phi'] = coincidence['shower_phi']
         dst_row['reference_core_pos'] = coincidence['x'], coincidence['y']
         dst_row['reconstructed_core_pos'] = reconstructed_core_x, reconstructed_core_y
+        dst_row['reference_shower_size'] = coincidence['shower_size']
         dst_row['reconstructed_shower_size'] = reconstructed_shower_size
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
         dst_row.append()

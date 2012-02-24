@@ -24,10 +24,11 @@ class BaseLdfSimulation(BaseSimulation):
     _observables_nrows = 0
 
 
-    def __init__(self, cluster, data, output, R, N, use_poisson=None, gauss=None, trig_threshold=1., **kwargs):
+    def __init__(self, cluster, data, output, R, N, shower_size=10 ** 4.8, use_poisson=None, gauss=None, trig_threshold=1., **kwargs):
         self.use_poisson = use_poisson
         self.gauss = gauss
         self.trig_threshold = trig_threshold
+        self.shower_size = shower_size
 
         super(BaseLdfSimulation, self).__init__(cluster, data, output, R, N, **kwargs)
 
@@ -54,7 +55,8 @@ class BaseLdfSimulation(BaseSimulation):
 
         for event_id, (r, phi) in progress(enumerate(positions)):
             event = {'id': event_id, 'r': r, 'phi': phi, 'alpha': 0.,
-                     'shower_theta': 0., 'shower_phi': 0.}
+                     'shower_theta': 0., 'shower_phi': 0.,
+                     'shower_size': self.shower_size}
             self.simulate_event(event)
 
         self.coincidences.flush()
@@ -93,7 +95,7 @@ class BaseLdfSimulation(BaseSimulation):
 
     def simulate_detector_observables(self, detector, event):
         R = self.calculate_core_distance(detector, event)
-        density = self.calculate_ldf_value(R)
+        density = self.calculate_ldf_value(R, event['shower_size'])
         num_particles = density * detector.get_area()
 
         if self.use_poisson:
@@ -115,7 +117,7 @@ class BaseLdfSimulation(BaseSimulation):
 
         return sqrt((x - X) ** 2 + (y - Y) ** 2)
 
-    def calculate_ldf_value(self, R):
+    def calculate_ldf_value(self, R, shower_size):
         return 0.
 
     def write_observables_and_return_id(self, station, event, n1, n2, n3, n4):
@@ -147,17 +149,40 @@ class BaseLdfSimulation(BaseSimulation):
 
         return self._observables_nrows - 1
 
+    def write_coincidence(self, event, N):
+        """Write coincidence information
+
+        :param event: simulated shower event information
+        :param N: number of stations which triggered
+
+        """
+        row = self.coincidences.row
+
+        r = event['r']
+        phi = event['phi']
+        row['id'] = event['id']
+        row['N'] = N
+        row['r'] = r
+        row['phi'] = phi
+        row['x'] = r * cos(phi)
+        row['y'] = r * sin(phi)
+        row['shower_theta'] = event['shower_theta']
+        row['shower_phi'] = event['shower_phi']
+        row['shower_size'] = event['shower_size']
+        row.append()
+
 
 class KascadeLdfSimulation(BaseLdfSimulation):
     def __init__(self, *args, **kwargs):
+        Ne = kwargs.pop('Ne', None)
+        s = kwargs.pop('s', None)
+
         super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
 
-        Ne = kwargs.get('Ne', None)
-        s = kwargs.get('s', None)
         self.ldf = KascadeLdf(Ne, s)
 
-    def calculate_ldf_value(self, r):
-        return self.ldf.calculate_ldf_value(r)
+    def calculate_ldf_value(self, r, shower_size):
+        return self.ldf.get_ldf_value_for_size(r, shower_size)
 
 
 class KascadeLdf():
