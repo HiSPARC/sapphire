@@ -38,10 +38,8 @@ if USE_TEX:
 
 
 class CoreReconstruction(object):
-    def __init__(self, data, simulation_path, results_table=None, solver=None, N=None, overwrite=False):
+    def __init__(self, data, results_table=None, solver=None, N=None, overwrite=False):
         self.data = data
-        self.simulation = data.getNode(simulation_path)
-        self.cluster = self.simulation._v_attrs.cluster
 
         if results_table:
             self.results_table = self.create_empty_output_table(results_table, overwrite)
@@ -97,17 +95,20 @@ class CoreReconstruction(object):
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
         dst_row.append()
 
-    def reconstruct_core_positions(self, group):
-        group = self.data.getNode(group)
-        observables = group.observables
-        coincidence_table = group.coincidences
-        self.station, = group._v_attrs.cluster.stations
-        if not 'cluster' in self.results_table.attrs:
-            self.results_table.attrs.cluster = group._v_attrs.cluster
+
+    def reconstruct_core_positions(self, source):
+        source = self.data.getNode(source)
+        self.source = source
+
+        self.cluster = source._v_attrs.cluster
+        self._store_cluster_with_results()
 
         progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                               pb.ETA()],
                                      fd=sys.stderr)
+
+        observables = source.observables
+        coincidence_table = source.coincidences
 
         for event, coincidence in progressbar(zip(observables[:self.N], coincidence_table[:self.N])):
             assert event['id'] == coincidence['id']
@@ -187,8 +188,8 @@ class CoreReconstruction(object):
         events = []
         id = coincidence['id']
 
-        for index in self.simulation.c_index[id]:
-            events.append(self.simulation.observables[index])
+        for index in self.source.c_index[id]:
+            events.append(self.source.observables[index])
 
         return events
 
@@ -256,6 +257,10 @@ class CoreReconstruction(object):
     def _get_station_from_event(self, event):
         station_id = event['station_id']
         return self.cluster.stations[station_id - 1]
+
+    def _store_cluster_with_results(self):
+        if not 'cluster' in self.results_table.attrs:
+            self.results_table.attrs.cluster = self.cluster
 
 
 class CorePositionSolver(object):
@@ -410,19 +415,19 @@ if __name__ == '__main__':
         data = tables.openFile(DATAFILE, 'a')
 
     if '/reconstructions' not in data:
-        c = CoreReconstruction(data, '/ldfsim/exact', '/reconstructions/exact')
+        c = CoreReconstruction(data, '/reconstructions/exact')
         c.reconstruct_core_positions('/ldfsim/exact')
 
-        c = CoreReconstruction(data, '/ldfsim/gauss_10', '/reconstructions/gauss_10')
+        c = CoreReconstruction(data, '/reconstructions/gauss_10')
         c.reconstruct_core_positions('/ldfsim/gauss_10')
 
-        c = CoreReconstruction(data, '/ldfsim/gauss_20', '/reconstructions/gauss_20')
+        c = CoreReconstruction(data, '/reconstructions/gauss_20')
         c.reconstruct_core_positions('/ldfsim/gauss_20')
 
-        c = CoreReconstruction(data, '/ldfsim/poisson', '/reconstructions/poisson')
+        c = CoreReconstruction(data, '/reconstructions/poisson')
         c.reconstruct_core_positions('/ldfsim/poisson')
 
-        c = CoreReconstruction(data, '/ldfsim/poisson_gauss_20', '/reconstructions/poisson_gauss_20')
+        c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20')
         c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
     utils.set_prefix("COR-")
