@@ -129,7 +129,7 @@ class CoreReconstruction(object):
         x0, y0 = solver.get_center_of_mass_of_measurements()
         xopt, yopt = optimize.fmin(solver.calculate_chi_squared_for_xy, (x0, y0), disp=0)
 
-        r, dens = solver.get_ldf_measurements_for_core_position((x0, y0))
+        r, dens = solver.get_ldf_measurements_for_core_position((xopt, yopt))
         sigma = where(dens > 1, sqrt(dens), 1.)
         popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens, p0=(1e5,), sigma=sigma)
         shower_size, = popt
@@ -183,7 +183,8 @@ class PlotCoreReconstruction(CoreReconstruction):
         coincidence = self.get_coincidence_with_multiplicity(coincidence_idx, multiplicity, min_detectors)
 
         figure()
-        xopt, yopt = self.reconstruct_core_position(coincidence)
+        subplot(121)
+        xopt, yopt, shower_size = self.reconstruct_core_position(coincidence)
 
         self._do_do_plot_coincidence(coincidence, use_detectors=True)
         x0, y0 = self.solver.get_center_of_mass_of_measurements()
@@ -192,6 +193,9 @@ class PlotCoreReconstruction(CoreReconstruction):
 
         xlim(-50, 50)
         ylim(-50, 50)
+
+        subplot(122)
+        self._do_plot_ldf(coincidence, xopt, yopt, shower_size)
 
     def get_coincidence_with_multiplicity(self, index, multiplicity, num_detectors):
         coincidences = self.source.coincidences.read()
@@ -240,6 +244,18 @@ class PlotCoreReconstruction(CoreReconstruction):
         else:
             method = "station-averaged signal"
         plt.title("Coincidence (%d-fold) #%d\n%s\n%s" % (coincidence['N'], index, method, type(self.solver).__name__))
+
+    def _do_plot_ldf(self, coincidence, x0, y0, shower_size):
+        x = logspace(-1, 2, 100)
+        y = self.solver.ldf_given_size(x, shower_size)
+        loglog(x, y, label='LDF')
+
+        r, dens = self.solver.get_ldf_measurements_for_core_position((x0, y0))
+        loglog(r, dens, 'o', label="signals")
+
+        legend()
+        xlabel("Core distance [m]")
+        ylabel("Particle density [$m^{-2}$]")
 
     def _plot_chi_squared_on_map(self, coincidence, use_detectors=False):
         solver = self.solver
