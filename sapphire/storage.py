@@ -280,6 +280,7 @@ class ReconstructedEvent(tables.IsDescription):
     reconstructed_phi = tables.Float32Col()
     reference_core_pos = tables.Float32Col(shape=2)
     reconstructed_core_pos = tables.Float32Col(shape=2)
+    reconstructed_shower_size = tables.Float32Col()
     min_n134 = tables.Float32Col()
 
 

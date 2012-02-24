@@ -72,7 +72,7 @@ class CoreReconstruction(object):
         return table
 
     def store_reconstructed_event(self, coincidence, event, reconstructed_core_x,
-                                  reconstructed_core_y):
+                                  reconstructed_core_y, reconstructed_shower_size):
         dst_row = self.results_table.row
 
         dst_row['id'] = event['id']
@@ -92,6 +92,7 @@ class CoreReconstruction(object):
         dst_row['reference_phi'] = coincidence['shower_phi']
         dst_row['reference_core_pos'] = coincidence['x'], coincidence['y']
         dst_row['reconstructed_core_pos'] = reconstructed_core_x, reconstructed_core_y
+        dst_row['reconstructed_shower_size'] = reconstructed_shower_size
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
         dst_row.append()
 
@@ -114,8 +115,8 @@ class CoreReconstruction(object):
             assert event['id'] == coincidence['id']
 
             if coincidence['N'] >= 1:
-                x, y = self.reconstruct_core_position(coincidence)
-                self.store_reconstructed_event(coincidence, event, x, y)
+                x, y, N = self.reconstruct_core_position(coincidence)
+                self.store_reconstructed_event(coincidence, event, x, y, N)
 
         self.results_table.flush()
 
@@ -128,7 +129,12 @@ class CoreReconstruction(object):
         x0, y0 = solver.get_center_of_mass_of_measurements()
         xopt, yopt = optimize.fmin(solver.calculate_chi_squared_for_xy, (x0, y0), disp=0)
 
-        return xopt, yopt
+        r, dens = solver.get_ldf_measurements_for_core_position((x0, y0))
+        sigma = where(dens > 1, sqrt(dens), 1.)
+        popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens, p0=(1e5,), sigma=sigma)
+        shower_size, = popt
+
+        return xopt, yopt, shower_size
 
     def get_events_from_coincidence(self, coincidence):
         events = []
@@ -298,6 +304,22 @@ class CorePositionSolver(object):
             else:
                 chi_squared += (expected - observed) ** 2 / expected
         return chi_squared
+
+    def get_ldf_measurements_for_core_position(self, (x0, y0)):
+        # FIXME
+        area = .5
+
+        r, ldf = [], []
+        for x, y, value in self._measurements:
+            core_distance = np.sqrt((x0 - x) ** 2 + (y0 - y) ** 2)
+            if core_distance == 0.:
+                core_distance = 1e-2
+            r.append(core_distance)
+            ldf.append(value / area)
+        return array(r), array(ldf)
+
+    def ldf_given_size(self, r, shower_size):
+        return self._ldf.get_ldf_value_for_size(r, shower_size)
 
     def _get_expected_observed(self, guess_x, guess_y):
         normalizing_measurement, other_measurements = self._get_normalizing_and_other_measurements()

@@ -182,6 +182,9 @@ class KascadeLdf():
     def calculate_ldf_value(self, r):
         return self.get_ldf_value_for_size_and_shape(r, self._Ne, self._s)
 
+    def get_ldf_value_for_size(self, r, Ne):
+        return self.get_ldf_value_for_size_and_shape(r, Ne, self._s)
+
     def get_ldf_value_for_size_and_shape(self, r, Ne, s):
         c_s = self._c_s
         r0 = self._r0
