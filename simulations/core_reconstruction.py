@@ -123,7 +123,7 @@ class CoreReconstruction(object):
         solver = self.solver
 
         solver.reset_measurements()
-        self._add_detector_measurements_to_solver(solver, coincidence)
+        self._add_individual_detector_measurements_to_solver(solver, coincidence)
 
         x0, y0 = solver.get_center_of_mass_of_measurements()
         xopt, yopt = optimize.fmin(solver.calculate_chi_squared_for_xy, (x0, y0), disp=0)
@@ -139,13 +139,13 @@ class CoreReconstruction(object):
 
         return events
 
-    def _add_station_measurements_to_solver(self, solver, coincidence):
+    def _add_station_averaged_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
             if self._station_has_triggered(event):
                 value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
                 solver.add_measurement_at_xy(event['x'], event['y'], value)
 
-    def _add_detector_measurements_to_solver(self, solver, coincidence):
+    def _add_individual_detector_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
             station = self._get_station_from_event(event)
             if self._station_has_triggered(event):
@@ -187,13 +187,13 @@ class PlotCoreReconstruction(CoreReconstruction):
         xlim(-50, 50)
         ylim(-50, 50)
 
-    def get_coincidence_with_multiplicity(self, index, multiplicity, min_detectors):
+    def get_coincidence_with_multiplicity(self, index, multiplicity, num_detectors):
         coincidences = self.source.coincidences.read()
         sel = coincidences.compress(coincidences[:]['N'] >= multiplicity)
         coords = sel['id']
 
         events = self.source.observables.readCoordinates(coords)
-        events_sel = events.compress(events[:]['N'] >= min_detectors)
+        events_sel = events.compress(events[:]['N'] == num_detectors)
 
         idx = events_sel[index]['id']
         return coincidences[idx]
@@ -240,7 +240,7 @@ class PlotCoreReconstruction(CoreReconstruction):
         solver.reset_measurements()
 
         if use_detectors:
-            self._add_detector_measurements_to_solver(solver, coincidence)
+            self._add_individual_detector_measurements_to_solver(solver, coincidence)
         else:
             self._add_station_measurements_to_solver(solver, coincidence)
 
@@ -345,6 +345,12 @@ class CorePositionSolver(object):
         return x0, y0
 
 
+class CorePositionSolverWithoutNullMeasurements(CorePositionSolver):
+    def add_measurement_at_xy(self, x, y, value):
+        if value > 0:
+            self._measurements.append((x, y, value))
+
+
 class OverdeterminedCorePositionSolver(CorePositionSolver):
     def _get_expected_observed(self, guess_x, guess_y):
         for (x1, y1, value1), (x2, y2, value2) in combinations(self._measurements, 2):
@@ -361,6 +367,9 @@ class CorePositionCirclesSolver(CorePositionSolver):
         for expected, observed in self._get_expected_observed(guess_x, guess_y):
             chi_squared *= (expected - observed) ** 2 / expected
         return chi_squared
+
+class CorePositionCirclesSolverWithoutNullMeasurements(CorePositionSolverWithoutNullMeasurements, CorePositionCirclesSolver):
+    pass
 
 
 class OverdeterminedCorePositionCirclesSolver(CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
