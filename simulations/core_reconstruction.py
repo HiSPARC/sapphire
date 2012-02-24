@@ -323,16 +323,13 @@ class CorePositionSolver(object):
         return chi_squared
 
     def get_ldf_measurements_for_core_position(self, (x0, y0)):
-        # FIXME
-        area = .5
-
         r, ldf = [], []
         for x, y, value in self._measurements:
             core_distance = np.sqrt((x0 - x) ** 2 + (y0 - y) ** 2)
             if core_distance == 0.:
                 core_distance = 1e-2
             r.append(core_distance)
-            ldf.append(value / area)
+            ldf.append(value)
         return array(r), array(ldf)
 
     def ldf_given_size(self, r, shower_size):
