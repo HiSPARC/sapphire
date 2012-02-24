@@ -130,7 +130,12 @@ class CoreReconstruction(object):
 
         return xopt, yopt
 
-    def plot_reconstruct_core_position(self, coincidence):
+    def plot_reconstruct_core_position(self, source, coincidence_idx, multiplicity=1, min_detectors=3):
+        source = self.data.getNode(source)
+        self.source = source
+        self.cluster = source._v_attrs.cluster
+        coincidence = self.get_coincidence_with_multiplicity(coincidence_idx, multiplicity, min_detectors)
+
         figure()
         xopt, yopt = self.reconstruct_core_position(coincidence)
 
@@ -179,10 +184,16 @@ class CoreReconstruction(object):
             method = "station-averaged signal"
         plt.title("Coincidence (%d-fold) #%d\n%s\n%s" % (coincidence['N'], index, method, type(self.solver).__name__))
 
-    def get_coincidence_with_multiplicity(self, index, multiplicity):
-        coincidences = self.simulation.coincidences.read()
+    def get_coincidence_with_multiplicity(self, index, multiplicity, min_detectors):
+        coincidences = self.source.coincidences.read()
         sel = coincidences.compress(coincidences[:]['N'] >= multiplicity)
-        return sel[index]
+        coords = sel['id']
+
+        events = self.source.observables.readCoordinates(coords)
+        events_sel = events.compress(events[:]['N'] >= min_detectors)
+
+        idx = events_sel[index]['id']
+        return coincidences[idx]
 
     def get_events_from_coincidence(self, coincidence):
         events = []
@@ -212,7 +223,7 @@ class CoreReconstruction(object):
         for i in range(len(x)):
             for j in range(len(y)):
                 chi_squared[j][i] = solver.calculate_chi_squared_for_xy((x[i], y[j]))
-        plt.contourf(x, y, mylog(chi_squared), 50, cmap=plt.cm.rainbow)
+        plt.contourf(x, y, mylog(chi_squared), 100, cmap=plt.cm.rainbow)
         plt.colorbar()
 
     def _add_station_measurements_to_solver(self, solver, coincidence):
