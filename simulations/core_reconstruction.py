@@ -192,6 +192,9 @@ class PlotCoreReconstruction(CoreReconstruction):
         plt.scatter(x0, y0, color='green')
         plt.scatter(xopt, yopt, color='yellow')
 
+        xs, ys = array(self.solver._make_guess_position_list(x0, y0)).T
+        scatter(xs, ys, color='cyan', s=5)
+
         xlim(-50, 50)
         ylim(-50, 50)
 
@@ -313,11 +316,12 @@ class CorePositionSolver(object):
         self._measurements = []
         self._normalizing_idx = None
 
-    def optimize_core_position(self, x0, y0, retries=3):
+    def optimize_core_position(self, x0, y0):
         best_value = self.calculate_chi_squared_for_xy((x0, y0))
-        best_xy = x0, y0
 
-        for i in range(retries):
+        pos_list = self._make_guess_position_list(x0, y0)
+
+        for x0, y0 in pos_list:
             xopt, yopt = optimize.fmin(self.calculate_chi_squared_for_xy,
                                        (x0, y0), disp=0)
             value = self.calculate_chi_squared_for_xy((xopt, yopt))
@@ -325,19 +329,22 @@ class CorePositionSolver(object):
                 best_value = value
                 best_xy = xopt, yopt
 
-#            print xopt, yopt, value,
-
-            # reset if distance > 1 km
-            distance_sq = (xopt - x0) ** 2 + (yopt - y0) ** 2
-            if distance_sq > 1e3 ** 2:
-                xopt, yopt = x0, y0
-
-            x0 = xopt + np.random.uniform(-10, 10)
-            y0 = yopt + np.random.uniform(-10, 10)
-
-#            print x0, y0
-
         return best_xy
+
+    def _make_guess_position_list(self, x0, y0):
+        """Create list of starting positions using inflection"""
+
+        pos_list = [(x0, y0)]
+        for x, y, value in self._measurements:
+            r = sqrt((x - x0) ** 2 + (y - y0) ** 2)
+            phi = arctan2(y0 - y, x0 - x)
+
+            x1 = x + r * cos(phi + pi)
+            y1 = y + r * sin(phi + pi)
+
+            pos_list.append((x1, y1))
+
+        return pos_list
 
     def calculate_chi_squared_for_xy(self, (guess_x, guess_y)):
         chi_squared = 0
