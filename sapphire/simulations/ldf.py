@@ -24,10 +24,7 @@ class BaseLdfSimulation(BaseSimulation):
     _observables_nrows = 0
 
 
-    def __init__(self, cluster, data, output, R, N, shower_size=10 ** 4.8, use_poisson=None, gauss=None, trig_threshold=1., **kwargs):
-        self.use_poisson = use_poisson
-        self.gauss = gauss
-        self.trig_threshold = trig_threshold
+    def __init__(self, cluster, data, output, R, N, shower_size=10 ** 4.8, **kwargs):
         self.shower_size = shower_size
 
         super(BaseLdfSimulation, self).__init__(cluster, data, output, R, N, **kwargs)
@@ -82,10 +79,11 @@ class BaseLdfSimulation(BaseSimulation):
         num_particles = []
         for detector in station.detectors:
             num_particles.append(self.simulate_detector_observables(detector, event))
-        id = self.write_observables_and_return_id(station, event, *num_particles)
+        signals = self.simulate_detector_signals(num_particles)
+        id = self.write_observables_and_return_id(station, event, signals)
 
         num_detectors_over_threshold = sum([True if u >= self.trig_threshold else False for u
-                                            in num_particles])
+                                            in signals])
         if num_detectors_over_threshold >= 2:
             has_triggered = True
         else:
@@ -98,15 +96,7 @@ class BaseLdfSimulation(BaseSimulation):
         density = self.calculate_ldf_value(R, event['shower_size'])
         num_particles = density * detector.get_area()
 
-        if self.use_poisson:
-            N = np.random.poisson(num_particles)
-        else:
-            N = num_particles
-
-        if self.gauss is not None and N > 0:
-            N = np.random.normal(loc=N, scale=sqrt(N) * self.gauss)
-
-        return N
+        return num_particles
 
     def calculate_core_distance(self, detector, event):
         r, phi = event['r'], event['phi']
@@ -120,7 +110,7 @@ class BaseLdfSimulation(BaseSimulation):
     def calculate_ldf_value(self, R, shower_size):
         return 0.
 
-    def write_observables_and_return_id(self, station, event, n1, n2, n3, n4):
+    def write_observables_and_return_id(self, station, event, num_particles):
         """Write observables from a single event
 
         :param station: Station instance
@@ -133,20 +123,15 @@ class BaseLdfSimulation(BaseSimulation):
         x, y, alpha = station.get_xyalpha_coordinates()
         r, phi, alpha = station.get_rphialpha_coordinates()
 
-        row['id'] = event['id']
-        row['station_id'] = station.station_id
-        row['r'] = r
-        row['phi'] = phi
-        row['x'] = x
-        row['y'] = y
-        row['alpha'] = alpha
-        row['N'] = sum([1 if u >= self.trig_threshold else 0 for u
-                        in n1, n2, n3, n4])
-        row['t1'], row['t2'], row['t3'], row['t4'] = 0, 0, 0, 0
-        row['n1'], row['n2'], row['n3'], row['n4'] = n1, n2, n3, n4
-        row.append()
-        self._observables_nrows += 1
+        station = {'id': event['id'], 'station_id': station.station_id,
+                   'r': r, 'phi': phi, 'alpha': alpha}
 
+        timings = 4 * [0.]
+
+        super(BaseLdfSimulation, self).write_observables(station, num_particles,
+                                                         timings)
+
+        self._observables_nrows += 1
         return self._observables_nrows - 1
 
     def write_coincidence(self, event, N):

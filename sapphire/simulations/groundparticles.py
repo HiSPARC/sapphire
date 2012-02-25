@@ -329,7 +329,9 @@ Number of cluster positions in simulation: %d
                                     # finish business, but no new particles
                                     # will be processed
                                     particle['id'] = -1
-                        self.write_observables(header, t)
+                        timings = self.simulate_timings(t)
+                        num_particles = [len(u) for u in t]
+                        self.write_observables(header, num_particles, timings)
                         # trigger if Ndet hit >= 2
                         if sum([1 if u else 0 for u in t]) >= 2:
                             N += 1
@@ -357,7 +359,7 @@ Number of cluster positions in simulation: %d
             data[col] = row[col]
         return data
 
-    def write_observables(self, observables, t):
+    def write_observables(self, observables, num_particles, timings):
         """Transform coordinates before calling super
 
         Until now, the simulation has set new cluster coordinates for each
@@ -385,7 +387,7 @@ Number of cluster positions in simulation: %d
         observables['phi'] = phi
         observables['alpha'] = alpha
 
-        super(GroundParticlesSimulation, self).write_observables(observables, t)
+        super(GroundParticlesSimulation, self).write_observables(observables, num_particles, timings)
 
     def write_coincidence(self, event, N):
         """Transform coordinates before calling super

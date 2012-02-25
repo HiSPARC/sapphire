@@ -7,7 +7,7 @@
 import tables
 import os.path
 import textwrap
-from math import pi, sin, cos
+from math import pi, sin, cos, sqrt
 import numpy as np
 
 from sapphire import storage
@@ -22,7 +22,9 @@ class BaseSimulation(object):
 
     """
 
-    def __init__(self, cluster, data, output, R, N, force=False):
+    def __init__(self, cluster, data, output, R, N,
+                 use_poisson=None, gauss=None, trig_threshold=1.,
+                 force=False):
         """Simulation initialization
 
         :param cluster: BaseCluster (or derived) instance
@@ -38,6 +40,10 @@ class BaseSimulation(object):
         self.data = data
         self.R = R
         self.N = N
+
+        self.use_poisson = use_poisson
+        self.gauss = gauss
+        self.trig_threshold = trig_threshold
 
         if output in data and not force:
             raise RuntimeError("Cancelling simulation; %s already exists?"
@@ -107,18 +113,10 @@ class BaseSimulation(object):
             r = np.sqrt(np.random.uniform(0, self.R ** 2))
             yield r, phi
 
-    def write_observables(self, station, t):
-        """Write observables from a single event
+    def write_observables(self, station, signals, timings):
+        """Write observables from a single event"""
 
-        :param station: station object
-        :param t: 4-tuple of lists containing the arrival times of the
-                  particles in the four detectors, e.g.
-                  ([13.3, 8.6, 33.2], [], [3.4], [8.7, 3.6])
-
-        """
         row = self.observables.row
-
-        timings = self.simulate_timings(t)
 
         r = station['r']
         phi = station['phi']
@@ -129,10 +127,9 @@ class BaseSimulation(object):
         row['x'] = r * cos(phi)
         row['y'] = r * sin(phi)
         row['alpha'] = station['alpha']
-        row['N'] = sum([1 if u else 0 for u in t])
+        row['N'] = sum([1 if u >= self.trig_threshold else 0 for u in signals])
         row['t1'], row['t2'], row['t3'], row['t4'] = timings
-        row['n1'], row['n2'], row['n3'], row['n4'] = \
-            [len(u) for u in t]
+        row['n1'], row['n2'], row['n3'], row['n4'] = signals
         row.append()
 
     def simulate_timings(self, t):
@@ -157,6 +154,24 @@ class BaseSimulation(object):
                 dt.append((x + 0.3781) / 0.2018)
 
         return dt
+
+    def simulate_detector_signals(self, num_particles_in_detectors):
+        signal = []
+        for num_particles in num_particles_in_detectors:
+            signal.append(self.simulate_single_detector_signal(num_particles))
+        return signal
+
+    def simulate_single_detector_signal(self, num_particles):
+        if self.use_poisson:
+            num_particles = np.random.poisson(num_particles)
+
+        if self.gauss is not None and num_particles > 0:
+            signal = np.random.normal(loc=num_particles,
+                                      scale=sqrt(num_particles) * self.gauss)
+        else:
+            signal = num_particles
+
+        return signal
 
     def write_coincidence(self, event, N):
         """Write coincidence information
