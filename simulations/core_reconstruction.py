@@ -418,6 +418,7 @@ def do_reconstruction_plots(table):
     plot_N_reconstructions_vs_R(table)
     plot_core_pos_uncertainty_vs_R(table)
     plot_shower_size_hist(table)
+    plot_scatter_reconstructed_core(table)
 
 
 Pnil = lambda x: exp(-0.5 * x)
@@ -508,6 +509,32 @@ def plot_shower_size_hist(table):
 
     xlabel("log shower size")
     ylabel("count")
+    utils.saveplot()
+
+def plot_scatter_reconstructed_core(table):
+    figsize = rcParams['figure.figsize']
+    figsize[0] = figsize[1] * 2
+
+    figure(figsize=figsize)
+
+    subplot(121)
+    x, y = table.col('reference_core_pos').T
+    plot(x, y, ',')
+    xlabel("Distance [m]")
+    ylabel("Distance [m]")
+    xlim(-60, 60)
+    ylim(-60, 60)
+    title("simulated")
+
+    subplot(122)
+    x, y = table.col('reconstructed_core_pos').T
+    plot(x, y, ',')
+    xlabel("Distance [m]")
+    ylabel("Distance [m]")
+    xlim(-60, 60)
+    ylim(-60, 60)
+    title("reconstructed")
+
     utils.saveplot()
 
 
