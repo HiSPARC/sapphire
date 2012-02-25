@@ -25,7 +25,7 @@ class GroundParticlesSimulation(BaseSimulation):
     the simulation.
     """
 
-    def __init__(self, cluster, data, grdpcles, output, R, N, force=False):
+    def __init__(self, cluster, data, grdpcles, output, R, N, force=False, *args, **kwargs):
         """Simulation initialization
 
         :param cluster: BaseCluster (or derived) instance
@@ -48,7 +48,7 @@ class GroundParticlesSimulation(BaseSimulation):
 
         self.shower_theta = self.get_shower_theta_from_grdpcles_group()
 
-        super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force)
+        super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force, *args, **kwargs)
 
     def get_shower_theta_from_grdpcles_group(self):
         group_name = self.grdpcles._v_pathname
@@ -331,9 +331,10 @@ Number of cluster positions in simulation: %d
                                     particle['id'] = -1
                         timings = self.simulate_timings(t)
                         num_particles = [len(u) for u in t]
-                        self.write_observables(header, num_particles, timings)
+                        signals = self.simulate_detector_signals(num_particles)
+                        self.write_observables(header, signals, timings)
                         # trigger if Ndet hit >= 2
-                        if sum([1 if u else 0 for u in t]) >= 2:
+                        if sum([1 if u >= self.trig_threshold else 0 for u in signals]) >= 2:
                             N += 1
                             # only add triggered stations to c_list, just
                             # like real data
