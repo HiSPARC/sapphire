@@ -128,7 +128,7 @@ class CoreReconstruction(object):
         self._add_individual_detector_measurements_to_solver(solver, coincidence)
 
         x0, y0 = solver.get_center_of_mass_of_measurements()
-        xopt, yopt = optimize.fmin(solver.calculate_chi_squared_for_xy, (x0, y0), disp=0)
+        xopt, yopt = solver.optimize_core_position(x0, y0)
 
         r, dens = solver.get_ldf_measurements_for_core_position((xopt, yopt))
         sigma = where(dens > 1, sqrt(dens), 1.)
@@ -177,11 +177,11 @@ class CoreReconstruction(object):
 
 
 class PlotCoreReconstruction(CoreReconstruction):
-    def plot_reconstruct_core_position(self, source, coincidence_idx, multiplicity=1, min_detectors=3):
+    def plot_reconstruct_core_position(self, source, coincidence_idx):
         source = self.data.getNode(source)
         self.source = source
         self.cluster = source._v_attrs.cluster
-        coincidence = self.get_coincidence_with_multiplicity(coincidence_idx, multiplicity, min_detectors)
+        coincidence = source.coincidences[coincidence_idx]
 
         figure()
         subplot(121)
@@ -271,8 +271,8 @@ class PlotCoreReconstruction(CoreReconstruction):
 
     def _plot_chi_squared_contours(self, solver):
         mylog = np.vectorize(lambda x: np.log10(x) if x > 0 else -999.)
-        x = np.linspace(-100, 100, 100)
-        y = np.linspace(-100, 100, 100)
+        x = np.linspace(-60, 60, 100)
+        y = np.linspace(-60, 60, 100)
         chi_squared = np.zeros((len(x), len(y)))
         for i in range(len(x)):
             for j in range(len(y)):
@@ -312,6 +312,32 @@ class CorePositionSolver(object):
     def reset_measurements(self):
         self._measurements = []
         self._normalizing_idx = None
+
+    def optimize_core_position(self, x0, y0, retries=3):
+        best_value = self.calculate_chi_squared_for_xy((x0, y0))
+        best_xy = x0, y0
+
+        for i in range(retries):
+            xopt, yopt = optimize.fmin(self.calculate_chi_squared_for_xy,
+                                       (x0, y0), disp=0)
+            value = self.calculate_chi_squared_for_xy((xopt, yopt))
+            if value < best_value:
+                best_value = value
+                best_xy = xopt, yopt
+
+#            print xopt, yopt, value,
+
+            # reset if distance > 1 km
+            distance_sq = (xopt - x0) ** 2 + (yopt - y0) ** 2
+            if distance_sq > 1e3 ** 2:
+                xopt, yopt = x0, y0
+
+            x0 = xopt + np.random.uniform(-10, 10)
+            y0 = yopt + np.random.uniform(-10, 10)
+
+#            print x0, y0
+
+        return best_xy
 
     def calculate_chi_squared_for_xy(self, (guess_x, guess_y)):
         chi_squared = 0
@@ -512,7 +538,8 @@ def plot_shower_size_hist(table):
     utils.saveplot()
 
 def plot_scatter_reconstructed_core(table):
-    figsize = rcParams['figure.figsize']
+    # Make sure to get a *copy*
+    figsize = list(rcParams['figure.figsize'])
     figsize[0] = figsize[1] * 2
 
     figure(figsize=figsize)
