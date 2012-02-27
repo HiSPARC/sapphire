@@ -335,14 +335,22 @@ class CorePositionSolver(object):
         """Create list of starting positions using inflection"""
 
         pos_list = [(x0, y0)]
-        for x, y, value in self._measurements:
-            r = sqrt((x - x0) ** 2 + (y - y0) ** 2)
-            phi = arctan2(y0 - y, x0 - x)
 
-            x1 = x + r * cos(phi + pi)
-            y1 = y + r * sin(phi + pi)
+        measurements = array(self._measurements)
+        xs = measurements[:, 0]
+        ys = measurements[:, 1]
 
-            pos_list.append((x1, y1))
+        x = mean(xs)
+        y = mean(ys)
+        rs = sqrt((xs - x) ** 2 + (ys - y) ** 2)
+        mean_r = mean(rs)
+
+        phi = arctan2(y0 - y, x0 - x)
+
+        x1 = x + 2 * mean_r * cos(phi)
+        y1 = y + 2 * mean_r * sin(phi)
+
+        pos_list.append((x1, y1))
 
         return pos_list
 
@@ -538,7 +546,10 @@ def plot_shower_size_hist(table):
     reconstructed = table.col('reconstructed_shower_size')
 
     hist(log10(reconstructed), bins=200, histtype='step')
-    axvline(log10(table[0]['reference_shower_size']))
+    reference_shower_size = table[0]['reference_shower_size']
+    if reference_shower_size == 0.:
+        reference_shower_size = 10 ** 4.8
+    axvline(log10(reference_shower_size))
 
     xlabel("log shower size")
     ylabel("count")
@@ -551,9 +562,13 @@ def plot_scatter_reconstructed_core(table):
 
     figure(figsize=figsize)
 
+    station = table.attrs.cluster.stations[0]
     subplot(121)
     x, y = table.col('reference_core_pos').T
-    plot(x, y, ',')
+    scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
+    for detector in station.detectors:
+        x, y = detector.get_xy_coordinates()
+        plt.scatter(x, y, c='r', s=20, edgecolor='none', zorder=2)
     xlabel("Distance [m]")
     ylabel("Distance [m]")
     xlim(-60, 60)
@@ -562,7 +577,10 @@ def plot_scatter_reconstructed_core(table):
 
     subplot(122)
     x, y = table.col('reconstructed_core_pos').T
-    plot(x, y, ',')
+    scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
+    for detector in station.detectors:
+        x, y = detector.get_xy_coordinates()
+        plt.scatter(x, y, c='r', s=20, edgecolor='none', zorder=2)
     xlabel("Distance [m]")
     ylabel("Distance [m]")
     xlim(-60, 60)
@@ -584,20 +602,20 @@ if __name__ == '__main__':
         c = CoreReconstruction(data, '/reconstructions/exact')
         c.reconstruct_core_positions('/ldfsim/exact')
 
-        c = CoreReconstruction(data, '/reconstructions/gauss_10')
-        c.reconstruct_core_positions('/ldfsim/gauss_10')
+        #c = CoreReconstruction(data, '/reconstructions/gauss_10')
+        #c.reconstruct_core_positions('/ldfsim/gauss_10')
 
         c = CoreReconstruction(data, '/reconstructions/gauss_20')
         c.reconstruct_core_positions('/ldfsim/gauss_20')
 
-        c = CoreReconstruction(data, '/reconstructions/poisson')
-        c.reconstruct_core_positions('/ldfsim/poisson')
+        #c = CoreReconstruction(data, '/reconstructions/poisson')
+        #c.reconstruct_core_positions('/ldfsim/poisson')
 
         c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20')
         c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
-        c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20_nonull', solver=CorePositionSolverWithoutNullMeasurements(ldf.KascadeLdf()))
-        c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
+        #c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20_nonull', solver=CorePositionSolverWithoutNullMeasurements(ldf.KascadeLdf()))
+        #c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
         c = CoreReconstruction(data, '/reconstructions/ground_gauss_20')
         c.reconstruct_core_positions('/groundsim/zenith_0/shower_0')
@@ -607,20 +625,20 @@ if __name__ == '__main__':
     utils.set_suffix("-EXACT")
     do_reconstruction_plots(data.root.reconstructions.exact)
 
-    utils.set_suffix("-GAUSS_10")
-    do_reconstruction_plots(data.root.reconstructions.gauss_10)
+    #utils.set_suffix("-GAUSS_10")
+    #do_reconstruction_plots(data.root.reconstructions.gauss_10)
 
     utils.set_suffix("-GAUSS_20")
     do_reconstruction_plots(data.root.reconstructions.gauss_20)
 
-    utils.set_suffix("-POISSON")
-    do_reconstruction_plots(data.root.reconstructions.poisson)
+    #utils.set_suffix("-POISSON")
+    #do_reconstruction_plots(data.root.reconstructions.poisson)
 
     utils.set_suffix("-POISSON-GAUSS_20")
     do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20)
 
-    utils.set_suffix("-POISSON-GAUSS_20_NONULL")
-    do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20_nonull)
+    #utils.set_suffix("-POISSON-GAUSS_20_NONULL")
+    #do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20_nonull)
 
     utils.set_suffix("-GROUND-GAUSS_20")
     do_reconstruction_plots(data.root.reconstructions.ground_gauss_20)
