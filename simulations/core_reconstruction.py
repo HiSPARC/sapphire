@@ -602,20 +602,20 @@ if __name__ == '__main__':
         c = CoreReconstruction(data, '/reconstructions/exact')
         c.reconstruct_core_positions('/ldfsim/exact')
 
-        #c = CoreReconstruction(data, '/reconstructions/gauss_10')
-        #c.reconstruct_core_positions('/ldfsim/gauss_10')
+        c = CoreReconstruction(data, '/reconstructions/gauss_10')
+        c.reconstruct_core_positions('/ldfsim/gauss_10')
 
         c = CoreReconstruction(data, '/reconstructions/gauss_20')
         c.reconstruct_core_positions('/ldfsim/gauss_20')
 
-        #c = CoreReconstruction(data, '/reconstructions/poisson')
-        #c.reconstruct_core_positions('/ldfsim/poisson')
+        c = CoreReconstruction(data, '/reconstructions/poisson')
+        c.reconstruct_core_positions('/ldfsim/poisson')
 
         c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20')
         c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
-        #c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20_nonull', solver=CorePositionSolverWithoutNullMeasurements(ldf.KascadeLdf()))
-        #c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
+        c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20_nonull', solver=CorePositionSolverWithoutNullMeasurements(ldf.KascadeLdf()))
+        c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
         c = CoreReconstruction(data, '/reconstructions/ground_gauss_20')
         c.reconstruct_core_positions('/groundsim/zenith_0/shower_0')
@@ -625,20 +625,20 @@ if __name__ == '__main__':
     utils.set_suffix("-EXACT")
     do_reconstruction_plots(data.root.reconstructions.exact)
 
-    #utils.set_suffix("-GAUSS_10")
-    #do_reconstruction_plots(data.root.reconstructions.gauss_10)
+    utils.set_suffix("-GAUSS_10")
+    do_reconstruction_plots(data.root.reconstructions.gauss_10)
 
     utils.set_suffix("-GAUSS_20")
     do_reconstruction_plots(data.root.reconstructions.gauss_20)
 
-    #utils.set_suffix("-POISSON")
-    #do_reconstruction_plots(data.root.reconstructions.poisson)
+    utils.set_suffix("-POISSON")
+    do_reconstruction_plots(data.root.reconstructions.poisson)
 
     utils.set_suffix("-POISSON-GAUSS_20")
     do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20)
 
-    #utils.set_suffix("-POISSON-GAUSS_20_NONULL")
-    #do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20_nonull)
+    utils.set_suffix("-POISSON-GAUSS_20_NONULL")
+    do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20_nonull)
 
     utils.set_suffix("-GROUND-GAUSS_20")
     do_reconstruction_plots(data.root.reconstructions.ground_gauss_20)
