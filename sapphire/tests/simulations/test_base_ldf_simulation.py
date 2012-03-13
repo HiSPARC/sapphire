@@ -13,7 +13,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
         data = MagicMock()
         output = '/simulations'
         R = sentinel.R
-        N = sentinel.N
+        N = 12345
         shower_size = sentinel.shower_size
 
         self.simulation = BaseLdfSimulation(cluster, data, output, R, N, shower_size)

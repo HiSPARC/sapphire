@@ -1,9 +1,9 @@
-from math import pi, sin, cos, sqrt
 from scipy.special import gamma
 import progressbar as pb
 import sys
 
 import numpy as np
+from numpy import pi, arccos, sin, cos, sqrt
 
 from base import BaseSimulation
 
@@ -29,7 +29,7 @@ class BaseLdfSimulation(BaseSimulation):
 
         super(BaseLdfSimulation, self).__init__(cluster, data, output, R, N, **kwargs)
 
-    def run(self, positions=None):
+    def run(self, positions=None, max_theta=None):
         """Run a simulation
 
         This is the code which performs the simulation.  It creates a list
@@ -51,8 +51,10 @@ class BaseLdfSimulation(BaseSimulation):
                                   fd=sys.stderr)
 
         for event_id, (r, phi) in progress(enumerate(positions)):
+            shower_theta, shower_phi = self.generate_shower_theta_and_phi(max_theta)
+
             event = {'id': event_id, 'r': r, 'phi': phi, 'alpha': 0.,
-                     'shower_theta': 0., 'shower_phi': 0.,
+                     'shower_theta': shower_theta, 'shower_phi': shower_phi,
                      'shower_size': self.shower_size}
             self.simulate_event(event)
 
@@ -63,6 +65,17 @@ class BaseLdfSimulation(BaseSimulation):
         self.c_index.flush()
 
         self._run_exit_msg()
+
+    def generate_shower_theta_and_phi(self, max_theta=None):
+        if max_theta is None:
+            shower_theta, shower_phi = 0., 0.
+        else:
+            min_x = cos(max_theta)
+            x = np.random.uniform(min_x, 1.)
+            shower_theta = arccos(x)
+            shower_phi = np.random.uniform(-pi, pi)
+
+        return shower_theta, shower_phi
 
     def simulate_event(self, event):
         multiplicity = 0
