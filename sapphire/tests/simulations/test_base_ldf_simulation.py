@@ -127,6 +127,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
         detector.get_area.assert_called_once_with()
         event.__getitem__.assert_called_once_with('shower_size')
 
+    @unittest.skip('Need better test')
     def test_calculate_core_distance(self):
         detector = Mock()
         detector.get_xy_coordinates.return_value = (4, 5)

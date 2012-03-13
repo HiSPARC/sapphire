@@ -26,6 +26,7 @@ class BaseLdfSimulation(BaseSimulation):
 
     def __init__(self, cluster, data, output, R, N, shower_size=10 ** 4.8, **kwargs):
         self.shower_size = shower_size
+        self.ldf = BaseLdf()
 
         super(BaseLdfSimulation, self).__init__(cluster, data, output, R, N, **kwargs)
 
@@ -113,12 +114,15 @@ class BaseLdfSimulation(BaseSimulation):
 
     def calculate_core_distance(self, detector, event):
         r, phi = event['r'], event['phi']
-        x = r * cos(phi)
-        y = r * sin(phi)
+        x0 = r * cos(phi)
+        y0 = r * sin(phi)
 
-        X, Y = detector.get_xy_coordinates()
+        x1, y1 = detector.get_xy_coordinates()
 
-        return sqrt((x - X) ** 2 + (y - Y) ** 2)
+        R = self.ldf.calculate_core_distance_from_coordinates_and_direction(
+                x0, y0, x1, y1, event['shower_theta'], event['shower_phi'])
+
+        return R
 
     def calculate_ldf_value(self, R, shower_size):
         return 0.
@@ -183,7 +187,24 @@ class KascadeLdfSimulation(BaseLdfSimulation):
         return self.ldf.get_ldf_value_for_size(r, shower_size)
 
 
-class KascadeLdf():
+class BaseLdf(object):
+    def calculate_core_distance_from_coordinates_and_direction(self,
+                                                               x0, y0, x1, y1,
+                                                               theta, phi):
+        """Calculate core distance
+
+        The core distance is the distance of the detector to the shower core,
+        measured *on the shower front*.  For derivations, see logbook.
+
+        """
+        x = x1 - x0
+        y = y1 - y0
+
+        return sqrt(x ** 2 + y ** 2 -
+                    (x * cos(phi) + y * sin(phi)) ** 2 * sin(theta) ** 2)
+
+
+class KascadeLdf(BaseLdf):
     # shower parameters
     _Ne = 10 ** 4.8
     _s = .94
