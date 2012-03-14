@@ -105,6 +105,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
         self.simulation.simulate_detector_observables.assert_called_once_with(sentinel.detector1, sentinel.event)
         self.simulation.write_observables_and_return_id.assert_called_with(station, event, [sentinel.n1, sentinel.n2, sentinel.n3, sentinel.n4])
 
+    @unittest.skip("Needs better mocking, or just drop it")
     def test_simulate_detector_observables(self):
         area = .5
         detector = Mock()

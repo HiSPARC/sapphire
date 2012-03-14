@@ -107,8 +107,9 @@ class BaseLdfSimulation(BaseSimulation):
 
     def simulate_detector_observables(self, detector, event):
         R = self.calculate_core_distance(detector, event)
-        density = self.calculate_ldf_value(R, event['shower_size'])
-        num_particles = density * detector.get_area()
+        density_on_front = self.calculate_ldf_value(R, event['shower_size'])
+        density_on_ground = cos(event['shower_theta']) * density_on_front
+        num_particles = density_on_ground * detector.get_area()
 
         return num_particles
 
