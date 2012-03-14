@@ -10,6 +10,8 @@
 """
 from __future__ import division
 
+from math import pi
+
 import tables
 
 from sapphire import clusters
@@ -29,16 +31,16 @@ if __name__ == '__main__':
 
     cluster = clusters.SingleStation()
     simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/exact', R=60, N=N)
-    simulation.run()
+    simulation.run(max_theta=pi / 3)
 
     simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/gauss_10', R=60, N=N, gauss=.1, trig_threshold=.9)
-    simulation.run()
+    simulation.run(max_theta=pi / 3)
 
     simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/gauss_20', R=60, N=N, gauss=.2, trig_threshold=.8)
-    simulation.run()
+    simulation.run(max_theta=pi / 3)
 
     simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/poisson', R=60, N=N, use_poisson=True)
-    simulation.run()
+    simulation.run(max_theta=pi / 3)
 
     simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/poisson_gauss_20', R=60, N=N, use_poisson=True, gauss=.2, trig_threshold=.5)
-    simulation.run()
+    simulation.run(max_theta=pi / 3)
