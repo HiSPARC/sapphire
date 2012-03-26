@@ -123,8 +123,8 @@ class Scintillator:
 
     def _residuals(self, xdata, ydata, mev_scale, count_scale,
                    gauss_scale, a, b):
-        yfit = self.conv_landau(xdata, count_scale, mev_scale,
-                                gauss_scale)
+        yfit = self.conv_landau_for_x(xdata, count_scale, mev_scale,
+                                      gauss_scale)
 
         yfit = yfit.compress((a <= xdata) & (xdata < b))
         ydata = ydata.compress((a <= xdata) & (xdata < b))
