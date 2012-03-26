@@ -48,7 +48,7 @@ class Scintillator:
 
     _lf0 = log(xi) - log(epsilon) + 1 - Euler - delta
 
-    full_domain = linspace(-100, 100, 10000)
+    full_domain = linspace(-100, 100, 1000)
     pdf_values = None
     pdf_domain = full_domain.compress(-5 <= full_domain)
 
