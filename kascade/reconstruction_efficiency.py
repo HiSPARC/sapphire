@@ -175,9 +175,7 @@ class ReconstructionEfficiency(object):
         gammas = self.gamma_func(x, *p_gamma)
         plt.plot(x * VNS, gammas, label='gamma')
 
-        nx = np.linspace(-RANGE_MAX, RANGE_MAX, N_BINS * 2 + 1)
-        nlandaus = self.scintillator.conv_landau(nx, *p_landau)
-        landaus = np.interp(x, nx, nlandaus)
+        landaus = self.scintillator.conv_landau_for_x(x, *p_landau)
         plt.plot(x * VNS, landaus, label='landau/gauss')
 
         plt.plot(x * VNS, gammas + landaus, label='gamma + landau/gauss')
@@ -195,10 +193,8 @@ class ReconstructionEfficiency(object):
         return N * x ** -a
 
     def fit_conv_landau_to_data(self, x, y, p0):
-        x_symm = np.linspace(-RANGE_MAX, RANGE_MAX, N_BINS * 2 + 1)
-        y_symm = np.interp(x_symm, x, y)
         popt = optimize.fmin(self.scintillator.residuals, p0,
-                             (x_symm, y_symm, 4500, 5500), disp=0)
+                             (x, y, 4500, 5500), disp=0)
         return popt
 
     def fit_complete(self, x, y, p_gamma, p_landau):
@@ -209,13 +205,11 @@ class ReconstructionEfficiency(object):
         return popt[:2], popt[2:]
 
     def constrained_fit_complete(self, x, y, p_gamma, p_landau):
-        x_symm = np.linspace(-RANGE_MAX, RANGE_MAX, N_BINS * 2 + 1)
-        y_symm = np.interp(x_symm, x, y)
         N_gamma = p_gamma[0]
         N_landau = p_landau[0]
         popt = optimize.fmin(self.constrained_complete_residuals,
                              (N_gamma, N_landau),
-                             (self.scintillator, x_symm, y_symm, p_gamma,
+                             (self.scintillator, x, y, p_gamma,
                               p_landau, LOW, HIGH),
                              maxfun=100000, disp=0)
         p_gamma[0] = popt[0]
