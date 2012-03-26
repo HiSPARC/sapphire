@@ -10,6 +10,8 @@
     doing serious work arises.
 
 """
+import warnings
+
 from numpy import pi, Inf, sin, cos, exp, log, arctan, vectorize, \
                   convolve, linspace, interp, arange
 from scipy import integrate, stats
@@ -46,8 +48,9 @@ class Scintillator:
 
     _lf0 = log(xi) - log(epsilon) + 1 - Euler - delta
 
+    full_domain = linspace(-100, 100, 10000)
     pdf_values = None
-    pdf_domain = linspace(-5, 100, 5000)
+    pdf_domain = full_domain.compress(-5 <= full_domain)
 
 
     def landau_pdf(self, Delta):
@@ -64,15 +67,35 @@ class Scintillator:
 
     def conv_landau_for_x(self, x, count_scale=1, mev_scale=None,
                           gauss_scale=None):
-        x_step = x[-1] - x[-2]
-        x_symm = arange(-max(x), max(x) + x_step / 2, x_step)
-        y_symm = self.conv_landau(x_symm, count_scale, mev_scale, gauss_scale)
+        if mev_scale is None:
+            mev_scale = self.mev_scale
+        if gauss_scale is None:
+            gauss_scale = self.gauss_scale
 
-        y = interp(x, x_symm, y_symm)
+        f = self.landau_pdf
+        g = stats.norm(scale=gauss_scale).pdf
+        x_domain  = self.full_domain
+
+        y_calc = count_scale * discrete_convolution(f, g, x_domain)
+        x_calc = x_domain / mev_scale
+
+        y = interp(x, x_calc, y_calc)
         return y
 
     def conv_landau(self, x, count_scale=1, mev_scale=None,
                     gauss_scale=None):
+        """Bare-bones convoluted landau function
+
+        This thing is fragile.  Use with great care!  First and foremost,
+        x must be symmetrical around zero.  Second, x must contain most of
+        the Landau function (including a significant part of the tail).
+        If not, the results cannot be trusted!
+
+        Better use conv_landau_for_x, which better handles this.
+
+        """
+        warnings.warn("Better be sure you know that you're doing!")
+
         if not mev_scale:
             mev_scale = self.mev_scale
         if not gauss_scale:
