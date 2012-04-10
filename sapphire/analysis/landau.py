@@ -73,9 +73,9 @@ class Scintillator:
 
     def conv_landau(self, x, count_scale=1, mev_scale=None,
                     gauss_scale=None):
-        if not mev_scale:
+        if mev_scale is None:
             mev_scale = self.mev_scale
-        if not gauss_scale:
+        if gauss_scale is None:
             gauss_scale = self.gauss_scale
 
         f = self.landau_pdf

@@ -10,16 +10,17 @@
 """
 from __future__ import division
 
-import tables
-import os.path
-import sys
-import textwrap
+from math import pi
 
-import clusters
-from simulations import KascadeLdfSimulation
+import tables
+
+from sapphire import clusters
+from sapphire.simulations import KascadeLdfSimulation
 
 
 DATAFILE = 'data.h5'
+
+N = 10000
 
 
 if __name__ == '__main__':
@@ -28,8 +29,18 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile(DATAFILE, 'w')
 
-    cluster = clusters.SimpleCluster()
-    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim', R=200,
-                                      N=100000)
-    simulation._Ne = 10 ** 6
-    simulation.run()
+    cluster = clusters.SingleStation()
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/exact', R=60, N=N)
+    simulation.run(max_theta=pi / 3)
+
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/gauss_10', R=60, N=N, gauss=.1, trig_threshold=.9)
+    simulation.run(max_theta=pi / 3)
+
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/gauss_20', R=60, N=N, gauss=.2, trig_threshold=.8)
+    simulation.run(max_theta=pi / 3)
+
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/poisson', R=60, N=N, use_poisson=True)
+    simulation.run(max_theta=pi / 3)
+
+    simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/poisson_gauss_20', R=60, N=N, use_poisson=True, gauss=.2, trig_threshold=.5)
+    simulation.run(max_theta=pi / 3)

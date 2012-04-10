@@ -19,8 +19,7 @@ from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruc
 
 USE_TEX = True
 
-TIMING_ERROR = 4
-#TIMING_ERROR = 7
+TIMING_ERROR = 2.8
 
 # For matplotlib plots
 if USE_TEX:
@@ -44,7 +43,7 @@ def do_full_reconstruction(data, N=None):
     simulation_group = '/simulations/E_1PeV'
     reconstruction_group = simulation_group.replace('simulations', 'reconstructions')
 
-    for theta in 0, 5, 22.5, 35:
+    for theta in 0, 5, 10, 15, 22.5, 30, 35, 45:
         tablename = 'zenith_%s' % str(theta).replace('.', '_')
         source = os.path.join(simulation_group, tablename)
         dest = os.path.join(reconstruction_group, tablename)
@@ -148,7 +147,7 @@ def plot_uncertainty_mip(group):
     # Labels etc.
     xlabel("Minimum number of particles")
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$\theta = 22.5^\circ$")
+    #title(r"$\theta = 22.5^\circ$")
     legend(numpoints=1)
     utils.saveplot()
     print
@@ -156,6 +155,8 @@ def plot_uncertainty_mip(group):
 def plot_uncertainty_zenith(group):
     group = group.E_1PeV
     rec = DirectionReconstruction
+
+    N = 2
 
     # constants for uncertainty estimation
     # BEWARE: stations must be the same over all reconstruction tables used
@@ -165,10 +166,10 @@ def plot_uncertainty_zenith(group):
 
     figure()
     x, y, y2 = [], [], []
-    for THETA in 0, 5, 22.5, 35:
+    for THETA in 0, 5, 10, 15, 22.5, 30, 35, 45:
         x.append(THETA)
         table = group._f_getChild('zenith_%s' % str(THETA).replace('.', '_'))
-        events = table.readWhere('min_n134 == 2')
+        events = table.readWhere('min_n134 >= N')
         print THETA, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -189,24 +190,21 @@ def plot_uncertainty_zenith(group):
     utils.savedata((x, y, y2))
 
     # Uncertainty estimate
-    x = linspace(0, deg2rad(35), 50)
+    x = linspace(0, deg2rad(45), 50)
     phis = linspace(-pi, pi, 50)
-    y, y2, y3 = [], [], []
+    y, y2 = [], []
     for t in x:
         y.append(mean(rec.rel_phi_errorsq(t, phis, phi1, phi2, r1, r2)))
-        y3.append(mean(rec.rel_phi_errorsq(t, phis, phi1, phi2, r1, r2)) * sin(t) ** 2)
         y2.append(mean(rec.rel_theta1_errorsq(t, phis, phi1, phi2, r1, r2)))
     y = TIMING_ERROR * sqrt(array(y))
-    y3 = TIMING_ERROR * sqrt(array(y3))
     y2 = TIMING_ERROR * sqrt(array(y2))
     plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
-    plot(rad2deg(x), rad2deg(y3), label="Estimate Phi * sin(Theta)")
     plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
 
     # Labels etc.
     xlabel("Shower zenith angle [deg]")
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$N_{MIP} = 2$")
+    #title(r"$N_{MIP} \geq %d$" % N)
     ylim(0, 100)
     legend(numpoints=1)
     utils.saveplot()
@@ -247,7 +245,7 @@ def plot_uncertainty_core_distance(group):
     # Labels etc.
     xlabel("Core distance [m] $\pm %d$" % DR)
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$N_{MIP} = %d, \theta = 22.5^\circ$" % N)
+    #title(r"$N_{MIP} = %d, \theta = 22.5^\circ$" % N)
     ylim(ymin=0)
     legend(numpoints=1, loc='best')
     utils.saveplot()
@@ -256,6 +254,8 @@ def plot_uncertainty_core_distance(group):
 def plot_uncertainty_size(group):
     group = group.E_1PeV
     rec = DirectionReconstruction
+
+    N = 2
 
     # constants for uncertainty estimation
     # BEWARE: stations must be the same shape(!) over all reconstruction tables used
@@ -273,7 +273,7 @@ def plot_uncertainty_size(group):
         else:
             table = group._f_getChild('zenith_22_5')
 
-        events = table.readWhere('min_n134 == 2')
+        events = table.readWhere('min_n134 >= N')
         print size, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -306,7 +306,7 @@ def plot_uncertainty_size(group):
     # Labels etc.
     xlabel("Station size [m]")
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
+    #title(r"$\theta = 22.5^\circ, N_{MIP} \geq %d$" % N)
     legend(numpoints=1)
     utils.saveplot()
     print
@@ -314,6 +314,8 @@ def plot_uncertainty_size(group):
 def plot_uncertainty_binsize(group):
     group = group.E_1PeV
     rec = DirectionReconstruction
+
+    N = 2
 
     # constants for uncertainty estimation
     # BEWARE: stations must be the same over all reconstruction tables used
@@ -329,7 +331,7 @@ def plot_uncertainty_binsize(group):
             table = group._f_getChild('zenith_22_5_binned_randomized_%s' % str(bin_size).replace('.', '_'))
         else:
             table = group.zenith_22_5
-        events = table.readWhere('min_n134 == 2')
+        events = table.readWhere('min_n134 >= 2')
 
         print bin_size, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
@@ -365,7 +367,7 @@ def plot_uncertainty_binsize(group):
     # Labels etc.
     xlabel("Bin size [ns]")
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$\theta = 22.5^\circ, N_{MIP} = 2$")
+    #title(r"$\theta = 22.5^\circ, N_{MIP} \geq %d$" % N)
     legend(loc='best', numpoints=1)
     ylim(ymin=0)
     utils.saveplot()
@@ -397,7 +399,7 @@ def plot_phi_reconstruction_results_for_MIP(group, N):
     plot_2d_histogram(rad2deg(sim_phi), rad2deg(r_phi), 180)
     xlabel(r"$\phi_{simulated}$ [deg]")
     ylabel(r"$\phi_{reconstructed}$ [deg]")
-    title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
+    #title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     utils.saveplot(N)
 
@@ -406,21 +408,28 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
 
     figure()
 
-    angles = [0, 5, 22.5, 35]
+    angles = [0, 5, 10, 15, 22.5, 30, 35, 45]
     r_dtheta = []
+    d25, d50, d75 = [], [], []
     for angle in angles:
         table = group._f_getChild('zenith_%s' % str(angle).replace('.', '_'))
         sel = table.readWhere('min_n134 >= %d' % N)
-        r_dtheta.append(rad2deg(sel[:]['reconstructed_theta'] - sel[:]['reference_theta']))
+        dtheta = sel[:]['reconstructed_theta'] - sel[:]['reference_theta']
+        r_dtheta.append(rad2deg(dtheta))
 
-    boxplot(r_dtheta, sym='', positions=angles, widths=2.)
+        d25.append(scoreatpercentile(rad2deg(dtheta), 25))
+        d50.append(scoreatpercentile(rad2deg(dtheta), 50))
+        d75.append(scoreatpercentile(rad2deg(dtheta), 75))
+
+    fill_between(angles, d25, d75, color='0.75')
+    plot(angles, d50, 'o-', color='black')
 
     xlabel(r"$\theta_{simulated}$ [deg]")
     ylabel(r"$\theta_{reconstructed} - \theta_{simulated}$ [deg]")
-    title(r"$N_{MIP} \geq %d$" % N)
+    #title(r"$N_{MIP} \geq %d$" % N)
 
-    axhline(0)
-    ylim(-20, 20)
+    axhline(0, color='black')
+    #ylim(-20, 20)
 
     utils.saveplot(N)
 
@@ -431,6 +440,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
 
     bin_edges = linspace(-180, 180, 18)
     x, r_dphi = [], []
+    d25, d50, d75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         rad_low = deg2rad(low)
         rad_high = deg2rad(high)
@@ -439,21 +449,33 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
         dphi = sel[:]['reconstructed_phi'] - sel[:]['reference_phi']
         dphi = (dphi + pi) % (2 * pi) - pi
         r_dphi.append(rad2deg(dphi))
+
+        d25.append(scoreatpercentile(rad2deg(dphi), 25))
+        d50.append(scoreatpercentile(rad2deg(dphi), 50))
+        d75.append(scoreatpercentile(rad2deg(dphi), 75))
         x.append((low + high) / 2)
 
-    boxplot(r_dphi, positions=x, widths=1 * (high - low), sym='')
+    fill_between(x, d25, d75, color='0.75')
+    plot(x, d50, 'o-', color='black')
 
     xlabel(r"$\phi_{simulated}$ [deg]")
     ylabel(r"$\phi_{reconstructed} - \phi_{simulated}$ [deg]")
-    title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
+    #title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     xticks(linspace(-180, 180, 9))
-    axhline(0)
+    axhline(0, color='black')
 
     utils.saveplot(N)
 
 def boxplot_arrival_times(group, N):
     table = group.E_1PeV.zenith_0
+
+    sel = table.readWhere('min_n134 >= N')
+    t1 = sel[:]['t1']
+    t3 = sel[:]['t3']
+    t4 = sel[:]['t4']
+    ts = concatenate([t1, t3, t4])
+    print "Median arrival time delay over all detected events", median(ts)
 
     figure()
 
@@ -463,23 +485,22 @@ def boxplot_arrival_times(group, N):
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         query = '(min_n134 >= N) & (low <= r) & (r < high)'
         sel = table.readWhere(query)
-        t2 = sel[:]['t2']
-        arrival_times.append(t2.compress(t2 > -999))
-
-        # For KASCADE plots
         t1 = sel[:]['t1']
-        ct1 = t1.compress((t1 > -999) & (t2 > -999))
-        ct2 = t2.compress((t1 > -999) & (t2 > -999))
-        t25.append(scoreatpercentile(abs(ct2 - ct1), 25))
-        t50.append(scoreatpercentile(abs(ct2 - ct1), 50))
-        t75.append(scoreatpercentile(abs(ct2 - ct1), 75))
+        t3 = sel[:]['t3']
+        t4 = sel[:]['t4']
+        ts = concatenate([t1, t3, t4])
+
+        t25.append(scoreatpercentile(ts, 25))
+        t50.append(scoreatpercentile(ts, 50))
+        t75.append(scoreatpercentile(ts, 75))
         x.append((low + high) / 2)
 
-    boxplot(arrival_times, positions=x, widths=.7 * (high - low), sym='')
+    fill_between(x, t25, t75, color='0.75')
+    plot(x, t50, 'o-', color='black')
 
     xlabel("Core distance [m]")
-    ylabel("Arrival time [ns]")
-    title(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ$" % N)
+    ylabel("Arrival time delay [ns]")
+    #title(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ$" % N)
 
     xticks(arange(0, 100.5, 10))
 
@@ -488,8 +509,11 @@ def boxplot_arrival_times(group, N):
 
 def boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
+    
+    figure()
 
     r_list = []
+    r25, r50, r75 = [], [], []
     x = []
     for N in range(1, 5):
         sel = table.readWhere('min_n134 == N')
@@ -497,12 +521,17 @@ def boxplot_core_distances_for_mips(group):
         r_list.append(r)
         x.append(N)
 
-    figure()
-    boxplot(r_list)
+        r25.append(scoreatpercentile(r, 25))
+        r50.append(scoreatpercentile(r, 50))
+        r75.append(scoreatpercentile(r, 75))
+
+    fill_between(x, r25, r75, color='0.75')
+    plot(x, r50, 'o-', color='black')
+
     xticks(range(1, 5))
     xlabel("Minimum number of particles")
     ylabel("Core distance [m]")
-    title(r"$\theta = 22.5^\circ$")
+    #title(r"$\theta = 22.5^\circ$")
 
     utils.saveplot()
 
@@ -529,7 +558,7 @@ def plot_detection_efficiency_vs_R_for_angles(N):
     bin_edges = linspace(0, 100, 20)
     x = (bin_edges[:-1] + bin_edges[1:]) / 2.
 
-    for angle in [0, 5, 22.5, 35]:
+    for angle in [0, 22.5, 35]:
         angle_str = str(angle).replace('.', '_')
         shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
 
@@ -553,7 +582,7 @@ def plot_detection_efficiency_vs_R_for_angles(N):
 
     xlabel("Core distance [m]")
     ylabel("Detection efficiency")
-    title(r"$N_{MIP} \geq %d$" % N)
+    #title(r"$N_{MIP} \geq %d$" % N)
     legend()
 
     utils.saveplot(N)
@@ -566,7 +595,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     bin_edges = linspace(0, 100, 10)
     x = (bin_edges[:-1] + bin_edges[1:]) / 2.
 
-    for angle in [0, 5, 22.5, 35]:
+    for angle in [0, 22.5, 35]:
         angle_str = str(angle).replace('.', '_')
         shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
         reconstructions = group._f_getChild('zenith_%s' % angle_str)
@@ -592,7 +621,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
 
     xlabel("Core distance [m]")
     ylabel("Reconstruction efficiency")
-    title(r"$N_{MIP} \geq %d$" % N)
+    #title(r"$N_{MIP} \geq %d$" % N)
     legend()
 
     utils.saveplot(N)
@@ -630,7 +659,7 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
 
     xlabel("Core distance [m]")
     ylabel("Reconstruction efficiency")
-    title(r"$\theta = 22.5^\circ$")
+    #title(r"$\theta = 22.5^\circ$")
     legend()
 
     utils.saveplot()

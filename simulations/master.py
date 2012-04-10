@@ -27,7 +27,7 @@ class Master(object):
         self.do_energies_simulations()
 
     def store_shower_data(self):
-        for angle in [0, 5, 22.5, 35]:
+        for angle in [0, 5, 10, 15, 22.5, 30, 35, 45]:
             self.store_1PeV_data_for_angle(angle)
         for energy, group_name in [('e14', 'E_100TeV'),
                                    ('e16', 'E_10PeV')]:

@@ -1,0 +1,5 @@
+A todo list to keep me busy (after April 1, 2012)
+-------------------------------------------------
+
+  * in the kascade analysis, 'c_index' should be called 'k_index', since
+    its structure is very different.  Make sure you have tests for that!

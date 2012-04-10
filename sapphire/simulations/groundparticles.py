@@ -25,7 +25,7 @@ class GroundParticlesSimulation(BaseSimulation):
     the simulation.
     """
 
-    def __init__(self, cluster, data, grdpcles, output, R, N, force=False):
+    def __init__(self, cluster, data, grdpcles, output, R, N, force=False, *args, **kwargs):
         """Simulation initialization
 
         :param cluster: BaseCluster (or derived) instance
@@ -48,7 +48,7 @@ class GroundParticlesSimulation(BaseSimulation):
 
         self.shower_theta = self.get_shower_theta_from_grdpcles_group()
 
-        super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force)
+        super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force, *args, **kwargs)
 
     def get_shower_theta_from_grdpcles_group(self):
         group_name = self.grdpcles._v_pathname
@@ -329,9 +329,12 @@ Number of cluster positions in simulation: %d
                                     # finish business, but no new particles
                                     # will be processed
                                     particle['id'] = -1
-                        self.write_observables(header, t)
+                        timings = self.simulate_timings(t)
+                        num_particles = [len(u) for u in t]
+                        signals = self.simulate_detector_signals(num_particles)
+                        self.write_observables(header, signals, timings)
                         # trigger if Ndet hit >= 2
-                        if sum([1 if u else 0 for u in t]) >= 2:
+                        if sum([1 if u >= self.trig_threshold else 0 for u in signals]) >= 2:
                             N += 1
                             # only add triggered stations to c_list, just
                             # like real data
@@ -357,7 +360,7 @@ Number of cluster positions in simulation: %d
             data[col] = row[col]
         return data
 
-    def write_observables(self, observables, t):
+    def write_observables(self, observables, num_particles, timings):
         """Transform coordinates before calling super
 
         Until now, the simulation has set new cluster coordinates for each
@@ -385,7 +388,7 @@ Number of cluster positions in simulation: %d
         observables['phi'] = phi
         observables['alpha'] = alpha
 
-        super(GroundParticlesSimulation, self).write_observables(observables, t)
+        super(GroundParticlesSimulation, self).write_observables(observables, num_particles, timings)
 
     def write_coincidence(self, event, N):
         """Transform coordinates before calling super

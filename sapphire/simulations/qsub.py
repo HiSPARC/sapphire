@@ -22,7 +22,8 @@ class QSubSimulation(GroundParticlesSimulation):
     submitted through qsub and the results are collected.
     """
 
-    def __init__(self, cluster, data, grdpcles, output, R, N, N_cores=2):
+    def __init__(self, cluster, data, grdpcles, output, R, N, N_cores=2,
+                 *args, **kwargs):
         """Initialize the simulation
 
         :param cluster: BaseCluster (or derived) instance
@@ -36,7 +37,7 @@ class QSubSimulation(GroundParticlesSimulation):
         """
         self.N_cores = N_cores
         super(QSubSimulation, self).__init__(cluster, data, grdpcles,
-                                             output, R, N)
+                                             output, R, N, *args, **kwargs)
 
     def run(self):
         """Perform a simulation
@@ -65,6 +66,9 @@ class QSubSimulation(GroundParticlesSimulation):
             data.root._v_attrs.output = self.output._v_pathname
             data.root._v_attrs.N = len(batch)
             data.root._v_attrs.R = self.R
+            data.root._v_attrs.use_poisson = self.use_poisson
+            data.root._v_attrs.gauss = self.gauss
+            data.root._v_attrs.trig_threshold = self.trig_threshold
             data.close()
             self._qsub(hash)
 
@@ -225,6 +229,9 @@ class QSubChild(GroundParticlesSimulation):
         self.cluster = attrs.cluster
         self.N = attrs.N
         self.R = attrs.R
+        self.use_poisson = attrs.use_poisson
+        self.gauss = attrs.gauss
+        self.trig_threshold = attrs.trig_threshold
 
         output = attrs.output
         head, tail = os.path.split(output)

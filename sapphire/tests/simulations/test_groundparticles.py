@@ -212,7 +212,8 @@ class GroundParticleSimulationTests(unittest.TestCase):
 
     def test_write_observables_uses_station_coordinates(self):
         observables = {'station_id': 1}
-        t = sentinel.t
+        t = [[1, 2], [2, 3, 4], [3, 4], [4, 5, 6]]
+        num_particles = [len(u) for u in t]
 
         cluster = Mock(name='cluster')
         cluster.stations = MagicMock(name='stations')
@@ -222,7 +223,7 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.simulation.cluster = cluster
 
         with patch.object(BaseSimulation, 'write_observables') as mock_parent:
-            self.simulation.write_observables(observables, t)
+            self.simulation.write_observables(observables, num_particles, t)
 
         # list index must be zero-based
         cluster.stations.__getitem__.assert_called_once_with(0)
@@ -233,7 +234,7 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.assertIs(observables['phi'], sentinel.phi)
         self.assertIs(observables['alpha'], sentinel.alpha)
         # must call parent method
-        mock_parent.assert_called_once_with(observables, t)
+        mock_parent.assert_called_once_with(observables, num_particles, t)
 
     def test_write_coincidence_calls_super_with_transformed_coordinates(self):
         event = {'phi': 1., 'alpha': 2.}
