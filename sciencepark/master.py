@@ -80,7 +80,7 @@ class Master:
                                                       'coincidences',
                                                       storage.Coincidence)
             self.observables = self.data.createTable(group, 'observables',
-                                            storage.SimulationEventObservables)
+                                            storage.EventObservables)
 
             progress = pb.ProgressBar(widgets=[pb.ETA(), pb.Bar(),
                                                pb.Percentage()])
@@ -99,10 +99,9 @@ class Master:
         coincidence_id = len(self.coincidences)
         row['id'] = coincidence_id
         row['N'] = len(coincidence)
-        row.append()
-        self.coincidences.flush()
 
         observables_idx = []
+        timestamps = []
         for index in coincidence:
             event_desc = self.data.root.timestamps[index]
             station_id = event_desc[1]
@@ -113,7 +112,15 @@ class Master:
             idx = self.store_event_in_observables(event, coincidence_id,
                                                   station_id)
             observables_idx.append(idx)
+            timestamps.append((event['ext_timestamp'], event['timestamp'],
+                               event['nanoseconds']))
+
+        first_timestamp = sorted(timestamps)[0]
+        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
+            first_timestamp
+        row.append()
         self.c_index.append(observables_idx)
+        self.coincidences.flush()
 
     def store_event_in_observables(self, event, coincidence_id, station_id):
         row = self.observables.row
@@ -121,7 +128,8 @@ class Master:
         row['id'] = event_id
 
         row['station_id'] = station_id
-        for key in 'n1', 'n2', 'n3', 'n4', 't1', 't2', 't3', 't4':
+        for key in ('timestamp', 'nanoseconds', 'ext_timestamp',
+                    'n1', 'n2', 'n3', 'n4', 't1', 't2', 't3', 't4'):
             row[key] = event[key]
 
         signals = [event[key] for key in 'n1', 'n2', 'n3', 'n4']

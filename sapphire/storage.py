@@ -200,6 +200,61 @@ class SimulationEventObservables(tables.IsDescription):
     n4 = tables.Float32Col()
 
 
+class EventObservables(tables.IsDescription):
+
+    """Store information about the observables of an event.
+
+    The observables are described for each station independently.  So, for each
+    event (with a unique :attr:`id`), there is a table row for each station
+    (with a unique :attr:`station_id`), such that only the (id, station_id)
+    combinations are unique in the table.
+
+    .. attribute:: id
+
+        a unique identifier for the simulated event (only unique in this table)
+
+    .. attribute:: station_id
+
+        station identifier, such that you can do::
+
+            >>> station = cluster.stations[station_id]
+
+    .. attribute:: r, phi, x, y
+
+        coordinates of the station.  Depending on the simulation, this might be
+        constant throughout the simulation, or it might change event by event.
+
+    .. attribute:: alpha
+
+        rotation of the station around its center
+
+    .. attribute:: N
+
+        number of detectors with at least one particle
+
+    """
+    id = tables.UInt32Col()
+    station_id = tables.UInt8Col()
+    timestamp = tables.Time32Col()
+    nanoseconds = tables.UInt32Col()
+    ext_timestamp = tables.UInt64Col()
+
+    r = tables.Float32Col()
+    phi = tables.Float32Col()
+    x = tables.Float32Col()
+    y = tables.Float32Col()
+    alpha = tables.Float32Col()
+    N = tables.UInt8Col()
+    t1 = tables.Float32Col()
+    t2 = tables.Float32Col()
+    t3 = tables.Float32Col()
+    t4 = tables.Float32Col()
+    n1 = tables.Float32Col()
+    n2 = tables.Float32Col()
+    n3 = tables.Float32Col()
+    n4 = tables.Float32Col()
+
+
 class Coincidence(tables.IsDescription):
 
     """Store information about a coincidence of stations within a cluster.
@@ -246,6 +301,10 @@ class Coincidence(tables.IsDescription):
 
     """
     id = tables.UInt32Col()
+    timestamp = tables.Time32Col()
+    nanoseconds = tables.UInt32Col()
+    ext_timestamp = tables.UInt64Col()
+
     N = tables.UInt8Col()
     r = tables.Float32Col()
     phi = tables.Float32Col()
