@@ -134,7 +134,11 @@ class ProcessEvents(object):
         for event in progressbar(events):
             timings = self._reconstruct_time_from_traces(event)
             result.append(timings)
-        return 1e9 * np.array(result)
+        result = np.array(result)
+
+        # Replace NaN with -999, get timings in ns
+        timings = np.where(np.isnan(result), -999, 1e9 * result)
+        return timings
 
     def _create_progressbar_from_iterable(self, iterable, length=None):
         if length is None:
