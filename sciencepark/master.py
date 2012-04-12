@@ -1,4 +1,5 @@
 import datetime
+import operator
 
 import tables
 import numpy as np
@@ -24,6 +25,8 @@ class Master:
 
     def main(self):
         self.download_data()
+        self.clean_data()
+
         self.search_coincidences()
         self.process_events_from_c_index()
         #self.data.removeNode('/coincidences', recursive=True)
@@ -37,6 +40,34 @@ class Master:
                 print "Downloading data for station", station
                 download_data(self.data, group_path, station,
                               start, end, get_blobs=True)
+
+    def clean_data(self):
+        for group in self.station_groups:
+            group = self.data.getNode(group)
+            attrs = group._v_attrs
+            if not 'is_clean' in attrs or not attrs.is_clean:
+                self.clean_events_in_group(group)
+                attrs.is_clean = True
+
+    def clean_events_in_group(self, group):
+        events = group.events
+
+        timestamps = [u for u in enumerate(events.col('ext_timestamp'))]
+        timestamps.sort(key=operator.itemgetter(1))
+
+        prev = 0
+        unique_ids = []
+        for row_id, timestamp in timestamps:
+            if timestamp != prev:
+                unique_ids.append(row_id)
+            prev = timestamp
+
+        tmptable = self.data.createTable(group, 't__events',
+                                         description=events.description)
+        rows = events.readCoordinates(unique_ids)
+        tmptable.append(rows)
+        tmptable.flush()
+        self.data.renameNode(tmptable, 'events', overwrite=True)
 
     def search_coincidences(self):
         if '/c_index' not in self.data and '/timestamps' not in self.data:
