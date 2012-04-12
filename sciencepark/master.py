@@ -2,6 +2,7 @@ import datetime
 
 import tables
 import numpy as np
+import progressbar as pb
 
 from hisparc.publicdb import download_data
 from hisparc.analysis import coincidences
@@ -81,7 +82,9 @@ class Master:
             self.observables = self.data.createTable(group, 'observables',
                                             storage.SimulationEventObservables)
 
-            for coincidence in self.data.root.c_index:
+            progress = pb.ProgressBar(widgets=[pb.ETA(), pb.Bar(),
+                                               pb.Percentage()])
+            for coincidence in progress(self.data.root.c_index):
                 self.store_coincidence(coincidence)
 
             c_index = self.data.createVLArray(group, 'c_index',
