@@ -8,7 +8,53 @@ import progressbar as pb
 from hisparc.publicdb import download_data
 from hisparc.analysis import coincidences
 from sapphire.analysis.process_events import ProcessIndexedEvents
-from sapphire import storage
+from sapphire import storage, clusters
+import transformations
+
+
+class ScienceParkCluster(clusters.BaseCluster):
+    # website 1 maart 2012
+#    gps_coordinates = {501: (52.3559126101, 4.95074843056,
+#                               58.6631137794),
+#                       503: (52.3562664259, 4.95294989286,
+#                               48.7995043574),
+#                       506: (52.3571869092, 4.95198066585,
+#                               45.4739832897),
+#                      }
+
+    # Niels mailtje Nov 2011
+#    gps_coordinates = {501: (52.3559179545,4.95114534876,
+#                               58.6631137794),
+#                       503: (52.3562664259,4.95294989286,
+#                               48.7995043574),
+#                       506: (52.3571787512,4.95198605591,
+#                               45.4739832897),
+#                      }
+
+    # 1 dag self-survey (8 april 2011) + 506 (Niels)
+    gps_coordinates = {501: (52.355924173294305, 4.951144021644267,
+                             56.102345941588283),
+                       503: (52.356254735127557, 4.9529437445598328,
+                             51.582641703076661),
+                       506: (52.3571787512,4.95198605591,
+                             45.4739832897),
+                      }
+
+    station_rotations = {501: 135, 503: 45, 506: 267}
+
+
+    def __init__(self, stations):
+        super(ScienceParkCluster, self).__init__()
+
+        reference = self.gps_coordinates[501]
+        transformation = \
+            transformations.FromWGS84ToENUTransformation(reference)
+
+        for station in stations:
+            easting, northing, up = \
+                transformation.transform(self.gps_coordinates[station])
+            alpha = self.station_rotations[station] / 180. * np.pi
+            self._add_station((easting, northing), alpha)
 
 
 class Master:
@@ -20,6 +66,7 @@ class Master:
         self.data = tables.openFile('master.h5', 'a')
 
         self.station_groups = ['/s%d' % u for u in self.stations]
+        self.cluster = ScienceParkCluster(self.stations)
 
         self.trig_threshold = .5
 
