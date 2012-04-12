@@ -83,7 +83,6 @@ class Master:
 
         self.search_coincidences()
         self.process_events_from_c_index()
-        #self.data.removeNode('/coincidences', recursive=True)
         self.store_coincidences()
 
     def download_data(self):
