@@ -86,7 +86,7 @@ class Station(object):
 
     __detectors = None
 
-    def __init__(self, cluster, station_id, position, angle, detectors):
+    def __init__(self, cluster, station_id, position, angle, detectors=None):
         """Initialize station
 
         :param cluster: cluster this station is a part of
@@ -105,6 +105,15 @@ class Station(object):
         self.station_id = station_id
         self.position = position
         self.angle = angle
+
+        if detectors is None:
+            # detector positions for a standard station
+            station_size = 10
+            a = station_size / 2
+            b = a / 3 * sqrt(3)
+            detectors = [(0., 2 * b, 'UD'), (0., 0., 'UD'),
+                         (-a, -b, 'LR'), (a, -b, 'LR')]
+
         for x, y, orientation in detectors:
             self._add_detector(x, y, orientation)
 
@@ -173,7 +182,7 @@ class BaseCluster(object):
         self._x, self._y = position
         self._alpha = angle
 
-    def _add_station(self, position, angle, detectors):
+    def _add_station(self, position, angle, detectors=None):
         """Add a station to the cluster
 
         :param position: tuple of (x, y) values
@@ -228,21 +237,14 @@ class SimpleCluster(BaseCluster):
 
         super(SimpleCluster, self).__init__()
 
-        # calculate detector positions for a four-detector station
-        station_size = 10
-        a = station_size / 2
-        b = a / 3 * sqrt(3)
-        detectors = [(0., 2 * b, 'UD'), (0., 0., 'UD'),
-                     (-a, -b, 'LR'), (a, -b, 'LR')]
-
         # calculate station positions.  the cluster resembles a single
         # four-detector HiSPARC station, but scaled up
         A = size / 2
         B = A / 3 * sqrt(3)
-        self._add_station((0, 2 * B), 0, detectors)
-        self._add_station((0, 0), 0, detectors)
-        self._add_station((-A, -B), 2 * pi / 3, detectors)
-        self._add_station((A, -B), -2 * pi / 3, detectors)
+        self._add_station((0, 2 * B), 0)
+        self._add_station((0, 0), 0)
+        self._add_station((-A, -B), 2 * pi / 3)
+        self._add_station((A, -B), -2 * pi / 3)
 
 class SingleStation(BaseCluster):
     """Define a cluster containing a single station"""
@@ -252,10 +254,4 @@ class SingleStation(BaseCluster):
 
         super(SingleStation, self).__init__()
 
-        # calculate detector positions for a four-detector station
-        a = station_size / 2
-        b = a / 3 * sqrt(3)
-        detectors = [(0., 2 * b, 'UD'), (0., 0., 'UD'),
-                     (-a, -b, 'LR'), (a, -b, 'LR')]
-
-        self._add_station((0, 0), 0, detectors)
+        self._add_station((0, 0), 0)
