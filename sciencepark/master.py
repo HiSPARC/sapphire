@@ -1,3 +1,4 @@
+from math import sqrt
 import datetime
 import operator
 
@@ -47,7 +48,8 @@ class ScienceParkCluster(clusters.BaseCluster):
                              43.8700314863),
                       }
 
-    station_rotations = {501: 135, 503: 45, 506: 267}
+    station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
+                         506: 267}
 
 
     def __init__(self, stations):
@@ -61,13 +63,24 @@ class ScienceParkCluster(clusters.BaseCluster):
             easting, northing, up = \
                 transformation.transform(self.gps_coordinates[station])
             alpha = self.station_rotations[station] / 180. * np.pi
-            self._add_station((easting, northing), alpha)
+
+            if station != 502:
+                self._add_station((easting, northing), alpha)
+            else:
+                # 502 is diamond-shaped
+                a = 5
+                b = sqrt(75)
+                detectors = [(0, 2. / 3 * b, 'UD'),
+                             (2 * a, 2. / 3 * b, 'UD'),
+                             (-a, -1. / 3 * b, 'LR'),
+                             (a, -1. / 3 * b, 'LR')]
+                self._add_station((easting, northing), alpha, detectors)
 
 
 class Master:
-    stations = [501, 503, 506]
+    stations = range(501, 507)
     datetimerange = (datetime.datetime(2012, 3, 1),
-                     datetime.datetime(2012, 3, 2))
+                     datetime.datetime(2012, 3, 8))
 
     def __init__(self, data_path):
         self.data = tables.openFile('master.h5', 'a')
