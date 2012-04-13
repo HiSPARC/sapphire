@@ -83,7 +83,7 @@ class Master:
                      datetime.datetime(2012, 3, 8))
 
     def __init__(self, data_path):
-        self.data = tables.openFile('master.h5', 'a')
+        self.data = tables.openFile(data_path, 'a')
 
         self.station_groups = ['/s%d' % u for u in self.stations]
         self.cluster = ScienceParkCluster(self.stations)
