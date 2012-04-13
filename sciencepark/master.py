@@ -239,5 +239,5 @@ class Master:
 
 
 if __name__ == '__main__':
-    master = Master('data.h5')
+    master = Master('master.h5')
     master.main()
