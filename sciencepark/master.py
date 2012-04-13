@@ -1,14 +1,18 @@
 from math import sqrt
 import datetime
 import operator
+import os.path
 
 import tables
 import numpy as np
+from numpy import arctan2, cos, sin, arcsin, isnan
 import progressbar as pb
 
 from hisparc.publicdb import download_data
 from hisparc.analysis import coincidences
 from sapphire.analysis.process_events import ProcessIndexedEvents
+from sapphire.analysis.direction_reconstruction import \
+        DirectionReconstruction
 from sapphire import storage, clusters
 import transformations
 
@@ -44,7 +48,7 @@ class ScienceParkCluster(clusters.BaseCluster):
                              54.622688433155417),
                        505: (52.357251580629246, 4.9484007564706891,
                              47.730995402671397),
-                       506: (52.3571787512,4.95198605591,
+                       506: (52.3571787512, 4.95198605591,
                              43.8700314863),
                       }
 
@@ -97,6 +101,8 @@ class Master:
         self.search_coincidences()
         self.process_events_from_c_index()
         self.store_coincidences()
+
+        self.reconstruct_direction()
 
     def download_data(self):
         start, end = self.datetimerange
@@ -172,6 +178,8 @@ class Master:
     def store_coincidences(self):
         if '/coincidences' not in self.data:
             group = self.data.createGroup('/', 'coincidences')
+            group._v_attrs.cluster = self.cluster
+
             self.c_index = []
             self.coincidences = self.data.createTable(group,
                                                       'coincidences',
@@ -237,7 +245,137 @@ class Master:
         self.observables.flush()
         return event_id
 
+    def reconstruct_direction(self):
+        reconstruction = ClusterDirectionReconstruction(self.data, self.stations, '/reconstructions', overwrite=True)
+        reconstruction.reconstruct_angles('/coincidences')
+
+
+class ClusterDirectionReconstruction(DirectionReconstruction):
+    reconstruction_description = {'coinc_id': tables.UInt32Col(),
+                                  'N': tables.UInt8Col(),
+                                  'reconstructed_theta': tables.Float32Col(),
+                                  'reconstructed_phi': tables.Float32Col(),
+                                  'min_n134': tables.Float32Col(),
+                                 }
+    reconstruction_coincidence_description = {'id': tables.UInt32Col(),
+                                              'N': tables.UInt8Col(),
+                                             }
+
+
+    def __init__(self, datafile, stations, results_group=None, min_n134=1., N=None, overwrite=False):
+        self.data = datafile
+        self.stations = stations
+
+        if results_group:
+            self.results_group = self._create_reconstruction_group_and_tables(results_group, overwrite)
+        else:
+            self.results_group = None
+
+        self.min_n134 = min_n134
+        self.N = N
+
+    def _create_reconstruction_group_and_tables(self, results_group, overwrite):
+        if results_group in self.data:
+            if overwrite:
+                self.data.removeNode(results_group, recursive=True)
+            else:
+                raise RuntimeError("Result group exists, but overwrite is False")
+
+        head, tail = os.path.split(results_group)
+        group = self.data.createGroup(head, tail)
+        stations_description = {'s%d' % u: tables.BoolCol() for u in
+                                self.stations}
+
+        description = self.reconstruction_description
+        description.update(stations_description)
+        self.reconstruction = self.data.createTable(group,
+            'reconstructions', description)
+
+        description = self.reconstruction_coincidence_description
+        description.update(stations_description)
+        self.reconstruction_coincidences = \
+            self.data.createTable(group, 'coincidences', description)
+
+        return group
+
+    def reconstruct_angles(self, coincidences_group):
+        coincidences_group = self.data.getNode(coincidences_group)
+        self.data_group = coincidences_group
+        coincidences = coincidences_group.coincidences
+
+        self.cluster = coincidences_group._v_attrs.cluster
+        self.results_group._v_attrs.cluster = self.cluster
+
+        sel_coincidences = coincidences.readWhere('N >= 3')
+        for coincidence in sel_coincidences:
+            self.reconstruct_individual_stations(coincidence)
+
+#        for event, coincidence in zip(observables[:self.N], coincidences[:self.N]):
+#            assert event['id'] == coincidence['id']
+#            if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
+#                theta, phi = self.reconstruct_angle(event)
+#
+#                if not isnan(theta) and not isnan(phi):
+#                    self.store_reconstructed_event(coincidence, event, theta, phi)
+
+        self.data.flush()
+
+    def reconstruct_individual_stations(self, coincidence):
+        coinc_id = coincidence['id']
+        event_indexes = self.data_group.c_index[coinc_id]
+        events = self.data_group.observables.readCoordinates(event_indexes)
+
+        for event in events:
+            if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
+                theta, phi = self.reconstruct_angle(event)
+
+                if not isnan(theta) and not isnan(phi):
+                    self.store_reconstructed_event_from_single_station(coincidence, event, theta, phi)
+
+    def reconstruct_angle(self, event, offsets=None):
+        """Reconstruct angles from a single event"""
+
+        c = 3.00e+8
+
+        if offsets is not None:
+            self._correct_offsets(event, offsets)
+
+        dt1 = event['t1'] - event['t3']
+        dt2 = event['t1'] - event['t4']
+
+        station = self.cluster.stations[event['station_id']]
+        r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
+        r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
+
+        phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
+                      (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
+        theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
+        theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
+
+        e1 = sqrt(self.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
+        e2 = sqrt(self.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
+
+        theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
+
+        return theta_wgt, phi
+
+    def store_reconstructed_event_from_single_station(self, coincidence, event,
+                                                      reconstructed_theta,
+                                                      reconstructed_phi):
+        dst_row = self.results_group.reconstructions.row
+
+        dst_row['coinc_id'] = coincidence['id']
+        dst_row['N'] = 1
+        dst_row['reconstructed_theta'] = reconstructed_theta
+        dst_row['reconstructed_phi'] = reconstructed_phi
+        dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
+        station = self.stations[event['station_id']]
+        dst_row['s%d' % station] = True
+        dst_row.append()
+
 
 if __name__ == '__main__':
+    np.seterr(divide='ignore', invalid='ignore')
+
     master = Master('master.h5')
     master.main()
