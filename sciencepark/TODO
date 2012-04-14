@@ -1,0 +1,3 @@
+    - correct for time offsets between detectors
+    - correct for time offsets between stations
+    - correct gps timestamp for trigger?
