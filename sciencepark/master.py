@@ -2,6 +2,7 @@ from math import sqrt
 import datetime
 import operator
 import os.path
+import itertools
 
 import tables
 import numpy as np
@@ -293,14 +294,7 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         sel_coincidences = coincidences.readWhere('N >= 3')
         for coincidence in progress(sel_coincidences):
             self.reconstruct_individual_stations(coincidence)
-
-#        for event, coincidence in zip(observables[:self.N], coincidences[:self.N]):
-#            assert event['id'] == coincidence['id']
-#            if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
-#                theta, phi = self.reconstruct_angle(event)
-#
-#                if not isnan(theta) and not isnan(phi):
-#                    self.store_reconstructed_event(coincidence, event, theta, phi)
+            self.reconstruct_cluster_stations(coincidence)
 
         self.data.flush()
 
@@ -315,6 +309,18 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
                 if not isnan(theta) and not isnan(phi):
                     self.store_reconstructed_event_from_single_station(coincidence, event, theta, phi)
+
+    def reconstruct_cluster_stations(self, coincidence):
+        coinc_id = coincidence['id']
+        event_indexes = self.data_group.c_index[coinc_id]
+        events = self.data_group.observables.readCoordinates(event_indexes)
+        stations = events[:]['station_id']
+
+        for index_group in itertools.combinations(stations, 3):
+            theta, phi = self.reconstruct_cluster_angle(events, index_group)
+
+            if not isnan(theta) and not isnan(phi):
+                self.store_reconstructed_event_from_cluster(coincidence, events, index_group, theta, phi)
 
     def reconstruct_angle(self, event, offsets=None):
         """Reconstruct angles from a single event"""
@@ -343,6 +349,32 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         return theta_wgt, phi
 
+    def reconstruct_cluster_angle(self, events, index_group):
+        """Reconstruct angles from a single event"""
+
+        c = 3.00e+8
+
+        t = [long(events[u]['ext_timestamp']) for u in index_group]
+        stations = [events[u]['station_id'] for u in index_group]
+
+        dt1 = t[0] - t[1]
+        dt2 = t[0] - t[2]
+
+        r1, phi1 = self.cluster.calc_r_and_phi_for_stations(stations[0], stations[1])
+        r2, phi2 = self.cluster.calc_r_and_phi_for_stations(stations[0], stations[2])
+
+        phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
+                      (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
+        theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
+        theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
+
+        e1 = sqrt(self.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
+        e2 = sqrt(self.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
+
+        theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
+
+        return theta_wgt, phi
+
     def store_reconstructed_event_from_single_station(self, coincidence, event,
                                                       reconstructed_theta,
                                                       reconstructed_phi):
@@ -355,6 +387,21 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
         station = self.stations[event['station_id']]
         dst_row['s%d' % station] = True
+        dst_row.append()
+
+    def store_reconstructed_event_from_cluster(self, coincidence, events,
+                                               index_group, reconstructed_theta,
+                                               reconstructed_phi):
+        dst_row = self.results_group.reconstructions.row
+
+        dst_row['coinc_id'] = coincidence['id']
+        dst_row['N'] = 3
+        dst_row['reconstructed_theta'] = reconstructed_theta
+        dst_row['reconstructed_phi'] = reconstructed_phi
+        for index in index_group:
+            station_id = events[index]['station_id']
+            station = self.stations[station_id]
+            dst_row['s%d' % station] = True
         dst_row.append()
 
 

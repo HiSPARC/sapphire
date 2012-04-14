@@ -1,3 +1,4 @@
     - correct for time offsets between detectors
     - correct for time offsets between stations
     - correct gps timestamp for trigger?
+    - correct 502 position (changed on which date?)

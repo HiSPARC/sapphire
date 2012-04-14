@@ -228,6 +228,17 @@ class BaseCluster(object):
         self._y = r * sin(phi)
         self._alpha = alpha
 
+    def calc_r_and_phi_for_stations(self, s1, s2):
+        """Calculate angle between detectors (phi1, phi2)"""
+
+        x1, y1, alpha1 = self.stations[s1].get_xyalpha_coordinates()
+        x2, y2, alpha2 = self.stations[s2].get_xyalpha_coordinates()
+
+        r = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        phi = atan2((y2 - y1), (x2 - x1))
+
+        return r, phi
+
 
 class SimpleCluster(BaseCluster):
     """Define a simple cluster containing four stations"""
