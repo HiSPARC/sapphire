@@ -18,24 +18,6 @@ import transformations
 
 
 class ScienceParkCluster(clusters.BaseCluster):
-    # website 1 maart 2012
-#    gps_coordinates = {501: (52.3559126101, 4.95074843056,
-#                               58.6631137794),
-#                       503: (52.3562664259, 4.95294989286,
-#                               48.7995043574),
-#                       506: (52.3571869092, 4.95198066585,
-#                               45.4739832897),
-#                      }
-
-    # Niels mailtje 6 nov 2011
-#    gps_coordinates = {501: (52.3559179545,4.95114534876,
-#                               58.6631137794),
-#                       503: (52.3562664259,4.95294989286,
-#                               48.7995043574),
-#                       506: (52.3571787512,4.95198605591,
-#                               45.4739832897),
-#                      }
-
     # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
     # 2 dec, 2011)
     gps_coordinates = {501: (52.355924173294305, 4.951144021644267,
@@ -187,8 +169,8 @@ class Master:
             self.observables = self.data.createTable(group, 'observables',
                                             storage.EventObservables)
 
-            progress = pb.ProgressBar(widgets=[pb.ETA(), pb.Bar(),
-                                               pb.Percentage()])
+            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                               pb.ETA()])
             for coincidence in progress(self.data.root.c_index):
                 self.store_coincidence(coincidence)
 
@@ -306,8 +288,10 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         self.cluster = coincidences_group._v_attrs.cluster
         self.results_group._v_attrs.cluster = self.cluster
 
+        progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                           pb.ETA()])
         sel_coincidences = coincidences.readWhere('N >= 3')
-        for coincidence in sel_coincidences:
+        for coincidence in progress(sel_coincidences):
             self.reconstruct_individual_stations(coincidence)
 
 #        for event, coincidence in zip(observables[:self.N], coincidences[:self.N]):
