@@ -314,9 +314,9 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         coinc_id = coincidence['id']
         event_indexes = self.data_group.c_index[coinc_id]
         events = self.data_group.observables.readCoordinates(event_indexes)
-        stations = events[:]['station_id']
 
-        for index_group in itertools.combinations(stations, 3):
+        indexes = range(len(events))
+        for index_group in itertools.combinations(indexes, 3):
             theta, phi = self.reconstruct_cluster_angle(events, index_group)
 
             if not isnan(theta) and not isnan(phi):
