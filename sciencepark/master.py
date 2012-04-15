@@ -6,7 +6,7 @@ import itertools
 
 import tables
 import numpy as np
-from numpy import arctan2, cos, sin, arcsin, isnan
+from numpy import arctan2, cos, sin, arcsin, isnan, pi
 import progressbar as pb
 
 from hisparc.publicdb import download_data
@@ -372,6 +372,11 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         e2 = sqrt(self.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
 
         theta_wgt = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
+
+        if theta_wgt < 0:
+            theta_wgt *= -1
+            phi += pi
+            phi = (phi + pi) % (2 * pi) - pi
 
         return theta_wgt, phi
 
