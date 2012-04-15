@@ -9,6 +9,8 @@ from __future__ import division
 
 from math import sqrt, pi, sin, cos, atan2
 
+import transformations
+
 
 class Detector(object):
     """A HiSPARC detector"""
@@ -266,3 +268,49 @@ class SingleStation(BaseCluster):
         super(SingleStation, self).__init__()
 
         self._add_station((0, 0), 0)
+
+
+class ScienceParkCluster(BaseCluster):
+    # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
+    # 2 dec, 2011)
+    gps_coordinates = {501: (52.355924173294305, 4.951144021644267,
+                             56.102345941588283),
+                       502: (52.355293344895919, 4.9501047083812697,
+                             55.954367009922862),
+                       503: (52.356254735127557, 4.9529437445598328,
+                             51.582641703076661),
+                       504: (52.357178777910278, 4.9543838852175561,
+                             54.622688433155417),
+                       505: (52.357251580629246, 4.9484007564706891,
+                             47.730995402671397),
+                       506: (52.3571787512, 4.95198605591,
+                             43.8700314863),
+                      }
+
+    station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
+                         506: 267}
+
+
+    def __init__(self, stations=range(501, 507)):
+        super(ScienceParkCluster, self).__init__()
+
+        reference = self.gps_coordinates[501]
+        transformation = \
+            transformations.FromWGS84ToENUTransformation(reference)
+
+        for station in stations:
+            easting, northing, up = \
+                transformation.transform(self.gps_coordinates[station])
+            alpha = self.station_rotations[station] / 180. * pi
+
+            if station != 502:
+                self._add_station((easting, northing), alpha)
+            else:
+                # 502 is diamond-shaped
+                a = 5
+                b = sqrt(75)
+                detectors = [(0, 2. / 3 * b, 'UD'),
+                             (2 * a, 2. / 3 * b, 'UD'),
+                             (-a, -1. / 3 * b, 'LR'),
+                             (a, -1. / 3 * b, 'LR')]
+                self._add_station((easting, northing), alpha, detectors)

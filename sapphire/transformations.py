@@ -65,7 +65,7 @@ class FromWGS84ToENUTransformation:
         e = self.geode.e
 
         N = a / sqrt(1 - e ** 2 * sin(latitude) ** 2)
-        
+
         X = (N + altitude) * cos(latitude) * cos(longitude)
         Y = (N + altitude) * cos(latitude) * sin(longitude)
         Z = (b ** 2 / a ** 2 * N  + altitude) * sin(latitude)
