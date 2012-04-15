@@ -25,6 +25,8 @@ if USE_TEX:
 def main(data):
     plot_sciencepark_cluster()
     plot_all_single_and_cluster_combinations(data)
+    hist_phi_single_stations(data)
+    hist_theta_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = master.ScienceParkCluster(range(501, 507))
@@ -86,6 +88,34 @@ def plot_direction_single_vs_cluster(data, station, cluster):
     ylim(-pi, pi)
 
     utils.saveplot('%d-%s' % (station, '_'.join(cluster_str)))
+
+def hist_phi_single_stations(data):
+    reconstructions = data.root.reconstructions.reconstructions
+
+    figure()
+    for n, station in enumerate(range(501, 507), 1):
+        subplot(2, 3, n)
+        query = '(N == 1) & s%d' % station
+        phi = reconstructions.readWhere(query, field='reconstructed_phi')
+        hist(phi, bins=linspace(-pi, pi, 21), histtype='step')
+        xlabel(r"$\phi$")
+        legend([station])
+
+    utils.saveplot()
+
+def hist_theta_single_stations(data):
+    reconstructions = data.root.reconstructions.reconstructions
+
+    figure()
+    for n, station in enumerate(range(501, 507), 1):
+        subplot(2, 3, n)
+        query = '(N == 1) & s%d' % station
+        theta = reconstructions.readWhere(query, field='reconstructed_theta')
+        hist(theta, bins=linspace(0, pi / 2, 21), histtype='step')
+        xlabel(r"$\theta$")
+        legend([station])
+
+    utils.saveplot()
 
 
 if __name__ == '__main__':
