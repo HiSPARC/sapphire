@@ -3,7 +3,7 @@ import itertools
 import tables
 from pylab import *
 
-import master
+from sapphire import clusters
 import utils
 
 
@@ -29,7 +29,7 @@ def main(data):
     hist_theta_single_stations(data)
 
 def plot_sciencepark_cluster():
-    cluster = master.ScienceParkCluster(range(501, 507))
+    cluster = clusters.ScienceParkCluster(range(501, 507))
 
     figure()
     xl, yl = [], []

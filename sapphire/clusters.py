@@ -306,11 +306,12 @@ class ScienceParkCluster(BaseCluster):
             if station != 502:
                 self._add_station((easting, northing), alpha)
             else:
-                # 502 is diamond-shaped
+                # 502 is diamond-shaped, with detector 2 to the side
+                # Furthermore, detectors 3 and 4 are reversed (cabling issue)
                 a = 5
                 b = sqrt(75)
                 detectors = [(0, 2. / 3 * b, 'UD'),
                              (2 * a, 2. / 3 * b, 'UD'),
-                             (-a, -1. / 3 * b, 'LR'),
-                             (a, -1. / 3 * b, 'LR')]
+                             (a, -1. / 3 * b, 'LR'),
+                             (-a, -1. / 3 * b, 'LR')]
                 self._add_station((easting, northing), alpha, detectors)
