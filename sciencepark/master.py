@@ -11,7 +11,7 @@ import progressbar as pb
 
 from hisparc.publicdb import download_data
 from hisparc.analysis import coincidences
-from sapphire.analysis.process_events import ProcessIndexedEvents
+from sapphire.analysis.process_events import ProcessIndexedEventsWithLINT
 from sapphire.analysis.direction_reconstruction import \
         DirectionReconstruction
 from sapphire import storage, clusters
@@ -105,8 +105,8 @@ class Master:
                                                axis=0)
                 index = selected[:, 2]
 
-                process = ProcessIndexedEvents(self.data, station_group,
-                                               index)
+                process = ProcessIndexedEventsWithLINT(self.data, station_group,
+                                                       index)
                 process.process_and_store_results()
 
             attrs.is_processed = True
