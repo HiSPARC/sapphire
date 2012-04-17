@@ -27,8 +27,8 @@ def main(data):
     plot_all_single_and_cluster_combinations(data)
     hist_phi_single_stations(data)
     hist_theta_single_stations(data)
-
     plot_N_vs_R(data)
+    plot_fav_single_vs_cluster(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -50,7 +50,7 @@ def plot_all_single_and_cluster_combinations(data):
         for station in station_group:
             plot_direction_single_vs_cluster(data, station, station_group)
 
-def plot_direction_single_vs_cluster(data, station, cluster):
+def calc_direction_single_vs_cluster(data, station, cluster):
     reconstructions = data.root.reconstructions.reconstructions
 
     station_query = '(N == 1) & s%d' % station
@@ -71,6 +71,14 @@ def plot_direction_single_vs_cluster(data, station, cluster):
             phi_cluster.append(event_cluster['reconstructed_phi'])
             theta_station.append(event_station['reconstructed_theta'])
             phi_station.append(event_station['reconstructed_phi'])
+
+    return theta_station, phi_station, theta_cluster, phi_cluster
+
+def plot_direction_single_vs_cluster(data, station, cluster):
+    cluster_str = [str(u) for u in cluster]
+
+    theta_station, phi_station, theta_cluster, phi_cluster = \
+        calc_direction_single_vs_cluster(data, station, cluster)
 
     figsize = list(rcParams['figure.figsize'])
     figsize[1] = figsize[0] / 2
@@ -143,6 +151,30 @@ def plot_N_vs_R(data):
     xlabel("Distance [m]")
     ylabel("Number of coincidences")
 
+    utils.saveplot()
+
+def plot_fav_single_vs_cluster(data):
+    cluster = [501, 503, 506]
+    cluster_str = [str(u) for u in cluster]
+
+    figure()
+    for n, station in enumerate(cluster, 1):
+        theta_station, phi_station, theta_cluster, phi_cluster = \
+            calc_direction_single_vs_cluster(data, station, cluster)
+
+        subplot(2, 3, n)
+        plot(phi_station, phi_cluster, ',')
+        xlabel(r"$\phi_{%d}$" % station)
+        ylabel(r"$\phi_{\{%s\}}$" % ','.join(cluster_str))
+        xlim(-pi, pi)
+        ylim(-pi, pi)
+
+        subplot(2, 3, n + 3)
+        plot(theta_station, theta_cluster, ',')
+        xlabel(r"$\theta_{%d}$" % station)
+        ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
+        xlim(0, pi / 2)
+        ylim(0, pi / 2)
     utils.saveplot()
 
 
