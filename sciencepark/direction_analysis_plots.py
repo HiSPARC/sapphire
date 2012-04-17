@@ -188,7 +188,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         theta_station, phi_station, theta_cluster, phi_cluster = \
             calc_direction_single_vs_cluster(data, station, cluster)
 
-        bins = linspace(0, pi / 2, 11)
+        bins = linspace(0, pi / 4, 11)
         x, y, y2 = [], [], []
         for low, high in zip(bins[:-1], bins[1:]):
             sel_phi_c = phi_cluster.compress((low <= theta_station) &
