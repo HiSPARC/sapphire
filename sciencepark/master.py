@@ -31,6 +31,8 @@ class Master:
 
         self.trig_threshold = .5
 
+        self.detector_offsets = []
+
     def main(self):
         self.download_data()
         self.clean_data()
@@ -185,7 +187,10 @@ class Master:
         return event_id
 
     def reconstruct_direction(self):
-        reconstruction = ClusterDirectionReconstruction(self.data, self.stations, '/reconstructions', overwrite=True)
+        reconstruction = ClusterDirectionReconstruction(self.data,
+                            self.stations, '/reconstructions',
+                            detector_offsets=self.detector_offsets,
+                            overwrite=True)
         reconstruction.reconstruct_angles('/coincidences')
 
     def determine_detector_offsets(self):
@@ -193,6 +198,7 @@ class Master:
             process = ProcessEvents(self.data, station_group)
             offsets = process.determine_detector_timing_offsets()
             print "Offsets for station %d: %s" % (station_id, offsets)
+            self.detector_offsets.append(offsets)
 
 
 class ClusterDirectionReconstruction(DirectionReconstruction):
@@ -207,7 +213,7 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
                                              }
 
 
-    def __init__(self, datafile, stations, results_group=None, min_n134=1., N=None, overwrite=False):
+    def __init__(self, datafile, stations, results_group=None, min_n134=1., N=None, detector_offsets=None, overwrite=False):
         self.data = datafile
         self.stations = stations
 
@@ -218,6 +224,7 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         self.min_n134 = min_n134
         self.N = N
+        self.detector_offsets = detector_offsets
 
     def _create_reconstruction_group_and_tables(self, results_group, overwrite):
         if results_group in self.data:
@@ -267,8 +274,8 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         for event in events:
             if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
-                if event['station_id'] == 0:
-                    theta, phi = self.reconstruct_angle(event, [-1.3671260576094615, 0.0, 3.2544742777614744, 0.90211124748607352])
+                if self.detector_offsets:
+                    theta, phi = self.reconstruct_angle(event, self.detector_offsets[event['station_id']])
                 else:
                     theta, phi = self.reconstruct_angle(event)
 
