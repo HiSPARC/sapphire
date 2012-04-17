@@ -11,7 +11,7 @@ import progressbar as pb
 
 from hisparc.publicdb import download_data
 from hisparc.analysis import coincidences
-from sapphire.analysis.process_events import ProcessIndexedEventsWithLINT
+from sapphire.analysis.process_events import ProcessEvents, ProcessIndexedEventsWithLINT
 from sapphire.analysis.direction_reconstruction import \
         DirectionReconstruction
 from sapphire import storage, clusters
@@ -21,6 +21,7 @@ class Master:
     stations = range(501, 507)
     datetimerange = (datetime.datetime(2012, 3, 1),
                      datetime.datetime(2012, 3, 8))
+
 
     def __init__(self, data_path):
         self.data = tables.openFile(data_path, 'a')
@@ -37,6 +38,8 @@ class Master:
         self.search_coincidences()
         self.process_events_from_c_index()
         self.store_coincidences()
+
+        self.determine_detector_offsets()
 
         self.reconstruct_direction()
 
@@ -185,6 +188,12 @@ class Master:
         reconstruction = ClusterDirectionReconstruction(self.data, self.stations, '/reconstructions', overwrite=True)
         reconstruction.reconstruct_angles('/coincidences')
 
+    def determine_detector_offsets(self):
+        for station_id, station_group in enumerate(self.station_groups):
+            process = ProcessEvents(self.data, station_group)
+            offsets = process.determine_detector_timing_offsets()
+            print "Offsets for station %d: %s" % (station_id, offsets)
+
 
 class ClusterDirectionReconstruction(DirectionReconstruction):
     reconstruction_description = {'coinc_id': tables.UInt32Col(),
@@ -258,7 +267,10 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         for event in events:
             if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
-                theta, phi = self.reconstruct_angle(event)
+                if event['station_id'] == 0:
+                    theta, phi = self.reconstruct_angle(event, [-1.3671260576094615, 0.0, 3.2544742777614744, 0.90211124748607352])
+                else:
+                    theta, phi = self.reconstruct_angle(event)
 
                 if not isnan(theta) and not isnan(phi):
                     self.store_reconstructed_event_from_single_station(coincidence, event, theta, phi)
