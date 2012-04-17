@@ -29,6 +29,7 @@ def main(data):
     hist_theta_single_stations(data)
     plot_N_vs_R(data)
     plot_fav_single_vs_cluster(data)
+    plot_fav_uncertainty_single_vs_cluster(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -72,7 +73,8 @@ def calc_direction_single_vs_cluster(data, station, cluster):
             theta_station.append(event_station['reconstructed_theta'])
             phi_station.append(event_station['reconstructed_phi'])
 
-    return theta_station, phi_station, theta_cluster, phi_cluster
+    return array(theta_station).flatten(), array(phi_station).flatten(), \
+        array(theta_cluster).flatten(), array(phi_cluster).flatten()
 
 def plot_direction_single_vs_cluster(data, station, cluster):
     cluster_str = [str(u) for u in cluster]
@@ -175,6 +177,46 @@ def plot_fav_single_vs_cluster(data):
         ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
         xlim(0, pi / 2)
         ylim(0, pi / 2)
+    utils.saveplot()
+
+def plot_fav_uncertainty_single_vs_cluster(data):
+    cluster = [501, 503, 506]
+    cluster_str = [str(u) for u in cluster]
+
+    figure()
+    for n, station in enumerate(cluster, 1):
+        theta_station, phi_station, theta_cluster, phi_cluster = \
+            calc_direction_single_vs_cluster(data, station, cluster)
+
+        bins = linspace(0, pi / 2, 11)
+        x, y, y2 = [], [], []
+        for low, high in zip(bins[:-1], bins[1:]):
+            sel_phi_c = phi_cluster.compress((low <= theta_station) &
+                                             (theta_station < high))
+            sel_phi_s = phi_station.compress((low <= theta_station) &
+                                             (theta_station < high))
+            sel_theta_c = theta_cluster.compress((low <= theta_station) &
+                                                 (theta_station < high))
+            sel_theta_s = theta_station.compress((low <= theta_station) &
+                                                 (theta_station < high))
+            dphi = sel_phi_s - sel_phi_c
+            dtheta = sel_theta_s - sel_theta_c
+            # make sure phi, theta are between -pi and pi
+            dphi = (dphi + pi) % (2 * pi) - pi
+            dtheta = (dtheta + pi) % (2 * pi) - pi
+            print rad2deg((low + high) / 2), len(dphi), len(dtheta)
+            x.append((low + high) / 2)
+            y.append(std(dphi))
+            y2.append(std(dtheta))
+
+        subplot(2, 3, n)
+        plot(rad2deg(x), rad2deg(y))
+        xlabel(r"$\theta_{%d}$" % station)
+
+        subplot(2, 3, n + 3)
+        plot(rad2deg(x), rad2deg(y2))
+        xlabel(r"$\theta_{%d}$" % station)
+        #ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
     utils.saveplot()
 
 
