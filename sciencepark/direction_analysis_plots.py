@@ -28,6 +28,8 @@ def main(data):
     hist_phi_single_stations(data)
     hist_theta_single_stations(data)
 
+    plot_N_vs_R(data)
+
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
 
@@ -114,6 +116,32 @@ def hist_theta_single_stations(data):
         hist(theta, bins=linspace(0, pi / 2, 21), histtype='step')
         xlabel(r"$\theta$")
         legend([station])
+
+    utils.saveplot()
+
+def plot_N_vs_R(data):
+    stations = range(501, 507)
+    station_ids = range(6)
+    cluster = clusters.ScienceParkCluster(stations)
+
+    c_index = data.root.coincidences.c_index
+    observables = data.root.coincidences.observables
+
+    stations_in_coincidence = []
+    for coincidence_events in c_index:
+        stations = [observables[u]['station_id'] for u in
+                    coincidence_events]
+        stations_in_coincidence.append(stations)
+
+    figure()
+    for station1, station2 in itertools.combinations(station_ids, 2):
+        condition = [station1 in u and station2 in u for u in
+                     stations_in_coincidence]
+        N = sum(condition)
+        R, phi = cluster.calc_r_and_phi_for_stations(station1, station2)
+        scatter(R, N)
+    xlabel("Distance [m]")
+    ylabel("Number of coincidences")
 
     utils.saveplot()
 
