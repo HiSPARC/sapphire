@@ -9,7 +9,7 @@ import utils
 
 
 STATION_TIMING_ERR = 4
-CLUSTER_TIMING_ERR = 4
+CLUSTER_TIMING_ERR = 15
 
 
 USE_TEX = False
@@ -115,9 +115,10 @@ def hist_phi_single_stations(data):
         subplot(2, 3, n)
         query = '(N == 1) & s%d' % station
         phi = reconstructions.readWhere(query, field='reconstructed_phi')
-        hist(phi, bins=linspace(-pi, pi, 21), histtype='step')
+        hist(rad2deg(phi), bins=linspace(-180, 180, 21), histtype='step')
         xlabel(r"$\phi$")
         legend([station])
+        locator_params(tight=True, nbins=4)
 
     utils.saveplot()
 
@@ -129,9 +130,10 @@ def hist_theta_single_stations(data):
         subplot(2, 3, n)
         query = '(N == 1) & s%d' % station
         theta = reconstructions.readWhere(query, field='reconstructed_theta')
-        hist(theta, bins=linspace(0, pi / 2, 21), histtype='step')
+        hist(rad2deg(theta), bins=linspace(0, 45, 21), histtype='step')
         xlabel(r"$\theta$")
         legend([station])
+        locator_params(tight=True, nbins=4)
 
     utils.saveplot()
 
@@ -171,18 +173,20 @@ def plot_fav_single_vs_cluster(data):
             calc_direction_single_vs_cluster(data, station, cluster)
 
         subplot(2, 3, n)
-        plot(phi_station, phi_cluster, ',')
+        plot(rad2deg(phi_station), rad2deg(phi_cluster), ',')
         xlabel(r"$\phi_{%d}$" % station)
         ylabel(r"$\phi_{\{%s\}}$" % ','.join(cluster_str))
-        xlim(-pi, pi)
-        ylim(-pi, pi)
+        xlim(-180, 180)
+        ylim(-180, 180)
+        locator_params(tight=True, nbins=4)
 
         subplot(2, 3, n + 3)
-        plot(theta_station, theta_cluster, ',')
+        plot(rad2deg(theta_station), rad2deg(theta_cluster), ',')
         xlabel(r"$\theta_{%d}$" % station)
         ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
-        xlim(0, pi / 2)
-        ylim(0, pi / 2)
+        xlim(0, 45)
+        ylim(0, 45)
+        locator_params(tight=True, nbins=4)
     utils.saveplot()
 
 def plot_fav_uncertainty_single_vs_cluster(data):
@@ -231,6 +235,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         if n == 1:
             ylabel(r"$\phi$ uncertainty [deg]")
         ylim(0, 100)
+        locator_params(tight=True, nbins=4)
 
         subplot(2, 3, n + 3)
         plot(rad2deg(x), rad2deg(y2))
@@ -240,6 +245,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
             ylabel(r"$\theta$ uncertainty [deg]")
         #ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
         ylim(0, 15)
+        locator_params(tight=True, nbins=4)
     utils.saveplot()
 
 def calc_phi_error_for_station_cluster(theta, station, cluster):
