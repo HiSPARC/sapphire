@@ -226,13 +226,17 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         subplot(2, 3, n)
         plot(rad2deg(x), rad2deg(y))
         plot(rad2deg(ex), rad2deg(ephi))
-        xlabel(r"$\theta_{%d}$" % station)
+        xlabel(r"$\theta_{%d}$ [deg]" % station)
+        if n == 1:
+            ylabel(r"$\phi$ uncertainty [deg]")
         ylim(0, 100)
 
         subplot(2, 3, n + 3)
         plot(rad2deg(x), rad2deg(y2))
         plot(rad2deg(ex), rad2deg(etheta))
-        xlabel(r"$\theta_{%d}$" % station)
+        xlabel(r"$\theta_{%d}$ [deg]" % station)
+        if n == 1:
+            ylabel(r"$\theta$ uncertainty [deg]")
         #ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
         ylim(0, 15)
     utils.saveplot()
