@@ -50,6 +50,7 @@ def plot_sciencepark_cluster():
     axis('equal')
 
     utils.savedata([xl, yl])
+    utils.saveplot()
 
 def plot_all_single_and_cluster_combinations(data):
     for station_group in itertools.combinations(range(501, 507), 3):
