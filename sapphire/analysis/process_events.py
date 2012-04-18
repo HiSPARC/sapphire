@@ -216,7 +216,7 @@ class ProcessEvents(object):
             self.source = self.group._events
 
         if self.destination in self.group:
-            self.removeNode(self.group, self.destination)
+            self.data.removeNode(self.group, self.destination)
         self._tmp_events.rename(self.destination)
 
     def determine_detector_timing_offsets(self, timings_table='events'):
