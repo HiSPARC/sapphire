@@ -4,7 +4,12 @@ import tables
 from pylab import *
 
 from sapphire import clusters
+from sapphire.analysis.direction_reconstruction import DirectionReconstruction
 import utils
+
+
+STATION_TIMING_ERR = 4
+CLUSTER_TIMING_ERR = 4
 
 
 USE_TEX = False
@@ -182,13 +187,14 @@ def plot_fav_single_vs_cluster(data):
 def plot_fav_uncertainty_single_vs_cluster(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
+    cluster_ids = [0, 2, 5]
 
     figure()
     for n, station in enumerate(cluster, 1):
         theta_station, phi_station, theta_cluster, phi_cluster = \
             calc_direction_single_vs_cluster(data, station, cluster)
 
-        bins = linspace(0, pi / 4, 11)
+        bins = linspace(0, deg2rad(35), 11)
         x, y, y2 = [], [], []
         for low, high in zip(bins[:-1], bins[1:]):
             sel_phi_c = phi_cluster.compress((low <= theta_station) &
@@ -209,15 +215,63 @@ def plot_fav_uncertainty_single_vs_cluster(data):
             y.append(std(dphi))
             y2.append(std(dtheta))
 
+        ex = linspace(0, deg2rad(35), 50)
+        ephi, etheta = [], []
+        for theta in ex:
+            ephi.append(calc_phi_error_for_station_cluster(theta, n,
+                                                           cluster_ids))
+            etheta.append(calc_theta_error_for_station_cluster(theta, n,
+                                                               cluster_ids))
+
         subplot(2, 3, n)
         plot(rad2deg(x), rad2deg(y))
+        plot(rad2deg(ex), rad2deg(ephi))
         xlabel(r"$\theta_{%d}$" % station)
+        ylim(0, 100)
 
         subplot(2, 3, n + 3)
         plot(rad2deg(x), rad2deg(y2))
+        plot(rad2deg(ex), rad2deg(etheta))
         xlabel(r"$\theta_{%d}$" % station)
         #ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
+        ylim(0, 15)
     utils.saveplot()
+
+def calc_phi_error_for_station_cluster(theta, station, cluster):
+    phis = linspace(-pi, pi, 50)
+    rec = DirectionReconstruction
+    sciencepark = clusters.ScienceParkCluster(range(501, 507))
+
+    r1, phi1 = sciencepark.stations[station].calc_r_and_phi_for_detectors(1, 3)
+    r2, phi2 = sciencepark.stations[station].calc_r_and_phi_for_detectors(1, 4)
+    err_single = rec.rel_phi_errorsq(theta, phis, phi1, phi2, r1, r2)
+
+    r1, phi1 = sciencepark.calc_r_and_phi_for_stations(cluster[0], cluster[1])
+    r2, phi2 = sciencepark.calc_r_and_phi_for_stations(cluster[0], cluster[2])
+    err_cluster = rec.rel_phi_errorsq(theta, phis, phi1, phi2, r1, r2)
+
+    # errors are already squared!!
+    err_total = sqrt(STATION_TIMING_ERR ** 2 * err_single +
+                     CLUSTER_TIMING_ERR ** 2 * err_cluster)
+    return mean(err_total)
+
+def calc_theta_error_for_station_cluster(theta, station, cluster):
+    phis = linspace(-pi, pi, 50)
+    rec = DirectionReconstruction
+    sciencepark = clusters.ScienceParkCluster(range(501, 507))
+
+    r1, phi1 = sciencepark.stations[station].calc_r_and_phi_for_detectors(1, 3)
+    r2, phi2 = sciencepark.stations[station].calc_r_and_phi_for_detectors(1, 4)
+    err_single = rec.rel_theta1_errorsq(theta, phis, phi1, phi2, r1, r2)
+
+    r1, phi1 = sciencepark.calc_r_and_phi_for_stations(cluster[0], cluster[1])
+    r2, phi2 = sciencepark.calc_r_and_phi_for_stations(cluster[0], cluster[2])
+    err_cluster = rec.rel_theta1_errorsq(theta, phis, phi1, phi2, r1, r2)
+
+    # errors are already squared!!
+    err_total = sqrt(STATION_TIMING_ERR ** 2 * err_single +
+                     CLUSTER_TIMING_ERR ** 2 * err_cluster)
+    return mean(err_total)
 
 
 if __name__ == '__main__':
