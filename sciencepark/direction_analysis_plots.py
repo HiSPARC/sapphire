@@ -35,6 +35,7 @@ def main(data):
     plot_N_vs_R(data)
     plot_fav_single_vs_cluster(data)
     plot_fav_uncertainty_single_vs_cluster(data)
+    hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -283,6 +284,29 @@ def calc_theta_error_for_station_cluster(theta, station, cluster):
     err_total = sqrt(STATION_TIMING_ERR ** 2 * err_single +
                      CLUSTER_TIMING_ERR ** 2 * err_cluster)
     return mean(err_total)
+
+def hist_fav_single_stations(data):
+    reconstructions = data.root.reconstructions.reconstructions
+
+    figure()
+    for n, station in enumerate([501, 503, 506], 1):
+        query = '(N == 1) & s%d' % station
+        phi = reconstructions.readWhere(query, field='reconstructed_phi')
+        theta = reconstructions.readWhere(query, field='reconstructed_theta')
+
+        subplot(2, 3, n)
+        hist(rad2deg(phi), bins=linspace(-180, 180, 21), histtype='step')
+        xlabel(r"$\phi$")
+        legend([station], loc='lower right')
+        locator_params(tight=True, nbins=4)
+
+        subplot(2, 3, n + 3)
+        hist(rad2deg(theta), bins=linspace(0, 45, 21), histtype='step')
+        xlabel(r"$\theta$")
+        legend([station], loc='lower right')
+        locator_params(tight=True, nbins=4)
+
+    utils.saveplot()
 
 
 if __name__ == '__main__':
