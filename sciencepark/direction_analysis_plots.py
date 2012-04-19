@@ -61,7 +61,7 @@ def plot_all_single_and_cluster_combinations(data):
 def calc_direction_single_vs_cluster(data, station, cluster):
     reconstructions = data.root.reconstructions.reconstructions
 
-    station_query = '(N == 1) & s%d' % station
+    station_query = '(N == 1) & s%d & (min_n134 >= 2.)' % station
     cluster_query = '(N == 3) & ' + ' & '.join(['s%d' % u for u in cluster])
     cluster_str = [str(u) for u in cluster]
 
