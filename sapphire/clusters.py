@@ -9,6 +9,8 @@ from __future__ import division
 
 from math import sqrt, pi, sin, cos, atan2
 
+import transformations
+
 
 class Detector(object):
     """A HiSPARC detector"""
@@ -86,7 +88,7 @@ class Station(object):
 
     __detectors = None
 
-    def __init__(self, cluster, station_id, position, angle, detectors):
+    def __init__(self, cluster, station_id, position, angle, detectors=None):
         """Initialize station
 
         :param cluster: cluster this station is a part of
@@ -105,6 +107,15 @@ class Station(object):
         self.station_id = station_id
         self.position = position
         self.angle = angle
+
+        if detectors is None:
+            # detector positions for a standard station
+            station_size = 10
+            a = station_size / 2
+            b = a / 3 * sqrt(3)
+            detectors = [(0., 2 * b, 'UD'), (0., 0., 'UD'),
+                         (-a, -b, 'LR'), (a, -b, 'LR')]
+
         for x, y, orientation in detectors:
             self._add_detector(x, y, orientation)
 
@@ -173,7 +184,7 @@ class BaseCluster(object):
         self._x, self._y = position
         self._alpha = angle
 
-    def _add_station(self, position, angle, detectors):
+    def _add_station(self, position, angle, detectors=None):
         """Add a station to the cluster
 
         :param position: tuple of (x, y) values
@@ -219,6 +230,17 @@ class BaseCluster(object):
         self._y = r * sin(phi)
         self._alpha = alpha
 
+    def calc_r_and_phi_for_stations(self, s1, s2):
+        """Calculate angle between detectors (phi1, phi2)"""
+
+        x1, y1, alpha1 = self.stations[s1].get_xyalpha_coordinates()
+        x2, y2, alpha2 = self.stations[s2].get_xyalpha_coordinates()
+
+        r = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+        phi = atan2((y2 - y1), (x2 - x1))
+
+        return r, phi
+
 
 class SimpleCluster(BaseCluster):
     """Define a simple cluster containing four stations"""
@@ -228,21 +250,14 @@ class SimpleCluster(BaseCluster):
 
         super(SimpleCluster, self).__init__()
 
-        # calculate detector positions for a four-detector station
-        station_size = 10
-        a = station_size / 2
-        b = a / 3 * sqrt(3)
-        detectors = [(0., 2 * b, 'UD'), (0., 0., 'UD'),
-                     (-a, -b, 'LR'), (a, -b, 'LR')]
-
         # calculate station positions.  the cluster resembles a single
         # four-detector HiSPARC station, but scaled up
         A = size / 2
         B = A / 3 * sqrt(3)
-        self._add_station((0, 2 * B), 0, detectors)
-        self._add_station((0, 0), 0, detectors)
-        self._add_station((-A, -B), 2 * pi / 3, detectors)
-        self._add_station((A, -B), -2 * pi / 3, detectors)
+        self._add_station((0, 2 * B), 0)
+        self._add_station((0, 0), 0)
+        self._add_station((-A, -B), 2 * pi / 3)
+        self._add_station((A, -B), -2 * pi / 3)
 
 class SingleStation(BaseCluster):
     """Define a cluster containing a single station"""
@@ -252,10 +267,51 @@ class SingleStation(BaseCluster):
 
         super(SingleStation, self).__init__()
 
-        # calculate detector positions for a four-detector station
-        a = station_size / 2
-        b = a / 3 * sqrt(3)
-        detectors = [(0., 2 * b, 'UD'), (0., 0., 'UD'),
-                     (-a, -b, 'LR'), (a, -b, 'LR')]
+        self._add_station((0, 0), 0)
 
-        self._add_station((0, 0), 0, detectors)
+
+class ScienceParkCluster(BaseCluster):
+    # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
+    # 2 dec, 2011)
+    gps_coordinates = {501: (52.355924173294305, 4.951144021644267,
+                             56.102345941588283),
+                       502: (52.355293344895919, 4.9501047083812697,
+                             55.954367009922862),
+                       503: (52.356254735127557, 4.9529437445598328,
+                             51.582641703076661),
+                       504: (52.357178777910278, 4.9543838852175561,
+                             54.622688433155417),
+                       505: (52.357251580629246, 4.9484007564706891,
+                             47.730995402671397),
+                       506: (52.3571787512, 4.95198605591,
+                             43.8700314863),
+                      }
+
+    station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
+                         506: 267}
+
+
+    def __init__(self, stations=range(501, 507)):
+        super(ScienceParkCluster, self).__init__()
+
+        reference = self.gps_coordinates[501]
+        transformation = \
+            transformations.FromWGS84ToENUTransformation(reference)
+
+        for station in stations:
+            easting, northing, up = \
+                transformation.transform(self.gps_coordinates[station])
+            alpha = self.station_rotations[station] / 180. * pi
+
+            if station != 502:
+                self._add_station((easting, northing), alpha)
+            else:
+                # 502 is diamond-shaped, with detector 2 to the side
+                # Furthermore, detectors 3 and 4 are reversed (cabling issue)
+                a = 5
+                b = sqrt(75)
+                detectors = [(0, 2. / 3 * b, 'UD'),
+                             (2 * a, 2. / 3 * b, 'UD'),
+                             (a, -1. / 3 * b, 'LR'),
+                             (-a, -1. / 3 * b, 'LR')]
+                self._add_station((easting, northing), alpha, detectors)

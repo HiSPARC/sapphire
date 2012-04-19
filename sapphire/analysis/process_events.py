@@ -134,7 +134,11 @@ class ProcessEvents(object):
         for event in progressbar(events):
             timings = self._reconstruct_time_from_traces(event)
             result.append(timings)
-        return 1e9 * np.array(result)
+        result = np.array(result)
+
+        # Replace NaN with -999, get timings in ns
+        timings = np.where(np.isnan(result), -999, 1e9 * result)
+        return timings
 
     def _create_progressbar_from_iterable(self, iterable, length=None):
         if length is None:
@@ -212,7 +216,7 @@ class ProcessEvents(object):
             self.source = self.group._events
 
         if self.destination in self.group:
-            self.removeNode(self.group, self.destination)
+            self.data.removeNode(self.group, self.destination)
         self._tmp_events.rename(self.destination)
 
     def determine_detector_timing_offsets(self, timings_table='events'):
@@ -222,14 +226,17 @@ class ProcessEvents(object):
         gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
         bins = np.arange(-100 + 1.25, 100, 2.5)
 
+        print "Determining offsets based on # events:",
         offsets = []
         for timings in 't1', 't3', 't4':
             timings = table.col(timings)
             dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
+            print len(dt),
             y, bins = np.histogram(dt, bins=bins)
             x = (bins[:-1] + bins[1:]) / 2
             popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
             offsets.append(popt[1])
+        print
 
         return [offsets[0]] + [0.] + offsets[1:]
 
