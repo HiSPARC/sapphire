@@ -3,18 +3,33 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy.stats import scoreatpercentile
+from pylab import *
 
 import utils
+
+USE_TEX = True
+
+# For matplotlib plots
+if USE_TEX:
+    rcParams['font.serif'] = 'Computer Modern'
+    rcParams['font.sans-serif'] = 'Computer Modern'
+    rcParams['font.family'] = 'sans-serif'
+    rcParams['figure.figsize'] = [4 * x for x in (1, 2. / 3)]
+    rcParams['figure.subplot.left'] = 0.175
+    rcParams['figure.subplot.bottom'] = 0.175
+    rcParams['font.size'] = 10
+    rcParams['legend.fontsize'] = 'small'
+    rcParams['text.usetex'] = True
 
 
 def main():
     global data
-    data = tables.openFile('data-e15-S250.h5', 'r')
-    utils.set_suffix('E_1PeV')
+    data = tables.openFile('master-ch4v2.h5', 'r')
+    #utils.set_suffix('E_1PeV')
 
     #scatterplot_core_distance_vs_time()
-    median_core_distance_vs_time()
-    #boxplot_core_distance_vs_time()
+    #median_core_distance_vs_time()
+    boxplot_core_distance_vs_time()
     #hists_core_distance_vs_time()
 
 
@@ -70,28 +85,30 @@ def plot_and_fit_statistic(func):
 def boxplot_core_distance_vs_time():
     plt.figure()
 
-    sim = data.root.showers.E_1PeV.zenith_0
-    electrons = sim.electrons
+    sim = data.root.showers.E_1PeV.zenith_0.shower_0
+    leptons = sim.leptons
 
-    bins = np.logspace(0, 2, 25)
+    #bins = np.logspace(0, 2, 25)
+    bins = np.linspace(0, 100, 15)
     x, arrival_time, widths = [], [], []
+    t25, t50, t75 = [], [], []
     for low, high in zip(bins[:-1], bins[1:]):
-        sel = electrons.readWhere('(low < core_distance) & (core_distance <= high)')
+        sel = leptons.readWhere('(low < core_distance) & (core_distance <= high)')
         x.append(np.mean([low, high]))
         arrival_time.append(sel[:]['arrival_time'])
         widths.append((high - low) / 2)
+        ts = sel[:]['arrival_time']
+        t25.append(scoreatpercentile(ts, 25))
+        t50.append(scoreatpercentile(ts, 50))
+        t75.append(scoreatpercentile(ts, 75))
 
-    plt.boxplot(arrival_time, positions=x, widths=widths)
-
-    plt.xscale('log')
-    plt.yscale('log')
-
-    plt.xlim(1e0, 1e2)
+    fill_between(x, t25, t75, color='0.75')
+    plot(x, t50, 'o-', color='black')
 
     plt.xlabel("Core distance [m]")
     plt.ylabel("Arrival time [ns]")
 
-    utils.title("Shower front timing structure")
+    #utils.title("Shower front timing structure")
     utils.saveplot()
 
 def hists_core_distance_vs_time():
