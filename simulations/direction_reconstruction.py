@@ -429,7 +429,7 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
     #title(r"$N_{MIP} \geq %d$" % N)
 
     axhline(0, color='black')
-    #ylim(-20, 20)
+    ylim(-10, 25)
 
     utils.saveplot(N)
 
@@ -464,6 +464,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
 
     xticks(linspace(-180, 180, 9))
     axhline(0, color='black')
+    ylim(-15, 15)
 
     utils.saveplot(N)
 
@@ -777,7 +778,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('master.h5', 'a')
+        data = tables.openFile('master-ch4v2.h5', 'r')
 
     if '/reconstructions' not in data:
         print "Reconstructing shower direction..."
