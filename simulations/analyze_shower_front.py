@@ -7,7 +7,10 @@ from pylab import *
 
 import utils
 
-USE_TEX = True
+from artist import GraphArtist
+
+
+USE_TEX = False
 
 # For matplotlib plots
 if USE_TEX:
@@ -31,6 +34,7 @@ def main():
     #median_core_distance_vs_time()
     boxplot_core_distance_vs_time()
     #hists_core_distance_vs_time()
+    plot_front_passage()
 
 
 def scatterplot_core_distance_vs_time():
@@ -111,6 +115,14 @@ def boxplot_core_distance_vs_time():
     #utils.title("Shower front timing structure")
     utils.saveplot()
 
+    graph = GraphArtist(width=r'.45\linewidth')
+    graph.plot(x, t50, mark='*')
+    graph.shade_region(x, t25, t75)
+    graph.set_xlabel(r"Core distance [\si{\meter}]")
+    graph.set_ylabel(r"Arrival time delay [\si{\nano\second}]")
+    graph.set_ylimits(min=0)
+    graph.save('front-passage-vs-R')
+
 def hists_core_distance_vs_time():
     plt.figure()
 
@@ -133,6 +145,26 @@ def hists_core_distance_vs_time():
 
     utils.title("Shower front timing structure")
     utils.saveplot()
+
+def plot_front_passage():
+    sim = data.root.showers.E_1PeV.zenith_0.shower_0
+    leptons = sim.leptons
+    R = 40
+    dR = 2
+    low = R - dR
+    high = R + dR
+    global t
+    t = leptons.readWhere('(low < core_distance) & (core_distance <= high)',
+                          field='arrival_time')
+
+    n, bins, patches = hist(t, bins=linspace(0, 30, 31), histtype='step')
+
+    graph = GraphArtist(width=r'.45\linewidth')
+    graph.histogram(n, bins)
+    graph.set_xlabel(r"Arrival time [\si{\nano\second}]")
+    graph.set_ylabel("Number of leptons")
+    graph.set_ylimits(min=0)
+    graph.save('front-passage')
 
 
 if __name__ == '__main__':
