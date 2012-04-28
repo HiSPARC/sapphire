@@ -24,7 +24,7 @@ def plot_trace(station_group, idx):
     line_styles = ['black', 'black!80', 'black!60', 'black!40']
     styles = (u for u in line_styles)
 
-    graph = GraphArtist()
+    graph = GraphArtist(width=r'.5\linewidth')
     for trace in traces:
         graph.plot(x, trace / 1000, mark=None, linestyle=styles.next())
     graph.set_xlabel(r"Time [\si{\nano\second}]")
