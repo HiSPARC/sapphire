@@ -28,7 +28,7 @@ def plot_trace(station_group, idx):
     for trace in traces:
         graph.plot(x, trace / 1000, mark=None, linestyle=styles.next())
     graph.set_xlabel(r"Time [\si{\nano\second}]")
-    graph.set_ylabel(r"Pulseheight [\si{\volt}]")
+    graph.set_ylabel(r"Signal [\si{\volt}]")
     graph.set_xlimits(0, 200)
     graph.save('plots/traces')
 
