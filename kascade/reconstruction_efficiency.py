@@ -173,12 +173,14 @@ class ReconstructionEfficiency(object):
 
     def plot_landau_and_gamma(self, x, p_gamma, p_landau):
         gammas = self.gamma_func(x, *p_gamma)
-        plt.plot(x * VNS, gammas, label='gamma')
+        gamma_trunc = np.where(x * VNS <= 21, gammas, 0.)
+
+        plt.plot(x * VNS, gamma_trunc, label='gamma')
 
         landaus = self.scintillator.conv_landau_for_x(x, *p_landau)
         plt.plot(x * VNS, landaus, label='landau/gauss')
 
-        plt.plot(x * VNS, gammas + landaus, label='gamma + landau/gauss')
+        plt.plot(x * VNS, gamma_trunc + landaus, label='gamma + landau/gauss')
 
 
     def fit_gammas_to_data(self, x, y, p0):
