@@ -269,8 +269,8 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
 
     figure()
     plot_2d_histogram(rad2deg(sim_phi), rad2deg(r_phi), 180)
-    xlabel(r"$\phi_{KASCADE}$ [deg]")
-    ylabel(r"$\phi_{reconstructed}$ [deg]")
+    xlabel(r"$\phi_K$ [deg]")
+    ylabel(r"$\phi_H$ [deg]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ \pm %d^\circ$" % (N, rad2deg(DTHETA)))
 
     utils.saveplot(N)
@@ -284,8 +284,8 @@ def plot_theta_reconstruction_results_for_MIP(table, N):
     x_edges = linspace(0, 40, 81)
     y_edges = linspace(0, 40, 81)
     plot_2d_histogram(rad2deg(sim_theta), rad2deg(r_theta), (x_edges, y_edges))
-    xlabel(r"$\theta_{KASCADE}$ [deg]")
-    ylabel(r"$\theta_{reconstructed}$ [deg]")
+    xlabel(r"$\theta_K$ [deg]")
+    ylabel(r"$\theta_H$ [deg]")
     title(r"$N_{MIP} \geq %d$" % N)
 
     utils.saveplot(N)
