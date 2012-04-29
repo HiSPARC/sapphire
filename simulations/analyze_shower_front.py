@@ -116,7 +116,7 @@ def boxplot_core_distance_vs_time():
     utils.saveplot()
 
     graph = GraphArtist(width=r'.43\linewidth')
-    graph.plot(x, t50, mark='*')
+    graph.plot(x, t50, mark=None)
     graph.shade_region(x, t25, t75)
     graph.set_xlabel(r"Core distance [\si{\meter}]")
     graph.set_ylabel(r"Arrival time [\si{\nano\second}]")
