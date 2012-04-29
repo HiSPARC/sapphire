@@ -44,8 +44,8 @@ class ReconstructionEfficiency(object):
             scintillator = self.scintillator
 
     def main(self):
-        #self.plot_spectrum_fit_chisq()
-        #self.plot_gamma_landau_fit()
+        self.plot_spectrum_fit_chisq()
+        self.plot_gamma_landau_fit()
         self.plot_detection_efficiency()
 
     def calc_charged_fraction(self, x, y, p_gamma, p_landau):
