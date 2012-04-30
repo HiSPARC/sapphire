@@ -11,16 +11,17 @@ from pylab import *
 from scipy import integrate
 from scipy.special import erf
 from scipy.stats import scoreatpercentile
+from scipy.stats import norm as normpdf
 from scipy.interpolate import spline
+from scipy.optimize import curve_fit
 
 import utils
 
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
 from myshowerfront import *
 
-USE_TEX = True
+USE_TEX = False
 
-ONEP_TIMING_ERROR = 4.9
 TIMING_ERROR = 2.7
 
 # For matplotlib plots
@@ -83,28 +84,29 @@ def do_reconstruction_plots(data):
     group = data.root.reconstructions
 
     plot_uncertainty_mip(group)
-    plot_uncertainty_zenith(group)
-    plot_uncertainty_core_distance(group)
-    plot_uncertainty_size(group)
-    plot_uncertainty_binsize(group)
+    #plot_uncertainty_zenith(group)
+    #plot_uncertainty_core_distance(group)
+    #plot_uncertainty_size(group)
+    #plot_uncertainty_binsize(group)
 
-    plot_phi_reconstruction_results_for_MIP(group, 1)
-    plot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_theta_reconstruction_results_for_MIP(group, 1)
-    boxplot_theta_reconstruction_results_for_MIP(group, 2)
-    boxplot_phi_reconstruction_results_for_MIP(group, 1)
-    boxplot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_arrival_times(group, 1)
-    boxplot_arrival_times(group, 2)
-    boxplot_core_distances_for_mips(group)
-    save_for_kascade_boxplot_core_distances_for_mips(group)
-    plot_detection_efficiency_vs_R_for_angles(1)
-    plot_detection_efficiency_vs_R_for_angles(2)
-    plot_reconstruction_efficiency_vs_R_for_angles(1)
-    plot_reconstruction_efficiency_vs_R_for_angles(2)
-    plot_reconstruction_efficiency_vs_R_for_mips()
+    #plot_phi_reconstruction_results_for_MIP(group, 1)
+    #plot_phi_reconstruction_results_for_MIP(group, 2)
+    #boxplot_theta_reconstruction_results_for_MIP(group, 1)
+    #boxplot_theta_reconstruction_results_for_MIP(group, 2)
+    #boxplot_phi_reconstruction_results_for_MIP(group, 1)
+    #boxplot_phi_reconstruction_results_for_MIP(group, 2)
+    #boxplot_arrival_times(group, 1)
+    #boxplot_arrival_times(group, 2)
+    #boxplot_core_distances_for_mips(group)
+    #save_for_kascade_boxplot_core_distances_for_mips(group)
+    #plot_detection_efficiency_vs_R_for_angles(1)
+    #plot_detection_efficiency_vs_R_for_angles(2)
+    #plot_reconstruction_efficiency_vs_R_for_angles(1)
+    #plot_reconstruction_efficiency_vs_R_for_angles(2)
+    #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def plot_uncertainty_mip(group):
+    global errors, errors2
     table = group.E_1PeV.zenith_22_5
     rec = DirectionReconstruction
 
@@ -112,6 +114,8 @@ def plot_uncertainty_mip(group):
     station = table.attrs.cluster.stations[0]
     r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
+
+    gauss = lambda x, N, mu, sigma: N * normpdf.pdf(x, mu, sigma)
 
     figure()
     x, y, y2 = [], [], []
@@ -125,8 +129,25 @@ def plot_uncertainty_mip(group):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+
+        n, bins = histogram(errors, bins=200)
+        nx = (bins[:-1] + bins[1:]) / 2
+        popt, pcov = curve_fit(gauss, nx, n)
+        sigma = popt[2]
+        y.append(sigma)
+        figure()
+        plot(nx, n)
+        plot(nx, gauss(nx, *popt))
+        print "FF", sigma / std(errors)
+        
+        n, bins = histogram(errors2, bins=200)
+        nx = (bins[:-1] + bins[1:]) / 2
+        popt, pcov = curve_fit(gauss, nx, n)
+        sigma = popt[2]
+        print "FF", sigma / std(errors2)
+
+        #y.append(std(errors))
+        #y2.appendstd(errors2))
 
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
@@ -142,22 +163,19 @@ def plot_uncertainty_mip(group):
     phis = linspace(-pi, pi, 50)
     phi_errsq = mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
     theta_errsq = mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
-    y = ONEP_TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
-    y2 = ONEP_TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
+    y = TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
+    y2 = TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
 
-    mc = my_std_t(data, x)
+    mc = my_std_t(x)
     mc = sqrt(mc ** 2 + 1.2 ** 2)
     y3 = mc * sqrt(phi_errsq)
     y4 = mc * sqrt(theta_errsq)
-
     nx = linspace(1, 5, 100)
-    y = spline(x, y, nx)
-    y2 = spline(x, y2, nx)
     y3 = spline(x, y3, nx)
     y4 = spline(x, y4, nx)
 
-    plot(nx, rad2deg(y), label="Gauss Phi")
-    plot(nx, rad2deg(y2), label="Gauss Theta")
+    plot(x, rad2deg(y), label="Estimate Phi")
+    plot(x, rad2deg(y2), label="Estimate Theta")
     plot(nx, rad2deg(y3), label="Monte Carlo Phi")
     plot(nx, rad2deg(y4), label="Monte Carlo Theta")
     # Labels etc.
@@ -168,6 +186,26 @@ def plot_uncertainty_mip(group):
     xlim(.5, 5.5)
     utils.saveplot()
     print
+
+@vectorize
+def my_std_t(N):
+    sim = data.root.showers.E_1PeV.zenith_22_5
+    t = get_front_arrival_time(sim, 30, 5, pi / 8)
+    n, bins = histogram(t, bins=linspace(0, 50, 201))
+    mct = monte_carlo_timings(n, bins, 10000)
+    print "Monte Carlo:", N
+
+    mint_list = []
+    i = 0
+    while i < len(mct):
+        try:
+            values = mct[i:i + N]
+        except IndexError:
+            break
+        if len(values) == N:
+            mint_list.append(min(values))
+        i += N
+    return median(mint_list)
 
 def plot_uncertainty_zenith(group):
     group = group.E_1PeV
