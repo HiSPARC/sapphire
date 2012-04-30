@@ -3,6 +3,9 @@ import tables
 from pylab import *
 from numpy import *
 
+from artist import GraphArtist
+
+
 def get_front_arrival_time(sim, R, dR, theta):
     query = '(R - dR <= core_distance) & (core_distance < R + dR)'
     c = 3e-1 # m / ns
@@ -99,33 +102,58 @@ def my_t_draw_something(data, N, num_events):
     return mint_list
 
 def plot_R():
-    hist(data.root.simulations.E_1PeV.zenith_22_5.shower_0.coincidences.col('r'), bins=100, histtype='step')
+    graph = GraphArtist(width=r'.45\linewidth')
+
+    n, bins, patches = hist(data.root.simulations.E_1PeV.zenith_22_5.shower_0.coincidences.col('r'), bins=100, histtype='step')
+    graph.histogram(n, bins, linestyle='black!50')
+
     shower = data.root.simulations.E_1PeV.zenith_22_5.shower_0
     ids = shower.observables.getWhereList('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
     R = shower.coincidences.readCoordinates(ids, field='r')
-    hist(R, bins=100, histtype='step')
+    n, bins, patches = hist(R, bins=100, histtype='step')
+    graph.histogram(n, bins)
+
     xlabel("Core distance [m]")
     ylabel("Number of events")
 
     print "mean", mean(R)
     print "median", median(R)
 
+    graph.set_xlabel(r"Core distance [\si{\meter}]")
+    graph.set_ylabel("Number of events")
+    graph.set_xlimits(min=0)
+    graph.set_ylimits(min=0)
+    graph.save('plots/SIM-R')
+
+
 def plot_arrival_times():
+    graph = GraphArtist(width=r'.45\linewidth')
+
     figure()
     sim = data.root.showers.E_1PeV.zenith_22_5
     t = get_front_arrival_time(sim, 30, 2, pi / 8)
     n, bins = histogram(t, bins=linspace(0, 50, 201))
     mct = monte_carlo_timings(n, bins, 100000)
-    hist(mct, bins=linspace(0, 20, 101), histtype='step')
+    n, bins, patches = hist(mct, bins=linspace(0, 20, 101), histtype='step')
+    graph.histogram(n, bins, linestyle='black!50')
 
     mint = my_t_draw_something(data, 2, 100000)
-    hist(mint, bins=linspace(0, 20, 101), histtype='step')
+    n, bins, patches = hist(mint, bins=linspace(0, 20, 101), histtype='step')
+    graph.histogram(n, bins)
 
     xlabel("Arrival time [ns]")
     ylabel("Number of events")
 
+    graph.set_xlabel(r"Arrival time [\si{\nano\second}]")
+    graph.set_ylabel("Number of events")
+    graph.set_xlimits(0, 20)
+    graph.set_ylimits(min=0)
+    graph.save('plots/SIM-T')
 
 
 if __name__ == '__main__':
     if not 'data' in globals():
         data = tables.openFile('master-ch4v2.h5')
+
+    plot_R()
+    plot_arrival_times()
