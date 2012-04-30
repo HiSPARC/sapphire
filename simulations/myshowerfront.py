@@ -56,6 +56,29 @@ def my_std_t(data, N):
         i += N
     return median(mint_list)
 
+def my_std_t_for_R(data, N_list, R_list):
+    sim = data.root.showers.E_1PeV.zenith_22_5
+
+    value_list = []
+    for N, R in zip(N_list, R_list):
+        t = get_front_arrival_time(sim, R, 2, pi / 8)
+        n, bins = histogram(t, bins=linspace(0, 50, 201))
+        mct = monte_carlo_timings(n, bins, 10000)
+        print "Monte Carlo:", N
+
+        mint_list = []
+        i = 0
+        while i < len(mct):
+            try:
+                values = mct[i:i + N]
+            except IndexError:
+                break
+            if len(values) == N:
+                mint_list.append(min(values))
+            i += N
+        value_list.append(median(mint_list))
+    return array(value_list)
+
 def my_t_draw_something(data, N, num_events):
     sim = data.root.showers.E_1PeV.zenith_22_5
     t = get_front_arrival_time(sim, 30, 5, pi / 8)

@@ -113,6 +113,8 @@ def plot_uncertainty_mip(group):
     r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
+    R_list = get_median_core_distances_for_mips(group, range(1, 6))
+
     figure()
     x, y, y2 = [], [], []
     for N in range(1, 6):
@@ -146,6 +148,7 @@ def plot_uncertainty_mip(group):
     y2 = ONEP_TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
 
     mc = my_std_t(data, x)
+    #mc = my_std_t_for_R(data, x, R_list)
     mc = sqrt(mc ** 2 + 1.2 ** 2)
     y3 = mc * sqrt(phi_errsq)
     y4 = mc * sqrt(theta_errsq)
@@ -524,6 +527,25 @@ def boxplot_arrival_times(group, N):
 
     utils.savedata((x, t25, t50, t75), N)
     utils.saveplot(N)
+
+def get_median_core_distances_for_mips(group, N_list):
+    table = group.E_1PeV.zenith_22_5
+    
+    r_list = []
+    r25, r50, r75 = [], [], []
+    x = []
+    for N in N_list:
+        sel = table.readWhere('min_n134 >= N')
+        r = sel[:]['r']
+        r_list.append(r)
+        x.append(N)
+
+        r25.append(scoreatpercentile(r, 25))
+        r50.append(scoreatpercentile(r, 50))
+        r75.append(scoreatpercentile(r, 75))
+        print "MIP, median, mean", N, r50[-1], mean(r), std(r) / mean(r)
+
+    return r50
 
 def boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
