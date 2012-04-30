@@ -98,7 +98,7 @@ def do_reconstruction_plots(data):
     #boxplot_theta_reconstruction_results_for_MIP(group, 2)
     #boxplot_phi_reconstruction_results_for_MIP(group, 1)
     #boxplot_phi_reconstruction_results_for_MIP(group, 2)
-    #boxplot_arrival_times(group, 1)
+    boxplot_arrival_times(group, 1)
     #boxplot_arrival_times(group, 2)
     #boxplot_core_distances_for_mips(group)
     #save_for_kascade_boxplot_core_distances_for_mips(group)
@@ -541,9 +541,15 @@ def boxplot_arrival_times(group, N):
         query = '(min_n134 >= N) & (low <= r) & (r < high)'
         sel = table.readWhere(query)
         t1 = sel[:]['t1']
+        t2 = sel[:]['t2']
         t3 = sel[:]['t3']
         t4 = sel[:]['t4']
-        ts = concatenate([t1, t3, t4])
+        #ts = concatenate([t1, t3, t4])
+        # Huh???
+        #print (t2 == -999).any()
+        ct1 = t1.compress((t1 > -999) & (t2 > -999))
+        ct2 = t2.compress((t1 > -999) & (t2 > -999))
+        ts = abs(ct2 - ct1)
 
         t25.append(scoreatpercentile(ts, 25))
         t50.append(scoreatpercentile(ts, 50))

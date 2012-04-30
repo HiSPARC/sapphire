@@ -43,20 +43,20 @@ if USE_TEX:
 def do_reconstruction_plots(data, table):
     """Make plots based upon earlier reconstructions"""
 
-    #plot_uncertainty_mip(table)
-    #plot_uncertainty_zenith(table)
-    #plot_uncertainty_core_distance(table)
+    plot_uncertainty_mip(table)
+    plot_uncertainty_zenith(table)
+    plot_uncertainty_core_distance(table)
 
-    #plot_phi_reconstruction_results_for_MIP(table, 1)
-    #plot_phi_reconstruction_results_for_MIP(table, 2)
-    #plot_theta_reconstruction_results_for_MIP(table, 1)
-    #plot_theta_reconstruction_results_for_MIP(table, 2)
-    #boxplot_theta_reconstruction_results_for_MIP(table, 1)
-    #boxplot_theta_reconstruction_results_for_MIP(table, 2)
-    #boxplot_phi_reconstruction_results_for_MIP(table, 1)
-    #boxplot_phi_reconstruction_results_for_MIP(table, 2)
-    #boxplot_arrival_times(table, 1)
-    #boxplot_core_distances_for_mips(table)
+    plot_phi_reconstruction_results_for_MIP(table, 1)
+    plot_phi_reconstruction_results_for_MIP(table, 2)
+    plot_theta_reconstruction_results_for_MIP(table, 1)
+    plot_theta_reconstruction_results_for_MIP(table, 2)
+    boxplot_theta_reconstruction_results_for_MIP(table, 1)
+    boxplot_theta_reconstruction_results_for_MIP(table, 2)
+    boxplot_phi_reconstruction_results_for_MIP(table, 1)
+    boxplot_phi_reconstruction_results_for_MIP(table, 2)
+    boxplot_arrival_times(table, 1)
+    boxplot_core_distances_for_mips(table)
 #    plot_detection_efficiency_vs_R_for_angles(1)
 #    plot_detection_efficiency_vs_R_for_angles(2)
 #    plot_reconstruction_efficiency_vs_R_for_angles(1)
@@ -321,19 +321,30 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
 
     angles = [0, 5, 22.5, 35]
     r_dtheta = []
+    x = []
+    d25, d50, d75 = [], [], []
     for angle in angles:
         theta = deg2rad(angle)
         sel = table.readWhere('(min_n134 >= N) & (abs(reference_theta - theta) <= DTHETA)')
-        r_dtheta.append(rad2deg(sel[:]['reconstructed_theta'] - sel[:]['reference_theta']))
+        dtheta = rad2deg(sel[:]['reconstructed_theta'] - sel[:]['reference_theta'])
+        r_dtheta.append(dtheta)
 
-    boxplot(r_dtheta, sym='', positions=angles, widths=2.)
+        d25.append(scoreatpercentile(dtheta, 25))
+        d50.append(scoreatpercentile(dtheta, 50))
+        d75.append(scoreatpercentile(dtheta, 75))
+        x.append(angle)
 
-    xlabel(r"$\theta_{KASCADE}$ [deg]")
-    ylabel(r"$\theta_{reconstructed} - \theta_{KASCADE}$ [deg]")
+    #boxplot(r_dtheta, sym='', positions=angles, widths=2.)
+    fill_between(x, d25, d75, color='0.75')
+    plot(x, d50, 'o-', color='black')
+
+    xlabel(r"$\theta_K$ [deg]")
+    ylabel(r"$\theta_H - \theta_K$ [deg]")
     title(r"$N_{MIP} \geq %d$" % N)
 
-    axhline(0)
+    axhline(0, color='black')
     ylim(-20, 25)
+    xlim(0, 35)
 
     utils.saveplot(N)
 
@@ -345,6 +356,7 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
 
     bin_edges = linspace(-180, 180, 18)
     x, r_dphi = [], []
+    d25, d50, d75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         rad_low = deg2rad(low)
         rad_high = deg2rad(high)
@@ -353,16 +365,22 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
         dphi = sel[:]['reconstructed_phi'] - sel[:]['reference_phi']
         dphi = (dphi + pi) % (2 * pi) - pi
         r_dphi.append(rad2deg(dphi))
+
+        d25.append(scoreatpercentile(rad2deg(dphi), 25))
+        d50.append(scoreatpercentile(rad2deg(dphi), 50))
+        d75.append(scoreatpercentile(rad2deg(dphi), 75))
         x.append((low + high) / 2)
 
-    boxplot(r_dphi, positions=x, widths=1 * (high - low), sym='')
+    #boxplot(r_dphi, positions=x, widths=1 * (high - low), sym='')
+    fill_between(x, d25, d75, color='0.75')
+    plot(x, d50, 'o-', color='black')
 
-    xlabel(r"$\phi_{KASCADE}$ [deg]")
-    ylabel(r"$\phi_{reconstructed} - \phi_{KASCADE}$ [deg]")
+    xlabel(r"$\phi_K$ [deg]")
+    ylabel(r"$\phi_H - \phi_K$ [deg]")
     title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ \pm %d^\circ$" % (N, rad2deg(DTHETA)))
 
     xticks(linspace(-180, 180, 9))
-    axhline(0)
+    axhline(0, color='black')
 
     utils.saveplot(N)
 
@@ -644,11 +662,11 @@ if __name__ == '__main__':
         data = tables.openFile('kascade.h5', 'r')
 
     utils.set_prefix("KAS-")
-    #do_reconstruction_plots(data, data.root.reconstructions)
-    #do_lint_comparison(data)
-    #utils.set_prefix("KAS-LINT-")
-    #do_reconstruction_plots(data, data.root.lint_reconstructions)
+    do_reconstruction_plots(data, data.root.reconstructions)
+    do_lint_comparison(data)
+    utils.set_prefix("KAS-LINT-")
+    do_reconstruction_plots(data, data.root.lint_reconstructions)
     utils.set_prefix("KAS-OFFSETS-")
     do_reconstruction_plots(data, data.root.reconstructions_offsets)
-    #utils.set_prefix("KAS-LINT-OFFSETS-")
-    #do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)
+    utils.set_prefix("KAS-LINT-OFFSETS-")
+    do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)
