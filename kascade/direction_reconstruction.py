@@ -11,17 +11,20 @@ from pylab import *
 from scipy import integrate
 from scipy.special import erf
 from scipy.stats import scoreatpercentile
+from scipy.interpolate import spline
 
 import utils
 
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
+
+from myshowerfront import *
 
 
 DATADIR = '../simulations/plots'
 
 USE_TEX = True
 
-TIMING_ERROR = 4
+TIMING_ERROR = 3.1
 #TIMING_ERROR = 7
 
 # For matplotlib plots
@@ -40,20 +43,20 @@ if USE_TEX:
 def do_reconstruction_plots(data, table):
     """Make plots based upon earlier reconstructions"""
 
-    plot_uncertainty_mip(table)
-    plot_uncertainty_zenith(table)
-    plot_uncertainty_core_distance(table)
+    #plot_uncertainty_mip(table)
+    #plot_uncertainty_zenith(table)
+    #plot_uncertainty_core_distance(table)
 
-    plot_phi_reconstruction_results_for_MIP(table, 1)
-    plot_phi_reconstruction_results_for_MIP(table, 2)
-    plot_theta_reconstruction_results_for_MIP(table, 1)
-    plot_theta_reconstruction_results_for_MIP(table, 2)
-    boxplot_theta_reconstruction_results_for_MIP(table, 1)
-    boxplot_theta_reconstruction_results_for_MIP(table, 2)
-    boxplot_phi_reconstruction_results_for_MIP(table, 1)
-    boxplot_phi_reconstruction_results_for_MIP(table, 2)
-    boxplot_arrival_times(table, 1)
-    boxplot_core_distances_for_mips(table)
+    #plot_phi_reconstruction_results_for_MIP(table, 1)
+    #plot_phi_reconstruction_results_for_MIP(table, 2)
+    #plot_theta_reconstruction_results_for_MIP(table, 1)
+    #plot_theta_reconstruction_results_for_MIP(table, 2)
+    #boxplot_theta_reconstruction_results_for_MIP(table, 1)
+    #boxplot_theta_reconstruction_results_for_MIP(table, 2)
+    #boxplot_phi_reconstruction_results_for_MIP(table, 1)
+    #boxplot_phi_reconstruction_results_for_MIP(table, 2)
+    #boxplot_arrival_times(table, 1)
+    #boxplot_core_distances_for_mips(table)
 #    plot_detection_efficiency_vs_R_for_angles(1)
 #    plot_detection_efficiency_vs_R_for_angles(2)
 #    plot_reconstruction_efficiency_vs_R_for_angles(1)
@@ -90,8 +93,10 @@ def plot_uncertainty_mip(table):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+        #y.append(std(errors))
+        #y2.append(std(errors2))
+        y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
 
     print
     print "mip: min_n134, theta_std, phi_std"
@@ -107,22 +112,35 @@ def plot_uncertainty_mip(table):
     phis = linspace(-pi, pi, 50)
     phi_errsq = mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
     theta_errsq = mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
-    ey = TIMING_ERROR * std_t(ex) * sqrt(phi_errsq)
-    ey2 = TIMING_ERROR * std_t(ex) * sqrt(theta_errsq)
+    #ey = TIMING_ERROR * std_t(ex) * sqrt(phi_errsq)
+    #ey2 = TIMING_ERROR * std_t(ex) * sqrt(theta_errsq)
+
+    R_list = [30, 20, 16, 14, 12]
+    with tables.openFile('master-ch4v2.h5') as data2:
+        mc = my_std_t_for_R(data2, x, R_list)
+    mc = sqrt(mc ** 2 + 1.2 ** 2 + 2.5 ** 2)
+    print mc
+    ey = mc * sqrt(phi_errsq)
+    ey2 = mc * sqrt(theta_errsq)
+
+    nx = linspace(1, 4, 100)
+    ey = spline(x, ey, nx)
+    ey2 = spline(x, ey2, nx)
 
     # Plots
     plot(x, rad2deg(y), '^', label="Theta")
     plot(sx, rad2deg(sy), '^', label="Theta (sim)")
-    plot(ex, rad2deg(ey2), label="Estimate Theta")
+    plot(nx, rad2deg(ey2))#, label="Estimate Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
     plot(sx, rad2deg(sy2), 'v', label="Phi (sim)")
-    plot(ex, rad2deg(ey), label="Estimate Phi")
+    plot(nx, rad2deg(ey))#, label="Estimate Phi")
 
     # Labels etc.
     xlabel("$N_{MIP} \pm %.1f$" % DN)
     ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
     legend(numpoints=1)
+    xlim(0.5, 4.5)
     utils.saveplot()
     print
 
@@ -141,7 +159,7 @@ def plot_uncertainty_zenith(table):
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
-    for theta in 0, 5, 22.5, 35:
+    for theta in 0, 5, 10, 15, 22.5, 30, 35:
         x.append(theta)
         THETA = deg2rad(theta)
         events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
@@ -152,8 +170,10 @@ def plot_uncertainty_zenith(table):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+        #y.append(std(errors))
+        #y2.append(std(errors2))
+        y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
     print
     print "zenith: theta, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
@@ -178,18 +198,19 @@ def plot_uncertainty_zenith(table):
     # Plots
     plot(x, rad2deg(y), '^', label="Theta")
     plot(sx, rad2deg(sy), '^', label="Theta (sim)")
-    plot(rad2deg(ex), rad2deg(ey2), label="Estimate Theta")
+    plot(rad2deg(ex), rad2deg(ey2))#, label="Estimate Theta")
     # Azimuthal angle undefined for zenith = 0
     plot(x[1:], rad2deg(y2[1:]), 'v', label="Phi")
     plot(sx[1:], rad2deg(sy2[1:]), 'v', label="Phi (sim)")
-    plot(rad2deg(ex), rad2deg(ey), label="Estimate Phi")
-    plot(rad2deg(ex), rad2deg(ey3), label="Estimate Phi * sin(Theta)")
+    plot(rad2deg(ex), rad2deg(ey))#, label="Estimate Phi")
+    #plot(rad2deg(ex), rad2deg(ey3), label="Estimate Phi * sin(Theta)")
 
     # Labels etc.
     xlabel(r"Shower zenith angle [deg $\pm %d^\circ$]" % rad2deg(DTHETA))
     ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$N_{MIP} = %d \pm %.1f$" % (N, DN))
-    ylim(0, 100)
+    ylim(0, 60)
+    xlim(-.5, 37)
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
@@ -217,8 +238,10 @@ def plot_uncertainty_core_distance(table):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+        #y.append(std(errors))
+        #y2.append(std(errors2))
+        y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
 
     print
     print "R: theta_std, phi_std"
@@ -240,6 +263,7 @@ def plot_uncertainty_core_distance(table):
     ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$N_{MIP} = %d \pm %.1f, \theta = 22.5^\circ \pm %d^\circ, %.1f \leq \log(E) \leq %.1f$" % (N, DN, rad2deg(DTHETA), LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
     ylim(ymin=0)
+    xlim(-2, 62)
     legend(numpoints=1, loc='best')
     utils.saveplot()
     print
@@ -581,13 +605,17 @@ def plot_fsot_vs_lint_for_zenith(fsot, lint):
 
         errors = f_sel['reconstructed_phi'] - f_sel['reference_phi']
         errors2 = f_sel['reconstructed_theta'] - f_sel['reference_theta']
-        f_y.append(std(errors))
-        f_y2.append(std(errors2))
+        #f_y.append(std(errors))
+        #f_y2.append(std(errors2))
+        f_y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        f_y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
 
         errors = l_sel['reconstructed_phi'] - l_sel['reference_phi']
         errors2 = l_sel['reconstructed_theta'] - l_sel['reference_theta']
-        l_y.append(std(errors))
-        l_y2.append(std(errors2))
+        #l_y.append(std(errors))
+        #l_y2.append(std(errors2))
+        l_y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        l_y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
 
         x.append((low + high) / 2)
 
@@ -616,11 +644,11 @@ if __name__ == '__main__':
         data = tables.openFile('kascade.h5', 'r')
 
     utils.set_prefix("KAS-")
-    do_reconstruction_plots(data, data.root.reconstructions)
-    do_lint_comparison(data)
-    utils.set_prefix("KAS-LINT-")
-    do_reconstruction_plots(data, data.root.lint_reconstructions)
+    #do_reconstruction_plots(data, data.root.reconstructions)
+    #do_lint_comparison(data)
+    #utils.set_prefix("KAS-LINT-")
+    #do_reconstruction_plots(data, data.root.lint_reconstructions)
     utils.set_prefix("KAS-OFFSETS-")
     do_reconstruction_plots(data, data.root.reconstructions_offsets)
-    utils.set_prefix("KAS-LINT-OFFSETS-")
-    do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)
+    #utils.set_prefix("KAS-LINT-OFFSETS-")
+    #do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)

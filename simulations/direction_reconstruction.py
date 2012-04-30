@@ -275,8 +275,10 @@ def plot_uncertainty_core_distance(group):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+        #y.append(std(errors))
+        #y2.append(std(errors2))
+        y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
 
     print
     print "R: theta_std, phi_std"
