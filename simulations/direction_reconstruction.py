@@ -419,8 +419,9 @@ def plot_uncertainty_binsize(group):
     xlabel("Sampling time [ns]")
     ylabel("Angle reconstruction uncertainty [deg]")
     #title(r"$\theta = 22.5^\circ, N_{MIP} \geq %d$" % N)
-    legend(loc='best', numpoints=1)
-    ylim(ymin=0)
+    legend(loc='upper left', numpoints=1)
+    ylim(0, 20)
+    xlim(-0.1, 5.5)
     utils.saveplot()
     print
 
