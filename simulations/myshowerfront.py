@@ -84,7 +84,7 @@ def my_std_t_for_R(data, N_list, R_list):
 
 def my_t_draw_something(data, N, num_events):
     sim = data.root.showers.E_1PeV.zenith_22_5
-    t = get_front_arrival_time(sim, 30, 5, pi / 8)
+    t = get_front_arrival_time(sim, 20, 5, pi / 8)
     n, bins = histogram(t, bins=linspace(0, 50, 201))
     mct = monte_carlo_timings(n, bins, num_events * N)
     print "Monte Carlo:", N
@@ -131,7 +131,7 @@ def plot_arrival_times():
 
     figure()
     sim = data.root.showers.E_1PeV.zenith_22_5
-    t = get_front_arrival_time(sim, 30, 2, pi / 8)
+    t = get_front_arrival_time(sim, 20, 5, pi / 8)
     n, bins = histogram(t, bins=linspace(0, 50, 201))
     mct = monte_carlo_timings(n, bins, 100000)
     n, bins, patches = hist(mct, bins=linspace(0, 20, 101), histtype='step')
@@ -150,10 +150,12 @@ def plot_arrival_times():
     graph.set_ylimits(min=0)
     graph.save('plots/SIM-T')
 
+    print median(t), median(mct), median(mint)
+
 
 if __name__ == '__main__':
     if not 'data' in globals():
         data = tables.openFile('master-ch4v2.h5')
 
     #plot_R()
-    #plot_arrival_times()
+    plot_arrival_times()
