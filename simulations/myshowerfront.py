@@ -43,7 +43,7 @@ def monte_carlo_timings(n, bins, size):
 def my_std_t(data, N):
     sim = data.root.showers.E_1PeV.zenith_22_5
     t = get_front_arrival_time(sim, 30, 5, pi / 8)
-    n, bins = histogram(t, bins=linspace(0, 50, 201))
+    n, bins = histogram(t, bins=linspace(0, 50, 401))
     mct = monte_carlo_timings(n, bins, 10000)
     print "Monte Carlo:", N
 
@@ -64,8 +64,8 @@ def my_std_t_for_R(data, N_list, R_list):
 
     value_list = []
     for N, R in zip(N_list, R_list):
-        t = get_front_arrival_time(sim, R, 2, pi / 8)
-        n, bins = histogram(t, bins=linspace(0, 50, 201))
+        t = get_front_arrival_time(sim, R, 5, pi / 8)
+        n, bins = histogram(t, bins=linspace(0, 50, 401))
         mct = monte_carlo_timings(n, bins, 10000)
         print "Monte Carlo:", N
 
@@ -155,5 +155,5 @@ if __name__ == '__main__':
     if not 'data' in globals():
         data = tables.openFile('master-ch4v2.h5')
 
-    plot_R()
-    plot_arrival_times()
+    #plot_R()
+    #plot_arrival_times()

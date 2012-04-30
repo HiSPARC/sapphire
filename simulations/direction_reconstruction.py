@@ -22,8 +22,8 @@ from artist import GraphArtist
 
 USE_TEX = True
 
-ONEP_TIMING_ERROR = 4.9
-TIMING_ERROR = 2.7
+ONEP_TIMING_ERROR = .66 * 4.9
+TIMING_ERROR = .66 * 2.7
 
 # For matplotlib plots
 if USE_TEX:
@@ -90,21 +90,21 @@ def do_reconstruction_plots(data):
     plot_uncertainty_size(group)
     plot_uncertainty_binsize(group)
 
-    plot_phi_reconstruction_results_for_MIP(group, 1)
-    plot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_theta_reconstruction_results_for_MIP(group, 1)
-    boxplot_theta_reconstruction_results_for_MIP(group, 2)
-    boxplot_phi_reconstruction_results_for_MIP(group, 1)
-    boxplot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_arrival_times(group, 1)
-    boxplot_arrival_times(group, 2)
-    boxplot_core_distances_for_mips(group)
-    save_for_kascade_boxplot_core_distances_for_mips(group)
-    plot_detection_efficiency_vs_R_for_angles(1)
-    plot_detection_efficiency_vs_R_for_angles(2)
-    plot_reconstruction_efficiency_vs_R_for_angles(1)
-    plot_reconstruction_efficiency_vs_R_for_angles(2)
-    plot_reconstruction_efficiency_vs_R_for_mips()
+    #plot_phi_reconstruction_results_for_MIP(group, 1)
+    #plot_phi_reconstruction_results_for_MIP(group, 2)
+    #boxplot_theta_reconstruction_results_for_MIP(group, 1)
+    #boxplot_theta_reconstruction_results_for_MIP(group, 2)
+    #boxplot_phi_reconstruction_results_for_MIP(group, 1)
+    #boxplot_phi_reconstruction_results_for_MIP(group, 2)
+    #boxplot_arrival_times(group, 1)
+    #boxplot_arrival_times(group, 2)
+    #boxplot_core_distances_for_mips(group)
+    #save_for_kascade_boxplot_core_distances_for_mips(group)
+    #plot_detection_efficiency_vs_R_for_angles(1)
+    #plot_detection_efficiency_vs_R_for_angles(2)
+    #plot_reconstruction_efficiency_vs_R_for_angles(1)
+    #plot_reconstruction_efficiency_vs_R_for_angles(2)
+    #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def plot_uncertainty_mip(group):
     table = group.E_1PeV.zenith_22_5
@@ -129,8 +129,11 @@ def plot_uncertainty_mip(group):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+        #y.append(std(errors))
+        #y2.append(std(errors2))
+        y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
+        print "YYY", rad2deg(scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17))
 
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
@@ -152,8 +155,8 @@ def plot_uncertainty_mip(group):
     y = ONEP_TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
     y2 = ONEP_TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
 
-    mc = my_std_t(data, x)
-    #mc = my_std_t_for_R(data, x, R_list)
+    #mc = .66 * my_std_t(data, x)
+    mc = .66 * my_std_t_for_R(data, x, R_list)
     mc = sqrt(mc ** 2 + 1.2 ** 2)
     y3 = mc * sqrt(phi_errsq)
     y4 = mc * sqrt(theta_errsq)
@@ -214,8 +217,10 @@ def plot_uncertainty_zenith(group):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+        #y.append(std(errors))
+        #y2.append(std(errors2))
+        y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
     plot(x, rad2deg(y), '^', label="Theta")
     # Azimuthal angle undefined for zenith = 0
     plot(x[1:], rad2deg(y2[1:]), 'v', label="Phi")
@@ -318,8 +323,10 @@ def plot_uncertainty_size(group):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+        #y.append(std(errors))
+        #y2.append(std(errors2))
+        y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
     print
@@ -377,8 +384,10 @@ def plot_uncertainty_binsize(group):
         errors2 = events['reference_phi'] - events['reconstructed_phi']
         # Make sure -pi < errors2 < pi
         errors2 = (errors2 + pi) % (2 * pi) - pi
-        y.append(std(errors))
-        y2.append(std(errors2))
+        #y.append(std(errors))
+        #y2.append(std(errors2))
+        y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
+        y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
     print
@@ -402,7 +411,7 @@ def plot_uncertainty_binsize(group):
     plot(x, rad2deg(y2), label="Estimate Theta")
 
     # Labels etc.
-    xlabel("Bin size [ns]")
+    xlabel("Sampling time [ns]")
     ylabel("Angle reconstruction uncertainty [deg]")
     #title(r"$\theta = 22.5^\circ, N_{MIP} \geq %d$" % N)
     legend(loc='best', numpoints=1)
