@@ -20,10 +20,12 @@ from myshowerfront import *
 
 from artist import GraphArtist
 
+
 USE_TEX = True
 
-ONEP_TIMING_ERROR = .66 * 4.9
-TIMING_ERROR = .66 * 2.7
+ONEP_TIMING_ERROR = 4.6
+TIMING_ERROR = 1.8
+
 
 # For matplotlib plots
 if USE_TEX:
@@ -119,9 +121,11 @@ def plot_uncertainty_mip(group):
 
     figure()
     x, y, y2 = [], [], []
-    for N in range(1, 6):
+    for N in range(1, 5):
         x.append(N)
         events = table.readWhere('min_n134>=%d' % N)
+        #query = '(n1 == N) & (n3 == N) & (n4 == N)'
+        #vents = table.readWhere(query)
         print len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -155,13 +159,14 @@ def plot_uncertainty_mip(group):
     y = ONEP_TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
     y2 = ONEP_TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
 
-    #mc = .66 * my_std_t(data, x)
-    mc = .66 * my_std_t_for_R(data, x, R_list)
+    mc = my_std_t_for_R(data, x, R_list)
+    for u, v in zip(mc, R_list):
+        print v, u, sqrt(u ** 2 + 1.2 ** 2), sqrt((.66 * u) ** 2 + 1.2 ** 2)
     mc = sqrt(mc ** 2 + 1.2 ** 2)
     y3 = mc * sqrt(phi_errsq)
     y4 = mc * sqrt(theta_errsq)
 
-    nx = linspace(1, 5, 100)
+    nx = linspace(1, 4, 100)
     y = spline(x, y, nx)
     y2 = spline(x, y2, nx)
     y3 = spline(x, y3, nx)
@@ -176,7 +181,7 @@ def plot_uncertainty_mip(group):
     ylabel("Angle reconstruction uncertainty [deg]")
     #title(r"$\theta = 22.5^\circ$")
     legend(numpoints=1)
-    xlim(.5, 5.5)
+    xlim(.5, 4.5)
     utils.saveplot()
     print
 
@@ -189,7 +194,7 @@ def plot_uncertainty_mip(group):
     graph.plot(nx, rad2deg(y4), mark=None, linestyle='smooth')
     graph.set_xlabel("Minimum number of particles")
     graph.set_ylabel(r"Reconstruction uncertainty [\si{\degree}]")
-    graph.set_xticks(range(1, 6))
+    graph.set_xticks(range(1, 5))
     graph.save('plots/DIR-uncertainty_mip')
 
 def plot_uncertainty_zenith(group):
@@ -562,6 +567,8 @@ def get_median_core_distances_for_mips(group, N_list):
     x = []
     for N in N_list:
         sel = table.readWhere('min_n134 >= N')
+        #query = '(n1 == N) & (n3 == N) & (n4 == N)'
+        #sel = table.readWhere(query)
         r = sel[:]['r']
         r_list.append(r)
         x.append(N)
