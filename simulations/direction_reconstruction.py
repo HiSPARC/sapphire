@@ -18,6 +18,8 @@ import utils
 from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
 from myshowerfront import *
 
+from artist import GraphArtist
+
 USE_TEX = True
 
 ONEP_TIMING_ERROR = 4.9
@@ -132,6 +134,9 @@ def plot_uncertainty_mip(group):
 
     plot(x, rad2deg(y), '^', label="Theta")
     plot(x, rad2deg(y2), 'v', label="Phi")
+    Sx = x
+    Sy = y
+    Sy2 = y2
     print
     print "mip: min_n134, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
@@ -171,6 +176,18 @@ def plot_uncertainty_mip(group):
     xlim(.5, 5.5)
     utils.saveplot()
     print
+
+    graph = GraphArtist(width=r'.5\linewidth')
+    graph.plot(Sx, rad2deg(Sy), mark='o', linestyle='only marks')
+    graph.plot(Sx, rad2deg(Sy2), mark='*', linestyle='only marks')
+    graph.plot(nx, rad2deg(y), mark=None, linestyle='dashed,smooth')
+    graph.plot(nx, rad2deg(y2), mark=None, linestyle='dashed,smooth')
+    graph.plot(nx, rad2deg(y3), mark=None, linestyle='smooth')
+    graph.plot(nx, rad2deg(y4), mark=None, linestyle='smooth')
+    graph.set_xlabel("Minimum number of particles")
+    graph.set_ylabel(r"Reconstruction uncertainty [\si{\degree}]")
+    graph.set_xticks(range(1, 6))
+    graph.save('plots/DIR-uncertainty_mip')
 
 def plot_uncertainty_zenith(group):
     group = group.E_1PeV
