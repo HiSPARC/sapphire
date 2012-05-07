@@ -247,13 +247,16 @@ class ProcessEvents(object):
         :returns: array of pulseheight values
 
         """
-        blobs = self.group.blobs
+        blobs = self._get_blobs()
 
         trace = zlib.decompress(blobs[idx]).split(',')
         if trace[-1] == '':
             del trace[-1]
         trace = np.array([int(x) for x in trace])
         return trace
+
+    def _get_blobs(self):
+        return self.group.blobs
 
     def _reconstruct_time_from_trace(self, trace, baseline):
         """Reconstruct time of measurement from a trace.
