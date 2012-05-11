@@ -202,6 +202,9 @@ class Master:
             process = ProcessEvents(self.data, station_group)
             offsets = process.determine_detector_timing_offsets()
             print "Offsets for station %d: %s" % (station_id, offsets)
+            # FIXME: ugly hack for 501
+            if station_id == 0:
+                offsets = [0, 0, 0, 0]
             self.detector_offsets.append(offsets)
 
 
@@ -394,5 +397,5 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 if __name__ == '__main__':
     np.seterr(divide='ignore', invalid='ignore')
 
-    master = Master('master-large.h5')
+    master = Master('master.h5')
     master.main()
