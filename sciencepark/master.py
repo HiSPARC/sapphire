@@ -139,6 +139,10 @@ class Master:
                 c_index.append(coincidence)
             c_index.flush()
             self.c_index = c_index
+        else:
+            # Force new cluster geometry
+            group = self.data.getNode('/', 'coincidences')
+            group._v_attrs.cluster = self.cluster
 
     def store_coincidence(self, coincidence):
         row = self.coincidences.row

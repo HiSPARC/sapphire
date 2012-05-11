@@ -303,9 +303,10 @@ class ScienceParkCluster(BaseCluster):
                 transformation.transform(self.gps_coordinates[station])
             alpha = self.station_rotations[station] / 180. * pi
 
-            if station != 502:
+            # disable diamond-shaped 502, for the moment
+            if station not in [501]:
                 self._add_station((easting, northing), alpha)
-            else:
+            elif station == 502:
                 # 502 is diamond-shaped, with detector 2 to the side
                 # Furthermore, detectors 3 and 4 are reversed (cabling issue)
                 a = 5
@@ -315,3 +316,9 @@ class ScienceParkCluster(BaseCluster):
                              (a, -1. / 3 * b, 'LR'),
                              (-a, -1. / 3 * b, 'LR')]
                 self._add_station((easting, northing), alpha, detectors)
+            elif station == 501:
+                detectors = [(0.37, 8.62, 'UD'), (.07, 2.15, 'UD'),
+                             (-5.23, 0, 'LR'), (5.08, 0, 'LR')]
+                self._add_station((easting, northing), alpha, detectors)
+            else:
+                raise RuntimeError("Programming error. Station unknown.")
