@@ -2,14 +2,15 @@ import itertools
 
 import tables
 from pylab import *
+from scipy.stats import scoreatpercentile
 
 from sapphire import clusters
 from sapphire.analysis.direction_reconstruction import DirectionReconstruction
 import utils
 
 
-STATION_TIMING_ERR = 4
-CLUSTER_TIMING_ERR = 15
+STATION_TIMING_ERR = 3.1
+CLUSTER_TIMING_ERR = 5.9
 
 
 USE_TEX = False
@@ -28,14 +29,14 @@ if USE_TEX:
 
 
 def main(data):
-    plot_sciencepark_cluster()
-    plot_all_single_and_cluster_combinations(data)
-    hist_phi_single_stations(data)
-    hist_theta_single_stations(data)
-    plot_N_vs_R(data)
-    plot_fav_single_vs_cluster(data)
+    #plot_sciencepark_cluster()
+    #plot_all_single_and_cluster_combinations(data)
+    #hist_phi_single_stations(data)
+    #hist_theta_single_stations(data)
+    #plot_N_vs_R(data)
+    #plot_fav_single_vs_cluster(data)
     plot_fav_uncertainty_single_vs_cluster(data)
-    hist_fav_single_stations(data)
+    #hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -218,8 +219,10 @@ def plot_fav_uncertainty_single_vs_cluster(data):
             dtheta = (dtheta + pi) % (2 * pi) - pi
             print rad2deg((low + high) / 2), len(dphi), len(dtheta)
             x.append((low + high) / 2)
-            y.append(std(dphi))
-            y2.append(std(dtheta))
+            #y.append(std(dphi))
+            #y2.append(std(dtheta))
+            y.append((scoreatpercentile(dphi, 83) - scoreatpercentile(dphi, 17)) / 2)
+            y2.append((scoreatpercentile(dtheta, 83) - scoreatpercentile(dtheta, 17)) / 2)
 
         ex = linspace(0, deg2rad(35), 50)
         ephi, etheta = [], []
@@ -311,7 +314,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('master.h5')
+        data = tables.openFile('new.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
