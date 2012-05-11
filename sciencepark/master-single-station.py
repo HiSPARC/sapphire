@@ -20,7 +20,7 @@ from sapphire import storage, clusters
 class Master:
     stations = [501, 503, 506]
     datetimerange = (datetime.datetime(2012, 3, 7),
-                     datetime.datetime(2012, 4, 7))
+                     datetime.datetime(2012, 3, 14))
 
     offsets = []
 
