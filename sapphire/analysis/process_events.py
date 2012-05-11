@@ -221,16 +221,19 @@ class ProcessEvents(object):
 
     def determine_detector_timing_offsets(self, timings_table='events'):
         table = self.data.getNode(self.group, timings_table)
-        t2 = table.col('t2')
+        t1 = table.col('t1')
 
         gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
         bins = np.arange(-100 + 1.25, 100, 2.5)
 
         print "Determining offsets based on # events:",
         offsets = []
-        for timings in 't1', 't3', 't4':
+        for timings in 't3', 't4':
+            n1 = table.col('n1')
+            n3 = table.col('n3')
+            n4 = table.col('n4')
             timings = table.col(timings)
-            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
+            dt = (timings - t1).compress((t1 >= 0) & (timings >= 0) & (n1 >= 1) & (n3 >= 1) & (n4 >= 1))
             print len(dt),
             y, bins = np.histogram(dt, bins=bins)
             x = (bins[:-1] + bins[1:]) / 2
@@ -238,7 +241,8 @@ class ProcessEvents(object):
             offsets.append(popt[1])
         print
 
-        return [offsets[0]] + [0.] + offsets[1:]
+        #return [offsets[0]] + [0.] + offsets[1:]
+        return [0., 0.] + offsets
 
 
 class ProcessIndexedEvents(ProcessEvents):
