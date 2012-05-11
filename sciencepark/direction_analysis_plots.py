@@ -3,9 +3,11 @@ import itertools
 import tables
 from pylab import *
 from scipy.stats import scoreatpercentile
+from scipy.optimize import curve_fit
 
 from sapphire import clusters
 from sapphire.analysis.direction_reconstruction import DirectionReconstruction
+from sapphire.simulations.ldf import KascadeLdf
 import utils
 
 
@@ -33,9 +35,9 @@ def main(data):
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
-    #plot_N_vs_R(data)
+    plot_N_vs_R(data)
     #plot_fav_single_vs_cluster(data)
-    plot_fav_uncertainty_single_vs_cluster(data)
+    #plot_fav_uncertainty_single_vs_cluster(data)
     #hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
@@ -147,19 +149,49 @@ def plot_N_vs_R(data):
     c_index = data.root.coincidences.c_index
     observables = data.root.coincidences.observables
 
-    stations_in_coincidence = []
-    for coincidence_events in c_index:
-        stations = [observables[u]['station_id'] for u in
-                    coincidence_events]
-        stations_in_coincidence.append(stations)
+    #figure()
+    clf()
+    global c_x, c_y
+    if 'c_x' in globals():
+        scatter(c_x, c_y)
+    else:
+        stations_in_coincidence = []
+        for coincidence_events in c_index:
+            stations = [observables[u]['station_id'] for u in
+                        coincidence_events]
+            stations_in_coincidence.append(stations)
 
-    figure()
-    for station1, station2 in itertools.combinations(station_ids, 2):
-        condition = [station1 in u and station2 in u for u in
-                     stations_in_coincidence]
-        N = sum(condition)
-        R, phi = cluster.calc_r_and_phi_for_stations(station1, station2)
-        scatter(R, N)
+        c_x = []
+        c_y = []
+        for station1, station2 in itertools.combinations(station_ids, 2):
+            condition = [station1 in u and station2 in u for u in
+                         stations_in_coincidence]
+            N = sum(condition)
+            R, phi = cluster.calc_r_and_phi_for_stations(station1, station2)
+            scatter(R, N)
+            c_x.append(R)
+            c_y.append(N)
+
+    ldf = KascadeLdf()
+    R = linspace(0, 500)
+    E = linspace(1e14, 1e19, 100)
+    F = E ** -2.7
+    N = []
+    for r in R:
+        x = []
+        for f, e in zip(F, E):
+            Ne = e / 1e15 * 10 ** 4.8
+            density = ldf.get_ldf_value_for_size(r, Ne)
+            prob = 1 - exp(-.5 * density)
+            x.append(f * prob)
+        N.append(mean(x))
+    N = array(N)
+    f = lambda x, S: S * interp(x, R, N)
+    popt, pcov = curve_fit(f, c_x, c_y, p0=(1e45))
+    plot(R, f(R, 1.4 * popt[0]))
+    ylim(0, 150000)
+    xlim(0, 500)
+            
     xlabel("Distance [m]")
     ylabel("Number of coincidences")
 
@@ -201,7 +233,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         theta_station, phi_station, theta_cluster, phi_cluster = \
             calc_direction_single_vs_cluster(data, station, cluster)
 
-        bins = linspace(0, deg2rad(35), 11)
+        bins = linspace(0, deg2rad(45), 11)
         x, y, y2 = [], [], []
         for low, high in zip(bins[:-1], bins[1:]):
             sel_phi_c = phi_cluster.compress((low <= theta_station) &
@@ -224,7 +256,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
             y.append((scoreatpercentile(dphi, 83) - scoreatpercentile(dphi, 17)) / 2)
             y2.append((scoreatpercentile(dtheta, 83) - scoreatpercentile(dtheta, 17)) / 2)
 
-        ex = linspace(0, deg2rad(35), 50)
+        ex = linspace(0, deg2rad(45), 50)
         ephi, etheta = [], []
         for theta in ex:
             ephi.append(calc_phi_error_for_station_cluster(theta, n,
@@ -233,7 +265,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
                                                                cluster_ids))
 
         subplot(2, 3, n)
-        plot(rad2deg(x), rad2deg(y))
+        plot(rad2deg(x), rad2deg(y), 'o')
         plot(rad2deg(ex), rad2deg(ephi))
         xlabel(r"$\theta_{%d}$ [deg]" % station)
         if n == 1:
@@ -242,7 +274,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         locator_params(tight=True, nbins=4)
 
         subplot(2, 3, n + 3)
-        plot(rad2deg(x), rad2deg(y2))
+        plot(rad2deg(x), rad2deg(y2), 'o')
         plot(rad2deg(ex), rad2deg(etheta))
         xlabel(r"$\theta_{%d}$ [deg]" % station)
         if n == 1:
@@ -314,7 +346,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('new.h5')
+        data = tables.openFile('my.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
