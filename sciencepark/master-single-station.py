@@ -95,7 +95,7 @@ class Master:
                 for event_id, event in enumerate(station.events):
                     timestamps.append((event['ext_timestamp'], id,
                                        event_id))
-                    c_index.append([len(timestamps)])
+                    c_index.append([len(timestamps) - 1])
             timestamps = np.array(timestamps, dtype=np.uint64)
             self.data.createArray('/', 'timestamps', timestamps)
             self.data.createVLArray('/', 'c_index', tables.UInt32Atom())
