@@ -19,8 +19,8 @@ from sapphire import storage, clusters
 
 class Master:
     stations = [501, 503, 506]
-    datetimerange = (datetime.datetime(2012, 3, 7),
-                     datetime.datetime(2012, 3, 14))
+    datetimerange = (datetime.datetime(2012, 2, 1),
+                     datetime.datetime(2012, 3, 1))
 
     offsets = []
 
@@ -393,5 +393,5 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 if __name__ == '__main__':
     np.seterr(divide='ignore', invalid='ignore')
 
-    master = Master('master-single.h5')
+    master = Master('new-single.h5')
     master.main()
