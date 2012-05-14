@@ -35,8 +35,9 @@ def main(data):
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
-    plot_N_vs_R(data)
+    #plot_N_vs_R(data)
     #plot_fav_single_vs_cluster(data)
+    plot_fav_single_vs_single(data)
     #plot_fav_uncertainty_single_vs_cluster(data)
     #hist_fav_single_stations(data)
 
@@ -85,6 +86,30 @@ def calc_direction_single_vs_cluster(data, station, cluster):
 
     return array(theta_station).flatten(), array(phi_station).flatten(), \
         array(theta_cluster).flatten(), array(phi_cluster).flatten()
+
+def calc_direction_single_vs_single(data, station1, station2):
+    reconstructions = data.root.reconstructions.reconstructions
+
+    station1_query = '(N == 1) & s%d & (min_n134 >= 2.)' % station1
+    station2_query = '(N == 1) & s%d & (min_n134 >= 2.)' % station2
+
+    sel_station1 = reconstructions.readWhere(station1_query)
+    sel_station2 = reconstructions.readWhere(station2_query)
+
+    theta_station2, theta_station1 = [], []
+    phi_station2, phi_station1 = [], []
+    for event_station2 in sel_station2:
+        coinc_id = event_station2['coinc_id']
+        event_station1 = sel_station1.compress(sel_station1[:]['coinc_id'] == coinc_id)
+        assert len(event_station1) <= 1
+        if event_station1:
+            theta_station2.append(event_station2['reconstructed_theta'])
+            phi_station2.append(event_station2['reconstructed_phi'])
+            theta_station1.append(event_station1['reconstructed_theta'])
+            phi_station1.append(event_station1['reconstructed_phi'])
+
+    return array(theta_station1).flatten(), array(phi_station1).flatten(), \
+        array(theta_station2).flatten(), array(phi_station2).flatten()
 
 def plot_direction_single_vs_cluster(data, station, cluster):
     cluster_str = [str(u) for u in cluster]
@@ -223,6 +248,44 @@ def plot_fav_single_vs_cluster(data):
         locator_params(tight=True, nbins=4)
     utils.saveplot()
 
+def plot_fav_single_vs_single(data):
+    cluster = [501, 503, 506]
+    cluster_str = [str(u) for u in cluster]
+
+    figure()
+    for i in range(len(cluster)):
+        for j in range(len(cluster)):
+            station1 = cluster[i]
+            station2 = cluster[j]
+
+            theta_station1, phi_station1, theta_station2, phi_station2 = \
+                calc_direction_single_vs_single(data, station1, station2)
+
+            subplot(3, 3, j * 3 + i + 1)
+            if i > j:
+                plot(rad2deg(phi_station1), rad2deg(phi_station2), ',')
+                xlim(-180, 180)
+                ylim(-180, 180)
+            elif i < j:
+                plot(rad2deg(theta_station1), rad2deg(theta_station2), ',')
+                xlim(0, 45)
+                ylim(0, 45)
+
+            if j == 2:
+                xlabel(station1)
+            if i == 0:
+                ylabel(station2)
+            locator_params(tight=True, nbins=4)
+
+            #subplot(3, 3, n + 3)
+            #plot(rad2deg(theta_station1), rad2deg(theta_station2), ',')
+            #xlabel(r"$\theta_{%d}$" % station1)
+            #ylabel(r"$\theta_{\{%s\}}$" % ','.join(station2_str))
+            #xlim(0, 45)
+            #ylim(0, 45)
+            #locator_params(tight=True, nbins=4)
+    utils.saveplot()
+
 def plot_fav_uncertainty_single_vs_cluster(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
@@ -346,7 +409,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('my.h5')
+        data = tables.openFile('new.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
