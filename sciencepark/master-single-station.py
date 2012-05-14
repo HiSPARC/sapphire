@@ -11,7 +11,7 @@ import progressbar as pb
 
 from hisparc.publicdb import download_data
 from hisparc.analysis import coincidences
-from sapphire.analysis.process_events import ProcessEvents, ProcessIndexedEventsWithLINT
+from sapphire.analysis.process_events import ProcessEvents, ProcessEventsWithLINT
 from sapphire.analysis.direction_reconstruction import \
         DirectionReconstruction
 from sapphire import storage, clusters
@@ -40,7 +40,7 @@ class Master:
         self.clean_data()
 
         self.search_coincidences()
-        self.process_events_from_c_index()
+        self.process_events()
         self.store_coincidences()
 
         self.determine_detector_offsets()
@@ -86,35 +86,29 @@ class Master:
 
     def search_coincidences(self):
         if '/c_index' not in self.data and '/timestamps' not in self.data:
-            c_index, timestamps = \
-                coincidences.search_coincidences(self.data,
-                                                 self.station_groups)
+            #c_index, timestamps = \
+            #    coincidences.search_coincidences(self.data,
+            #                                     self.station_groups)
+            c_index, timestamps = [], []
+            for id, station in enumerate(self.station_groups):
+                station = self.data.getNode(station)
+                for event_id, event in enumerate(station.events):
+                    timestamps.append((event['ext_timestamp'], id,
+                                       event_id))
+                    c_index.append([len(timestamps)])
             timestamps = np.array(timestamps, dtype=np.uint64)
             self.data.createArray('/', 'timestamps', timestamps)
             self.data.createVLArray('/', 'c_index', tables.UInt32Atom())
             for coincidence in c_index:
                 self.data.root.c_index.append(coincidence)
 
-    def process_events_from_c_index(self):
+    def process_events(self):
         attrs = self.data.root._v_attrs
+        attrs.is_processed = False
         if 'is_processed' not in attrs or not attrs.is_processed:
-            c_index = self.data.root.c_index.read()
-            timestamps = self.data.root.timestamps.read()
-
-            selected_timestamps = []
-            for coincidence in c_index:
-                for event in coincidence:
-                    selected_timestamps.append(timestamps[event])
-            full_index = np.array(selected_timestamps)
-
             for station_id, station_group in enumerate(self.station_groups):
-                selected = full_index.compress(full_index[:, 1] == station_id,
-                                               axis=0)
-                index = selected[:, 2]
-
-                process = ProcessIndexedEventsWithLINT(self.data, station_group,
-                                                       index)
-                process.process_and_store_results()
+                process = ProcessEventsWithLINT(self.data, station_group)
+                process.process_and_store_results(overwrite=True)
 
             attrs.is_processed = True
 
@@ -205,8 +199,8 @@ class Master:
             offsets = process.determine_detector_timing_offsets()
             print "Offsets for station %d: %s" % (station_id, offsets)
             # FIXME: ugly hack for 501
-            if station_id == 0:
-                offsets = [0, 0, 0, 0]
+            #if station_id == 0:
+            #    offsets = [0, 0, 0, 0]
             self.detector_offsets.append(offsets)
 
 
