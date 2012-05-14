@@ -39,8 +39,8 @@ def main(data):
     #plot_fav_single_vs_cluster(data)
     #plot_fav_single_vs_single(data)
     #plot_fav_uncertainty_single_vs_cluster(data)
-    plot_fav_uncertainty_single_vs_single(data)
-    #hist_fav_single_stations(data)
+    #plot_fav_uncertainty_single_vs_single(data)
+    hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -508,7 +508,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('new.h5')
+        data = tables.openFile('single.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
