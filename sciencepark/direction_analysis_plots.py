@@ -31,7 +31,7 @@ if USE_TEX:
 
 
 def main(data):
-    #plot_sciencepark_cluster()
+    plot_sciencepark_cluster()
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
@@ -40,7 +40,7 @@ def main(data):
     #plot_fav_single_vs_single(data)
     #plot_fav_uncertainty_single_vs_cluster(data)
     #plot_fav_uncertainty_single_vs_single(data)
-    hist_fav_single_stations(data)
+    #hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -54,6 +54,14 @@ def plot_sciencepark_cluster():
             yl.append(y)
             scatter(x, y, c='black', s=3)
     axis('equal')
+
+    cluster = clusters.ScienceParkCluster([501, 503, 506])
+    pos = []
+    for station in cluster.stations:
+        x, y, alpha = station.get_xyalpha_coordinates()
+        pos.append((x, y))
+    for (x0, y0), (x1, y1) in itertools.combinations(pos, 2):
+        plot([x0, x1], [y0, y1], 'gray')
 
     utils.savedata([xl, yl])
     utils.saveplot()
