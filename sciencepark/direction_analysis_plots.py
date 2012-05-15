@@ -31,7 +31,7 @@ if USE_TEX:
 
 
 def main(data):
-    plot_sciencepark_cluster()
+    #plot_sciencepark_cluster()
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
@@ -40,7 +40,7 @@ def main(data):
     #plot_fav_single_vs_single(data)
     #plot_fav_uncertainty_single_vs_cluster(data)
     #plot_fav_uncertainty_single_vs_single(data)
-    #hist_fav_single_stations(data)
+    hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -516,7 +516,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('single.h5')
+        data = tables.openFile('month-single.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
