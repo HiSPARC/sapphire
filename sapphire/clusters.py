@@ -305,8 +305,11 @@ class ScienceParkCluster(BaseCluster):
 
             # disable diamond-shaped 502, for the moment
             if station not in [501]:
-                self._add_station((easting, northing), alpha)
+                detectors = [(0, 8.66, 'UD'), (0, 2.89, 'UD'),
+                             (-5, 0, 'LR'), (5, 0, 'LR')]
+                self._add_station((easting, northing), alpha, detectors)
             elif station == 502:
+                # Currently, never executed
                 # 502 is diamond-shaped, with detector 2 to the side
                 # Furthermore, detectors 3 and 4 are reversed (cabling issue)
                 a = 5
