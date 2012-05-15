@@ -35,12 +35,12 @@ def main(data):
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
-    #plot_N_vs_R(data)
-    #plot_fav_single_vs_cluster(data)
-    #plot_fav_single_vs_single(data)
-    #plot_fav_uncertainty_single_vs_cluster(data)
-    #plot_fav_uncertainty_single_vs_single(data)
-    hist_fav_single_stations(data)
+    plot_N_vs_R(data)
+    plot_fav_single_vs_cluster(data)
+    plot_fav_single_vs_single(data)
+    plot_fav_uncertainty_single_vs_cluster(data)
+    plot_fav_uncertainty_single_vs_single(data)
+    #hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -71,7 +71,7 @@ def plot_all_single_and_cluster_combinations(data):
         for station in station_group:
             plot_direction_single_vs_cluster(data, station, station_group)
 
-def calc_direction_single_vs_cluster(data, station, cluster):
+def calc_direction_single_vs_cluster(data, station, cluster, limit=None):
     reconstructions = data.root.reconstructions.reconstructions
 
     station_query = '(N == 1) & s%d & (min_n134 >= 2.)' % station
@@ -92,6 +92,9 @@ def calc_direction_single_vs_cluster(data, station, cluster):
             phi_cluster.append(event_cluster['reconstructed_phi'])
             theta_station.append(event_station['reconstructed_theta'])
             phi_station.append(event_station['reconstructed_phi'])
+
+        if limit and len(theta_cluster) >= limit:
+            break
 
     return array(theta_station).flatten(), array(phi_station).flatten(), \
         array(theta_cluster).flatten(), array(phi_cluster).flatten()
@@ -183,8 +186,8 @@ def plot_N_vs_R(data):
     c_index = data.root.coincidences.c_index
     observables = data.root.coincidences.observables
 
-    #figure()
-    clf()
+    figure()
+    #clf()
     global c_x, c_y
     if 'c_x' in globals():
         scatter(c_x, c_y)
@@ -207,7 +210,7 @@ def plot_N_vs_R(data):
             c_y.append(N)
 
     ldf = KascadeLdf()
-    R = linspace(0, 500)
+    R = linspace(100, 500)
     E = linspace(1e14, 1e19, 100)
     F = E ** -2.7
     N = []
@@ -221,9 +224,15 @@ def plot_N_vs_R(data):
         N.append(mean(x))
     N = array(N)
     f = lambda x, S: S * interp(x, R, N)
-    popt, pcov = curve_fit(f, c_x, c_y, p0=(1e45))
-    plot(R, f(R, 1.4 * popt[0]))
-    ylim(0, 150000)
+    c_x = array(c_x)
+    c_y = array(c_y)
+    # WTF wrong with point at slightly less than 100 m? 501 / 502??
+    sc_x = c_x.compress(c_x >= 100)
+    sc_y = c_y.compress(c_x >= 100)
+    popt, pcov = curve_fit(f, sc_x, sc_y, p0=(1e45))
+    plot(R, f(R, popt[0]))
+    #ylim(0, 150000)
+    ylim(0, 500000)
     xlim(0, 500)
             
     xlabel("Distance [m]")
@@ -238,7 +247,7 @@ def plot_fav_single_vs_cluster(data):
     figure()
     for n, station in enumerate(cluster, 1):
         theta_station, phi_station, theta_cluster, phi_cluster = \
-            calc_direction_single_vs_cluster(data, station, cluster)
+            calc_direction_single_vs_cluster(data, station, cluster, 2000)
 
         subplot(2, 3, n)
         plot(rad2deg(phi_station), rad2deg(phi_cluster), ',')
@@ -516,7 +525,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('month-single.h5')
+        data = tables.openFile('large.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
