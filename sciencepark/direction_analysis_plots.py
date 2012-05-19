@@ -37,8 +37,8 @@ def main(data):
     #hist_theta_single_stations(data)
     #plot_N_vs_R(data)
     #plot_fav_single_vs_cluster(data)
-    plot_fav_single_vs_single(data)
-    #plot_fav_uncertainty_single_vs_cluster(data)
+    #plot_fav_single_vs_single(data)
+    plot_fav_uncertainty_single_vs_cluster(data)
     #plot_fav_uncertainty_single_vs_single(data)
     #hist_fav_single_stations(data)
 
@@ -252,18 +252,21 @@ def plot_fav_single_vs_cluster(data):
         subplot(2, 3, n)
         plot(rad2deg(phi_station), rad2deg(phi_cluster), ',')
         xlabel(r"$\phi_{%d}$" % station)
-        ylabel(r"$\phi_{\{%s\}}$" % ','.join(cluster_str))
         xlim(-180, 180)
         ylim(-180, 180)
         locator_params(tight=True, nbins=4)
+        if n == 1:
+            ylabel(r"$\phi_{\{%s\}}$" % ','.join(cluster_str))
 
         subplot(2, 3, n + 3)
         plot(rad2deg(theta_station), rad2deg(theta_cluster), ',')
         xlabel(r"$\theta_{%d}$" % station)
-        ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
         xlim(0, 45)
         ylim(0, 45)
         locator_params(tight=True, nbins=4)
+        if n == 1:
+            ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
+    subplots_adjust(wspace=.4, hspace=.4)
     utils.saveplot()
 
 def plot_fav_single_vs_single(data):
@@ -363,6 +366,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         #ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
         ylim(0, 15)
         locator_params(tight=True, nbins=4)
+    subplots_adjust(wspace=.3, hspace=.3)
     utils.saveplot()
 
 def plot_fav_uncertainty_single_vs_single(data):
@@ -528,7 +532,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('month-single.h5')
+        data = tables.openFile('large.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
