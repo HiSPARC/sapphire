@@ -86,12 +86,12 @@ def do_reconstruction_plots(data):
 
     group = data.root.reconstructions
 
-    #plot_uncertainty_mip(group)
+    plot_uncertainty_mip(group)
     #plot_uncertainty_zenith(group)
     #plot_uncertainty_core_distance(group)
     #plot_uncertainty_size(group)
     #plot_uncertainty_binsize(group)
-    plot_uncertainty_zenith_angular_distance(group)
+    #plot_uncertainty_zenith_angular_distance(group)
 
     #plot_phi_reconstruction_results_for_MIP(group, 1)
     #plot_phi_reconstruction_results_for_MIP(group, 2)
@@ -157,8 +157,8 @@ def plot_uncertainty_mip(group):
     phis = linspace(-pi, pi, 50)
     phi_errsq = mean(rec.rel_phi_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
     theta_errsq = mean(rec.rel_theta1_errorsq(pi / 8, phis, phi1, phi2, r1, r2))
-    y = ONEP_TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
-    y2 = ONEP_TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
+    y = TIMING_ERROR * std_t(x) * sqrt(phi_errsq)
+    y2 = TIMING_ERROR * std_t(x) * sqrt(theta_errsq)
 
     mc = my_std_t_for_R(data, x, R_list)
     for u, v in zip(mc, R_list):
@@ -191,12 +191,13 @@ def plot_uncertainty_mip(group):
     graph.plot(Sx, rad2deg(Sy2), mark='*', linestyle='only marks')
     graph.plot(nx, rad2deg(y), mark=None, linestyle='dashed,smooth')
     graph.plot(nx, rad2deg(y2), mark=None, linestyle='dashed,smooth')
-    graph.plot(nx, rad2deg(y3), mark=None, linestyle='smooth')
-    graph.plot(nx, rad2deg(y4), mark=None, linestyle='smooth')
     graph.set_xlabel("Minimum number of particles")
     graph.set_ylabel(r"Reconstruction uncertainty [\si{\degree}]")
     graph.set_xticks(range(1, 5))
     graph.save('plots/DIR-uncertainty_mip')
+    graph.plot(nx, rad2deg(y3), mark=None, linestyle='smooth')
+    graph.plot(nx, rad2deg(y4), mark=None, linestyle='smooth')
+    graph.save('plots/DIR-uncertainty_mip_full')
 
 def plot_uncertainty_zenith(group):
     group = group.E_1PeV
