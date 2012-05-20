@@ -43,20 +43,20 @@ if USE_TEX:
 def do_reconstruction_plots(data, table):
     """Make plots based upon earlier reconstructions"""
 
-    plot_uncertainty_mip(table)
-    plot_uncertainty_zenith(table)
-    plot_uncertainty_core_distance(table)
+    #plot_uncertainty_mip(table)
+    #plot_uncertainty_zenith(table)
+    #plot_uncertainty_core_distance(table)
 
-    plot_phi_reconstruction_results_for_MIP(table, 1)
-    plot_phi_reconstruction_results_for_MIP(table, 2)
-    plot_theta_reconstruction_results_for_MIP(table, 1)
-    plot_theta_reconstruction_results_for_MIP(table, 2)
-    boxplot_theta_reconstruction_results_for_MIP(table, 1)
-    boxplot_theta_reconstruction_results_for_MIP(table, 2)
-    boxplot_phi_reconstruction_results_for_MIP(table, 1)
-    boxplot_phi_reconstruction_results_for_MIP(table, 2)
+    #plot_phi_reconstruction_results_for_MIP(table, 1)
+    #plot_phi_reconstruction_results_for_MIP(table, 2)
+    #plot_theta_reconstruction_results_for_MIP(table, 1)
+    #plot_theta_reconstruction_results_for_MIP(table, 2)
+    #boxplot_theta_reconstruction_results_for_MIP(table, 1)
+    #boxplot_theta_reconstruction_results_for_MIP(table, 2)
+    #boxplot_phi_reconstruction_results_for_MIP(table, 1)
+    #boxplot_phi_reconstruction_results_for_MIP(table, 2)
     boxplot_arrival_times(table, 1)
-    boxplot_core_distances_for_mips(table)
+    #boxplot_core_distances_for_mips(table)
 #    plot_detection_efficiency_vs_R_for_angles(1)
 #    plot_detection_efficiency_vs_R_for_angles(2)
 #    plot_reconstruction_efficiency_vs_R_for_angles(1)
@@ -385,15 +385,13 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
     utils.saveplot(N)
 
 def boxplot_arrival_times(table, N):
-    figure()
-
     THETA = deg2rad(0)
     DTHETA = deg2rad(10.)
 
     LOGENERGY = 15
     DLOGENERGY = .5
 
-    bin_edges = linspace(0, 100, 6)
+    bin_edges = linspace(0, 80, 5)
     x = []
     t25, t50, t75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
@@ -429,7 +427,9 @@ def boxplot_arrival_times(table, N):
     ax1.yaxis.set_label_text("Arrival time difference $|t_2 - t_1|$ [ns]")
     fig.suptitle(r"$N_{MIP} \geq %d, \quad \theta = 0^\circ \pm %d^\circ, \quad %.1f \leq \log(E) \leq %.1f$" % (N, rad2deg(DTHETA), LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
 
-    ylim(ymax=20)
+    ylim(ymax=15)
+    xlim(xmax=80)
+    locator_params(tight=True, nbins=4)
 
     fig.subplots_adjust(left=.1, right=.95)
 
@@ -661,12 +661,12 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile('kascade.h5', 'r')
 
-    utils.set_prefix("KAS-")
-    do_reconstruction_plots(data, data.root.reconstructions)
-    do_lint_comparison(data)
-    utils.set_prefix("KAS-LINT-")
-    do_reconstruction_plots(data, data.root.lint_reconstructions)
+    #utils.set_prefix("KAS-")
+    #do_reconstruction_plots(data, data.root.reconstructions)
+    #do_lint_comparison(data)
+    #utils.set_prefix("KAS-LINT-")
+    #do_reconstruction_plots(data, data.root.lint_reconstructions)
     utils.set_prefix("KAS-OFFSETS-")
     do_reconstruction_plots(data, data.root.reconstructions_offsets)
-    utils.set_prefix("KAS-LINT-OFFSETS-")
-    do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)
+    #utils.set_prefix("KAS-LINT-OFFSETS-")
+    #do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)
