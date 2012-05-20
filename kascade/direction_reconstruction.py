@@ -44,7 +44,7 @@ def do_reconstruction_plots(data, table):
     """Make plots based upon earlier reconstructions"""
 
     #plot_uncertainty_mip(table)
-    #plot_uncertainty_zenith(table)
+    plot_uncertainty_zenith(table)
     #plot_uncertainty_core_distance(table)
 
     #plot_phi_reconstruction_results_for_MIP(table, 1)
@@ -55,7 +55,7 @@ def do_reconstruction_plots(data, table):
     #boxplot_theta_reconstruction_results_for_MIP(table, 2)
     #boxplot_phi_reconstruction_results_for_MIP(table, 1)
     #boxplot_phi_reconstruction_results_for_MIP(table, 2)
-    boxplot_arrival_times(table, 1)
+    #boxplot_arrival_times(table, 1)
     #boxplot_core_distances_for_mips(table)
 #    plot_detection_efficiency_vs_R_for_angles(1)
 #    plot_detection_efficiency_vs_R_for_angles(2)
@@ -159,7 +159,7 @@ def plot_uncertainty_zenith(table):
     figure()
     rcParams['text.usetex'] = False
     x, y, y2 = [], [], []
-    for theta in 0, 5, 10, 15, 22.5, 30, 35:
+    for theta in 5, 10, 15, 22.5, 30, 35:
         x.append(theta)
         THETA = deg2rad(theta)
         events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
@@ -197,11 +197,11 @@ def plot_uncertainty_zenith(table):
 
     # Plots
     plot(x, rad2deg(y), '^', label="Theta")
-    plot(sx, rad2deg(sy), '^', label="Theta (sim)")
+    #plot(sx, rad2deg(sy), '^', label="Theta (sim)")
     plot(rad2deg(ex), rad2deg(ey2))#, label="Estimate Theta")
     # Azimuthal angle undefined for zenith = 0
     plot(x[1:], rad2deg(y2[1:]), 'v', label="Phi")
-    plot(sx[1:], rad2deg(sy2[1:]), 'v', label="Phi (sim)")
+    #plot(sx[1:], rad2deg(sy2[1:]), 'v', label="Phi (sim)")
     plot(rad2deg(ex), rad2deg(ey))#, label="Estimate Phi")
     #plot(rad2deg(ex), rad2deg(ey3), label="Estimate Phi * sin(Theta)")
 
