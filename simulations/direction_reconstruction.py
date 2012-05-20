@@ -86,11 +86,12 @@ def do_reconstruction_plots(data):
 
     group = data.root.reconstructions
 
-    plot_uncertainty_mip(group)
-    plot_uncertainty_zenith(group)
-    plot_uncertainty_core_distance(group)
-    plot_uncertainty_size(group)
-    plot_uncertainty_binsize(group)
+    #plot_uncertainty_mip(group)
+    #plot_uncertainty_zenith(group)
+    #plot_uncertainty_core_distance(group)
+    #plot_uncertainty_size(group)
+    #plot_uncertainty_binsize(group)
+    plot_uncertainty_zenith_angular_distance(group)
 
     #plot_phi_reconstruction_results_for_MIP(group, 1)
     #plot_phi_reconstruction_results_for_MIP(group, 2)
@@ -98,7 +99,7 @@ def do_reconstruction_plots(data):
     #boxplot_theta_reconstruction_results_for_MIP(group, 2)
     #boxplot_phi_reconstruction_results_for_MIP(group, 1)
     #boxplot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_arrival_times(group, 1)
+    #boxplot_arrival_times(group, 1)
     #boxplot_arrival_times(group, 2)
     #boxplot_core_distances_for_mips(group)
     #save_for_kascade_boxplot_core_distances_for_mips(group)
@@ -849,6 +850,48 @@ def plot_failed_histograms():
     xlabel(r"$c \, \Delta t_2 / (r_2 \cos(\phi - \phi_2))$")
 
     utils.saveplot()
+
+def plot_uncertainty_zenith_angular_distance(group):
+    group = group.E_1PeV
+    rec = DirectionReconstruction
+
+    N = 2
+
+    # constants for uncertainty estimation
+    # BEWARE: stations must be the same over all reconstruction tables used
+    station = group.zenith_0.attrs.cluster.stations[0]
+    r1, phi1 = station.calc_r_and_phi_for_detectors(1, 3)
+    r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
+
+    figure()
+    # Uncertainty estimate
+    x = linspace(0, deg2rad(45), 50)
+    #x = array([pi / 8])
+    phis = linspace(-pi, pi, 50)
+    y, y2 = [], []
+    for t in x:
+        y.append(mean(rec.rel_phi_errorsq(t, phis, phi1, phi2, r1, r2)))
+        y2.append(mean(rec.rel_theta1_errorsq(t, phis, phi1, phi2, r1, r2)))
+    y = TIMING_ERROR * sqrt(array(y))
+    y2 = TIMING_ERROR * sqrt(array(y2))
+    ang_dist = sqrt((y * sin(x)) ** 2 + y2 ** 2)
+    #plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
+    #plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
+    plot(rad2deg(x), rad2deg(ang_dist), label="Angular distance")
+    print rad2deg(x)
+    print rad2deg(y)
+    print rad2deg(y2)
+    print rad2deg(y * sin(x))
+    print rad2deg(ang_dist)
+
+    # Labels etc.
+    xlabel("Shower zenith angle [deg]")
+    ylabel("Angular distance [deg]")
+    #title(r"$N_{MIP} \geq %d$" % N)
+    #ylim(0, 100)
+    #legend(numpoints=1)
+    utils.saveplot()
+    print
 
 
 if __name__ == '__main__':
