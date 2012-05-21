@@ -22,9 +22,9 @@ from myshowerfront import *
 
 DATADIR = '../simulations/plots'
 
-USE_TEX = False
+USE_TEX = True
 
-TIMING_ERROR = 3.1
+TIMING_ERROR = 2.4
 #TIMING_ERROR = 7
 
 # For matplotlib plots
@@ -45,23 +45,23 @@ def do_reconstruction_plots(data, table):
 
     plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
-    #plot_uncertainty_core_distance(table)
+    plot_uncertainty_core_distance(table)
 
-    #plot_phi_reconstruction_results_for_MIP(table, 1)
-    #plot_phi_reconstruction_results_for_MIP(table, 2)
-    #plot_theta_reconstruction_results_for_MIP(table, 1)
-    #plot_theta_reconstruction_results_for_MIP(table, 2)
-    #boxplot_theta_reconstruction_results_for_MIP(table, 1)
-    #boxplot_theta_reconstruction_results_for_MIP(table, 2)
-    #boxplot_phi_reconstruction_results_for_MIP(table, 1)
-    #boxplot_phi_reconstruction_results_for_MIP(table, 2)
-    #boxplot_arrival_times(table, 1)
-    #boxplot_core_distances_for_mips(table)
-#    plot_detection_efficiency_vs_R_for_angles(1)
-#    plot_detection_efficiency_vs_R_for_angles(2)
-#    plot_reconstruction_efficiency_vs_R_for_angles(1)
-#    plot_reconstruction_efficiency_vs_R_for_angles(2)
-#    plot_reconstruction_efficiency_vs_R_for_mips()
+    plot_phi_reconstruction_results_for_MIP(table, 1)
+    plot_phi_reconstruction_results_for_MIP(table, 2)
+    plot_theta_reconstruction_results_for_MIP(table, 1)
+    plot_theta_reconstruction_results_for_MIP(table, 2)
+    boxplot_theta_reconstruction_results_for_MIP(table, 1)
+    boxplot_theta_reconstruction_results_for_MIP(table, 2)
+    boxplot_phi_reconstruction_results_for_MIP(table, 1)
+    boxplot_phi_reconstruction_results_for_MIP(table, 2)
+    boxplot_arrival_times(table, 1)
+    boxplot_core_distances_for_mips(table)
+    #plot_detection_efficiency_vs_R_for_angles(1)
+    #plot_detection_efficiency_vs_R_for_angles(2)
+    #plot_reconstruction_efficiency_vs_R_for_angles(1)
+    #plot_reconstruction_efficiency_vs_R_for_angles(2)
+    #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def do_lint_comparison(data):
     fsot = data.root.reconstructions_offsets
@@ -665,12 +665,12 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile('kascade.h5', 'r')
 
-    #utils.set_prefix("KAS-")
-    #do_reconstruction_plots(data, data.root.reconstructions)
-    #do_lint_comparison(data)
-    #utils.set_prefix("KAS-LINT-")
-    #do_reconstruction_plots(data, data.root.lint_reconstructions)
+    utils.set_prefix("KAS-")
+    do_reconstruction_plots(data, data.root.reconstructions)
+    do_lint_comparison(data)
+    utils.set_prefix("KAS-LINT-")
+    do_reconstruction_plots(data, data.root.lint_reconstructions)
     utils.set_prefix("KAS-OFFSETS-")
     do_reconstruction_plots(data, data.root.reconstructions_offsets)
-    #utils.set_prefix("KAS-LINT-OFFSETS-")
-    #do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)
+    utils.set_prefix("KAS-LINT-OFFSETS-")
+    do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)
