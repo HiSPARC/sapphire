@@ -22,7 +22,7 @@ from myshowerfront import *
 
 DATADIR = '../simulations/plots'
 
-USE_TEX = True
+USE_TEX = False
 
 TIMING_ERROR = 3.1
 #TIMING_ERROR = 7
@@ -43,7 +43,7 @@ if USE_TEX:
 def do_reconstruction_plots(data, table):
     """Make plots based upon earlier reconstructions"""
 
-    #plot_uncertainty_mip(table)
+    plot_uncertainty_mip(table)
     plot_uncertainty_zenith(table)
     #plot_uncertainty_core_distance(table)
 
@@ -80,12 +80,14 @@ def plot_uncertainty_mip(table):
     THETA = deg2rad(22.5)
     DTHETA = deg2rad(5.)
     DN = .1
+    LOGENERGY = 15
+    DLOGENERGY = .5
 
     figure()
     x, y, y2 = [], [], []
     for N in range(1, 6):
         x.append(N)
-        events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
+        events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
         print len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -138,7 +140,7 @@ def plot_uncertainty_mip(table):
     # Labels etc.
     xlabel("$N_{MIP} \pm %.1f$" % DN)
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$\theta = 22.5^\circ \pm %d^\circ$" % rad2deg(DTHETA))
+    title(r"$\theta = 22.5^\circ \pm %d^\circ \quad %.1f \leq \log(E) \leq %.1f$" % (rad2deg(DTHETA), LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
     legend(numpoints=1)
     xlim(0.5, 4.5)
     utils.saveplot()
@@ -155,6 +157,8 @@ def plot_uncertainty_zenith(table):
     N = 2
     DTHETA = deg2rad(1.)
     DN = .1
+    LOGENERGY = 15
+    DLOGENERGY = .5
 
     figure()
     rcParams['text.usetex'] = False
@@ -162,7 +166,7 @@ def plot_uncertainty_zenith(table):
     for theta in 5, 10, 15, 22.5, 30, 35:
         x.append(theta)
         THETA = deg2rad(theta)
-        events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA)')
+        events = table.readWhere('(min_n134 >= N) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
         print theta, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -208,7 +212,7 @@ def plot_uncertainty_zenith(table):
     # Labels etc.
     xlabel(r"Shower zenith angle [deg $\pm %d^\circ$]" % rad2deg(DTHETA))
     ylabel("Angle reconstruction uncertainty [deg]")
-    title(r"$N_{MIP} = %d \pm %.1f$" % (N, DN))
+    title(r"$N_{MIP} \geq %d, \quad %.1f \leq \log(E) \leq %.1f$" % (N, LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
     ylim(0, 60)
     xlim(-.5, 37)
     legend(numpoints=1)
