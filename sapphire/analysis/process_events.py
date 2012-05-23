@@ -287,6 +287,10 @@ class ProcessEventsWithLINT(ProcessEvents):
         trace = trace - baseline
         threshold = ADC_THRESHOLD
 
+        # FIXME: apparently, there are a few bugs here. I see, in my
+        # cluster reconstruction analysis, timings like -inf and
+        # -something. Guesses: sometimes y0 == y1, and sometimes y1 < y0.
+
         value = np.nan
         for i, t in enumerate(trace):
             if t >= threshold:
