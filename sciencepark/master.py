@@ -202,45 +202,59 @@ class Master:
                             overwrite=True)
         reconstruction.reconstruct_angles('/coincidences')
 
-    def determine_detector_offsets(self):
-        for station_id, station_group in enumerate(self.station_groups):
-            process = ProcessEvents(self.data, station_group)
-            offsets = process.determine_detector_timing_offsets()
-            # FIXME: ugly hack for 501
-            #if station_id == 0:
-            #    offsets = [0, 0, 0, 0]
-            print "Offsets for station %d: %s" % (station_id, offsets)
-            self.detector_offsets.append(offsets)
+    def determine_detector_offsets(self, overwrite=False):
+        offsets_group = '/detector_offsets'
+        if offsets_group in self.data and not overwrite:
+            self.detector_offsets = self.data.root.detector_offsets.read()
+        else:
+            for station_id, station_group in enumerate(self.station_groups):
+                process = ProcessEvents(self.data, station_group)
+                offsets = process.determine_detector_timing_offsets()
+                print "Offsets for station %d: %s" % (station_id, offsets)
+                self.detector_offsets.append(offsets)
+            if offsets_group in self.data:
+                self.data.removeNode(offsets_group)
+            group, node = os.path.split(offsets_group)
+            self.data.createArray(group, node, self.detector_offsets)
 
-    def determine_station_offsets(self):
-        ref_group = '/s501'
-        station_groups = list(self.station_groups)
-        station_groups.remove(ref_group)
+    def determine_station_offsets(self, overwrite=False):
+        offsets_group = '/station_offsets'
+        if offsets_group in self.data and not overwrite:
+            self.station_offsets = self.data.root.station_offsets.read()
+        else:
+            ref_group = '/s501'
+            station_groups = list(self.station_groups)
+            station_groups.remove(ref_group)
 
-        gauss = lambda x, N, mu, sigma: N * norm.pdf(x, mu, sigma)
-        bins = linspace(-1e3, 1e3, 101)
+            gauss = lambda x, N, mu, sigma: N * norm.pdf(x, mu, sigma)
+            bins = linspace(-1e3, 1e3, 101)
 
-        for station_id, station_group in enumerate(station_groups):
-            c_index, timestamps = coincidences.search_coincidences(
-                                    self.data, [ref_group, station_group])
+            for station_id, station_group in enumerate(station_groups):
+                c_index, timestamps = coincidences.search_coincidences(
+                                        self.data, [ref_group, station_group])
 
-            dt = []
-            c_index = [c for c in c_index if len(c) == 2]
-            for i, j in c_index:
-                stations = [timestamps[u][1] for u in [i, j]]
-                t0, t1 = [int(timestamps[u][0]) for u in [i, j]]
-                if stations[0] > stations[1]:
-                    t0, t1 = t1, t0
-                dt.append(t1 - t0)
-            print ref_group, station_group, len(dt),
-            y, bins = np.histogram(dt, bins=bins)
-            x = (bins[:-1] + bins[1:]) / 2
-            popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0, 100.))
-            print popt
-            self.station_offsets.append(popt[1])
+                dt = []
+                c_index = [c for c in c_index if len(c) == 2]
+                for i, j in c_index:
+                    stations = [timestamps[u][1] for u in [i, j]]
+                    t0, t1 = [int(timestamps[u][0]) for u in [i, j]]
+                    if stations[0] > stations[1]:
+                        t0, t1 = t1, t0
+                    dt.append(t1 - t0)
+                print ref_group, station_group, len(dt),
+                y, bins = np.histogram(dt, bins=bins)
+                x = (bins[:-1] + bins[1:]) / 2
+                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0, 100.))
+                print popt
+                self.station_offsets.append(popt[1])
 
-        ref_idx = self.station_groups.index(ref_group)
-        self.station_offsets.insert(ref_idx, 0.)
+            ref_idx = self.station_groups.index(ref_group)
+            self.station_offsets.insert(ref_idx, 0.)
+
+            if offsets_group in self.data:
+                self.data.removeNode(offsets_group)
+            group, node = os.path.split(offsets_group)
+            self.data.createArray(group, node, self.station_offsets)
 
 
 class ClusterDirectionReconstruction(DirectionReconstruction):
