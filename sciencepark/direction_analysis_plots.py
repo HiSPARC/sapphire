@@ -11,8 +11,8 @@ from sapphire.simulations.ldf import KascadeLdf
 import utils
 
 
-STATION_TIMING_ERR = 3.1
-CLUSTER_TIMING_ERR = 5.9
+STATION_TIMING_ERR = 2.4
+CLUSTER_TIMING_ERR = 5.5
 
 
 USE_TEX = False
@@ -37,9 +37,9 @@ def main(data):
     #hist_theta_single_stations(data)
     #plot_N_vs_R(data)
     #plot_fav_single_vs_cluster(data)
-    #plot_fav_single_vs_single(data)
-    plot_fav_uncertainty_single_vs_cluster(data)
-    #plot_fav_uncertainty_single_vs_single(data)
+    plot_fav_single_vs_single(data)
+    #plot_fav_uncertainty_single_vs_cluster(data)
+    plot_fav_uncertainty_single_vs_single(data)
     #hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
@@ -532,7 +532,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('large.h5')
+        data = tables.openFile('newlarge.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
