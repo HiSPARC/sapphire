@@ -395,13 +395,21 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         for event in events:
             timestamp = int(event['ext_timestamp'])
             station = event['station_id']
-            arrival_times = [event[u] for u in 't1', 't2', 't3', 't4']
+            arrival_times = [event[u] for u in 't1', 't2', 't3', 't4' if
+                             event[u] != -999.]
             arrival_times.sort()
             # FIXME: should check for three low condition (< 1% ?)
-            trigger_offset = arrival_times[1] - arrival_times[0]
+            if len(arrival_times) >= 2:
+                trigger_offset = arrival_times[1] - arrival_times[0]
+            else:
+                trigger_offset = 0.
             offset = self.station_offsets[station]
             # FIXME: ext_timestamp (long) + float loses precision
-            correction = int(round(offset + trigger_offset))
+            try:
+                correction = int(round(offset + trigger_offset))
+            except:
+                print arrival_times
+                correction = int(round(offset))
             t.append(timestamp - correction)
             stations.append(station)
 
