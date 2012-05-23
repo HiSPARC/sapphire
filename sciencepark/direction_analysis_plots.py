@@ -37,9 +37,9 @@ def main(data):
     #hist_theta_single_stations(data)
     #plot_N_vs_R(data)
     plot_fav_single_vs_cluster(data)
-    #plot_fav_single_vs_single(data)
+    plot_fav_single_vs_single(data)
     plot_fav_uncertainty_single_vs_cluster(data)
-    #plot_fav_uncertainty_single_vs_single(data)
+    plot_fav_uncertainty_single_vs_single(data)
     #hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
