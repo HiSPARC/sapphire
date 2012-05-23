@@ -6,8 +6,10 @@ import itertools
 
 import tables
 import numpy as np
-from numpy import arctan2, cos, sin, arcsin, isnan, pi
+from numpy import arctan2, cos, sin, arcsin, isnan, pi, linspace
 import progressbar as pb
+from scipy.optimize import curve_fit
+from scipy.stats import norm
 
 from hisparc.publicdb import download_data
 from hisparc.analysis import coincidences
@@ -32,6 +34,7 @@ class Master:
         self.trig_threshold = .5
 
         self.detector_offsets = []
+        self.station_offsets = []
 
     def main(self):
         self.download_data()
@@ -42,6 +45,7 @@ class Master:
         self.store_coincidences()
 
         self.determine_detector_offsets()
+        self.determine_station_offsets()
 
         self.reconstruct_direction()
 
@@ -201,12 +205,41 @@ class Master:
         for station_id, station_group in enumerate(self.station_groups):
             process = ProcessEvents(self.data, station_group)
             offsets = process.determine_detector_timing_offsets()
-            print "Offsets for station %d: %s" % (station_id, offsets)
             # FIXME: ugly hack for 501
-            if station_id == 0:
-                offsets = [0, 0, 0, 0]
+            #if station_id == 0:
+            #    offsets = [0, 0, 0, 0]
+            print "Offsets for station %d: %s" % (station_id, offsets)
             self.detector_offsets.append(offsets)
 
+    def determine_station_offsets(self):
+        ref_group = '/s501'
+        station_groups = list(self.station_groups)
+        station_groups.remove(ref_group)
+
+        gauss = lambda x, N, mu, sigma: N * norm.pdf(x, mu, sigma)
+        bins = linspace(-1e3, 1e3, 101)
+
+        for station_id, station_group in enumerate(station_groups):
+            c_index, timestamps = coincidences.search_coincidences(
+                                    self.data, [ref_group, station_group])
+
+            dt = []
+            c_index = [c for c in c_index if len(c) == 2]
+            for i, j in c_index:
+                stations = [timestamps[u][1] for u in [i, j]]
+                t0, t1 = [int(timestamps[u][0]) for u in [i, j]]
+                if stations[0] > stations[1]:
+                    t0, t1 = t1, t0
+                dt.append(t0 - t1)
+            print ref_group, station_group, len(dt),
+            y, bins = np.histogram(dt, bins=bins)
+            x = (bins[:-1] + bins[1:]) / 2
+            popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0, 100.))
+            print popt
+            self.station_offsets.append(popt[1])
+
+        ref_idx = self.station_groups.index(ref_group)
+        self.station_offsets.insert(ref_idx, 0.)
 
 class ClusterDirectionReconstruction(DirectionReconstruction):
     reconstruction_description = {'coinc_id': tables.UInt32Col(),
