@@ -459,7 +459,7 @@ def do_reconstruction_plots(table):
     plot_N_reconstructions_vs_R(table)
     plot_core_pos_uncertainty_vs_R(table)
     plot_shower_size_hist(table)
-    plot_scatter_reconstructed_core(table)
+    plot_scatter_reconstructed_core(table, N=1000)
 
 
 Pnil = lambda x: exp(-0.5 * x)
@@ -555,7 +555,7 @@ def plot_shower_size_hist(table):
     ylabel("count")
     utils.saveplot()
 
-def plot_scatter_reconstructed_core(table):
+def plot_scatter_reconstructed_core(table, N=None):
     # Make sure to get a *copy*
     figsize = list(rcParams['figure.figsize'])
     figsize[0] = figsize[1] * 2
@@ -564,8 +564,9 @@ def plot_scatter_reconstructed_core(table):
 
     station = table.attrs.cluster.stations[0]
     subplot(121)
-    x, y = table.col('reference_core_pos').T
-    scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
+    x, y = table.col('reference_core_pos')[:N].T
+    #scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
+    plot(x, y, ',', c='b', markeredgecolor='b', zorder=1)
     for detector in station.detectors:
         x, y = detector.get_xy_coordinates()
         plt.scatter(x, y, c='r', s=20, edgecolor='none', zorder=2)
@@ -576,8 +577,9 @@ def plot_scatter_reconstructed_core(table):
     title("simulated")
 
     subplot(122)
-    x, y = table.col('reconstructed_core_pos').T
-    scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
+    x, y = table.col('reconstructed_core_pos')[:N].T
+    #scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
+    plot(x, y, ',', c='b', markeredgecolor='b', zorder=1)
     for detector in station.detectors:
         x, y = detector.get_xy_coordinates()
         plt.scatter(x, y, c='r', s=20, edgecolor='none', zorder=2)
