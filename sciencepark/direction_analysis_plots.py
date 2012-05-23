@@ -211,6 +211,7 @@ def plot_N_vs_R(data):
             scatter(R, N)
             c_x.append(R)
             c_y.append(N)
+            print R, N, station1, station2
 
     ldf = KascadeLdf()
     R = linspace(100, 500)
@@ -706,7 +707,7 @@ if __name__ == '__main__':
         #data = tables.openFile('new.h5')
         #data = tables.openFile('newlarge.h5')
         # For N vs R plot
-        data = tables.openFile('my.h5')
+        data = tables.openFile('master-large.h5')
 
     artist.utils.set_prefix("SP-DIR-")
     utils.set_prefix("SP-DIR-")

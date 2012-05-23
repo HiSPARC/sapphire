@@ -469,5 +469,5 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 if __name__ == '__main__':
     np.seterr(divide='ignore', invalid='ignore')
 
-    master = Master('master.h5')
+    master = Master('master-large.h5')
     master.main()
