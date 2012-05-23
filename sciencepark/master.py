@@ -198,6 +198,7 @@ class Master:
         reconstruction = ClusterDirectionReconstruction(self.data,
                             self.stations, '/reconstructions',
                             detector_offsets=self.detector_offsets,
+                            station_offsets=self.station_offsets,
                             overwrite=True)
         reconstruction.reconstruct_angles('/coincidences')
 
@@ -230,7 +231,7 @@ class Master:
                 t0, t1 = [int(timestamps[u][0]) for u in [i, j]]
                 if stations[0] > stations[1]:
                     t0, t1 = t1, t0
-                dt.append(t0 - t1)
+                dt.append(t1 - t0)
             print ref_group, station_group, len(dt),
             y, bins = np.histogram(dt, bins=bins)
             x = (bins[:-1] + bins[1:]) / 2
@@ -240,6 +241,7 @@ class Master:
 
         ref_idx = self.station_groups.index(ref_group)
         self.station_offsets.insert(ref_idx, 0.)
+
 
 class ClusterDirectionReconstruction(DirectionReconstruction):
     reconstruction_description = {'coinc_id': tables.UInt32Col(),
@@ -253,7 +255,9 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
                                              }
 
 
-    def __init__(self, datafile, stations, results_group=None, min_n134=1., N=None, detector_offsets=None, overwrite=False):
+    def __init__(self, datafile, stations, results_group=None,
+                 min_n134=1., N=None, detector_offsets=None,
+                 station_offsets=None, overwrite=False):
         self.data = datafile
         self.stations = stations
 
@@ -265,6 +269,7 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         self.min_n134 = min_n134
         self.N = N
         self.detector_offsets = detector_offsets
+        self.station_offsets = station_offsets
 
     def _create_reconstruction_group_and_tables(self, results_group, overwrite):
         if results_group in self.data:
@@ -371,8 +376,14 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         c = 3.00e+8
 
-        t = [long(events[u]['ext_timestamp']) for u in index_group]
-        stations = [events[u]['station_id'] for u in index_group]
+        t = []
+        stations = []
+        for event in events:
+            timestamp = int(event['ext_timestamp'])
+            station = event['station_id']
+            offset = int(round(self.station_offsets[station]))
+            t.append(timestamp - offset)
+            stations.append(station)
 
         dt1 = t[0] - t[1]
         dt2 = t[0] - t[2]
