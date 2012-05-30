@@ -194,6 +194,7 @@ def plot_uncertainty_mip(group):
     graph.set_xlabel("Minimum number of particles")
     graph.set_ylabel(r"Reconstruction uncertainty [\si{\degree}]")
     graph.set_xticks(range(1, 5))
+    graph.set_ylimits(0, 32)
     graph.save('plots/DIR-uncertainty_mip')
     graph.plot(nx, rad2deg(y3), mark=None, linestyle='smooth')
     graph.plot(nx, rad2deg(y4), mark=None, linestyle='smooth')
