@@ -90,7 +90,7 @@ def do_reconstruction_plots(data):
     #plot_uncertainty_zenith(group)
     #plot_uncertainty_core_distance(group)
     #plot_uncertainty_size(group)
-    #plot_uncertainty_binsize(group)
+    plot_uncertainty_binsize(group)
     #plot_uncertainty_zenith_angular_distance(group)
 
     #plot_phi_reconstruction_results_for_MIP(group, 1)
@@ -107,8 +107,8 @@ def do_reconstruction_plots(data):
     #plot_detection_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
     #plot_reconstruction_efficiency_vs_R_for_angles(2)
-    artistplot_reconstruction_efficiency_vs_R_for_angles(1)
-    artistplot_reconstruction_efficiency_vs_R_for_angles(2)
+    #artistplot_reconstruction_efficiency_vs_R_for_angles(1)
+    #artistplot_reconstruction_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def plot_uncertainty_mip(group):
@@ -208,6 +208,8 @@ def plot_uncertainty_zenith(group):
 
     N = 2
 
+    graph = GraphArtist()
+
     # constants for uncertainty estimation
     # BEWARE: stations must be the same over all reconstruction tables used
     station = group.zenith_0.attrs.cluster.stations[0]
@@ -232,8 +234,10 @@ def plot_uncertainty_zenith(group):
         y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
         y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
     plot(x, rad2deg(y), '^', label="Theta")
+    graph.plot(x, rad2deg(y), mark='o', linestyle=None)
     # Azimuthal angle undefined for zenith = 0
     plot(x[1:], rad2deg(y2[1:]), 'v', label="Phi")
+    graph.plot(x[1:], rad2deg(y2[1:]), mark='*', linestyle=None)
     print
     print "zenith: theta, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
@@ -251,15 +255,21 @@ def plot_uncertainty_zenith(group):
     y = TIMING_ERROR * sqrt(array(y))
     y2 = TIMING_ERROR * sqrt(array(y2))
     plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
+    graph.plot(rad2deg(x), rad2deg(y), mark=None)
     plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
+    graph.plot(rad2deg(x), rad2deg(y2), mark=None)
 
     # Labels etc.
     xlabel("Shower zenith angle [deg]")
+    graph.set_xlabel(r"Shower zenith angle [\si{\degree}]")
     ylabel("Angle reconstruction uncertainty [deg]")
+    graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
     #title(r"$N_{MIP} \geq %d$" % N)
     ylim(0, 100)
+    graph.set_ylimits(0, 60)
     legend(numpoints=1)
     utils.saveplot()
+    graph.save('plots/DIR-uncertainty-zenith')
     print
 
 def plot_uncertainty_core_distance(group):
@@ -311,6 +321,8 @@ def plot_uncertainty_size(group):
 
     N = 2
 
+    graph = GraphArtist()
+
     # constants for uncertainty estimation
     # BEWARE: stations must be the same shape(!) over all reconstruction tables used
     station = group.zenith_22_5.attrs.cluster.stations[0]
@@ -340,7 +352,9 @@ def plot_uncertainty_size(group):
         y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
         y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
     plot(x, rad2deg(y), '^', label="Theta")
+    graph.plot(x, rad2deg(y), mark='o', linestyle=None)
     plot(x, rad2deg(y2), 'v', label="Phi")
+    graph.plot(x, rad2deg(y2), mark='*', linestyle=None)
     print
     print "stationsize: size, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
@@ -357,14 +371,19 @@ def plot_uncertainty_size(group):
     y = TIMING_ERROR * sqrt(array(y))
     y2 = TIMING_ERROR * sqrt(array(y2))
     plot(x, rad2deg(y), label="Estimate Phi")
+    graph.plot(x, rad2deg(y), mark=None)
     plot(x, rad2deg(y2), label="Estimate Theta")
+    graph.plot(x, rad2deg(y2), mark=None)
 
     # Labels etc.
     xlabel("Station size [m]")
+    graph.set_xlabel(r"Station size [\si{\meter}]")
     ylabel("Angle reconstruction uncertainty [deg]")
+    graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
     #title(r"$\theta = 22.5^\circ, N_{MIP} \geq %d$" % N)
     legend(numpoints=1)
     utils.saveplot()
+    graph.save('plots/DIR-uncertainty-size')
     print
 
 def plot_uncertainty_binsize(group):
@@ -372,6 +391,8 @@ def plot_uncertainty_binsize(group):
     rec = DirectionReconstruction
 
     N = 2
+
+    graph = GraphArtist()
 
     # constants for uncertainty estimation
     # BEWARE: stations must be the same over all reconstruction tables used
@@ -401,7 +422,9 @@ def plot_uncertainty_binsize(group):
         y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
         y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
     plot(x, rad2deg(y), '^', label="Theta")
+    graph.plot(x, rad2deg(y), mark='o', linestyle=None)
     plot(x, rad2deg(y2), 'v', label="Phi")
+    graph.plot(x, rad2deg(y2), mark='*', linestyle=None)
     print
     print "binsize: size, theta_std, phi_std"
     for u, v, w in zip(x, y, y2):
@@ -420,16 +443,21 @@ def plot_uncertainty_binsize(group):
     y = array(y)
     y2 = array(y2)
     plot(x, rad2deg(y), label="Estimate Phi")
+    graph.plot(x, rad2deg(y), mark=None)
     plot(x, rad2deg(y2), label="Estimate Theta")
+    graph.plot(x, rad2deg(y2), mark=None)
 
     # Labels etc.
     xlabel("Sampling time [ns]")
+    graph.set_xlabel(r"Sampling time [\si{\nano\second}]")
     ylabel("Angle reconstruction uncertainty [deg]")
+    graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
     #title(r"$\theta = 22.5^\circ, N_{MIP} \geq %d$" % N)
     legend(loc='upper left', numpoints=1)
     ylim(0, 20)
     xlim(-0.1, 5.5)
     utils.saveplot()
+    graph.save('plots/DIR-uncertainty-binsize')
     print
 
 # Time of first hit pamflet functions
