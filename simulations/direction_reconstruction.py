@@ -103,10 +103,12 @@ def do_reconstruction_plots(data):
     #boxplot_arrival_times(group, 2)
     #boxplot_core_distances_for_mips(group)
     #save_for_kascade_boxplot_core_distances_for_mips(group)
-    plot_detection_efficiency_vs_R_for_angles(1)
-    plot_detection_efficiency_vs_R_for_angles(2)
+    #plot_detection_efficiency_vs_R_for_angles(1)
+    #plot_detection_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
     #plot_reconstruction_efficiency_vs_R_for_angles(2)
+    artistplot_reconstruction_efficiency_vs_R_for_angles(1)
+    artistplot_reconstruction_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def plot_uncertainty_mip(group):
@@ -693,6 +695,8 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     bin_edges = linspace(0, 100, 10)
     x = (bin_edges[:-1] + bin_edges[1:]) / 2.
 
+    all_data = []
+
     for angle in [0, 22.5, 35]:
         angle_str = str(angle).replace('.', '_')
         shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
@@ -715,6 +719,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
             ssel = reconstructions.readWhere('(min_n134 >= N) & (low <= r) & (r < high)')
             efficiencies.append(len(ssel) / sum(shower_results))
 
+        all_data.append(efficiencies)
         plot(x, efficiencies, label=r'$\theta = %s^\circ$' % angle)
 
     xlabel("Core distance [m]")
@@ -723,6 +728,30 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     legend()
 
     utils.saveplot(N)
+    utils.savedata(array([x] + all_data).T, suffix=N)
+
+def artistplot_reconstruction_efficiency_vs_R_for_angles(N):
+    filename = 'DIR-plot_reconstruction_efficiency_vs_R_for_angles-%d.txt' % N
+    all_data = loadtxt(os.path.join('plots/', filename))
+
+    graph = GraphArtist()
+    locations = iter(['above right', 'below left', 'below left'])
+    positions = iter([.9, .2, .2])
+
+    x = all_data[:, 0]
+
+    for angle, efficiencies in zip([0, 22.5, 35], all_data[:, 1:].T):
+        graph.plot(x, efficiencies, mark=None)
+        graph.add_pin(r'\SI{%s}{\degree}' % angle, use_arrow=True,
+                      location=locations.next(),
+                      relative_position=positions.next())
+
+    graph.set_xlabel("Core distance [\si{\meter}]")
+    graph.set_ylabel("Reconstruction efficiency")
+    graph.set_xlimits(0, 100)
+    graph.set_ylimits(0, 1)
+    texname = filename.replace('.txt', '.tex')
+    graph.save(os.path.join('plots/', texname))
 
 def plot_reconstruction_efficiency_vs_R_for_mips():
     reconstructions = data.root.reconstructions.E_1PeV.zenith_22_5
