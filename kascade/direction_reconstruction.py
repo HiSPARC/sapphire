@@ -47,16 +47,16 @@ def do_reconstruction_plots(data, table):
     plot_uncertainty_zenith(table)
     plot_uncertainty_core_distance(table)
 
-    plot_phi_reconstruction_results_for_MIP(table, 1)
-    plot_phi_reconstruction_results_for_MIP(table, 2)
-    plot_theta_reconstruction_results_for_MIP(table, 1)
-    plot_theta_reconstruction_results_for_MIP(table, 2)
-    boxplot_theta_reconstruction_results_for_MIP(table, 1)
-    boxplot_theta_reconstruction_results_for_MIP(table, 2)
-    boxplot_phi_reconstruction_results_for_MIP(table, 1)
-    boxplot_phi_reconstruction_results_for_MIP(table, 2)
-    boxplot_arrival_times(table, 1)
-    boxplot_core_distances_for_mips(table)
+    #plot_phi_reconstruction_results_for_MIP(table, 1)
+    #plot_phi_reconstruction_results_for_MIP(table, 2)
+    #plot_theta_reconstruction_results_for_MIP(table, 1)
+    #plot_theta_reconstruction_results_for_MIP(table, 2)
+    #boxplot_theta_reconstruction_results_for_MIP(table, 1)
+    #boxplot_theta_reconstruction_results_for_MIP(table, 2)
+    #boxplot_phi_reconstruction_results_for_MIP(table, 1)
+    #boxplot_phi_reconstruction_results_for_MIP(table, 2)
+    #boxplot_arrival_times(table, 1)
+    #boxplot_core_distances_for_mips(table)
     #plot_detection_efficiency_vs_R_for_angles(1)
     #plot_detection_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
@@ -146,6 +146,19 @@ def plot_uncertainty_mip(table):
     utils.saveplot()
     print
 
+    graph = GraphArtist()
+    graph.plot(x, rad2deg(y), mark='o', linestyle=None)
+    graph.plot(sx, rad2deg(sy), mark='square', linestyle=None)
+    graph.plot(nx, rad2deg(ey2), mark=None)
+    graph.plot(x, rad2deg(y2), mark='*', linestyle=None)
+    graph.plot(sx, rad2deg(sy2), mark='square*', linestyle=None)
+    graph.plot(nx, rad2deg(ey), mark=None)
+    graph.set_xlabel(r"$N_\mathrm{MIP} \pm %.1f$" % DN)
+    graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
+    graph.set_xlimits(max=4.5)
+    graph.set_ylimits(0, 40)
+    graph.save('plots/%suncertainty-mip' % utils.__prefix)
+
 def plot_uncertainty_zenith(table):
     rec = DirectionReconstruction
 
@@ -199,26 +212,36 @@ def plot_uncertainty_zenith(table):
     ey3 = TIMING_ERROR * sqrt(array(ey3))
     ey2 = TIMING_ERROR * sqrt(array(ey2))
 
+    graph = GraphArtist()
+
     # Plots
     plot(x, rad2deg(y), '^', label="Theta")
+    graph.plot(x, rad2deg(y), mark='o', linestyle=None)
     #plot(sx, rad2deg(sy), '^', label="Theta (sim)")
     plot(rad2deg(ex), rad2deg(ey2))#, label="Estimate Theta")
+    graph.plot(rad2deg(ex), rad2deg(ey2), mark=None)
     # Azimuthal angle undefined for zenith = 0
     plot(x[1:], rad2deg(y2[1:]), 'v', label="Phi")
+    graph.plot(x[1:], rad2deg(y2[1:]), mark='*', linestyle=None)
     #plot(sx[1:], rad2deg(sy2[1:]), 'v', label="Phi (sim)")
     plot(rad2deg(ex), rad2deg(ey))#, label="Estimate Phi")
+    graph.plot(rad2deg(ex), rad2deg(ey), mark=None)
     #plot(rad2deg(ex), rad2deg(ey3), label="Estimate Phi * sin(Theta)")
 
     # Labels etc.
     xlabel(r"Shower zenith angle [deg $\pm %d^\circ$]" % rad2deg(DTHETA))
+    graph.set_xlabel(r"Shower zenith angle [\si{\degree} $\pm \SI{%d}{\degree}$]" % rad2deg(DTHETA))
     ylabel("Angle reconstruction uncertainty [deg]")
+    graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
     title(r"$N_{MIP} \geq %d, \quad %.1f \leq \log(E) \leq %.1f$" % (N, LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
     ylim(0, 60)
+    graph.set_ylimits(0, 60)
     xlim(-.5, 37)
     legend(numpoints=1)
     if USE_TEX:
         rcParams['text.usetex'] = True
     utils.saveplot()
+    graph.save('plots/%suncertainty-zenith' % utils.__prefix)
     print
 
 def plot_uncertainty_core_distance(table):
@@ -256,20 +279,30 @@ def plot_uncertainty_core_distance(table):
 #    # Simulation data
     sx, sy, sy2 = loadtxt(os.path.join(DATADIR, 'DIR-plot_uncertainty_core_distance.txt'))
 
+    graph = GraphArtist()
+
     # Plots
     plot(x, rad2deg(y), '^-', label="Theta")
+    graph.plot(x[:-1], rad2deg(y[:-1]), mark='o')
     plot(sx, rad2deg(sy), '^-', label="Theta (sim)")
+    graph.plot(sx[:-1], rad2deg(sy[:-1]), mark='square')
     plot(x, rad2deg(y2), 'v-', label="Phi")
+    graph.plot(x[:-1], rad2deg(y2[:-1]), mark='*')
     plot(sx, rad2deg(sy2), 'v-', label="Phi (sim)")
+    graph.plot(sx[:-1], rad2deg(sy2[:-1]), mark='square*')
 
     # Labels etc.
     xlabel("Core distance [m] $\pm %d$" % DR)
+    graph.set_xlabel(r"Core distance [\si{\meter}] $\pm \SI{%d}{\meter}$" % DR)
     ylabel("Angle reconstruction uncertainty [deg]")
+    graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
     title(r"$N_{MIP} = %d \pm %.1f, \theta = 22.5^\circ \pm %d^\circ, %.1f \leq \log(E) \leq %.1f$" % (N, DN, rad2deg(DTHETA), LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
     ylim(ymin=0)
+    graph.set_ylimits(min=0)
     xlim(-2, 62)
     legend(numpoints=1, loc='best')
     utils.saveplot()
+    graph.save('plots/%suncertainty-core-distance' % utils.__prefix)
     print
 
 # Time of first hit pamflet functions
