@@ -157,6 +157,7 @@ def plot_uncertainty_mip(table):
     graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
     graph.set_xlimits(max=4.5)
     graph.set_ylimits(0, 40)
+    graph.set_xticks(range(5))
     graph.save('plots/%suncertainty-mip' % utils.__prefix)
 
 def plot_uncertainty_zenith(table):
