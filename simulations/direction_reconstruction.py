@@ -86,7 +86,7 @@ def do_reconstruction_plots(data):
 
     group = data.root.reconstructions
 
-    plot_uncertainty_mip(group)
+    #plot_uncertainty_mip(group)
     #plot_uncertainty_zenith(group)
     #plot_uncertainty_core_distance(group)
     #plot_uncertainty_size(group)
@@ -103,8 +103,8 @@ def do_reconstruction_plots(data):
     #boxplot_arrival_times(group, 2)
     #boxplot_core_distances_for_mips(group)
     #save_for_kascade_boxplot_core_distances_for_mips(group)
-    #plot_detection_efficiency_vs_R_for_angles(1)
-    #plot_detection_efficiency_vs_R_for_angles(2)
+    plot_detection_efficiency_vs_R_for_angles(1)
+    plot_detection_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
     #plot_reconstruction_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_mips()
@@ -639,6 +639,9 @@ def save_for_kascade_boxplot_core_distances_for_mips(group):
 
 def plot_detection_efficiency_vs_R_for_angles(N):
     figure()
+    graph = GraphArtist()
+    locations = iter(['right', 'above left', 'below left'])
+    positions = iter([.15, .15, .15])
 
     bin_edges = linspace(0, 100, 20)
     x = (bin_edges[:-1] + bin_edges[1:]) / 2.
@@ -664,13 +667,23 @@ def plot_detection_efficiency_vs_R_for_angles(N):
             efficiencies.append(mean(shower_results))
 
         plot(x, efficiencies, label=r'$\theta = %s^\circ$' % angle)
+        graph.plot(x, efficiencies, mark=None)
+        graph.add_pin(r'\SI{%s}{\degree}' % angle,
+                      location=locations.next(), use_arrow=True,
+                      relative_position=positions.next())
 
     xlabel("Core distance [m]")
+    graph.set_xlabel(r"Core distance [\si{\meter}]")
     ylabel("Detection efficiency")
+    graph.set_ylabel("Detection efficiency")
     #title(r"$N_{MIP} \geq %d$" % N)
     legend()
+    graph.set_xlimits(0, 100)
+    graph.set_ylimits(0, 1)
 
     utils.saveplot(N)
+    graph.save('plots/DIR-detection-efficiency-%d' % N)
+    graph.save_as_pdf('preview')
 
 def plot_reconstruction_efficiency_vs_R_for_angles(N):
     group = data.root.reconstructions.E_1PeV
