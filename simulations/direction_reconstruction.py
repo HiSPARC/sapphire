@@ -90,7 +90,7 @@ def do_reconstruction_plots(data):
     #plot_uncertainty_zenith(group)
     #plot_uncertainty_core_distance(group)
     #plot_uncertainty_size(group)
-    plot_uncertainty_binsize(group)
+    #plot_uncertainty_binsize(group)
     #plot_uncertainty_zenith_angular_distance(group)
 
     #plot_phi_reconstruction_results_for_MIP(group, 1)
@@ -107,8 +107,8 @@ def do_reconstruction_plots(data):
     #plot_detection_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
     #plot_reconstruction_efficiency_vs_R_for_angles(2)
-    #artistplot_reconstruction_efficiency_vs_R_for_angles(1)
-    #artistplot_reconstruction_efficiency_vs_R_for_angles(2)
+    artistplot_reconstruction_efficiency_vs_R_for_angles(1)
+    artistplot_reconstruction_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def plot_uncertainty_mip(group):
@@ -777,7 +777,7 @@ def artistplot_reconstruction_efficiency_vs_R_for_angles(N):
     graph.set_xlabel("Core distance [\si{\meter}]")
     graph.set_ylabel("Reconstruction efficiency")
     graph.set_xlimits(0, 100)
-    graph.set_ylimits(0, 1)
+    graph.set_ylimits(max=1)
     texname = filename.replace('.txt', '.tex')
     graph.save(os.path.join('plots/', texname))
 
