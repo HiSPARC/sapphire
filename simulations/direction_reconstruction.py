@@ -93,8 +93,8 @@ def do_reconstruction_plots(data):
     #plot_uncertainty_binsize(group)
     #plot_uncertainty_zenith_angular_distance(group)
 
-    #plot_phi_reconstruction_results_for_MIP(group, 1)
-    #plot_phi_reconstruction_results_for_MIP(group, 2)
+    plot_phi_reconstruction_results_for_MIP(group, 1)
+    plot_phi_reconstruction_results_for_MIP(group, 2)
     #boxplot_theta_reconstruction_results_for_MIP(group, 1)
     #boxplot_theta_reconstruction_results_for_MIP(group, 2)
     #boxplot_phi_reconstruction_results_for_MIP(group, 1)
@@ -107,8 +107,8 @@ def do_reconstruction_plots(data):
     #plot_detection_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
     #plot_reconstruction_efficiency_vs_R_for_angles(2)
-    artistplot_reconstruction_efficiency_vs_R_for_angles(1)
-    artistplot_reconstruction_efficiency_vs_R_for_angles(2)
+    #artistplot_reconstruction_efficiency_vs_R_for_angles(1)
+    #artistplot_reconstruction_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def plot_uncertainty_mip(group):
@@ -822,7 +822,8 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
     imshow(H.T, extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
-           origin='lower left', interpolation='lanczos', aspect='auto')
+           origin='lower left', interpolation='lanczos', aspect='auto',
+           cmap=cm.Greys)
     colorbar()
 
 def do_jos_plots(data):
