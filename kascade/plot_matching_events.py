@@ -6,6 +6,7 @@ from pylab import *
 from scipy.optimize import curve_fit
 
 from sapphire.kascade import KascadeCoincidences
+from artist import GraphArtist
 
 import utils
 
@@ -26,7 +27,7 @@ if USE_TEX:
 
 
 def do_matching_plots(data):
-    plot_nearest_neighbors(data)
+    #plot_nearest_neighbors(data)
     plot_residual_time_differences(data)
 
 def plot_nearest_neighbors(data, limit=None):
@@ -109,6 +110,26 @@ def plot_residual_time_differences(data):
     title("July 2, 2008")
     xlabel("Time difference [us]")
     utils.saveplot()
+
+    graph = GraphArtist(width=r'.45\linewidth')
+    n, bins = histogram(all_dts / 1e3, bins=arange(-10, 2, .01))
+    graph.histogram(n, bins)
+    graph.set_title("Jul 1 - Aug 6, 2008")
+    graph.set_xlabel(r"Time difference [\si{\micro\second}]")
+    graph.set_ylabel("Counts")
+    graph.set_xlimits(-10, 2)
+    graph.set_ylimits(min=0)
+    graph.save('plots/MAT-residual-time-differences-weeks')
+
+    graph = GraphArtist(width=r'.45\linewidth')
+    n, bins = histogram(dts / 1e3, bins=arange(-8, -6, .01))
+    graph.histogram(n, bins)
+    graph.set_title("Jul 2, 2008")
+    graph.set_xlabel(r"Time difference [\si{\micro\second}]")
+    graph.set_ylabel("Counts")
+    graph.set_xlimits(-8, -6)
+    graph.set_ylimits(min=0)
+    graph.save('plots/MAT-residual-time-differences-day')
 
 def make_timestamp(year, month, day, hour=0, minutes=0, seconds=0):
     dt = datetime.datetime(year, month, day, hour, minutes, seconds)
