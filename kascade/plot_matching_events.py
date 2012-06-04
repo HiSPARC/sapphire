@@ -27,8 +27,8 @@ if USE_TEX:
 
 
 def do_matching_plots(data):
-    #plot_nearest_neighbors(data)
-    plot_residual_time_differences(data)
+    plot_nearest_neighbors(data)
+    #plot_residual_time_differences(data)
 
 def plot_nearest_neighbors(data, limit=None):
     global coincidences
@@ -38,18 +38,24 @@ def plot_nearest_neighbors(data, limit=None):
     coincidences = KascadeCoincidences(data, hisparc_group, kascade_group,
                                        ignore_existing=True)
 
-    dt_opt = find_optimum_dt(coincidences, p0=-13, limit=1000)
-    print dt_opt
+    #dt_opt = find_optimum_dt(coincidences, p0=-13, limit=1000)
+    #print dt_opt
+
+    graph = GraphArtist(axis='semilogy')
+    styles = iter(['solid', 'dashed', 'dashdotted'])
 
     uncorrelated = None
     figure()
-    for shift in -12, -13, dt_opt, -14:
+    #for shift in -12, -13, dt_opt, -14:
+    for shift in -12, -13, -14:
         print "Shifting", shift
         coincidences.search_coincidences(shift, dtlimit=1, limit=limit)
         print "."
         dts = coincidences.coincidences['dt']
         n, bins, p = hist(abs(dts) / 1e9, bins=100, histtype='step',
                           label='%.3f s' % shift)
+        n = [u if u else 1e-99 for u in n]
+        graph.histogram(n, bins, linestyle=styles.next() + ',gray')
         if uncorrelated is None:
             uncorrelated = n, bins
 
@@ -58,12 +64,17 @@ def plot_nearest_neighbors(data, limit=None):
     f = lambda x, N, a: N * exp(-a * x)
     popt, pcov = curve_fit(f, x, y)
     plot(x, f(x, *popt), label=r"$\lambda = %.2f$ Hz" % popt[1])
+    graph.plot(x, f(x, *popt), mark=None)
 
     yscale('log')
     xlabel("Time difference [s]")
+    graph.set_xlabel(r"Time difference [\si{\second}]")
     ylabel("Counts")
+    graph.set_ylabel("Counts")
     legend()
+    graph.set_ylimits(min=10)
     utils.saveplot()
+    graph.save('plots/MAT-nearest-neighbors')
 
 def find_optimum_dt(coincidences, p0, delta=1e-3, limit=None):
     dt_new = p0
