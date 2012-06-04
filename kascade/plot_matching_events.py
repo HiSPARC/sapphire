@@ -52,8 +52,8 @@ def plot_nearest_neighbors(data, limit=None):
         coincidences.search_coincidences(shift, dtlimit=1, limit=limit)
         print "."
         dts = coincidences.coincidences['dt']
-        n, bins, p = hist(abs(dts) / 1e9, bins=100, histtype='step',
-                          label='%.3f s' % shift)
+        n, bins, p = hist(abs(dts) / 1e9, bins=linspace(0, 1, 101),
+                          histtype='step', label='%.3f s' % shift)
         n = [u if u else 1e-99 for u in n]
         graph.histogram(n, bins, linestyle=styles.next() + ',gray')
         if uncorrelated is None:
