@@ -86,15 +86,15 @@ def do_reconstruction_plots(data):
 
     group = data.root.reconstructions
 
-    #plot_uncertainty_mip(group)
-    #plot_uncertainty_zenith(group)
-    #plot_uncertainty_core_distance(group)
-    #plot_uncertainty_size(group)
-    #plot_uncertainty_binsize(group)
-    #plot_uncertainty_zenith_angular_distance(group)
+    plot_uncertainty_mip(group)
+    plot_uncertainty_zenith(group)
+    plot_uncertainty_core_distance(group)
+    plot_uncertainty_size(group)
+    plot_uncertainty_binsize(group)
+    plot_uncertainty_zenith_angular_distance(group)
 
-    plot_phi_reconstruction_results_for_MIP(group, 1)
-    plot_phi_reconstruction_results_for_MIP(group, 2)
+    #plot_phi_reconstruction_results_for_MIP(group, 1)
+    #plot_phi_reconstruction_results_for_MIP(group, 2)
     #boxplot_theta_reconstruction_results_for_MIP(group, 1)
     #boxplot_theta_reconstruction_results_for_MIP(group, 2)
     #boxplot_phi_reconstruction_results_for_MIP(group, 1)
@@ -197,10 +197,10 @@ def plot_uncertainty_mip(group):
     graph.set_ylabel(r"Reconstruction uncertainty [\si{\degree}]")
     graph.set_xticks(range(1, 5))
     graph.set_ylimits(0, 32)
-    graph.save('plots/DIR-uncertainty_mip')
+    graph.save(utils.savename())
     graph.plot(nx, rad2deg(y3), mark=None, linestyle='smooth')
     graph.plot(nx, rad2deg(y4), mark=None, linestyle='smooth')
-    graph.save('plots/DIR-uncertainty_mip_full')
+    graph.save(utils.savename('full'))
 
 def plot_uncertainty_zenith(group):
     group = group.E_1PeV
@@ -269,7 +269,7 @@ def plot_uncertainty_zenith(group):
     graph.set_ylimits(0, 60)
     legend(numpoints=1)
     utils.saveplot()
-    graph.save('plots/DIR-uncertainty-zenith')
+    graph.save(utils.savename())
     print
 
 def plot_uncertainty_core_distance(group):
@@ -383,7 +383,7 @@ def plot_uncertainty_size(group):
     #title(r"$\theta = 22.5^\circ, N_{MIP} \geq %d$" % N)
     legend(numpoints=1)
     utils.saveplot()
-    graph.save('plots/DIR-uncertainty-size')
+    graph.save(utils.savename())
     print
 
 def plot_uncertainty_binsize(group):
@@ -457,7 +457,7 @@ def plot_uncertainty_binsize(group):
     ylim(0, 20)
     xlim(-0.1, 5.5)
     utils.saveplot()
-    graph.save('plots/DIR-uncertainty-binsize')
+    graph.save(utils.savename())
     print
 
 # Time of first hit pamflet functions
@@ -713,7 +713,6 @@ def plot_detection_efficiency_vs_R_for_angles(N):
 
     utils.saveplot(N)
     graph.save('plots/DIR-detection-efficiency-%d' % N)
-    graph.save_as_pdf('preview')
 
 def plot_reconstruction_efficiency_vs_R_for_angles(N):
     group = data.root.reconstructions.E_1PeV
@@ -937,6 +936,7 @@ def plot_uncertainty_zenith_angular_distance(group):
     r2, phi2 = station.calc_r_and_phi_for_detectors(1, 4)
 
     figure()
+    graph = GraphArtist()
     # Uncertainty estimate
     x = linspace(0, deg2rad(45), 50)
     #x = array([pi / 8])
@@ -951,6 +951,7 @@ def plot_uncertainty_zenith_angular_distance(group):
     #plot(rad2deg(x), rad2deg(y), label="Estimate Phi")
     #plot(rad2deg(x), rad2deg(y2), label="Estimate Theta")
     plot(rad2deg(x), rad2deg(ang_dist), label="Angular distance")
+    graph.plot(rad2deg(x), rad2deg(ang_dist), mark=None)
     print rad2deg(x)
     print rad2deg(y)
     print rad2deg(y2)
@@ -960,10 +961,14 @@ def plot_uncertainty_zenith_angular_distance(group):
     # Labels etc.
     xlabel("Shower zenith angle [deg]")
     ylabel("Angular distance [deg]")
+    graph.set_xlabel(r"Shower zenith angle [\si{\degree}]")
+    graph.set_ylabel(r"Angular distance [\si{\degree}]")
+    graph.set_ylimits(min=6)
     #title(r"$N_{MIP} \geq %d$" % N)
     #ylim(0, 100)
     #legend(numpoints=1)
     utils.saveplot()
+    graph.save(utils.savename())
     print
 
 

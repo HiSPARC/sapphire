@@ -22,6 +22,13 @@ def whosparent():
 
     return inspect.stack()[2][3]
 
+def savename(suffix=''):
+    """Create a name using caller's name"""
+
+    if suffix:
+        suffix = '-%s' % suffix
+    return 'plots/%s%s%s%s' % (__prefix, whosparent(), suffix, __suffix)
+
 def saveplot(suffix=''):
     """Save a plot using caller's name"""
 
