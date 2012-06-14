@@ -22,7 +22,7 @@ from artist import GraphArtist
 import artist.utils
 
 
-USE_TEX = True
+USE_TEX = False
 
 ONEP_TIMING_ERROR = 4.6
 TIMING_ERROR = 1.8
@@ -96,12 +96,12 @@ def do_reconstruction_plots(data):
 
     #plot_phi_reconstruction_results_for_MIP(group, 1)
     #plot_phi_reconstruction_results_for_MIP(group, 2)
-    #boxplot_theta_reconstruction_results_for_MIP(group, 1)
-    #boxplot_theta_reconstruction_results_for_MIP(group, 2)
-    #boxplot_phi_reconstruction_results_for_MIP(group, 1)
-    #boxplot_phi_reconstruction_results_for_MIP(group, 2)
-    boxplot_arrival_times(group, 1)
-    boxplot_arrival_times(group, 2)
+#    boxplot_theta_reconstruction_results_for_MIP(group, 1)
+#    boxplot_theta_reconstruction_results_for_MIP(group, 2)
+#    boxplot_phi_reconstruction_results_for_MIP(group, 1)
+#    boxplot_phi_reconstruction_results_for_MIP(group, 2)
+#    boxplot_arrival_times(group, 1)
+#    boxplot_arrival_times(group, 2)
     #boxplot_core_distances_for_mips(group)
     #save_for_kascade_boxplot_core_distances_for_mips(group)
     #plot_detection_efficiency_vs_R_for_angles(1)
@@ -521,6 +521,14 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
 
     utils.saveplot(N)
 
+    graph = GraphArtist()
+    graph.draw_horizontal_line(0, linestyle='gray')
+    graph.shade_region(angles, d25, d75)
+    graph.plot(angles, d50, linestyle=None)
+    graph.set_xlabel(r"$\theta_\mathrm{sim}$ [\si{\degree}]")
+    graph.set_ylabel(r"$\theta_\mathrm{rec} - \theta_\mathrm{sim}$ [\si{\degree}]")
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 def boxplot_phi_reconstruction_results_for_MIP(group, N):
     table = group.E_1PeV.zenith_22_5
 
@@ -555,6 +563,16 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
     ylim(-15, 15)
 
     utils.saveplot(N)
+
+    graph = GraphArtist()
+    graph.draw_horizontal_line(0, linestyle='gray')
+    graph.shade_region(x, d25, d75)
+    graph.plot(x, d50, linestyle=None)
+    graph.set_xlabel(r"$\phi_\mathrm{sim}$ [\si{\degree}]")
+    graph.set_ylabel(r"$\phi_\mathrm{rec} - \phi_\mathrm{sim}$ [\si{\degree}]")
+    graph.set_xticks([-180, -90, '...', 180])
+    graph.set_xlimits(-180, 180)
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def boxplot_arrival_times(group, N):
     table = group.E_1PeV.zenith_0
