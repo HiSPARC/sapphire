@@ -19,6 +19,7 @@ from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruc
 from myshowerfront import *
 
 from artist import GraphArtist
+import artist.utils
 
 
 USE_TEX = True
@@ -86,12 +87,12 @@ def do_reconstruction_plots(data):
 
     group = data.root.reconstructions
 
-    plot_uncertainty_mip(group)
-    plot_uncertainty_zenith(group)
-    plot_uncertainty_core_distance(group)
-    plot_uncertainty_size(group)
-    plot_uncertainty_binsize(group)
-    plot_uncertainty_zenith_angular_distance(group)
+#    plot_uncertainty_mip(group)
+#    plot_uncertainty_zenith(group)
+#    plot_uncertainty_core_distance(group)
+#    plot_uncertainty_size(group)
+#    plot_uncertainty_binsize(group)
+#    plot_uncertainty_zenith_angular_distance(group)
 
     #plot_phi_reconstruction_results_for_MIP(group, 1)
     #plot_phi_reconstruction_results_for_MIP(group, 2)
@@ -99,8 +100,8 @@ def do_reconstruction_plots(data):
     #boxplot_theta_reconstruction_results_for_MIP(group, 2)
     #boxplot_phi_reconstruction_results_for_MIP(group, 1)
     #boxplot_phi_reconstruction_results_for_MIP(group, 2)
-    #boxplot_arrival_times(group, 1)
-    #boxplot_arrival_times(group, 2)
+    boxplot_arrival_times(group, 1)
+    boxplot_arrival_times(group, 2)
     #boxplot_core_distances_for_mips(group)
     #save_for_kascade_boxplot_core_distances_for_mips(group)
     #plot_detection_efficiency_vs_R_for_angles(1)
@@ -575,11 +576,6 @@ def boxplot_arrival_times(group, N):
         sel = table.readWhere(query)
         t1 = sel[:]['t1']
         t2 = sel[:]['t2']
-        t3 = sel[:]['t3']
-        t4 = sel[:]['t4']
-        #ts = concatenate([t1, t3, t4])
-        # Huh???
-        #print (t2 == -999).any()
         ct1 = t1.compress((t1 > -999) & (t2 > -999))
         ct2 = t2.compress((t1 > -999) & (t2 > -999))
         ts = abs(ct2 - ct1)
@@ -600,6 +596,15 @@ def boxplot_arrival_times(group, N):
 
     utils.savedata((x, t25, t50, t75), N)
     utils.saveplot(N)
+
+    graph = GraphArtist()
+    graph.shade_region(x, t25, t75)
+    graph.plot(x, t50, linestyle=None)
+    graph.set_xlabel(r"Core distance [\si{\meter}]")
+    graph.set_ylabel(r"Arrival time delay [\si{\nano\second}]")
+    graph.set_xlimits(0, 100)
+    graph.set_ylimits(min=0)
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def get_median_core_distances_for_mips(group, N_list):
     table = group.E_1PeV.zenith_22_5
@@ -989,6 +994,7 @@ if __name__ == '__main__':
         print "Skipping reconstruction!"
 
     utils.set_prefix("DIR-")
+    artist.utils.set_prefix("DIR-")
     do_reconstruction_plots(data)
 
     # These currently don't work
