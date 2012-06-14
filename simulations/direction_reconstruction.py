@@ -87,29 +87,29 @@ def do_reconstruction_plots(data):
 
     group = data.root.reconstructions
 
-#    plot_uncertainty_mip(group)
-#    plot_uncertainty_zenith(group)
-#    plot_uncertainty_core_distance(group)
-#    plot_uncertainty_size(group)
-#    plot_uncertainty_binsize(group)
-#    plot_uncertainty_zenith_angular_distance(group)
+    plot_uncertainty_mip(group)
+    plot_uncertainty_zenith(group)
+    plot_uncertainty_core_distance(group)
+    plot_uncertainty_size(group)
+    plot_uncertainty_binsize(group)
+    plot_uncertainty_zenith_angular_distance(group)
 
     #plot_phi_reconstruction_results_for_MIP(group, 1)
     #plot_phi_reconstruction_results_for_MIP(group, 2)
-#    boxplot_theta_reconstruction_results_for_MIP(group, 1)
-#    boxplot_theta_reconstruction_results_for_MIP(group, 2)
-#    boxplot_phi_reconstruction_results_for_MIP(group, 1)
-#    boxplot_phi_reconstruction_results_for_MIP(group, 2)
-#    boxplot_arrival_times(group, 1)
-#    boxplot_arrival_times(group, 2)
+    boxplot_theta_reconstruction_results_for_MIP(group, 1)
+    boxplot_theta_reconstruction_results_for_MIP(group, 2)
+    boxplot_phi_reconstruction_results_for_MIP(group, 1)
+    boxplot_phi_reconstruction_results_for_MIP(group, 2)
+    boxplot_arrival_times(group, 1)
+    boxplot_arrival_times(group, 2)
     #boxplot_core_distances_for_mips(group)
     #save_for_kascade_boxplot_core_distances_for_mips(group)
-    #plot_detection_efficiency_vs_R_for_angles(1)
-    #plot_detection_efficiency_vs_R_for_angles(2)
+    plot_detection_efficiency_vs_R_for_angles(1)
+    plot_detection_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
     #plot_reconstruction_efficiency_vs_R_for_angles(2)
-    #artistplot_reconstruction_efficiency_vs_R_for_angles(1)
-    #artistplot_reconstruction_efficiency_vs_R_for_angles(2)
+    artistplot_reconstruction_efficiency_vs_R_for_angles(1)
+    artistplot_reconstruction_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def plot_uncertainty_mip(group):
@@ -198,10 +198,10 @@ def plot_uncertainty_mip(group):
     graph.set_ylabel(r"Reconstruction uncertainty [\si{\degree}]")
     graph.set_xticks(range(1, 5))
     graph.set_ylimits(0, 32)
-    graph.save(utils.savename())
+    artist.utils.save_graph(graph, dirname='plots')
     graph.plot(nx, rad2deg(y3), mark=None, linestyle='smooth')
     graph.plot(nx, rad2deg(y4), mark=None, linestyle='smooth')
-    graph.save(utils.savename('full'))
+    artist.utils.save_graph(graph, suffix='full', dirname='plots')
 
 def plot_uncertainty_zenith(group):
     group = group.E_1PeV
@@ -270,7 +270,7 @@ def plot_uncertainty_zenith(group):
     graph.set_ylimits(0, 60)
     legend(numpoints=1)
     utils.saveplot()
-    graph.save(utils.savename())
+    artist.utils.save_graph(graph, dirname='plots')
     print
 
 def plot_uncertainty_core_distance(group):
@@ -384,7 +384,7 @@ def plot_uncertainty_size(group):
     #title(r"$\theta = 22.5^\circ, N_{MIP} \geq %d$" % N)
     legend(numpoints=1)
     utils.saveplot()
-    graph.save(utils.savename())
+    artist.utils.save_graph(graph, dirname='plots')
     print
 
 def plot_uncertainty_binsize(group):
@@ -458,7 +458,7 @@ def plot_uncertainty_binsize(group):
     ylim(0, 20)
     xlim(-0.1, 5.5)
     utils.saveplot()
-    graph.save(utils.savename())
+    artist.utils.save_graph(graph, dirname='plots')
     print
 
 # Time of first hit pamflet functions
@@ -735,7 +735,7 @@ def plot_detection_efficiency_vs_R_for_angles(N):
     graph.set_ylimits(0, 1)
 
     utils.saveplot(N)
-    graph.save('plots/DIR-detection-efficiency-%d' % N)
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def plot_reconstruction_efficiency_vs_R_for_angles(N):
     group = data.root.reconstructions.E_1PeV
@@ -800,8 +800,7 @@ def artistplot_reconstruction_efficiency_vs_R_for_angles(N):
     graph.set_ylabel("Reconstruction efficiency")
     graph.set_xlimits(0, 100)
     graph.set_ylimits(max=1)
-    texname = filename.replace('.txt', '.tex')
-    graph.save(os.path.join('plots/', texname))
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def plot_reconstruction_efficiency_vs_R_for_mips():
     reconstructions = data.root.reconstructions.E_1PeV.zenith_22_5
@@ -991,7 +990,7 @@ def plot_uncertainty_zenith_angular_distance(group):
     #ylim(0, 100)
     #legend(numpoints=1)
     utils.saveplot()
-    graph.save(utils.savename())
+    artist.utils.save_graph(graph, dirname='plots')
     print
 
 
