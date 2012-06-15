@@ -527,6 +527,7 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
     graph.plot(angles, d50, linestyle=None)
     graph.set_xlabel(r"$\theta_\mathrm{sim}$ [\si{\degree}]")
     graph.set_ylabel(r"$\theta_\mathrm{rec} - \theta_\mathrm{sim}$ [\si{\degree}]")
+    graph.set_ylimits(-8, 22)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def boxplot_phi_reconstruction_results_for_MIP(group, N):
@@ -572,6 +573,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
     graph.set_ylabel(r"$\phi_\mathrm{rec} - \phi_\mathrm{sim}$ [\si{\degree}]")
     graph.set_xticks([-180, -90, '...', 180])
     graph.set_xlimits(-180, 180)
+    graph.set_ylimits(-17, 17)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def boxplot_arrival_times(group, N):
