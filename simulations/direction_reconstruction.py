@@ -102,8 +102,8 @@ def do_reconstruction_plots(data):
     boxplot_phi_reconstruction_results_for_MIP(group, 2)
     boxplot_arrival_times(group, 1)
     boxplot_arrival_times(group, 2)
-    #boxplot_core_distances_for_mips(group)
-    #save_for_kascade_boxplot_core_distances_for_mips(group)
+    boxplot_core_distances_for_mips(group)
+    save_for_kascade_boxplot_core_distances_for_mips(group)
     plot_detection_efficiency_vs_R_for_angles(1)
     plot_detection_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
@@ -672,6 +672,14 @@ def boxplot_core_distances_for_mips(group):
     #title(r"$\theta = 22.5^\circ$")
 
     utils.saveplot()
+
+    graph = GraphArtist()
+    graph.shade_region(x, r25, r75)
+    graph.plot(x, r50, linestyle=None)
+    graph.set_xlabel("Minimum number of particles")
+    graph.set_ylabel(r"Core distance [\si{\meter}]")
+    graph.set_ylimits(min=0)
+    artist.utils.save_graph(graph, dirname='plots')
 
 def save_for_kascade_boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
