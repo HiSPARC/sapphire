@@ -189,7 +189,7 @@ def plot_uncertainty_mip(group):
     utils.saveplot()
     print
 
-    graph = GraphArtist(width=r'.5\linewidth')
+    graph = GraphArtist()
     graph.plot(Sx, rad2deg(Sy), mark='o', linestyle='only marks')
     graph.plot(Sx, rad2deg(Sy2), mark='*', linestyle='only marks')
     graph.plot(nx, rad2deg(y), mark=None, linestyle='dashed,smooth')
