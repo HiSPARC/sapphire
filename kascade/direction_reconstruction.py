@@ -19,6 +19,9 @@ from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruc
 
 from myshowerfront import *
 
+from artist import GraphArtist
+import artist.utils
+
 
 DATADIR = '../simulations/plots'
 
@@ -51,17 +54,12 @@ def do_reconstruction_plots(data, table):
     #plot_phi_reconstruction_results_for_MIP(table, 2)
     #plot_theta_reconstruction_results_for_MIP(table, 1)
     #plot_theta_reconstruction_results_for_MIP(table, 2)
-    #boxplot_theta_reconstruction_results_for_MIP(table, 1)
-    #boxplot_theta_reconstruction_results_for_MIP(table, 2)
-    #boxplot_phi_reconstruction_results_for_MIP(table, 1)
-    #boxplot_phi_reconstruction_results_for_MIP(table, 2)
+    boxplot_theta_reconstruction_results_for_MIP(table, 1)
+    boxplot_theta_reconstruction_results_for_MIP(table, 2)
+    boxplot_phi_reconstruction_results_for_MIP(table, 1)
+    boxplot_phi_reconstruction_results_for_MIP(table, 2)
     #boxplot_arrival_times(table, 1)
     #boxplot_core_distances_for_mips(table)
-    #plot_detection_efficiency_vs_R_for_angles(1)
-    #plot_detection_efficiency_vs_R_for_angles(2)
-    #plot_reconstruction_efficiency_vs_R_for_angles(1)
-    #plot_reconstruction_efficiency_vs_R_for_angles(2)
-    #plot_reconstruction_efficiency_vs_R_for_mips()
 
 def do_lint_comparison(data):
     fsot = data.root.reconstructions_offsets
@@ -158,7 +156,7 @@ def plot_uncertainty_mip(table):
     graph.set_xlimits(max=4.5)
     graph.set_ylimits(0, 40)
     graph.set_xticks(range(5))
-    graph.save('plots/%suncertainty-mip' % utils.__prefix)
+    artist.utils.save_graph(graph, dirname='plots')
 
 def plot_uncertainty_zenith(table):
     rec = DirectionReconstruction
@@ -242,7 +240,7 @@ def plot_uncertainty_zenith(table):
     if USE_TEX:
         rcParams['text.usetex'] = True
     utils.saveplot()
-    graph.save('plots/%suncertainty-zenith' % utils.__prefix)
+    artist.utils.save_graph(graph, dirname='plots')
     print
 
 def plot_uncertainty_core_distance(table):
@@ -303,7 +301,7 @@ def plot_uncertainty_core_distance(table):
     xlim(-2, 62)
     legend(numpoints=1, loc='best')
     utils.saveplot()
-    graph.save('plots/%suncertainty-core-distance' % utils.__prefix)
+    artist.utils.save_graph(graph, dirname='plots')
     print
 
 # Time of first hit pamflet functions
@@ -357,7 +355,7 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
 
     DTHETA = deg2rad(1.)
 
-    angles = [0, 5, 22.5, 35]
+    angles = [0, 5, 10, 15, 22.5, 35]
     r_dtheta = []
     x = []
     d25, d50, d75 = [], [], []
@@ -385,6 +383,15 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
     xlim(0, 35)
 
     utils.saveplot(N)
+
+    graph = GraphArtist()
+    graph.draw_horizontal_line(0, linestyle='gray')
+    graph.shade_region(angles, d25, d75)
+    graph.plot(angles, d50, linestyle=None)
+    graph.set_xlabel(r"$\theta_K$ [\si{\degree}]")
+    graph.set_ylabel(r"$\theta_H - \theta_K$ [\si{\degree}]")
+    graph.set_ylimits(-5, 15)
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def boxplot_phi_reconstruction_results_for_MIP(table, N):
     figure()
@@ -421,6 +428,17 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
     axhline(0, color='black')
 
     utils.saveplot(N)
+
+    graph = GraphArtist()
+    graph.draw_horizontal_line(0, linestyle='gray')
+    graph.shade_region(x, d25, d75)
+    graph.plot(x, d50, linestyle=None)
+    graph.set_xlabel(r"$\phi_K$ [\si{\degree}]")
+    graph.set_ylabel(r"$\phi_H - \phi_K$ [\si{\degree}]")
+    graph.set_xticks([-180, -90, '...', 180])
+    graph.set_xlimits(-180, 180)
+    graph.set_ylimits(-23, 23)
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def boxplot_arrival_times(table, N):
     THETA = deg2rad(0)
@@ -526,118 +544,6 @@ def boxplot_core_distances_for_mips(table):
     fig.set_size_inches(5, 2.67)
     utils.saveplot()
 
-def plot_detection_efficiency_vs_R_for_angles(N):
-    figure()
-
-    bin_edges = linspace(0, 100, 20)
-    x = (bin_edges[:-1] + bin_edges[1:]) / 2.
-
-    for angle in [0, 5, 22.5, 35]:
-        angle_str = str(angle).replace('.', '_')
-        shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
-
-        efficiencies = []
-        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
-            shower_results = []
-            for shower in data.listNodes(shower_group):
-                sel_query = '(low <= r) & (r < high)'
-                coinc_sel = shower.coincidences.readWhere(sel_query)
-                ids = coinc_sel['id']
-                obs_sel = shower.observables.readCoordinates(ids)
-                assert (obs_sel['id'] == ids).all()
-
-                o = obs_sel
-                sel = obs_sel.compress((o['n1'] >= N) & (o['n3'] >= N) &
-                                       (o['n4'] >= N))
-                shower_results.append(len(sel) / len(obs_sel))
-            efficiencies.append(mean(shower_results))
-
-        plot(x, efficiencies, label=r'$\theta = %s^\circ$' % angle)
-
-    xlabel("Core distance [m]")
-    ylabel("Detection efficiency")
-    title(r"$N_{MIP} \geq %d$" % N)
-    legend()
-
-    utils.saveplot(N)
-
-def plot_reconstruction_efficiency_vs_R_for_angles(N):
-    group = data.root.reconstructions.E_1PeV
-
-    figure()
-
-    bin_edges = linspace(0, 100, 10)
-    x = (bin_edges[:-1] + bin_edges[1:]) / 2.
-
-    for angle in [0, 5, 22.5, 35]:
-        angle_str = str(angle).replace('.', '_')
-        shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
-        reconstructions = group._f_getChild('zenith_%s' % angle_str)
-
-        efficiencies = []
-        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
-            shower_results = []
-            for shower in data.listNodes(shower_group):
-                sel_query = '(low <= r) & (r < high)'
-                coinc_sel = shower.coincidences.readWhere(sel_query)
-                ids = coinc_sel['id']
-                obs_sel = shower.observables.readCoordinates(ids)
-                assert (obs_sel['id'] == ids).all()
-
-                o = obs_sel
-                sel = obs_sel.compress((o['n1'] >= N) & (o['n3'] >= N) &
-                                       (o['n4'] >= N))
-                shower_results.append(len(sel))
-            ssel = reconstructions.readWhere('(min_n134 >= N) & (low <= r) & (r < high)')
-            efficiencies.append(len(ssel) / sum(shower_results))
-
-        plot(x, efficiencies, label=r'$\theta = %s^\circ$' % angle)
-
-    xlabel("Core distance [m]")
-    ylabel("Reconstruction efficiency")
-    title(r"$N_{MIP} \geq %d$" % N)
-    legend()
-
-    utils.saveplot(N)
-
-def plot_reconstruction_efficiency_vs_R_for_mips():
-    reconstructions = data.root.reconstructions.E_1PeV.zenith_22_5
-
-    figure()
-
-    bin_edges = linspace(0, 100, 10)
-    x = (bin_edges[:-1] + bin_edges[1:]) / 2.
-
-    for N in range(1, 5):
-        shower_group = '/simulations/E_1PeV/zenith_22_5'
-
-        efficiencies = []
-        for low, high in zip(bin_edges[:-1], bin_edges[1:]):
-            shower_results = []
-            for shower in data.listNodes(shower_group):
-                sel_query = '(low <= r) & (r < high)'
-                coinc_sel = shower.coincidences.readWhere(sel_query)
-                ids = coinc_sel['id']
-                obs_sel = shower.observables.readCoordinates(ids)
-                assert (obs_sel['id'] == ids).all()
-
-                o = obs_sel
-                sel = o.compress(amin(array([o['n1'], o['n3'], o['n4']]), 0) == N)
-
-                shower_results.append(len(sel))
-            ssel = reconstructions.readWhere('(min_n134 == N) & (low <= r) & (r < high)')
-            print sum(shower_results), len(ssel), len(ssel) / sum(shower_results)
-            efficiencies.append(len(ssel) / sum(shower_results))
-
-        plot(x, efficiencies, label=r'$N_{MIP} = %d' % N)
-
-    xlabel("Core distance [m]")
-    ylabel("Reconstruction efficiency")
-    title(r"$\theta = 22.5^\circ$")
-    legend()
-
-    utils.saveplot()
-
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
     imshow(H.T, extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
@@ -688,6 +594,15 @@ def plot_fsot_vs_lint_for_zenith(fsot, lint):
     title(r"$N_{MIP} \geq %d$" % min_N)
     utils.saveplot()
 
+    graph = GraphArtist()
+    graph.plot(x, rad2deg(f_y), mark=None)
+    graph.plot(x, rad2deg(l_y), mark=None, linestyle='gray')
+    graph.plot(x, rad2deg(f_y2), mark=None)
+    graph.plot(x, rad2deg(l_y2), mark=None, linestyle='gray')
+    graph.set_xlabel(r"Shower zenith angle [\si{\degree}]")
+    graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
+    artist.utils.save_graph(graph, dirname='plots')
+
 
 if __name__ == '__main__':
     # invalid values in arcsin will be ignored (nan handles the situation
@@ -699,12 +614,16 @@ if __name__ == '__main__':
     except NameError:
         data = tables.openFile('kascade.h5', 'r')
 
+    artist.utils.set_prefix("KAS-")
     utils.set_prefix("KAS-")
     do_reconstruction_plots(data, data.root.reconstructions)
     do_lint_comparison(data)
+    artist.utils.set_prefix("KAS-LINT-")
     utils.set_prefix("KAS-LINT-")
     do_reconstruction_plots(data, data.root.lint_reconstructions)
+    artist.utils.set_prefix("KAS-OFFSETS-")
     utils.set_prefix("KAS-OFFSETS-")
     do_reconstruction_plots(data, data.root.reconstructions_offsets)
+    artist.utils.set_prefix("KAS-LINT-OFFSETS-")
     utils.set_prefix("KAS-LINT-OFFSETS-")
     do_reconstruction_plots(data, data.root.lint_reconstructions_offsets)
