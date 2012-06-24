@@ -9,6 +9,9 @@ from sapphire.analysis import landau
 
 import utils
 
+from artist import GraphArtist
+import artist.utils
+
 
 RANGE_MAX = 40000
 N_BINS = 400
@@ -117,6 +120,15 @@ class ReconstructionEfficiency(object):
         plt.legend()
         utils.saveplot()
 
+        graph = GraphArtist('semilogy')
+        graph.histogram(n, bins * VNS, linestyle='gray')
+        self.artistplot_landau_and_gamma(graph, x, p_gamma, p_landau)
+        graph.set_xlabel(r"Pulse integral [\si{\volt\nano\second}]")
+        graph.set_ylabel("Count")
+        graph.set_xlimits(0, 30)
+        graph.set_ylimits(1e1, 1e4)
+        artist.utils.save_graph(graph, dirname='plots')
+
     def plot_spectrum_fit_chisq(self):
         global integrals
 
@@ -182,6 +194,25 @@ class ReconstructionEfficiency(object):
 
         plt.plot(x * VNS, gamma_trunc + landaus, label='gamma + landau/gauss')
 
+    def artistplot_landau_and_gamma(self, graph, x, p_gamma, p_landau):
+        gammas = self.gamma_func(x, *p_gamma)
+        gamma_trunc = np.where(x * VNS <= 21, gammas, 1e-99)
+
+        graph.plot(x * VNS, gamma_trunc, mark=None, linestyle='dashed')
+
+        landaus = self.scintillator.conv_landau_for_x(x, *p_landau)
+        graph.plot(x * VNS, landaus, mark=None, linestyle='dashdotted')
+
+        graph.plot(x * VNS, gamma_trunc + landaus, mark=None)
+
+    def artistplot_alt_landau_and_gamma(self, graph, x, p_gamma, p_landau):
+        gammas = self.gamma_func(x, *p_gamma)
+        gamma_trunc = np.where(x * VNS <= 21, gammas, 1e-99)
+
+        graph.plot(x * VNS, gamma_trunc, mark=None, linestyle='dashed,gray')
+
+        landaus = self.scintillator.conv_landau_for_x(x, *p_landau)
+        graph.plot(x * VNS, landaus, mark=None, linestyle='dashdotted,gray')
 
     def fit_gammas_to_data(self, x, y, p0):
         condition = (LOW <= x) & (x < 2000)
@@ -304,6 +335,18 @@ class ReconstructionEfficiency(object):
         plt.legend(loc='best')
         utils.saveplot()
 
+        graph = GraphArtist()
+        graph.plot(x2, self.p_detection(x2), mark=None)
+        graph.plot(x2, self.conv_p_detection(x2, *popt), mark=None,
+                   linestyle='dashed')
+        graph.plot(x, y, yerr=yerr, linestyle=None)
+        graph.set_xlabel(
+            r"Charged particle density [\si{\per\square\meter}]")
+        graph.set_ylabel("Detection probability")
+        graph.set_xlimits(min=0)
+        graph.set_ylimits(min=0)
+        artist.utils.save_graph(graph, dirname='plots')
+
     def plot_full_spectrum_fit_in_density_range(self, sel, popt, low, high):
         bins = np.linspace(0, RANGE_MAX, N_BINS + 1)
         n, bins = np.histogram(sel, bins=bins)
@@ -328,6 +371,16 @@ class ReconstructionEfficiency(object):
         suffix = suffix.replace('.', '_')
         utils.saveplot(suffix)
 
+        graph = GraphArtist('semilogy')
+        graph.histogram(n, bins * VNS, linestyle='gray')
+        self.artistplot_alt_landau_and_gamma(graph, x, p_gamma, p_landau)
+        graph.plot(x * VNS, y_charged, mark=None)
+        graph.set_xlabel(r"Pulse integral [\si{\volt\nano\second}]")
+        graph.set_ylabel("Count")
+        graph.set_xlimits(0, 30)
+        graph.set_ylimits(1e0, 1e4)
+        artist.utils.save_graph(graph, suffix, dirname='plots')
+
     p_detection = np.vectorize(lambda x: 1 - np.exp(-.5 * x) if x >= 0 else 0.)
 
     def conv_p_detection(self, x, sigma):
@@ -346,5 +399,6 @@ if __name__ == '__main__':
         data = tables.openFile('kascade.h5', 'r')
 
     utils.set_prefix('EFF-')
+    artist.utils.set_prefix('EFF-')
     efficiency = ReconstructionEfficiency(data)
     efficiency.main()
