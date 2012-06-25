@@ -371,6 +371,9 @@ class ReconstructionEfficiency(object):
         suffix = suffix.replace('.', '_')
         utils.saveplot(suffix)
 
+        n = np.where(n > 0, n, 1e-99)
+        y_charged = np.where(y_charged > 0, y_charged, 1e-99)
+
         graph = GraphArtist('semilogy')
         graph.histogram(n, bins * VNS, linestyle='gray')
         self.artistplot_alt_landau_and_gamma(graph, x, p_gamma, p_landau)
