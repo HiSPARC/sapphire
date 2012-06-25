@@ -374,7 +374,7 @@ class ReconstructionEfficiency(object):
         graph = GraphArtist('semilogy')
         graph.histogram(n, bins * VNS, linestyle='gray')
         self.artistplot_alt_landau_and_gamma(graph, x, p_gamma, p_landau)
-        graph.plot(x * VNS, y_charged, mark=None)
+        graph.histogram(y_charged, bins * VNS)
         graph.set_xlabel(r"Pulse integral [\si{\volt\nano\second}]")
         graph.set_ylabel("Count")
         graph.set_xlimits(0, 30)
