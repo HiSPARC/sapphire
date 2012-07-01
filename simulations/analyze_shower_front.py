@@ -115,7 +115,7 @@ def boxplot_core_distance_vs_time():
     #utils.title("Shower front timing structure")
     utils.saveplot()
 
-    graph = GraphArtist(width=r'.43\linewidth')
+    graph = GraphArtist()
     graph.plot(x, t50, mark=None)
     graph.shade_region(x, t25, t75)
     graph.set_xlabel(r"Core distance [\si{\meter}]")
@@ -160,7 +160,7 @@ def plot_front_passage():
 
     n, bins, patches = hist(t, bins=linspace(0, 30, 31), histtype='step')
 
-    graph = GraphArtist(width=r'.43\linewidth')
+    graph = GraphArtist()
     graph.histogram(n, bins)
     graph.set_xlabel(r"Arrival time [\si{\nano\second}]")
     graph.set_ylabel("Number of leptons")
