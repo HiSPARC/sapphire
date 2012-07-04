@@ -2,6 +2,7 @@ import tables
 
 from pylab import *
 
+from sapphire.analysis import landau
 from artist import GraphArtist
 
 
@@ -9,16 +10,37 @@ def plot_pulseheight_histogram(data):
     events = data.root.hisparc.cluster_kascade.station_601.events
     ph = events.col('pulseheights')
 
-    clf()
-    n, bins, patches = hist(ph[:, 0], bins=arange(0, 2001, 10),
-                            histtype='step')
-    yscale('log')
-    ylim(ymin=1e1)
+    s = landau.Scintillator()
+    mev_scale = 3.38 / 340
+    count_scale = 6e3 / .32
 
-    graph = GraphArtist('semilogy', width=r'.5\linewidth')
-    graph.histogram(n, bins)
-    graph.set_xlabel(r"Pulseheight [\adc{}]")
+    clf()
+    n, bins, patches = hist(ph[:, 0], bins=arange(0, 1501, 10),
+                            histtype='step')
+    x = linspace(0, 1500, 1500)
+    plot(x, s.conv_landau_for_x(x, mev_scale=mev_scale,
+                                count_scale=count_scale))
+    plot(x, count_scale * s.landau_pdf(x * mev_scale))
+    ylim(ymax=25000)
+    xlim(xmax=1500)
+
+    graph = GraphArtist()
+    n_trunc = where(n <= 100000, n, 100000)
+    graph.histogram(n_trunc, bins, linestyle='gray')
+    graph.add_pin('data', x=800, location='above right', use_arrow=True)
+    graph.plot(x, s.conv_landau_for_x(x, mev_scale=mev_scale,
+                                      count_scale=count_scale),
+               mark=None)
+    graph.add_pin('convolved Landau', x=450, location='above right',
+                  use_arrow=True)
+    graph.plot(x, count_scale * s.landau_pdf(x * mev_scale), mark=None,
+               linestyle='black')
+    graph.add_pin('Landau', x=380, location='above right', use_arrow=True)
+
+    graph.set_xlabel(r"Pulseheight [adc{}]")
     graph.set_ylabel(r"Number of events")
+    graph.set_xlimits(0, 1400)
+    graph.set_ylimits(0, 21000)
     graph.save("plots/plot_pulseheight_histogram")
 
 
