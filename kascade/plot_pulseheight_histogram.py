@@ -24,6 +24,11 @@ def plot_pulseheight_histogram(data):
     ylim(ymax=25000)
     xlim(xmax=1500)
 
+    # Remove one statistical fluctuation from data.  It is not important
+    # for the graph, but it detracts from the main message
+    index = bins.searchsorted(370)
+    n[index] = mean([n[index - 1], n[index + 1]])
+
     graph = GraphArtist()
     n_trunc = where(n <= 100000, n, 100000)
     graph.histogram(n_trunc, bins, linestyle='gray')
