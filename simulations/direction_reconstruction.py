@@ -703,8 +703,8 @@ def save_for_kascade_boxplot_core_distances_for_mips(group):
 def plot_detection_efficiency_vs_R_for_angles(N):
     figure()
     graph = GraphArtist()
-    locations = iter(['right', 'above left', 'below left'])
-    positions = iter([.15, .15, .15])
+    locations = iter(['right', 'left', 'below left'])
+    positions = iter([.18, .14, .15])
 
     bin_edges = linspace(0, 100, 20)
     x = (bin_edges[:-1] + bin_edges[1:]) / 2.
