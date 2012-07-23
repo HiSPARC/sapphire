@@ -86,9 +86,6 @@ class Master:
 
     def search_coincidences(self):
         if '/c_index' not in self.data and '/timestamps' not in self.data:
-            #c_index, timestamps = \
-            #    coincidences.search_coincidences(self.data,
-            #                                     self.station_groups)
             c_index, timestamps = [], []
             for id, station in enumerate(self.station_groups):
                 station = self.data.getNode(station)
@@ -198,9 +195,6 @@ class Master:
             process = ProcessEvents(self.data, station_group)
             offsets = process.determine_detector_timing_offsets()
             print "Offsets for station %d: %s" % (station_id, offsets)
-            # FIXME: ugly hack for 501
-            #if station_id == 0:
-            #    offsets = [0, 0, 0, 0]
             self.detector_offsets.append(offsets)
 
 
