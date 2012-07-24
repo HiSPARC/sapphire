@@ -3,6 +3,9 @@ import time
 
 import progressbar as pb
 
+from sapphire.analysis.core_reconstruction import CoreReconstruction, \
+                                                  PlotCoreReconstruction
+
 import artist
 
 
@@ -159,12 +162,88 @@ def plot_energy(data, sel_str):
     graph.save_as_pdf('preview')
 
 
+def reconstruct_shower_sizes(data, tcc):
+    reconstruction = KascadeCoreReconstruction(data, '/core',
+                                               overwrite=True)
+    reconstruction.reconstruct_core_positions(
+        '/hisparc/cluster_kascade/station_601', '/kascade', tcc)
+
+
+class KascadeCoreReconstruction(CoreReconstruction):
+    def reconstruct_core_positions(self, hisparc_group, kascade_group, tcc):
+        hisparc_group = self.data.getNode(hisparc_group)
+
+        hisparc_table = self.data.getNode(hisparc_group, 'events')
+        c_index = self.data.getNode(kascade_group, 'c_index')
+        kascade_table = self.data.getNode(kascade_group, 'events')
+
+        self.cluster = hisparc_group._v_attrs.cluster
+        self._store_cluster_with_results()
+
+        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                              pb.ETA()],
+                                     fd=sys.stderr)
+
+        for idx, tcc_value in progressbar(zip(c_index[:self.N], tcc)):
+            hisparc_event = hisparc_table[idx['h_idx']]
+            kascade_event = kascade_table[idx['k_idx']]
+
+            if tcc_value >= 10:
+                x, y, N = self.reconstruct_core_position(hisparc_event)
+                self.store_reconstructed_event(hisparc_event,
+                                               kascade_event, x, y, N)
+
+        self.results_table.flush()
+
+    def store_reconstructed_event(self, hisparc_event, kascade_event,
+                                  reconstructed_core_x,
+                                  reconstructed_core_y,
+                                  reconstructed_shower_size):
+        dst_row = self.results_table.row
+
+        dst_row['id'] = hisparc_event['event_id']
+        dst_row['station_id'] = 0
+        dst_row['t1'] = hisparc_event['t1']
+        dst_row['t2'] = hisparc_event['t2']
+        dst_row['t3'] = hisparc_event['t3']
+        dst_row['t4'] = hisparc_event['t4']
+        dst_row['n1'] = hisparc_event['n1']
+        dst_row['n2'] = hisparc_event['n2']
+        dst_row['n3'] = hisparc_event['n3']
+        dst_row['n4'] = hisparc_event['n4']
+        dst_row['reference_theta'] = kascade_event['zenith']
+        dst_row['reference_phi'] = kascade_event['azimuth']
+        dst_row['reference_core_pos'] = kascade_event['core_pos']
+        dst_row['reconstructed_core_pos'] = reconstructed_core_x, \
+                                            reconstructed_core_y
+        dst_row['reference_shower_size'] = kascade_event['Num_e']
+        dst_row['reconstructed_shower_size'] = reconstructed_shower_size
+        dst_row['min_n134'] = min(hisparc_event['n1'],
+                                  hisparc_event['n3'],
+                                  hisparc_event['n4'])
+        dst_row.append()
+
+    def get_events_from_coincidence(self, coincidence):
+        """Fake coincidences"""
+        events = [coincidence]
+        return events
+
+    def _get_station_from_event(self, event):
+        return self.cluster.stations[0]
+
+    def _station_has_triggered(self, event):
+        return True
+
+
 if __name__ == '__main__':
     if 'data' not in globals():
         data = tables.openFile('kascade.h5', 'a')
 
     tcc = get_tcc_values(data, force_new=False)
+    reconstruct_shower_sizes(data, tcc)
+    core = data.root.core
+
     #plot_core_positions(data)
     #scatter_core_positions(data)
-    plot_energy(data, 'tcc >= 10')
+    #plot_energy(data, 'tcc >= 10')
     #plot_energy(data, 'tcc < 10')
