@@ -94,8 +94,8 @@ def do_reconstruction_plots(data):
     plot_uncertainty_binsize(group)
     plot_uncertainty_zenith_angular_distance(group)
 
-    #plot_phi_reconstruction_results_for_MIP(group, 1)
-    #plot_phi_reconstruction_results_for_MIP(group, 2)
+    plot_phi_reconstruction_results_for_MIP(group, 1)
+    plot_phi_reconstruction_results_for_MIP(group, 2)
     boxplot_theta_reconstruction_results_for_MIP(group, 1)
     boxplot_theta_reconstruction_results_for_MIP(group, 2)
     boxplot_phi_reconstruction_results_for_MIP(group, 1)
@@ -488,8 +488,19 @@ def plot_phi_reconstruction_results_for_MIP(group, N):
     xlabel(r"$\phi_{simulated}$ [deg]")
     ylabel(r"$\phi_{reconstructed}$ [deg]")
     #title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
-
     utils.saveplot(N)
+
+    graph = artist.GraphArtist()
+    bins = linspace(-180, 180, 73)
+    H, x_edges, y_edges = histogram2d(rad2deg(sim_phi), rad2deg(r_phi),
+                                      bins=bins)
+    graph.histogram2d(H, x_edges, y_edges, type='reverse_bw')
+    graph.set_xlabel(r'$\phi_\mathrm{sim}$ [\si{\degree}]')
+    graph.set_ylabel(r'$\phi_\mathrm{rec}$ [\si{\degree}]')
+    graph.set_xticks(range(-180, 181, 90))
+    graph.set_yticks(range(-180, 181, 90))
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 
 def boxplot_theta_reconstruction_results_for_MIP(group, N):
     group = group.E_1PeV
