@@ -127,7 +127,7 @@ def plot_R():
 
 
 def plot_arrival_times():
-    graph = GraphArtist(width=r'.45\linewidth')
+    graph = GraphArtist()
 
     figure()
     sim = data.root.showers.E_1PeV.zenith_22_5
@@ -157,5 +157,5 @@ if __name__ == '__main__':
     if not 'data' in globals():
         data = tables.openFile('master-ch4v2.h5')
 
-    #plot_R()
+    plot_R()
     plot_arrival_times()
