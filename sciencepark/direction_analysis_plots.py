@@ -2,7 +2,7 @@ import itertools
 
 import tables
 from pylab import *
-from scipy.stats import scoreatpercentile
+from scipy.stats import scoreatpercentile, chisquare
 from scipy.optimize import curve_fit
 
 from sapphire import clusters
@@ -36,11 +36,11 @@ def main(data):
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
     #plot_N_vs_R(data)
-    plot_fav_single_vs_cluster(data)
-    plot_fav_single_vs_single(data)
-    plot_fav_uncertainty_single_vs_cluster(data)
-    plot_fav_uncertainty_single_vs_single(data)
-    #hist_fav_single_stations(data)
+    #plot_fav_single_vs_cluster(data)
+    #plot_fav_single_vs_single(data)
+    #plot_fav_uncertainty_single_vs_cluster(data)
+    #plot_fav_uncertainty_single_vs_single(data)
+    hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -513,7 +513,15 @@ def hist_fav_single_stations(data):
         theta = reconstructions.readWhere(query, field='reconstructed_theta')
 
         subplot(2, 3, n)
-        hist(rad2deg(phi), bins=linspace(-180, 180, 21), histtype='step')
+        N, bins, patches = hist(rad2deg(phi), bins=linspace(-180, 180, 21),
+                                histtype='step')
+        x = (bins[:-1] + bins[1:]) / 2
+        f = lambda x, a: a
+        popt, pcov = curve_fit(f, x, N, sigma=sqrt(N))
+        chi2 = chisquare(N, popt[0], ddof=0)
+        print station, popt, pcov, chi2
+
+        axhline(popt[0])
         xlabel(r"$\phi$")
         legend([station], loc='lower right')
         locator_params(tight=True, nbins=4)
@@ -532,7 +540,7 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('newlarge.h5')
+        data = tables.openFile('month-single.h5')
 
     utils.set_prefix("SP-DIR-")
     main(data)
