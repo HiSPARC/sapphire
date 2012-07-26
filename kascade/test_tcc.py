@@ -39,7 +39,7 @@ def get_tcc_values(data, force_new=False):
 def calculate_tcc(event):
     n = array([event[u] for u in 'n1', 'n2', 'n3', 'n4'])
     n = where(n < .5, 0, n)
-    if not (n >= 0).all():
+    if not (n > 0).sum() >= 2:
         return -999
     
     i_max = len(n)
