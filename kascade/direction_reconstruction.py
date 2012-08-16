@@ -50,10 +50,10 @@ def do_reconstruction_plots(data, table):
     plot_uncertainty_zenith(table)
     plot_uncertainty_core_distance(table)
 
-    #plot_phi_reconstruction_results_for_MIP(table, 1)
-    #plot_phi_reconstruction_results_for_MIP(table, 2)
-    #plot_theta_reconstruction_results_for_MIP(table, 1)
-    #plot_theta_reconstruction_results_for_MIP(table, 2)
+    plot_phi_reconstruction_results_for_MIP(table, 1)
+    plot_phi_reconstruction_results_for_MIP(table, 2)
+    plot_theta_reconstruction_results_for_MIP(table, 1)
+    plot_theta_reconstruction_results_for_MIP(table, 2)
     boxplot_theta_reconstruction_results_for_MIP(table, 1)
     boxplot_theta_reconstruction_results_for_MIP(table, 2)
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
@@ -335,6 +335,16 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
 
     utils.saveplot(N)
 
+    graph = artist.GraphArtist()
+    bins = linspace(-180, 180, 73)
+    H, x_edges, y_edges = histogram2d(rad2deg(sim_phi), rad2deg(r_phi),
+                                      bins=bins)
+    graph.histogram2d(H, x_edges, y_edges, type='reverse_bw')
+    graph.set_xlabel(r'$\phi_K$ [\si{\degree}]')
+    graph.set_ylabel(r'$\phi_H$ [\si{\degree}]')
+    graph.save_as_pdf('preview')
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 def plot_theta_reconstruction_results_for_MIP(table, N):
     events = table.readWhere('min_n134 >= N')
     sim_theta = events['reference_theta']
@@ -349,6 +359,16 @@ def plot_theta_reconstruction_results_for_MIP(table, N):
     title(r"$N_{MIP} \geq %d$" % N)
 
     utils.saveplot(N)
+
+    graph = artist.GraphArtist()
+    bins = linspace(0, 40, 41)
+    H, x_edges, y_edges = histogram2d(rad2deg(sim_theta), rad2deg(r_theta),
+                                      bins=bins)
+    graph.histogram2d(H, x_edges, y_edges, type='reverse_bw')
+    graph.set_xlabel(r'$\theta_K$ [\si{\degree}]')
+    graph.set_ylabel(r'$\theta_H$ [\si{\degree}]')
+    graph.save_as_pdf('preview')
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def boxplot_theta_reconstruction_results_for_MIP(table, N):
     figure()
