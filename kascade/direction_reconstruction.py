@@ -610,7 +610,7 @@ def boxplot_core_distances_for_mips(table):
     graph.show_xticklabels_for_all([(0, 0), (0, 1), (0, 2)])
     graph.show_yticklabels(0, 0)
 
-    artist.utils.save_graph(graph, suffix=N, dirname='plots')
+    artist.utils.save_graph(graph, dirname='plots')
 
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
