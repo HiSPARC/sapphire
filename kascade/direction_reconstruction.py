@@ -19,7 +19,7 @@ from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruc
 
 from myshowerfront import *
 
-from artist import GraphArtist
+from artist import GraphArtist, MultiPlot
 import artist.utils
 
 
@@ -28,7 +28,6 @@ DATADIR = '../simulations/plots'
 USE_TEX = True
 
 TIMING_ERROR = 2.4
-#TIMING_ERROR = 7
 
 # For matplotlib plots
 if USE_TEX:
@@ -58,8 +57,8 @@ def do_reconstruction_plots(data, table):
     boxplot_theta_reconstruction_results_for_MIP(table, 2)
     boxplot_phi_reconstruction_results_for_MIP(table, 1)
     boxplot_phi_reconstruction_results_for_MIP(table, 2)
-    #boxplot_arrival_times(table, 1)
-    #boxplot_core_distances_for_mips(table)
+    boxplot_arrival_times(table, 1)
+    boxplot_core_distances_for_mips(table)
 
 def do_lint_comparison(data):
     fsot = data.root.reconstructions_offsets
@@ -342,7 +341,6 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
     graph.histogram2d(H, x_edges, y_edges, type='reverse_bw')
     graph.set_xlabel(r'$\phi_K$ [\si{\degree}]')
     graph.set_ylabel(r'$\phi_H$ [\si{\degree}]')
-    graph.save_as_pdf('preview')
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def plot_theta_reconstruction_results_for_MIP(table, N):
@@ -367,7 +365,6 @@ def plot_theta_reconstruction_results_for_MIP(table, N):
     graph.histogram2d(H, x_edges, y_edges, type='reverse_bw')
     graph.set_xlabel(r'$\theta_K$ [\si{\degree}]')
     graph.set_ylabel(r'$\theta_H$ [\si{\degree}]')
-    graph.save_as_pdf('preview')
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def boxplot_theta_reconstruction_results_for_MIP(table, N):
@@ -512,6 +509,35 @@ def boxplot_arrival_times(table, N):
     fig.set_size_inches(5, 2.67)
     utils.saveplot(N)
 
+    sx = sx.compress(sx < 80)
+    st25 = st25[:len(sx)]
+    st50 = st50[:len(sx)]
+    st75 = st75[:len(sx)]
+
+    graph = MultiPlot(1, 3, width=r'.3\linewidth', height=r'.4\linewidth')
+
+    graph.shade_region(0, 0, sx, st25, st75)
+    graph.plot(0, 0, sx, st50, linestyle=None)
+    graph.plot(0, 2, sx, st50)
+    graph.set_label(0, 0, 'simulation', 'upper left')
+
+    graph.shade_region(0, 1, x, t25, t75)
+    graph.plot(0, 1, x, t50, linestyle=None, mark='*')
+    graph.plot(0, 2, x, t50, mark='*')
+    graph.set_label(0, 1, 'experiment', 'upper left')
+
+    graph.set_label(0, 2, 'sim + exp', 'upper left')
+
+    graph.set_ylimits(0, 15)
+    graph.set_xlimits(0, 80)
+    graph.set_xlabel("Core distance [\si{\meter}]")
+    graph.set_ylabel(r"Arrival time difference $|t_2 - t_1|$ [\si{\nano\second}]")
+    graph.show_xticklabels_for_all([(0, 0), (0, 1), (0, 2)])
+    graph.set_xticklabels_position(0, 1, 'right')
+    graph.show_yticklabels(0, 0)
+
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 def boxplot_core_distances_for_mips(table):
     THETA = deg2rad(22.5)
     DTHETA = deg2rad(1.)
@@ -563,6 +589,28 @@ def boxplot_core_distances_for_mips(table):
 
     fig.set_size_inches(5, 2.67)
     utils.saveplot()
+
+    graph = MultiPlot(1, 3, width=r'.3\linewidth', height=r'.4\linewidth')
+
+    graph.shade_region(0, 0, sx, sr25, sr75)
+    graph.plot(0, 0, sx, sr50, linestyle=None)
+    graph.plot(0, 2, sx, sr50)
+    graph.set_label(0, 0, 'simulation')
+
+    graph.shade_region(0, 1, x, r25_list, r75_list)
+    graph.plot(0, 1, x, r50_list, linestyle=None, mark='*')
+    graph.plot(0, 2, x, r50_list, mark='*')
+    graph.set_label(0, 1, 'experiment')
+
+    graph.set_label(0, 2, 'sim + exp')
+
+    graph.set_ylimits(0, 50)
+    graph.set_xlabel("Minimum number of particles $\pm %.1f$" % DN)
+    graph.set_ylabel("Core distance [\si{\meter}]")
+    graph.show_xticklabels_for_all([(0, 0), (0, 1), (0, 2)])
+    graph.show_yticklabels(0, 0)
+
+    artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
@@ -616,9 +664,9 @@ def plot_fsot_vs_lint_for_zenith(fsot, lint):
 
     graph = GraphArtist()
     graph.plot(x, rad2deg(f_y), mark=None)
-    graph.plot(x, rad2deg(l_y), mark=None, linestyle='gray')
+    graph.plot(x, rad2deg(l_y), mark=None, linestyle='dashed')
     graph.plot(x, rad2deg(f_y2), mark=None)
-    graph.plot(x, rad2deg(l_y2), mark=None, linestyle='gray')
+    graph.plot(x, rad2deg(l_y2), mark=None, linestyle='dashed')
     graph.set_xlabel(r"Shower zenith angle [\si{\degree}]")
     graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
     artist.utils.save_graph(graph, dirname='plots')
