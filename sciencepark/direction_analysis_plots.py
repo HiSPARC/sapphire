@@ -61,6 +61,7 @@ def artistplot_N_vs_R():
 
     graph.set_xlabel(r"Distance [\si{\meter}]")
     graph.set_ylabel("Number of coincidences")
+    graph.set_xlimits(min=0)
     graph.set_ylimits(min=0)
 
     artist.utils.save_graph(graph, dirname='plots')
