@@ -40,10 +40,10 @@ def main(data):
     #hist_theta_single_stations(data)
     #plot_N_vs_R(data)
     #plot_fav_single_vs_cluster(data)
-    #plot_fav_single_vs_single(data)
+    plot_fav_single_vs_single(data)
     #plot_fav_uncertainty_single_vs_cluster(data)
     #plot_fav_uncertainty_single_vs_single(data)
-    hist_fav_single_stations(data)
+#    hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -237,7 +237,7 @@ def plot_N_vs_R(data):
     #ylim(0, 150000)
     ylim(0, 500000)
     xlim(0, 500)
-            
+
     xlabel("Distance [m]")
     ylabel("Number of coincidences")
 
@@ -276,6 +276,8 @@ def plot_fav_single_vs_single(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
 
+    graph = artist.MultiPlot(3, 3, width=r'.35\linewidth')
+
     figure()
     for i in range(len(cluster)):
         for j in range(len(cluster)):
@@ -290,10 +292,22 @@ def plot_fav_single_vs_single(data):
                 plot(rad2deg(phi_station1), rad2deg(phi_station2), ',')
                 xlim(-180, 180)
                 ylim(-180, 180)
+
+                bins = linspace(-180, 180, 37)
+                H, x_edges, y_edges = histogram2d(rad2deg(phi_station1),
+                                                  rad2deg(phi_station2),
+                                                  bins=bins)
+                graph.histogram2d(j, i, H, x_edges, y_edges, 'reverse_bw')
             elif i < j:
                 plot(rad2deg(theta_station1), rad2deg(theta_station2), ',')
                 xlim(0, 45)
                 ylim(0, 45)
+
+                bins = linspace(0, 45, 46)
+                H, x_edges, y_edges = histogram2d(rad2deg(theta_station1),
+                                                  rad2deg(theta_station2),
+                                                  bins=bins)
+                graph.histogram2d(j, i, H, x_edges, y_edges, 'reverse_bw')
 
             if j == 2:
                 xlabel(station1)
@@ -308,7 +322,32 @@ def plot_fav_single_vs_single(data):
             #xlim(0, 45)
             #ylim(0, 45)
             #locator_params(tight=True, nbins=4)
+
     utils.saveplot()
+
+    graph.set_empty_for_all([(0, 0), (1, 1), (2, 2)])
+
+    graph.show_xticklabels_for_all([(0, 1), (0, 2), (2, 0), (2, 1)])
+    graph.set_xticks(0, 1, range(-180, 181, 90))
+    graph.set_xticks(0, 2, range(-90, 181, 90))
+    graph.show_yticklabels_for_all([(0, 2), (1, 2), (1, 0), (2, 0)])
+    graph.set_yticks(1, 2, range(-180, 181, 90))
+    graph.set_yticks(0, 2, range(-90, 181, 90))
+
+    graph.set_subplot_xlabel(0, 1, r'$\phi [\si{\degree}]$')
+    graph.set_subplot_xlabel(0, 2, r'$\phi [\si{\degree}]$')
+    graph.set_subplot_ylabel(0, 2, r'$\phi [\si{\degree}]$')
+    graph.set_subplot_ylabel(1, 2, r'$\phi [\si{\degree}]$')
+
+    graph.set_subplot_xlabel(2, 0, r'$\theta [\si{\degree}]$')
+    graph.set_subplot_xlabel(2, 1, r'$\theta [\si{\degree}]$')
+    graph.set_subplot_ylabel(1, 0, r'$\theta [\si{\degree}]$')
+    graph.set_subplot_ylabel(2, 0, r'$\theta [\si{\degree}]$')
+
+    for i, station in enumerate(cluster):
+        graph.set_label(i, i, cluster[i], 'center')
+
+    artist.utils.save_graph(graph, dirname='plots')
 
 def plot_fav_uncertainty_single_vs_cluster(data):
     cluster = [501, 503, 506]
@@ -572,7 +611,11 @@ def hist_fav_single_stations(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('month-single.h5')
+        # For single station plots
+        #data = tables.openFile('month-single.h5')
+        # For station / cluster plots
+        #data = tables.openFile('new.h5')
+        data = tables.openFile('newlarge.h5')
 
     artist.utils.set_prefix("SP-DIR-")
     utils.set_prefix("SP-DIR-")
