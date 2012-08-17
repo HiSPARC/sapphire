@@ -39,12 +39,12 @@ def main(data):
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
 #    plot_N_vs_R(data)
-    artistplot_N_vs_R()
-    plot_fav_single_vs_cluster(data)
-    plot_fav_single_vs_single(data)
-    plot_fav_uncertainty_single_vs_cluster(data)
-    plot_fav_uncertainty_single_vs_single(data)
-#    hist_fav_single_stations(data)
+#    artistplot_N_vs_R()
+#    plot_fav_single_vs_cluster(data)
+#    plot_fav_single_vs_single(data)
+#    plot_fav_uncertainty_single_vs_cluster(data)
+#    plot_fav_uncertainty_single_vs_single(data)
+    hist_fav_single_stations(data)
 
 def artistplot_N_vs_R():
     data = genfromtxt('plots/SP-DIR-plot_N_vs_R-data.txt')
@@ -705,18 +705,18 @@ def hist_fav_single_stations(data):
     subplots_adjust(wspace=.4)
     utils.saveplot()
 
-    graph1.set_ylimits(0, 1500)
-    graph1.set_xlimits(-180, 180)
+    graph1.set_ylimits_for_all(None, 0, 1500)
+    graph1.set_xlimits_for_all(None, -180, 180)
     graph1.show_yticklabels(0, 0)
     graph1.show_xticklabels_for_all()
     graph1.set_xticklabels_position(0, 1, 'right')
-    graph1.set_xticks(range(-180, 181, 90))
+    graph1.set_xticks_for_all(None, range(-180, 181, 90))
     graph1.set_xlabel(r'$\phi [\si{\degree}]$')
     graph1.set_ylabel('Count')
     artist.utils.save_graph(graph1, suffix='phi', dirname='plots')
 
-    graph2.set_ylimits(0, 2000)
-    graph2.set_xlimits(0, 45)
+    graph2.set_ylimits_for_all(None, 0, 2000)
+    graph2.set_xlimits_for_all(None, 0, 45)
     graph2.show_yticklabels(0, 0)
     graph2.show_xticklabels_for_all()
     graph2.set_xticklabels_position(0, 1, 'right')
@@ -728,10 +728,10 @@ def hist_fav_single_stations(data):
 if __name__ == '__main__':
     if 'data' not in globals():
         # For single station plots
-        #data = tables.openFile('month-single.h5')
+        data = tables.openFile('month-single.h5')
         # For station / cluster plots
         #data = tables.openFile('new.h5')
-        data = tables.openFile('newlarge.h5')
+        #data = tables.openFile('newlarge.h5')
         # For N vs R plot
         #data = tables.openFile('master-large.h5')
 
