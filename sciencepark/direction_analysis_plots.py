@@ -38,12 +38,32 @@ def main(data):
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
-    plot_N_vs_R(data)
+#    plot_N_vs_R(data)
+    artistplot_N_vs_R()
 #    plot_fav_single_vs_cluster(data)
 #    plot_fav_single_vs_single(data)
 #    plot_fav_uncertainty_single_vs_cluster(data)
 #    plot_fav_uncertainty_single_vs_single(data)
 #    hist_fav_single_stations(data)
+
+def artistplot_N_vs_R():
+    data = genfromtxt('plots/SP-DIR-plot_N_vs_R-data.txt')
+    R = data[0, :]
+    N = data[1, :]
+
+    data = genfromtxt('plots/SP-DIR-plot_N_vs_R-fit.txt')
+    Rfit = data[0, :]
+    Nfit = data[1, :]
+
+    graph = artist.GraphArtist()
+    graph.plot(R, N, linestyle=None)
+    graph.plot(Rfit, Nfit, mark=None)
+
+    graph.set_xlabel(r"Distance [\si{\meter}]")
+    graph.set_ylabel("Number of coincidences")
+    graph.set_ylimits(min=0)
+
+    artist.utils.save_graph(graph, dirname='plots')
 
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
@@ -704,10 +724,10 @@ if __name__ == '__main__':
         # For single station plots
         #data = tables.openFile('month-single.h5')
         # For station / cluster plots
-        #data = tables.openFile('new.h5')
+        data = tables.openFile('new.h5')
         #data = tables.openFile('newlarge.h5')
         # For N vs R plot
-        data = tables.openFile('master-large.h5')
+        #data = tables.openFile('master-large.h5')
 
     artist.utils.set_prefix("SP-DIR-")
     utils.set_prefix("SP-DIR-")
