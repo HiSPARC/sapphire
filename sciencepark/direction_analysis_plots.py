@@ -333,6 +333,8 @@ def plot_fav_single_vs_single(data):
                                                   rad2deg(phi_station2),
                                                   bins=bins)
                 graph.histogram2d(j, i, H, x_edges, y_edges, 'reverse_bw')
+                graph.set_label(j, i, r'$\phi$', 'upper left',
+                                style='fill=white')
             elif i < j:
                 plot(rad2deg(theta_station1), rad2deg(theta_station2), ',')
                 xlim(0, 45)
@@ -343,6 +345,8 @@ def plot_fav_single_vs_single(data):
                                                   rad2deg(theta_station2),
                                                   bins=bins)
                 graph.histogram2d(j, i, H, x_edges, y_edges, 'reverse_bw')
+                graph.set_label(j, i, r'$\theta$', 'upper left',
+                                style='fill=white')
 
             if j == 2:
                 xlabel(station1)
@@ -369,15 +373,8 @@ def plot_fav_single_vs_single(data):
     graph.set_yticks(1, 2, range(-180, 181, 90))
     graph.set_yticks(0, 2, range(-90, 181, 90))
 
-    graph.set_subplot_xlabel(0, 1, r'$\phi [\si{\degree}]$')
-    graph.set_subplot_xlabel(0, 2, r'$\phi [\si{\degree}]$')
-    graph.set_subplot_ylabel(0, 2, r'$\phi [\si{\degree}]$')
-    graph.set_subplot_ylabel(1, 2, r'$\phi [\si{\degree}]$')
-
-    graph.set_subplot_xlabel(2, 0, r'$\theta [\si{\degree}]$')
-    graph.set_subplot_xlabel(2, 1, r'$\theta [\si{\degree}]$')
-    graph.set_subplot_ylabel(1, 0, r'$\theta [\si{\degree}]$')
-    graph.set_subplot_ylabel(2, 0, r'$\theta [\si{\degree}]$')
+    graph.set_xlabel(r"Shower angle [\si{\degree}]")
+    graph.set_ylabel(r"Shower angle [\si{\degree}]")
 
     for i, station in enumerate(cluster):
         graph.set_label(i, i, cluster[i], 'center')
