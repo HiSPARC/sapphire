@@ -39,7 +39,7 @@ def main(data):
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
     #plot_N_vs_R(data)
-    #plot_fav_single_vs_cluster(data)
+    plot_fav_single_vs_cluster(data)
     plot_fav_single_vs_single(data)
     #plot_fav_uncertainty_single_vs_cluster(data)
     plot_fav_uncertainty_single_vs_single(data)
@@ -247,6 +247,9 @@ def plot_fav_single_vs_cluster(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
 
+    graph1 = artist.MultiPlot(1, 3, width=r'.35\linewidth')
+    graph2 = artist.MultiPlot(1, 3, width=r'.35\linewidth')
+
     figure()
     for n, station in enumerate(cluster, 1):
         theta_station, phi_station, theta_cluster, phi_cluster = \
@@ -261,6 +264,13 @@ def plot_fav_single_vs_cluster(data):
         if n == 1:
             ylabel(r"$\phi_{\{%s\}}$" % ','.join(cluster_str))
 
+        bins = linspace(-180, 180, 37)
+        H, x_edges, y_edges = histogram2d(rad2deg(phi_station),
+                                          rad2deg(phi_cluster),
+                                          bins=bins)
+        graph1.histogram2d(0, n - 1, H, x_edges, y_edges, 'reverse_bw')
+        graph1.set_label(0, n - 1, station, 'upper left', style='fill=white')
+
         subplot(2, 3, n + 3)
         plot(rad2deg(theta_station), rad2deg(theta_cluster), ',')
         xlabel(r"$\theta_{%d}$" % station)
@@ -269,8 +279,33 @@ def plot_fav_single_vs_cluster(data):
         locator_params(tight=True, nbins=4)
         if n == 1:
             ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
+
+        bins = linspace(0, 45, 46)
+        H, x_edges, y_edges = histogram2d(rad2deg(theta_station),
+                                          rad2deg(theta_cluster),
+                                          bins=bins)
+        graph2.histogram2d(0, n - 1, H, x_edges, y_edges, 'reverse_bw')
+        graph2.set_label(0, n - 1, station, 'upper left', style='fill=white')
+
     subplots_adjust(wspace=.4, hspace=.4)
     utils.saveplot()
+
+    graph1.set_xticks_for_all(None, range(-180, 181, 90))
+    graph1.set_yticks_for_all(None, range(-180, 181, 90))
+    graph1.show_xticklabels_for_all(None)
+    graph1.show_yticklabels(0, 0)
+    graph1.set_xticklabels_position(0, 1, 'right')
+    graph1.set_xlabel(r"Azimuthal angle (station) [\si{\degree}]")
+    graph1.set_ylabel(r"Azimuthal angle (cluster) [\si{\degree}]")
+
+    graph2.show_xticklabels_for_all(None)
+    graph2.show_yticklabels(0, 0)
+    graph2.set_xticklabels_position(0, 1, 'right')
+    graph2.set_xlabel(r"Zenith angle (station) [\si{\degree}]")
+    graph2.set_ylabel(r"Zenith angle (cluster) [\si{\degree}]")
+
+    artist.utils.save_graph(graph1, suffix='phi', dirname='plots')
+    artist.utils.save_graph(graph2, suffix='theta', dirname='plots')
 
 def plot_fav_single_vs_single(data):
     cluster = [501, 503, 506]
