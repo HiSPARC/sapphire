@@ -41,7 +41,7 @@ def main(data):
     #plot_N_vs_R(data)
     plot_fav_single_vs_cluster(data)
     plot_fav_single_vs_single(data)
-    #plot_fav_uncertainty_single_vs_cluster(data)
+    plot_fav_uncertainty_single_vs_cluster(data)
     plot_fav_uncertainty_single_vs_single(data)
 #    hist_fav_single_stations(data)
 
@@ -389,6 +389,8 @@ def plot_fav_uncertainty_single_vs_cluster(data):
     cluster_str = [str(u) for u in cluster]
     cluster_ids = [0, 2, 5]
 
+    graph = artist.MultiPlot(2, 3, width=r'.35\linewidth')
+
     figure()
     for n, station in enumerate(cluster, 1):
         theta_station, phi_station, theta_cluster, phi_cluster = \
@@ -434,6 +436,10 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         ylim(0, 100)
         locator_params(tight=True, nbins=4)
 
+        graph.plot(0, n - 1, rad2deg(x), rad2deg(y), linestyle=None)
+        graph.plot(0, n - 1, rad2deg(ex), rad2deg(ephi), mark=None)
+        graph.set_label(0, n - 1, r'$\phi$, %d' % station)
+
         subplot(2, 3, n + 3)
         plot(rad2deg(x), rad2deg(y2), 'o')
         plot(rad2deg(ex), rad2deg(etheta))
@@ -443,8 +449,24 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         #ylabel(r"$\theta_{\{%s\}}$" % ','.join(cluster_str))
         ylim(0, 15)
         locator_params(tight=True, nbins=4)
+
+        graph.plot(1, n - 1, rad2deg(x), rad2deg(y2), linestyle=None)
+        graph.plot(1, n - 1, rad2deg(ex), rad2deg(etheta), mark=None)
+        graph.set_label(1, n - 1, r'$\theta$, %d' % station)
+
     subplots_adjust(wspace=.3, hspace=.3)
     utils.saveplot()
+
+    graph.set_xlimits_for_all(None, 0, 45)
+    graph.set_ylimits_for_all([(0, 0), (0, 1), (0, 2)], 0, 100)
+    graph.set_ylimits_for_all([(1, 0), (1, 1), (1, 2)], 0, 15)
+    graph.show_xticklabels_for_all([(1, 0), (0, 1), (1, 2)])
+    graph.show_yticklabels_for_all([(0, 2), (1, 0)])
+
+    graph.set_xlabel(r"Shower zenith angle [\si{\degree}]")
+    graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
+
+    artist.utils.save_graph(graph, dirname='plots')
 
 def plot_fav_uncertainty_single_vs_single(data):
     cluster = [501, 503, 506]
