@@ -711,7 +711,7 @@ def hist_fav_single_stations(data):
     graph1.show_xticklabels_for_all()
     graph1.set_xticklabels_position(0, 1, 'right')
     graph1.set_xticks_for_all(None, range(-180, 181, 90))
-    graph1.set_xlabel(r'$\phi [\si{\degree}]$')
+    graph1.set_xlabel(r'Shower azimuthal angle [\si{\degree}]')
     graph1.set_ylabel('Count')
     artist.utils.save_graph(graph1, suffix='phi', dirname='plots')
 
@@ -720,7 +720,7 @@ def hist_fav_single_stations(data):
     graph2.show_yticklabels(0, 0)
     graph2.show_xticklabels_for_all()
     graph2.set_xticklabels_position(0, 1, 'right')
-    graph2.set_xlabel(r'$\theta [\si{\degree}]$')
+    graph2.set_xlabel(r'Shower zenith angle [\si{\degree}]')
     graph2.set_ylabel('Count')
     artist.utils.save_graph(graph2, suffix='theta', dirname='plots')
 
