@@ -10,6 +10,9 @@ from sapphire.analysis.direction_reconstruction import DirectionReconstruction
 from sapphire.simulations.ldf import KascadeLdf
 import utils
 
+import artist
+import artist.utils
+
 
 STATION_TIMING_ERR = 2.4
 CLUSTER_TIMING_ERR = 5.5
@@ -506,6 +509,9 @@ def calc_theta_error_for_station_station(theta, station1, station2):
 def hist_fav_single_stations(data):
     reconstructions = data.root.reconstructions.reconstructions
 
+    graph1 = artist.MultiPlot(1, 3, width=r'.35\linewidth')
+    graph2 = artist.MultiPlot(1, 3, width=r'.35\linewidth')
+
     figure()
     for n, station in enumerate([501, 503, 506], 1):
         query = '(N == 1) & s%d' % station
@@ -527,20 +533,47 @@ def hist_fav_single_stations(data):
         locator_params(tight=True, nbins=4)
         axis('auto')
 
+        graph1.histogram(0, n - 1, N, bins)
+        graph1.set_label(0, n - 1, station)
+
         subplot(2, 3, n + 3)
-        hist(rad2deg(theta), bins=linspace(0, 45, 21), histtype='step')
+        N, bins, patches = hist(rad2deg(theta), bins=linspace(0, 45, 21),
+                                histtype='step')
         xlabel(r"$\theta$")
         legend([station], loc='lower right')
         locator_params(tight=True, nbins=4)
         axis('auto')
 
+        graph2.histogram(0, n - 1, N, bins)
+        graph2.set_label(0, n - 1, station)
+
     subplots_adjust(wspace=.4)
     utils.saveplot()
+
+    graph1.set_ylimits(0, 1500)
+    graph1.set_xlimits(-180, 180)
+    graph1.show_yticklabels(0, 0)
+    graph1.show_xticklabels_for_all()
+    graph1.set_xticklabels_position(0, 1, 'right')
+    graph1.set_xticks(range(-180, 181, 90))
+    graph1.set_xlabel(r'$\phi [\si{\degree}]$')
+    graph1.set_ylabel('Count')
+    artist.utils.save_graph(graph1, suffix='phi', dirname='plots')
+
+    graph2.set_ylimits(0, 2000)
+    graph2.set_xlimits(0, 45)
+    graph2.show_yticklabels(0, 0)
+    graph2.show_xticklabels_for_all()
+    graph2.set_xticklabels_position(0, 1, 'right')
+    graph2.set_xlabel(r'$\theta [\si{\degree}]$')
+    graph2.set_ylabel('Count')
+    artist.utils.save_graph(graph2, suffix='theta', dirname='plots')
 
 
 if __name__ == '__main__':
     if 'data' not in globals():
         data = tables.openFile('month-single.h5')
 
+    artist.utils.set_prefix("SP-DIR-")
     utils.set_prefix("SP-DIR-")
     main(data)
