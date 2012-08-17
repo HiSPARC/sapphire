@@ -42,7 +42,7 @@ def main(data):
     #plot_fav_single_vs_cluster(data)
     plot_fav_single_vs_single(data)
     #plot_fav_uncertainty_single_vs_cluster(data)
-    #plot_fav_uncertainty_single_vs_single(data)
+    plot_fav_uncertainty_single_vs_single(data)
 #    hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
@@ -415,6 +415,8 @@ def plot_fav_uncertainty_single_vs_single(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
 
+    graph = artist.MultiPlot(3, 3, width=r'.35\linewidth')
+
     figure()
     for i in range(len(cluster)):
         for j in range(len(cluster)):
@@ -458,10 +460,15 @@ def plot_fav_uncertainty_single_vs_single(data):
                 plot(rad2deg(x), rad2deg(y), 'o')
                 plot(rad2deg(ex), rad2deg(ephi))
                 ylim(0, 100)
+
+                graph.plot(j, i, rad2deg(x), rad2deg(y), linestyle=None)
+                graph.plot(j, i, rad2deg(ex), rad2deg(ephi), mark=None)
             elif i < j:
                 plot(rad2deg(x), rad2deg(y2), 'o')
                 plot(rad2deg(ex), rad2deg(etheta))
                 ylim(0, 15)
+                graph.plot(j, i, rad2deg(x), rad2deg(y2), linestyle=None)
+                graph.plot(j, i, rad2deg(ex), rad2deg(etheta), mark=None)
 
             xlim(0, 45)
 
@@ -472,6 +479,32 @@ def plot_fav_uncertainty_single_vs_single(data):
             locator_params(tight=True, nbins=4)
 
     utils.saveplot()
+
+    graph.set_empty_for_all([(0, 0), (1, 1), (2, 2)])
+    graph.set_ylimits_for_all([(0, 1), (0, 2), (1, 2)], 0, 100)
+    graph.set_ylimits_for_all([(1, 0), (2, 0), (2, 1)], 0, 15)
+    graph.set_xlimits_for_all(None, 0, 45)
+
+    graph.show_xticklabels_for_all([(2, 0), (2, 1), (0, 2)])
+    graph.show_yticklabels_for_all([(0, 2), (1, 2), (1, 0), (2, 0)])
+
+    graph.set_yticks(1, 0, [5, 10, 15])
+    graph.set_yticks(0, 2, range(20, 101, 20))
+
+    for i, station in enumerate(cluster):
+        graph.set_label(i, i, station, 'center')
+
+    graph.set_xlabel(r'Shower zenith angle [\si{\degree}]')
+    graph.set_ylabel(r'Angle reconstruction uncertainty [\si{\degree}]')
+
+    graph.set_label(0, 1, r'$\phi$')
+    graph.set_label(0, 2, r'$\phi$')
+    graph.set_label(1, 2, r'$\phi$')
+    graph.set_label(1, 0, r'$\theta$', 'upper left')
+    graph.set_label(2, 0, r'$\theta$', 'upper left')
+    graph.set_label(2, 1, r'$\theta$', 'upper left')
+
+    artist.utils.save_graph(graph, dirname='plots')
 
 def calc_phi_error_for_station_cluster(theta, station, cluster):
     phis = linspace(-pi, pi, 50)
