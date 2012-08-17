@@ -38,11 +38,11 @@ def main(data):
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
-    #plot_N_vs_R(data)
-    plot_fav_single_vs_cluster(data)
-    plot_fav_single_vs_single(data)
-    plot_fav_uncertainty_single_vs_cluster(data)
-    plot_fav_uncertainty_single_vs_single(data)
+    plot_N_vs_R(data)
+#    plot_fav_single_vs_cluster(data)
+#    plot_fav_single_vs_single(data)
+#    plot_fav_uncertainty_single_vs_cluster(data)
+#    plot_fav_uncertainty_single_vs_single(data)
 #    hist_fav_single_stations(data)
 
 def plot_sciencepark_cluster():
@@ -242,6 +242,8 @@ def plot_N_vs_R(data):
     ylabel("Number of coincidences")
 
     utils.saveplot()
+    utils.savedata([sc_x, sc_y], suffix='data')
+    utils.savedata([R, f(R, popt[0])], suffix='fit')
 
 def plot_fav_single_vs_cluster(data):
     cluster = [501, 503, 506]
@@ -702,7 +704,9 @@ if __name__ == '__main__':
         #data = tables.openFile('month-single.h5')
         # For station / cluster plots
         #data = tables.openFile('new.h5')
-        data = tables.openFile('newlarge.h5')
+        #data = tables.openFile('newlarge.h5')
+        # For N vs R plot
+        data = tables.openFile('my.h5')
 
     artist.utils.set_prefix("SP-DIR-")
     utils.set_prefix("SP-DIR-")
