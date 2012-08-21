@@ -34,7 +34,7 @@ if USE_TEX:
 
 
 def main(data):
-    #plot_sciencepark_cluster()
+    plot_sciencepark_cluster()
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
@@ -44,7 +44,7 @@ def main(data):
 #    plot_fav_single_vs_single(data)
 #    plot_fav_uncertainty_single_vs_cluster(data)
 #    plot_fav_uncertainty_single_vs_single(data)
-    hist_fav_single_stations(data)
+#    hist_fav_single_stations(data)
 
 def artistplot_N_vs_R():
     data = genfromtxt('plots/SP-DIR-plot_N_vs_R-data.txt')
@@ -67,16 +67,23 @@ def artistplot_N_vs_R():
     artist.utils.save_graph(graph, dirname='plots')
 
 def plot_sciencepark_cluster():
-    cluster = clusters.ScienceParkCluster(range(501, 507))
+    stations = range(501, 507)
+    cluster = clusters.ScienceParkCluster(stations)
 
     figure()
-    xl, yl = [], []
+    x_list, y_list = [], []
+    x_stations, y_stations = [], []
     for station in cluster.stations:
+        x_detectors, y_detectors = [], []
         for detector in station.detectors:
             x, y = detector.get_xy_coordinates()
-            xl.append(x)
-            yl.append(y)
+            x_detectors.append(x)
+            y_detectors.append(y)
             scatter(x, y, c='black', s=3)
+        x_list.extend(x_detectors)
+        y_list.extend(y_detectors)
+        x_stations.append(mean(x_detectors))
+        y_stations.append(mean(y_detectors))
     axis('equal')
 
     cluster = clusters.ScienceParkCluster([501, 503, 506])
@@ -87,8 +94,13 @@ def plot_sciencepark_cluster():
     for (x0, y0), (x1, y1) in itertools.combinations(pos, 2):
         plot([x0, x1], [y0, y1], 'gray')
 
-    utils.savedata([xl, yl])
+    utils.savedata([x_list, y_list])
     utils.saveplot()
+
+    artist.utils.save_data([x_list, y_list], suffix='detectors',
+                           dirname='plots')
+    artist.utils.save_data([stations, x_stations, y_stations],
+                           suffix='stations', dirname='plots')
 
 def plot_all_single_and_cluster_combinations(data):
     for station_group in itertools.combinations(range(501, 507), 3):
@@ -728,12 +740,14 @@ def hist_fav_single_stations(data):
 if __name__ == '__main__':
     if 'data' not in globals():
         # For single station plots
-        data = tables.openFile('month-single.h5')
+        #data = tables.openFile('month-single.h5')
         # For station / cluster plots
         #data = tables.openFile('new.h5')
         #data = tables.openFile('newlarge.h5')
         # For N vs R plot
         #data = tables.openFile('master-large.h5')
+        # No data
+        data = None
 
     artist.utils.set_prefix("SP-DIR-")
     utils.set_prefix("SP-DIR-")
