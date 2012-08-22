@@ -632,7 +632,7 @@ def boxplot_arrival_times(group, N):
     graph.shade_region(x, t25, t75)
     graph.plot(x, t50, linestyle=None)
     graph.set_xlabel(r"Core distance [\si{\meter}]")
-    graph.set_ylabel(r"Arrival time delay [\si{\nano\second}]")
+    graph.set_ylabel(r"Arrival time difference $|t_2 - t_1|$ [\si{\nano\second}]")
     graph.set_xlimits(0, 100)
     graph.set_ylimits(min=0)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
