@@ -692,6 +692,7 @@ def boxplot_core_distances_for_mips(group):
     graph.set_xlabel("Minimum number of particles")
     graph.set_ylabel(r"Core distance [\si{\meter}]")
     graph.set_ylimits(min=0)
+    graph.set_xticks(range(5))
     artist.utils.save_graph(graph, dirname='plots')
 
 def save_for_kascade_boxplot_core_distances_for_mips(group):
