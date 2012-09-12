@@ -538,6 +538,7 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
     graph.plot(angles, d50, linestyle=None)
     graph.set_xlabel(r"$\theta_\mathrm{sim}$ [\si{\degree}]")
     graph.set_ylabel(r"$\theta_\mathrm{rec} - \theta_\mathrm{sim}$ [\si{\degree}]")
+    graph.set_title(r"$N_\mathrm{MIP} \geq %d$" % N)
     graph.set_ylimits(-8, 22)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
