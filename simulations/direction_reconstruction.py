@@ -582,6 +582,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
     graph.plot(x, d50, linestyle=None)
     graph.set_xlabel(r"$\phi_\mathrm{sim}$ [\si{\degree}]")
     graph.set_ylabel(r"$\phi_\mathrm{rec} - \phi_\mathrm{sim}$ [\si{\degree}]")
+    graph.set_label(r"$N_\mathrm{MIP} \geq %d$" % N)
     graph.set_xticks([-180, -90, '...', 180])
     graph.set_xlimits(-180, 180)
     graph.set_ylimits(-17, 17)
