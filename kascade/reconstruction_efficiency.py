@@ -380,6 +380,7 @@ class ReconstructionEfficiency(object):
         graph.histogram(y_charged, bins * VNS)
         graph.set_xlabel(r"Pulse integral [\si{\volt\nano\second}]")
         graph.set_ylabel("Count")
+        graph.set_title(r"$\SI{%.1f}{\per\square\meter} \leq \rho_\mathrm{charged}$ < $\SI{%.1f}{\per\square\meter}$" % (low, high))
         graph.set_xlimits(0, 30)
         graph.set_ylimits(1e0, 1e4)
         artist.utils.save_graph(graph, suffix, dirname='plots')
