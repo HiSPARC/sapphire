@@ -341,6 +341,8 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
     graph.histogram2d(H, x_edges, y_edges, type='reverse_bw')
     graph.set_xlabel(r'$\phi_K$ [\si{\degree}]')
     graph.set_ylabel(r'$\phi_H$ [\si{\degree}]')
+    graph.set_xticks(range(-180, 181, 90))
+    graph.set_yticks(range(-180, 181, 90))
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
 def plot_theta_reconstruction_results_for_MIP(table, N):
