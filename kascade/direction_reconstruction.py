@@ -228,7 +228,7 @@ def plot_uncertainty_zenith(table):
 
     # Labels etc.
     xlabel(r"Shower zenith angle [deg $\pm %d^\circ$]" % rad2deg(DTHETA))
-    graph.set_xlabel(r"Shower zenith angle [\si{\degree} $\pm \SI{%d}{\degree}$]" % rad2deg(DTHETA))
+    graph.set_xlabel(r"Shower zenith angle [\si{\degree}] $\pm \SI{%d}{\degree}$" % rad2deg(DTHETA))
     ylabel("Angle reconstruction uncertainty [deg]")
     graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
     title(r"$N_{MIP} \geq %d, \quad %.1f \leq \log(E) \leq %.1f$" % (N, LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
