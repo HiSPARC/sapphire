@@ -3,8 +3,8 @@
     This module processes the CIC event message
 """
 
-__author__="thevinh"
-__date__ ="$17-sep-2009"
+__author__ = "thevinh"
+__date__ = "$17-sep-2009"
 
 import struct
 import datetime
@@ -71,7 +71,7 @@ class CIC(HiSparc2Event):
 			self.eventrate = 0
 
 		# Only bits 0-19 are defined, zero the rest to make sure
-		self.trigger_pattern &= 2**20-1
+		self.trigger_pattern &= 2 ** 20 - 1
 
 		self.datetime = datetime.datetime(gps_year, gps_month, gps_day,
 										  gps_hour, gps_minute, gps_second)
@@ -118,14 +118,14 @@ class CIC(HiSparc2Event):
 		"""
 
 		n = len(raw_trace)
-		if n%3 != 0:
+		if n % 3 != 0:
 			#return None
 			raise Exception("Blob length is not divisible by 3!")
 		a = struct.unpack("%dB" % (n), raw_trace)
 		trace = []
-		for i in xrange(0,n,3):
-			trace.append((a[i]<<4) + ((a[i+1] & 240)>>4))
-			trace.append(((a[i+1] & 15)<<8) + a[i+2])
+		for i in xrange(0, n, 3):
+			trace.append((a[i] << 4) + ((a[i + 1] & 240) >> 4))
+			trace.append(((a[i + 1] & 15) << 8) + a[i + 2])
 		trace_str = ""
 		for i in trace:
 			trace_str += str(i) + ","

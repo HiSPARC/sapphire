@@ -73,11 +73,11 @@ def xuniqueCombinations(items, n):
     Reference: http://code.activestate.com/recipes/190465/
 
     """
-    if n==0: yield []
+    if n == 0: yield []
     else:
         for i in xrange(len(items)):
-            for cc in xuniqueCombinations(items[i+1:],n-1):
-                yield [items[i]]+cc
+            for cc in xuniqueCombinations(items[i + 1:], n - 1):
+                yield [items[i]] + cc
 
 
 def reconstruct_angles_from_set(detectors, times):
@@ -160,7 +160,7 @@ def average_angles(angles):
             cosines.append(cos(angle))
 
     mean_angle = arctan2(mean(sines), mean(cosines))
-    radius = sqrt(mean(sines)**2 + mean(cosines)**2)
+    radius = sqrt(mean(sines) ** 2 + mean(cosines) ** 2)
 
     return mean_angle, radius
 
@@ -199,8 +199,8 @@ def angle_graphs(data, coincidences, ph_threshold, accuracy):
             oa.append(opening_angle(theta[i][0], phi[i][0], cs[i]['kascade_zenith'], cs[i]['kascade_azimuth']))
 
     pylab.figure()
-    pylab.hist(ht, bins=50, histtype='step', range=[0, pi/2], label='HiSPARC')
-    pylab.hist(kt, bins=50, histtype='step', range=[0, pi/2], label='KASCADE')
+    pylab.hist(ht, bins=50, histtype='step', range=[0, pi / 2], label='HiSPARC')
+    pylab.hist(kt, bins=50, histtype='step', range=[0, pi / 2], label='KASCADE')
     pylab.legend()
     pylab.xlabel('Zenith angle (radians)')
     pylab.ylabel('Count')

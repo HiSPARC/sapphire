@@ -92,7 +92,7 @@ class HiSparc2Event(object, Event):
 			self._struct_offset = 0
 			return
 
-		if fmt=='LVstring':
+		if fmt == 'LVstring':
 			# Request for a labview string. That is, first a long for the
 			# length, then the string itself.
 			length, = self.unpackSeqMessage('>L')

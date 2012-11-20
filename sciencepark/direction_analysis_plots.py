@@ -293,7 +293,7 @@ def plot_fav_single_vs_cluster(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
 
-    width=r'.35\linewidth'
+    width = r'.35\linewidth'
     graph1 = artist.MultiPlot(1, 3, width=width, height=width)
     graph2 = artist.MultiPlot(1, 3, width=width, height=width)
 
@@ -359,7 +359,7 @@ def plot_fav_single_vs_single(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
 
-    width=r'.35\linewidth'
+    width = r'.35\linewidth'
     graph = artist.MultiPlot(3, 3, width=width, height=width)
 
     figure()
@@ -436,7 +436,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
     cluster_str = [str(u) for u in cluster]
     cluster_ids = [0, 2, 5]
 
-    width=r'.35\linewidth'
+    width = r'.35\linewidth'
     graph = artist.MultiPlot(2, 3, width=width, height=width)
 
     figure()
@@ -521,7 +521,7 @@ def plot_fav_uncertainty_single_vs_single(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
 
-    width=r'.35\linewidth'
+    width = r'.35\linewidth'
     graph = artist.MultiPlot(3, 3, width=width, height=width)
 
     figure()
@@ -693,7 +693,7 @@ def calc_theta_error_for_station_station(theta, station1, station2):
 def hist_fav_single_stations(data):
     reconstructions = data.root.reconstructions.reconstructions
 
-    width=r'.35\linewidth'
+    width = r'.35\linewidth'
     graph1 = artist.MultiPlot(1, 3, width=width, height=width)
     graph2 = artist.MultiPlot(1, 3, width=width, height=width)
 
