@@ -78,6 +78,7 @@ def do_full_reconstruction(data, N=None):
             rec = BinnedDirectionReconstruction(data, dest_table, min_n134=1, binning=binning, randomize_binning=randomize, N=N)
             rec.reconstruct_angles_for_shower_group(source)
 
+
 def do_reconstruction_plots(data):
     """Make plots based upon earlier reconstructions"""
 
@@ -104,6 +105,7 @@ def do_reconstruction_plots(data):
     #plot_reconstruction_efficiency_vs_R_for_angles(1)
     #plot_reconstruction_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_mips()
+
 
 def plot_uncertainty_mip(group):
     global errors, errors2
@@ -187,6 +189,7 @@ def plot_uncertainty_mip(group):
     utils.saveplot()
     print
 
+
 @vectorize
 def my_std_t(N):
     sim = data.root.showers.E_1PeV.zenith_22_5
@@ -206,6 +209,7 @@ def my_std_t(N):
             mint_list.append(min(values))
         i += N
     return median(mint_list)
+
 
 def plot_uncertainty_zenith(group):
     group = group.E_1PeV
@@ -265,6 +269,7 @@ def plot_uncertainty_zenith(group):
     utils.saveplot()
     print
 
+
 def plot_uncertainty_core_distance(group):
     table = group.E_1PeV.zenith_22_5
 
@@ -305,6 +310,7 @@ def plot_uncertainty_core_distance(group):
     legend(numpoints=1, loc='best')
     utils.saveplot()
     print
+
 
 def plot_uncertainty_size(group):
     group = group.E_1PeV
@@ -365,6 +371,7 @@ def plot_uncertainty_size(group):
     legend(numpoints=1)
     utils.saveplot()
     print
+
 
 def plot_uncertainty_binsize(group):
     group = group.E_1PeV
@@ -443,6 +450,7 @@ expv_tsqv = lambda n: expv_tsq(n)[0]
 
 std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
 
+
 def plot_phi_reconstruction_results_for_MIP(group, N):
     table = group.E_1PeV.zenith_22_5
 
@@ -457,6 +465,7 @@ def plot_phi_reconstruction_results_for_MIP(group, N):
     #title(r"$N_{MIP} \geq %d, \quad \theta = 22.5^\circ$" % N)
 
     utils.saveplot(N)
+
 
 def boxplot_theta_reconstruction_results_for_MIP(group, N):
     group = group.E_1PeV
@@ -487,6 +496,7 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
     ylim(-10, 25)
 
     utils.saveplot(N)
+
 
 def boxplot_phi_reconstruction_results_for_MIP(group, N):
     table = group.E_1PeV.zenith_22_5
@@ -522,6 +532,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
     ylim(-15, 15)
 
     utils.saveplot(N)
+
 
 def boxplot_arrival_times(group, N):
     table = group.E_1PeV.zenith_0
@@ -563,6 +574,7 @@ def boxplot_arrival_times(group, N):
     utils.savedata((x, t25, t50, t75), N)
     utils.saveplot(N)
 
+
 def boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
     
@@ -591,6 +603,7 @@ def boxplot_core_distances_for_mips(group):
 
     utils.saveplot()
 
+
 def save_for_kascade_boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
 
@@ -607,6 +620,7 @@ def save_for_kascade_boxplot_core_distances_for_mips(group):
         x.append(N)
 
     utils.savedata((x, r25_list, r50_list, r75_list))
+
 
 def plot_detection_efficiency_vs_R_for_angles(N):
     figure()
@@ -642,6 +656,7 @@ def plot_detection_efficiency_vs_R_for_angles(N):
     legend()
 
     utils.saveplot(N)
+
 
 def plot_reconstruction_efficiency_vs_R_for_angles(N):
     group = data.root.reconstructions.E_1PeV
@@ -682,6 +697,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
 
     utils.saveplot(N)
 
+
 def plot_reconstruction_efficiency_vs_R_for_mips():
     reconstructions = data.root.reconstructions.E_1PeV.zenith_22_5
 
@@ -720,16 +736,19 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
 
     utils.saveplot()
 
+
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
     imshow(H.T, extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
            origin='lower left', interpolation='lanczos', aspect='auto')
     colorbar()
 
+
 def do_jos_plots(data):
     make_datasets_failed_reconstructions_scatter(data)
     plot_failed_and_successful_scatter_plots()
     plot_failed_histograms()
+
 
 def make_datasets_failed_reconstructions_scatter(data):
     global dt1, dt2, phis_sim, phis_rec
@@ -759,6 +778,7 @@ def make_datasets_failed_reconstructions_scatter(data):
                 gdt2.append(event['t1'] - event['t4'])
                 gphis_sim.append(coincidence['phi'])
                 gphis_rec.append(phi)
+
 
 def plot_failed_and_successful_scatter_plots():
     figure(figsize=(20., 11.5))
@@ -800,6 +820,7 @@ def plot_failed_and_successful_scatter_plots():
     ylim(-200, 200)
 
     utils.saveplot()
+
 
 def plot_failed_histograms():
     figure()

@@ -182,6 +182,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
         self.simulation.observables.row.append.assert_called_once_with()
         self.assertEqual(self.simulation._observables_nrows, 28)
 
+
 class SideEffects:
     def __init__(self, response_list):
         self.response_list = response_list

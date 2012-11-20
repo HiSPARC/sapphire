@@ -10,6 +10,7 @@
 import time
 import calendar
 
+
 def gps_to_utc(timestamp):
     """Convert GPS time to UTC
 
@@ -38,6 +39,7 @@ def utc_from_string(date):
     """
     t = time.strptime(date, '%B %d, %Y')
     return calendar.timegm(t)
+
 
 def gps_from_string(date):
     """Convert a date string to GPS time

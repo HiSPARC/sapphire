@@ -53,6 +53,7 @@ def scatterplot_core_distance_vs_time():
     utils.title("Shower front timing structure")
     utils.saveplot()
 
+
 def median_core_distance_vs_time():
     plt.figure()
     plot_and_fit_statistic(lambda a: scoreatpercentile(a, 25))
@@ -63,6 +64,7 @@ def median_core_distance_vs_time():
     plt.xlabel("Core distance [m]")
     plt.ylabel("Median arrival time [ns]")
     legend(loc='lower right')
+
 
 def plot_and_fit_statistic(func):
     sim = data.root.showers.E_1PeV.zenith_0
@@ -85,6 +87,7 @@ def plot_and_fit_statistic(func):
     popt, pcov = curve_fit(logf, logx, logy)
     plot(x, g(x, *popt), label="f(x) = %.2e * x ^ %.2e" % (10 ** popt[1],
                                                            popt[0]))
+
 
 def boxplot_core_distance_vs_time():
     plt.figure()
@@ -124,6 +127,7 @@ def boxplot_core_distance_vs_time():
     graph.set_xlimits(0, 100)
     graph.save('plots/front-passage-vs-R')
 
+
 def hists_core_distance_vs_time():
     plt.figure()
 
@@ -146,6 +150,7 @@ def hists_core_distance_vs_time():
 
     utils.title("Shower front timing structure")
     utils.saveplot()
+
 
 def plot_front_passage():
     sim = data.root.showers.E_1PeV.zenith_0.shower_0

@@ -422,6 +422,7 @@ class CorePositionCirclesSolver(CorePositionSolver):
             chi_squared *= (expected - observed) ** 2 / expected
         return chi_squared
 
+
 class CorePositionCirclesSolverWithoutNullMeasurements(CorePositionSolverWithoutNullMeasurements, CorePositionCirclesSolver):
     pass
 

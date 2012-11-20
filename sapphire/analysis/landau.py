@@ -16,6 +16,7 @@ from numpy import pi, Inf, sin, cos, exp, log, arctan, vectorize, \
                   convolve, linspace, interp, arange
 from scipy import integrate, stats
 
+
 @vectorize
 def pdf(lf):
     if lf < -10:
@@ -28,9 +29,11 @@ def pdf(lf):
         integrant = integrate.quad(pdf_kernel2, 0, Inf, args=(lf,))[0]
         return 1 / pi * integrant
 
+
 def pdf_kernel(y, sf):
     return (exp(sf / 2 * log(1 + y ** 2 / sf ** 2) - y * arctan(y / sf)) *
             cos(.5 * y * log(1 + y ** 2 / sf ** 2) - y + sf * arctan(y / sf)))
+
 
 def pdf_kernel2(u, lf):
     return exp(-lf * u) * u ** -u * sin(pi * u)

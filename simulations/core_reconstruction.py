@@ -53,6 +53,7 @@ Ptrig = lambda x: comb(4, 2) * Pp(x) ** 2 * Pnil(x) ** 2 + \
                   comb(4, 3) * Pp(x) ** 3 * Pnil(x) + \
                   comb(4, 4) * Pp(x) ** 4
 
+
 def plot_N_reconstructions_vs_R(table):
     figure()
 
@@ -98,6 +99,7 @@ def plot_N_reconstructions_vs_R(table):
     ylabel("Reconstruction efficiency")
     utils.saveplot()
 
+
 def plot_core_pos_uncertainty_vs_R(table):
     figure()
 
@@ -125,6 +127,7 @@ def plot_core_pos_uncertainty_vs_R(table):
     ylabel("Core position uncertainty [m]")
     utils.saveplot()
 
+
 def plot_shower_size_hist(table):
     figure()
 
@@ -139,6 +142,7 @@ def plot_shower_size_hist(table):
     xlabel("log shower size")
     ylabel("count")
     utils.saveplot()
+
 
 def plot_scatter_reconstructed_core(table, N=None):
     # Make sure to get a *copy*

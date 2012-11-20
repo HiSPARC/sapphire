@@ -42,6 +42,7 @@ def plot_ldf_and_models(data, group):
     title("Full and measured LDF (E = 1 PeV)")
     legend()
 
+
 def plot_ldf_ldf(data, group):
     group = data.getNode(group)
 

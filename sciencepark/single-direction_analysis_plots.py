@@ -40,6 +40,7 @@ def main(data):
     #plot_fav_uncertainty_single_vs_cluster(data)
     hist_fav_single_stations(data)
 
+
 def plot_sciencepark_cluster():
     cluster = clusters.ScienceParkCluster(range(501, 507))
 
@@ -56,10 +57,12 @@ def plot_sciencepark_cluster():
     utils.savedata([xl, yl])
     utils.saveplot()
 
+
 def plot_all_single_and_cluster_combinations(data):
     for station_group in itertools.combinations(range(501, 507), 3):
         for station in station_group:
             plot_direction_single_vs_cluster(data, station, station_group)
+
 
 def calc_direction_single_vs_cluster(data, station, cluster):
     reconstructions = data.root.reconstructions.reconstructions
@@ -86,6 +89,7 @@ def calc_direction_single_vs_cluster(data, station, cluster):
     return array(theta_station).flatten(), array(phi_station).flatten(), \
         array(theta_cluster).flatten(), array(phi_cluster).flatten()
 
+
 def plot_direction_single_vs_cluster(data, station, cluster):
     cluster_str = [str(u) for u in cluster]
 
@@ -111,6 +115,7 @@ def plot_direction_single_vs_cluster(data, station, cluster):
 
     utils.saveplot('%d-%s' % (station, '_'.join(cluster_str)))
 
+
 def hist_phi_single_stations(data):
     reconstructions = data.root.reconstructions.reconstructions
 
@@ -126,6 +131,7 @@ def hist_phi_single_stations(data):
 
     utils.saveplot()
 
+
 def hist_theta_single_stations(data):
     reconstructions = data.root.reconstructions.reconstructions
 
@@ -140,6 +146,7 @@ def hist_theta_single_stations(data):
         locator_params(tight=True, nbins=4)
 
     utils.saveplot()
+
 
 def plot_N_vs_R(data):
     stations = range(501, 507)
@@ -192,6 +199,7 @@ def plot_N_vs_R(data):
 
     utils.saveplot()
 
+
 def plot_fav_single_vs_cluster(data):
     cluster = [501, 503, 506]
     cluster_str = [str(u) for u in cluster]
@@ -217,6 +225,7 @@ def plot_fav_single_vs_cluster(data):
         ylim(0, 45)
         locator_params(tight=True, nbins=4)
     utils.saveplot()
+
 
 def plot_fav_uncertainty_single_vs_cluster(data):
     cluster = [501, 503, 506]
@@ -279,6 +288,7 @@ def plot_fav_uncertainty_single_vs_cluster(data):
         locator_params(tight=True, nbins=4)
     utils.saveplot()
 
+
 def calc_phi_error_for_station_cluster(theta, station, cluster):
     phis = linspace(-pi, pi, 50)
     rec = DirectionReconstruction
@@ -297,6 +307,7 @@ def calc_phi_error_for_station_cluster(theta, station, cluster):
                      CLUSTER_TIMING_ERR ** 2 * err_cluster)
     return mean(err_total)
 
+
 def calc_theta_error_for_station_cluster(theta, station, cluster):
     phis = linspace(-pi, pi, 50)
     rec = DirectionReconstruction
@@ -314,6 +325,7 @@ def calc_theta_error_for_station_cluster(theta, station, cluster):
     err_total = sqrt(STATION_TIMING_ERR ** 2 * err_single +
                      CLUSTER_TIMING_ERR ** 2 * err_cluster)
     return mean(err_total)
+
 
 def hist_fav_single_stations(data):
     reconstructions = data.root.reconstructions.reconstructions

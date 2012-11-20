@@ -30,6 +30,7 @@ def do_matching_plots(data):
     plot_nearest_neighbors(data)
     plot_residual_time_differences(data)
 
+
 def plot_nearest_neighbors(data, limit=None):
     global coincidences
     hisparc_group = data.root.hisparc.cluster_kascade.station_601
@@ -76,6 +77,7 @@ def plot_nearest_neighbors(data, limit=None):
     utils.saveplot()
     graph.save('plots/MAT-nearest-neighbors')
 
+
 def find_optimum_dt(coincidences, p0, delta=1e-3, limit=None):
     dt_new = p0
     dt_old = Inf
@@ -92,6 +94,7 @@ def find_optimum_dt(coincidences, p0, delta=1e-3, limit=None):
             dt_new -= median(dts.compress(dts < 0))
 
     return dt_new
+
 
 def plot_residual_time_differences(data):
     global idxes, dts
@@ -139,6 +142,7 @@ def plot_residual_time_differences(data):
 
     graph.save('plots/MAT-residual-time-differences')
     graph.save_as_pdf('preview')
+
 
 def make_timestamp(year, month, day, hour=0, minutes=0, seconds=0):
     dt = datetime.datetime(year, month, day, hour, minutes, seconds)

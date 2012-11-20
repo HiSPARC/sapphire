@@ -20,6 +20,7 @@ def plot_coordinate_systems():
 
     utils.saveplot()
 
+
 def generate_coordinates_in_rectangle():
     x, y, alpha = [], [], []
     for i in linspace(-10, 10, 5):
@@ -30,6 +31,7 @@ def generate_coordinates_in_rectangle():
                 alpha.append(k)
 
     return array(x), array(y), array(alpha)
+
 
 def transform_coordinates(x, y, alpha):
     xp, yp, alphap = [], [], []
@@ -49,12 +51,14 @@ def transform_coordinates(x, y, alpha):
 
     return array(xp), array(yp), array(alphap)
 
+
 def draw_coordinates(x, y, alpha):
     for u, v, w in zip(x, y, alpha):
         scatter(u, v, c='black', s=4)
         s = sin(w)
         t = cos(w)
         plot([u, u + s], [v, v + t], c='black')
+
 
 def plot_coordinate_density():
     figure()
@@ -73,11 +77,13 @@ def plot_coordinate_density():
 
     utils.saveplot()
 
+
 def generate_random_coordinates_in_rectangle(N=100):
     x, y = uniform(-10, 10, (2, N))
     alpha = uniform(-pi, pi, N)
 
     return x, y, alpha
+
 
 def generate_random_coordinates_in_circle(R, N=100):
     x, y, alpha = [], [], []
@@ -91,6 +97,7 @@ def generate_random_coordinates_in_circle(R, N=100):
             alpha.append(uniform(-pi, pi))
 
     return x, y, alpha
+
 
 def draw_coordinate_density(x, y):
     H, xedges, yedges = histogram2d(x, y, bins=100)

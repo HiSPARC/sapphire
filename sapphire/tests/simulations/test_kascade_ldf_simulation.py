@@ -4,6 +4,7 @@ from numpy import logspace, array
 
 from sapphire.simulations.ldf import KascadeLdfSimulation, BaseLdfSimulation, KascadeLdf
 
+
 class KascadeLdfSimulationTest(unittest.TestCase):
     def setUp(self):
         cluster = Mock()
@@ -46,6 +47,7 @@ class KascadeLdfSimulationTest(unittest.TestCase):
         actual = self.simulation.calculate_ldf_value(r, 10 ** 4.8)
 
         self.assertTrue(((expected - actual) / expected < 1e-8).all())
+
 
 class KascadeLdfTest(unittest.TestCase):
     def setUp(self):

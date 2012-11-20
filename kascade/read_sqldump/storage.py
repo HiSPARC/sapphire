@@ -9,6 +9,7 @@ class HisparcClusters(tables.IsDescription):
     password = tables.StringCol(20, pos=3)
     description = tables.StringCol(20, pos=4)
        
+
 class HisparcEvent(tables.IsDescription):
     # DISCUSS: use of signed (dflt -1) vs unsigned (labview code)
     event_id = tables.UInt32Col(pos=0)
@@ -25,10 +26,12 @@ class HisparcEvent(tables.IsDescription):
     traces = tables.Int32Col(shape=4, dflt=-1, pos=12)
     event_rate = tables.Float32Col(pos=13)
        
+
 class HisparcError(tables.IsDescription):
     event_id = tables.UInt32Col(pos=0)
     timestamp = tables.Time32Col(pos=2)
     messages = tables.Int32Col(pos=3)
+
 
 class HisparcComparatorData(tables.IsDescription):
     event_id = tables.UInt32Col(pos=0)
@@ -38,6 +41,7 @@ class HisparcComparatorData(tables.IsDescription):
     device = tables.UInt8Col(pos=5)
     comparator = tables.UInt8Col(pos=6)
     count = tables.UInt16Col(pos=7)
+
 
 class HisparcConfiguration(tables.IsDescription):
     event_id = tables.UInt32Col()
@@ -130,6 +134,7 @@ class HisparcConfiguration(tables.IsDescription):
     slv_ch2_comp_gain = tables.Float64Col()
     slv_ch2_comp_offset = tables.Float64Col()
 
+
 class HisparcWeather(tables.IsDescription):
     event_id = tables.UInt32Col(pos=0)
     timestamp = tables.Time32Col(pos=1)
@@ -169,6 +174,7 @@ def open_or_create_file(data_dir, date):
 
     return tables.openFile(file, 'a')
 
+
 def get_or_create_station_group(file, cluster, station_id):
     """Get an existing station group or create a new one
 
@@ -187,6 +193,7 @@ def get_or_create_station_group(file, cluster, station_id):
         file.flush()
 
     return station
+
 
 def get_or_create_cluster_group(file, cluster):
     """Get an existing cluster group or create a new one
@@ -210,6 +217,7 @@ def get_or_create_cluster_group(file, cluster):
         file.flush()
 
     return cluster
+
 
 def get_or_create_node(file, cluster, node):
     """Get an existing node or create a new one

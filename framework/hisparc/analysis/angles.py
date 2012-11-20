@@ -17,11 +17,13 @@ detector_positions = [(78.0, 15.05),
                       (83.0, 23.71),
                       (73.0, 23.71)]
 
+
 def reconstruct_angles(coincidence, dataset):
     """Reconstruct shower angles of a coincidence event"""
 
     times = reconstruct_time_differences(coincidence, dataset)
     return reconstruct_all_angles(times)
+
 
 def reconstruct_all_angles(times):
     angles = []
@@ -29,6 +31,7 @@ def reconstruct_all_angles(times):
         angles.append(reconstruct_angles_from_set(detectors, times))
 
     return angles
+
 
 def reconstruct_time_differences(coincidence, dataset):
     """Reconstruct time differences of a coincidence event"""
@@ -43,6 +46,7 @@ def reconstruct_time_differences(coincidence, dataset):
         times.append(reconstruct_time_from_trace(trace))
 
     return times
+
 
 def reconstruct_time_from_trace(trace):
     """Reconstruct time of measurement from a trace"""
@@ -62,6 +66,7 @@ def reconstruct_time_from_trace(trace):
 
     return value * ADC_TIME_PER_SAMPLE
 
+
 def xuniqueCombinations(items, n):
     """Return unique combinations from a list
 
@@ -73,6 +78,7 @@ def xuniqueCombinations(items, n):
         for i in xrange(len(items)):
             for cc in xuniqueCombinations(items[i+1:],n-1):
                 yield [items[i]]+cc
+
 
 def reconstruct_angles_from_set(detectors, times):
     """Reconstruct angles from a set of three detectors"""
@@ -112,6 +118,7 @@ def reconstruct_angles_from_set(detectors, times):
     
     return detectors, theta, phi
 
+
 def calc_distance(det0, det1):
     """Calculate the distance between two detectors"""
 
@@ -120,6 +127,7 @@ def calc_distance(det0, det1):
 
     return sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
 
+
 def calc_phi(det0, det1):
     """Calculate the angle of the line of sight between two detectors"""
 
@@ -127,6 +135,7 @@ def calc_phi(det0, det1):
     x1, y1 = detector_positions[det1]
 
     return arctan2((y1 - y0), (x1 - x0))
+
 
 def average_angles(angles):
     """Average a set of angles and estimate the error
@@ -155,11 +164,13 @@ def average_angles(angles):
 
     return mean_angle, radius
 
+
 def opening_angle(theta1, phi1, theta2, phi2):
     """Calculate the angle between two unit vectors"""
 
     return arccos(sin(theta1) * sin(theta2) * cos(phi1 - phi2) +
                   cos(theta1) * cos(theta2))
+
 
 def angle_graphs(data, coincidences, ph_threshold, accuracy):
     """Produce some nice graphs"""
@@ -210,6 +221,7 @@ def angle_graphs(data, coincidences, ph_threshold, accuracy):
     pylab.ylabel('Count')
     pylab.title('Histogram of opening angles (accur > %.2f)' % accuracy)
 
+
 def test_angles():
     for theta in arange(0, 5) * (pi / 8):
         # phi = 0
@@ -238,14 +250,17 @@ def test_angles():
 
         print
 
+
 def test_calc_dt(r, theta):
     return r * sin(theta) / 3e8
+
 
 def test_with_ran(times):
     #times = [x + random() * 1e-11 for x in times]
     angles = reconstruct_all_angles(times)
     for angle in angles:
         print angle
+
 
 def test_for_nan(angles):
     for theta, phi in angles:

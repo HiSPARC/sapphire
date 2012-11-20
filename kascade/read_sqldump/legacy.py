@@ -3,6 +3,7 @@ import datetime
 import random
 from zlib import compress
 
+
 def unpack_legacy_message(self):
     """Unpack a legacy buffer message
 

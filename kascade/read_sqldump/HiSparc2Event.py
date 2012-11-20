@@ -9,6 +9,7 @@ import base64
 from Event import Event
 import EventExportValues
 
+
 class HiSparc2Event(object, Event):
 	def __init__(self, message):
 		""" Initialization

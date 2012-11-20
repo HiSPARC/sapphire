@@ -14,6 +14,7 @@ try:
 except ImportError:
     pass
 
+
 def do_timeshifts(hevents, kevents, shifts, dtlimit=None, limit=None,
                   h=None, k=None):
     """Search for coincidences using multiple time shifts
@@ -59,6 +60,7 @@ def do_timeshifts(hevents, kevents, shifts, dtlimit=None, limit=None,
 
     finish_graph()
     return coincidences
+
 
 def store_coincidences(table, hevents, kevents, coincidences):
     """Store coincidences in a table
@@ -109,6 +111,7 @@ def store_coincidences(table, hevents, kevents, coincidences):
     if old_data_length:
         print "Flushing old data..."
         table.removeRows(0, old_data_length)
+
 
 def search_coincidences(hisparc_data, kascade_data, timeshift,
                         dtlimit=None):
@@ -184,6 +187,7 @@ def search_coincidences(hisparc_data, kascade_data, timeshift,
 
     return coincidences
 
+
 def shift_data(data, timeshift):
     """Shift event data in time
 
@@ -202,6 +206,7 @@ def shift_data(data, timeshift):
 
     return [[x[0], x[1] + timeshift] for x in data]
 
+
 def finish_graph():
     """Finish the histogram
 
@@ -219,6 +224,7 @@ def finish_graph():
     except NameError:
         print "Unfortunately, the pylab interface was not available."
         print "No graphs at this point."
+
 
 def get_arrays_from_tables(h, k, limit=None):
     """Get data arrays from data tables
@@ -255,6 +261,7 @@ def get_arrays_from_tables(h, k, limit=None):
     h = sorted(h, key=operator.itemgetter(1))
 
     return h, k
+
 
 def test(hevents, kevents, h=None, k=None):
     """Perform a small coincidence test

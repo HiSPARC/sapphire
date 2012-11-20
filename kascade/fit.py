@@ -11,6 +11,7 @@ def frac_bins(low, high, binsize, nbins=1):
     high = ceil((high - low) / binsize) * binsize + low + .5 * binsize
     return arange(low, high, binsize)
 
+
 def fit_gauss_to_timings(events, timing_data):
     events = events[:]
     gauss = lambda x, N, mu, sigma: N * normpdf(x, mu, sigma)

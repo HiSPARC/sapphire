@@ -11,6 +11,7 @@ from upload_codes import eventtype_upload_codes
 
 logger = logging.getLogger('writer.store_events')
 
+
 def store_event(datafile, cluster, station_id, event):
     """Stores an event in the h5 filesystem
 
@@ -102,6 +103,7 @@ def store_event(datafile, cluster, station_id, event):
     table.flush()
     blobs.flush()
 
+
 def data_is_blob(uploadcode, blob_types):
     """Determine if data is a variable length binary value (blob)"""
 
@@ -111,6 +113,7 @@ def data_is_blob(uploadcode, blob_types):
     elif uploadcode in blob_types:
         return True
     return False
+
 
 def store_event_list(data_dir, station_id, cluster, event_list):
     """Store a list of events"""

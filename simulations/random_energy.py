@@ -1,5 +1,6 @@
 flux = lambda x: x ** -2.7
 
+
 def random_energy(a, b, size=1):
     y0 = flux(a)
     y1 = flux(b)

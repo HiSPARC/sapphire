@@ -21,6 +21,7 @@ logger = logging.getLogger('hisparc.publicdb')
 #PUBLICDB_XMLRPC_URL = 'http://localhost:8000/raw_data/rpc'
 PUBLICDB_XMLRPC_URL = 'http://data.hisparc.nl/django/raw_data/rpc'
 
+
 def download_data(file, group, station_id, start, end, get_blobs=False):
     """Download raw data from the datastore
 
@@ -67,6 +68,7 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         logger.info("Storing data...")
         store_data(file, group, tmp_datafile, t0, t1)
         logger.info("Done.")
+
 
 def store_data(dst_file, dst_group, src_filename, t0, t1):
     """Copy data from a temporary file to the destination file
@@ -130,6 +132,7 @@ def store_data(dst_file, dst_group, src_filename, t0, t1):
 
     os.remove(src_filename)
 
+
 def datetimerange(start, stop):
     """Generator for datetime ranges
 
@@ -188,6 +191,7 @@ def datetimerange(start, stop):
         else:
             return
 
+
 def get_or_create_group(file, group):
     """Get or create a group in the datafile"""
 
@@ -198,6 +202,7 @@ def get_or_create_group(file, group):
         file.createGroup(parent, newgroup, 'Data group',
                          createparents=True)
     return group
+
 
 def get_or_create_node(file, group, src_node):
     """Get or create a node based on a source node"""

@@ -6,6 +6,7 @@
 import zlib
 import numpy as np
 
+
 def get_traces(traces_array, indexes):
     """Get traces from the traces table with given indexes
 
@@ -41,6 +42,7 @@ def get_traces(traces_array, indexes):
         traces.append(np.array(map(adc_to_mv, trace)))
 
     return traces
+
 
 def adc_to_mv(value):
     """Transform an ADC value into millivolts"""

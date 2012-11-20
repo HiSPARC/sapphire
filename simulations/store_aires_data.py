@@ -60,6 +60,7 @@ def store_aires_data(data, group_name, file):
 
     sim.close()
 
+
 def create_group(data, group_name):
     head, tail = os.path.split(group_name)
     group = data.createGroup(head, tail, createparents=True)

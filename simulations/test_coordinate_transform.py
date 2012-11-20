@@ -27,6 +27,7 @@ def plot_station_and_shower_transforms(event_id):
     xlabel("[m]")
     ylabel("[m]")
 
+
 def plot_cluster(alpha):
     for station in cluster.stations:
         c = 'yellow'

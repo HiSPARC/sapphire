@@ -82,6 +82,7 @@ def do_full_reconstruction(data, N=None):
             rec = BinnedDirectionReconstruction(data, dest_table, min_n134=1, binning=binning, randomize_binning=randomize, N=N)
             rec.reconstruct_angles_for_shower_group(source)
 
+
 def do_reconstruction_plots(data):
     """Make plots based upon earlier reconstructions"""
 
@@ -111,6 +112,7 @@ def do_reconstruction_plots(data):
     artistplot_reconstruction_efficiency_vs_R_for_angles(1)
     artistplot_reconstruction_efficiency_vs_R_for_angles(2)
     #plot_reconstruction_efficiency_vs_R_for_mips()
+
 
 def plot_uncertainty_mip(group):
     table = group.E_1PeV.zenith_22_5
@@ -203,6 +205,7 @@ def plot_uncertainty_mip(group):
     graph.plot(nx, rad2deg(y4), mark=None, linestyle='smooth')
     artist.utils.save_graph(graph, suffix='full', dirname='plots')
 
+
 def plot_uncertainty_zenith(group):
     group = group.E_1PeV
     rec = DirectionReconstruction
@@ -273,6 +276,7 @@ def plot_uncertainty_zenith(group):
     artist.utils.save_graph(graph, dirname='plots')
     print
 
+
 def plot_uncertainty_core_distance(group):
     table = group.E_1PeV.zenith_22_5
 
@@ -315,6 +319,7 @@ def plot_uncertainty_core_distance(group):
     legend(numpoints=1, loc='best')
     utils.saveplot()
     print
+
 
 def plot_uncertainty_size(group):
     group = group.E_1PeV
@@ -387,6 +392,7 @@ def plot_uncertainty_size(group):
     utils.saveplot()
     artist.utils.save_graph(graph, dirname='plots')
     print
+
 
 def plot_uncertainty_binsize(group):
     group = group.E_1PeV
@@ -478,6 +484,7 @@ expv_tsqv = lambda n: expv_tsq(n)[0]
 
 std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
 
+
 def plot_phi_reconstruction_results_for_MIP(group, N):
     table = group.E_1PeV.zenith_22_5
 
@@ -544,6 +551,7 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
     graph.set_ylimits(-8, 22)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
+
 def boxplot_phi_reconstruction_results_for_MIP(group, N):
     table = group.E_1PeV.zenith_22_5
 
@@ -590,6 +598,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
     graph.set_xlimits(-180, 180)
     graph.set_ylimits(-17, 17)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 
 def boxplot_arrival_times(group, N):
     table = group.E_1PeV.zenith_0
@@ -641,9 +650,10 @@ def boxplot_arrival_times(group, N):
     graph.set_ylimits(min=0)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
+
 def get_median_core_distances_for_mips(group, N_list):
     table = group.E_1PeV.zenith_22_5
-    
+
     r_list = []
     r25, r50, r75 = [], [], []
     x = []
@@ -662,9 +672,10 @@ def get_median_core_distances_for_mips(group, N_list):
 
     return r50
 
+
 def boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
-    
+
     figure()
 
     r_list = []
@@ -699,6 +710,7 @@ def boxplot_core_distances_for_mips(group):
     graph.set_xticks(range(5))
     artist.utils.save_graph(graph, dirname='plots')
 
+
 def save_for_kascade_boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
 
@@ -715,6 +727,7 @@ def save_for_kascade_boxplot_core_distances_for_mips(group):
         x.append(N)
 
     utils.savedata((x, r25_list, r50_list, r75_list))
+
 
 def plot_detection_efficiency_vs_R_for_angles(N):
     figure()
@@ -763,6 +776,7 @@ def plot_detection_efficiency_vs_R_for_angles(N):
     utils.saveplot(N)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
+
 def plot_reconstruction_efficiency_vs_R_for_angles(N):
     group = data.root.reconstructions.E_1PeV
 
@@ -806,6 +820,7 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     utils.saveplot(N)
     utils.savedata(array([x] + all_data).T, suffix=N)
 
+
 def artistplot_reconstruction_efficiency_vs_R_for_angles(N):
     filename = 'DIR-plot_reconstruction_efficiency_vs_R_for_angles-%d.txt' % N
     all_data = loadtxt(os.path.join('plots/', filename))
@@ -827,6 +842,7 @@ def artistplot_reconstruction_efficiency_vs_R_for_angles(N):
     graph.set_xlimits(0, 100)
     graph.set_ylimits(max=1)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 
 def plot_reconstruction_efficiency_vs_R_for_mips():
     reconstructions = data.root.reconstructions.E_1PeV.zenith_22_5
@@ -866,6 +882,7 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
 
     utils.saveplot()
 
+
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
     imshow(H.T, extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
@@ -873,10 +890,12 @@ def plot_2d_histogram(x, y, bins):
            cmap=cm.Greys)
     colorbar()
 
+
 def do_jos_plots(data):
     make_datasets_failed_reconstructions_scatter(data)
     plot_failed_and_successful_scatter_plots()
     plot_failed_histograms()
+
 
 def make_datasets_failed_reconstructions_scatter(data):
     global dt1, dt2, phis_sim, phis_rec
@@ -906,6 +925,7 @@ def make_datasets_failed_reconstructions_scatter(data):
                 gdt2.append(event['t1'] - event['t4'])
                 gphis_sim.append(coincidence['phi'])
                 gphis_rec.append(phi)
+
 
 def plot_failed_and_successful_scatter_plots():
     figure(figsize=(20., 11.5))
@@ -948,6 +968,7 @@ def plot_failed_and_successful_scatter_plots():
 
     utils.saveplot()
 
+
 def plot_failed_histograms():
     figure()
 
@@ -970,6 +991,7 @@ def plot_failed_histograms():
     xlabel(r"$c \, \Delta t_2 / (r_2 \cos(\phi - \phi_2))$")
 
     utils.saveplot()
+
 
 def plot_uncertainty_zenith_angular_distance(group):
     group = group.E_1PeV

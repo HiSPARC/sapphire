@@ -51,6 +51,7 @@ def do_reconstruction_plots(data, tablename, table2name, sim_data,
     #plot_zenith_core_dists_mean(table, sim_table)
     #plot_uncertainty_core_dist_phi_theta(table, sim_table)
 
+
 def plot_uncertainty_mip(table, sim_table):
     # constants for uncertainty estimation
     phi1 = calc_phi(1, 3)
@@ -128,6 +129,7 @@ def plot_uncertainty_mip(table, sim_table):
         writer = csv.writer(f, delimiter='\t')
         writer.writerow(('mip', 'theta', 'phi'))
         writer.writerows(zip(cx, rad2deg(cy2), rad2deg(cy)))
+
 
 def plot_uncertainty_zenith(table, sim_table):
     # constants for uncertainty estimation
@@ -218,6 +220,7 @@ def plot_uncertainty_zenith(table, sim_table):
         writer.writerows(zip(rad2deg(cx), rad2deg(cy2), rad2deg(cy),
                              rad2deg(cy3)))
 
+
 def plot_uncertainty_zenith2(table, table2):
     # constants for uncertainty estimation
     phi1 = calc_phi(1, 3)
@@ -278,6 +281,7 @@ def plot_uncertainty_zenith2(table, table2):
     savefig('plots/auto-results-zenith2.pdf')
     print
 
+
 def plot_uncertainty_phi(table):
     # constants for uncertainty estimation
     phi1 = calc_phi(1, 3)
@@ -304,6 +308,7 @@ def plot_uncertainty_phi(table):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-phi.pdf')
     print
+
 
 def plot_uncertainty_energy(table):
     THETA = pi / 8
@@ -344,6 +349,7 @@ def plot_uncertainty_energy(table):
     savefig('plots/auto-results-energy.pdf')
     print
 
+
 def plot_mip_core_dists_mean(table, sim_table):
     figure()
     rcParams['text.usetex'] = False
@@ -382,6 +388,7 @@ def plot_mip_core_dists_mean(table, sim_table):
     savefig('plots/auto-results-mip_core_dists_mean.pdf')
     print
 
+
 def plot_zenith_core_dists_mean(table, sim_table):
     figure()
     rcParams['text.usetex'] = False
@@ -413,6 +420,7 @@ def plot_zenith_core_dists_mean(table, sim_table):
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-zenith_core_dists_mean.pdf')
+
 
 def plot_uncertainty_core_dist_phi_theta(table, sim_table):
     THETA = pi / 8
@@ -472,6 +480,7 @@ def plot_uncertainty_core_dist_phi_theta(table, sim_table):
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-core-dist-phi-theta.pdf')
+
 
 def plot_interarrival_times(h, k):
     f = lambda x, N, a: N * exp(a * x)
@@ -541,9 +550,11 @@ def negpos68(x):
 
     return (xmin + xmax) / 2.
 
+
 def get_raw_timings(events, i, j):
     return compress((events['n%d' % i] >= 1) & (events['n%d' % j] >= 1),
                     events['t%d' % i] - events['t%d' % j])
+
 
 def plot_arrival_times_core(data, datasim):
     D2_Z = 5
@@ -605,6 +616,7 @@ def plot_arrival_times_core(data, datasim):
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-arrival-core-spread.pdf')
+
 
 def plot_2d_results_phi(data):
     #table = data.getNode('/reconstructions', 'full_.9scaled_linear')
@@ -707,6 +719,7 @@ def plot_2d_results_phi(data):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-bin-phi.pdf')
 
+
 def plot_2d_results_theta(data):
     #table = data.getNode('/reconstructions', 'full_.9scaled_linear')
     table = data.root.reconstructions.full_linear
@@ -794,6 +807,7 @@ def plot_2d_results_theta(data):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-bin-theta.pdf')
 
+
 def plot_energy_zenith_bin(data, tablename):
     table = data.getNode('/reconstructions', tablename)
 
@@ -831,6 +845,7 @@ def plot_energy_zenith_bin(data, tablename):
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-bin-theta-energy.pdf')
 
+
 def plot_zenith_bin_12(data):
     table = data.root.reconstructions.full3_linear
     events = table.readWhere('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
@@ -859,6 +874,7 @@ def plot_zenith_bin_12(data):
     if USE_TEX:
         rcParams['text.usetex'] = True
     savefig('plots/auto-results-bin-theta-12.pdf')
+
 
 def reconstruct_optimal_coincidences(h, k, initial, start=None, limit=None):
     """Determine optimal timeshift for coincidences and reconstruct"""
@@ -922,6 +938,7 @@ def reconstruct_optimal_coincidences(h, k, initial, start=None, limit=None):
     xlabel("Time (s)")
     ylabel("Residual time difference (ns)")
     axis('tight')
+
 
 def time_plot(h, k, initial, batchsize=5000, limit=None):
     tl = []

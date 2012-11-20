@@ -14,6 +14,7 @@ from HiSparc2Event import HiSparc2Event
 from legacy import unpack_legacy_message
 import EventExportValues
 
+
 class CIC(HiSparc2Event):	
 	def __init__(self, message):
 		""" Initialization

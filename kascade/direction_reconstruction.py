@@ -60,11 +60,13 @@ def do_reconstruction_plots(data, table):
     boxplot_arrival_times(table, 1)
     boxplot_core_distances_for_mips(table)
 
+
 def do_lint_comparison(data):
     fsot = data.root.reconstructions_offsets
     lint = data.root.lint_reconstructions_offsets
 
     plot_fsot_vs_lint_for_zenith(fsot, lint)
+
 
 def plot_uncertainty_mip(table):
     rec = DirectionReconstruction
@@ -157,6 +159,7 @@ def plot_uncertainty_mip(table):
     graph.set_xticks(range(5))
     artist.utils.save_graph(graph, dirname='plots')
 
+
 def plot_uncertainty_zenith(table):
     rec = DirectionReconstruction
 
@@ -242,6 +245,7 @@ def plot_uncertainty_zenith(table):
     artist.utils.save_graph(graph, dirname='plots')
     print
 
+
 def plot_uncertainty_core_distance(table):
     N = 2
     THETA = deg2rad(22.5)
@@ -318,6 +322,7 @@ expv_tsqv = lambda n: expv_tsq(n)[0]
 
 std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
 
+
 def plot_phi_reconstruction_results_for_MIP(table, N):
     THETA = deg2rad(22.5)
     DTHETA = deg2rad(5.)
@@ -345,6 +350,7 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
     graph.set_yticks(range(-180, 181, 90))
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
+
 def plot_theta_reconstruction_results_for_MIP(table, N):
     events = table.readWhere('min_n134 >= N')
     sim_theta = events['reference_theta']
@@ -368,6 +374,7 @@ def plot_theta_reconstruction_results_for_MIP(table, N):
     graph.set_xlabel(r'$\theta_K$ [\si{\degree}]')
     graph.set_ylabel(r'$\theta_H$ [\si{\degree}]')
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 
 def boxplot_theta_reconstruction_results_for_MIP(table, N):
     figure()
@@ -411,6 +418,7 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
     graph.set_ylabel(r"$\theta_H - \theta_K$ [\si{\degree}]")
     graph.set_ylimits(-5, 15)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 
 def boxplot_phi_reconstruction_results_for_MIP(table, N):
     figure()
@@ -458,6 +466,7 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
     graph.set_xlimits(-180, 180)
     graph.set_ylimits(-23, 23)
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
+
 
 def boxplot_arrival_times(table, N):
     THETA = deg2rad(0)
@@ -540,6 +549,7 @@ def boxplot_arrival_times(table, N):
 
     artist.utils.save_graph(graph, suffix=N, dirname='plots')
 
+
 def boxplot_core_distances_for_mips(table):
     THETA = deg2rad(22.5)
     DTHETA = deg2rad(1.)
@@ -614,12 +624,14 @@ def boxplot_core_distances_for_mips(table):
 
     artist.utils.save_graph(graph, dirname='plots')
 
+
 def plot_2d_histogram(x, y, bins):
     H, xedges, yedges = histogram2d(x, y, bins)
     imshow(H.T, extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
            origin='lower left', interpolation='lanczos', aspect='auto',
            cmap=cm.Greys)
     colorbar()
+
 
 def plot_fsot_vs_lint_for_zenith(fsot, lint):
     bins = linspace(0, 35, 21)

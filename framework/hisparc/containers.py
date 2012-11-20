@@ -1,5 +1,6 @@
 import tables
 
+
 class HisparcEvent(tables.IsDescription):
     event_id = tables.UInt64Col()
     timestamp = tables.Time32Col()

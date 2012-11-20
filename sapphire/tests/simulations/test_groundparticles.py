@@ -10,6 +10,7 @@ from sapphire.simulations import groundparticles, BaseSimulation
 from sapphire import clusters
 from sapphire import storage
 
+
 class GroundParticleSimulationTests(unittest.TestCase):
     @patch('os.path.split')
     def setUp(self, os_path_split_mock):

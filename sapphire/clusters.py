@@ -259,6 +259,7 @@ class SimpleCluster(BaseCluster):
         self._add_station((-A, -B), 2 * pi / 3)
         self._add_station((A, -B), -2 * pi / 3)
 
+
 class SingleStation(BaseCluster):
     """Define a cluster containing a single station"""
 

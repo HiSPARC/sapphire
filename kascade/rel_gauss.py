@@ -12,6 +12,7 @@ def main(data):
         fit_using_just_gauss_to_integrals(data, num_detector)
         print
 
+
 def fit_to_pulseheights(data, s, num_detector):
     figure()
 
@@ -25,6 +26,7 @@ def fit_to_pulseheights(data, s, num_detector):
     popt = do_fit_to_data(ph, s, 1000, 201, (center, .3 * center))
     print "Relative Gauss width (2nd try):", popt[2] / 3.38
 
+
 def fit_to_integrals(data, s, num_detector):
     figure()
 
@@ -37,6 +39,7 @@ def fit_to_integrals(data, s, num_detector):
     center = 3.38 / popt[1]
     popt = do_fit_to_data(intg, s, 20000, 201, (center, .3 * center))
     print "Relative Gauss width (2nd try):", popt[2] / 3.38
+
 
 def fit_using_just_gauss_to_integrals(data, num_detector):
     figure()
@@ -52,6 +55,7 @@ def fit_using_just_gauss_to_integrals(data, num_detector):
     popt = do_fit_to_data_using_gauss(intg, 20000, 201,
                                       (center, .3 * center))
     print "Relative Gauss width (2nd try):", popt[2] / 3.38
+
 
 def do_fit_to_data(dataset, s, max_hist_value, n_bins, guess):
     center, width = guess
@@ -78,6 +82,7 @@ def do_fit_to_data(dataset, s, max_hist_value, n_bins, guess):
     plot(x, s.conv_landau_for_x(x, *popt), 'g')
 
     return popt
+
 
 def do_fit_to_data_using_gauss(dataset, max_hist_value, n_bins, guess):
     center, width = guess

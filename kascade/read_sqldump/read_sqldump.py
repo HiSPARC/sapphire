@@ -20,6 +20,7 @@ mysql_escape_sequences = {r'\0': '\x00',
                           r'\_': '_',
                          }
 
+
 def process_dump(path):
     datafile = tables.openFile(DATAFILE, 'w')
 
@@ -32,6 +33,7 @@ def process_dump(path):
     buffer.close()
 
     datafile.close()
+
 
 def process_insert(datafile, s, id):
     insert_pattern = re.compile(r"""(\((?:[^'\)]+|'(?:\\?.)*?')+\))""")
@@ -59,6 +61,7 @@ def process_insert(datafile, s, id):
                 }
         store_event(datafile, 'kascade', 601, event)
     return id
+
 
 def unescape_mysql_string(matchobj):
     seq = matchobj.group(0)

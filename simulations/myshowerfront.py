@@ -23,6 +23,7 @@ def get_front_arrival_time(sim, R, dR, theta):
 
     return array(t_list)
 
+
 def monte_carlo_timings(n, bins, size):
     x0 = min(bins)
     x1 = max(bins)
@@ -38,6 +39,7 @@ def monte_carlo_timings(n, bins, size):
             t_list.append(x)
 
     return t_list
+
 
 @vectorize
 def my_std_t(data, N):
@@ -58,6 +60,7 @@ def my_std_t(data, N):
             mint_list.append(min(values))
         i += N
     return median(mint_list)
+
 
 def my_std_t_for_R(data, N_list, R_list):
     sim = data.root.showers.E_1PeV.zenith_22_5
@@ -82,6 +85,7 @@ def my_std_t_for_R(data, N_list, R_list):
         value_list.append(median(mint_list))
     return array(value_list)
 
+
 def my_t_draw_something(data, N, num_events):
     sim = data.root.showers.E_1PeV.zenith_22_5
     t = get_front_arrival_time(sim, 20, 5, pi / 8)
@@ -100,6 +104,7 @@ def my_t_draw_something(data, N, num_events):
             mint_list.append(min(values))
         i += N
     return mint_list
+
 
 def plot_R():
     graph = GraphArtist(width=r'.45\linewidth')

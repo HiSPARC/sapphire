@@ -13,6 +13,7 @@ H_SHIFT = 13.18 # HiSPARC timeshift
 
 K_FILE = "generator-kascade.dat"
 
+
 def generate_events(timespan, rate, reconstructed_fraction):
     """Generate HiSPARC and KASCADE synchronized events"""
 
@@ -36,6 +37,7 @@ def generate_events(timespan, rate, reconstructed_fraction):
                 store_kascade_event(writer, ts, ns)
     db.commit()
     db.close()
+
 
 def store_hisparc_event(cursor, ts, ns):
     t = datetime.datetime.utcfromtimestamp(gpstime.utc_to_gps(ts))
@@ -77,6 +79,7 @@ def store_hisparc_event(cursor, ts, ns):
 
     cursor.execute("INSERT INTO message (device_id, message) VALUES "
                    "(601, %s)", (msg,))
+
 
 def store_kascade_event(writer, ts, ns):
     ns = ns - (ns % 200)

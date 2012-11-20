@@ -70,6 +70,7 @@ def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
 
     return coincidences, timestamps
 
+
 def retrieve_timestamps(stations, shifts=None, limit=None):
     """Retrieve all timestamps from all stations, optionally shifting them
 
@@ -109,6 +110,7 @@ def retrieve_timestamps(stations, shifts=None, limit=None):
     timestamps.sort()
 
     return timestamps
+
 
 def do_search_coincidences(timestamps, window=200000):
     """Search for coincidences in a set of timestamps
@@ -151,6 +153,7 @@ def do_search_coincidences(timestamps, window=200000):
             coincidences.append(c)
 
     return coincidences
+
 
 def get_events(data, stations, coincidence, timestamps,
                get_raw_traces=False):
