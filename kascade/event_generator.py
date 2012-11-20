@@ -44,7 +44,7 @@ def store_hisparc_event(cursor, ts, ns):
     trace = 'xxx'
     l = len(trace)
 
-    msg = struct.pack(">BBHBBBBBHIiHhhhhhhii%ds%dshhhhhhii%ds%ds" % 
+    msg = struct.pack(">BBHBBBBBHIiHhhhhhhii%ds%dshhhhhhii%ds%ds" %
                       (l, l, l, l),
                       2,        # central database
                       2,        # number of devices

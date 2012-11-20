@@ -192,7 +192,7 @@ def plot_N_vs_R(data):
     f = lambda x, S: S * interp(x, R, N)
     popt, pcov = curve_fit(f, c_x, c_y, p0=(1e45))
     plot(R, f(R, *popt))
-            
+
     xlabel("Distance [m]")
     ylabel("Number of coincidences")
     ylim(0, 10000)

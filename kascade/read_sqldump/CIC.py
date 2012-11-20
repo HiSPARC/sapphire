@@ -1,6 +1,6 @@
-""" 
+"""
 	Process HiSPARC messages from a buffer.
-    This module processes the CIC event message 
+    This module processes the CIC event message
 """
 
 __author__="thevinh"
@@ -15,36 +15,36 @@ from legacy import unpack_legacy_message
 import EventExportValues
 
 
-class CIC(HiSparc2Event):	
+class CIC(HiSparc2Event):
 	def __init__(self, message):
 		""" Initialization
 			Proceed to unpack the message.
-		"""			
+		"""
 		# invoke constructor of parent class
 		HiSparc2Event.__init__(self, message)
-		
+
 		# init the trigger rate attribute
 		self.eventrate = 0
 
                 self.uploadCode = 'CIC'
-		
-	#--------------------------End of __init__--------------------------#	
 
-	def parseMessage(self):		
+	#--------------------------End of __init__--------------------------#
+
+	def parseMessage(self):
 		# get database flags
-		tmp = struct.unpack("B", self.message[0:1])[0]		
+		tmp = struct.unpack("B", self.message[0:1])[0]
 		if tmp <= 3:
 			unpack_legacy_message(self)
 		else:
 			self.unpackMessage()
-			
+
 		# get all event data necessary for an upload.
 		self.export_values = EventExportValues.export_values[self.uploadCode]
-		
+
 		return self.getEventData()
-			
-	#--------------------------End of parseMessage--------------------------#	
-	
+
+	#--------------------------End of parseMessage--------------------------#
+
 	def unpackMessage(self):
 		"""	Unpack a buffer message
 			This routine unpacks a buffer message written by the LabVIEW DAQ
@@ -69,7 +69,7 @@ class CIC(HiSparc2Event):
 		# Try to handle NaNs for eventrate. These are handled differently from platform to platform (i.e. MSVC libraries are screwed). This platform-dependent fix is not needed in later versions of python. So, drop this in the near future!
 		if str(self.eventrate) in ['-1.#IND', '1.#INF']:
 			self.eventrate = 0
-      
+
 		# Only bits 0-19 are defined, zero the rest to make sure
 		self.trigger_pattern &= 2**20-1
 
@@ -99,9 +99,9 @@ class CIC(HiSparc2Event):
 
 			self.slv_tr1 = compress(self.unpack_trace(slv_tr1))
 			self.slv_tr2 = compress(self.unpack_trace(slv_tr2))
-			
-	#--------------------------End of unpackMessage--------------------------#	
-			
+
+	#--------------------------End of unpackMessage--------------------------#
+
 	def unpack_trace(self, raw_trace):
 		"""	Unpack a trace
 			Traces are stored in a funny way. We have a 12-bit ADC, so two
@@ -116,7 +116,7 @@ class CIC(HiSparc2Event):
 			DF: This is legacy code. I've never tried to understand it and will
 			certainly not touch it until I do.
 		"""
-				
+
 		n = len(raw_trace)
 		if n%3 != 0:
 			#return None
@@ -132,4 +132,4 @@ class CIC(HiSparc2Event):
 
 		return trace_str
 
-	#--------------------------End of unpack_trace--------------------------#	
+	#--------------------------End of unpack_trace--------------------------#

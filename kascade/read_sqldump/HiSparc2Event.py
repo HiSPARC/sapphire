@@ -16,29 +16,29 @@ class HiSparc2Event(object, Event):
 			First, determine message type from the argument. Then, check if
 			this might be a legacy message. Proceed to unpack the message.
 		"""
-		
-		# invoke constructor of parent class
-		Event.__init__(self)		
-		
-		# get the message field in the message table
-		self.message = message[1]	
 
-	#--------------------------End of __init__--------------------------#	
+		# invoke constructor of parent class
+		Event.__init__(self)
+
+		# get the message field in the message table
+		self.message = message[1]
+
+	#--------------------------End of __init__--------------------------#
 
 	def unpackMessage(self):
 		pass
 
-	#--------------------------End of unpackMessage--------------------------#	
+	#--------------------------End of unpackMessage--------------------------#
 
-	def parseMessage(self):			
+	def parseMessage(self):
 		self.unpackMessage()
-		
+
 		# get all event data necessary for an upload.
-		self.export_values = EventExportValues.export_values[self.uploadCode]		
-		
+		self.export_values = EventExportValues.export_values[self.uploadCode]
+
 		return self.getEventData()
-		
-	#--------------------------End of parseMessage--------------------------#	
+
+	#--------------------------End of parseMessage--------------------------#
 
 	def getEventData(self):
 		"""	Get all event data necessary for an upload.
@@ -46,21 +46,21 @@ class HiSparc2Event(object, Event):
 			and figures out what data to collect for an
 			upload to the eventwarehouse. It returns a list of
 			dictionaries, one for each data element.
-		"""		
+		"""
 
 		eventdata = []
 		for value in self.export_values:
 			is_calculated = value[0]
 			data_uploadcode = value[1]
-			
-			try:				
+
+			try:
 				data = self.__getattribute__(value[2])
 			except AttributeError:
 				#if not self.version == 21:
 					# This is not a legacy message. Therefore, it should
 					# contain all exported variables, but alas, it
 					# apparently doesn't.
-					#print 'I missed this variable: ', value[2]				
+					#print 'I missed this variable: ', value[2]
 				continue
 
 			if data_uploadcode in ['TR1', 'TR2', 'TR3', 'TR4']:
@@ -78,8 +78,8 @@ class HiSparc2Event(object, Event):
 
 		return eventdata
 
-	#--------------------------End of getEventData--------------------------#	
-		
+	#--------------------------End of getEventData--------------------------#
+
 	def unpackSeqMessage(self, fmt=None):
 		"""	Sequentially unpack message with a format
 			This method is used to read from the same buffer multiple times,
@@ -104,7 +104,7 @@ class HiSparc2Event(object, Event):
 		data = struct.unpack_from(fmt, self.message,
 								  offset=self._struct_offset)
 		self._struct_offset += struct.calcsize(fmt)
-		
+
 		return data
 
-	#--------------------------End of unpackSeqMessage--------------------------#	
+	#--------------------------End of unpackSeqMessage--------------------------#

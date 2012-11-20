@@ -8,7 +8,7 @@ class HisparcClusters(tables.IsDescription):
     cluster_id = tables.StringCol(40, pos=2)
     password = tables.StringCol(20, pos=3)
     description = tables.StringCol(20, pos=4)
-       
+
 
 class HisparcEvent(tables.IsDescription):
     # DISCUSS: use of signed (dflt -1) vs unsigned (labview code)
@@ -25,7 +25,7 @@ class HisparcEvent(tables.IsDescription):
     integrals = tables.Int32Col(shape=4, dflt=-1, pos=11)
     traces = tables.Int32Col(shape=4, dflt=-1, pos=12)
     event_rate = tables.Float32Col(pos=13)
-       
+
 
 class HisparcError(tables.IsDescription):
     event_id = tables.UInt32Col(pos=0)

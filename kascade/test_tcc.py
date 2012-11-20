@@ -41,7 +41,7 @@ def calculate_tcc(event):
     n = where(n < .5, 0, n)
     if not (n > 0).sum() >= 2:
         return -999
-    
+
     i_max = len(n)
     mean_n = n.mean()
 

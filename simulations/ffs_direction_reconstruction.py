@@ -141,7 +141,7 @@ def plot_uncertainty_mip(group):
         plot(nx, n)
         plot(nx, gauss(nx, *popt))
         print "FF", sigma / std(errors)
-        
+
         n, bins = histogram(errors2, bins=200)
         nx = (bins[:-1] + bins[1:]) / 2
         popt, pcov = curve_fit(gauss, nx, n)
@@ -577,7 +577,7 @@ def boxplot_arrival_times(group, N):
 
 def boxplot_core_distances_for_mips(group):
     table = group.E_1PeV.zenith_22_5
-    
+
     figure()
 
     r_list = []
