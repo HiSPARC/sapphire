@@ -71,9 +71,9 @@ class HiSparc2Event(object, Event):
                 data = base64.b64encode(data)
 
             eventdata.append({
-                "calculated" : is_calculated,
-                "data_uploadcode" : data_uploadcode,
-                "data" : data,
+                "calculated": is_calculated,
+                "data_uploadcode": data_uploadcode,
+                "data": data,
             })
 
         return eventdata

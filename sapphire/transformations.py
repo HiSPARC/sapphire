@@ -68,7 +68,7 @@ class FromWGS84ToENUTransformation:
 
         X = (N + altitude) * cos(latitude) * cos(longitude)
         Y = (N + altitude) * cos(latitude) * sin(longitude)
-        Z = (b ** 2 / a ** 2 * N  + altitude) * sin(latitude)
+        Z = (b ** 2 / a ** 2 * N + altitude) * sin(latitude)
 
         return X, Y, Z
 

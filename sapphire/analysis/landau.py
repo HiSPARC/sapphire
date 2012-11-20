@@ -77,7 +77,7 @@ class Scintillator:
 
         f = self.landau_pdf
         g = stats.norm(scale=gauss_scale).pdf
-        x_domain  = self.full_domain
+        x_domain = self.full_domain
 
         y_calc = count_scale * discrete_convolution(f, g, x_domain)
         x_calc = x_domain / mev_scale

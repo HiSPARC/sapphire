@@ -67,7 +67,7 @@ class Master(object):
             return
         else:
             print "Searching for coincidences"
-            coincidences.search_coincidences(timeshift= -13.180220188,
+            coincidences.search_coincidences(timeshift=-13.180220188,
                                              dtlimit=1e-3)
             print "Storing coincidences"
             coincidences.store_coincidences()
