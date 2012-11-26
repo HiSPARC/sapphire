@@ -371,7 +371,9 @@ Number of cluster positions in simulation: %d
         Now, we will transform to the coordinate system of the cluster.  We make
         the simple assumption that the transformation from cluster coordinates
         to shower coordinates and back again will simply result in cluster
-        coordinates.  Thus::
+        coordinates.  Thus:
+
+        .. math::
 
             T^{-1}(T(x, y)) = (x, y).
 
