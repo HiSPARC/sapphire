@@ -1,7 +1,7 @@
-""" Simulation classes
+"""Simulation classes
 
-    Define simulations as a class, so they can be subclassed.  This way,
-    only bits of simulation logic need to be overridden.
+Define simulations as a class, so they can be subclassed.  This way, only
+bits of simulation logic need to be overridden.
 
 """
 import tables

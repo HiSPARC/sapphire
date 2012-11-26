@@ -9,7 +9,7 @@ Welcome to SAPPHiRE's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :numbered:
 
    sapphire
