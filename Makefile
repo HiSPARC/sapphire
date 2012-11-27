@@ -8,7 +8,7 @@ gh-pages:
 	git checkout master doc sapphire
 	make -C doc/ html
 	mv -fv doc/_build/html/* .
-	rm -rf doc/
+	rm -rf doc/ sapphire/
 	git add -A
 	git commit -m "Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`"
 	git checkout master
