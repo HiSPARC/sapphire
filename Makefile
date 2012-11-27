@@ -5,7 +5,7 @@ gh-pages:
 	git rm -rf .
 	git clean -dxf
 	git checkout HEAD .nojekyll
-	git checkout master doc
+	git checkout master doc sapphire
 	make -C doc/ html
 	mv -fv doc/_build/html/* .
 	rm -rf doc/
