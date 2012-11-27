@@ -3,6 +3,7 @@
 gh-pages:
 	git checkout gh-pages
 	git rm -rf .
+	git clean -dxf
 	git checkout HEAD .nojekyll
 	git checkout master doc
 	make -C doc/ html
