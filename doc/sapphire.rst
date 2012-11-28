@@ -1,5 +1,5 @@
-SAPPHiRE
-========
+SAPPHiRE Reference
+==================
 
 .. automodule:: sapphire
    :members:
