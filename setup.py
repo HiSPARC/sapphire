@@ -6,4 +6,5 @@ setup(
     url = "http://github.com/hisparc/sapphire/",
     author = "David Fokkema",
     author_email = "davidf@nikhef.nl",
+    description = "A framework for the HiSPARC experiment"
 )
