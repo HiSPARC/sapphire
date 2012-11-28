@@ -1,7 +1,7 @@
 .PHONY: gh-pages
 
 gh-pages:
-ifeq (`git status --porcelain | wc -l`, 0)
+ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
 	git checkout gh-pages
 	git rm -rf .
 	git clean -dxf
