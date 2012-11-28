@@ -1,11 +1,11 @@
-SAPPHiRE -- A Framework for HiSPARC
+SAPPHiRE — A Framework for HiSPARC
 ===================================
 
-SAPPHiRE is a Simulation and Analysis Program Package for HiSPARC Research
-and Education.  It was created in the process of completing the PhD
-research of David Fokkema.  The history of this repository contains the
-complete simulation, analysis and plot generation code that formed the
-basis for David's thesis.
+SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
+<http://www.hisparc.nl/>`_ Research and Education.  It was created in the
+process of completing the PhD research of David Fokkema.  The history of
+this repository contains the complete simulation, analysis and plot
+generation code that formed the basis for David's thesis.
 
 This repository is created with a sole purpose in mind: to enable HiSPARC
 students, teachers and researchers to easily gain access to the data and
