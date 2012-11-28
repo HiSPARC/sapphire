@@ -6,5 +6,8 @@ setup(
     url = "http://github.com/hisparc/sapphire/",
     author = "David Fokkema",
     author_email = "davidf@nikhef.nl",
-    description = "A framework for the HiSPARC experiment"
+    description = "A framework for the HiSPARC experiment",
+
+    install_requires = ['numpy', 'scipy', 'tables', 'matplotlib',
+                        'progressbar', 'mock'],
 )
