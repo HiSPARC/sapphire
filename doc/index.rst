@@ -21,6 +21,8 @@ Contents:
    :maxdepth: 3
    :numbered:
 
+   installation
+   tutorial
    sapphire
 
 
