@@ -6,14 +6,14 @@ Using Pip.  Like so::
 
     $ pip install sapphire
 
-Then, the python package called ``sapphire`` will be retrieved from the
-internet.  It will have its dependencies listed and ``pip`` will pull them
-in and all should be well.  In fact, sapphire *does* have its dependencies
-listed and pip *will* pull them in.  It is only then, that things start go
-wrong.  Whether you'll experience difficulties depends on the operating
-system you're using and previously installed software.  Before I'll go on
-describing how to install sapphire itself, we will first install the
-prerequisites.
+Then, the python package called ``sapphire`` would be retrieved from the
+internet.  It would have its dependencies listed and ``pip`` would pull
+them in and all should be well.  In fact, sapphire *does* have its
+dependencies listed and pip *will* pull them in.  It is only then, that
+things start go wrong.  Whether you'll experience difficulties depends on
+the operating system you're using and previously installed software.
+Before I'll go on describing how to install sapphire itself, we will first
+install the prerequisites.
 
 
 Mac OS X
@@ -51,7 +51,7 @@ system::
     $ pip install matplotlib
 
 
-Instaling sapphire
+Installing sapphire
 ------------------
 
 Like so::
