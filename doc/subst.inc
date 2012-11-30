@@ -1,0 +1,1 @@
+.. |sapphire| replace:: SAPPHiRE

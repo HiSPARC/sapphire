@@ -1,3 +1,5 @@
+.. include:: subst.inc
+
 Installation
 ============
 
@@ -8,11 +10,11 @@ Using `Pip <http://www.pip-installer.org/>`_.  Like so::
 
 Then, the python package called ``sapphire`` would be retrieved from the
 internet.  It would have its dependencies listed and ``pip`` would pull
-them in and all should be well.  In fact, sapphire *does* have its
+them in and all should be well.  In fact, |sapphire| *does* have its
 dependencies listed and pip *will* pull them in.  It is only then, that
 things start go wrong.  Whether you'll experience difficulties depends on
 the operating system you're using and previously installed software.
-Before I'll go on describing how to install sapphire itself, we will first
+Before I'll go on describing how to install |sapphire| itself, we will first
 install the prerequisites.
 
 
@@ -36,7 +38,7 @@ terminal::
 
 This will install Python and Pip.
 
-As of this writing, several of the dependencies listed by sapphire do not
+As of this writing, several of the dependencies listed by |sapphire| do not
 have their own dependencies listed in a way that pip (or other tools, for
 that matter) know how to handle.  Furthermore, matplotlib needs to be
 installed all by itself, and its dependencies must be installed before it.
@@ -80,7 +82,7 @@ opinion, anyway.  Lots of python packages can be installed using
 pacakges at your own discretion (read: risk).  Pip handles python packages
 very well, so I'll give some instructions using Pip.
 
-As of this writing, several of the dependencies listed by sapphire do not
+As of this writing, several of the dependencies listed by |sapphire| do not
 have their own dependencies listed in a way that pip (or other tools, for
 that matter) know how to handle.  Furthermore, matplotlib needs to be
 installed all by itself, and its dependencies must be installed before it.
@@ -97,8 +99,8 @@ There are more prerequisites to be installed, but they are correctly
 handled by the python package management software.
 
 
-Installing sapphire
-------------------
+Installing |sapphire|
+---------------------
 
 Like so::
 
