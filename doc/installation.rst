@@ -78,22 +78,32 @@ Debian and derivatives (like Ubuntu)
 Debian has a first-class package manager which other distributions and
 operating systems have a hard time competing with.  In my personal
 opinion, anyway.  Lots of python packages can be installed using
-``apt-get``, but some of them are outdated.  Use ``apt-get`` for python
-pacakges at your own discretion (read: risk).  Pip handles python packages
-very well, so I'll give some instructions using Pip.
+``apt-get``, but some of them might be outdated, depending on the age of
+your distribution.  Use ``apt-get`` for python pacakges at your own
+discretion (read: risk).  Pip handles python packages very well, so I'll
+give some instructions using Pip.
 
 As of this writing, several of the dependencies listed by |sapphire| do not
 have their own dependencies listed in a way that pip (or other tools, for
 that matter) know how to handle.  Furthermore, matplotlib needs to be
 installed all by itself, and its dependencies must be installed before it.
 
+You need to install some development libraries::
+
+    $ sudo apt-get install gfortran
+    $ sudo apt-get install python-dev
+    $ sudo apt-get install libfreetype6-dev
+    $ sudo apt-get install libpng-dev
+    $ sudo apt-get install libatlas-base-dev
+    $ sudo apt-get install libhdf5-dev
+
 After trial and error, this is the magic incantation which works on my
 system::
 
-    $ pip install numpy
-    $ pip install numexpr
-    $ pip install cython
-    $ pip install matplotlib
+    $ sudo pip install numpy
+    $ sudo pip install numexpr
+    $ sudo pip install cython
+    $ sudo pip install matplotlib
 
 There are more prerequisites to be installed, but they are correctly
 handled by the python package management software.
