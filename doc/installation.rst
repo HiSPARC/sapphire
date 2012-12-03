@@ -59,7 +59,7 @@ Windows
 ^^^^^^^
 
 While Python follows a *batteries included* philosophy with an extensive
-standard library, the unix philosophy favors minimalism.  Therefore, it is
+standard library, the Unix philosophy favors minimalism.  Therefore, it is
 custom to install Python and then continue to install additional packages
 as needed.  Not so with Windows.  Windows does not have a package manager
 which can handle many software packages.  Instead, it favors installing
@@ -68,8 +68,38 @@ Installing a package requires running a separate installer.
 
 Luckily, the `Python(x,y) <http://code.google.com/p/pythonxy/>`_ project
 solves this problem by installing not only Python, but a complete
-scientific environment.  This means that all are prerequisites are
+scientific environment.  This means that all our prerequisites are
 automatically covered.  Please install Python(x,y).
+
+In a Unix environment it is common to use the *terminal* for management
+tasks.  It is a text-only environment that lets you basically do anything.
+In windows, people are accustomed to performing all kinds of tasks using
+graphical interfaces.  However, these graphical interfaces are much harder
+to write than text-only interfaces.  As a result, graphical interfaces are
+usually somewhat limited.  Luckily, there *is* a terminal-like environment
+in Windows, called the *command prompt*.  You can open a command prompt in
+the following ways:
+
+    **Windows XP:**  Click Start.  Click Run.  Type ``cmd`` and press
+    *Enter*.
+
+    **Windows Vista, 7:**  Click Start.  Type ``cmd`` and press *Enter*.
+
+    **Windows 8:**  From the Start Screen, type ``cmd`` and press *Enter*.
+
+.. note::
+    In the rest of this document, we will follow the Unix convention of
+    displaying a dollar sign ($) whenever we work from a terminal.  In
+    Unix environments, the dollar sign signifies the *command prompt*.  In
+    Windows, the command prompt is something like ``c:\>``.  Thus, whenever
+    you see::
+
+        $ pip install foo
+
+    we mean that you should open a command window, and then type ``pip
+    install foo`` at the prompt.  In Windows, this looks something like::
+
+        c:\> pip install foo
 
 
 Debian and derivatives (like Ubuntu)
@@ -149,8 +179,10 @@ a zip file.
 
 .. image:: images/github-zipball.png
 
-Uncompress the zip file, open a terminal and navigate to the top-level
-directory containing the code.  Then issue::
+You can also click the following link:
+https://github.com/hisparc/sapphire/zipball/master.  Uncompress the zip
+file, open a terminal and navigate to the top-level directory containing
+the code.  Then issue::
 
     $ python setup.py install
 
@@ -165,6 +197,12 @@ First off, the following is not an exhaustive check.  But it will tell you
 if |sapphire| is, in fact, installed on your system and that Python knows
 how to find it.
 
+.. note:: When you run this check from *inside* the top-level |sapphire|
+          code directory, it will always return successfully.  The reason
+          for this is that Python also checks the current working
+          directory for packges.  *So, run this check from e.g. your home
+          directory.*
+
 Start a Python session.  You can use a launcher of some type (e.g. the one
 from Python(x,y)), or open a terminal and type::
 
@@ -174,16 +212,10 @@ Or, if you prefer, `IPython <http://ipython.org>`_::
 
     $ ipython
 
-In fact, we recommend using IPython for interactive use.  Then, try to
-import |sapphire|::
+In fact, we recommend using IPython for interactive use (install IPython
+using ``pip install ipython``).  Then, try to import |sapphire|::
 
     >>> import sapphire
 
 If this returns without an error message, all is well and |sapphire| is
 correctly installed.
-
-.. note:: When you run this check from *inside* the top-level |sapphire|
-          code directory, it will always return successfully.  The reason
-          for this is that Python also checks the current working
-          directory for packges.  So, run this check from e.g. your home
-          directory.
