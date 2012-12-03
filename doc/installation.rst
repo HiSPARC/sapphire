@@ -96,6 +96,7 @@ You need to install some development libraries::
     $ sudo apt-get install libpng-dev
     $ sudo apt-get install libatlas-base-dev
     $ sudo apt-get install libhdf5-dev
+    $ sudo apt-get install tk-dev
 
 After trial and error, this is the magic incantation which works on my
 system::
