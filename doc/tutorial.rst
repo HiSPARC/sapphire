@@ -54,3 +54,68 @@ and you'll be presented with a basic help screen.  Instead of
 objects, etc.  Everything in Python has *some* help text associated with
 it.  Not all of it is very helpful to a newcomer, hence this tutorial.
 All help text is also available in the :doc:`sapphire`.
+
+
+Downloading and accessing |hisparc| data
+----------------------------------------
+
+The |sapphire| package comprises multiple modules and packages.  To access
+data from the public database, we'll have to import the ``publicdb``
+module.  Also, we need the ``tables`` module to actually store the data.
+`PyTables <pytables.org>`_ is based on the open HDF5 data format, which is
+used by `many (research) institutes
+<http://www.hdfgroup.org/HDF5/users5.html>`_.  For example, it is used by
+the KNMI and by NASA.  To specify the date and time for which to download
+the data, we need the ``datetime`` module.  Thus, we have::
+
+    >>> import tables
+    >>> import datetime
+    >>> import sapphire.publicdb
+
+Creating an empty data file, with the name ``mydata.h5``, is done easily::
+
+    >>> data = tables.openFile('mydata.h5', 'w')
+
+The ``'w'`` means *write*, which creates a file for writing (and reading).
+Mind that this will create an empty file.  If there already was a file
+with that name, it will be overwritten!  Alternatively, you can say
+``'a'``, which means *append*, thus adding to an existing file without
+overwriting its contents.  Finally, you can specify ``'r'`` for
+*read-only*.
+
+To download data, we have to specify the date/time *range*.  If we want to
+download data from the December 1, 2012 all through December 2, 2012,
+we can specify this by typing::
+
+    >>> start = datetime.datetime(2012, 12, 1)
+    >>> end = datetime.datetime(2012, 12, 3)
+
+Mind that if we do not specify the hour of day, it is taken to be 00:00
+hours.  Thus, there is no data included from December 3.  Alternatively,
+we can download data from a two hour interval on December 14 by specifying
+the hour of day::
+
+    >>> start = datetime.datetime(2012, 12, 14, 19)
+    >>> end = datetime.datetime(2012, 12, 14, 21)
+
+which is from 19:00 to 21:00 hours.  It is important to realize that the
+we use a GPS clock, which equal to UTC (up to leap seconds).  So, if we
+download data for a station in the Netherlands, we have just said from
+20:00 to 22:00 local time.  You can specify the time up to the seconds.
+
+We have not actually done anything yet.  We have just stored our time
+window in two arbitrarily-named variables, ``start`` and ``end``.  To
+download data from station 501 and store it in a group with name ``s501``,
+we can use the :func:`sapphire.publicdb.download_data` function::
+
+    >>> sapphire.publicdb.download_data(data, '/s501', 501, start, end)
+    INFO:hisparc.publicdb:2012-12-01 00:00:00 None
+    INFO:hisparc.publicdb:Getting server data URL (2012-12-01 00:00:00)
+    INFO:hisparc.publicdb:Downloading data...
+    INFO:hisparc.publicdb:Storing data...
+    INFO:hisparc.publicdb:Done.
+    INFO:hisparc.publicdb:2012-12-02 00:00:00 None
+    INFO:hisparc.publicdb:Getting server data URL (2012-12-02 00:00:00)
+    INFO:hisparc.publicdb:Downloading data...
+    INFO:hisparc.publicdb:Storing data...
+    INFO:hisparc.publicdb:Done.
