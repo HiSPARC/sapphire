@@ -3,3 +3,5 @@
 .project
 .pydevproject
 .DS_Store
+
+sapphire.egg-info/
