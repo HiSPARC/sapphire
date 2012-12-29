@@ -87,6 +87,20 @@ the following ways:
 
     **Windows 8:**  From the Start Screen, type ``cmd`` and press *Enter*.
 
+First, we'll install the modern Python package manager Pip::
+
+    c:\> easy_install pip
+
+This will probably try to open another terminal window, install Pip, close
+the window, and *then* complain that easy_install is probably not
+installed correctly (at least, this is how it went for us on Windows 7).
+Just tell Windows the program *was* installed correctly.  Pip will not
+have such idiosyncrasies and this was the last time we'll have used
+``easy_install``.  Note that it is also possible to install Python(x,y)
+and select the Pip package under *Python* in the installation options
+menu.  This makes it unnecessary to manually run ``easy_install``.  The
+end result is the same, however.
+
 .. note::
     In the rest of this document, we will follow the Unix convention of
     displaying a dollar sign ($) whenever we work from a terminal.  In
@@ -100,6 +114,12 @@ the following ways:
     install foo`` at the prompt.  In Windows, this looks something like::
 
         c:\> pip install foo
+
+When you run Python(x,y), we found it best to select *IPython (Qt)* under
+*Interactive consoles*, and run it in *Console 2* (the left, green, one).
+See below.  This will automatically import Pylab, a plotting package.
+
+.. image:: images/pythonxy-console.png
 
 
 Debian and derivatives (like Ubuntu)
