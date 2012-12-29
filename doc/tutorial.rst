@@ -23,6 +23,15 @@ see the :doc:`sapphire`.
 First steps
 -----------
 
+In a few examples, we will plot the data which we have produced.  We make
+use of pylab, which is included with matplotlib.  In OS X and Linux, you
+can start an IPython terminal with pylab using::
+
+    $ ipython --pylab
+
+On Windows, where you're probably using Python(x,y), this should be the
+default mode.
+
 Whenever you see something like::
 
     >>> print 'Hello, world'
@@ -72,6 +81,7 @@ the data, we need the ``datetime`` module.  Thus, we have::
     >>> import datetime
     >>> import sapphire.publicdb
 
+
 Creating an empty data file, with the name ``mydata.h5``, is done easily::
 
     >>> data = tables.openFile('mydata.h5', 'w')
@@ -82,6 +92,10 @@ with that name, it will be overwritten!  Alternatively, you can say
 ``'a'``, which means *append*, thus adding to an existing file without
 overwriting its contents.  Finally, you can specify ``'r'`` for
 *read-only*.
+
+
+Downloading data
+^^^^^^^^^^^^^^^^
 
 To download data, we have to specify the date/time *range*.  If we want to
 download data from the December 1, 2012 all through December 2, 2012,
@@ -119,3 +133,117 @@ we can use the :func:`sapphire.publicdb.download_data` function::
     INFO:hisparc.publicdb:Downloading data...
     INFO:hisparc.publicdb:Storing data...
     INFO:hisparc.publicdb:Done.
+
+As you can see in the reference documentation of
+:func:`sapphire.publicdb.download_data`, available by either clicking on
+the link or typing in ``help(sapphire.publicdb.download_data)`` in the
+interpreter, the function takes six arguments: *file, group, station_id,
+start, end* and *get_blobs*.  The last one has the default argument
+*False*, and may be omitted, as we have done here.  In our example, we
+have opened a file, ``mydata.h5``, and have stored the file *handler* in
+the variable ``data``.  So, we passed ``data`` to the function.  The group
+name is ``/s501``.  Group names in PyTables are just like folders in a
+directory hierarchy.  So, we might have specified
+``/path/to/my/hisparc/data/files/for_station/s501``.  It is important to
+note that this has absolutely nothing to do with *files*.  Whatever path
+you specify, it is all contained *inside* your data file.  Since this is
+just a small data file, we have opted for a simple structure.  At the
+moment, just one group named ``s501`` at the root of the hierarchy.  Group
+names must start with a letter, hence the ``s`` for station.
+
+The *station_id* is simply the station number.  Here, we've chosen to
+download data for station 501, located at Nikhef.  The *start* and *end*
+parameters specify the date/time range.  Finally, *get_blobs* selects
+whether binary data should be downloaded.  This includes the traces of
+individual events, error messages, etc.  We've selected the default, which
+is *False*.  Binary data is often not neccessary, and will increase the
+data size tenfold.
+
+
+Looking around
+^^^^^^^^^^^^^^
+
+If you want to know what groups and tables are contained within the data
+file, just ``print`` it::
+
+    >>> print data
+    mydata.h5 (File) ''
+    Last modif.: 'Sat Dec 29 14:50:55 2012'
+    Object Tree:
+    / (RootGroup) ''
+    /s501 (Group) 'Data group'
+    /s501/events (Table(137600,)) 'HiSPARC coincidences table'
+    /s501/weather (Table(51513,)) 'HiSPARC weather data'
+
+The *object tree* gives an overview of all groups and tables.  As you can
+see, the ``/s501`` group contains two tables, ``events`` and ``weather``.
+The events table contains the data from the |hisparc| scintillators, while
+the weather table contains data from the (optional) weather station.
+
+To directly access any object in the hierarchy, you can make use of the
+``data.root`` object, which points to the root group.  Then, just specify
+the remaining path, with dots instead of slashes.  For example, to access
+the events table::
+
+    >>> print data.root.s501.events
+    /s501/events (Table(137600,)) 'HiSPARC coincidences table'
+
+Of course, we'd like to get some more information.  You can drop the print
+statement, and just access the object directly.  PyTables is set up such
+that it will give more detailed information whenever you specify the
+object directly::
+
+    >>> data.root.s501.events
+    /s501/events (Table(137600,)) 'HiSPARC coincidences table'
+      description := {
+      "event_id": UInt32Col(shape=(), dflt=0, pos=0),
+      "timestamp": Time32Col(shape=(), dflt=0, pos=1),
+      "nanoseconds": UInt32Col(shape=(), dflt=0, pos=2),
+      "ext_timestamp": UInt64Col(shape=(), dflt=0, pos=3),
+      "data_reduction": BoolCol(shape=(), dflt=False, pos=4),
+      "trigger_pattern": UInt32Col(shape=(), dflt=0, pos=5),
+      "baseline": Int16Col(shape=(4,), dflt=-1, pos=6),
+      "std_dev": Int16Col(shape=(4,), dflt=-1, pos=7),
+      "n_peaks": Int16Col(shape=(4,), dflt=-1, pos=8),
+      "pulseheights": Int16Col(shape=(4,), dflt=-1, pos=9),
+      "integrals": Int32Col(shape=(4,), dflt=-1, pos=10),
+      "traces": Int32Col(shape=(4,), dflt=-1, pos=11),
+      "event_rate": Float32Col(shape=(), dflt=0.0, pos=12)}
+      byteorder := 'little'
+      chunkshape := (704,)
+
+There you go!  But what does it all *mean*?  Well, if you want to get to
+the bottom of it, read the `PyTables documentation
+<http://pytables.github.com/usersguide/index.html>`_.  We'll give a quick
+overview here.
+
+First, this table contains 137600 rows.  In total, there are thirteen
+columns: *event_id, timestamp, nanoseconds, ext_timestamp, data_reduction,
+trigger_pattern, baseline, std_dev, n_peaks, pulseheights, integrals,
+traces* and *event_rate*.
+
+Each event has a unique [#event_id]_ identifier, ``event_id``.  Each event
+has a Unix timestamp in GPS time, *not* UTC.  The sub-second part of the
+timestamp is given in ``nanoseconds``.  The ``ext_timestamp`` is the full
+timestamp in ns.  Since there cannot exist another event with the same
+timestamp, this field in combination with the station number uniquely
+identifies the event.  The ``data_reduction`` flag signifies whether the
+full PMT trace (*no* reduction) has been stored, or just the PMT pulse
+(*reduced*, or *zero suppression*).  The ``trigger_pattern`` is a binary
+value containing the exact trigger condition at the time of the event.
+The ``baseline``, ``std_dev``, ``n_peaks``, ``pulseheights`` and
+``integrals`` fields are values derived from the PMT traces.  Each field
+contains four values, one for each detector.  If a station only has two
+detectors, the last two values for each field are -1.  If the baseline
+cannot be determined, all these values are -999.  The ``event_rate`` is
+the trigger rate at the time of the event.
+
+
+.. rubric:: Footnotes
+
+.. [#event_id]
+
+    Unique in this table.  When data is downloaded for analysis and
+    combined with other data into one table, the ``event_id`` will be
+    different.  To uniquely define an event, use a station number /
+    ``ext_timestamp`` combination.
