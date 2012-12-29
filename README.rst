@@ -46,10 +46,10 @@ For Linux, use your favorite package manager.
 
 Then::
 
-    $ sudo pip install numpy
-    $ sudo pip install numexpr
-    $ sudo pip install cython
-    $ sudo pip install matplotlib
+    $ pip install numpy
+    $ pip install numexpr
+    $ pip install cython
+    $ pip install matplotlib
 
 And, finally::
 
