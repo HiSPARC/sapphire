@@ -1,6 +1,9 @@
 SAPPHiRE — A Framework for HiSPARC
 ===================================
 
+Introduction
+------------
+
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 <http://www.hisparc.nl/>`_ Research and Education.  It was created in the
 process of completing the PhD research of David Fokkema.  The history of
@@ -21,4 +24,35 @@ write well-documented, clean code.  He feels, however, that the presently
 available code is a good start.  By releasing it now, it can be used,
 accessed, and cleaned up.
 
-Watch this space.
+In fact, it is probably being cleaned up at this very moment!
+
+
+Installation
+------------
+
+The complete installation instructions are available in the documentation
+in the ``doc/`` directory.  You can compile them using Sphinx, or you can
+follow this link: http://hisparc.github.com/sapphire/.
+
+
+Quick installation
+^^^^^^^^^^^^^^^^^^
+
+For the impatient, here are some quick installation instructions.  Make
+sure you have python and pip installed.  For the Mac, I recommend to
+install Homebrew and then ``brew install python`` to get the job done.
+For Windows, install `Python(x,y) <http://code.google.com/p/pythonxy/>`_.
+For Linux, use your favorite package manager.
+
+Then::
+
+    $ sudo pip install numpy
+    $ sudo pip install numexpr
+    $ sudo pip install cython
+    $ sudo pip install matplotlib
+
+And, finally::
+
+    $ pip install https://github.com/hisparc/sapphire/zipball/master
+
+You're done!
