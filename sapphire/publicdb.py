@@ -42,9 +42,9 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
 
         >>> import tables
         >>> import datetime
-        >>> import hisparc
+        >>> import sapphire.publicdb
         >>> data = tables.openFile('data.h5', 'w')
-        >>> hisparc.publicdb.download_data(data, '/s501', 501, datetime.datetime(2010, 9, 1), datetime.datetime(2010, 9, 2))
+        >>> sapphire.publicdb.download_data(data, '/s501', 501, datetime.datetime(2010, 9, 1), datetime.datetime(2010, 9, 2))
         INFO:hisparc.publicdb:2010-09-01 00:00:00 None
         INFO:hisparc.publicdb:Getting server data URL (2010-09-01 00:00:00)
         INFO:hisparc.publicdb:Downloading data...
@@ -66,11 +66,11 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         logger.info("Downloading data...")
         tmp_datafile, headers = urllib.urlretrieve(url)
         logger.info("Storing data...")
-        store_data(file, group, tmp_datafile, t0, t1)
+        _store_data(file, group, tmp_datafile, t0, t1)
         logger.info("Done.")
 
 
-def store_data(dst_file, dst_group, src_filename, t0, t1):
+def _store_data(dst_file, dst_group, src_filename, t0, t1):
     """Copy data from a temporary file to the destination file
 
     This function takes a file containing downloaded data and copies it to
@@ -82,7 +82,7 @@ def store_data(dst_file, dst_group, src_filename, t0, t1):
     # Open in rw mode, need to update blob idxs, if necessary
     with tables.openFile(src_filename, 'a') as src_file:
         src_group = src_file.listNodes('/')[0]
-        dst_group = get_or_create_group(dst_file, dst_group)
+        dst_group = _get_or_create_group(dst_file, dst_group)
 
         if 'blobs' in dst_group:
             len_blobs = len(dst_file.getNode(dst_group, 'blobs'))
@@ -90,7 +90,7 @@ def store_data(dst_file, dst_group, src_filename, t0, t1):
             len_blobs = 0
 
         for node in src_file.listNodes(src_group):
-            dst_node = get_or_create_node(dst_file, dst_group, node)
+            dst_node = _get_or_create_node(dst_file, dst_group, node)
 
             if node.name == 'blobs':
                 for row in node:
@@ -192,7 +192,7 @@ def datetimerange(start, stop):
             return
 
 
-def get_or_create_group(file, group):
+def _get_or_create_group(file, group):
     """Get or create a group in the datafile"""
 
     try:
@@ -204,7 +204,7 @@ def get_or_create_group(file, group):
     return group
 
 
-def get_or_create_node(file, group, src_node):
+def _get_or_create_node(file, group, src_node):
     """Get or create a node based on a source node"""
 
     try:
