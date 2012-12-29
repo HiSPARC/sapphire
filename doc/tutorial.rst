@@ -238,6 +238,39 @@ detectors, the last two values for each field are -1.  If the baseline
 cannot be determined, all these values are -999.  The ``event_rate`` is
 the trigger rate at the time of the event.
 
+We'll get to work with this data in a moment.  First, we'll take a look at
+the weather table::
+
+    >>> data.root.s501.weather
+    /s501/weather (Table(51513,)) 'HiSPARC weather data'
+      description := {
+      "event_id": UInt32Col(shape=(), dflt=0, pos=0),
+      "timestamp": Time32Col(shape=(), dflt=0, pos=1),
+      "temp_inside": Float32Col(shape=(), dflt=0.0, pos=2),
+      "temp_outside": Float32Col(shape=(), dflt=0.0, pos=3),
+      "humidity_inside": Int16Col(shape=(), dflt=0, pos=4),
+      "humidity_outside": Int16Col(shape=(), dflt=0, pos=5),
+      "barometer": Float32Col(shape=(), dflt=0.0, pos=6),
+      "wind_dir": Int16Col(shape=(), dflt=0, pos=7),
+      "wind_speed": Int16Col(shape=(), dflt=0, pos=8),
+      "solar_rad": Int16Col(shape=(), dflt=0, pos=9),
+      "uv": Int16Col(shape=(), dflt=0, pos=10),
+      "evapotranspiration": Float32Col(shape=(), dflt=0.0, pos=11),
+      "rain_rate": Float32Col(shape=(), dflt=0.0, pos=12),
+      "heat_index": Int16Col(shape=(), dflt=0, pos=13),
+      "dew_point": Float32Col(shape=(), dflt=0.0, pos=14),
+      "wind_chill": Float32Col(shape=(), dflt=0.0, pos=15)}
+      byteorder := 'little'
+      chunkshape := (1310,)
+
+We'll let these column names speak for themselves.
+
+
+Accessing the data
+^^^^^^^^^^^^^^^^^^
+
+
+
 
 .. rubric:: Footnotes
 
