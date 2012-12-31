@@ -119,7 +119,7 @@ download data for a station in the Netherlands, we have just said from
 
 We have not actually done anything yet.  We have just stored our time
 window in two arbitrarily-named variables, ``start`` and ``end``.  To
-download data from station 501 and store it in a group with name ``s501``,
+download data from station 501 and store it in a group with name ``/s501``,
 we can use the :func:`sapphire.publicdb.download_data` function::
 
     >>> sapphire.publicdb.download_data(data, '/s501', 501, start, end)
@@ -218,9 +218,10 @@ the bottom of it, read the `PyTables documentation
 overview here.
 
 First, this table contains 137600 rows.  In total, there are thirteen
-columns: *event_id, timestamp, nanoseconds, ext_timestamp, data_reduction,
-trigger_pattern, baseline, std_dev, n_peaks, pulseheights, integrals,
-traces* and *event_rate*.
+columns: ``event_id``, ``timestamp``, ``nanoseconds``, ``ext_timestamp``,
+``data_reduction``, ``trigger_pattern``, ``baseline``, ``std_dev``,
+``n_peaks``, ``pulseheights``, ``integrals``, ``traces`` and
+``event_rate``.
 
 Each event has a unique [#event_id]_ identifier, ``event_id``.  Each event
 has a Unix timestamp in GPS time, *not* UTC.  The sub-second part of the
