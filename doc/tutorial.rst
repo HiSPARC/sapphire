@@ -272,7 +272,75 @@ We'll let these column names speak for themselves.
 Accessing the data
 ^^^^^^^^^^^^^^^^^^
 
+We can access the data in several ways.  We can address the complete
+table, or just one or several rows from it.  We can read out a single
+column, or select data based on a query.  Before we do any of that, we'll
+save us some typing::
 
+    >>> events = data.root.s501.events
+
+Now, we have stored a short-hand reference to the events table. Let's get
+the first event::
+
+    >>> events[0]
+    (1L, 1354320004, 670634817L, 1354320004670634817L, True, 196608L,
+    [195, 197, 197, 197], [658, 763, 646, 771], [1, 0, 1, 0], [173, 3,
+    407, 3], [1603, 0, 4019, 0], [0, 1, 2, 3], 0.9111111164093018)
+
+That's the first event!  It is not, however, immediately clear what
+numbers correspond to which columns.  They are in order, however, so you
+could find out.  It is often easier to specify the column you're
+interested in::
+
+    >>> events[0]['pulseheights']
+    array([173,   3, 407,   3], dtype=int16)
+    >>> events[0]['n_peaks']
+    array([1, 0, 1, 0], dtype=int16)
+
+Which gives us the pulseheights of the first event.  The pulseheights are
+16-bit integers (that's the ``dtype=int16``) and are determined after
+digitizing the events using an analog-digital converter (ADC).  Each unit
+corresponds to about -0.57 mV.  You can tell that the first and third
+detectors had relatively large pulseheights, and that they were registered
+as a significant *peak* in the signal (see the ``n_peaks`` column).
+
+If you're interested in the pulseheights of *all* events, the fastest way
+to do it is to make use of the :meth:`Table.col`  method of the table::
+
+    >>> events.col('pulseheights')
+    array([[173,   3, 407,   3],
+           [  1,   2, 313, 756],
+           [211,   2,   2, 268],
+           ...,
+           [  2,   2, 529, 327],
+           [  7,   2, 318, 249],
+           [  3, 250,  14, 416]], dtype=int16)
+
+It is also possible to select the data based on a query.  For example, to
+select all events between timestamps 1354320000 and 1354323600 (a one-hour
+time span)::
+
+    >>> t0 = 1354320000
+    >>> t1 = t0 + 3600
+    >>> sel_events = events.readWhere('(t0 <= timestamp) & (timestamp < t1)')
+    >>> len(sel_events)
+    2836
+
+Thus, we have selected 2836 events.  The variable ``sel_events`` no longer
+points to a table.  We can no longer make use of the :meth:`Table.col`
+method, but we *can* access all pulseheights in the following way::
+
+    >>> sel_events['pulseheights']
+    array([[173,   3, 407,   3],
+           [  1,   2, 313, 756],
+           [211,   2,   2, 268],
+           ...,
+           [328, 556, 255,  15],
+           [  3, 325, 309,   3],
+           [  2,   2, 271, 381]], dtype=int16)
+
+This notation is possible for arrays, but not for tables.  So, for tables,
+use the :meth:`Table.col` method.  For arrays, use this special notation.
 
 
 .. rubric:: Footnotes
