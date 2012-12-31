@@ -467,7 +467,7 @@ documentation, see the `Matplotlib site <http://matplotlib.org>`_
     >>> ylabel("Counts")
     >>> title("Pulseheight histogram (log scale)")
 
-The :func:`arange` function returns an array with range from 0 to 2001 in
+The :func:`arange` function returns an array with range from 0 to 2000 in
 steps of 20.  It is necessary to say 2001 (or 2002, 2000.1 or whatever)
 and not 2000, if you want the range to be inclusive.  The :func:`hist`
 function will then plot a *stepped* histogram with a log scale.  Finally,
