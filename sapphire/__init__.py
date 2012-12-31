@@ -28,6 +28,9 @@ The following packages and modules are included:
 :mod:`~sapphire.storage`
     storage-related definitions
 
+:mod:`~sapphire.time_util`
+    GPS date/time utility functions
+
 :mod:`~sapphire.transformations`
     geographic coordinate transformations
 
