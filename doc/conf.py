@@ -283,3 +283,7 @@ epub_copyright = u'2012, David Fokkema'
 
 # Allow duplicate toc entries.
 #epub_tocdup = True
+
+
+# -- User-defined options ------------------------------------------------------
+autoclass_content = 'both'
