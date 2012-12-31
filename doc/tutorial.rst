@@ -405,8 +405,7 @@ time on December 2, 2012::
     >>> t1 = sapphire.time_util.GPSTime(2012, 12, 2, 13).gpstimestamp()
     >>> t0, t1
     (1354449600, 1354453200)
-    >>> sel_events = events.readWhere('(t0 <= timestamp) & (timestamp <
-    >>> t1)')
+    >>> sel_events = events.readWhere('(t0 <= timestamp) & (timestamp < t1)')
     >>> len(sel_events)
     2817
 
