@@ -343,6 +343,89 @@ This notation is possible for arrays, but not for tables.  So, for tables,
 use the :meth:`Table.col` method.  For arrays, use this special notation.
 
 
+The :mod:`sapphire.time_util` module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+|sapphire| includes a handy module: :mod:`sapphire.time_util`.  This saves
+you from the hassle of converting timestamps and confusing local time and
+GPS (or UTC) time.  It is important to realize that the |hisparc| station
+uses a GPS clock, and thus saves all timestamps in GPS time, which is
+certainly not local time!  You can look up `GPS time
+<http://en.wikipedia.org/wiki/Global_Positioning_System#Timekeeping>`_,
+but suffice it to say that it is *almost* equal to UTC time.  The
+difference is the leap seconds introduced after 1980.  In January 2013,
+GPS time is ahead of UTC by 16 seconds.  We will not reference UTC or
+local time, but instead always reference GPS time!
+
+While you tell |sapphire| to download data using year, month, day, hour,
+minutes, seconds notation, the events table contains timestamps.  It is
+often hard to convert between the two.  For example, the correct
+conversion between a GPS date/time and a GPS timestamp is given by::
+
+    >>> calendar.timegm(datetime.datetime(2012, 12, 1, 0).utctimetuple())
+    1354320000
+
+Which is, at best, cumbersome.  It is easy, however, to screw up and
+inadvertently convert to local time.  For your benefit, we have included
+the :class:`sapphire.time_util.GPSTime` class.  You instantiate the class
+by giving it a GPS time to work with.  It can either be in date/time
+notation, or as a timestamp.  For example, the exact same result is
+obtained by these two lines of code::
+
+    >>> sapphire.time_util.GPSTime(2012, 12, 1)
+    <sapphire.time_util.GPSTime instance at 0x10b8021b8>
+    >>> sapphire.time_util.GPSTime(1354320000)
+    <sapphire.time_util.GPSTime instance at 0x10b802128>
+
+If you store the instance, you can then call several methods to convert
+the date/time to whatever you require::
+
+    >>> gpstime = sapphire.time_util.GPSTime(2012, 12, 1)
+    >>> gpstime.datetime()
+    datetime.datetime(2012, 12, 1, 0, 0)
+    >>> gpstime.description()
+    'Sat Dec  1 00:00:00 2012'
+    >>> gpstime.gpstimestamp()
+    1354320000
+
+Or, indeed::
+
+    >>> gpstime = sapphire.time_util.GPSTime(1354320000)
+    >>> gpstime.datetime()
+    datetime.datetime(2012, 12, 1, 0, 0)
+    >>> gpstime.description()
+    'Sat Dec  1 00:00:00 2012'
+    >>> gpstime.gpstimestamp()
+    1354320000
+
+It is now easy to select events occuring between 12:00 and 13:00 hours GPS
+time on December 2, 2012::
+
+    >>> t0 = sapphire.time_util.GPSTime(2012, 12, 2, 12).gpstimestamp()
+    >>> t1 = sapphire.time_util.GPSTime(2012, 12, 2, 13).gpstimestamp()
+    >>> t0, t1
+    (1354449600, 1354453200)
+    >>> sel_events = events.readWhere('(t0 <= timestamp) & (timestamp <
+    >>> t1)')
+    >>> len(sel_events)
+    2817
+
+And when did the tenth event occur?  Well::
+
+    >>> t = sel_events[9]['timestamp']
+    >>> t
+    1354449620
+    >>> sapphire.time_util.GPSTime(t).description()
+    'Sun Dec  2 12:00:20 2012'
+
+To shorten the typing somewhat, remember that in Python you can import
+classes from modules into your own namespace::
+
+    >>> from sapphire.time_util import GPSTime
+    >>> GPSTime(t).description()
+    'Sun Dec  2 12:00:20 2012'
+
+
 .. rubric:: Footnotes
 
 .. [#event_id]
