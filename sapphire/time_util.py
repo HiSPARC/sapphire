@@ -17,15 +17,15 @@ class GPSTime:
     def __init__(self, *args):
         """Instantiate the class.
 
-        The arguments to this method can take different forms.  First, it
-        can take year, month, day, hour, minutes, seconds arguments.  The
-        year, month and day are mandatory, while hour, minutes, seconds
-        default to zero.
+        The arguments to the __init__ method can take different forms.
+        First, it can take year, month, day, hour, minutes, seconds
+        arguments.  The year, month and day are mandatory, while hour,
+        minutes, seconds default to zero.
 
         If the argument is a single number, this is interpreted as a
         Unix-like timestamp, in GPS time.
 
-        Examples::
+        Examples specifying the exact same time::
 
             >>> GPSTime(2012, 12, 1)
             >>> GPSTime(1354320000)
@@ -57,7 +57,7 @@ class GPSTime:
 
         Example::
 
-            >>> gpstime = GPSTime(2012, 12, 1)
+            >>> gpstime = GPSTime(1354320000)
             >>> gpstime.description()
             'Sat Dec  1 00:00:00 2012'
 
@@ -71,7 +71,7 @@ class GPSTime:
 
         Example::
 
-            >>> gpstime = GPSTime(2012, 12, 1)
+            >>> gpstime = GPSTime(1354320000)
             >>> gpstime.datetime()
             datetime.datetime(2012, 12, 1, 0, 0)
 
