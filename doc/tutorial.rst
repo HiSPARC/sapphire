@@ -224,20 +224,22 @@ columns: ``event_id``, ``timestamp``, ``nanoseconds``, ``ext_timestamp``,
 ``event_rate``.
 
 Each event has a unique [#event_id]_ identifier, ``event_id``.  Each event
-has a Unix timestamp in GPS time, *not* UTC.  The sub-second part of the
-timestamp is given in ``nanoseconds``.  The ``ext_timestamp`` is the full
-timestamp in ns.  Since there cannot exist another event with the same
-timestamp, this field in combination with the station number uniquely
-identifies the event.  The ``data_reduction`` flag signifies whether the
-full PMT trace (*no* reduction) has been stored, or just the PMT pulse
-(*reduced*, or *zero suppression*).  The ``trigger_pattern`` is a binary
-value containing the exact trigger condition at the time of the event.
-The ``baseline``, ``std_dev``, ``n_peaks``, ``pulseheights`` and
-``integrals`` fields are values derived from the PMT traces.  Each field
-contains four values, one for each detector.  If a station only has two
-detectors, the last two values for each field are -1.  If the baseline
-cannot be determined, all these values are -999.  The ``event_rate`` is
-the trigger rate at the time of the event.
+has a Unix timestamp in GPS time, *not* UTC.  A `Unix timestamp
+<http://en.wikipedia.org/wiki/Unix_time>`_ is the number of seconds that
+have passed since January 1, 1970.  The sub-second part of the timestamp
+is given in ``nanoseconds``.  The ``ext_timestamp`` is the full timestamp
+in ns.  Since there cannot exist another event with the same timestamp,
+this field in combination with the station number uniquely identifies the
+event.  The ``data_reduction`` flag signifies whether the full PMT trace
+(*no* reduction) has been stored, or just the PMT pulse (*reduced*, or
+*zero suppression*).  The ``trigger_pattern`` is a binary value containing
+the exact trigger condition at the time of the event.  The ``baseline``,
+``std_dev``, ``n_peaks``, ``pulseheights`` and ``integrals`` fields are
+values derived from the PMT traces.  Each field contains four values, one
+for each detector.  If a station only has two detectors, the last two
+values for each field are -1.  If the baseline cannot be determined, all
+these values are -999.  The ``event_rate`` is the trigger rate at the time
+of the event.
 
 We'll get to work with this data in a moment.  First, we'll take a look at
 the weather table::
