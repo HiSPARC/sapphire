@@ -426,6 +426,59 @@ classes from modules into your own namespace::
     'Sun Dec  2 12:00:20 2012'
 
 
+Plotting data
+^^^^^^^^^^^^^
+
+Now that we can access the data, we want to visualize it.  Plotting data
+is a great way to do that.  And of course, the venerable histogram is
+still very useful to condense thousands of events into one display.  Pylab
+contains an easy function to do just that: :func:`hist`.  Let's try to
+recreate a few graphs as seen on the |hisparc| `data display
+<http://data.hisparc.nl/django/show/stations/501/2012/12/1/>`_::
+
+    >>> ph = events.col('pulseheights')
+    >>> hist(ph)
+    ([array([114794,  17565,   3062,   1009,    502,    285,    170,     86,
+               72,     55]), array([112813,  19028,   3339,   1246,    540,    295,    163,    100,
+               66,     10]), array([109162,  21833,   4246,   1345,    579,    290,    113,     32,
+                0,      0]), array([109996,  21283,   4028,   1285,    581,    251,    133,     43,
+                0,      0])], array([  1.00000000e+00,   3.91100000e+02,   7.81200000e+02,
+             1.17130000e+03,   1.56140000e+03,   1.95150000e+03,
+             2.34160000e+03,   2.73170000e+03,   3.12180000e+03,
+             3.51190000e+03,   3.90200000e+03]), <a list of 4 Lists of Patches objects>)
+
+.. image:: images/tutorial-hist-simple.png
+   :width: 500px
+
+This will not do.  Firstly, data from the four detectors is pictured as
+four side-by-side colored bars.  Secondly, the number of bins is very low;
+it is only ten.  Thirdly, the data range continues up to very high values
+with hardly any events.
+
+To fix this, we'll make use of several arguments that can be passed to the
+:func:`hist` function.  We'll also make use of some NumPy (`documentation
+<http://docs.scipy.org/doc/numpy/user/>`_) functionality.  For Pylab
+documentation, see the `Matplotlib site <http://matplotlib.org>`_
+(`function reference
+<http://matplotlib.org/1.2.0/api/pyplot_summary.html>`_).  Try this::
+
+    >>> bins = arange(0, 2001, 20)
+    >>> hist(ph, bins, histtype='step', log=True)
+    >>> xlabel("Pulseheight [ADC]")
+    >>> ylabel("Counts")
+    >>> title("Pulseheight histogram (log scale)")
+
+The :func:`arange` function returns an array with range from 0 to 2001 in
+steps of 20.  It is necessary to say 2001 (or 2002, 2000.1 or whatever)
+and not 2000, if you want the range to be inclusive.  The :func:`hist`
+function will then plot a *stepped* histogram with a log scale.  Finally,
+we add some labels and a title.  This is the result:
+
+.. image:: images/tutorial-hist-better.png
+   :width: 500px
+
+
+
 .. rubric:: Footnotes
 
 .. [#event_id]
