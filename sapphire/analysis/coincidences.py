@@ -56,7 +56,12 @@ def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
 
     """
     # get the 'events' tables from the groups or groupnames
-    stations = [data.getNode(x, 'events') for x in stations]
+    event_tables = []
+    for station_group in stations:
+        station_group = data.getNode(station_group)
+        if 'events' in station_group:
+            event_tables.append(data.getNode(station_group, 'events'))
+    stations = event_tables
 
     # calculate the shifts in nanoseconds and cast them to long.
     # (prevent upcasting timestamps to float64 further on)
