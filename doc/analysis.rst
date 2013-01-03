@@ -3,6 +3,7 @@ Data analysis
 
 .. automodule:: sapphire.analysis
    :members:
+   :undoc-members:
 
 
 Contents:
