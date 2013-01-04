@@ -188,11 +188,11 @@ class Master:
 
     def reconstruct_direction(self):
         print "Reconstructing direction..."
-        reconstruction = ClusterDirectionReconstruction(self.data,
-                            self.stations, '/reconstructions',
-                            detector_offsets=self.detector_offsets,
-                            overwrite=True)
-        reconstruction.reconstruct_angles('/coincidences')
+        if '/reconstructions' not in self.data:
+            reconstruction = ClusterDirectionReconstruction(self.data,
+                                self.stations, '/reconstructions',
+                                detector_offsets=self.detector_offsets)
+            reconstruction.reconstruct_angles('/coincidences')
 
     def determine_detector_offsets(self):
         print "Determing detector offsets..."
