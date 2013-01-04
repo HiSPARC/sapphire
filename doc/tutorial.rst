@@ -467,7 +467,7 @@ documentation, see the `Matplotlib site <http://matplotlib.org>`_
     >>> ylabel("Counts")
     >>> title("Pulseheight histogram (log scale)")
 
-The :func:`arange` function returns an array with range from 0 to 2001 in
+The :func:`arange` function returns an array with range from 0 to 2000 in
 steps of 20.  It is necessary to say 2001 (or 2002, 2000.1 or whatever)
 and not 2000, if you want the range to be inclusive.  The :func:`hist`
 function will then plot a *stepped* histogram with a log scale.  Finally,
@@ -476,6 +476,13 @@ we add some labels and a title.  This is the result:
 .. image:: images/tutorial-hist-better.png
    :width: 500px
 
+In this plot, the gamma and charged particle part of the spectrum are easy
+to distinguish.  The cut at 123 ADC is due to the trigger.  The bump at
+approximately 300 ADC is the so-called MIP (minimum ionizing particle)
+peak.  For an explanation of this plot and the features of the pulseheight
+histogram, see `David's thesis
+<http://www.nikhef.nl/pub/services/biblio/theses_pdf/thesis_D_Fokkema.pdf>`_,
+page 44–45, and 49–51.
 
 
 .. rubric:: Footnotes
