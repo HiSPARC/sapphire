@@ -10,8 +10,6 @@
 import numpy as np
 import time
 
-from hisparc.analysis.traces import get_traces
-
 
 def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
     """Search for coincidences
