@@ -10,7 +10,6 @@ from numpy import arctan2, cos, sin, arcsin, isnan, pi
 import progressbar as pb
 
 from sapphire.publicdb import download_data
-from sapphire.analysis import coincidences
 from sapphire.analysis.process_events import ProcessEvents, ProcessEventsWithLINT
 from sapphire.analysis.direction_reconstruction import \
         DirectionReconstruction
