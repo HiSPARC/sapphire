@@ -34,13 +34,13 @@ if USE_TEX:
 
 
 def main(data):
-    plot_sciencepark_cluster()
+#    plot_sciencepark_cluster()
     #plot_all_single_and_cluster_combinations(data)
     #hist_phi_single_stations(data)
     #hist_theta_single_stations(data)
 #    plot_N_vs_R(data)
 #    artistplot_N_vs_R()
-#    plot_fav_single_vs_cluster(data)
+    plot_fav_single_vs_cluster(data)
 #    plot_fav_single_vs_single(data)
 #    plot_fav_uncertainty_single_vs_cluster(data)
 #    plot_fav_uncertainty_single_vs_single(data)
@@ -762,10 +762,11 @@ if __name__ == '__main__':
         # For station / cluster plots
         #data = tables.openFile('new.h5')
         #data = tables.openFile('newlarge.h5')
+        data = tables.openFile('master.h5')
         # For N vs R plot
         #data = tables.openFile('master-large.h5')
         # No data
-        data = None
+        #data = None
 
     artist.utils.set_prefix("SP-DIR-")
     utils.set_prefix("SP-DIR-")

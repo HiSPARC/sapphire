@@ -10,7 +10,6 @@ from numpy import arctan2, cos, sin, arcsin, isnan, pi
 import progressbar as pb
 
 from sapphire.publicdb import download_data
-from sapphire.analysis import coincidences
 from sapphire.analysis.process_events import ProcessEvents, ProcessEventsWithLINT
 from sapphire.analysis.direction_reconstruction import \
         DirectionReconstruction
@@ -20,7 +19,7 @@ from sapphire import storage, clusters
 class Master:
     stations = [501, 503, 506]
     datetimerange = (datetime.datetime(2012, 2, 1),
-                     datetime.datetime(2012, 3, 1))
+                     datetime.datetime(2012, 2, 2))
 
     offsets = []
 
@@ -57,6 +56,7 @@ class Master:
                               start, end, get_blobs=True)
 
     def clean_data(self):
+        print "Cleaning data..."
         for group in self.station_groups:
             group = self.data.getNode(group)
             attrs = group._v_attrs
@@ -85,6 +85,7 @@ class Master:
         self.data.renameNode(tmptable, 'events', overwrite=True)
 
     def search_coincidences(self):
+        print "Searching for coincidences..."
         if '/c_index' not in self.data and '/timestamps' not in self.data:
             c_index, timestamps = [], []
             for id, station in enumerate(self.station_groups):
@@ -100,8 +101,8 @@ class Master:
                 self.data.root.c_index.append(coincidence)
 
     def process_events(self):
+        print "Processing events..."
         attrs = self.data.root._v_attrs
-        attrs.is_processed = False
         if 'is_processed' not in attrs or not attrs.is_processed:
             for station_id, station_group in enumerate(self.station_groups):
                 process = ProcessEventsWithLINT(self.data, station_group)
@@ -110,6 +111,7 @@ class Master:
             attrs.is_processed = True
 
     def store_coincidences(self):
+        print "Storing coincidences..."
         if '/coincidences' not in self.data:
             group = self.data.createGroup('/', 'coincidences')
             group._v_attrs.cluster = self.cluster
@@ -184,13 +186,15 @@ class Master:
         return event_id
 
     def reconstruct_direction(self):
-        reconstruction = ClusterDirectionReconstruction(self.data,
-                            self.stations, '/reconstructions',
-                            detector_offsets=self.detector_offsets,
-                            overwrite=True)
-        reconstruction.reconstruct_angles('/coincidences')
+        print "Reconstructing direction..."
+        if '/reconstructions' not in self.data:
+            reconstruction = ClusterDirectionReconstruction(self.data,
+                                self.stations, '/reconstructions',
+                                detector_offsets=self.detector_offsets)
+            reconstruction.reconstruct_angles('/coincidences')
 
     def determine_detector_offsets(self):
+        print "Determing detector offsets..."
         for station_id, station_group in enumerate(self.station_groups):
             process = ProcessEvents(self.data, station_group)
             offsets = process.determine_detector_timing_offsets()

@@ -11,27 +11,24 @@ import progressbar as pb
 from scipy.optimize import curve_fit
 from scipy.stats import norm
 
-from hisparc.publicdb import download_data
-from hisparc.analysis import coincidences
-from sapphire.analysis.process_events import ProcessEvents, ProcessIndexedEventsWithLINT
+from sapphire.publicdb import download_data
+import sapphire.analysis.coincidences
+from sapphire.analysis.process_events import ProcessEvents
 from sapphire.analysis.direction_reconstruction import \
-        DirectionReconstruction
+    DirectionReconstruction
 from sapphire import storage, clusters
 
 
 class Master:
-    stations = range(501, 507)
-    datetimerange = (datetime.datetime(2011, 5, 13),
-                     datetime.datetime(2012, 3, 1))
-
+    stations = [501, 503, 506]
+    datetimerange = (datetime.datetime(2012, 1, 1),
+                     datetime.datetime(2012, 1, 2))
 
     def __init__(self, data_path):
         self.data = tables.openFile(data_path, 'a')
 
         self.station_groups = ['/s%d' % u for u in self.stations]
         self.cluster = clusters.ScienceParkCluster(self.stations)
-
-        self.trig_threshold = .5
 
         self.detector_offsets = []
         self.station_offsets = []
@@ -41,8 +38,6 @@ class Master:
         self.clean_data()
 
         self.search_coincidences()
-        self.process_events_from_c_index()
-        self.store_coincidences()
 
         self.determine_detector_offsets()
         self.determine_station_offsets()
@@ -87,120 +82,22 @@ class Master:
         self.data.renameNode(tmptable, 'events', overwrite=True)
 
     def search_coincidences(self):
-        if '/c_index' not in self.data and '/timestamps' not in self.data:
-            c_index, timestamps = \
-                coincidences.search_coincidences(self.data,
-                                                 self.station_groups)
-            timestamps = np.array(timestamps, dtype=np.uint64)
-            self.data.createArray('/', 'timestamps', timestamps)
-            self.data.createVLArray('/', 'c_index', tables.UInt32Atom())
-            for coincidence in c_index:
-                self.data.root.c_index.append(coincidence)
-
-    def process_events_from_c_index(self):
-        attrs = self.data.root._v_attrs
-        if 'is_processed' not in attrs or not attrs.is_processed:
-            c_index = self.data.root.c_index.read()
-            timestamps = self.data.root.timestamps.read()
-
-            selected_timestamps = []
-            for coincidence in c_index:
-                for event in coincidence:
-                    selected_timestamps.append(timestamps[event])
-            full_index = np.array(selected_timestamps)
-
-            for station_id, station_group in enumerate(self.station_groups):
-                selected = full_index.compress(full_index[:, 1] == station_id,
-                                               axis=0)
-                index = selected[:, 2]
-
-                process = ProcessIndexedEventsWithLINT(self.data, station_group,
-                                                       index)
-                process.process_and_store_results()
-
-            attrs.is_processed = True
-
-    def store_coincidences(self):
+        print "Searching for coincidences..."
         if '/coincidences' not in self.data:
-            group = self.data.createGroup('/', 'coincidences')
-            group._v_attrs.cluster = self.cluster
-
-            self.c_index = []
-            self.coincidences = self.data.createTable(group,
-                                                      'coincidences',
-                                                      storage.Coincidence)
-            self.observables = self.data.createTable(group, 'observables',
-                                            storage.EventObservables)
-
-            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                               pb.ETA()])
-            for coincidence in progress(self.data.root.c_index):
-                self.store_coincidence(coincidence)
-
-            c_index = self.data.createVLArray(group, 'c_index',
-                                              tables.UInt32Col())
-            for coincidence in self.c_index:
-                c_index.append(coincidence)
-            c_index.flush()
-            self.c_index = c_index
-        else:
-            # Force new cluster geometry
-            group = self.data.getNode('/', 'coincidences')
-            group._v_attrs.cluster = self.cluster
-
-    def store_coincidence(self, coincidence):
-        row = self.coincidences.row
-        coincidence_id = len(self.coincidences)
-        row['id'] = coincidence_id
-        row['N'] = len(coincidence)
-
-        observables_idx = []
-        timestamps = []
-        for index in coincidence:
-            event_desc = self.data.root.timestamps[index]
-            station_id = event_desc[1]
-            event_index = event_desc[2]
-
-            group = self.data.getNode(self.station_groups[station_id])
-            event = group.events[event_index]
-            idx = self.store_event_in_observables(event, coincidence_id,
-                                                  station_id)
-            observables_idx.append(idx)
-            timestamps.append((event['ext_timestamp'], event['timestamp'],
-                               event['nanoseconds']))
-
-        first_timestamp = sorted(timestamps)[0]
-        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
-            first_timestamp
-        row.append()
-        self.c_index.append(observables_idx)
-        self.coincidences.flush()
-
-    def store_event_in_observables(self, event, coincidence_id, station_id):
-        row = self.observables.row
-        event_id = len(self.observables)
-        row['id'] = event_id
-
-        row['station_id'] = station_id
-        for key in ('timestamp', 'nanoseconds', 'ext_timestamp',
-                    'n1', 'n2', 'n3', 'n4', 't1', 't2', 't3', 't4'):
-            row[key] = event[key]
-
-        signals = [event[key] for key in 'n1', 'n2', 'n3', 'n4']
-        N = sum([1 if u > self.trig_threshold else 0 for u in signals])
-        row['N'] = N
-
-        row.append()
-        self.observables.flush()
-        return event_id
+            coincidences = sapphire.analysis.coincidences.Coincidences(
+                self.data, '/coincidences', self.station_groups)
+            coincidences.search_coincidences()
+            coincidences.process_events()
+            coincidences.store_coincidences(self.cluster)
 
     def reconstruct_direction(self):
-        reconstruction = ClusterDirectionReconstruction(self.data,
-                            self.stations, '/reconstructions',
-                            detector_offsets=self.detector_offsets,
-                            station_offsets=self.station_offsets,
-                            overwrite=True)
-        reconstruction.reconstruct_angles('/coincidences')
+        print "Reconstructing direction..."
+        if not '/reconstructions' in self.data:
+            reconstruction = ClusterDirectionReconstruction(self.data,
+                                self.stations, '/reconstructions',
+                                detector_offsets=self.detector_offsets,
+                                station_offsets=self.station_offsets)
+            reconstruction.reconstruct_angles('/coincidences')
 
     def determine_detector_offsets(self, overwrite=False):
         offsets_group = '/detector_offsets'
@@ -230,8 +127,10 @@ class Master:
             bins = linspace(-1e3, 1e3, 101)
 
             for station_id, station_group in enumerate(station_groups):
-                c_index, timestamps = coincidences.search_coincidences(
-                                        self.data, [ref_group, station_group])
+                coincidences = sapphire.analysis.coincidences.Coincidences(
+                    self.data, coincidence_group=None,
+                    station_groups=[ref_group, station_group])
+                c_index, timestamps = coincidences._search_coincidences()
 
                 dt = []
                 c_index = [c for c in c_index if len(c) == 2]
@@ -469,5 +368,5 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 if __name__ == '__main__':
     np.seterr(divide='ignore', invalid='ignore')
 
-    master = Master('master-large.h5')
+    master = Master('master.h5')
     master.main()
