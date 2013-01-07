@@ -36,11 +36,12 @@ class Coincidences:
         c_index, timestamps = \
             self._search_coincidences(window, shifts, limit)
         timestamps = np.array(timestamps, dtype=np.uint64)
-        self.data.createArray(self.coincidence_group, 'timestamps', timestamps)
-        self.data.createVLArray(self.coincidence_group, 'c_index',
+        self.data.createArray(self.coincidence_group, '_src_timestamps',
+                              timestamps)
+        self.data.createVLArray(self.coincidence_group, '_src_c_index',
                                 tables.UInt32Atom())
         for coincidence in c_index:
-            self.coincidence_group.c_index.append(coincidence)
+            self.coincidence_group._src_c_index.append(coincidence)
 
     def _search_coincidences(self, window, shifts, limit):
         """Search for coincidences
