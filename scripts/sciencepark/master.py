@@ -30,8 +30,6 @@ class Master:
         self.station_groups = ['/s%d' % u for u in self.stations]
         self.cluster = clusters.ScienceParkCluster(self.stations)
 
-        self.trig_threshold = .5
-
         self.detector_offsets = []
         self.station_offsets = []
 
@@ -42,12 +40,11 @@ class Master:
         if '/coincidences' in self.data:
             self.data.removeNode('/coincidences', recursive=True)
         self.search_coincidences()
-        #self.store_coincidences()
 
         self.determine_detector_offsets()
-        self.determine_station_offsets()
+        #self.determine_station_offsets()
 
-        self.reconstruct_direction()
+        #self.reconstruct_direction()
 
     def download_data(self):
         start, end = self.datetimerange
@@ -92,81 +89,7 @@ class Master:
             self.data, '/coincidences', self.station_groups, overwrite=True)
         coincidences.search_coincidences()
         coincidences.process_events()
-
-    def store_coincidences(self):
-        print "Storing coincidences..."
-        if '/coincidences' not in self.data:
-            group = self.data.createGroup('/', 'coincidences')
-            group._v_attrs.cluster = self.cluster
-
-            self.c_index = []
-            self.coincidences = self.data.createTable(group,
-                                                      'coincidences',
-                                                      storage.Coincidence)
-            self.observables = self.data.createTable(group, 'observables',
-                                                     storage.EventObservables)
-
-            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                               pb.ETA()])
-            for coincidence in progress(self.data.root.c_index):
-                self.store_coincidence(coincidence)
-
-            c_index = self.data.createVLArray(group, 'c_index',
-                                              tables.UInt32Col())
-            for coincidence in self.c_index:
-                c_index.append(coincidence)
-            c_index.flush()
-            self.c_index = c_index
-        else:
-            # Force new cluster geometry
-            group = self.data.getNode('/', 'coincidences')
-            group._v_attrs.cluster = self.cluster
-
-    def store_coincidence(self, coincidence):
-        row = self.coincidences.row
-        coincidence_id = len(self.coincidences)
-        row['id'] = coincidence_id
-        row['N'] = len(coincidence)
-
-        observables_idx = []
-        timestamps = []
-        for index in coincidence:
-            event_desc = self.data.root.timestamps[index]
-            station_id = event_desc[1]
-            event_index = event_desc[2]
-
-            group = self.data.getNode(self.station_groups[station_id])
-            event = group.events[event_index]
-            idx = self.store_event_in_observables(event, coincidence_id,
-                                                  station_id)
-            observables_idx.append(idx)
-            timestamps.append((event['ext_timestamp'], event['timestamp'],
-                               event['nanoseconds']))
-
-        first_timestamp = sorted(timestamps)[0]
-        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
-            first_timestamp
-        row.append()
-        self.c_index.append(observables_idx)
-        self.coincidences.flush()
-
-    def store_event_in_observables(self, event, coincidence_id, station_id):
-        row = self.observables.row
-        event_id = len(self.observables)
-        row['id'] = event_id
-
-        row['station_id'] = station_id
-        for key in ('timestamp', 'nanoseconds', 'ext_timestamp',
-                    'n1', 'n2', 'n3', 'n4', 't1', 't2', 't3', 't4'):
-            row[key] = event[key]
-
-        signals = [event[key] for key in 'n1', 'n2', 'n3', 'n4']
-        N = sum([1 if u > self.trig_threshold else 0 for u in signals])
-        row['N'] = N
-
-        row.append()
-        self.observables.flush()
-        return event_id
+        coincidences.store_coincidences(self.cluster)
 
     def reconstruct_direction(self):
         print "Reconstructing direction..."
