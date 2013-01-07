@@ -13,8 +13,7 @@ from scipy.stats import norm
 
 from sapphire.publicdb import download_data
 import sapphire.analysis.coincidences
-from sapphire.analysis.process_events import ProcessEvents, \
-    ProcessIndexedEventsWithLINT
+from sapphire.analysis.process_events import ProcessEvents
 from sapphire.analysis.direction_reconstruction import \
     DirectionReconstruction
 from sapphire import storage, clusters
@@ -40,14 +39,9 @@ class Master:
         self.download_data()
         self.clean_data()
 
-        #if '/c_index' in self.data:
-        #    self.data.root.c_index.remove()
-        #if '/timestamps' in self.data:
-        #    self.data.root.timestamps.remove()
         if '/coincidences' in self.data:
             self.data.removeNode('/coincidences', recursive=True)
         self.search_coincidences()
-        #self.process_events_from_c_index()
         #self.store_coincidences()
 
         self.determine_detector_offsets()
@@ -97,31 +91,7 @@ class Master:
         coincidences = sapphire.analysis.coincidences.Coincidences(
             self.data, '/coincidences', self.station_groups, overwrite=True)
         coincidences.search_coincidences()
-
-    def process_events_from_c_index(self):
-        print "Processing events..."
-        attrs = self.data.root._v_attrs
-        if 'is_processed' not in attrs or not attrs.is_processed:
-            c_index = self.data.root.c_index.read()
-            timestamps = self.data.root.timestamps.read()
-
-            selected_timestamps = []
-            for coincidence in c_index:
-                for event in coincidence:
-                    selected_timestamps.append(timestamps[event])
-            full_index = np.array(selected_timestamps)
-
-            for station_id, station_group in enumerate(self.station_groups):
-                selected = full_index.compress(full_index[:, 1] == station_id,
-                                               axis=0)
-                index = selected[:, 2]
-
-                process = ProcessIndexedEventsWithLINT(self.data,
-                                                       station_group,
-                                                       index)
-                process.process_and_store_results()
-
-            attrs.is_processed = True
+        coincidences.process_events()
 
     def store_coincidences(self):
         print "Storing coincidences..."

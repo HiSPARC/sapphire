@@ -12,6 +12,8 @@ import time
 import os.path
 import tables
 
+from sapphire.analysis.process_events import ProcessIndexedEventsWithLINT
+
 
 class Coincidences:
 
@@ -42,6 +44,26 @@ class Coincidences:
                                 tables.UInt32Atom())
         for coincidence in c_index:
             self.coincidence_group._src_c_index.append(coincidence)
+
+    def process_events(self):
+        c_index = self.coincidence_group._src_c_index.read()
+        timestamps = self.coincidence_group._src_timestamps.read()
+
+        selected_timestamps = []
+        for coincidence in c_index:
+            for event in coincidence:
+                selected_timestamps.append(timestamps[event])
+        full_index = np.array(selected_timestamps)
+
+        for station_id, station_group in enumerate(self.station_groups):
+            selected = full_index.compress(full_index[:, 1] == station_id,
+                                           axis=0)
+            index = selected[:, 2]
+
+            process = ProcessIndexedEventsWithLINT(self.data,
+                                                   station_group,
+                                                   index)
+            process.process_and_store_results(overwrite=True)
 
     def _search_coincidences(self, window, shifts, limit):
         """Search for coincidences
