@@ -42,7 +42,7 @@ class Master:
         self.search_coincidences()
 
         self.determine_detector_offsets()
-        #self.determine_station_offsets()
+        self.determine_station_offsets()
 
         #self.reconstruct_direction()
 
@@ -128,8 +128,10 @@ class Master:
             bins = linspace(-1e3, 1e3, 101)
 
             for station_id, station_group in enumerate(station_groups):
-                c_index, timestamps = coincidences.search_coincidences(
-                                        self.data, [ref_group, station_group])
+                coincidences = sapphire.analysis.coincidences.Coincidences(
+                    self.data, coincidence_group=None,
+                    station_groups=[ref_group, station_group])
+                c_index, timestamps = coincidences._search_coincidences()
 
                 dt = []
                 c_index = [c for c in c_index if len(c) == 2]

@@ -24,16 +24,17 @@ class Coincidences:
     def __init__(self, data, coincidence_group, station_groups,
                  overwrite=False):
         self.data = data
-        if coincidence_group in self.data:
-            if overwrite:
-                self.data.removeNode(coincidence_group, recursive=True)
-            else:
-                raise RuntimeError("Group %s already exists in datafile, "
-                                   "and overwrite is False" %
-                                   coincidence_group)
-        head, tail = os.path.split(coincidence_group)
-        self.coincidence_group = data.createGroup(head, tail,
-                                                  createparents=True)
+        if coincidence_group is not None:
+            if coincidence_group in self.data:
+                if overwrite:
+                    self.data.removeNode(coincidence_group, recursive=True)
+                else:
+                    raise RuntimeError("Group %s already exists in datafile, "
+                                       "and overwrite is False" %
+                                       coincidence_group)
+            head, tail = os.path.split(coincidence_group)
+            self.coincidence_group = data.createGroup(head, tail,
+                                                      createparents=True)
         self.station_groups = station_groups
 
         self.trig_threshold = .5
@@ -139,7 +140,7 @@ class Coincidences:
         self.observables.flush()
         return event_id
 
-    def _search_coincidences(self, window, shifts, limit):
+    def _search_coincidences(self, window=200000, shifts=None, limit=None):
         """Search for coincidences
 
         Search for coincidences in a set of PyTables event tables, optionally
