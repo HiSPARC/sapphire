@@ -37,14 +37,12 @@ class Master:
         self.download_data()
         self.clean_data()
 
-        if '/coincidences' in self.data:
-            self.data.removeNode('/coincidences', recursive=True)
         self.search_coincidences()
 
         self.determine_detector_offsets()
         self.determine_station_offsets()
 
-        #self.reconstruct_direction()
+        self.reconstruct_direction()
 
     def download_data(self):
         start, end = self.datetimerange
@@ -85,11 +83,12 @@ class Master:
 
     def search_coincidences(self):
         print "Searching for coincidences..."
-        coincidences = sapphire.analysis.coincidences.Coincidences(
-            self.data, '/coincidences', self.station_groups, overwrite=True)
-        coincidences.search_coincidences()
-        coincidences.process_events()
-        coincidences.store_coincidences(self.cluster)
+        if '/coincidences' not in self.data:
+            coincidences = sapphire.analysis.coincidences.Coincidences(
+                self.data, '/coincidences', self.station_groups)
+            coincidences.search_coincidences()
+            coincidences.process_events()
+            coincidences.store_coincidences(self.cluster)
 
     def reconstruct_direction(self):
         print "Reconstructing direction..."
