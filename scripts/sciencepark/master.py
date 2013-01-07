@@ -11,8 +11,8 @@ import progressbar as pb
 from scipy.optimize import curve_fit
 from scipy.stats import norm
 
-from hisparc.publicdb import download_data
-from hisparc.analysis import coincidences
+from sapphire.publicdb import download_data
+from sapphire.analysis import coincidences
 from sapphire.analysis.process_events import ProcessEvents, ProcessIndexedEventsWithLINT
 from sapphire.analysis.direction_reconstruction import \
         DirectionReconstruction
@@ -20,9 +20,9 @@ from sapphire import storage, clusters
 
 
 class Master:
-    stations = range(501, 507)
-    datetimerange = (datetime.datetime(2011, 5, 13),
-                     datetime.datetime(2012, 3, 1))
+    stations = [501, 503, 506]
+    datetimerange = (datetime.datetime(2012, 1, 1),
+                     datetime.datetime(2012, 1, 2))
 
 
     def __init__(self, data_path):
@@ -87,6 +87,7 @@ class Master:
         self.data.renameNode(tmptable, 'events', overwrite=True)
 
     def search_coincidences(self):
+        print "Searching for coincidences..."
         if '/c_index' not in self.data and '/timestamps' not in self.data:
             c_index, timestamps = \
                 coincidences.search_coincidences(self.data,
@@ -98,6 +99,7 @@ class Master:
                 self.data.root.c_index.append(coincidence)
 
     def process_events_from_c_index(self):
+        print "Processing events..."
         attrs = self.data.root._v_attrs
         if 'is_processed' not in attrs or not attrs.is_processed:
             c_index = self.data.root.c_index.read()
@@ -121,6 +123,7 @@ class Master:
             attrs.is_processed = True
 
     def store_coincidences(self):
+        print "Storing coincidences..."
         if '/coincidences' not in self.data:
             group = self.data.createGroup('/', 'coincidences')
             group._v_attrs.cluster = self.cluster
@@ -195,12 +198,13 @@ class Master:
         return event_id
 
     def reconstruct_direction(self):
-        reconstruction = ClusterDirectionReconstruction(self.data,
-                            self.stations, '/reconstructions',
-                            detector_offsets=self.detector_offsets,
-                            station_offsets=self.station_offsets,
-                            overwrite=True)
-        reconstruction.reconstruct_angles('/coincidences')
+        print "Reconstructing direction..."
+        if not '/reconstructions' in self.data:
+            reconstruction = ClusterDirectionReconstruction(self.data,
+                                self.stations, '/reconstructions',
+                                detector_offsets=self.detector_offsets,
+                                station_offsets=self.station_offsets)
+            reconstruction.reconstruct_angles('/coincidences')
 
     def determine_detector_offsets(self, overwrite=False):
         offsets_group = '/detector_offsets'
@@ -469,5 +473,5 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 if __name__ == '__main__':
     np.seterr(divide='ignore', invalid='ignore')
 
-    master = Master('master-large.h5')
+    master = Master('master.h5')
     master.main()
