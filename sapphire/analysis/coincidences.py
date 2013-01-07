@@ -9,69 +9,100 @@
 
 import numpy as np
 import time
+import os.path
+import tables
 
 
-def search_coincidences(data, stations, window=200000, shifts=None, limit=None):
-    """Search for coincidences
+class Coincidences:
 
-    Search for coincidences in a set of PyTables event tables, optionally
-    shifting the data in time.  This is necessary when one wants to
-    compare the timestamps of stations who use a different time (as in
-    GPS, UTC or local time).  This function searches for events which
-    occured almost at the same time and thus might be the result of an
-    extended air shower.
+    """Search for and store coincidences between HiSPARC stations"""
 
-    :param data: the PyTables data file
-    :param stations: a list of HiSPARC event tables (normally from
-        different stations, hence the name)
-    :param window: the time window in nanoseconds which will be searched
-        for coincidences.  Events falling outside this window will not be
-        part of the coincidence.  Default: 200000 (i.e. 200 us).
-    :param shifts: a list of time shifts which may contain 'None'.
-    :param limit: limit the number of events which are processed
+    def __init__(self, data, coincidence_group, station_groups,
+                 overwrite=False):
+        self.data = data
+        if coincidence_group in self.data:
+            if overwrite:
+                self.data.removeNode(coincidence_group, recursive=True)
+            else:
+                raise RuntimeError("Group %s already exists in datafile, "
+                                   "and overwrite is False" %
+                                   coincidence_group)
+        head, tail = os.path.split(coincidence_group)
+        self.coincidence_group = data.createGroup(head, tail,
+                                                  createparents=True)
+        self.station_groups = station_groups
 
-    :return: coincidences, timestamps. First a list of coincidences, which
-        each consist of a list with indexes into the timestamps array as a
-        pointer to the events making up the coincidence. Then, a list of
-        tuples.  Each tuple consists of a timestamp followed by an index
-        into the stations list which designates the detector
-        station which measured the event, and finally an index into that
-        station's event table.
+    def search_coincidences(self, window=200000, shifts=None, limit=None):
+        c_index, timestamps = \
+            self._search_coincidences(window, shifts, limit)
+        timestamps = np.array(timestamps, dtype=np.uint64)
+        self.data.createArray(self.coincidence_group, 'timestamps', timestamps)
+        self.data.createVLArray(self.coincidence_group, 'c_index',
+                                tables.UInt32Atom())
+        for coincidence in c_index:
+            self.coincidence_group.c_index.append(coincidence)
 
-    Example usage::
+    def _search_coincidences(self, window, shifts, limit):
+        """Search for coincidences
 
-        >>> import tables
-        >>> from hisparc.analysis.coincidences import search_coincidences
-        >>> data = tables.openFile('test.h5', 'a')
-        >>> coincidences, timestamps = search_coincidences(data,
-        ... ['/hisparc/station501', '/hisparc/station502',
-        ... '/hisparc/station503', '/hisparc/station504',
-        ... '/hisparc/station505'], shifts=[None, None, -15, None, None])
-        >>> coincidences[:3]
-        [[73, 74], [81, 82], [98, 99]]
-        >>> timestamps[73], timestamps[74]
-        ((1235433610410730837, 0, 23), (1235433610410731004, 2, 17))
+        Search for coincidences in a set of PyTables event tables, optionally
+        shifting the data in time.  This is necessary when one wants to
+        compare the timestamps of stations who use a different time (as in
+        GPS, UTC or local time).  This function searches for events which
+        occured almost at the same time and thus might be the result of an
+        extended air shower.
 
-    """
-    # get the 'events' tables from the groups or groupnames
-    event_tables = []
-    for station_group in stations:
-        station_group = data.getNode(station_group)
-        if 'events' in station_group:
-            event_tables.append(data.getNode(station_group, 'events'))
-    stations = event_tables
+        :param data: the PyTables data file
+        :param stations: a list of HiSPARC event tables (normally from
+            different stations, hence the name)
+        :param window: the time window in nanoseconds which will be searched
+            for coincidences.  Events falling outside this window will not be
+            part of the coincidence.  Default: 200000 (i.e. 200 us).
+        :param shifts: a list of time shifts which may contain 'None'.
+        :param limit: limit the number of events which are processed
 
-    # calculate the shifts in nanoseconds and cast them to long.
-    # (prevent upcasting timestamps to float64 further on)
-    if shifts:
-        for i in range(len(shifts)):
-            if shifts[i]:
-                shifts[i] = long(shifts[i] * 1e9)
+        :return: coincidences, timestamps. First a list of coincidences, which
+            each consist of a list with indexes into the timestamps array as a
+            pointer to the events making up the coincidence. Then, a list of
+            tuples.  Each tuple consists of a timestamp followed by an index
+            into the stations list which designates the detector
+            station which measured the event, and finally an index into that
+            station's event table.
 
-    timestamps = retrieve_timestamps(stations, shifts, limit)
-    coincidences = do_search_coincidences(timestamps, window)
+        Example usage::
 
-    return coincidences, timestamps
+            >>> import tables
+            >>> from hisparc.analysis.coincidences import search_coincidences
+            >>> data = tables.openFile('test.h5', 'a')
+            >>> coincidences, timestamps = search_coincidences(data,
+            ... ['/hisparc/station501', '/hisparc/station502',
+            ... '/hisparc/station503', '/hisparc/station504',
+            ... '/hisparc/station505'], shifts=[None, None, -15, None, None])
+            >>> coincidences[:3]
+            [[73, 74], [81, 82], [98, 99]]
+            >>> timestamps[73], timestamps[74]
+            ((1235433610410730837, 0, 23), (1235433610410731004, 2, 17))
+
+        """
+        # get the 'events' tables from the groups or groupnames
+        event_tables = []
+        for station_group in self.station_groups:
+            station_group = self.data.getNode(station_group)
+            if 'events' in station_group:
+                event_tables.append(self.data.getNode(station_group, 'events'))
+        stations = event_tables
+
+        # calculate the shifts in nanoseconds and cast them to long.
+        # (prevent upcasting timestamps to float64 further on)
+        if shifts:
+            for i in range(len(shifts)):
+                if shifts[i]:
+                    shifts[i] = long(shifts[i] * 1e9)
+
+        timestamps = retrieve_timestamps(stations, shifts, limit)
+        coincidences = do_search_coincidences(timestamps, window)
+
+        return coincidences, timestamps
 
 
 def retrieve_timestamps(stations, shifts=None, limit=None):

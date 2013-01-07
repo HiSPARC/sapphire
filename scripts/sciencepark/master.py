@@ -12,10 +12,11 @@ from scipy.optimize import curve_fit
 from scipy.stats import norm
 
 from sapphire.publicdb import download_data
-from sapphire.analysis import coincidences
-from sapphire.analysis.process_events import ProcessEvents, ProcessIndexedEventsWithLINT
+import sapphire.analysis.coincidences
+from sapphire.analysis.process_events import ProcessEvents, \
+    ProcessIndexedEventsWithLINT
 from sapphire.analysis.direction_reconstruction import \
-        DirectionReconstruction
+    DirectionReconstruction
 from sapphire import storage, clusters
 
 
@@ -23,7 +24,6 @@ class Master:
     stations = [501, 503, 506]
     datetimerange = (datetime.datetime(2012, 1, 1),
                      datetime.datetime(2012, 1, 2))
-
 
     def __init__(self, data_path):
         self.data = tables.openFile(data_path, 'a')
@@ -40,9 +40,15 @@ class Master:
         self.download_data()
         self.clean_data()
 
+        #if '/c_index' in self.data:
+        #    self.data.root.c_index.remove()
+        #if '/timestamps' in self.data:
+        #    self.data.root.timestamps.remove()
+        if '/coincidences' in self.data:
+            self.data.removeNode('/coincidences', recursive=True)
         self.search_coincidences()
-        self.process_events_from_c_index()
-        self.store_coincidences()
+        #self.process_events_from_c_index()
+        #self.store_coincidences()
 
         self.determine_detector_offsets()
         self.determine_station_offsets()
@@ -88,15 +94,9 @@ class Master:
 
     def search_coincidences(self):
         print "Searching for coincidences..."
-        if '/c_index' not in self.data and '/timestamps' not in self.data:
-            c_index, timestamps = \
-                coincidences.search_coincidences(self.data,
-                                                 self.station_groups)
-            timestamps = np.array(timestamps, dtype=np.uint64)
-            self.data.createArray('/', 'timestamps', timestamps)
-            self.data.createVLArray('/', 'c_index', tables.UInt32Atom())
-            for coincidence in c_index:
-                self.data.root.c_index.append(coincidence)
+        coincidences = sapphire.analysis.coincidences.Coincidences(
+            self.data, '/coincidences', self.station_groups, overwrite=True)
+        coincidences.search_coincidences()
 
     def process_events_from_c_index(self):
         print "Processing events..."
@@ -116,7 +116,8 @@ class Master:
                                                axis=0)
                 index = selected[:, 2]
 
-                process = ProcessIndexedEventsWithLINT(self.data, station_group,
+                process = ProcessIndexedEventsWithLINT(self.data,
+                                                       station_group,
                                                        index)
                 process.process_and_store_results()
 
@@ -133,7 +134,7 @@ class Master:
                                                       'coincidences',
                                                       storage.Coincidence)
             self.observables = self.data.createTable(group, 'observables',
-                                            storage.EventObservables)
+                                                     storage.EventObservables)
 
             progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                                pb.ETA()])
