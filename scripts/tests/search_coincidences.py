@@ -14,21 +14,19 @@ from sapphire.analysis import coincidences
 
 
 STATIONS = [501, 503, 506]
+START = datetime.datetime(2013, 1, 1)
+END = datetime.datetime(2013, 1, 2)
 
 
 if __name__ == '__main__':
     station_groups = ['/s%d' % u for u in STATIONS]
 
-    data = tables.openFile('testdata.h5', 'a')
+    data = tables.openFile('data.h5', 'w')
     for station, group in zip(STATIONS, station_groups):
-        if group not in data:
-            download_data(data, group, station,
-                          datetime.datetime(2013, 1, 1),
-                          datetime.datetime(2013, 1, 2), get_blobs=False)
+        download_data(data, group, station, START, END)
 
     coincidences = coincidences.Coincidences(data, '/coincidences',
-                                             station_groups,
-                                             overwrite=True)
+                                             station_groups)
     coincidences.search_and_store_coincidences()
 
     # This is the manual method

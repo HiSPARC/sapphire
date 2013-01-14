@@ -2,8 +2,34 @@
 
     This module can be used to search for coincidences between several
     HiSPARC stations.
-"""
 
+    Example usage::
+
+        import datetime
+
+        import tables
+
+        from sapphire.publicdb import download_data
+        from sapphire.analysis import coincidences
+
+
+        STATIONS = [501, 503, 506]
+        START = datetime.datetime(2013, 1, 1)
+        END = datetime.datetime(2013, 1, 2)
+
+
+        if __name__ == '__main__':
+            station_groups = ['/s%d' % u for u in STATIONS]
+
+            data = tables.openFile('data.h5', 'w')
+            for station, group in zip(STATIONS, station_groups):
+                download_data(data, group, station, START, END)
+
+            coincidences = coincidences.Coincidences(data, '/coincidences',
+                                                     station_groups)
+            coincidences.search_and_store_coincidences()
+
+"""
 import numpy as np
 import time
 import os.path
@@ -43,7 +69,7 @@ class Coincidences:
         """Initialize the class.
 
         :param data: the PyTables datafile.
-        :param coincidenc_group: the destination group.
+        :param coincidence_group: the destination group.
         :param station_groups: a list of groups containing the station
             data.
         :param overwrite: if True, overwrite a previous coincidences
