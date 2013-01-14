@@ -2,6 +2,9 @@
 
 This package contains modules for performing various analysis tasks:
 
+:mod:`~sapphire.analysis.coincidences`
+    Search for coincidences between HiSPARC stations
+
 :mod:`~sapphire.analysis.core_reconstruction`
     Shower core and shower size reconstruction
 

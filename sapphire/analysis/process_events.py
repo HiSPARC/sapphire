@@ -449,3 +449,18 @@ class ProcessEventsWithoutTraces(ProcessEvents):
         """Fake storing results from traces."""
 
         pass
+
+class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
+                                        ProcessIndexedEvents):
+
+    """Process a subset of events without traces
+
+    This is a subclass of :class:`ProcessIndexedEvents` and
+    :class:`ProcessEventsWithoutTraces`.  Processing events without
+    considering traces will invalidate the arrival time information.
+    However, for some analyses it is not necessary to obtain this
+    information.  Ignoring the traces will then greatly decrease
+    processing time and data size.
+
+    """
+    pass

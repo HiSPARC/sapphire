@@ -2,9 +2,6 @@
 
     This module can be used to search for coincidences between several
     HiSPARC stations.
-
-    To search for coincidences, use the :func:`search_coincidences`
-    function.
 """
 
 import numpy as np
@@ -13,16 +10,46 @@ import os.path
 import tables
 import progressbar as pb
 
-from sapphire.analysis.process_events import ProcessIndexedEventsWithLINT
+from sapphire.analysis import process_events
 from sapphire import storage
 
 
 class Coincidences:
 
-    """Search for and store coincidences between HiSPARC stations"""
+    """Search for and store coincidences between HiSPARC stations.
+
+    Suppose you want to search for coincidences between stations 501 and
+    503.  First, download the data for these stations (with, or without
+    traces, depending on your intentions).  Suppose you stored the data in
+    the '/s501' and '/s503' groups in the 'data' file.  Then::
+
+        >>> station_groups = ['/s501', '/s503']
+        >>> coincidences = Coincidences(data, '/coincidences', station_groups)
+        >>> coincidences.search_and_store_coincidences()
+
+    If you want a more manual method, replace the last line with::
+
+        >>> coincidences.search_coincidences()
+        >>> coincidences.process_events()
+        >>> coincidences.store_coincidences()
+
+    You can then provide different parameters to the individual methods.
+    See the corresponding docstrings.
+
+    """
 
     def __init__(self, data, coincidence_group, station_groups,
                  overwrite=False):
+        """Initialize the class.
+
+        :param data: the PyTables datafile.
+        :param coincidenc_group: the destination group.
+        :param station_groups: a list of groups containing the station
+            data.
+        :param overwrite: if True, overwrite a previous coincidences
+            group.
+
+        """
         self.data = data
         if coincidence_group is not None:
             if coincidence_group in self.data:
@@ -39,18 +66,71 @@ class Coincidences:
 
         self.trig_threshold = .5
 
+    def search_and_store_coincidences(self):
+        """Search, process and store coincidences.
+
+        This is a semi-automatic method to search for coincidences,
+        process the events making up the coincidences and then store the
+        results in the coincidences group.
+
+        If you want to make use of non-default parameters like coincidence
+        window lenghts, time shifts or overwriting previously processed
+        events, please call the individual methods.  See the class
+        docstring.
+
+        """
+        self.search_coincidences()
+        self.process_events()
+        self.store_coincidences()
+
     def search_coincidences(self, window=200000, shifts=None, limit=None):
+        """Search for coincidences.
+
+        Search all data in the station_groups for coincidences, and store
+        rudimentary coindence data in the coindences group.  This data
+        might be useful, but is very basic.  You can call the
+        :meth:`store_coincidences` method to store the coincidences in an
+        easier format in the coincidences group.
+
+        If you want to process the preliminary results: they are stored in
+        _src_c_index and _src_timestamps.  The former is a list of
+        coincidences, which each consist of a list with indexes into the
+        timestamps array as a pointer to the events making up the
+        coincidence. The latter is a list of tuples.  Each tuple consists
+        of a timestamp followed by an index into the stations list which
+        designates the detector station which measured the event, and
+        finally an index into that station's event table.
+
+        :param window: the coincidence time window.  All events with delta
+            t's smaller than this window will be considered a coincidence.
+        :param shifts: optionally shift a station's data in time.  This
+            can be useful if a station has a misconfigured GPS clock.
+            Expects a list of shifts for each station.
+        :param limit: optionally limit the search for this number of
+            events.
+
+        """
         c_index, timestamps = \
             self._search_coincidences(window, shifts, limit)
         timestamps = np.array(timestamps, dtype=np.uint64)
         self.data.createArray(self.coincidence_group, '_src_timestamps',
                               timestamps)
-        self.data.createVLArray(self.coincidence_group, '_src_c_index',
-                                tables.UInt32Atom())
+        src_c_index = self.data.createVLArray(self.coincidence_group,
+                                              '_src_c_index',
+                                              tables.UInt32Atom())
         for coincidence in c_index:
-            self.coincidence_group._src_c_index.append(coincidence)
+            src_c_index.append(coincidence)
 
-    def process_events(self):
+    def process_events(self, overwrite=False):
+        """Process events using :mod:`sapphire.analysis.process_events`
+
+        Events making up the coincidences are processed to obtain
+        observables like number of particles and particle arrival times.
+
+        :param overwrite: if True, overwrite the events tables in the
+            station groups.
+
+        """
         c_index = self.coincidence_group._src_c_index.read()
         timestamps = self.coincidence_group._src_timestamps.read()
 
@@ -65,12 +145,26 @@ class Coincidences:
                                            axis=0)
             index = selected[:, 2]
 
-            process = ProcessIndexedEventsWithLINT(self.data,
-                                                   station_group,
-                                                   index)
-            process.process_and_store_results(overwrite=True)
+            if 'blobs' in station_group:
+                Process = process_events.ProcessIndexedEventsWithLINT
+            else:
+                Process = process_events.ProcessIndexedEventsWithoutTraces
+
+            process = Process(self.data, station_group, index)
+            process.process_and_store_results(overwrite=overwrite)
 
     def store_coincidences(self, cluster=None):
+        """Store the previously found coincidences.
+
+        After you have searched for coincidences, you can store the
+        more user-friendly results in the coincidences group using this
+        method.
+
+        :param cluster: optionally store a
+            :class:`sapphire.clusters.BaseCluster` instance in the
+            coincidences group for future reference.
+
+        """
         if cluster:
             self.coincidence_group._v_attrs.cluster = cluster
 
@@ -85,7 +179,7 @@ class Coincidences:
         progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                            pb.ETA()])
         for coincidence in progress(self.coincidence_group._src_c_index):
-            self.store_coincidence(coincidence)
+            self._store_coincidence(coincidence)
 
         c_index = self.data.createVLArray(self.coincidence_group, 'c_index',
                                           tables.UInt32Col())
@@ -94,7 +188,13 @@ class Coincidences:
         c_index.flush()
         self.c_index = c_index
 
-    def store_coincidence(self, coincidence):
+    def _store_coincidence(self, coincidence):
+        """Store a single coincidence in the coincidence group.
+
+        Stores in the coincidences table, the c_index, and the individual
+        events in the observables table.
+
+        """
         row = self.coincidences.row
         coincidence_id = len(self.coincidences)
         row['id'] = coincidence_id
@@ -109,8 +209,8 @@ class Coincidences:
 
             group = self.data.getNode(self.station_groups[station_id])
             event = group.events[event_index]
-            idx = self.store_event_in_observables(event, coincidence_id,
-                                                  station_id)
+            idx = self._store_event_in_observables(event, coincidence_id,
+                                                   station_id)
             observables_idx.append(idx)
             timestamps.append((event['ext_timestamp'], event['timestamp'],
                                event['nanoseconds']))
@@ -122,7 +222,10 @@ class Coincidences:
         self.c_index.append(observables_idx)
         self.coincidences.flush()
 
-    def store_event_in_observables(self, event, coincidence_id, station_id):
+    def _store_event_in_observables(self, event, coincidence_id,
+                                    station_id):
+        """Store a single event in the observables table."""
+
         row = self.observables.row
         event_id = len(self.observables)
         row['id'] = event_id
