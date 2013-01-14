@@ -485,6 +485,200 @@ histogram, see `David's thesis
 page 44–45, and 49–51.
 
 
+Searching for coincidences
+--------------------------
+
+If you work with |hisparc| data, invariably you'll be interested in
+*coincidences* between |hisparc| stations.  That is, are there showers
+which have been observed by multiple stations?  To find out, we'll make
+use of the :mod:`sapphire.analysis.coincidences` module.
+
+
+Performing the search
+^^^^^^^^^^^^^^^^^^^^^
+
+Consider the following script, which you can hopefully understand by now
+(note that the prompt (>>>) is absent, since this is a *script*::
+
+        import datetime
+
+        import tables
+
+        from sapphire.publicdb import download_data
+        from sapphire.analysis import coincidences
+
+
+        STATIONS = [501, 503, 506]
+        START = datetime.datetime(2013, 1, 1)
+        END = datetime.datetime(2013, 1, 2)
+
+
+        if __name__ == '__main__':
+            station_groups = ['/s%d' % u for u in STATIONS]
+
+            data = tables.openFile('data.h5', 'w')
+            for station, group in zip(STATIONS, station_groups):
+                download_data(data, group, station, START, END)
+
+At this point, we have downloaded data for three stations.  Note that we
+didn't specify ``get_blobs=True`` in the
+:func:`sapphire.publicdb.download_data` function.  Thus, we have no traces
+and the download is quick.  Let's see what the datafile now contains::
+
+    >>> print data
+    data.h5 (File) ''
+    Last modif.: 'Mon Jan 14 17:34:39 2013'
+    Object Tree: 
+    / (RootGroup) ''
+    /s501 (Group) 'Data group'
+    /s501/events (Table(70643,)) 'HiSPARC coincidences table'
+    /s501/weather (Table(25199,)) 'HiSPARC weather data'
+    /s503 (Group) 'Data group'
+    /s503/events (Table(34937,)) 'HiSPARC coincidences table'
+    /s506 (Group) 'Data group'
+    /s506/events (Table(68365,)) 'HiSPARC coincidences table'
+
+It contains three groups, one for each station.  To search for
+coincidences between these stations, we first initialize the
+:class:`sapphire.analysis.coincidences.Coincidences` class like so::
+
+    >>> coincidences = coincidences.Coincidences(data, '/coincidences',
+    ...                                          station_groups)
+
+From the documentation (click on the class above the example to go to the
+documentation) it is clear that we have to specify the datafile
+(``data``), the destination group (``/coincidences``) and the groups
+containing the station data (``station_groups``).  Once that's done, there
+is an easy way to search for coincidences, process the events making up
+the coincidences, and store them in the destination group::
+
+    >>> coincidences.search_and_store_coincidences()
+
+If you want to tweak the process using non-default parameters, see the
+module documentation (:mod:`sapphire.analysis.coincidences`).  For now,
+let us turn to the results::
+
+    >>> print data
+    data.h5 (File) ''
+    Last modif.: 'Mon Jan 14 17:46:23 2013'
+    Object Tree: 
+    / (RootGroup) ''
+    /coincidences (Group) ''
+    /coincidences/_src_c_index (VLArray(4976,)) ''
+    /coincidences/_src_timestamps (Array(173945, 3)) ''
+    /coincidences/c_index (VLArray(4976,)) ''
+    /coincidences/coincidences (Table(4976,)) ''
+    /coincidences/observables (Table(10479,)) ''
+    /s501 (Group) 'Data group'
+    /s501/_events (Table(70643,)) 'HiSPARC coincidences table'
+    /s501/events (Table(70643,)) ''
+    /s501/weather (Table(25199,)) 'HiSPARC weather data'
+    /s503 (Group) 'Data group'
+    /s503/_events (Table(34937,)) 'HiSPARC coincidences table'
+    /s503/events (Table(34937,)) ''
+    /s506 (Group) 'Data group'
+    /s506/_events (Table(68365,)) 'HiSPARC coincidences table'
+    /s506/events (Table(68365,)) ''
+
+The new addition is the ``/coincidences`` group.  It contains two more or
+less private members: ``_src_c_index`` and ``_src_timestamps``.  We won't
+cover them here.  The public tables are ``c_index``, ``coincidences`` and
+``observables``.  Information about the coincidences is stored in the
+``coincidences`` table.  Let's look at the columns:
+
+=============== ===========
+column          description
+=============== ===========
+id              an index number identifying the coincidence
+N               the number of stations taking part in the coincidence
+timestamp       the unix timestamp
+nanoseconds     the nanosecond part of the timestamp
+ext_timestamp   the timestamp in nanoseconds
+r               *compatibility reasons*
+phi             *compatibility reasons*
+x               *compatibility reasons*
+y               *compatibility reasons*
+shower_size     *compatibility reasons*
+shower_theta    *compatibility reasons*
+shower_phi      *compatibility reasons*
+=============== ===========
+
+The columns included for compatibility reasons are used by the event
+simulation code.  In that case, the ``r``, ``phi`` describe the location
+of the shower core in polar coordinates.  Similarly, the ``x``, ``y``
+columns give the position in cartesian coordinates.  Furthermore, the
+``shower_size`` gives the so-called *shower size*, and ``shower_theta``
+and ``shower_phi`` contain the direction of the (simulated) shower.  These
+are not known for certain when working with |hisparc| data, but are
+included nonetheless.  These columns are all set to 0.0.
+
+The ``c_index`` array is used as an index to look up the individual events
+making up a coincidence.  The fifth coincidence is accessed by::
+
+    >>> data.root.coincidences.coincidences[4]
+
+Remember, the indexes are zero-based.  The coincidence id is also 4::
+
+    >>> data.root.coincidences.coincidences[4]['id']
+    4
+
+and the number of stations participating is 2::
+
+    >>> data.root.coincidences.coincidences[4]['N'] 
+    2
+
+To lookup the indexes of the events taking part in this coincidence,
+access the ``c_index`` array using the same id::
+
+    >>> data.root.coincidences.c_index[4]
+    array([8, 9], dtype=uint32)
+
+That is, event ids 8 and 9 are part of this coincidence.  The event
+observables are then stored in the ``observables`` table, and can be
+accessed using these ids::
+
+    >>> data.root.coincidences.observables[8]
+    (2, 0.0, 1356998421116183027L, 8L, 0.6368421316146851,
+    0.005263158120214939, 0.005263158120214939, 1.0394736528396606,
+    116183027L, 0.0, 0.0, 2, -1.0, -1.0, -1.0, -1.0, 1356998421, 0.0, 0.0)
+
+The columns in this table are:
+
+=============== ===========
+column          description
+=============== ===========
+id              an index number identifying the event
+station_id      an index number identifying the station
+N               the number of detectors with particles
+timestamp       the unix timestamp
+nanoseconds     the nanosecond part of the timestamp
+ext_timestamp   the timestamp in nanoseconds
+n1              the number of particles in detector 1
+n2              the number of particles in detector 2
+n3              the number of particles in detector 3
+n4              the number of particles in detector 4
+t1              the particle arrival time in detector 1
+t2              the particle arrival time in detector 2
+t3              the particle arrival time in detector 3
+t4              the particle arrival time in detector 4
+r               *compatibility reasons*
+phi             *compatibility reasons*
+x               *compatibility reasons*
+y               *compatibility reasons*
+alpha           *compatibility reasons*
+=============== ===========
+
+The columns included for compatibility reasons are again used by the event
+simulation code.  In that case, the ``r``, ``phi``, ``x`` and ``y``
+coordinates refer to the position of the *station*, not the shower.  In
+some types of simulation, the position of the station is changed from
+event to event.  The ``alpha`` column refers to the *orientation* of the
+station in those cases.
+
+The station id is an index into the ``station_groups`` list which was used
+when searching for coincidences.  So, an id of 2 refers to ``/s506``.
+
+
 .. rubric:: Footnotes
 
 .. [#event_id]

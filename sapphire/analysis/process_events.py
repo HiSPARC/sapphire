@@ -15,13 +15,39 @@ ADC_TIME_PER_SAMPLE = 2.5e-9
 
 
 class ProcessEvents(object):
+
+    """Process HiSPARC events to obtain several observables.
+
+    This class can be used to process a set of HiSPARC events and adds a
+    few observables like particle arrival time and number of particles in
+    the detector to a copy of the event table.
+    """
+
     def __init__(self, data, group, source=None):
+        """Initialize the class.
+
+        :param data: the PyTables datafile
+        :param group: the group containing the station data.  In normal
+            cases, this is simply the group containing the events table.
+        :param source: the name of the events table.  Default: None,
+            meaning the default name 'events'.
+
+        """
         self.data = data
         self.group = data.getNode(group)
         self.source = self._get_source(source)
 
     def process_and_store_results(self, destination=None, overwrite=False,
                                   limit=None):
+        """Process events and store the results.
+
+        :param destination: name of the table where the results will be
+            written.  The default, None, corresponds to 'events'.
+        :param overwrite: if True, overwrite previously obtained results.
+        :param limit: the maximum number of events that will be stored.
+            The default, None, corresponds to no limit.
+
+        """
         self.limit = limit
 
         self._check_destination(destination, overwrite)
@@ -32,6 +58,12 @@ class ProcessEvents(object):
         self._move_results_table_into_destination()
 
     def get_traces_for_event(self, event):
+        """Return the traces from an event.
+
+        :param event: a row from the events table.
+        :returns: the traces: an array of pulseheight values.
+
+        """
         traces = []
         for idx in event['traces']:
             if not idx < 0:
@@ -42,10 +74,24 @@ class ProcessEvents(object):
         return traces
 
     def get_traces_for_event_index(self, idx):
+        """Return the traces from event #idx.
+
+        :param idx: the index number of the event.
+        :returns: the traces: an array of pulseheight values.
+
+        """
         event = self.source[idx]
         return self.get_traces_for_event(event)
 
     def _get_source(self, source):
+        """Return the table containing the events.
+
+        :param source: the *name* of the table.  If None, this method will
+            try to find the original events table, even if the events were
+            previously processed.
+        :returns: table object
+
+        """
         if source is None:
             if '_events' in self.group:
                 source = self.group._events
@@ -56,6 +102,8 @@ class ProcessEvents(object):
         return source
 
     def _check_destination(self, destination, overwrite):
+        """Check if the destination is valid"""
+
         if destination == '_events':
             raise RuntimeError("The _events table is reserved for internal use.  Choose another destination.")
         elif destination is None:
@@ -70,10 +118,14 @@ class ProcessEvents(object):
         self.destination = destination
 
     def _create_results_table(self):
+        """Create results table containing the events."""
+
         self._tmp_events = self._create_empty_results_table()
         self._copy_events_into_table()
 
     def _create_empty_results_table(self):
+        """Create empty results table with correct length."""
+
         if self.limit:
             length = self.limit
         else:
@@ -107,13 +159,14 @@ class ProcessEvents(object):
 
         timings = self.process_traces()
 
+        # Assign values to full table, column-wise.
         for idx in range(4):
             col = 't%d' % (idx + 1)
             getattr(table.cols, col)[:] = timings[:, idx]
         table.flush()
 
     def process_traces(self, limit=None):
-        """Process traces to yield pulse timing information"""
+        """Process traces to yield pulse timing information."""
 
         if limit:
             self.limit = limit
@@ -128,6 +181,15 @@ class ProcessEvents(object):
         return timings
 
     def _process_traces_from_event_list(self, events, length=None):
+        """Process traces from a list of events.
+
+        This is the method looping over all events.
+
+        :param events: an iterable of the events
+        :param length: an indication of the number of events, for use as a
+            progress bar.  Optional.
+
+        """
         progressbar = self._create_progressbar_from_iterable(events, length)
 
         result = []
@@ -141,6 +203,8 @@ class ProcessEvents(object):
         return timings
 
     def _create_progressbar_from_iterable(self, iterable, length=None):
+        """Create a progressbar object from any iterable."""
+
         if length is None:
             try:
                 length = len(iterable)
@@ -155,6 +219,13 @@ class ProcessEvents(object):
             return lambda x: x
 
     def _reconstruct_time_from_traces(self, event):
+        """Reconstruct arrival times for a single event.
+
+        This method loops over the traces.
+
+        :param event: row from the events table.
+
+        """
         timings = []
         for pulseheight, trace_idx in zip(event['pulseheights'],
                                           event['traces']):
@@ -166,6 +237,14 @@ class ProcessEvents(object):
         return timings
 
     def _get_trace(self, idx):
+        """Returns a trace given an index into the blobs array.
+
+        Decompress a trace from the blobs array.
+
+        :param idx: index into the blobs array
+        :returns: array of pulseheight values
+
+        """
         blobs = self.group.blobs
 
         trace = zlib.decompress(blobs[idx]).split(',')
@@ -175,8 +254,14 @@ class ProcessEvents(object):
         return trace
 
     def _reconstruct_time_from_trace(self, trace):
-        """Reconstruct time of measurement from a trace"""
+        """Reconstruct time of measurement from a trace.
 
+        This method is doing the hard work.
+
+        :param trace: array containing pulseheight values.
+        :returns: arrival time
+
+        """
         t = trace[:100]
         baseline = np.mean(t)
 
@@ -192,15 +277,21 @@ class ProcessEvents(object):
         return value * ADC_TIME_PER_SAMPLE
 
     def _store_number_of_particles(self):
+        """Store number of particles in the detectors.
+
+        Process all pulseheights from the events and estimate the number
+        of particles in each detector.
+
+        """
         table = self._tmp_events
 
-        n_particles = self.process_pulseheights()
+        n_particles = self._process_pulseheights()
         for idx in range(4):
             col = 'n%d' % (idx + 1)
             getattr(table.cols, col)[:] = n_particles[:, idx]
         table.flush()
 
-    def process_pulseheights(self):
+    def _process_pulseheights(self):
         #FIXME Much too simplistic!  Need fits
 
         n_particles = []
@@ -220,6 +311,8 @@ class ProcessEvents(object):
         self._tmp_events.rename(self.destination)
 
     def determine_detector_timing_offsets(self, timings_table='events'):
+        """Determine the offsets between the station detectors."""
+
         table = self.data.getNode(self.group, timings_table)
         t2 = table.col('t2')
 
@@ -242,7 +335,25 @@ class ProcessEvents(object):
 
 
 class ProcessIndexedEvents(ProcessEvents):
+
+    """Process a subset of events using an index.
+
+    This is a subclass of :class:`ProcessEvents`.  Using an index, this
+    class will only process a subset of events, thus saving time.  For
+    example, this class can only process events making up a coincidence.
+    """
+
     def __init__(self, data, group, indexes, source=None):
+        """Initialize the class.
+
+        :param data: the PyTables datafile
+        :param group: the group containing the station data.  In normal
+            cases, this is simply the group containing the events table.
+        :param indexes: a list of indexes into the events table.
+        :param source: the name of the events table.  Default: None,
+            meaning the default name 'events'.
+
+        """
         super(ProcessIndexedEvents, self).__init__(data, group, source)
         self.indexes = indexes
 
@@ -262,6 +373,11 @@ class ProcessIndexedEvents(ProcessEvents):
         table.flush()
 
     def process_traces(self):
+        """Process traces to yield pulse timing information.
+
+        This method makes use of the indexes to build a list of events.
+
+        """
         events = self.source.itersequence(self.indexes)
 
         timings = self._process_traces_from_event_list(events,
@@ -274,6 +390,14 @@ class ProcessIndexedEvents(ProcessEvents):
 
 
 class ProcessEventsWithLINT(ProcessEvents):
+
+    """Process events using LInear INTerpolation for arrival times.
+
+    This is a subclass of :class:`ProcessEvents`.  Use a linear
+    interpolation method to determine the arrival times of particles.
+
+    """
+
     def _reconstruct_time_from_trace(self, trace):
         """Reconstruct time of measurement from a trace (LINT timings)"""
 
@@ -299,4 +423,44 @@ class ProcessEventsWithLINT(ProcessEvents):
 
 
 class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
+
+    """Process a subset of events using LInear INTerpolation.
+
+    This is a subclass of :class:`ProcessIndexedEvents` and
+    :class:`ProcessEventsWithLint`.
+
+    """
+    pass
+
+
+class ProcessEventsWithoutTraces(ProcessEvents):
+
+    """Process events without traces
+
+    This is a subclass of :class:`ProcessEvents`.  Processing events
+    without considering traces will invalidate the arrival time
+    information.  However, for some analyses it is not necessary to obtain
+    this information.  Ignoring the traces will then greatly decrease
+    processing time and data size.
+
+    """
+
+    def _store_results_from_traces(self):
+        """Fake storing results from traces."""
+
+        pass
+
+class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
+                                        ProcessIndexedEvents):
+
+    """Process a subset of events without traces
+
+    This is a subclass of :class:`ProcessIndexedEvents` and
+    :class:`ProcessEventsWithoutTraces`.  Processing events without
+    considering traces will invalidate the arrival time information.
+    However, for some analyses it is not necessary to obtain this
+    information.  Ignoring the traces will then greatly decrease
+    processing time and data size.
+
+    """
     pass

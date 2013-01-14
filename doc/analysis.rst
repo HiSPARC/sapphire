@@ -10,6 +10,7 @@ Contents:
 
 .. toctree::
 
+   coincidences
    core_reconstruction
    direction_reconstruction
    landau
