@@ -167,13 +167,16 @@ class Coincidences:
         full_index = np.array(selected_timestamps)
 
         for station_id, station_group in enumerate(self.station_groups):
+            station_group = self.data.getNode(station_group)
             selected = full_index.compress(full_index[:, 1] == station_id,
                                            axis=0)
             index = selected[:, 2]
 
             if 'blobs' in station_group:
+                print "Processing coincidence events with LINT"
                 Process = process_events.ProcessIndexedEventsWithLINT
             else:
+                print "Processing coincidence events without traces"
                 Process = process_events.ProcessIndexedEventsWithoutTraces
 
             process = Process(self.data, station_group, index)
