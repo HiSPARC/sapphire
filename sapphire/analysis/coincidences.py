@@ -91,6 +91,7 @@ class Coincidences:
         self.station_groups = station_groups
 
         self.trig_threshold = .5
+        self.overwrite = overwrite
 
     def search_and_store_coincidences(self):
         """Search, process and store coincidences.
@@ -147,7 +148,7 @@ class Coincidences:
         for coincidence in c_index:
             src_c_index.append(coincidence)
 
-    def process_events(self, overwrite=False):
+    def process_events(self, overwrite=None):
         """Process events using :mod:`sapphire.analysis.process_events`
 
         Events making up the coincidences are processed to obtain
@@ -157,6 +158,9 @@ class Coincidences:
             station groups.
 
         """
+        if overwrite is None:
+            overwrite = self.overwrite
+
         c_index = self.coincidence_group._src_c_index.read()
         timestamps = self.coincidence_group._src_timestamps.read()
 
