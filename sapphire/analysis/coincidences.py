@@ -395,6 +395,7 @@ class Coincidences:
         coincidences = []
 
         # traverse all timestamps
+        prev_coincidence = []
         for i in xrange(len(timestamps)):
 
             # build coincidence, starting with the current timestamp
@@ -412,7 +413,13 @@ class Coincidences:
 
             # if we have more than one event in the coincidence, save it
             if len(c) > 1:
-                coincidences.append(c)
+                # is this coincidence part of the previous coincidence?
+                is_part_of_prev = np.array([u in prev_coincidence
+                                            for u in c]).all()
+                if not is_part_of_prev:
+                    # no, so it's a new one
+                    coincidences.append(c)
+                    prev_coincidence = c
 
         return coincidences
 
