@@ -20,7 +20,7 @@ from sapphire import storage, clusters
 
 
 class Master:
-    stations = [501, 503, 506]
+    stations = range(501, 507)
     datetimerange = (datetime.datetime(2012, 1, 1),
                      datetime.datetime(2012, 1, 2))
 
@@ -247,7 +247,8 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         indexes = range(len(events))
         for index_group in itertools.combinations(indexes, 3):
-            theta, phi = self.reconstruct_cluster_angle(events, index_group)
+            sel_events = [events[u] for u in index_group]
+            theta, phi = self.reconstruct_cluster_angle(sel_events)
 
             if not isnan(theta) and not isnan(phi):
                 self.store_reconstructed_event_from_cluster(coincidence, events, index_group, theta, phi)
@@ -284,8 +285,8 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         return theta_wgt, phi
 
-    def reconstruct_cluster_angle(self, events, index_group):
-        """Reconstruct angles from a single event"""
+    def reconstruct_cluster_angle(self, events):
+        """Reconstruct angles from three events"""
 
         c = 3.00e+8
 
