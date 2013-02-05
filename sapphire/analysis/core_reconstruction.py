@@ -125,18 +125,16 @@ class CoreReconstruction(object):
 
     def _add_station_averaged_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
-            if self._station_has_triggered(event):
-                value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
-                solver.add_measurement_at_xy(event['x'], event['y'], value)
+            value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
+            solver.add_measurement_at_xy(event['x'], event['y'], value)
 
     def _add_individual_detector_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
             station = self._get_station_from_event(event)
-            if self._station_has_triggered(event):
-                for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
-                    x, y = detector.get_xy_coordinates()
-                    value = event[idx] / .5
-                    solver.add_measurement_at_xy(x, y, value)
+            for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
+                x, y = detector.get_xy_coordinates()
+                value = event[idx] / .5
+                solver.add_measurement_at_xy(x, y, value)
 
     def _station_has_triggered(self, event):
         if event['N'] >= 2:
