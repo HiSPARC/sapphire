@@ -9,19 +9,30 @@ from numpy import sqrt, arctan2, cos, sin
 import pylab as plt
 from scipy import optimize
 import progressbar as pb
+import tables
 
 from sapphire.simulations import ldf
 from sapphire import storage
 
 
 class CoreReconstruction(object):
-    def __init__(self, data, results_table=None, solver=None, N=None, overwrite=False):
-        self.data = data
+    reconstruction_description = {
+        'coinc_id': tables.UInt32Col(),
+        'N': tables.UInt8Col(),
+        'reconstructed_core_pos': tables.Float32Col(shape=2),
+        'reconstructed_shower_size': tables.Float32Col(),
+        'min_n134': tables.Float32Col()}
 
-        if results_table:
-            self.results_table = self.create_empty_output_table(results_table, overwrite)
+    def __init__(self, data, stations, results_group=None, solver=None,
+                 N=None, overwrite=False):
+        self.data = data
+        self.stations = stations
+
+        if results_group:
+            self.result_group = \
+                self.create_empty_output_table(results_group, overwrite)
         else:
-            self.results_table = None
+            self.result_group = None
 
         if solver is None:
             self.solver = CorePositionSolver(ldf.KascadeLdf())
@@ -30,17 +41,24 @@ class CoreReconstruction(object):
 
         self.N = N
 
-    def create_empty_output_table(self, table_path, overwrite=False):
-        group, tablename = os.path.split(table_path)
-
-        if table_path in self.data:
+    def create_empty_output_table(self, group_path, overwrite=False):
+        if group_path in self.data:
             if not overwrite:
-                raise RuntimeError("Reconstruction table %s already exists" % table_path)
+                raise RuntimeError(
+                    "Reconstruction group %s already exists" % group_path)
             else:
-                self.data.removeNode(group, tablename)
+                self.data.removeNode(group_path, recursive=True)
 
-        table = self._create_output_table(group, tablename)
-        return table
+        head, tail = os.path.split(group_path)
+        group = self.data.createGroup(head, tail)
+        stations_description = {'s%d' % u: tables.BoolCol() for u in
+                                self.stations}
+        description = self.reconstruction_description
+        description.update(stations_description)
+        self.reconstructions = self.data.createTable(group,
+            'reconstructions', description)
+
+        return group
 
     def _create_output_table(self, group, tablename):
         table = self.data.createTable(group, tablename,
@@ -48,8 +66,10 @@ class CoreReconstruction(object):
                                       createparents=True)
         return table
 
-    def store_reconstructed_event(self, coincidence, event, reconstructed_core_x,
-                                  reconstructed_core_y, reconstructed_shower_size):
+    def store_reconstructed_event(self, coincidence, event,
+                                  reconstructed_core_x,
+                                  reconstructed_core_y,
+                                  reconstructed_shower_size):
         dst_row = self.results_table.row
 
         dst_row['id'] = event['id']
@@ -74,6 +94,24 @@ class CoreReconstruction(object):
         dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
         dst_row.append()
 
+    def store_reconstructed_coincidence(self, coincidence,
+                                        reconstructed_core_x,
+                                        reconstructed_core_y,
+                                        reconstructed_shower_size):
+        dst_row = self.reconstructions.row
+        events = self.get_events_from_coincidence(coincidence)
+
+        dst_row['coinc_id'] = coincidence['id']
+        dst_row['N'] = len(events)
+        dst_row['reconstructed_core_pos'] = (reconstructed_core_x,
+                                             reconstructed_core_y)
+        dst_row['reconstructed_shower_size'] = reconstructed_shower_size
+
+        for event in events:
+            station_id = event['station_id']
+            station = self.stations[station_id]
+            dst_row['s%d' % station] = True
+        dst_row.append()
 
     def reconstruct_core_positions(self, source):
         source = self.data.getNode(source)
@@ -89,14 +127,13 @@ class CoreReconstruction(object):
         observables = source.observables
         coincidence_table = source.coincidences
 
-        for event, coincidence in progressbar(zip(observables[:self.N], coincidence_table[:self.N])):
-            assert event['id'] == coincidence['id']
-
-            if coincidence['N'] >= 1:
+        for coincidence in progressbar(coincidence_table[:self.N]):
+            if coincidence['N'] >= 3:
                 x, y, N = self.reconstruct_core_position(coincidence)
-                self.store_reconstructed_event(coincidence, event, x, y, N)
+                #self.store_reconstructed_event(coincidence, event, x, y, N)
+                self.store_reconstructed_coincidence(coincidence, x, y, N)
 
-        self.results_table.flush()
+        self.reconstructions.flush()
 
     def reconstruct_core_position(self, coincidence):
         solver = self.solver
@@ -125,18 +162,16 @@ class CoreReconstruction(object):
 
     def _add_station_averaged_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
-            if self._station_has_triggered(event):
-                value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
-                solver.add_measurement_at_xy(event['x'], event['y'], value)
+            value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
+            solver.add_measurement_at_xy(event['x'], event['y'], value)
 
     def _add_individual_detector_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
             station = self._get_station_from_event(event)
-            if self._station_has_triggered(event):
-                for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
-                    x, y = detector.get_xy_coordinates()
-                    value = event[idx] / .5
-                    solver.add_measurement_at_xy(x, y, value)
+            for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
+                x, y = detector.get_xy_coordinates()
+                value = event[idx] / .5
+                solver.add_measurement_at_xy(x, y, value)
 
     def _station_has_triggered(self, event):
         if event['N'] >= 2:
@@ -149,8 +184,8 @@ class CoreReconstruction(object):
         return self.cluster.stations[station_id - 1]
 
     def _store_cluster_with_results(self):
-        if not 'cluster' in self.results_table.attrs:
-            self.results_table.attrs.cluster = self.cluster
+        if not 'cluster' in self.result_group._v_attrs:
+            self.result_group._v_attrs.cluster = self.cluster
 
 
 class PlotCoreReconstruction(CoreReconstruction):

@@ -16,6 +16,7 @@ import sapphire.analysis.coincidences
 from sapphire.analysis.process_events import ProcessEvents
 from sapphire.analysis.direction_reconstruction import \
     DirectionReconstruction
+from sapphire.analysis.core_reconstruction import CoreReconstruction
 from sapphire import storage, clusters
 
 
@@ -43,6 +44,7 @@ class Master:
         self.determine_station_offsets()
 
         self.reconstruct_direction()
+        self.reconstruct_core_position()
 
     def download_data(self):
         start, end = self.datetimerange
@@ -98,6 +100,13 @@ class Master:
                                 detector_offsets=self.detector_offsets,
                                 station_offsets=self.station_offsets)
             reconstruction.reconstruct_angles('/coincidences')
+
+    def reconstruct_core_position(self):
+        print "Reconstructing core position..."
+        if not '/core_reconstructions' in self.data:
+            reconstruction = CoreReconstruction(self.data, self.stations,
+                                '/core_reconstructions')
+            reconstruction.reconstruct_core_positions('/coincidences')
 
     def determine_detector_offsets(self, overwrite=False):
         offsets_group = '/detector_offsets'
