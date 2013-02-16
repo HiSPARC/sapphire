@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('hisparc.publicdb')
 
 #PUBLICDB_XMLRPC_URL = 'http://localhost:8000/raw_data/rpc'
-PUBLICDB_XMLRPC_URL = 'http://data.hisparc.nl/django/raw_data/rpc'
+PUBLICDB_XMLRPC_URL = 'http://data.hisparc.nl/raw_data/rpc'
 
 
 def download_data(file, group, station_id, start, end, get_blobs=False):
@@ -149,26 +149,26 @@ def datetimerange(start, stop):
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 1, 13)):
         ...     x
-        ...     
+        ...
         (datetime.datetime(2010, 1, 1, 11, 0), datetime.datetime(2010, 1, 1, 13, 0))
 
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 2)):
         ...     x
-        ...     
+        ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
 
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 2, 13)):
         ...     x
-        ...     
+        ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
         (datetime.datetime(2010, 1, 2, 0, 0), datetime.datetime(2010, 1, 2, 13, 0))
 
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 5, 13)):
         ...     x
-        ...     
+        ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
         (datetime.datetime(2010, 1, 2, 0, 0), None)
         (datetime.datetime(2010, 1, 3, 0, 0), None)

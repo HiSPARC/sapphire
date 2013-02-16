@@ -433,7 +433,7 @@ is a great way to do that.  And of course, the venerable histogram is
 still very useful to condense thousands of events into one display.  Pylab
 contains an easy function to do just that: :func:`hist`.  Let's try to
 recreate a few graphs as seen on the |hisparc| `data display
-<http://data.hisparc.nl/django/show/stations/501/2012/12/1/>`_::
+<http://data.hisparc.nl/show/stations/501/2012/12/1/>`_::
 
     >>> ph = events.col('pulseheights')
     >>> hist(ph)
