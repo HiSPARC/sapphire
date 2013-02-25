@@ -63,6 +63,8 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
             if re.search("No data", str(exc)):
                 logger.warning("No data for %s" % t0)
                 continue
+            else:
+                raise
         logger.info("Downloading data...")
         tmp_datafile, headers = urllib.urlretrieve(url)
         logger.info("Storing data...")
