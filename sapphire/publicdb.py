@@ -131,6 +131,7 @@ def _store_data(dst_file, dst_group, src_filename, t0, t1):
                 dst_node.append(rows)
 
     os.remove(src_filename)
+    dst_file.flush()
 
 
 def datetimerange(start, stop):
