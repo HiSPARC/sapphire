@@ -93,7 +93,7 @@ class Coincidences:
         self.trig_threshold = .5
         self.overwrite = overwrite
 
-    def search_and_store_coincidences(self):
+    def search_and_store_coincidences(self, cluster=None):
         """Search, process and store coincidences.
 
         This is a semi-automatic method to search for coincidences,
@@ -108,7 +108,7 @@ class Coincidences:
         """
         self.search_coincidences()
         self.process_events()
-        self.store_coincidences()
+        self.store_coincidences(cluster)
 
     def search_coincidences(self, window=200000, shifts=None, limit=None):
         """Search for coincidences.
@@ -209,6 +209,7 @@ class Coincidences:
                                                  'observables',
                                                  storage.EventObservables)
 
+        print "Storing coincidences"
         progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                            pb.ETA()])
         for coincidence in progress(self.coincidence_group._src_c_index):
