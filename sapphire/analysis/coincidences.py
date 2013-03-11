@@ -64,6 +64,9 @@ class Coincidences:
 
     """
 
+    ProcessWithTraces = process_events.ProcessIndexedEventsWithLINT
+    ProcessWithoutTraces = process_events.ProcessIndexedEventsWithoutTraces
+
     def __init__(self, data, coincidence_group, station_groups,
                  overwrite=False):
         """Initialize the class.
@@ -177,11 +180,11 @@ class Coincidences:
             index = selected[:, 2]
 
             if 'blobs' in station_group:
-                print "Processing coincidence events with LINT"
-                Process = process_events.ProcessIndexedEventsWithLINT
+                print "Processing coincidence events with traces"
+                Process = self.ProcessWithTraces
             else:
                 print "Processing coincidence events without traces"
-                Process = process_events.ProcessIndexedEventsWithoutTraces
+                Process = self.ProcessWithoutTraces
 
             process = Process(self.data, station_group, index)
             process.process_and_store_results(overwrite=overwrite)
