@@ -372,6 +372,7 @@ by giving it a GPS time to work with.  It can either be in date/time
 notation, or as a timestamp.  For example, the exact same result is
 obtained by these two lines of code::
 
+    >>> import sapphire.time_util
     >>> sapphire.time_util.GPSTime(2012, 12, 1)
     <sapphire.time_util.GPSTime instance at 0x10b8021b8>
     >>> sapphire.time_util.GPSTime(1354320000)
