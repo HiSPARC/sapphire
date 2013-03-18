@@ -106,11 +106,11 @@ we can specify this by typing::
 
 Mind that if we do not specify the hour of day, it is taken to be 00:00
 hours.  Thus, there is no data included from December 3.  Alternatively,
-we can download data from a two hour interval on December 14 by specifying
+we can download data from a two hour interval on October 17 by specifying
 the hour of day::
 
-    >>> start = datetime.datetime(2012, 12, 14, 19)
-    >>> end = datetime.datetime(2012, 12, 14, 21)
+    >>> start = datetime.datetime(2012, 10, 17, 19)
+    >>> end = datetime.datetime(2012, 10, 17, 21)
 
 which is from 19:00 to 21:00 hours.  It is important to realize that the
 we use a GPS clock, which equal to UTC (up to leap seconds).  So, if we
