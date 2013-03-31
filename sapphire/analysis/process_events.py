@@ -227,13 +227,15 @@ class ProcessEvents(object):
 
         """
         timings = []
-        for pulseheight, trace_idx in zip(event['pulseheights'],
-                                          event['traces']):
+        for baseline, pulseheight, trace_idx in zip(event['baseline'],
+                                                    event['pulseheights'],
+                                                    event['traces']):
             if pulseheight < ADC_THRESHOLD:
                 timings.append(np.nan)
             else:
                 trace = self._get_trace(trace_idx)
-                timings.append(self._reconstruct_time_from_trace(trace))
+                timings.append(self._reconstruct_time_from_trace(trace,
+                                                                 baseline))
         return timings
 
     def _get_trace(self, idx):
@@ -253,20 +255,17 @@ class ProcessEvents(object):
         trace = np.array([int(x) for x in trace])
         return trace
 
-    def _reconstruct_time_from_trace(self, trace):
+    def _reconstruct_time_from_trace(self, trace, baseline):
         """Reconstruct time of measurement from a trace.
 
         This method is doing the hard work.
 
         :param trace: array containing pulseheight values.
+        :param baseline: baseline of the trace
         :returns: arrival time
 
         """
-        t = trace[:100]
-        baseline = np.mean(t)
-
-        trace = trace - baseline
-        threshold = ADC_THRESHOLD
+        threshold = baseline + ADC_THRESHOLD
 
         value = np.nan
         for i, t in enumerate(trace):
@@ -398,14 +397,17 @@ class ProcessEventsWithLINT(ProcessEvents):
 
     """
 
-    def _reconstruct_time_from_trace(self, trace):
-        """Reconstruct time of measurement from a trace (LINT timings)"""
+    def _reconstruct_time_from_trace(self, trace, baseline):
+        """Reconstruct time of measurement from a trace (LINT timings).
 
-        t = trace[:100]
-        baseline = np.mean(t)
+        This method is doing the hard work.
 
-        trace = trace - baseline
-        threshold = ADC_THRESHOLD
+        :param trace: array containing pulseheight values.
+        :param baseline: baseline of the trace
+        :returns: arrival time
+
+        """
+        threshold = baseline + ADC_THRESHOLD
 
         # FIXME: apparently, there are a few bugs here. I see, in my
         # cluster reconstruction analysis, timings like -inf and
