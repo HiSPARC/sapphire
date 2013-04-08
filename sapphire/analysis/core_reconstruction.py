@@ -139,7 +139,8 @@ class CoreReconstruction(object):
         solver = self.solver
 
         solver.reset_measurements()
-        self._add_individual_detector_measurements_to_solver(solver, coincidence)
+        #self._add_individual_detector_measurements_to_solver(solver, coincidence)
+        self._add_station_averaged_measurements_to_solver(solver, coincidence)
 
         x0, y0 = solver.get_center_of_mass_of_measurements()
         xopt, yopt = solver.optimize_core_position(x0, y0)
@@ -162,8 +163,10 @@ class CoreReconstruction(object):
 
     def _add_station_averaged_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
+            station = self._get_station_from_event(event)
+            x, y, alpha = station.get_xyalpha_coordinates()
             value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
-            solver.add_measurement_at_xy(event['x'], event['y'], value)
+            solver.add_measurement_at_xy(x, y, value)
 
     def _add_individual_detector_measurements_to_solver(self, solver, coincidence):
         for event in self.get_events_from_coincidence(coincidence):
@@ -199,7 +202,7 @@ class PlotCoreReconstruction(CoreReconstruction):
         subplot(121)
         xopt, yopt, shower_size = self.reconstruct_core_position(coincidence)
 
-        self._do_do_plot_coincidence(coincidence, use_detectors=True)
+        self._do_do_plot_coincidence(coincidence, use_detectors=False)
         x0, y0 = self.solver.get_center_of_mass_of_measurements()
         plt.scatter(x0, y0, color='green')
         plt.scatter(xopt, yopt, color='yellow')
@@ -280,7 +283,7 @@ class PlotCoreReconstruction(CoreReconstruction):
         if use_detectors:
             self._add_individual_detector_measurements_to_solver(solver, coincidence)
         else:
-            self._add_station_measurements_to_solver(solver, coincidence)
+            self._add_station_averaged_measurements_to_solver(solver, coincidence)
 
         self._plot_chi_squared_contours(solver)
 
