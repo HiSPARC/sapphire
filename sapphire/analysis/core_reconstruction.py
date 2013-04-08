@@ -198,8 +198,8 @@ class PlotCoreReconstruction(CoreReconstruction):
         self.cluster = source._v_attrs.cluster
         coincidence = source.coincidences[coincidence_idx]
 
-        figure()
-        subplot(121)
+        plt.figure()
+        plt.subplot(121)
         xopt, yopt, shower_size = self.reconstruct_core_position(coincidence)
 
         self._do_do_plot_coincidence(coincidence, use_detectors=False)
@@ -208,12 +208,12 @@ class PlotCoreReconstruction(CoreReconstruction):
         plt.scatter(xopt, yopt, color='yellow')
 
         xs, ys = np.array(self.solver._make_guess_position_list(x0, y0)).T
-        scatter(xs, ys, color='cyan', s=5)
+        plt.scatter(xs, ys, color='cyan', s=5)
 
-        xlim(-50, 50)
-        ylim(-50, 50)
+        plt.xlim(-500, 500)
+        plt.ylim(-500, 500)
 
-        subplot(122)
+        plt.subplot(122)
         self._do_plot_ldf(coincidence, xopt, yopt, shower_size)
 
     def get_coincidence_with_multiplicity(self, index, multiplicity, num_detectors):
@@ -265,16 +265,16 @@ class PlotCoreReconstruction(CoreReconstruction):
         plt.title("Coincidence (%d-fold) #%d\n%s\n%s" % (coincidence['N'], index, method, type(self.solver).__name__))
 
     def _do_plot_ldf(self, coincidence, x0, y0, shower_size):
-        x = logspace(-1, 2, 100)
+        x = plt.logspace(-1, 3, 100)
         y = self.solver.ldf_given_size(x, shower_size)
-        loglog(x, y, label='LDF')
+        plt.loglog(x, y, label='LDF')
 
         r, dens = self.solver.get_ldf_measurements_for_core_position((x0, y0))
-        loglog(r, dens, 'o', label="signals")
+        plt.loglog(r, dens, 'o', label="signals")
 
-        legend()
-        xlabel("Core distance [m]")
-        ylabel("Particle density [$m^{-2}$]")
+        plt.legend()
+        plt.xlabel("Core distance [m]")
+        plt.ylabel("Particle density [$m^{-2}$]")
 
     def _plot_chi_squared_on_map(self, coincidence, use_detectors=False):
         solver = self.solver
@@ -289,8 +289,8 @@ class PlotCoreReconstruction(CoreReconstruction):
 
     def _plot_chi_squared_contours(self, solver):
         mylog = np.vectorize(lambda x: np.log10(x) if x > 0 else -999.)
-        x = np.linspace(-60, 60, 100)
-        y = np.linspace(-60, 60, 100)
+        x = np.linspace(-600, 600, 100)
+        y = np.linspace(-600, 600, 100)
         chi_squared = np.zeros((len(x), len(y)))
         for i in range(len(x)):
             for j in range(len(y)):
