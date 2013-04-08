@@ -181,7 +181,7 @@ class CoreReconstruction(object):
 
     def _get_station_from_event(self, event):
         station_id = event['station_id']
-        return self.cluster.stations[station_id - 1]
+        return self.cluster.stations[station_id]
 
     def _store_cluster_with_results(self):
         if not 'cluster' in self.result_group._v_attrs:
@@ -300,7 +300,7 @@ class PlotCoreReconstruction(CoreReconstruction):
 
     def _plot_event_on_map(self, event):
         station_id = event['station_id']
-        station = self.cluster.stations[station_id - 1]
+        station = self.cluster.stations[station_id]
 
         detectors = station.detectors
         num_particles = [event[u] for u in ['n1', 'n2', 'n3', 'n4']]
