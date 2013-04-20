@@ -334,7 +334,9 @@ class CorePositionSolver(object):
     def optimize_core_position(self, x0, y0):
         best_value = self.calculate_chi_squared_for_xy((x0, y0))
 
-        pos_list = self._make_guess_position_list(x0, y0)
+        # FIXME
+        #pos_list = self._make_guess_position_list(x0, y0)
+        pos_list = [(x0, y0)]
 
         for x0, y0 in pos_list:
             xopt, yopt = optimize.fmin(self.calculate_chi_squared_for_xy,
