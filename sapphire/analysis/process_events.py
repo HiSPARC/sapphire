@@ -291,14 +291,40 @@ class ProcessEvents(object):
         table.flush()
 
     def _process_pulseheights(self):
-        #FIXME Much too simplistic!  Need fits
+        """Process pulseheights to density
 
-        n_particles = []
+        :returns: array of number of particles per detector
 
-        for event in self.source[:self.limit]:
-            n_particles.append(event['pulseheights'] / 380.)
+        """
+        ph = self.source.col('pulseheights')[:self.limit]
+        mpv = self._pulseheight_gauss_fit(ph)
+        n_particles = ph / mpv
 
-        return np.array(n_particles)
+        return n_particles
+
+    def _pulseheight_gauss_fit(self, pulseheights):
+        """Make Gauss fit to MIP peak to find MPV"""
+
+        adc_per_bin = 10
+        bins = np.arange(120, 4000, adc_per_bin)
+        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
+        mpv = []
+
+        for i in range(len(ph[0])):
+            y, bins = np.histogram(pulseheights[:, i], bins=bins)
+            x = (bins[:-1] + bins[1:]) / 2
+            # Initial paramaters
+            max_count = max(y)
+            mpv_bin = [k for k, v in enumerate(y) if v == max_count][0]
+            mpv_guess = x[mpv_bin]
+            N_guess = len(ph)
+            sigma_guess = 80.
+            max_bin = mpv_bin + sig_guess / adc_per_bin
+            # Fit
+            popt, pcov = curve_fit(gauss, x[:max_bin], y[:max_bin], p0=(N_guess, mpv_guess, sigma_guess))
+            mpv.append(popt[1])
+
+        return mpv
 
     def _move_results_table_into_destination(self):
         if self.source.name == 'events':
