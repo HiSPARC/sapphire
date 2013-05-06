@@ -135,14 +135,17 @@ class CoreReconstruction(object):
 
         self.reconstructions.flush()
 
-    def reconstruct_core_position(self, coincidence):
+    def reconstruct_core_position(self, coincidence, startpos=None):
         solver = self.solver
 
         solver.reset_measurements()
         #self._add_individual_detector_measurements_to_solver(solver, coincidence)
         self._add_station_averaged_measurements_to_solver(solver, coincidence)
 
-        x0, y0 = solver.get_center_of_mass_of_measurements()
+        if startpos is not None:
+            x0, y0 = startpos
+        else:
+            x0, y0 = solver.get_center_of_mass_of_measurements()
         xopt, yopt = solver.optimize_core_position(x0, y0)
 
         r, dens = solver.get_ldf_measurements_for_core_position((xopt, yopt))
