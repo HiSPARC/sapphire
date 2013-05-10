@@ -147,7 +147,7 @@ class ProcessEvents(object):
         table = self._tmp_events
         source = self.source
 
-        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
+        progressbar = self._create_progressbar_from_iterable(source.colnames)
 
         for col in progressbar(source.colnames):
             getattr(table.cols, col)[:self.limit] = getattr(source.cols,
