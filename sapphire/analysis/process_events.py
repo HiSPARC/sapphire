@@ -1,5 +1,6 @@
 import zlib
 from itertools import izip
+import operator
 
 import tables
 import numpy as np
@@ -51,6 +52,8 @@ class ProcessEvents(object):
         self.limit = limit
 
         self._check_destination(destination, overwrite)
+
+        self._clean_events_table()
 
         self._create_results_table()
         self._store_results_from_traces()
@@ -116,6 +119,70 @@ class ProcessEvents(object):
                 raise RuntimeError("I will not overwrite previous results (unless you specify overwrite=True)")
 
         self.destination = destination
+
+    def _clean_events_table(self):
+        """Clean the events table.
+
+        Remove duplicate events and sort the table by ext_timestamp.
+
+        """
+        events = self.source
+        events_tablename = self.source.name
+
+        enumerated_timestamps = \
+            list(enumerate(events.col('ext_timestamp')))
+        enumerated_timestamps.sort(key=operator.itemgetter(1))
+
+        unique_sorted_ids = \
+            self._find_unique_row_ids(enumerated_timestamps)
+
+        new_events = self._replace_table_with_selected_rows(events,
+            unique_sorted_ids)
+        self.source = new_events
+        self._normalize_event_ids(new_events)
+
+    def _find_unique_row_ids(self, enumerated_timestamps):
+        """Find the unique row_ids from enumerated timestamps."""
+
+        prev_timestamp = 0
+        unique_sorted_ids = []
+        for row_id, timestamp in enumerated_timestamps:
+            if timestamp != prev_timestamp:
+                # event is unique, so add it
+                unique_sorted_ids.append(row_id)
+            prev_timestamp = timestamp
+
+        return unique_sorted_ids
+
+    def _replace_table_with_selected_rows(self, table, row_ids):
+        """Replace events table with selected rows.
+
+        :param table: original table to be replaced.
+        :param row_ids: row ids of the selected rows which should go in
+            the destination table.
+
+        """
+        tmptable = self.data.createTable(self.group, 't__events',
+                                         description=table.description)
+        selected_rows = table.readCoordinates(row_ids)
+        tmptable.append(selected_rows)
+        tmptable.flush()
+        self.data.renameNode(tmptable, table.name, overwrite=True)
+        return tmptable
+
+    def _normalize_event_ids(self, events):
+        """Normalize event ids.
+
+        After sorting, the event ids no longer correspond to the row
+        number.  This can complicate finding the row id of a particular
+        event.  This method will replace the event_ids of all events by
+        the row id.
+
+        :param events: the events table to normalize.
+
+        """
+        row_ids = range(len(events))
+        events.modifyColumn(column=row_ids, colname='event_id')
 
     def _create_results_table(self):
         """Create results table containing the events."""
