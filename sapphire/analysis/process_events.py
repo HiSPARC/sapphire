@@ -36,6 +36,7 @@ class ProcessEvents(object):
         self.data = data
         self.group = data.getNode(group)
         self.source = self._get_source(source)
+        self.limit = None
 
     def process_and_store_results(self, destination=None, overwrite=False,
                                   limit=None):
@@ -171,11 +172,7 @@ class ProcessEvents(object):
         if limit:
             self.limit = limit
 
-        if self.limit:
-            events = self.source.iterrows(stop=self.limit)
-        else:
-            events = self.source
-
+        events = self.source.iterrows(stop=self.limit)
         timings = self._process_traces_from_event_list(events,
                                                        length=self.limit)
         return timings
@@ -290,8 +287,8 @@ class ProcessEvents(object):
             getattr(table.cols, col)[:] = n_particles[:, idx]
         table.flush()
 
-    def _process_pulseheights(self):
         """Process pulseheights to density
+    def _process_pulseheights(self, limit=None):
 
         :returns: array of number of particles per detector
 
@@ -299,6 +296,8 @@ class ProcessEvents(object):
         ph = self.source.col('pulseheights')[:self.limit]
         mpv = self._pulseheight_gauss_fit(ph)
         n_particles = ph / mpv
+        if limit:
+            self.limit = limit
 
         return n_particles
 
