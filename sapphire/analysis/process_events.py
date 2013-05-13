@@ -287,17 +287,19 @@ class ProcessEvents(object):
             getattr(table.cols, col)[:] = n_particles[:, idx]
         table.flush()
 
-        """Process pulseheights to density
     def _process_pulseheights(self, limit=None):
+        """Process pulseheights to particle density
 
         :returns: array of number of particles per detector
 
         """
-        ph = self.source.col('pulseheights')[:self.limit]
-        mpv = self._pulseheight_gauss_fit(ph)
-        n_particles = ph / mpv
         if limit:
             self.limit = limit
+
+        pulseheights = self.source.col('pulseheights')[:self.limit]
+
+        mpv = self._pulseheight_gauss_fit(pulseheights)
+        n_particles = pulseheights / mpv
 
         return n_particles
 
@@ -309,18 +311,19 @@ class ProcessEvents(object):
         gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
         mpv = []
 
-        for i in range(len(ph[0])):
+        for i in range(len(pulseheights[0])):
             y, bins = np.histogram(pulseheights[:, i], bins=bins)
             x = (bins[:-1] + bins[1:]) / 2
             # Initial paramaters
             max_count = max(y)
             mpv_bin = [k for k, v in enumerate(y) if v == max_count][0]
             mpv_guess = x[mpv_bin]
-            N_guess = len(ph)
+            N_guess = len(pulseheights)
             sigma_guess = 80.
-            max_bin = mpv_bin + sig_guess / adc_per_bin
+            max_bin = mpv_bin + sigma_guess / adc_per_bin
             # Fit
-            popt, pcov = curve_fit(gauss, x[:max_bin], y[:max_bin], p0=(N_guess, mpv_guess, sigma_guess))
+            popt, pcov = curve_fit(gauss, x[:max_bin], y[:max_bin],
+                                   p0=(N_guess, mpv_guess, sigma_guess))
             mpv.append(popt[1])
 
         return mpv
