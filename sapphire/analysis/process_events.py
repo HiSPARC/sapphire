@@ -26,7 +26,7 @@ class ProcessEvents(object):
     def __init__(self, data, group, source=None):
         """Initialize the class.
 
-        :param data: the PyTables datafile
+        :param data: the PyTables datafile.
         :param group: the group containing the station data.  In normal
             cases, this is simply the group containing the events table.
         :param source: the name of the events table.  Default: None,
@@ -90,7 +90,7 @@ class ProcessEvents(object):
         :param source: the *name* of the table.  If None, this method will
             try to find the original events table, even if the events were
             previously processed.
-        :returns: table object
+        :returns: table object.
 
         """
         if source is None:
@@ -167,8 +167,12 @@ class ProcessEvents(object):
         table.flush()
 
     def process_traces(self, limit=None):
-        """Process traces to yield pulse timing information."""
+        """Process traces to yield pulse timing information.
 
+        :param limit: number of rows to process.
+        :returns: arrival times in each detector for the given table.
+
+        """
         if limit:
             self.limit = limit
 
@@ -182,7 +186,7 @@ class ProcessEvents(object):
 
         This is the method looping over all events.
 
-        :param events: an iterable of the events
+        :param events: an iterable of the events.
         :param length: an indication of the number of events, for use as a
             progress bar.  Optional.
 
@@ -304,8 +308,12 @@ class ProcessEvents(object):
         return n_particles
 
     def _pulseheight_gauss_fit(self, pulseheights):
-        """Make Gauss fit to MIP peak to find MPV"""
+        """Make Gauss fit to MIP peak to find MPV
 
+        :param pulseheights: array of pulseheights for each detector.
+        :returns: list with mpv values for each detector.
+
+        """
         adc_per_bin = 10
         bins = np.arange(120, 4000, adc_per_bin)
         gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
@@ -322,9 +330,12 @@ class ProcessEvents(object):
             sigma_guess = 80.
             max_bin = mpv_bin + sigma_guess / adc_per_bin
             # Fit
-            popt, pcov = curve_fit(gauss, x[:max_bin], y[:max_bin],
-                                   p0=(N_guess, mpv_guess, sigma_guess))
-            mpv.append(popt[1])
+            try:
+                popt, pcov = curve_fit(gauss, x[:max_bin], y[:max_bin],
+                                       p0=(N_guess, mpv_guess, sigma_guess))
+                mpv.append(popt[1])
+            except RuntimeError:
+                mpv.append(380)
 
         return mpv
 
