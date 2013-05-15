@@ -459,8 +459,9 @@ def get_events(data, stations, coincidence, timestamps,
         process = process_events.ProcessEvents(data, stations[station])
         event = process.source[index]
         if not get_raw_traces:
-            # undo transpose to get expected format
-            traces = process.get_traces_for_event(event).T
+            # transpose to get expected format
+            traces = (process.get_traces_for_event(event) - event['baseline']).T
+            traces *= -.57
         else:
             traces = [blob_table[x] for x in event['traces']]
         events.append((stations[station], event, traces))
