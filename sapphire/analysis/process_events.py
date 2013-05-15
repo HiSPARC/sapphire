@@ -67,10 +67,7 @@ class ProcessEvents(object):
         :returns: the traces: an array of pulseheight values.
 
         """
-        traces = []
-        for idx in event['traces']:
-            if not idx < 0:
-                traces.append(self._get_trace(idx))
+        traces = [self._get_trace(idx) for idx in event['traces'] if idx >= 0]
 
         # Make traces follow NumPy conventions
         traces = np.array(traces).T
