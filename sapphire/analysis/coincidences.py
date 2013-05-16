@@ -432,8 +432,7 @@ class Coincidences:
         return coincidences
 
 
-def get_events(data, stations, coincidence, timestamps,
-               get_raw_traces=False):
+def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
     """Get event data of a coincidence
 
     Return a list of events making up a coincidence.
@@ -461,7 +460,7 @@ def get_events(data, stations, coincidence, timestamps,
         if not get_raw_traces:
             # transpose to get expected format
             traces = (process.get_traces_for_event(event) - event['baseline']).T
-            traces *= -.57
+            traces = traces * -0.57
         else:
             traces = [blob_table[x] for x in event['traces']]
         events.append((stations[station], event, traces))
