@@ -1,7 +1,9 @@
-import CorsikaBlocks
 import struct
 
-from CorsikaBlocks import RunHeader, RunTrailer, EventHeader, EventTrailer, ParticleData, CherenkovData
+import CorsikaBlocks
+from CorsikaBlocks import (RunHeader, RunTrailer, EventHeader, EventTrailer,
+                           ParticleData, CherenkovData)
+
 
 class CorsikaEvent:
     def __init__(self, raw_file, header_index, trailer_index):
@@ -23,8 +25,8 @@ class CorsikaEvent:
         Returns an instance of EventHeader
         """
         if not self.fHeader:
-            self.fHeader = CorsikaBlocks.EventHeader(struct.unpack(CorsikaBlocks.gSubblockFormat,
-                                                                   self.fRawFile.fContents[self.fHeaderIndex:CorsikaBlocks.gSubblockSize+self.fHeaderIndex]))
+            self.fHeader = EventHeader(struct.unpack(CorsikaBlocks.gSubblockFormat,
+                                                     self.fRawFile.fContents[self.fHeaderIndex:CorsikaBlocks.gSubblockSize + self.fHeaderIndex]))
         return self.fHeader
 
     def GetTrailer(self):
@@ -32,8 +34,8 @@ class CorsikaEvent:
         Returns an instance of EventTrailer
         """
         if not self.fTrailer:
-            self.fTrailer = CorsikaBlocks.EventTrailer(struct.unpack(CorsikaBlocks.gSubblockFormat,
-                                                                     self.fRawFile.fContents[self.fTrailerIndex:CorsikaBlocks.gSubblockSize+self.fTrailerIndex]))
+            self.fTrailer = EventTrailer(struct.unpack(CorsikaBlocks.gSubblockFormat,
+                                                       self.fRawFile.fContents[self.fTrailerIndex:CorsikaBlocks.gSubblockSize + self.fTrailerIndex]))
         return self.fTrailer
 
     def GetParticles(self):
@@ -51,10 +53,10 @@ class CorsikaEvent:
         done = False
         for sub_block_index in self.fRawFile._SubBlocksIndices(self.fHeaderIndex, self.fTrailerIndex):
             for p in range(CorsikaBlocks.gParticlesPerSubblock):
-                pos = sub_block_index + p*CorsikaBlocks.gParticleRecordSize
+                pos = sub_block_index + p * CorsikaBlocks.gParticleRecordSize
                 particle = self.fRawFile._GetParticleRecord(pos)
-                t = int(particle.fDescription/1000)
-                l = particle.fDescription%10
+                t = int(particle.fDescription / 1000)
+                l = particle.fDescription % 10
                 if t in types.keys():
                     types[t] += 1
                 else:
@@ -86,7 +88,7 @@ class CorsikaFile:
         It takes a file name as argument
         """
         self.fFilename = filename
-        self.fFile =  open(filename, 'rb')
+        self.fFile = open(filename, 'rb')
         self.fEvents = None
         self.fRuns = None
         self.fContents = self.fFile.read()
@@ -108,13 +110,13 @@ class CorsikaFile:
         Here would be the place to dynamically check for endiannes and
         field size.
         """
-        if len(self.fContents)%CorsikaBlocks.gBlockSize != 0:
-            raise Exception('File "{name}" does not have an integer number of blocks!'.format(name=filename))
+        if len(self.fContents) % CorsikaBlocks.gBlockSize != 0:
+            raise Exception('File "{name}" does not have an integer number of blocks!'.format(name=self.fFilenamefilename))
 
-        n_blocks = len(self.fContents)/CorsikaBlocks.gBlockSize
+        n_blocks = len(self.fContents) / CorsikaBlocks.gBlockSize
         for block in range(n_blocks):
-            a = struct.unpack('i', self.fContents[block*CorsikaBlocks.gBlockSize:block*CorsikaBlocks.gBlockSize+CorsikaBlocks.gBlockPaddingSize])[0]
-            b = struct.unpack('i', self.fContents[(block+1)*CorsikaBlocks.gBlockSize-CorsikaBlocks.gBlockPaddingSize: (block+1)*CorsikaBlocks.gBlockSize])[0]
+            a = struct.unpack('i', self.fContents[block * CorsikaBlocks.gBlockSize:block * CorsikaBlocks.gBlockSize + CorsikaBlocks.gBlockPaddingSize])[0]
+            b = struct.unpack('i', self.fContents[(block + 1) * CorsikaBlocks.gBlockSize - CorsikaBlocks.gBlockPaddingSize:(block + 1) * CorsikaBlocks.gBlockSize])[0]
             if a != b:
                 raise Exception('Block #{block} is not right: ({head}, {tail})'.format(block=block, head=a, tail=b))
 
@@ -122,26 +124,28 @@ class CorsikaFile:
         """
         Get the sub-blocks in the file.
 
-        Normally one would not need this function but it is here because I have used it.
+        Normally one would not need this function but it is here because
+        I have used it.
         """
-        n_blocks = len(self.fContents)/CorsikaBlocks.gBlockSize
-        for b in xrange(0, n_blocks*CorsikaBlocks.gBlockSize, CorsikaBlocks.gBlockSize):
+        n_blocks = len(self.fContents) / CorsikaBlocks.gBlockSize
+        for b in xrange(0, n_blocks * CorsikaBlocks.gBlockSize, CorsikaBlocks.gBlockSize):
             for s in xrange(0, CorsikaBlocks.gSubBlocksPerBlock):
-                pos = b + s*CorsikaBlocks.gSubblockSize + CorsikaBlocks.gBlockPaddingSize
-                yield struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[pos:pos+CorsikaBlocks.gSubblockSize])
+                pos = b + s * CorsikaBlocks.gSubblockSize + CorsikaBlocks.gBlockPaddingSize
+                yield struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[pos:pos + CorsikaBlocks.gSubblockSize])
 
     def GetEvents(self):
         """
         Generator of Events
 
-        This method is a generator over the events in the file. Use it like this::
+        This method is a generator over the events in the file.
+        Use it like this::
 
             for event in my_file.GetEvents():
                 pass
         """
         event_head = None
         for block in self._SubBlocksIndices():
-            tag = struct.unpack('4s', self.fContents[block:block+CorsikaBlocks.gFieldSize])[0]
+            tag = struct.unpack('4s', self.fContents[block:block + CorsikaBlocks.gFieldSize])[0]
             if tag == 'EVTH':
                 event_head = block
             if tag == 'EVTE':
@@ -155,11 +159,12 @@ class CorsikaFile:
         The idea of this method is to get the field indices for the
         beginning and end of the events. It does not unpack the data.
         """
-        n_blocks = len(self.fContents)/CorsikaBlocks.gBlockSize
-        for b in xrange(0, n_blocks*CorsikaBlocks.gBlockSize, CorsikaBlocks.gBlockSize):
+        n_blocks = len(self.fContents) / CorsikaBlocks.gBlockSize
+        for b in xrange(0, n_blocks * CorsikaBlocks.gBlockSize, CorsikaBlocks.gBlockSize):
             for s in xrange(0, CorsikaBlocks.gSubBlocksPerBlock):
-                pos = b + s*CorsikaBlocks.gSubblockSize + CorsikaBlocks.gBlockPaddingSize
-                if ( not min_sub_block is None and pos <= min_sub_block ) or ( not max_sub_block is None and pos >= max_sub_block ):
+                pos = b + s * CorsikaBlocks.gSubblockSize + CorsikaBlocks.gBlockPaddingSize
+                if ((not min_sub_block is None and pos <= min_sub_block)
+                    or (not max_sub_block is None and pos >= max_sub_block)):
                     continue
                 yield pos
 
@@ -167,39 +172,39 @@ class CorsikaFile:
         """
         Private method. DO NOT USE! EVER!
         """
-        heads = [b for b in self._SubBlocksIndices() if struct.unpack('4s', self.fContents[b:b+CorsikaBlocks.gFieldSize])[0] == 'EVTH']
-        tails = [b for b in self._SubBlocksIndices() if struct.unpack('4s', self.fContents[b:b+CorsikaBlocks.gFieldSize])[0] == 'EVTE']
+        heads = [b for b in self._SubBlocksIndices() if struct.unpack('4s', self.fContents[b:b + CorsikaBlocks.gFieldSize])[0] == 'EVTH']
+        tails = [b for b in self._SubBlocksIndices() if struct.unpack('4s', self.fContents[b:b + CorsikaBlocks.gFieldSize])[0] == 'EVTE']
         return (heads, tails)
-
 
     def _GetEventHeader(self, word):
         """
         Private method. DO NOT USE! EVER!
         """
-        return CorsikaBlocks.EventHeader(struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[word:CorsikaBlocks.gSubblockSize+word]))
+        return EventHeader(struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[word:CorsikaBlocks.gSubblockSize + word]))
 
     def _GetEventTrailer(self, word):
         """
         Private method. DO NOT USE! EVER!
         """
-        return CorsikaBlocks.EventTrailer(struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[word:CorsikaBlocks.gSubblockSize+word]))
+        return EventTrailer(struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[word:CorsikaBlocks.gSubblockSize + word]))
 
     def _GetRunHeader(self, word):
         """
         Private method. DO NOT USE! EVER!
         """
-        return CorsikaBlocks.RunHeader(struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[word:CorsikaBlocks.gSubblockSize+word]))
+        return RunHeader(struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[word:CorsikaBlocks.gSubblockSize + word]))
 
     def _GetRunTrailer(self, word):
         """
         Private method. DO NOT USE! EVER!
         """
-        return CorsikaBlocks.RunTrailer(struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[word:CorsikaBlocks.gSubblockSize+word]))
+        return RunTrailer(struct.unpack(CorsikaBlocks.gSubblockFormat, self.fContents[word:CorsikaBlocks.gSubblockSize + word]))
 
     def _GetParticleRecord(self, word):
         """
         Private method. DO NOT USE! EVER!
         """
-        return CorsikaBlocks.ParticleData(struct.unpack(CorsikaBlocks.gParticleFormat, self.fContents[word:CorsikaBlocks.gParticleRecordSize+word]))
+        return ParticleData(struct.unpack(CorsikaBlocks.gParticleFormat, self.fContents[word:CorsikaBlocks.gParticleRecordSize + word]))
 
-    def Blocks(): pass
+    def Blocks():
+        pass
