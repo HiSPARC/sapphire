@@ -18,23 +18,23 @@ import numpy
 # in 32 bit, one field is a float
 gFieldSize = struct.calcsize('f')
 
-# one block contains 5733 fields plus one header and one trailer field
-gBlockFormat = '5735f'
+# one block contains 6552 fields plus one header and one trailer field
+gBlockFormat = '6554f'
 gBlockSize = struct.calcsize(gBlockFormat)
 gBlockPaddingSize = struct.calcsize('f')
 
 # Each block contains 21 sub-blocks
-# Each sub-block consists of 273 fields
+# Each sub-block consists of 312 fields
 # the first of which _might_ be a string id.
-gSubblockFormat = '4s272f'
+gSubblockFormat = '4s311f'
 gSubblockSize = struct.calcsize(gSubblockFormat)
 gSubBlocksPerBlock = 21
 
 # Each particle record sub-block contains a fixed
 # number of particle records
-# With the unthinned option, each of these is 7 fields long
+# With the thinned option, each of these is 8 fields long
 # for a total of 39 records per sub block
-gParticleFormat = '7f'
+gParticleFormat = '8f'
 gParticlesPerSubblock = 39
 gParticleRecordSize = struct.calcsize(gParticleFormat)
 
@@ -71,7 +71,7 @@ if gSubblockSize / gParticleRecordSize != gParticlesPerSubblock:
 class RunHeader:
     """
     Class representing the run header sub-block
-    as specified in Corsika user manual, Table 7.
+    as specified in Corsika user manual, section 10.2
     """
     def __init__(self, subblock):
         self.fId = subblock[0]
@@ -94,12 +94,6 @@ class RunHeader:
         self.fCutoffElectrons = subblock[22] * units.GeV
         self.fCutoffPhotons = subblock[23] * units.GeV
 
-        self.fXPINCL = subblock[74]
-        self.fYPINCL = subblock[75]
-        self.fZPINCL = subblock[76]
-        self.fTHINCL = subblock[77]
-        self.fPHINCL = subblock[78]
-
         self.fConstAATM = numpy.array(subblock[254:259])
         self.fConstBATM = numpy.array(subblock[259:264])
         self.fConstCATM = numpy.array(subblock[264:269])
@@ -121,7 +115,7 @@ class RunHeader:
 class EventHeader:
     """
     Class representing the event header sub-block
-    as specified in Corsika user manual, Table 8.
+    as specified in Corsika user manual, section 10.2
     """
     def __init__(self, subblock):
         self.fId = subblock[0]
@@ -220,19 +214,7 @@ class EventHeader:
         self.fStartingHeight = subblock[157] * units.cm
         self.fFlagCharm = subblock[158]
         self.fFlagHadronOrigin = subblock[159]
-        self.fMinVertDepth = subblock[160]
-        self.fHighThresholdHadron = subblock[161]
-        self.fHighThresholdMuon = subblock[162]
-        self.fHighThresholdEM = subblock[163]
-        self.fLowThresholdHadron = subblock[164]
-        self.fLowThresholdMuon = subblock[165]
-        self.fLowThresholdEM = subblock[166]
         self.fFlagObseLevelCurvature = subblock[167]
-        self.fWhmaxThinHadronic = subblock[168]
-        self.fWtmaxThinEM = subblock[169]
-        self.fWhmaxSampHadronic = subblock[170]
-        self.fWtmaxSampMuons = subblock[171]
-        self.fWtmaxSampEM = subblock[172]
 
     def __str__(self):
         return '''Event header:
@@ -250,7 +232,7 @@ class EventHeader:
 class RunTrailer:
     """
     Class representing the run end sub-block
-    as specified in Corsika user manual, Table 14.
+    as specified in Corsika user manual, section 10.2.
     """
     def __init__(self, subblock):
         self.fID = subblock[0]
@@ -268,7 +250,7 @@ class RunTrailer:
 class EventTrailer:
     """
     Class representing the event end sub-block
-    as specified in Corsika user manual, Table 13.
+    as specified in Corsika user manual, section 10.2.
     """
     def __init__(self, subblock):
         self.fID = subblock[0]
@@ -323,7 +305,10 @@ class EventTrailer:
 class ParticleData:
     """
     Class representing the particle data sub-block
-    as specified in Corsika user manual, Table 10.
+    as specified in Corsika user manual, section 10.2.
+
+    The number of CherenkovData records in a sub-block depends on
+    compilation options.
     """
     def __init__(self, subblock):
         self.fDescription = subblock[0]
@@ -333,6 +318,7 @@ class ParticleData:
         self.fX = subblock[4] * units.cm2
         self.fY = subblock[5] * units.cm2
         self.fTorZ = subblock[6] * units.ns
+        self.fWeight = subblock[7]
 
     def IsParticle():
         return 0 < self.fDescription and self.fDescription < 100000
@@ -362,7 +348,7 @@ class ParticleData:
 class CherenkovData:
     """
     Class representing the cherenkov photon sub-block
-    as specified in Corsika user manual, Table 11.
+    as specified in Corsika user manual, section 10.2.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
@@ -375,6 +361,7 @@ class CherenkovData:
         self.fV = subblock[4]
         self.fT = subblock[5]
         self.fProductionHeight = subblock[6]
+        self.fWeight = subblock[7]
 
     def __str__(self):
         return '''Cherenkov:
