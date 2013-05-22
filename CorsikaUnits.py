@@ -1,19 +1,19 @@
 """
-Defines units in terms of Auger standard units
+Defines units in terms of HiSPARC standard units
 
 You should use the units defined in this file whenever you
 have a dimensional quantity in your code.  For example,
 write:
-    double s = 1.5*km
+    s = 1.5*km
 instead of:
-    double s = 1.5   // don't forget this is in km!
+    s = 1.5  # don't forget this is in km!
 The conversion factors defined in this file
-convert your data into Auger base units, so that
+convert your data into HiSPARC base units, so that
 all dimensional quantities in the code are in a
 single system of units!  You can also
 use the conversions defined here to, for example,
 display data with the unit of your choice.  For example:
-    cout << "s = " << s/mm << " mm"
+    print "s = %f mm" %  s/mm
 
 The base units are :
     - meter                   (meter)
