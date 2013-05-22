@@ -9,6 +9,7 @@ Authors
 Javier Gonzalez <jgonzalez@ik.fzk.de>
 """
 
+import textwrap
 import struct
 import CorsikaUnits as units
 import numpy
@@ -109,13 +110,14 @@ class RunHeader:
         self.fConstNFLCHE = subblock[272]
 
     def __str__(self):
-        return '''Run header:
-  id: {run_n}
-  date: {date}
-  version: {version}
-  '''.format(run_n=self.fRunNumber,
-             date=self.fDateStart,
-             version=self.fVersion)
+        return textwrap.dedent("""\
+            Run header:
+                id: {run_n}
+                date: {date}
+                version: {version}
+            """.format(run_n=self.fRunNumber,
+                       date=self.fDateStart,
+                       version=self.fVersion))
 
 
 class EventHeader:
@@ -235,16 +237,17 @@ class EventHeader:
         self.fWtmaxSampEM = subblock[172]
 
     def __str__(self):
-        return '''Event header:
-  id: {event_n}
-  primary: {primary}
-  energy: {energy} EeV
-  direction: ({zenith}, {azimuth})
-  '''.format(event_n=self.fEventNumber,
-             primary=self.fParticleId,
-             energy=self.fEnergy / units.EeV,
-             zenith=self.fTheta / units.degree,
-             azimuth=self.fPhi / units.degree)
+        return textwrap.dedent("""\
+            Event header:
+                id: {event_n}
+                primary: {primary}
+                energy: {energy} EeV
+                direction: ({zenith}, {azimuth})
+            """.format(event_n=self.fEventNumber,
+                         primary=self.fParticleId,
+                         energy=self.fEnergy / units.EeV,
+                         zenith=self.fTheta / units.degree,
+                         azimuth=self.fPhi / units.degree))
 
 
 class RunTrailer:
@@ -258,11 +261,12 @@ class RunTrailer:
         self.fEventsProcessed = subblock[2]
 
     def __str__(self):
-        return '''Run trailer:
-  id: {run_n}
-  events: {events}
-'''.format(run_n=self.fRunNumber,
-           events=self.fEventsProcessed)
+        return textwrap.dedent("""\
+            Run trailer:
+                id: {run_n}
+                events: {events}
+            """.format(run_n=self.fRunNumber,
+                       events=self.fEventsProcessed))
 
 
 class EventTrailer:
@@ -313,11 +317,12 @@ class EventTrailer:
         self.fPreshowerEMParticles = subblock[266]
 
     def __str__(self):
-        return '''Event trailer:
-  id: {event_n}
-  particles: {particles}
-  '''.format(event_n=self.fEventNumber,
-             particles=self.fParticles)
+        return textwrap.dedent("""\
+            Event trailer:
+                id: {event_n}
+                particles: {particles}
+            """.format(event_n=self.fEventNumber,
+                       particles=self.fParticles))
 
 
 class ParticleData:
@@ -330,33 +335,32 @@ class ParticleData:
         self.fPx = subblock[1] * units.GeV
         self.fPy = subblock[2] * units.GeV
         self.fPz = subblock[3] * units.GeV
-        self.fX = subblock[4] * units.cm2
-        self.fY = subblock[5] * units.cm2
+        self.fX = subblock[4] * units.cm
+        self.fY = subblock[5] * units.cm
         self.fTorZ = subblock[6] * units.ns
 
     def IsParticle():
-        return 0 < self.fDescription and self.fDescription < 100000
+        return 0 < self.fDescription < 100000
 
     def IsNucleus():
-        return 100000 <= self.fDescription and self.fDescription < 9900000
+        return 100000 <= self.fDescription < 9900000
 
     def IsCherenkov():
         return 9900000 <= self.fDescription
 
     def __str__(self):
-        return '''Particle:
-  id: {description}
-  momentum: {momentum}
-  position: {position}
-  time: {time}
-  weight {weight}
-  '''.format(description=self.fDescription,
-             momentum=(self.fPx * units.GeV,
-                       self.fPy * units.GeV,
-                       self.fPz * units.GeV),
-             position=(self.fX * units.m, self.fY * units.m),
-             time=self.fTorZ,
-             weight=self.fWeight)
+        return textwrap.dedent("""\
+            Particle:
+                id: {description}
+                momentum: {momentum} GeV
+                position: {position} m
+                time: {time} ns
+            """.format(description=self.fDescription,
+                       momentum=(self.fPx / units.GeV,
+                                 self.fPy / units.GeV,
+                                 self.fPz / units.GeV),
+                       position=(self.fX / units.m, self.fY / units.m),
+                       time=self.fTorZ))
 
 
 class CherenkovData:
@@ -369,22 +373,23 @@ class CherenkovData:
     """
     def __init__(self, subblock):
         self.fPhotonsInBunch = subblock[0]
-        self.fX = subblock[1]
-        self.fY = subblock[2]
+        self.fX = subblock[1] * units.cm
+        self.fY = subblock[2] * units.cm
         self.fU = subblock[3]
         self.fV = subblock[4]
-        self.fT = subblock[5]
-        self.fProductionHeight = subblock[6]
+        self.fT = subblock[5] * units.ns
+        self.fProductionHeight = subblock[6] * units.cm
 
     def __str__(self):
-        return '''Cherenkov:
-  n: {n}
-  position: {position} m
-  (u,v): {direction}
-  time: {time} ns
-  prod. height: {height} m
-  '''.format(n=self.fPhotonsInBunch,
-             direction=(self.fU, self.fV),
-             position=(self.fX * units.m, self.fY * units.m),
-             time=self.fT / units.nanosecond,
-             height=self.fWeight / units.m)
+        return textwrap.dedent("""\
+            Cherenkov:
+                n: {n}
+                position: {position} m
+                (u,v): {direction}
+                time: {time} ns
+                prod. height: {height} m
+            """.format(n=self.fPhotonsInBunch,
+                       direction=(self.fU, self.fV),
+                       position=(self.fX / units.m, self.fY / units.m),
+                       time=self.fT / units.ns,
+                       height=self.fProductionHeight / units.m))
