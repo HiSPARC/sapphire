@@ -1,0 +1,12 @@
+# Specific
+_build/
+
+# Python
+*.pyc
+*.pyo
+
+# OS generated files
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
