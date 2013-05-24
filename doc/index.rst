@@ -1,8 +1,3 @@
-.. PyCorsika documentation master file, created by
-   sphinx-quickstart on Thu Jul 21 11:19:32 2011.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Corsika Reader Documentation
 =====================================
 
@@ -13,7 +8,8 @@ The :ref:`CorsikaModule` provides functionality to read corsika files. It provid
 
 To use it, get the `tarball <http://www-ik.fzk.de/~jgonzalez/corsika_reader_0.9.tgz>`_ and uncompress it somewhere in your PYTHONPATH. It includes a short example.
 
-In order to use thi, you need `NumPy <http://numpy.scipy.org/>`_
+In order to use this, you need `NumPy <http://numpy.scipy.org/>`_
+
 
 Contents
 ========
@@ -23,10 +19,10 @@ Contents
 
    CorsikaFile
 
+
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
