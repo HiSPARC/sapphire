@@ -11,8 +11,12 @@ Javier Gonzalez <jgonzalez@ik.fzk.de>
 
 import textwrap
 import struct
-import CorsikaUnits as units
+
 import numpy
+
+import CorsikaUnits as units
+import CorsikaParticles as particles
+
 
 # All sizes are in bytes
 
@@ -244,10 +248,10 @@ class EventHeader:
                 energy: {energy} EeV
                 direction: ({zenith}, {azimuth})
             """.format(event_n=self.fEventNumber,
-                         primary=self.fParticleId,
-                         energy=self.fEnergy / units.EeV,
-                         zenith=self.fTheta / units.degree,
-                         azimuth=self.fPhi / units.degree))
+                       primary=self.fParticleId,
+                       energy=self.fEnergy / units.EeV,
+                       zenith=self.fTheta / units.degree,
+                       azimuth=self.fPhi / units.degree))
 
 
 class RunTrailer:
@@ -297,12 +301,12 @@ class EventTrailer:
 
         self.fElectronNumber = numpy.array(subblock[175:185])
         self.fAge = numpy.array(subblock[185:195])
-        self.fDistances = numpy.array(subblock[195:205]) * units.cm2
+        self.fDistances = numpy.array(subblock[195:205]) * units.cm
         self.fLocalAge1 = numpy.array(subblock[205:215])
 
         self.fLevelHeightMass = numpy.array(subblock[215:225])
         self.fLevelHeightDistance = numpy.array(subblock[225:235])
-        self.fDistanceBinsAge = numpy.array(subblock[235:245]) * units.cm2
+        self.fDistanceBinsAge = numpy.array(subblock[235:245]) * units.cm
         self.fLocalAge2 = numpy.array(subblock[245:255])
 
         # Longitudinal distribution
@@ -332,20 +336,24 @@ class ParticleData:
     """
     def __init__(self, subblock):
         self.fDescription = subblock[0]
+        self.fParticle = int(self.fDescription / 1000)
         self.fPx = subblock[1] * units.GeV
         self.fPy = subblock[2] * units.GeV
         self.fPz = subblock[3] * units.GeV
         self.fX = subblock[4] * units.cm
         self.fY = subblock[5] * units.cm
-        self.fTorZ = subblock[6] * units.ns
+        self.fT = subblock[6] * units.ns  # or z for additional muon info
 
-    def IsParticle():
+    def IsEM(self):
+        return self.fParticle in [particles.positron, particles.electron]
+
+    def IsParticle(self):
         return 0 < self.fDescription < 100000
 
-    def IsNucleus():
+    def IsNucleus(self):
         return 100000 <= self.fDescription < 9900000
 
-    def IsCherenkov():
+    def IsCherenkov(self):
         return 9900000 <= self.fDescription
 
     def __str__(self):
