@@ -294,7 +294,10 @@ class ProcessEvents(object):
         for baseline, pulseheight, trace_idx in zip(event['baseline'],
                                                     event['pulseheights'],
                                                     event['traces']):
-            if pulseheight < ADC_THRESHOLD:
+            if pulseheight < 0:
+                # retain -1, -999 status flags in timing
+                timings.append(pulseheight)
+            elif pulseheight < ADC_THRESHOLD:
                 timings.append(np.nan)
             else:
                 trace = self._get_trace(trace_idx)
@@ -363,7 +366,11 @@ class ProcessEvents(object):
         n_particles = []
 
         for event in self.source[:self.limit]:
-            n_particles.append(event['pulseheights'] / 380.)
+            pulseheights = event['pulseheights']
+            # retain -1, -999 status flags
+            pulseheights = np.where(pulseheights >= 0,
+                                    pulseheights / 380., pulseheights)
+            n_particles.append(pulseheights)
 
         return np.array(n_particles)
 
