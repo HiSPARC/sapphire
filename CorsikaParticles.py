@@ -8,7 +8,7 @@ particle id x 1000 + hadron generation x 10 + no. of observation level
 
 So to find e+/e-:
 
-    if floor(particle.fDescription / 1000) in [positron, electron]:
+    if particle.fParticle in [positron, electron]:
         pass
 
 """
@@ -62,14 +62,23 @@ k_star_0 = 62
 k_star_p = 63
 k_star_m = 64
 k_star_0_anti = 65
-electron_neutrino =  66
-electron_anti_neutrino =  67
-muon_neutrino =  68
-muon_anti_neutrino =  69
-eta__2_gamma =  71
-eta__3_pion_0 =  72
-eta__pion_p_pion_m_pion_0 =  73
-eta__pion_p_pion_m_gamma =  74
+electron_neutrino = 66
+electron_anti_neutrino = 67
+muon_neutrino = 68
+muon_anti_neutrino = 69
+
+eta__2_gamma = 71
+eta__3_pion_0 = 72
+eta__pion_p_pion_m_pion_0 = 73
+eta__pion_p_pion_m_gamma = 74
+additional_muon_p = 75
+additional_muon_m = 76
+
+decay_start_muon_p = 85
+decay_start_muon_m = 86
+
+decay_end_muon_p = 95
+decay_end_muon_m = 96
 
 D_0 = 116
 D_p = 117
@@ -84,11 +93,13 @@ anti_D_star_m = 125
 anti_D_star_0 = 126
 D_star_p_short = 127
 anti_D_star_m_short= 128
+
 j_psi = 130
 tau_p = 131
 tau_m = 132
 tau_neutrino = 133
 anti_tau_neutrino = 134
+
 Lambda_c_p = 137
 Xi_c_p = 138
 Xi_c_0 = 139
@@ -98,6 +109,7 @@ Sigma_c_0 = 142
 Xi_c_prime_p = 143
 Xi_c_prime_0 = 144
 Omega_c_0 = 145
+
 anti_Lambda_c_m = 149
 anti_Xi_c_m = 150
 anti_Xi_c_0 = 151
@@ -107,12 +119,35 @@ anti_Sigma_c_0 = 154
 anti_Xi_c_prime_m = 155
 anti_Xi_c_prime_0 = 156
 anti_Omega_c_0 = 157
+
 Sigma_c_star_pp = 161
 Sigma_c_star_p = 162
 Sigma_c_star_0 = 163
+
 anti_Sigma_c_star_mm = 171
 anti_Sigma_c_star_m = 172
 anti_Sigma_c_star_0 = 173
+
+B_0 = 176
+B_p = 177
+anti_B_m = 178
+anti_B_0 = 179
+B_s_0 = 180
+anti_B_s_0 = 181
+B_c_p = 182
+anti_B_c_m = 183
+Lambda_b_0 = 184
+Sigma_b_m = 185
+Sigma_b_p = 186
+Xi_b_0 = 187
+Xi_b_m = 188
+Omega_b_m = 189
+anti_Lambda_b_0 = 190
+anti_Sigma_b_p = 191
+anti_Sigma_b_m = 192
+anti_Xi_b_0 = 193
+anti_Xi_b_p = 194
+anti_Omega_b_p = 195
 
 # A x 100 + Z
 deuteron = 201

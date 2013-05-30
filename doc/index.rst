@@ -1,5 +1,5 @@
 Corsika Reader Documentation
-=====================================
+============================
 
 The :ref:`CorsikaModule` provides functionality to read corsika files. It provides the following main classes:
 

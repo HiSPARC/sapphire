@@ -337,12 +337,19 @@ class ParticleData:
     def __init__(self, subblock):
         self.fDescription = subblock[0]
         self.fParticle = int(self.fDescription / 1000)
+        self.fHadronGen = int(self.fDescription / 10) % 100
+        self.fObsLevel = self.fDescription % 10
         self.fPx = subblock[1] * units.GeV
         self.fPy = subblock[2] * units.GeV
         self.fPz = subblock[3] * units.GeV
         self.fX = subblock[4] * units.cm
         self.fY = subblock[5] * units.cm
         self.fT = subblock[6] * units.ns  # or z for additional muon info
+
+    def IsDetectable(self):
+        return self.fParticle in [particles.positron, particles.electron,
+                                  particles.muon_p, particles.muon_m,
+                                  particles.gamma]
 
     def IsEM(self):
         return self.fParticle in [particles.positron, particles.electron]
