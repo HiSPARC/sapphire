@@ -302,9 +302,10 @@ class ProcessEvents(object):
             self.limit = limit
 
         pulseheights = self.source.col('pulseheights')[:self.limit]
-        # loop per detector? or insert number of detector
-        mpv = self._pulseheight_gauss_fit(pulseheights)
-        n_particles = pulseheights / mpv # peak is second element
+        
+        bins = np.arange(0, 5000, 10)
+        mpv = self._pulse_gauss_fit(pulseheights, bins)
+        n_particles = pulseheights / mpv 
 
         return n_particles
 
@@ -318,13 +319,14 @@ class ProcessEvents(object):
             self.limit = limit
 
         pulseintegrals = self.source.col('integrals')[:self.limit]
-        # pulseintegrals uses the same def pulseheight_gauss_fit as pulseheights
-        mpv = self._pulseheight_gauss_fit(pulseintegrals)
-        n_particles = pulseintegrals / mpv # peak is second element
+        
+        bins = np.arange(0, 50000, 100)
+        mpv = self._pulse_gauss_fit(pulseintegrals, bins)
+        n_particles = pulseintegrals / mpv 
 
         return n_particles
-        
-    def _pulseheight_gauss_fit(self, pulseheights):
+    
+    def _pulse_gauss_fit(self, pulsecounts, bins):
         """Make Gauss fit to MIP peak to find MPV
 
         :param pulseheights: array of pulseheights for each detector.
@@ -332,26 +334,24 @@ class ProcessEvents(object):
 
         """
         mpv = []
-        data = pulseheights
-        bins = np.arange(0, 5000, 10)
+        data = pulsecounts
         
-        for i in range(len(pulseheights[0])):
+        
+        for i in range(len(pulsecounts[0])):
             # Make histogram: occurence of dPulseheight vs pulseheight
             # Number of bins is important
 
-            occurence, bins = np.histogram(pulseheights[:, i], bins=bins)
-            pulseheight = (bins[:-1] + bins[1:]) / 2
+            occurence, bins = np.histogram(pulsecounts[:, i], bins=bins)
+            pulsecount = (bins[:-1] + bins[1:]) / 2
 
             # Get fit parameters
+            average_pulsecount = (pulsecount * occurence).sum() / occurence.sum()
 
-            average_pulseheight = (pulseheight * occurence).sum() / occurence.sum()
+            if average_pulsecount < 100:
+                raise ValueError( "Average pulseintegral is less than 100" )
 
-            if average_pulseheight < 100:
-                raise ValueError( "Average pulseheight is less than 100" )
-
-            peak, minRange, maxRange = self.getFitParameters(pulseheight, occurence)
+            peak, minRange, maxRange = self.getFitParameters(pulsecount, occurence)
             width = peak - minRange
-
             peakOrig = peak
 
             # Check the width. More than 40 ADC is nice, just to be able to have a fit
@@ -366,19 +366,18 @@ class ProcessEvents(object):
 
                 return width, fitResult, chiSquare
 
+            # Cut our data set such that it only include minRange < pulseintegral < maxRange
 
-            # Cut our data set such that it only include minRange < pulseheight < maxRange
-
-            fit_window_pulseheight = []
+            fit_window_pulsecount = []
             fit_window_occurence = []
-            for i in range(len(pulseheight)):
-                if pulseheight[i] < minRange:
+            for i in range(len(pulsecount)):
+                if pulsecount[i] < minRange:
                     continue
 
-                if pulseheight[i] > maxRange:
+                if pulsecount[i] > maxRange:
                     continue
 
-                fit_window_pulseheight.append(pulseheight[i])
+                fit_window_pulsecount.append(pulsecount[i])
                 fit_window_occurence.append(occurence[i])
 
             # Initial parameter values
@@ -391,7 +390,7 @@ class ProcessEvents(object):
 
             fitResult = leastsq(self._residual,
                                 [initial_N, initial_mean, initial_width],
-                                args=(fit_window_pulseheight,
+                                args=(fit_window_pulsecount,
                                       fit_window_occurence),
                                 full_output=1)
 
@@ -400,11 +399,12 @@ class ProcessEvents(object):
 
             # Calculate the Chi2
 
-            chiSquare = sum(self._residual(fitParameters, fit_window_pulseheight, fit_window_occurence))
+            chiSquare = sum(self._residual(fitParameters, fit_window_pulsecount, fit_window_occurence))
             mpv.append(fitParameters[1])
 
         return mpv
 
+    
     def _residual(self, params, x, data):
         """Residual which is to be minimized"""
         # Fit function
