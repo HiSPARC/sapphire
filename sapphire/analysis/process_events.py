@@ -290,7 +290,8 @@ class ProcessEvents(object):
             col = 'n%d' % (idx + 1)
             getattr(table.cols, col)[:] = n_particles[:, idx]
         table.flush()
-
+    
+      
     def _process_pulseheights(self, limit=None):
         """Process pulseheights to particle density
 
@@ -307,6 +308,22 @@ class ProcessEvents(object):
 
         return n_particles
 
+    def _process_pulseintegrals(self, limit=None):
+        """Process pulseintegrals to particle density
+
+        :returns: array of number of particles per detector
+
+        """
+        if limit:
+            self.limit = limit
+
+        pulseintegrals = self.source.col('integrals')[:self.limit]
+        # pulseintegrals uses the same def pulseheight_gauss_fit as pulseheights
+        mpv = self._pulseheight_gauss_fit(pulseintegrals)
+        n_particles = pulseintegrals / mpv # peak is second element
+
+        return n_particles
+        
     def _pulseheight_gauss_fit(self, pulseheights):
         """Make Gauss fit to MIP peak to find MPV
 
