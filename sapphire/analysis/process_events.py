@@ -4,7 +4,7 @@ from itertools import izip
 import tables
 import numpy as np
 from scipy.stats import norm
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, leastsq
 import progressbar as pb
 
 from sapphire.storage import ProcessedHisparcEvent
@@ -301,9 +301,9 @@ class ProcessEvents(object):
             self.limit = limit
 
         pulseheights = self.source.col('pulseheights')[:self.limit]
-
+        # loop per detector? or insert number of detector
         mpv = self._pulseheight_gauss_fit(pulseheights)
-        n_particles = pulseheights / mpv
+        n_particles = pulseheights / mpv # peak is second element
 
         return n_particles
 
@@ -314,31 +314,184 @@ class ProcessEvents(object):
         :returns: list with mpv values for each detector.
 
         """
-        adc_per_bin = 10
-        bins = np.arange(120, 4000, adc_per_bin)
-        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
         mpv = []
-
+        data = pulseheights
+        bins = np.arange(0, 5000, 10)
+        
         for i in range(len(pulseheights[0])):
-            y, bins = np.histogram(pulseheights[:, i], bins=bins)
-            x = (bins[:-1] + bins[1:]) / 2
-            # Initial paramaters
-            max_count = max(y)
-            mpv_bin = [k for k, v in enumerate(y) if v == max_count][0]
-            mpv_guess = x[mpv_bin]
-            N_guess = len(pulseheights)
-            sigma_guess = 80.
-            max_bin = mpv_bin + sigma_guess / adc_per_bin
+            # Make histogram: occurence of dPulseheight vs pulseheight
+            # Number of bins is important
+
+            occurence, bins = np.histogram(pulseheights[:, i], bins=bins)
+            pulseheight = (bins[:-1] + bins[1:]) / 2
+
+            # Get fit parameters
+
+            average_pulseheight = (pulseheight * occurence).sum() / occurence.sum()
+
+            if average_pulseheight < 100:
+                raise ValueError( "Average pulseheight is less than 100" )
+
+            peak, minRange, maxRange = self.getFitParameters(pulseheight, occurence)
+            width = peak - minRange
+
+            peakOrig = peak
+
+            # Check the width. More than 40 ADC is nice, just to be able to have a fit
+            # at all.
+
+            if width <= 40:
+                fitParameters = np.zeros(3)
+                fitCovariance = np.zeros((3,3))
+
+                fitResult = [fitParameters, fitCovariance]
+                chiSquare = -1
+
+                return width, fitResult, chiSquare
+
+
+            # Cut our data set such that it only include minRange < pulseheight < maxRange
+
+            fit_window_pulseheight = []
+            fit_window_occurence = []
+            for i in range(len(pulseheight)):
+                if pulseheight[i] < minRange:
+                    continue
+
+                if pulseheight[i] > maxRange:
+                    continue
+
+                fit_window_pulseheight.append(pulseheight[i])
+                fit_window_occurence.append(occurence[i])
+
+            # Initial parameter values
+
+            initial_N = 16
+            initial_mean = peak
+            initial_width = width
+
             # Fit
-            try:
-                popt, pcov = curve_fit(gauss, x[:max_bin], y[:max_bin],
-                                       p0=(N_guess, mpv_guess, sigma_guess))
-                mpv.append(popt[1])
-            except RuntimeError:
-                mpv.append(380)
+
+            fitResult = leastsq(self._residual,
+                                [initial_N, initial_mean, initial_width],
+                                args=(fit_window_pulseheight,
+                                      fit_window_occurence),
+                                full_output=1)
+
+            fitParameters = fitResult[0]
+            fitCovariance = fitResult[1]
+
+            # Calculate the Chi2
+
+            chiSquare = sum(self._residual(fitParameters, fit_window_pulseheight, fit_window_occurence))
+            mpv.append(fitParameters[1])
 
         return mpv
 
+    def _residual(self, params, x, data):
+        """Residual which is to be minimized"""
+        # Fit function
+        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
+        constant = params[0]
+        mean = params[1]
+        width = params[2]
+
+        model = gauss(x, constant, mean, width)
+
+        return (data - model)
+
+    def findBinNextMinimum(self, y, startBin):
+
+        minY = y[startBin]
+
+        for i in range(startBin, len(y)+1):
+            currentY = y[i]
+
+            if currentY < minY:
+                minY = y[i]
+            elif currentY > minY:
+                return i - 1
+
+    def findBinNextMaximum(self, y, startBin):
+
+        maxY = y[startBin]
+
+        for i in range(startBin, len(y) + 1):
+            currentY = y[i]
+
+            if currentY > maxY:
+                maxY = y[i]
+            elif currentY < maxY:
+                return i - 1
+    
+    def smooth_forward(self, y, n=5):
+        
+        y_smoothed = []
+        
+        for i in range(0, len(y)-n):
+            sum = np.sum(y[i:i+n])
+            avg = sum / n
+            y_smoothed.append(avg)
+
+        return y_smoothed
+
+    def getFitParameters(self, x, y):
+
+        bias = (x[1]-x[0])*2
+
+        # Rebin x
+
+        x_rebinned = x.tolist()
+        if len(x_rebinned) % 2 == 1:
+            x_rebinned.append(x_rebinned[-1] + x_rebinned[1] - x_rebinned[0])
+        x_rebinned = np.float_(x_rebinned)
+        x_rebinned = x_rebinned.reshape(len(x_rebinned)/2, 2).mean(axis=1)
+
+        # Smooth y by averaging while keeping sharp cut at 120 ADC
+
+        y_smoothed = self.smooth_forward(y, 5)
+
+        for i in range(len(y_smoothed)):
+            if x[i] > 120:
+                break
+        y_smoothed[i] = 0
+
+        y_smoothed = np.float_(y_smoothed)
+
+        # First derivative y while keeping sharp cut at 120 ADC
+
+        if len(y_smoothed) % 2 == 1:
+            y_smoothed = y_smoothed.tolist()
+            y_smoothed.append(0.0)
+            y_smoothed = np.float_(y_smoothed)
+
+        y_smoothed_rebinned = 2 * y_smoothed.reshape(len(y_smoothed) / 2, 2).mean(axis=1)
+
+        y_diff = np.diff(y_smoothed_rebinned)
+
+        for i in range(len(y_diff)):
+            if x_rebinned[i] > 120:
+                break
+
+            y_diff[i] = 0
+
+        # Smooth y by averaging
+
+        y_diff_smoothed = np.convolve(y_diff, [0.2, 0.2, 0.2, 0.2, 0.2], "same")
+
+        # Find approx max using the derivative
+
+        binMinimum = self.findBinNextMinimum(y_diff_smoothed, 0)
+        binMaximum = self.findBinNextMaximum(y_diff_smoothed, binMinimum)
+        binMinimum = self.findBinNextMinimum(y_diff_smoothed, binMaximum)
+
+        maxX = x_rebinned[binMaximum]
+        minX = x_rebinned[binMinimum]
+
+        # Return fit peak, fit range minimum = maxX, fit range maximum = minX
+
+        return (maxX + minX) / 2 + bias, maxX + bias, minX + bias
+  
     def _move_results_table_into_destination(self):
         if self.source.name == 'events':
             self.source.rename('_events')
