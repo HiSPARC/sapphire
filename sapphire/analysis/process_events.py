@@ -308,23 +308,6 @@ class ProcessEvents(object):
         n_particles = pulseheights / mpv 
 
         return n_particles
-
-    def _process_pulseintegrals(self, limit=None):
-        """Process pulseintegrals to particle density
-
-        :returns: array of number of particles per detector
-
-        """
-        if limit:
-            self.limit = limit
-
-        pulseintegrals = self.source.col('integrals')[:self.limit]
-        
-        bins = np.arange(0, 50000, 100)
-        mpv = self._pulse_gauss_fit(pulseintegrals, bins)
-        n_particles = pulseintegrals / mpv 
-
-        return n_particles
     
     def _pulse_gauss_fit(self, pulsecounts, bins):
         """Make Gauss fit to MIP peak to find MPV
@@ -675,3 +658,45 @@ class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
 
     """
     pass
+    
+
+class ProcessEventsWithPulseIntegrals(ProcessEvents):
+
+    """Process events with pulse integrals
+
+    This is a subclass of :class:`ProcessEvents`.
+
+    """
+
+    def _store_number_of_particles(self):
+        """Store number of particles in the detectors.
+
+        Process all pulseintegrals from the events and estimate the
+        number of particles in each detector.
+
+        """
+        table = self._tmp_events
+
+        n_particles = self._process_pulseintegrals()
+        for idx in range(4):
+            col = 'n%d' % (idx + 1)
+            getattr(table.cols, col)[:] = n_particles[:, idx]
+        table.flush()
+        
+    def _process_pulseintegrals(self, limit=None):
+        """Process pulseintegrals to particle density
+
+        :returns: array of number of particles per detector
+
+        """
+        if limit:
+            self.limit = limit
+
+        pulseintegrals = self.source.col('integrals')[:self.limit]
+        
+        bins = np.arange(0, 50000, 100)
+        mpv = self._pulse_gauss_fit(pulseintegrals, bins)
+        n_particles = pulseintegrals / mpv 
+
+        return n_particles
+    
