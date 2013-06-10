@@ -15,8 +15,10 @@ def gps_to_utc(timestamp):
     """Convert GPS time to UTC
 
     """
-    if timestamp < gps_from_string('January 1, 2006'):
-        raise Exception, "Dates before January 1, 2006 not implemented!"
+    if timestamp < gps_from_string('January 1, 1999'):
+        raise Exception, "Dates before January 1, 1999 not implemented!"
+    elif timestamp < gps_from_string('January 1, 2006'):
+        return timestamp - 13
     elif timestamp < gps_from_string('January 1, 2009'):
         return timestamp - 14
     elif timestamp < gps_from_string('July 1, 2012'):
@@ -29,8 +31,10 @@ def utc_to_gps(timestamp):
     """Convert UTC to GPS time
 
     """
-    if timestamp < utc_from_string('January 1, 2006'):
-        raise Exception, "Dates before January 1, 2006 not implemented!"
+    if timestamp < utc_from_string('January 1, 1999'):
+        raise Exception, "Dates before January 1, 1999 not implemented!"
+    elif timestamp < utc_from_string('January 1, 2006'):
+        return timestamp + 13
     elif timestamp < utc_from_string('January 1, 2009'):
         return timestamp + 14
     elif timestamp < utc_from_string('July 1, 2012'):
