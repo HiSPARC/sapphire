@@ -9,6 +9,8 @@ import progressbar as pb
 
 from sapphire.storage import ProcessedHisparcEvent
 
+from IPython.Shell import IPShellEmbed
+ipshell = IPShellEmbed()
 
 ADC_THRESHOLD = 20
 ADC_TIME_PER_SAMPLE = 2.5e-9
@@ -370,7 +372,7 @@ class ProcessEvents(object):
             initial_width = width
 
             # Fit
-
+            ipshell()
             fitResult = leastsq(self._residual,
                                 [initial_N, initial_mean, initial_width],
                                 args=(fit_window_pulsecount,
@@ -660,11 +662,11 @@ class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
     pass
     
 
-class ProcessEventsWithPulseIntegrals(ProcessEvents):
+class ProcessEventsWithPulseIntegrals(ProcessEventsWithLINT):
 
     """Process events with pulse integrals
 
-    This is a subclass of :class:`ProcessEvents`.
+    This is a subclass of :class:`ProcessEventsWithLINT`.
 
     """
 
@@ -700,3 +702,8 @@ class ProcessEventsWithPulseIntegrals(ProcessEvents):
 
         return n_particles
     
+
+class ProcessIndexedEventsWithPulseIntegrals(
+    ProcessEventsWithPulseIntegrals, ProcessIndexedEvents):
+    
+    pass
