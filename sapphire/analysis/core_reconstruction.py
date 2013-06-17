@@ -192,7 +192,7 @@ class PlotCoreReconstruction(CoreReconstruction):
 
         plt.figure()
         plt.subplot(121)
-        xopt, yopt, shower_size = self.reconstruct_core_position(coincidence)
+        xopt, yopt, shower_size, chisq = self.reconstruct_core_position(coincidence)
 
         self._do_do_plot_coincidence(coincidence, use_detectors=False)
         x0, y0 = self.solver.get_center_of_mass_of_measurements()
