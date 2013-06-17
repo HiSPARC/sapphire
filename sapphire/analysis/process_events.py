@@ -372,7 +372,7 @@ class ProcessEvents(object):
             initial_width = width
 
             # Fit
-            ipshell()
+            # ipshell()
             fitResult = leastsq(self._residual,
                                 [initial_N, initial_mean, initial_width],
                                 args=(fit_window_pulsecount,
@@ -696,7 +696,7 @@ class ProcessEventsWithPulseIntegrals(ProcessEventsWithLINT):
 
         pulseintegrals = self.source.col('integrals')[:self.limit]
         
-        bins = np.arange(0, 50000, 100)
+        bins = np.arange(0, 40000, 100)
         mpv = self._pulse_gauss_fit(pulseintegrals, bins)
         n_particles = pulseintegrals / mpv 
 
