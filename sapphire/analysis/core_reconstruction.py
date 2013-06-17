@@ -21,6 +21,7 @@ class CoreReconstruction(object):
         'N': tables.UInt8Col(),
         'reconstructed_core_pos': tables.Float32Col(shape=2),
         'reconstructed_shower_size': tables.Float32Col(),
+        'core_chisq': tables.Float32Col(),
         'min_n134': tables.Float32Col()}
 
     def __init__(self, data, stations, results_group=None, solver=None,
@@ -69,7 +70,7 @@ class CoreReconstruction(object):
     def store_reconstructed_coincidence(self, coincidence,
                                         reconstructed_core_x,
                                         reconstructed_core_y,
-                                        reconstructed_shower_size):
+                                        reconstructed_shower_size, chisq):
         dst_row = self.reconstructions.row
         events = self.get_events_from_coincidence(coincidence)
 
@@ -78,6 +79,7 @@ class CoreReconstruction(object):
         dst_row['reconstructed_core_pos'] = (reconstructed_core_x,
                                              reconstructed_core_y)
         dst_row['reconstructed_shower_size'] = reconstructed_shower_size
+        dst_row['core_chisq'] = chisq
 
         for event in events:
             station_id = event['station_id']
@@ -101,8 +103,10 @@ class CoreReconstruction(object):
 
         for coincidence in progressbar(coincidence_table[:self.N]):
             if coincidence['N'] >= 3:
-                x, y, N = self.reconstruct_core_position(coincidence)
-                self.store_reconstructed_coincidence(coincidence, x, y, N)
+                x, y, N, chisq = \
+                    self.reconstruct_core_position(coincidence)
+                self.store_reconstructed_coincidence(coincidence, x, y, N,
+                                                     chisq)
 
         self.reconstructions.flush()
 
@@ -124,7 +128,10 @@ class CoreReconstruction(object):
         popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens, p0=(1e5,), sigma=sigma)
         shower_size, = popt
 
-        return xopt, yopt, shower_size
+        chisq = self._calculate_chi_squared(solver, xopt, yopt,
+                                            shower_size)
+
+        return xopt, yopt, shower_size, chisq
 
     def get_events_from_coincidence(self, coincidence):
         events = []
@@ -149,6 +156,17 @@ class CoreReconstruction(object):
                 x, y = detector.get_xy_coordinates()
                 value = event[idx] / .5
                 solver.add_measurement_at_xy(x, y, value)
+
+    def _calculate_chi_squared(self, solver, xopt, yopt, shower_size):
+        observed_measurements = \
+            solver.get_ldf_measurements_for_core_position((xopt, yopt))
+
+        chi_squared = 0
+        for r, observed in zip(*observed_measurements):
+            expected = solver.ldf_given_size(r, shower_size)
+            chi_squared += (expected - observed) ** 2 / expected
+
+        return chi_squared
 
     def _station_has_triggered(self, event):
         if event['N'] >= 2:
