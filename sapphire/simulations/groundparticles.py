@@ -11,6 +11,7 @@ import sys
 import numpy as np
 from math import pi, sin, cos, atan2, sqrt, isinf
 import re
+import textwrap
 
 from sapphire import storage
 from base import BaseSimulation
@@ -189,15 +190,15 @@ class GroundParticlesSimulation(BaseSimulation):
         """Print a welcome message at start of simulation run"""
 
         print 74 * '-'
-        print """Running simulation
+        print textwrap.dedent("""Running simulation
 
-Ground particles:   %s
-Output destination: %s
+            Ground particles:   %s
+            Output destination: %s
 
-Maximum core distance of cluster center:   %f m
-Number of cluster positions in simulation: %d
-        """ % (self.grdpcles._v_pathname, self.output._v_pathname, self.R,
-               self.N)
+            Maximum core distance of cluster center:   %f m
+            Number of cluster positions in simulation: %d
+            """ % (self.grdpcles._v_pathname, self.output._v_pathname, self.R,
+                   self.N))
 
     def _run_exit_msg(self):
         print 74 * '-'

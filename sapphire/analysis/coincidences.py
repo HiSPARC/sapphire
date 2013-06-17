@@ -30,10 +30,11 @@
             coincidences.search_and_store_coincidences()
 
 """
-import numpy as np
 import time
 import os.path
+
 import tables
+import numpy as np
 import progressbar as pb
 
 from sapphire.analysis import process_events
@@ -432,8 +433,7 @@ class Coincidences:
         return coincidences
 
 
-def get_events(data, stations, coincidence, timestamps,
-               get_raw_traces=False):
+def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
     """Get event data of a coincidence
 
     Return a list of events making up a coincidence.
@@ -454,14 +454,15 @@ def get_events(data, stations, coincidence, timestamps,
 
     """
     events = []
-
     for event in coincidence:
         timestamp, station, index = timestamps[event]
-        event_table = data.getNode(stations[station], 'events')
-        blob_table = data.getNode(stations[station], 'blobs')
-        event = event_table[index]
+        process = process_events.ProcessEvents(data, stations[station])
+        event = process.source[index]
+        baseline = event['baseline'][np.where(event['baseline'] >= 0)]
         if not get_raw_traces:
-            traces = get_traces(blob_table, event['traces'])
+            # transpose to get expected format
+            traces = (process.get_traces_for_event(event) - baseline).T
+            traces = traces * -0.57
         else:
             traces = [blob_table[x] for x in event['traces']]
         events.append((stations[station], event, traces))

@@ -21,6 +21,7 @@ class CoreReconstruction(object):
         'N': tables.UInt8Col(),
         'reconstructed_core_pos': tables.Float32Col(shape=2),
         'reconstructed_shower_size': tables.Float32Col(),
+        'core_chisq': tables.Float32Col(),
         'min_n134': tables.Float32Col()}
 
     def __init__(self, data, stations, results_group=None, solver=None,
@@ -66,38 +67,10 @@ class CoreReconstruction(object):
                                       createparents=True)
         return table
 
-    def store_reconstructed_event(self, coincidence, event,
-                                  reconstructed_core_x,
-                                  reconstructed_core_y,
-                                  reconstructed_shower_size):
-        dst_row = self.results_table.row
-
-        dst_row['id'] = event['id']
-        dst_row['station_id'] = event['station_id']
-        dst_row['r'] = coincidence['r']
-        dst_row['phi'] = coincidence['phi']
-        dst_row['alpha'] = event['alpha']
-        dst_row['t1'] = event['t1']
-        dst_row['t2'] = event['t2']
-        dst_row['t3'] = event['t3']
-        dst_row['t4'] = event['t4']
-        dst_row['n1'] = event['n1']
-        dst_row['n2'] = event['n2']
-        dst_row['n3'] = event['n3']
-        dst_row['n4'] = event['n4']
-        dst_row['reference_theta'] = coincidence['shower_theta']
-        dst_row['reference_phi'] = coincidence['shower_phi']
-        dst_row['reference_core_pos'] = coincidence['x'], coincidence['y']
-        dst_row['reconstructed_core_pos'] = reconstructed_core_x, reconstructed_core_y
-        dst_row['reference_shower_size'] = coincidence['shower_size']
-        dst_row['reconstructed_shower_size'] = reconstructed_shower_size
-        dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
-        dst_row.append()
-
     def store_reconstructed_coincidence(self, coincidence,
                                         reconstructed_core_x,
                                         reconstructed_core_y,
-                                        reconstructed_shower_size):
+                                        reconstructed_shower_size, chisq):
         dst_row = self.reconstructions.row
         events = self.get_events_from_coincidence(coincidence)
 
@@ -106,6 +79,7 @@ class CoreReconstruction(object):
         dst_row['reconstructed_core_pos'] = (reconstructed_core_x,
                                              reconstructed_core_y)
         dst_row['reconstructed_shower_size'] = reconstructed_shower_size
+        dst_row['core_chisq'] = chisq
 
         for event in events:
             station_id = event['station_id']
@@ -129,20 +103,24 @@ class CoreReconstruction(object):
 
         for coincidence in progressbar(coincidence_table[:self.N]):
             if coincidence['N'] >= 3:
-                x, y, N = self.reconstruct_core_position(coincidence)
-                #self.store_reconstructed_event(coincidence, event, x, y, N)
-                self.store_reconstructed_coincidence(coincidence, x, y, N)
+                x, y, N, chisq = \
+                    self.reconstruct_core_position(coincidence)
+                self.store_reconstructed_coincidence(coincidence, x, y, N,
+                                                     chisq)
 
         self.reconstructions.flush()
 
-    def reconstruct_core_position(self, coincidence):
+    def reconstruct_core_position(self, coincidence, startpos=None):
         solver = self.solver
 
         solver.reset_measurements()
         #self._add_individual_detector_measurements_to_solver(solver, coincidence)
         self._add_station_averaged_measurements_to_solver(solver, coincidence)
 
-        x0, y0 = solver.get_center_of_mass_of_measurements()
+        if startpos is not None:
+            x0, y0 = startpos
+        else:
+            x0, y0 = solver.get_center_of_mass_of_measurements()
         xopt, yopt = solver.optimize_core_position(x0, y0)
 
         r, dens = solver.get_ldf_measurements_for_core_position((xopt, yopt))
@@ -150,7 +128,10 @@ class CoreReconstruction(object):
         popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens, p0=(1e5,), sigma=sigma)
         shower_size, = popt
 
-        return xopt, yopt, shower_size
+        chisq = self._calculate_chi_squared(solver, xopt, yopt,
+                                            shower_size)
+
+        return xopt, yopt, shower_size, chisq
 
     def get_events_from_coincidence(self, coincidence):
         events = []
@@ -175,6 +156,17 @@ class CoreReconstruction(object):
                 x, y = detector.get_xy_coordinates()
                 value = event[idx] / .5
                 solver.add_measurement_at_xy(x, y, value)
+
+    def _calculate_chi_squared(self, solver, xopt, yopt, shower_size):
+        observed_measurements = \
+            solver.get_ldf_measurements_for_core_position((xopt, yopt))
+
+        chi_squared = 0
+        for r, observed in zip(*observed_measurements):
+            expected = solver.ldf_given_size(r, shower_size)
+            chi_squared += (expected - observed) ** 2 / expected
+
+        return chi_squared
 
     def _station_has_triggered(self, event):
         if event['N'] >= 2:
@@ -334,7 +326,9 @@ class CorePositionSolver(object):
     def optimize_core_position(self, x0, y0):
         best_value = self.calculate_chi_squared_for_xy((x0, y0))
 
-        pos_list = self._make_guess_position_list(x0, y0)
+        # FIXME
+        #pos_list = self._make_guess_position_list(x0, y0)
+        pos_list = [(x0, y0)]
 
         for x0, y0 in pos_list:
             xopt, yopt = optimize.fmin(self.calculate_chi_squared_for_xy,

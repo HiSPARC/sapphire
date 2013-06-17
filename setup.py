@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 setup(
     name = "sapphire",
-    version = "0.9.1b",
+    version = "0.9.2b",
     packages = find_packages(),
     url = "http://github.com/hisparc/sapphire/",
     author = "David Fokkema",
