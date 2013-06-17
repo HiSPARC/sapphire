@@ -66,34 +66,6 @@ class CoreReconstruction(object):
                                       createparents=True)
         return table
 
-    def store_reconstructed_event(self, coincidence, event,
-                                  reconstructed_core_x,
-                                  reconstructed_core_y,
-                                  reconstructed_shower_size):
-        dst_row = self.results_table.row
-
-        dst_row['id'] = event['id']
-        dst_row['station_id'] = event['station_id']
-        dst_row['r'] = coincidence['r']
-        dst_row['phi'] = coincidence['phi']
-        dst_row['alpha'] = event['alpha']
-        dst_row['t1'] = event['t1']
-        dst_row['t2'] = event['t2']
-        dst_row['t3'] = event['t3']
-        dst_row['t4'] = event['t4']
-        dst_row['n1'] = event['n1']
-        dst_row['n2'] = event['n2']
-        dst_row['n3'] = event['n3']
-        dst_row['n4'] = event['n4']
-        dst_row['reference_theta'] = coincidence['shower_theta']
-        dst_row['reference_phi'] = coincidence['shower_phi']
-        dst_row['reference_core_pos'] = coincidence['x'], coincidence['y']
-        dst_row['reconstructed_core_pos'] = reconstructed_core_x, reconstructed_core_y
-        dst_row['reference_shower_size'] = coincidence['shower_size']
-        dst_row['reconstructed_shower_size'] = reconstructed_shower_size
-        dst_row['min_n134'] = min(event['n1'], event['n3'], event['n4'])
-        dst_row.append()
-
     def store_reconstructed_coincidence(self, coincidence,
                                         reconstructed_core_x,
                                         reconstructed_core_y,
@@ -130,7 +102,6 @@ class CoreReconstruction(object):
         for coincidence in progressbar(coincidence_table[:self.N]):
             if coincidence['N'] >= 3:
                 x, y, N = self.reconstruct_core_position(coincidence)
-                #self.store_reconstructed_event(coincidence, event, x, y, N)
                 self.store_reconstructed_coincidence(coincidence, x, y, N)
 
         self.reconstructions.flush()
