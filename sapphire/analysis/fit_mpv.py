@@ -20,12 +20,13 @@ def main():
     yesterday = today - datetime.timedelta(days=1)
     station_ids = get_station_ids_with_data(yesterday)
 
-    for station in station_ids:
+    for station in station_ids[:1]:
         if station == 10:
             continue
         print station
         n, bins = get_histogram_for_station_on_date(station, yesterday)
-        mpv, is_fitted = find_mpv_in_histogram(n, bins)
+        find_mpv = FindMostProbableValue()
+        mpv, is_fitted = find_mpv.find_mpv_in_histogram(n, bins)
 
         figure()
         plot((bins[:-1] + bins[1:]) / 2., n)
@@ -67,60 +68,59 @@ def get_histogram_for_station_on_date(station_id, date):
     return n, bins
 
 
-def find_mpv_in_histogram(n, bins):
-    first_guess = find_first_guess_mpv_in_histogram(n, bins)
-    try:
-        mpv = fit_mpv_in_histogram(n, bins, first_guess)
-    except RuntimeError:
-        warnings.warn("Fit failed, using first guess")
-        return first_guess, False
-    else:
-        return mpv, True
+class FindMostProbableValue:
+    def find_mpv_in_histogram(self, n, bins):
+        first_guess = self.find_first_guess_mpv_in_histogram(n, bins)
+        try:
+            mpv = self.fit_mpv_in_histogram(n, bins, first_guess)
+        except RuntimeError:
+            warnings.warn("Fit failed, using first guess")
+            return first_guess, False
+        else:
+            return mpv, True
 
+    def find_first_guess_mpv_in_histogram(self, n, bins):
+        """First guesst of most probable value in histogram.
 
-def find_first_guess_mpv_in_histogram(n, bins):
-    """First guesst of most probable value in histogram.
+        Algorithm: First: from the left: find the greatest value and
+        cut off all data to the left of that maximum.  Now, you've cut off the
+        where the trigger cuts in data.  Work from the right: find the
+        location with the greatest decrease.  Then find the location of the
+        maximum to the right of this location.
 
-    Algorithm: First: from the left: find the greatest value and
-    cut off all data to the left of that maximum.  Now, you've cut off the
-    where the trigger cuts in data.  Work from the right: find the
-    location with the greatest decrease.  Then find the location of the
-    maximum to the right of this location.
+        """
+        # cut off trigger from the left
+        left_idx = n.argmax()
+        cut_n = n[left_idx:]
 
-    """
-    # cut off trigger from the left
-    left_idx = n.argmax()
-    cut_n = n[left_idx:]
+        # find mpv peak from right
+        delta_n = cut_n[:-1] - cut_n[1:]
+        idx_greatest_decrease = delta_n.argmin()
+        idx_right_max = cut_n[idx_greatest_decrease:].argmax()
 
-    # find mpv peak from right
-    delta_n = cut_n[:-1] - cut_n[1:]
-    idx_greatest_decrease = delta_n.argmin()
-    idx_right_max = cut_n[idx_greatest_decrease:].argmax()
+        idx_mpv = idx_right_max + idx_greatest_decrease + left_idx
+        mpv = (bins[idx_mpv] + bins[idx_mpv + 1]) / 2.
 
-    idx_mpv = idx_right_max + idx_greatest_decrease + left_idx
-    mpv = (bins[idx_mpv] + bins[idx_mpv + 1]) / 2.
+        return mpv
 
-    return mpv
+    def fit_mpv_in_histogram(self, n, bins, first_guess):
+        bins_x = (bins[:-1] + bins[1:]) / 2.
 
+        left = (1. - MPV_FIT_WIDTH_FACTOR) * first_guess
+        right = (1. + MPV_FIT_WIDTH_FACTOR) * first_guess
 
-def fit_mpv_in_histogram(n, bins, first_guess):
-    bins_x = (bins[:-1] + bins[1:]) / 2.
+        x = bins_x.compress((left <= bins_x) & (bins_x < right))
+        y = n.compress((left <= bins_x) & (bins_x < right))
 
-    left = (1. - MPV_FIT_WIDTH_FACTOR) * first_guess
-    right = (1. + MPV_FIT_WIDTH_FACTOR) * first_guess
+        f = lambda x, N, a, b: N * norm.pdf(x, loc=a, scale=b)
+        popt, pcov = curve_fit(f, x, y, p0=(y.max(), first_guess,
+                                            first_guess))
+        mpv = popt[1]
 
-    x = bins_x.compress((left <= bins_x) & (bins_x < right))
-    y = n.compress((left <= bins_x) & (bins_x < right))
+        if mpv < x[0] or mpv > x[-1]:
+            raise RuntimeError("Fitted MPV value outside range")
 
-    f = lambda x, N, a, b: N * norm.pdf(x, loc=a, scale=b)
-    popt, pcov = curve_fit(f, x, y, p0=(y.max(), first_guess,
-                                        first_guess))
-    mpv = popt[1]
-
-    if mpv < x[0] or mpv > x[-1]:
-        raise RuntimeError("Fitted MPV value outside range")
-
-    return mpv
+        return mpv
 
 
 if __name__ == '__main__':
