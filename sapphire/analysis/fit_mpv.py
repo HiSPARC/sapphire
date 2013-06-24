@@ -25,8 +25,8 @@ def main():
             continue
         print station
         n, bins = get_histogram_for_station_on_date(station, yesterday)
-        find_mpv = FindMostProbableValue()
-        mpv, is_fitted = find_mpv.find_mpv_in_histogram(n, bins)
+        find_mpv = FindMostProbableValue(n, bins)
+        mpv, is_fitted = find_mpv.find_mpv_in_histogram()
 
         figure()
         plot((bins[:-1] + bins[1:]) / 2., n)
@@ -69,17 +69,20 @@ def get_histogram_for_station_on_date(station_id, date):
 
 
 class FindMostProbableValue:
-    def find_mpv_in_histogram(self, n, bins):
-        first_guess = self.find_first_guess_mpv_in_histogram(n, bins)
+    def __init__(self, n, bins):
+        self.n, self.bins = n, bins
+
+    def find_mpv_in_histogram(self):
+        first_guess = self.find_first_guess_mpv_in_histogram()
         try:
-            mpv = self.fit_mpv_in_histogram(n, bins, first_guess)
+            mpv = self.fit_mpv_in_histogram(first_guess)
         except RuntimeError:
             warnings.warn("Fit failed, using first guess")
             return first_guess, False
         else:
             return mpv, True
 
-    def find_first_guess_mpv_in_histogram(self, n, bins):
+    def find_first_guess_mpv_in_histogram(self):
         """First guesst of most probable value in histogram.
 
         Algorithm: First: from the left: find the greatest value and
@@ -89,6 +92,8 @@ class FindMostProbableValue:
         maximum to the right of this location.
 
         """
+        n, bins = self.n, self.bins
+
         # cut off trigger from the left
         left_idx = n.argmax()
         cut_n = n[left_idx:]
@@ -103,7 +108,9 @@ class FindMostProbableValue:
 
         return mpv
 
-    def fit_mpv_in_histogram(self, n, bins, first_guess):
+    def fit_mpv_in_histogram(self, first_guess):
+        n, bins = self.n, self.bins
+
         bins_x = (bins[:-1] + bins[1:]) / 2.
 
         left = (1. - MPV_FIT_WIDTH_FACTOR) * first_guess
