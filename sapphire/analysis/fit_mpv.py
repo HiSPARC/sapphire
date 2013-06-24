@@ -8,6 +8,8 @@ import numpy as np
 from scipy.stats import norm
 from scipy.optimize import curve_fit
 
+import pylab as plt
+
 
 API_URL = 'http://data.hisparc.nl/api/stations/data/%d/%d/%d/'
 HIST_URL = 'http://data.hisparc.nl/show/source/pulseintegral/%d/%d/%d/%d/'
@@ -82,7 +84,7 @@ def main():
     yesterday = today - datetime.timedelta(days=1)
     station_ids = get_station_ids_with_data(yesterday)
 
-    for station in station_ids[:1]:
+    for station in station_ids:
         if station == 10:
             continue
         print station
@@ -90,13 +92,13 @@ def main():
         find_mpv = FindMostProbableValue(n, bins)
         mpv, is_fitted = find_mpv.find_mpv_in_histogram()
 
-        figure()
-        plot((bins[:-1] + bins[1:]) / 2., n)
+        plt.figure()
+        plt.plot((bins[:-1] + bins[1:]) / 2., n)
         if is_fitted:
-            axvline(mpv, c='g')
+            plt.axvline(mpv, c='g')
         else:
-            axvline(mpv, c='r')
-        title(station)
+            plt.axvline(mpv, c='r')
+        plt.title(station)
 
 
 def get_station_ids_with_data(date):
@@ -131,4 +133,6 @@ def get_histogram_for_station_on_date(station_id, date):
 
 
 if __name__ == '__main__':
+    warnings.simplefilter('always')
     main()
+    plt.show()
