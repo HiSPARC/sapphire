@@ -15,59 +15,6 @@ HIST_URL = 'http://data.hisparc.nl/show/source/pulseintegral/%d/%d/%d/%d/'
 MPV_FIT_WIDTH_FACTOR = .4
 
 
-def main():
-    today = datetime.date.today()
-    yesterday = today - datetime.timedelta(days=1)
-    station_ids = get_station_ids_with_data(yesterday)
-
-    for station in station_ids[:1]:
-        if station == 10:
-            continue
-        print station
-        n, bins = get_histogram_for_station_on_date(station, yesterday)
-        find_mpv = FindMostProbableValue(n, bins)
-        mpv, is_fitted = find_mpv.find_mpv_in_histogram()
-
-        figure()
-        plot((bins[:-1] + bins[1:]) / 2., n)
-        if is_fitted:
-            axvline(mpv, c='g')
-        else:
-            axvline(mpv, c='r')
-        title(station)
-
-
-def get_station_ids_with_data(date):
-    url = API_URL % (date.year, date.month, date.day)
-
-    reply = urllib2.urlopen(url)
-    reply = reply.read()
-
-    station_list = json.loads(reply)
-    station_ids = [int(u['number']) for u in station_list]
-
-    return station_ids
-
-
-def get_histogram_for_station_on_date(station_id, date):
-    url = HIST_URL % (station_id, date.year, date.month, date.day)
-
-    reply = urllib2.urlopen(url)
-    reply = reply.read()
-
-    file_like = StringIO.StringIO(reply)
-    data = np.genfromtxt(file_like)
-
-    bins = data[:, 0]
-    bins = list(bins)
-    bins.append(bins[-1] + (bins[-1] - bins[-2]))
-    bins = np.array(bins)
-
-    n = data[:, 1]
-
-    return n, bins
-
-
 class FindMostProbableValue:
     def __init__(self, n, bins):
         self.n, self.bins = n, bins
@@ -130,16 +77,58 @@ class FindMostProbableValue:
         return mpv
 
 
+def main():
+    today = datetime.date.today()
+    yesterday = today - datetime.timedelta(days=1)
+    station_ids = get_station_ids_with_data(yesterday)
+
+    for station in station_ids[:1]:
+        if station == 10:
+            continue
+        print station
+        n, bins = get_histogram_for_station_on_date(station, yesterday)
+        find_mpv = FindMostProbableValue(n, bins)
+        mpv, is_fitted = find_mpv.find_mpv_in_histogram()
+
+        figure()
+        plot((bins[:-1] + bins[1:]) / 2., n)
+        if is_fitted:
+            axvline(mpv, c='g')
+        else:
+            axvline(mpv, c='r')
+        title(station)
+
+
+def get_station_ids_with_data(date):
+    url = API_URL % (date.year, date.month, date.day)
+
+    reply = urllib2.urlopen(url)
+    reply = reply.read()
+
+    station_list = json.loads(reply)
+    station_ids = [int(u['number']) for u in station_list]
+
+    return station_ids
+
+
+def get_histogram_for_station_on_date(station_id, date):
+    url = HIST_URL % (station_id, date.year, date.month, date.day)
+
+    reply = urllib2.urlopen(url)
+    reply = reply.read()
+
+    file_like = StringIO.StringIO(reply)
+    data = np.genfromtxt(file_like)
+
+    bins = data[:, 0]
+    bins = list(bins)
+    bins.append(bins[-1] + (bins[-1] - bins[-2]))
+    bins = np.array(bins)
+
+    n = data[:, 1]
+
+    return n, bins
+
+
 if __name__ == '__main__':
     main()
-
-#    today = datetime.date.today()
-#    yesterday = today - datetime.timedelta(days=1)
-#    figure()
-#    n, bins = get_histogram_for_station_on_date(501, yesterday)
-#    plot((bins[:-1] + bins[1:]) / 2., n)
-#    mpv = find_first_guess_mpv_in_histogram(n, bins)
-#    fit_mpv = fit_mpv_in_histogram(n, bins, mpv)
-#    print mpv, fit_mpv
-#    axvline(mpv, c='r')
-#    axvline(fit_mpv, c='g')
