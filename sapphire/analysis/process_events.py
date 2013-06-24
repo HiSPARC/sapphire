@@ -369,14 +369,17 @@ class ProcessEvents(object):
         integrals = self.source.col('integrals')
         all_mpv = []
         for detector_integrals in integrals.T:
-            n, bins = np.histogram(detector_integrals,
-                                   bins=np.linspace(0, 50000, 201))
-            find_mpv = FindMostProbableValue(n, bins)
-            mpv, is_fitted = find_mpv.find_mpv_in_histogram()
-            if is_fitted:
-                all_mpv.append(mpv)
-            else:
+            if (detector_integrals < 0).all():
                 all_mpv.append(np.nan)
+            else:
+                n, bins = np.histogram(detector_integrals,
+                                       bins=np.linspace(0, 50000, 201))
+                find_mpv = FindMostProbableValue(n, bins)
+                mpv, is_fitted = find_mpv.find_mpv_in_histogram()
+                if is_fitted:
+                    all_mpv.append(mpv)
+                else:
+                    all_mpv.append(np.nan)
         all_mpv = np.array(all_mpv)
 
         for event in self.source[:self.limit]:
