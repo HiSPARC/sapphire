@@ -9,8 +9,6 @@ import progressbar as pb
 
 from sapphire.storage import ProcessedHisparcEvent
 
-from IPython.Shell import IPShellEmbed
-ipshell = IPShellEmbed()
 
 ADC_THRESHOLD = 20
 ADC_TIME_PER_SAMPLE = 2.5e-9
