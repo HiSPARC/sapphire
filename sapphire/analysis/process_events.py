@@ -9,6 +9,7 @@ from scipy.optimize import curve_fit
 import progressbar as pb
 
 from sapphire.storage import ProcessedHisparcEvent
+from sapphire.analysis.find_mpv import FindMostProbableValue
 
 
 ADC_THRESHOLD = 20
@@ -356,23 +357,38 @@ class ProcessEvents(object):
         """
         table = self._tmp_events
 
-        n_particles = self._process_pulseheights()
+        n_particles = self._process_pulseintegrals()
         for idx in range(4):
             col = 'n%d' % (idx + 1)
             getattr(table.cols, col)[:] = n_particles[:, idx]
         table.flush()
 
-    def _process_pulseheights(self):
-        #FIXME Much too simplistic!  Need fits
-
+    def _process_pulseintegrals(self):
         n_particles = []
 
+        integrals = self.source.col('integrals')
+        all_mpv = []
+        for detector_integrals in integrals.T:
+            n, bins = np.histogram(detector_integrals,
+                                   bins=np.linspace(0, 50000, 201))
+            find_mpv = FindMostProbableValue(n, bins)
+            mpv, is_fitted = find_mpv.find_mpv_in_histogram()
+            if is_fitted:
+                all_mpv.append(mpv)
+            else:
+                all_mpv.append(np.nan)
+        all_mpv = np.array(all_mpv)
+
         for event in self.source[:self.limit]:
-            pulseheights = event['pulseheights']
+            pulseintegrals = event['integrals']
             # retain -1, -999 status flags
-            pulseheights = np.where(pulseheights >= 0,
-                                    pulseheights / 380., pulseheights)
-            n_particles.append(pulseheights)
+            pulseintegrals = np.where(pulseintegrals >= 0,
+                                      pulseintegrals / all_mpv,
+                                      pulseintegrals)
+            # if mpv fit failed, value is nan.  Make it -999
+            pulseintegrals = np.where(np.isnan(pulseintegrals), -999,
+                                      pulseintegrals)
+            n_particles.append(pulseintegrals)
 
         return np.array(n_particles)
 
