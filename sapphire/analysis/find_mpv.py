@@ -128,17 +128,22 @@ class FindMostProbableValueInSpectrum:
 
         bins_x = (bins[:-1] + bins[1:]) / 2.
 
+        # calculate fit domain
         left = (1. - width_factor) * first_guess
         right = (1. + width_factor) * first_guess
 
+        # bracket histogram data
         x = bins_x.compress((left <= bins_x) & (bins_x < right))
         y = n.compress((left <= bins_x) & (bins_x < right))
 
+        # fit to a normal distribution
         f = lambda x, N, a, b: N * norm.pdf(x, loc=a, scale=b)
         popt, pcov = curve_fit(f, x, y, p0=(y.max(), first_guess,
                                             first_guess))
         mpv = popt[1]
 
+        # sanity check: if MPV is outside domain, the MIP peak was not
+        # bracketed correctly
         if mpv < x[0] or mpv > x[-1]:
             raise RuntimeError("Fitted MPV value outside range")
 
