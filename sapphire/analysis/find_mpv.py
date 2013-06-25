@@ -17,7 +17,7 @@ HIST_URL = 'http://data.hisparc.nl/show/source/pulseintegral/%d/%d/%d/%d/'
 MPV_FIT_WIDTH_FACTOR = .4
 
 
-class FindMostProbableValue:
+class FindMostProbableValueInSpectrum:
 
     """Find the most probable value (MPV) in a HiSPARC spectrum.
 
@@ -35,11 +35,11 @@ class FindMostProbableValue:
 
     Public methods:
 
-    :meth:`find_mpv_in_histogram`
+    :meth:`find_mpv`
         Find the most probable value
-    :meth:`find_first_guess_mpv_in_histogram`
+    :meth:`find_first_guess_mpv`
         Make a first guess of the most probable value
-    :meth:`fit_mpv_in_histogram`
+    :meth:`fit_mpv`
         Based on a first guess, fit the MIP peak to obtain the MPV
 
     """
@@ -53,7 +53,7 @@ class FindMostProbableValue:
         """
         self.n, self.bins = n, bins
 
-    def find_mpv_in_histogram(self):
+    def find_mpv(self):
         """Find the most probable value.
 
         First perform a first guess, then use that value to fit the MIP
@@ -63,16 +63,16 @@ class FindMostProbableValue:
         :return boolean is_fitted: indicates if the fit was successful.
 
         """
-        first_guess = self.find_first_guess_mpv_in_histogram()
+        first_guess = self.find_first_guess_mpv()
         try:
-            mpv = self.fit_mpv_in_histogram(first_guess)
+            mpv = self.fit_mpv(first_guess)
         except RuntimeError:
             warnings.warn("Fit failed, using first guess")
             return first_guess, False
         else:
             return mpv, True
 
-    def find_first_guess_mpv_in_histogram(self):
+    def find_first_guess_mpv(self):
         """First guess of most probable value.
 
         The algorithm is fast and simple. The following steps are
@@ -104,8 +104,7 @@ class FindMostProbableValue:
 
         return mpv
 
-    def fit_mpv_in_histogram(self, first_guess,
-                             width_factor=MPV_FIT_WIDTH_FACTOR):
+    def fit_mpv(self, first_guess, width_factor=MPV_FIT_WIDTH_FACTOR):
         """Fit a normal distribution to the MIP peak to obtain the MPV.
 
         A normal distribution is fitted to the spectrum in a restricted

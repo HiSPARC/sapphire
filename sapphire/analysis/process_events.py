@@ -9,7 +9,7 @@ from scipy.optimize import curve_fit
 import progressbar as pb
 
 from sapphire.storage import ProcessedHisparcEvent
-from sapphire.analysis.find_mpv import FindMostProbableValue
+from sapphire.analysis.find_mpv import FindMostProbableValueInSpectrum
 
 
 ADC_THRESHOLD = 20
@@ -374,8 +374,8 @@ class ProcessEvents(object):
             else:
                 n, bins = np.histogram(detector_integrals,
                                        bins=np.linspace(0, 50000, 201))
-                find_mpv = FindMostProbableValue(n, bins)
-                mpv, is_fitted = find_mpv.find_mpv_in_histogram()
+                find_mpv = FindMostProbableValueInSpectrum(n, bins)
+                mpv, is_fitted = find_mpv.find_mpv()
                 if is_fitted:
                     all_mpv.append(mpv)
                 else:
