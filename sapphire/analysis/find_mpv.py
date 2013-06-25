@@ -94,11 +94,15 @@ class FindMostProbableValueInSpectrum:
         left_idx = n.argmax()
         cut_n = n[left_idx:]
 
-        # find mpv peak from right
+        # find greatest decrease from right
         delta_n = cut_n[:-1] - cut_n[1:]
         idx_greatest_decrease = delta_n.argmin()
-        idx_right_max = cut_n[idx_greatest_decrease:].argmax()
+        cut_cut_n = cut_n[idx_greatest_decrease:]
 
+        # estimate most probable value with maximum in bracketed data
+        idx_right_max = cut_cut_n.argmax()
+
+        # calculate position of most probable value
         idx_mpv = idx_right_max + idx_greatest_decrease + left_idx
         mpv = (bins[idx_mpv] + bins[idx_mpv + 1]) / 2.
 
