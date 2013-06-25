@@ -144,6 +144,11 @@ class FindMostProbableValueInSpectrum:
         x = bins_x.compress((left <= bins_x) & (bins_x < right))
         y = n.compress((left <= bins_x) & (bins_x < right))
 
+        # sanity check: number of data points must be at least equal to
+        # the number of fit parameters
+        if len(x) < 3:
+            raise RuntimeError("Number of data points not sufficient")
+
         # fit to a normal distribution
         f = lambda x, N, a, b: N * norm.pdf(x, loc=a, scale=b)
         popt, pcov = curve_fit(f, x, y, p0=(y.max(), first_guess,
