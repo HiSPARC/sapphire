@@ -73,8 +73,8 @@ class FindMostProbableValueInSpectrum:
         try:
             mpv = self.fit_mpv(first_guess)
         except RuntimeError:
-            warnings.warn("Fit failed, using first guess")
-            return first_guess, False
+            warnings.warn("Fit failed")
+            return -999, False
         else:
             return mpv, True
 
