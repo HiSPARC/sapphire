@@ -18,10 +18,51 @@ MPV_FIT_WIDTH_FACTOR = .4
 
 
 class FindMostProbableValue:
+
+    """Find the most probable value (MPV) in a HiSPARC spectrum.
+
+    This is a fast algorithm to find the MPV value in a HiSPARC spectrum.
+    The MPV value indicates the position of the minimum-ionizing particles
+    (MIP) peak.  The algorithm makes some assumptions about the shape of
+    the spectrum:
+
+       * the spectrum includes the gamma peak (left-most part of
+         spectrum) which has more counts per bin than the MIP peak.
+       * ignoring the gamma peak, the MIP peak can be bracketed on the
+         left by the numerically largest bin-to-bin increase in the
+         number of counts.
+       * the MIP peak can be approximated by a normal distribution.
+
+    Public methods:
+
+    :meth:`find_mpv_in_histogram`
+        Find the most probable value
+    :meth:`find_first_guess_mpv_in_histogram`
+        Make a first guess of the most probable value
+    :meth:`fit_mpv_in_histogram`
+        Based on a first guess, fit the MIP peak to obtain the MPV
+
+    """
+
     def __init__(self, n, bins):
+        """Initialize the class instance.
+
+        :param n, bins: histogram counts and bins, as obtained using
+            :func:`numpy.histogram`.
+
+        """
         self.n, self.bins = n, bins
 
     def find_mpv_in_histogram(self):
+        """Find the most probable value.
+
+        First perform a first guess, then use that value to fit the MIP
+        peak.
+
+        :return mpv: best guess of the most probable value
+        :return boolean is_fitted: indicates if the fit was successful.
+
+        """
         first_guess = self.find_first_guess_mpv_in_histogram()
         try:
             mpv = self.fit_mpv_in_histogram(first_guess)
@@ -32,13 +73,19 @@ class FindMostProbableValue:
             return mpv, True
 
     def find_first_guess_mpv_in_histogram(self):
-        """First guesst of most probable value in histogram.
+        """First guess of most probable value.
 
-        Algorithm: First: from the left: find the greatest value and
-        cut off all data to the left of that maximum.  Now, you've cut off the
-        where the trigger cuts in data.  Work from the right: find the
-        location with the greatest decrease.  Then find the location of the
-        maximum to the right of this location.
+        The algorithm is fast and simple. The following steps are
+        performed:
+
+           * From the left: find the greatest value and cut off all data
+             to the left of that maximum.  We now assume the first
+             datapoint to be the maximum of the gamma peak.
+           * From the right: find the location of the greatest decrease
+             from bin to bin.  We assume that this value is where the MIP
+             peak dips before joining the gamma peak.
+           * Find the maximum *to the right* of this value.  We assume
+             this to be the approximate location of the MIP peak.
 
         """
         n, bins = self.n, self.bins
@@ -57,13 +104,29 @@ class FindMostProbableValue:
 
         return mpv
 
-    def fit_mpv_in_histogram(self, first_guess):
+    def fit_mpv_in_histogram(self, first_guess,
+                             width_factor=MPV_FIT_WIDTH_FACTOR):
+        """Fit a normal distribution to the MIP peak to obtain the MPV.
+
+        A normal distribution is fitted to the spectrum in a restricted
+        domain around the first guess value.  The width of the domain can
+        be adjusted by the width_factor parameter.
+
+        :param first_guess: approximate location of the most probable
+            value
+        :param width_factor: float in the range [0., 1.] to indicate the
+            width of the fit domain.  The domain is given by
+            [(1. - width_factor) * first_guess, (1. + width_factor) *
+            first_guess]
+        :returns mpv: mpv value obtained from the fit
+
+        """
         n, bins = self.n, self.bins
 
         bins_x = (bins[:-1] + bins[1:]) / 2.
 
-        left = (1. - MPV_FIT_WIDTH_FACTOR) * first_guess
-        right = (1. + MPV_FIT_WIDTH_FACTOR) * first_guess
+        left = (1. - width_factor) * first_guess
+        right = (1. + width_factor) * first_guess
 
         x = bins_x.compress((left <= bins_x) & (bins_x < right))
         y = n.compress((left <= bins_x) & (bins_x < right))
