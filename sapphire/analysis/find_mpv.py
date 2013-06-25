@@ -1,3 +1,9 @@
+"""Find the most probable value in a HiSPARC spectrum.
+
+:class:`FindMostProbableValueInSpectrum`
+   find the most probable value in a HiSPARC spectrum
+
+"""
 import datetime
 import urllib2
 import json
@@ -87,6 +93,8 @@ class FindMostProbableValueInSpectrum:
            * Find the maximum *to the right* of this value.  We assume
              this to be the approximate location of the MIP peak.
 
+        :returns mpv: first guess of the most probable value
+
         """
         n, bins = self.n, self.bins
 
@@ -151,6 +159,8 @@ class FindMostProbableValueInSpectrum:
 
 
 def main():
+    """Demo the MPV finder with actual data."""
+
     today = datetime.date.today()
     yesterday = today - datetime.timedelta(days=1)
     station_ids = get_station_ids_with_data(yesterday)
@@ -173,6 +183,8 @@ def main():
 
 
 def get_station_ids_with_data(date):
+    """Return the station ids having data on this day."""
+
     url = API_URL % (date.year, date.month, date.day)
 
     reply = urllib2.urlopen(url)
@@ -185,6 +197,12 @@ def get_station_ids_with_data(date):
 
 
 def get_histogram_for_station_on_date(station_id, date):
+    """Return a histogram of the spectrum of a station on a date.
+
+    :return n, bins: histogram counts and bins, as obtained using
+       :func:`numpy.histogram`.
+
+    """
     url = HIST_URL % (station_id, date.year, date.month, date.day)
 
     reply = urllib2.urlopen(url)
