@@ -170,8 +170,8 @@ def main():
             continue
         print station
         n, bins = get_histogram_for_station_on_date(station, yesterday)
-        find_mpv = FindMostProbableValue(n, bins)
-        mpv, is_fitted = find_mpv.find_mpv_in_histogram()
+        find_mpv = FindMostProbableValueInSpectrum(n, bins)
+        mpv, is_fitted = find_mpv.find_mpv()
 
         plt.figure()
         plt.plot((bins[:-1] + bins[1:]) / 2., n)
