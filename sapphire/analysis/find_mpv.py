@@ -185,6 +185,7 @@ def main():
         else:
             plt.axvline(mpv, c='r')
         plt.title(station)
+        plt.yscale('log')
 
 
 def get_station_ids_with_data(date):
