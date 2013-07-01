@@ -379,6 +379,7 @@ class ProcessEvents(object):
         
         bins = np.arange(0, 5000, 10)
         mpv = self._pulse_gauss_fit(pulseheights, bins)
+        print 'de waarden van de mip peaken, ph fit',  mpv
         n_particles = pulseheights / mpv 
 
         return n_particles
@@ -750,7 +751,7 @@ class ProcessEventsWithPulseIntegrals(ProcessEventsWithLINT):
 
         """
         table = self._tmp_events
-
+        
         n_particles = self._process_pulseintegrals()
         for idx in range(4):
             col = 'n%d' % (idx + 1)
@@ -770,6 +771,7 @@ class ProcessEventsWithPulseIntegrals(ProcessEventsWithLINT):
         
         bins = np.arange(0, 40000, 100)
         mpv = self._pulse_gauss_fit(pulseintegrals, bins)
+        print 'de waarden van de mip peaken, integral fit in process events',  mpv
         n_particles = pulseintegrals / mpv 
 
         return n_particles
