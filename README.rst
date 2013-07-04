@@ -32,7 +32,7 @@ Installation
 
 The complete installation instructions are available in the documentation
 in the ``doc/`` directory.  You can compile them using Sphinx, or you can
-follow this link: http://hisparc.github.com/sapphire/.
+follow this link: http://docs.hisparc.nl/sapphire/.
 
 
 Quick installation
