@@ -96,8 +96,8 @@ class BaseLdfSimulation(BaseSimulation):
         signals = self.simulate_detector_signals(num_particles)
         id = self.write_observables_and_return_id(station, event, signals)
 
-        num_detectors_over_threshold = sum([True if u >= self.trig_threshold else False for u
-                                            in signals])
+        num_detectors_over_threshold = sum([True if u >= self.trig_threshold
+                                            else False for u in signals])
         if num_detectors_over_threshold >= 2:
             has_triggered = True
         else:

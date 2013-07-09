@@ -48,7 +48,7 @@ class FromWGS84ToENUTransformation:
         ECEF: Earth-Centered, Earth-Fixed
 
         The conversion formulas are taken from
-        http://en.wikipedia.org/wiki/Geodetic_system#From_geodetic_to_ECEF_coordinates
+        http://en.wikipedia.org/wiki/Geodetic_system#From_geodetic_to_ECEF
         but slightly reworked.
 
         Mind that the input is expected to be in degrees, as is standard in
@@ -78,7 +78,7 @@ class FromWGS84ToENUTransformation:
         ENU: East, North, Up
 
         The conversion formulas are taken from
-        http://en.wikipedia.org/wiki/Geodetic_system#From_ECEF_to_ENU_Coordinates
+        http://en.wikipedia.org/wiki/Geodetic_system#From_ECEF_to_ENU
 
         :param coordinates: a tuple containing the ECEF coordinates of the
                             point to transform

@@ -273,7 +273,7 @@ class SingleStation(BaseCluster):
 
 class ScienceParkCluster(BaseCluster):
     # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
-    # 2 dec, 2011)
+    # 2 dec, 2011) + 508/509 (from site on 8 jul 2013)
     gps_coordinates = {501: (52.355924173294305, 4.951144021644267,
                              56.102345941588283),
                        502: (52.355293344895919, 4.9501047083812697,
@@ -288,11 +288,14 @@ class ScienceParkCluster(BaseCluster):
                              43.8700314863),
                        508: (52.3563513341, 4.95070840124,
                              52.51091104),
+                       509: (52.3545582682, 4.95569730394,
+                             59.942809986),
                       }
 
+    # 502, 505, 508 are now diamond shapes, rotation has less
+    # meaning, need positions of every detector to GPS
     station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
-                         506: 267, 508: 135}
-
+                         506: 267, 508: 135, 509: 135}
 
     def __init__(self, stations=range(501, 507)):
         super(ScienceParkCluster, self).__init__()
