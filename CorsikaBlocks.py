@@ -40,9 +40,8 @@ gSubBlocksPerBlock = 21
 # With the unthinned option, each of these is 7 fields long
 # for a total of 39 records per sub block
 gParticleFormat = '7f'
-gParticlesPerSubblock = 39
 gParticleRecordSize = struct.calcsize(gParticleFormat)
-
+gParticlesPerSubblock = 39
 
 # a couple of sanity checks for the formats
 if (gBlockSize - 2 * gBlockPaddingSize) / gSubblockSize != gSubBlocksPerBlock:
@@ -375,7 +374,7 @@ class ParticleData:
                                  self.fPy / units.GeV,
                                  self.fPz / units.GeV),
                        position=(self.fX / units.m, self.fY / units.m),
-                       time=self.fTorZ))
+                       time=self.fT / units.ns))
 
 
 class CherenkovData:
@@ -408,3 +407,107 @@ class CherenkovData:
                        position=(self.fX / units.m, self.fY / units.m),
                        time=self.fT / units.ns,
                        height=self.fProductionHeight / units.m))
+
+# THIN versions
+
+# one block contains 6552 fields plus one header and one trailer field
+gBlockFormatThin = '6554f'
+gBlockSizeThin = struct.calcsize(gBlockFormatThin)
+
+# Each block contains 21 sub-blocks
+# Each sub-block consists of 312 fields
+# the first of which _might_ be a string id.
+gSubblockFormatThin = '4s311f'
+gSubblockSizeThin = struct.calcsize(gSubblockFormatThin)
+
+# Each particle record sub-block contains a fixed
+# number of particle records
+# With the thinned option, each of these is 8 fields long
+# for a total of 39 records per sub block
+gParticleFormatThin = '8f'
+gParticleRecordSizeThin = struct.calcsize(gParticleFormatThin)
+
+
+# a couple of sanity checks for the formats
+if (gBlockSizeThin - 2 * gBlockPaddingSize) / gSubblockSizeThin != gSubBlocksPerBlock:
+    raise Exception('The block format ({block}) and sub-block format '
+                    '({sub_block}) do not agree! block size is {block_size} '
+                    'and sub-block size is {sub_block_size}. Block size should'
+                    ' be {subblocks_per_block} times the sub-block size plus '
+                    'padding (usually 8 bytes).'
+                    .format(block=gBlockFormatThin,
+                            sub_block=gSubblockFormatThin,
+                            block_size=gBlockSizeThin,
+                            sub_block_size=gSubblockSizeThin,
+                            subblocks_per_block=gSubBlocksPerBlock))
+
+
+if gSubblockSizeThin / gParticleRecordSizeThin != gParticlesPerSubblock:
+    raise Exception('The sub_block format ({sub_block}) and particle format '
+                    '({particle}) do not agree! sub-block size is '
+                    '{sub_block_size} and particle record size is '
+                    '{particle_size}. Sub-block size should be '
+                    '{particles_per_subblock} times the particle record size.'
+                    .format(sub_block=gSubblockFormatThin,
+                            particle=gParticleFormatThin,
+                            sub_block_size=gSubblockSizeThin,
+                            particle_size=gParticleRecordSizeThin,
+                            particles_per_subblock=gParticlesPerSubblock))
+
+
+class ParticleDataThin(ParticleData):
+    """
+    Class representing the thinned particle data sub-block
+    as specified in Corsika user manual, Table 10.
+
+    The number of CherenkovData records in a sub-block depends on
+    compilation options.
+    """
+    def __init__(self, subblock):
+        self.fWeight = subblock[7]
+        super(ParticleDataThin, self).__init__(subblock)
+
+    def __str__(self):
+        return textwrap.dedent("""\
+            Particle:
+                id: {description}
+                momentum: {momentum} GeV
+                position: {position} m
+                time: {time} ns
+                weight: {weight}
+            """.format(description=self.fDescription,
+                       momentum=(self.fPx / units.GeV,
+                                 self.fPy / units.GeV,
+                                 self.fPz / units.GeV),
+                       position=(self.fX / units.m, self.fY / units.m),
+                       time=self.fT / units.ns,
+                       weight=self.fWeight))
+
+
+class CherenkovDataThin(CherenkovData):
+    """
+    Class representing the thinned cherenkov photon sub-block
+    as specified in Corsika user manual, Table 11.
+
+    The number of CherenkovData records in a sub-block depends on
+    compilation options.
+    """
+    def __init__(self, subblock):
+        self.fWeight = subblock[7]
+        super(CherenkovDataThin, self).__init__(subblock)
+
+    def __str__(self):
+        return textwrap.dedent("""\
+            Cherenkov:
+                n: {n}
+                position: {position} m
+                (u,v): {direction}
+                time: {time} ns
+                prod. height: {height} m
+                weight: {weight}
+            """.format(n=self.fPhotonsInBunch,
+                       direction=(self.fU, self.fV),
+                       position=(self.fX / units.m, self.fY / units.m),
+                       time=self.fT / units.ns,
+                       height=self.fProductionHeight / units.m,
+                       weight=self.fWeight))
