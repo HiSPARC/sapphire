@@ -161,9 +161,9 @@ ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
 	git checkout master doc corsika Makefile
 	make html
 	make latexpdf
-	mv -fv doc/_build/html/* .
-	mv -fv doc/_build/latex/*.pdf .
-	rm -rf doc/ corsika/ Makefile
+	mv -fv _build/html/* .
+	mv -fv _build/latex/*.pdf .
+	rm -rf _build/ doc/ corsika/ Makefile
 	git add -A
 	git commit -m "Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`"
 	git checkout master
