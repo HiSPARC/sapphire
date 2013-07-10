@@ -20,59 +20,66 @@ import CorsikaParticles as particles
 
 # All sizes are in bytes
 
-# in 32 bit, one field is a float
-gFieldSize = struct.calcsize('f')
+class Format(object):
+    """
+    Class containing the format information of the file
+    as specified in Corsika user manual, Section 10.2.1.
+    """
+    def __init__(self):
+        # in 32 bit, one field is a float
+        self.field_size = struct.calcsize('f')
 
-# one block contains 5733 fields plus one header and one trailer field
-gBlockFormat = '5735f'
-gBlockSize = struct.calcsize(gBlockFormat)
-gBlockPaddingSize = struct.calcsize('f')
+        # one block contains 5733 fields plus one header and one trailer field
+        self.block_format = '5735f'
+        self.block_size = struct.calcsize(self.block_format)
+        self.block_padding_size = struct.calcsize('f')
 
-# Each block contains 21 sub-blocks
-# Each sub-block consists of 273 fields
-# the first of which _might_ be a string id.
-gSubblockFormat = '4s272f'
-gSubblockSize = struct.calcsize(gSubblockFormat)
-gSubBlocksPerBlock = 21
+        # Each block contains 21 sub-blocks
+        # Each sub-block consists of 273 fields
+        # the first of which _might_ be a string id.
+        self.subblock_format = '4s272f'
+        self.subblock_size = struct.calcsize(self.subblock_format)
+        self.subblocks_per_block = 21
 
-# Each particle record sub-block contains a fixed
-# number of particle records
-# With the unthinned option, each of these is 7 fields long
-# for a total of 39 records per sub block
-gParticleFormat = '7f'
-gParticleRecordSize = struct.calcsize(gParticleFormat)
-gParticlesPerSubblock = 39
+        # Each particle record sub-block contains a fixed
+        # number of particle records
+        # With the unthinned option, each of these is 7 fields long
+        # for a total of 39 records per sub block
+        self.particle_format = '7f'
+        self.particle_size = struct.calcsize(self.particle_format)
+        self.particles_per_subblock = 39
 
-# a couple of sanity checks for the formats
-if (gBlockSize - 2 * gBlockPaddingSize) / gSubblockSize != gSubBlocksPerBlock:
-    raise Exception('The block format ({block}) and sub-block format '
-                    '({sub_block}) do not agree! block size is {block_size} '
-                    'and sub-block size is {sub_block_size}. Block size should'
-                    ' be {subblocks_per_block} times the sub-block size plus '
-                    'padding (usually 8 bytes).'
-                    .format(block=gBlockFormat,
-                            sub_block=gSubblockFormat,
-                            block_size=gBlockSize,
-                            sub_block_size=gSubblockSize,
-                            subblocks_per_block=gSubBlocksPerBlock))
+    def __test__(self):
+        # a couple of sanity checks for the formats
+        if (self.block_size - 2 * self.block_padding_size) / self.subblock_size != self.subblocks_per_block:
+            raise Exception('The block format ({block}) and sub-block format '
+                            '({sub_block}) do not agree! block size is {block_size} '
+                            'and sub-block size is {sub_block_size}. Block size should'
+                            ' be {subblocks_per_block} times the sub-block size plus '
+                            'padding (usually 8 bytes).'
+                            .format(block=self.block_format,
+                                    sub_block=self.subblock_format,
+                                    block_size=self.block_size,
+                                    sub_block_size=self.subblock_size,
+                                    subblocks_per_block=self.subblocks_per_block))
 
 
-if gSubblockSize / gParticleRecordSize != gParticlesPerSubblock:
-    raise Exception('The sub_block format ({sub_block}) and particle format '
-                    '({particle}) do not agree! sub-block size is '
-                    '{sub_block_size} and particle record size is '
-                    '{particle_size}. Sub-block size should be '
-                    '{particles_per_subblock} times the particle record size.'
-                    .format(sub_block=gSubblockFormat,
-                            particle=gParticleFormat,
-                            sub_block_size=gSubblockSize,
-                            particle_size=gParticleRecordSize,
-                            particles_per_subblock=gParticlesPerSubblock))
+        if self.subblock_size / self.particle_size != self.particles_per_subblock:
+            raise Exception('The sub_block format ({sub_block}) and particle format '
+                            '({particle}) do not agree! sub-block size is '
+                            '{sub_block_size} and particle record size is '
+                            '{particle_size}. Sub-block size should be '
+                            '{particles_per_subblock} times the particle record size.'
+                            .format(sub_block=self.subblock_format,
+                                    particle=self.particle_format,
+                                    sub_block_size=self.subblock_size,
+                                    particle_size=self.particle_size,
+                                    particles_per_subblock=self.particles_per_subblock))
 
 
 # From here on, things should not depend on the field size as everything is
 
-class RunHeader:
+class RunHeader(object):
     """
     Class representing the run header sub-block
     as specified in Corsika user manual, Table 7.
@@ -123,7 +130,7 @@ class RunHeader:
                        version=self.fVersion))
 
 
-class EventHeader:
+class EventHeader(object):
     """
     Class representing the event header sub-block
     as specified in Corsika user manual, Table 8.
@@ -253,7 +260,7 @@ class EventHeader:
                        azimuth=self.fPhi / units.degree))
 
 
-class RunTrailer:
+class RunTrailer(object):
     """
     Class representing the run end sub-block
     as specified in Corsika user manual, Table 14.
@@ -272,7 +279,7 @@ class RunTrailer:
                        events=self.fEventsProcessed))
 
 
-class EventTrailer:
+class EventTrailer(object):
     """
     Class representing the event end sub-block
     as specified in Corsika user manual, Table 13.
@@ -328,7 +335,7 @@ class EventTrailer:
                        particles=self.fParticles))
 
 
-class ParticleData:
+class ParticleData(object):
     """
     Class representing the particle data sub-block
     as specified in Corsika user manual, Table 10.
@@ -377,7 +384,7 @@ class ParticleData:
                        time=self.fT / units.ns))
 
 
-class CherenkovData:
+class CherenkovData(object):
     """
     Class representing the cherenkov photon sub-block
     as specified in Corsika user manual, Table 11.
@@ -408,51 +415,33 @@ class CherenkovData:
                        time=self.fT / units.ns,
                        height=self.fProductionHeight / units.m))
 
+
 # THIN versions
 
-# one block contains 6552 fields plus one header and one trailer field
-gBlockFormatThin = '6554f'
-gBlockSizeThin = struct.calcsize(gBlockFormatThin)
+class FormatThin(Format):
+    """
+    Class containing the format information of the thinned file
+    as specified in Corsika user manual, Section 10.2.2.
+    """
+    def __init__(self):
+        super(FormatThin, self).__init__()
 
-# Each block contains 21 sub-blocks
-# Each sub-block consists of 312 fields
-# the first of which _might_ be a string id.
-gSubblockFormatThin = '4s311f'
-gSubblockSizeThin = struct.calcsize(gSubblockFormatThin)
+        # one block contains 6552 fields plus one header and one trailer field
+        self.block_format = '6554f'
+        self.block_size = struct.calcsize(self.block_format)
 
-# Each particle record sub-block contains a fixed
-# number of particle records
-# With the thinned option, each of these is 8 fields long
-# for a total of 39 records per sub block
-gParticleFormatThin = '8f'
-gParticleRecordSizeThin = struct.calcsize(gParticleFormatThin)
+        # Each block contains 21 sub-blocks
+        # Each sub-block consists of 312 fields
+        # the first of which _might_ be a string id.
+        self.subblock_format = '4s311f'
+        self.subblock_size = struct.calcsize(self.subblock_format)
 
-
-# a couple of sanity checks for the formats
-if (gBlockSizeThin - 2 * gBlockPaddingSize) / gSubblockSizeThin != gSubBlocksPerBlock:
-    raise Exception('The block format ({block}) and sub-block format '
-                    '({sub_block}) do not agree! block size is {block_size} '
-                    'and sub-block size is {sub_block_size}. Block size should'
-                    ' be {subblocks_per_block} times the sub-block size plus '
-                    'padding (usually 8 bytes).'
-                    .format(block=gBlockFormatThin,
-                            sub_block=gSubblockFormatThin,
-                            block_size=gBlockSizeThin,
-                            sub_block_size=gSubblockSizeThin,
-                            subblocks_per_block=gSubBlocksPerBlock))
-
-
-if gSubblockSizeThin / gParticleRecordSizeThin != gParticlesPerSubblock:
-    raise Exception('The sub_block format ({sub_block}) and particle format '
-                    '({particle}) do not agree! sub-block size is '
-                    '{sub_block_size} and particle record size is '
-                    '{particle_size}. Sub-block size should be '
-                    '{particles_per_subblock} times the particle record size.'
-                    .format(sub_block=gSubblockFormatThin,
-                            particle=gParticleFormatThin,
-                            sub_block_size=gSubblockSizeThin,
-                            particle_size=gParticleRecordSizeThin,
-                            particles_per_subblock=gParticlesPerSubblock))
+        # Each particle record sub-block contains a fixed
+        # number of particle records
+        # With the thinned option, each of these is 8 fields long
+        # for a total of 39 records per sub block
+        self.particle_format = '8f'
+        self.particle_size = struct.calcsize(self.particle_format)
 
 
 class ParticleDataThin(ParticleData):
