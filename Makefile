@@ -158,12 +158,12 @@ ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
 	git rm -rf .
 	git clean -dxf
 	git checkout HEAD .nojekyll .gitignore
-	git checkout master doc corsika
+	git checkout master doc corsika Makefile
 	make html
 	make latexpdf
 	mv -fv doc/_build/html/* .
 	mv -fv doc/_build/latex/*.pdf .
-	rm -rf doc/ corsika/
+	rm -rf doc/ corsika/ Makefile
 	git add -A
 	git commit -m "Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`"
 	git checkout master
