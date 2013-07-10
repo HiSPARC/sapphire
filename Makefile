@@ -14,7 +14,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) doc
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext gh-pages
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -151,3 +151,22 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
+gh-pages:
+ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
+	git checkout gh-pages
+	git rm -rf .
+	git clean -dxf
+	git checkout HEAD .nojekyll .gitignore
+	git checkout master doc corsika
+	make html
+	make latexpdf
+	mv -fv doc/_build/html/* .
+	mv -fv doc/_build/latex/*.pdf .
+	rm -rf doc/ corsika/
+	git add -A
+	git commit -m "Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`"
+	git checkout master
+else
+	$(error Working tree is not clean, please commit all changes.)
+endif
