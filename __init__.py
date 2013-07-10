@@ -1,22 +1,29 @@
 """
-This module provides the functionality to read corsika files.
+This module provides the functionality to read CORSIKA files.
 
 It provides the following main classes:
 
-* :ref:`CorsikaFile`: The file class provides a generator over all events
+* :class:`CorsikaFile.CorsikaFile`: The file class provides a generator over all events
   in the file.
-* :ref:`CorsikaEvent`: The event class that provides a generator over all
+* :class:`CorsikaFile.CorsikaEvent`: The event class that provides a generator over all
   particles at ground.
 
 and the following classes that correspond to the sub-blocks defined in
-the corsika manual:
+the CORSIKA manual:
 
-* :class:`RunHeader`
-* :class:`RunTrailer`
-* :class:`EventHeader`
-* :class:`EventTrailer`
-* :class:`ParticleData`
-* :class:`CherenkovData`
+* :class:`CorsikaBlocks.RunHeader`
+* :class:`CorsikaBlocks.RunTrailer`
+* :class:`CorsikaBlocks.EventHeader`
+* :class:`CorsikaBlocks.EventTrailer`
+* :class:`CorsikaBlocks.ParticleData`
+* :class:`CorsikaBlocks.CherenkovData`
+
+Additionally version for thinned showers are available:
+
+* :class:`CorsikaFile.CorsikaFileThin`
+* :class:`CorsikaBlocks.ParticleDataThin`
+* :class:`CorsikaBlocks.CherenkovDataThin`
+
 
 Issues
 ======
@@ -24,36 +31,39 @@ Issues
 This module does not handle platform dependent issues such as byte
 ordering (endianness) and field size. This was the result of an
 afternoon hack and has only been tested with files generated using 32
-bit corsika files on a linux system compiled with gfortran.
+bit CORSIKA files on a linux system compiled with gfortran.
 
-* **Field Size**: I'm assuming corsika files were generated in 32 bit mode.
-  In this case, each field in the file is 4 bytes long. If the files were
-  generated in 64 bit mode, each field will be (I think) 64 bits.
-  `NumPy <http://numpy.scipy.org/>`_ has support for 64 bit floats.
+* **Field Size**: According to the Corsika user manual section 10.2
+  all quantities are written as single precision real numbers
+  independently of 32-bit or 64-bit, so each field in the file
+  should be 4 bytes long.
 * **Endianness**: There is no check for byte ordering. It can be added using
   Python's `struct module
   <http://docs.python.org/library/struct.html#struct-alignment>`_.
-* **Memory mapping**: This module reads the entire corsika file and stores
+* **Memory mapping**: This module reads the entire CORSIKA file and stores
   it in memory. This might be a problem with large files and can be solved
   by using a memory-mapped file.
-* **Thinning**: This module does not handle unthinned showers.
+* **Thinning**: This module can handle thinned showers with the
+  special ..Thin subclasses.
 * **Special Particles**: This module currently ignores all special
   (book-keeping) particles like for muon additional information and history.
+
 
 More Info
 =========
 
 For short information on fortran unformatted binary files, take a look
-at http://paulbourke.net/dataformats/fortran/ (broken link)
+at http://paulbourke.net/dataformats/reading/
 
-For detailed information on the corsika format, check the 'Outputs'
-chapter in the corsika user manual. In particular, check the 'Normal
+For detailed information on the CORSIKA format, check the 'Outputs'
+chapter in the CORSIKA user manual. In particular, check the 'Normal
 Particle Output' section.
 
 Authors
 =======
 
-Javier Gonzalez <jgonzalez@ik.fzk.de>
+- Javier Gonzalez <jgonzalez@ik.fzk.de>
+- Arne de Laat <adelaat@nikhef.nl>
 """
 
 from CorsikaFile import *

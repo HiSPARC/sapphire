@@ -2,41 +2,57 @@
 Defines units in terms of HiSPARC standard units
 
 You should use the units defined in this file whenever you
-have a dimensional quantity in your code.  For example,
-write:
-    s = 1.5*km
-instead of:
+have a dimensional quantity in your code.  For example:
+
+Do:
+
+.. code-block:: python
+
+    s = 1.5 * km
+
+Don't:
+
+.. code-block:: python
+
     s = 1.5  # don't forget this is in km!
+
 The conversion factors defined in this file
 convert your data into HiSPARC base units, so that
 all dimensional quantities in the code are in a
 single system of units!  You can also
 use the conversions defined here to, for example,
 display data with the unit of your choice.  For example:
-    print "s = %f mm" %  s/mm
 
-The base units are :
-    - meter                   (meter)
-    - nanosecond              (nanosecond)
-    - electron Volt           (eV)
-    - positron charge         (eplus)
-    - degree Kelvin           (kelvin)
-    - the amount of substance (mole)
-    - luminous intensity      (candela)
-    - radian                  (radian)
-    - steradian               (steradian)
+.. code-block:: python
 
+    >>> print "s = %f mm" %  s / mm
+    1500000 mm
+
+The base units are:
+
+- meter (meter)
+- nanosecond (nanosecond)
+- electron Volt (eV)
+- positron charge (eplus)
+- degree Kelvin (kelvin)
+- the amount of substance (mole)
+- luminous intensity (candela)
+- radian (radian)
+- steradian (steradian)
 
 The SI numerical value of the positron charge is defined here,
-as it is needed for conversion factor : positron charge = eSI (coulomb)
+as it is needed for conversion factor: positron charge = eSI (coulomb)
 
 This is a slightly modified version of the units definitions
 written by the Geant4 collaboration.
 
 Authors:
-M. Maire
-S. Giani
-T. Paul (modifications for Auger)
+
+- M Maire
+- S Giani
+- T Paul (modifications for Auger)
+- Arne de Laat <adelaat@nikhef.nl>
+
 """
 
 # math constants

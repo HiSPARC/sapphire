@@ -1,12 +1,10 @@
 """
-Classes corresponding to corsika blocks and sub-blocks
+Classes corresponding to CORSIKA blocks and sub-blocks
 
 The classes in this module correspond one-to-one with the sub-blocks
-(and blocks) as specified in corsika's user manual.
+(and blocks) as specified in the CORSIKA users manual.
 
-Authors
--------
-Javier Gonzalez <jgonzalez@ik.fzk.de>
+Author: Javier Gonzalez <jgonzalez@ik.fzk.de>
 """
 
 import textwrap
@@ -448,9 +446,6 @@ class ParticleDataThin(ParticleData):
     """
     Class representing the thinned particle data sub-block
     as specified in Corsika user manual, Table 10.
-
-    The number of CherenkovData records in a sub-block depends on
-    compilation options.
     """
     def __init__(self, subblock):
         self.fWeight = subblock[7]

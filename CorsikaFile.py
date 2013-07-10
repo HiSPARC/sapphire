@@ -82,6 +82,13 @@ class CorsikaEvent(object):
 
 
 class CorsikaFile(object):
+    """ Corsika output file handler
+
+    This class will probide an interface for Corsika output files.
+    Allowing you go get at the events and particles in the file.
+    This class is meant for unthinned simulations.
+
+    """
     def __init__(self, filename):
         """
         CorsikaFile constructor
@@ -229,6 +236,13 @@ class CorsikaFile(object):
 
 
 class CorsikaFileThin(CorsikaFile):
+    """ Corsika thinned output file handler
+
+    Same as the unthinned output handler, but with support for
+    the different format, particles also have the weight property.
+    This class is meant for thinned simulations.
+
+    """
     def __init__(self, filename):
         """
         CorsikaFileThin constructor

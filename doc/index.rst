@@ -1,23 +1,57 @@
+.. include:: subst.inc
+
 Corsika Reader Documentation
 ============================
 
-The :ref:`CorsikaModule` provides functionality to read corsika files. It provides the following main classes:
+`CORSIKA <http://www-ik.fzk.de/~corsika/>`_ is an Air Shower
+Simulation Program. To be used for detailed simulation of
+extensive air showers initiated by high-energy cosmic-ray particles. 
 
-* :ref:`CorsikaFile`: The file class provides a generator over all events in the file.
-* :ref:`CorsikaEvent`: The event class that provides a generator over all particles at ground.
+This module makes it easy to work with |corsika| output, it was
+original written by `Javier Gonzalez
+<http://www-ik.fzk.de/~jgonzalez/corsika/>`_ and adapted for `HiSPARC
+<www.hisparc.nl>`_ by Arne de Laat.
 
-To use it, get the `tarball <http://www-ik.fzk.de/~jgonzalez/corsika_reader_0.9.tgz>`_ and uncompress it somewhere in your PYTHONPATH. It includes a short example.
+The :ref:`CorsikaModule` provides functionality to read |corsika| output
+files with `Python <www.python.org>`_. It provides the following main
+classes:
 
-In order to use this, you need `NumPy <http://numpy.scipy.org/>`_
+    * :class:`corsika.CorsikaFile.CorsikaFile`: The file class provides a
+      generator over all events in the file.
+    * :class:`corsika.CorsikaFile.CorsikaEvent`: The event class that provides a
+      generator over all particles at ground.
+
+This documentation sometimes refers to the |corsika| users manual, this
+users manual can be found here `CORSIKA User's Guide
+<http://www-ik.fzk.de/~corsika/usersguide/corsika_tech.html>`_
+
+
+Installation
+------------
+
+To use it, download the `source (zip)
+<https://github.com/hisparc/corsika/zipball/master>`_ and uncompress it
+somewhere in your PYTHONPATH. Then simply start Python and use
+:code:`import corsika` to import the module.
+Some examples are included some examples (they require |corsika| output).
+
+
+Requirements
+^^^^^^^^^^^^
+
+- Python 2.7.x
+- `NumPy <http://numpy.scipy.org/>`_, which can be installed with
+  :code:`pip install numpy`.
 
 
 Contents
-========
+--------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   :numbered:
 
-   CorsikaFile
+   corsika
 
 
 Indices and tables

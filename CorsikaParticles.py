@@ -1,12 +1,15 @@
 """
-Use this for particle identification for particles in corsika
+Use this for particle identification for particles in CORSIKA
 
 Particle codes as specified in Corsika user manual, Table 4.
 
-This relates to the Description in Particles as:
-particle id x 1000 + hadron generation x 10 + no. of observation level
+This relates to the Description in Particles as::
+
+    particle id x 1000 + hadron generation x 10 + no. of observation level
 
 So to find e+/e-:
+
+.. code-block:: python
 
     if particle.fParticle in [positron, electron]:
         pass
