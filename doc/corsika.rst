@@ -12,7 +12,7 @@ Contents
 
 .. toctree::
 
-   file
+   reader
    blocks
    units
    particles

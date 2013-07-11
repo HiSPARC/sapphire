@@ -12,8 +12,8 @@ import struct
 
 import numpy
 
-import CorsikaUnits as units
-import CorsikaParticles as particles
+import units
+import particles
 
 
 # All sizes are in bytes

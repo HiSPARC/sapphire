@@ -1,6 +1,6 @@
-Corsika Blocks
+Corsika Reader
 ==============
 
-.. automodule:: corsika.blocks
+.. automodule:: corsika.reader
    :members:
    :undoc-members:

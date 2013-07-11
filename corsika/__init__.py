@@ -3,26 +3,26 @@ This module provides the functionality to read CORSIKA files.
 
 It provides the following main classes:
 
-* :class:`CorsikaFile.CorsikaFile`: The file class provides a generator over all events
+* :class:`reader.CorsikaFile`: The file class provides a generator over all events
   in the file.
-* :class:`CorsikaFile.CorsikaEvent`: The event class that provides a generator over all
+* :class:`reader.CorsikaEvent`: The event class that provides a generator over all
   particles at ground.
 
 and the following classes that correspond to the sub-blocks defined in
 the CORSIKA manual:
 
-* :class:`CorsikaBlocks.RunHeader`
-* :class:`CorsikaBlocks.RunTrailer`
-* :class:`CorsikaBlocks.EventHeader`
-* :class:`CorsikaBlocks.EventTrailer`
-* :class:`CorsikaBlocks.ParticleData`
-* :class:`CorsikaBlocks.CherenkovData`
+* :class:`blocks.RunHeader`
+* :class:`blocks.RunTrailer`
+* :class:`blocks.EventHeader`
+* :class:`blocks.EventTrailer`
+* :class:`blocks.ParticleData`
+* :class:`blocks.CherenkovData`
 
 Additionally version for thinned showers are available:
 
-* :class:`CorsikaFile.CorsikaFileThin`
-* :class:`CorsikaBlocks.ParticleDataThin`
-* :class:`CorsikaBlocks.CherenkovDataThin`
+* :class:`reader.CorsikaFileThin`
+* :class:`blocks.ParticleDataThin`
+* :class:`blocks.CherenkovDataThin`
 
 
 Issues
@@ -66,5 +66,5 @@ Authors
 - Arne de Laat <adelaat@nikhef.nl>
 """
 
-from CorsikaFile import *
-import CorsikaBlocks
+from reader import *
+import blocks

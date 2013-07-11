@@ -1,6 +1,6 @@
 from struct import unpack
 
-from CorsikaBlocks import (RunHeader, RunTrailer, EventHeader, EventTrailer,
+from blocks import (RunHeader, RunTrailer, EventHeader, EventTrailer,
                            ParticleData, Format, ParticleDataThin, FormatThin)
 
 
