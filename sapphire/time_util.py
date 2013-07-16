@@ -10,8 +10,7 @@ import datetime
 import calendar
 import time
 
-class GPSTime:
-
+class GPSTime(object):
     """Date/time utility class."""
 
     def __init__(self, *args):

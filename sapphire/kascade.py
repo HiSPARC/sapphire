@@ -10,7 +10,7 @@ import gpstime
 from sapphire.storage import KascadeEvent
 
 
-class StoreKascadeData():
+class StoreKascadeData(object):
     def __init__(self, data, hisparc_path, kascade_path, kascade_filename,
                  force=False):
 
@@ -113,7 +113,7 @@ class StoreKascadeData():
         tablerow.append()
 
 
-class KascadeCoincidences():
+class KascadeCoincidences(object):
     def __init__(self, data, hisparc_group, kascade_group, overwrite=False,
                  ignore_existing=False):
         self.data = data

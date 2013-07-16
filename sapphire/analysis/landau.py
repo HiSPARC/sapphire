@@ -39,7 +39,7 @@ def pdf_kernel2(u, lf):
     return exp(-lf * u) * u ** -u * sin(pi * u)
 
 
-class Scintillator:
+class Scintillator(object):
     thickness = .02 # m
     xi = 0.172018 # MeV
     epsilon = 3.10756e-11

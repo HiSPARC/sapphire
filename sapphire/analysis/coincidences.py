@@ -41,7 +41,7 @@ from sapphire.analysis import process_events
 from sapphire import storage
 
 
-class Coincidences:
+class Coincidences(object):
 
     """Search for and store coincidences between HiSPARC stations.
 

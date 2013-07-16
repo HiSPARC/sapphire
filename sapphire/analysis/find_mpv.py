@@ -23,8 +23,7 @@ HIST_URL = 'http://data.hisparc.nl/show/source/pulseintegral/%d/%d/%d/%d/'
 MPV_FIT_WIDTH_FACTOR = .4
 
 
-class FindMostProbableValueInSpectrum:
-
+class FindMostProbableValueInSpectrum(object):
     """Find the most probable value (MPV) in a HiSPARC spectrum.
 
     This is a fast algorithm to find the MPV value in a HiSPARC spectrum.

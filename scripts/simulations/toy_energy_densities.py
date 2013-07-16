@@ -1,13 +1,14 @@
 import numpy as np
+import pylab as plt
 
 from sapphire import clusters
 from sapphire.simulations.ldf import KascadeLdf
 
 
-class ToyMonteCarlo:
+class ToyMonteCarlo(object):
     def main(self):
         global weights, densities, weighted_densities
-        figure()
+        plt.figure()
 
         cluster = clusters.SingleStation()
         self.station = cluster.stations[0]
@@ -15,7 +16,7 @@ class ToyMonteCarlo:
         R = np.linspace(0, 100, 100)
         densities = []
         weights = []
-        for E in linspace(1e13, 1e17, 10000):
+        for E in np.linspace(1e13, 1e17, 10000):
             relative_flux = E ** -2.7
             Ne = 10 ** (np.log10(E) - 15 + 4.8)
             self.ldf = KascadeLdf(Ne)
@@ -26,13 +27,14 @@ class ToyMonteCarlo:
         weights = np.array(weights)
         densities = np.array(densities).T
 
-        weighted_densities = (sum(weights * densities, axis=1) /
-                              sum(weights))
-        plot(R, weighted_densities)
-        yscale('log')
-        ylabel("Min. density [m^{-2}]")
-        xlabel("Core distance [m]")
-        axvline(5.77)
+        weighted_densities = (np.sum(weights * densities, axis=1) /
+                              np.sum(weights))
+        plt.plot(R, weighted_densities)
+        plt.yscale('log')
+        plt.ylabel("Min. density [m^{-2}]")
+        plt.xlabel("Core distance [m]")
+        plt.axvline(5.77)
+        plt.show()
 
     def calculate_minimum_density_for_station_at_R(self, R):
         densities = self.calculate_densities_for_station_at_R(R)
@@ -43,7 +45,7 @@ class ToyMonteCarlo:
         for detector in self.station.detectors:
             densities.append(self.calculate_densities_for_detector_at_R(
                                 detector, R))
-        return array(densities)
+        return np.array(densities)
 
     def calculate_densities_for_detector_at_R(self, detector, R):
         x = 0

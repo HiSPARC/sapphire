@@ -11,7 +11,7 @@ from math import sin, cos, sqrt, radians
 import numpy as np
 
 
-class WGS84Datum:
+class WGS84Datum(object):
     """Definition of the WGS84 datum
 
     These definitions are taken from
@@ -29,7 +29,7 @@ class WGS84Datum:
     eprime = sqrt(f * (2 - f) / (1 - f) ** 2)
 
 
-class FromWGS84ToENUTransformation:
+class FromWGS84ToENUTransformation(object):
     geode = WGS84Datum()
 
     def __init__(self, ref_llacoordinates):
