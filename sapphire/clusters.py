@@ -314,6 +314,27 @@ class SingleTwoDetectorStation(BaseCluster):
         self._add_station((0, 0), 0, detectors)
 
 
+class SingleDiamondStation(BaseCluster):
+    """Define a cluster containing a single diamond shaped station
+
+    Detectors 1, 3 and 4 are in the usual position for a 4 detector
+    layout, detector 2 is moved out of the center and positioned to
+    create a second equilateral triangle with detectors 1, 2 and 4.
+
+    """
+
+    def __init__(self):
+        super(SingleDiamondStation, self).__init__()
+
+        station_size = 10
+        a = station_size / 2.
+        b = a * sqrt(3)
+        detectors = [(0., b, 'UD'), (a * 2, b, 'UD'),
+                     (-a, 0., 'LR'), (a, 0., 'LR')]
+
+        self._add_station((0, 0), 0, detectors)
+
+
 class ScienceParkCluster(BaseCluster):
     # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
     # 2 dec, 2011) + 508/509 (from site on 8 jul 2013)
