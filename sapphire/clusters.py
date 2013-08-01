@@ -303,6 +303,17 @@ class SingleStation(BaseCluster):
         self._add_station((0, 0), 0)
 
 
+class SingleTwoDetectorStation(BaseCluster):
+    """Define a cluster containing a single 2 detector station"""
+
+    def __init__(self):
+        super(SingleTwoDetectorStation, self).__init__()
+
+        detectors = [(-5, 0, 'UD'), (5, 0, 'UD')]
+
+        self._add_station((0, 0), 0, detectors)
+
+
 class ScienceParkCluster(BaseCluster):
     # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
     # 2 dec, 2011) + 508/509 (from site on 8 jul 2013)
