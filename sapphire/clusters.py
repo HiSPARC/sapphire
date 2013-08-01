@@ -9,6 +9,7 @@ from __future__ import division
 
 from math import sqrt, pi, sin, cos, atan2
 
+from numpy import mean
 import transformations
 
 
@@ -173,6 +174,21 @@ class Station(object):
 
         return r, phi
 
+    def calc_xy_center_of_mass_coordinates(self):
+        """Calculate center of mass coordinates of detectors in station
+
+        :return: x, y; coordinates of station center relative to
+            absolute coordinate system
+
+        """
+        x, y = zip(*[detector.get_xy_coordinates()
+                     for detector in self.detectors])
+
+        x0 = mean(x)
+        y0 = mean(y)
+
+        return x0, y0
+
 
 class BaseCluster(object):
     """Base class for HiSPARC clusters"""
@@ -240,6 +256,22 @@ class BaseCluster(object):
         phi = atan2((y2 - y1), (x2 - x1))
 
         return r, phi
+
+    def calc_xy_center_of_mass_coordinates(self):
+        """Calculate center of mass coordinates of all detectors in cluster
+
+        :return: x, y; coordinates of cluster center relative to
+            absolute coordinate system
+
+        """
+        x, y = zip(*[detector.get_xy_coordinates()
+                     for station in self.stations
+                     for detector in station.detectors])
+
+        x0 = mean(x)
+        y0 = mean(y)
+
+        return x0, y0
 
 
 class SimpleCluster(BaseCluster):
