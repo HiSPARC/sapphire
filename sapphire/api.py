@@ -32,10 +32,8 @@ class Network(object):
     """Get info about the network (countries/clusters/subclusters/stations)"""
 
     def __init__(self):
-        """Initialize detector
-
-        :param station: station number
-
+        """Initialize network
+        
         """
         path = API['countries']
         self.all_countries = _get_json(path)
@@ -105,7 +103,7 @@ class Station(object):
     """Access data about a single station"""
 
     def __init__(self, station):
-        """Initialize detector
+        """Initialize station
 
         :param station: station number
 
