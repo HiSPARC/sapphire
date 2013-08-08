@@ -295,7 +295,7 @@ class SimpleCluster(BaseCluster):
 class SingleStation(BaseCluster):
     """Define a cluster containing a single station"""
 
-    def __init__(self, station_size=10):
+    def __init__(self):
         """Build the cluster"""
 
         super(SingleStation, self).__init__()
