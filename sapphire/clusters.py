@@ -112,9 +112,9 @@ class Station(object):
         if detectors is None:
             # detector positions for a standard station
             station_size = 10
-            a = station_size / 2.
+            a = station_size / 2
             b = a * sqrt(3)
-            detectors = [(0., b, 'UD'), (0., b / 3., 'UD'),
+            detectors = [(0., b, 'UD'), (0., b / 3, 'UD'),
                          (-a, 0., 'LR'), (a, 0., 'LR')]
 
         for x, y, orientation in detectors:
@@ -284,7 +284,7 @@ class SimpleCluster(BaseCluster):
 
         # calculate station positions.  the cluster resembles a single
         # four-detector HiSPARC station, but scaled up
-        A = size / 2.
+        A = size / 2
         B = A / sqrt(3)
         self._add_station((0, 2 * B), 0)
         self._add_station((0, 0), 0)
@@ -327,7 +327,7 @@ class SingleDiamondStation(BaseCluster):
         super(SingleDiamondStation, self).__init__()
 
         station_size = 10
-        a = station_size / 2.
+        a = station_size / 2
         b = a * sqrt(3)
         detectors = [(0., b, 'UD'), (a * 2, b, 'UD'),
                      (-a, 0., 'LR'), (a, 0., 'LR')]
@@ -371,7 +371,7 @@ class ScienceParkCluster(BaseCluster):
         for station in stations:
             easting, northing, up = \
                 transformation.transform(self.gps_coordinates[station])
-            alpha = self.station_rotations[station] / 180. * pi
+            alpha = self.station_rotations[station] / 180 * pi
 
             # disable diamond-shaped 502, for the moment
             if station not in [501]:
@@ -384,7 +384,7 @@ class ScienceParkCluster(BaseCluster):
                 # with detector 2 moved to the side in LR orientation.
                 # Furthermore, detectors 3 and 4 are reversed (cabling issue)
                 station_size = 10
-                a = station_size / 2.
+                a = station_size / 2
                 b = a * sqrt(3)
                 detectors = [(0., b, 'UD'), (a * 2, b, 'LR'),
                              (a, 0., 'LR'), (-a, 0., 'LR')]
