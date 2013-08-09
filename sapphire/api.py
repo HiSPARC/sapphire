@@ -216,7 +216,8 @@ def _retrieve_url(urlpath):
     try:
         result = urlopen(url).read()
     except HTTPError, e:
-        raise Exception('A HTTP %d error occured.' % e.code)
+        raise Exception('A HTTP %d error occured for the following url: %s' %
+                        (e.code, url))
     except URLError:
         raise Exception('An URL error occured.')
 
