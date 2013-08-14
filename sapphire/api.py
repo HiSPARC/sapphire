@@ -33,7 +33,7 @@ class Network(object):
 
     def __init__(self):
         """Initialize network
-        
+
         """
         path = API['countries']
         self.all_countries = _get_json(path)
@@ -45,6 +45,13 @@ class Network(object):
         self.all_stations = _get_json(path)
 
     def clusters(self, country=None):
+        """Get a list of stations
+
+        :param country: the id of the country for which to get all
+            clusters.
+        :return: all clusters in the region
+
+        """
         if country is None:
             return self.all_clusters
         else:
@@ -53,6 +60,14 @@ class Network(object):
             return _get_json(path)
 
     def subcluster(self, country=None, cluster=None):
+        """Get a list of subclusters
+
+        :param country, cluster: the id of the region for which to get
+            the subclusters it contains, only one or none should
+            be specified.
+        :return: all subclusters in the region
+
+        """
         if country is None and cluster is None:
             return self.all_subclusters
         elif not country is None:
@@ -70,6 +85,14 @@ class Network(object):
 
 
     def stations(self, country=None, cluster=None, subcluster=None):
+        """Get a list of stations
+
+        :param country, cluster, subcluster: the id of the region
+            for which to get all stations, only one or none should
+            be specified.
+        :return: all stations in the region
+
+        """
         if country is None and cluster is None and subcluster is None:
             return self.all_stations
         elif not country is None:
@@ -129,6 +152,12 @@ class Station(object):
         return self.info['scintillators']
 
     def detectors(self, date=None):
+        """Get the locations of detectors
+
+        :param date: date object for which to get the detector information
+        :return: the locations of the detectors.
+
+        """
         if date is None:
             dict = self.info
         else:
@@ -144,6 +173,12 @@ class Station(object):
                     'scintillator2': dict['scintillator2']}
 
     def location(self, date=None):
+        """Get gps location of the station
+
+        :param date: date object for which to get the location
+        :return: the gps coordinates for the station
+
+        """
         if date is None:
             dict = self.info
             return {'latitude': dict['latitude'],
@@ -156,6 +191,14 @@ class Station(object):
                     'altitude': dict['gps_altitude']}
 
     def config(self, date=None):
+        """Get station config
+
+        Retrieve either the latest, or a config for a specific date.
+
+        :param date: date object for which to get the config
+        :return: the full config for the station
+
+        """
         if date is None:
             date = datetime.date.today()
         path = API['configuration'].format(station_id=self.station,
@@ -167,6 +210,17 @@ class Station(object):
 
 
     def n_events(self, year='', month='', day='', hour=''):
+        """Get number of events
+
+        Note that it is possible to give only the year to get the total
+        number of events in that year. If both year and month are given,
+        the total events in that month are returned.
+
+        :param year, month, day, hour: the date and time for which to
+            get the number. It is possible to be less specific.
+        :return: the number of events recorded by the station on date.
+
+        """
         if year == '' and (month != '' or day != '' or hour != ''):
             raise Exception('You must also specify the year')
         elif month == '' and (day != '' or hour != ''):
@@ -180,6 +234,14 @@ class Station(object):
         return _get_json(path)
 
     def has_data(self, year='', month='', day=''):
+        """Check for HiSPARC data
+
+        :param year, month, day: the date for which to check. It is
+            possible to be less specific.
+        :return: boolean, indicating wether the station had air shower
+            data on the date.
+
+        """
         if year == '' and (month != '' or day != ''):
             raise Exception('You must also specify the year')
         elif month == '' and day != '':
@@ -191,6 +253,14 @@ class Station(object):
         return _get_json(path)
 
     def has_weather(self, year='', month='', day=''):
+        """Check for weather data
+
+        :param year, month, day: the date for which to check. It is
+            possible to be less specific.
+        :return: boolean, indicating wether the station had weather data
+            on the date.
+
+        """
         if year == '' and (month != '' or day != ''):
             raise Exception('You must also specify the year')
         elif month == '' and day != '':
@@ -203,14 +273,27 @@ class Station(object):
 
 
 def _get_json(urlpath):
+    """Retrieve a JSON from the HiSPARC API
+
+    :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
+        to retrieve
+    :return: the data returned by the api as dictionary or integer
+
+    """
     json_data = _retrieve_url(urlpath)
     data = json.loads(json_data)
-    
+
     return data
 
 
 def _retrieve_url(urlpath):
+    """Open a HiSPARC API URL and read the data
 
+    :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
+        to retrieve
+    :return: the data returned by the api as a string
+
+    """
     url = __api + urlpath
 
     try:
