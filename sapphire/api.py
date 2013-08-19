@@ -77,7 +77,7 @@ class Network(object):
             path = API['clusters_in_country'].format(country_id=country)
             return _get_json(path)
 
-    def subcluster(self, country=None, cluster=None):
+    def subclusters(self, country=None, cluster=None):
         """Get a list of subclusters
 
         :param country,cluster: the number of the region for which to get
@@ -139,6 +139,21 @@ class Network(object):
             path = (API['stations_in_subcluster']
                     .format(subcluster_id=subcluster))
             return _get_json(path)
+
+    def nested_network(self):
+        """Get a nested list of the full network"""
+        countries = self.all_countries
+        for country in countries:
+            clusters = self.clusters(country=country['number'])
+            for cluster in clusters:
+                subclusters = self.subclusters(cluster=cluster['number'])
+                for subcluster in subclusters:
+                    stations = self.stations(subcluster=subcluster['number'])
+                    subcluster.update({'stations': stations})
+                cluster.update({'subclusters': subclusters})
+            country.update({'clusters': clusters})
+        return countries
+
 
 class Station(object):
     """Access data about a single station"""
