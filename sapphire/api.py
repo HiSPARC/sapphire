@@ -4,6 +4,24 @@
     publicdb API. This takes care of the url retrieval and conversion
     from JSON to Python dictionaries.
 
+    Example usage:
+
+    .. code-block:: python
+
+        >>> from sapphire.api import Station
+        >>> stations = [5, 301, 3102, 504, 7101, 8008, 13005]
+        >>> clusters = [Station(station).cluster.lower() for station in stations]
+        >>> station_groups = ['/hisparc/cluster_%s/station_%d' % (c, s)
+        ...                   for c, s in zip(clusters, stations)]
+        >>> station_groups
+        [u'/hisparc/cluster_amsterdam/station_5',
+         u'/hisparc/cluster_amsterdam/station_301',
+         u'/hisparc/cluster_leiden/station_3102',
+         u'/hisparc/cluster_amsterdam/station_504',
+         u'/hisparc/cluster_enschede/station_7101',
+         u'/hisparc/cluster_eindhoven/station_8008',
+         u'/hisparc/cluster_bristol/station_13005']
+
 """
 import datetime
 from urllib2 import urlopen, HTTPError, URLError
@@ -47,7 +65,7 @@ class Network(object):
     def clusters(self, country=None):
         """Get a list of stations
 
-        :param country: the id of the country for which to get all
+        :param country: the number of the country for which to get all
             clusters.
         :return: all clusters in the region
 
@@ -62,7 +80,7 @@ class Network(object):
     def subcluster(self, country=None, cluster=None):
         """Get a list of subclusters
 
-        :param country, cluster: the id of the region for which to get
+        :param country,cluster: the number of the region for which to get
             the subclusters it contains, only one or none should
             be specified.
         :return: all subclusters in the region
@@ -87,7 +105,7 @@ class Network(object):
     def stations(self, country=None, cluster=None, subcluster=None):
         """Get a list of stations
 
-        :param country, cluster, subcluster: the id of the region
+        :param country,cluster,subcluster: the number of the region
             for which to get all stations, only one or none should
             be specified.
         :return: all stations in the region
@@ -216,7 +234,7 @@ class Station(object):
         number of events in that year. If both year and month are given,
         the total events in that month are returned.
 
-        :param year, month, day, hour: the date and time for which to
+        :param year,month,day,hour: the date and time for which to
             get the number. It is possible to be less specific.
         :return: the number of events recorded by the station on date.
 
@@ -236,7 +254,7 @@ class Station(object):
     def has_data(self, year='', month='', day=''):
         """Check for HiSPARC data
 
-        :param year, month, day: the date for which to check. It is
+        :param year,month,day: the date for which to check. It is
             possible to be less specific.
         :return: boolean, indicating wether the station had air shower
             data on the date.
@@ -255,7 +273,7 @@ class Station(object):
     def has_weather(self, year='', month='', day=''):
         """Check for weather data
 
-        :param year, month, day: the date for which to check. It is
+        :param year,month,day: the date for which to check. It is
             possible to be less specific.
         :return: boolean, indicating wether the station had weather data
             on the date.
