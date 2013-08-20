@@ -55,6 +55,8 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.subcluster, 'Science Park')
 
     def test_num_events(self):
+        self.assertIsInstance(self.station.n_events(2003), int)
+        self.assertEqual(self.station.n_events(2003), 0)
         self.assertEqual(self.station.n_events(2013, 8, 1), 63735)
 
 
