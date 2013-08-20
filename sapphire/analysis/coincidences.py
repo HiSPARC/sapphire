@@ -118,7 +118,7 @@ class Coincidences(object):
         """Search for coincidences.
 
         Search all data in the station_groups for coincidences, and store
-        rudimentary coindence data in the coindences group.  This data
+        rudimentary coincidence data in the coincidences group.  This data
         might be useful, but is very basic.  You can call the
         :meth:`store_coincidences` method to store the coincidences in an
         easier format in the coincidences group.
