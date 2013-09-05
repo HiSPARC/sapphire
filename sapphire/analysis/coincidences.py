@@ -477,8 +477,8 @@ class CoincidencesESD(Coincidences):
 
         s_index = self.data.createVLArray(self.coincidence_group, 's_index',
                                           tables.VLStringAtom())
-        for station in self.station_groups:
-            s_index.append(station_groups)
+        for station_group in self.station_groups:
+            s_index.append(station_group)
         s_index.flush()
 
         self.coincidence_group._src_timestamps.remove()
