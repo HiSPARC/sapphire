@@ -455,12 +455,12 @@ class CoincidencesESD(Coincidences):
             self.coincidence_group._v_attrs.cluster = cluster
 
         self.c_index = []
+        stations_description = {'s%d' % n: tables.BoolCol()
+                                for n in arange(len(self.station_groups))}
+        description = storage.Coincidence
+        description.update(stations_description)
         self.coincidences = self.data.createTable(self.coincidence_group,
-                                                  'coincidences',
-                                                  storage.Coincidence)
-        self.observables = self.data.createTable(self.coincidence_group,
-                                                 'observables',
-                                                 storage.EventObservables)
+                                                  'coincidences', description)
 
         print "Storing coincidences"
         progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
@@ -469,17 +469,26 @@ class CoincidencesESD(Coincidences):
             self._store_coincidence(coincidence)
 
         c_index = self.data.createVLArray(self.coincidence_group, 'c_index',
-                                          tables.UInt32Col())
+                                          tables.UInt32Col(shape=2))
         for coincidence in self.c_index:
             c_index.append(coincidence)
         c_index.flush()
         self.c_index = c_index
 
+        s_index = self.data.createVLArray(self.coincidence_group, 's_index',
+                                          tables.VLStringAtom())
+        for station in self.station_groups:
+            s_index.append(station_groups)
+        s_index.flush()
+
+        self.coincidence_group._src_timestamps.remove()
+        self.coincidence_group._src_c_index.remove()
+
     def _store_coincidence(self, coincidence):
         """Store a single coincidence in the coincidence group.
 
-        Stores in the coincidences table, the c_index, and the individual
-        events in the observables table.
+        Stores coincidence in the coincidences table and references
+        to the observables making up each coincidence in c_index.
 
         """
         row = self.coincidences.row
@@ -493,12 +502,11 @@ class CoincidencesESD(Coincidences):
             event_desc = self.coincidence_group._src_timestamps[index]
             station_id = event_desc[1]
             event_index = event_desc[2]
+            row['s%d' % station_id] = True
 
             group = self.data.getNode(self.station_groups[station_id])
             event = group.events[event_index]
-            idx = self._store_event_in_observables(event, coincidence_id,
-                                                   station_id)
-            observables_idx.append(idx)
+            observables_idx.append((station_id, event_index))
             timestamps.append((event['ext_timestamp'], event['timestamp'],
                                event['nanoseconds']))
 
