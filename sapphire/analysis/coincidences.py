@@ -439,6 +439,16 @@ class CoincidencesESD(Coincidences):
     stores the original event_id and station info for each coincidence.
 
     """
+    def search_and_store_coincidences(self, cluster=None):
+        """Search and store coincidences.
+
+        This is a semi-automatic method to search for coincidences
+        and then store the results in the coincidences group.
+
+        """
+        self.search_coincidences()
+        self.store_coincidences(cluster)
+
     def store_coincidences(self, cluster=None):
         """Store the previously found coincidences.
 
