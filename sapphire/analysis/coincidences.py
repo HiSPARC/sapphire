@@ -466,9 +466,9 @@ class CoincidencesESD(Coincidences):
 
         self.c_index = []
         stations_description = {'s%d' % n: tables.BoolCol()
-                                for n in arange(len(self.station_groups))}
+                                for n in range(len(self.station_groups))}
         description = storage.Coincidence
-        description.update(stations_description)
+        description.columns.update(stations_description)
         self.coincidences = self.data.createTable(self.coincidence_group,
                                                   'coincidences', description)
 
@@ -488,7 +488,7 @@ class CoincidencesESD(Coincidences):
         s_index = self.data.createVLArray(self.coincidence_group, 's_index',
                                           tables.VLStringAtom())
         for station_group in self.station_groups:
-            s_index.append(station_group)
+            s_index.append(station_group._v_pathname)
         s_index.flush()
 
         self.coincidence_group._src_timestamps.remove()
