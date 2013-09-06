@@ -449,16 +449,25 @@ class CoincidencesESD(Coincidences):
         self.search_coincidences()
         self.store_coincidences(cluster)
 
+    def search_coincidences(self, window=200000, shifts=None, limit=None):
+        """Search for coincidences.
+
+        Instead of storing the results in the tables `_src_c_index` and
+        `_src_timestamps`, they are stored in attributes by the same
+        name in the class.
+
+        """
+        c_index, timestamps = self._search_coincidences(window, shifts, limit)
+        self._src_timestamps = np.array(timestamps, dtype=np.uint64)
+        self._src_c_index = c_index
+
     def store_coincidences(self, cluster=None):
         """Store the previously found coincidences.
 
-        After you have searched for coincidences, you can store the
-        more user-friendly results in the coincidences group using this
-        method.
-
-        :param cluster: optionally store a
-            :class:`sapphire.clusters.BaseCluster` instance in the
-            coincidences group for future reference.
+        After having searched for coincidences, you can store the more
+        user-friendly results in the `coincidences` group using this
+        method. It also created a `c_index` and `s_index` table to find
+        the source events.
 
         """
         if cluster:
@@ -475,7 +484,7 @@ class CoincidencesESD(Coincidences):
         print "Storing coincidences"
         progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                            pb.ETA()])
-        for coincidence in progress(self.coincidence_group._src_c_index):
+        for coincidence in progress(self._src_c_index):
             self._store_coincidence(coincidence)
 
         c_index = self.data.createVLArray(self.coincidence_group, 'c_index',
@@ -491,14 +500,11 @@ class CoincidencesESD(Coincidences):
             s_index.append(station_group._v_pathname)
         s_index.flush()
 
-        self.coincidence_group._src_timestamps.remove()
-        self.coincidence_group._src_c_index.remove()
-
     def _store_coincidence(self, coincidence):
         """Store a single coincidence in the coincidence group.
 
         Stores coincidence in the coincidences table and references
-        to the observables making up each coincidence in c_index.
+        to the observables making up each coincidence in `c_index`.
 
         """
         row = self.coincidences.row
@@ -509,7 +515,7 @@ class CoincidencesESD(Coincidences):
         observables_idx = []
         timestamps = []
         for index in coincidence:
-            event_desc = self.coincidence_group._src_timestamps[index]
+            event_desc = self._src_timestamps[index]
             station_id = event_desc[1]
             event_index = event_desc[2]
             row['s%d' % station_id] = True
