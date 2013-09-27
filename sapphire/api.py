@@ -29,19 +29,19 @@ import json
 
 
 API = {"stations": 'stations/',
-       "stations_in_subcluster": 'subclusters/{subcluster_id}/',
+       "stations_in_subcluster": 'subclusters/{subcluster_number}/',
        "subclusters": 'subclusters/',
-       "subclusters_in_cluster": 'clusters/{cluster_id}/',
+       "subclusters_in_cluster": 'clusters/{cluster_number}/',
        "clusters": 'clusters/',
-       "clusters_in_country": 'countries/{country_id}/',
+       "clusters_in_country": 'countries/{country_number}/',
        "countries": 'countries/',
        "stations_with_data": 'stations/data/{year}/{month}/{day}/',
        "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
-       "station_info": 'station/{station_id}/',
-       "has_data": 'station/{station_id}/data/{year}/{month}/{day}/',
-       "has_weather": 'station/{station_id}/weather/{year}/{month}/{day}/',
-       "configuration": 'station/{station_id}/config/{year}/{month}/{day}/',
-       "number_of_events": 'station/{station_id}/num_events/{year}/{month}/{day}/{hour}/'}
+       "station_info": 'station/{station_number}/',
+       "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
+       "has_weather": 'station/{station_number}/weather/{year}/{month}/{day}/',
+       "configuration": 'station/{station_number}/config/{year}/{month}/{day}/',
+       "number_of_events": 'station/{station_number}/num_events/{year}/{month}/{day}/{hour}/'}
 
 __api = 'http://data.hisparc.nl/api/'
 
@@ -74,7 +74,7 @@ class Network(object):
             return self.all_clusters
         else:
             stations = []
-            path = API['clusters_in_country'].format(country_id=country)
+            path = API['clusters_in_country'].format(country_number=country)
             return _get_json(path)
 
     def subclusters(self, country=None, cluster=None):
@@ -90,15 +90,15 @@ class Network(object):
             return self.all_subclusters
         elif not country is None:
             subclusters = []
-            path = API['clusters_in_country'].format(country_id=country)
+            path = API['clusters_in_country'].format(country_number=country)
             clusters = _get_json(path)
             for cluster in clusters:
                 path = (API['subclusters_in_cluster']
-                        .format(cluster_id=cluster['number']))
+                        .format(cluster_number=cluster['number']))
                 subclusters.extend(_get_json(path))
             return subclusters
         else:
-            path = API['subclusters_in_cluster'].format(cluster_id=cluster)
+            path = API['subclusters_in_cluster'].format(cluster_number=cluster)
             return _get_json(path)
 
 
@@ -115,29 +115,29 @@ class Network(object):
             return self.all_stations
         elif not country is None:
             stations = []
-            path = API['clusters_in_country'].format(country_id=country)
+            path = API['clusters_in_country'].format(country_number=country)
             clusters = _get_json(path)
             for cluster in clusters:
                 path = (API['subclusters_in_cluster']
-                        .format(cluster_id=cluster['number']))
+                        .format(cluster_number=cluster['number']))
                 subclusters = _get_json(path)
                 for subcluster in subclusters:
                     path = (API['stations_in_subcluster']
-                            .format(subcluster_id=subcluster['number']))
+                            .format(subcluster_number=subcluster['number']))
                     stations.extend(_get_json(path))
             return stations
         elif not cluster is None:
             stations = []
-            path = API['subclusters_in_cluster'].format(cluster_id=cluster)
+            path = API['subclusters_in_cluster'].format(cluster_number=cluster)
             subclusters = _get_json(path)
             for subcluster in subclusters:
                 path = (API['stations_in_subcluster']
-                        .format(subcluster_id=subcluster['number']))
+                        .format(subcluster_number=subcluster['number']))
                 stations.extend(_get_json(path))
             return stations
         elif not subcluster is None:
             path = (API['stations_in_subcluster']
-                    .format(subcluster_id=subcluster))
+                    .format(subcluster_number=subcluster))
             return _get_json(path)
 
     def nested_network(self):
@@ -165,7 +165,7 @@ class Station(object):
 
         """
         self.station = station
-        path = API['station_info'].format(station_id=self.station)
+        path = API['station_info'].format(station_number=self.station)
         self.info = _get_json(path)
 
     @property
@@ -234,7 +234,7 @@ class Station(object):
         """
         if date is None:
             date = datetime.date.today()
-        path = API['configuration'].format(station_id=self.station,
+        path = API['configuration'].format(station_number=self.station,
                                            year=date.year,
                                            month=date.month,
                                            day=date.day)
@@ -261,7 +261,7 @@ class Station(object):
         elif day == '' and hour != '':
             raise Exception('You must also specify the day')
 
-        path = API['number_of_events'].format(station_id=self.station,
+        path = API['number_of_events'].format(station_number=self.station,
                                               year=year, month=month, day=day,
                                               hour=hour).strip("/")
         return _get_json(path)
@@ -280,7 +280,7 @@ class Station(object):
         elif month == '' and day != '':
             raise Exception('You must also specify the month')
 
-        path = (API['has_data'].format(station_id=self.station,
+        path = (API['has_data'].format(station_number=self.station,
                                                year=year, month=month, day=day)
                                        .strip("/"))
         return _get_json(path)
@@ -299,7 +299,7 @@ class Station(object):
         elif month == '' and day != '':
             raise Exception('You must also specify the month')
 
-        path = (API['has_weather'].format(station_id=self.station,
+        path = (API['has_weather'].format(station_number=self.station,
                                                year=year, month=month, day=day)
                                        .strip("/"))
         return _get_json(path)
