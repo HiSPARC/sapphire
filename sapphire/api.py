@@ -182,13 +182,13 @@ class Station(object):
 
     @property
     def n_detectors(self):
-        return self.info['scintillators']
+        return len(self.info['scintillators'])
 
     def detectors(self, date=None):
         """Get the locations of detectors
 
         :param date: date object for which to get the detector information
-        :return: the locations of the detectors.
+        :return: list with the locations of each detector
 
         """
         if date is None:
@@ -196,14 +196,7 @@ class Station(object):
         else:
             raise Exception('Not supported yet')
 
-        if dict['scintillators'] == 4:
-            return {'scintillator1': dict['scintillator1'],
-                    'scintillator2': dict['scintillator2'],
-                    'scintillator3': dict['scintillator3'],
-                    'scintillator4': dict['scintillator4']}
-        else:
-            return {'scintillator1': dict['scintillator1'],
-                    'scintillator2': dict['scintillator2']}
+        return dict['scintillators']
 
     def location(self, date=None):
         """Get gps location of the station

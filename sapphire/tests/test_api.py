@@ -59,6 +59,9 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.n_events(2003), 0)
         self.assertEqual(self.station.n_events(2013, 8, 1), 63735)
 
+    def test_detectors(self):
+        self.assertEqual(self.station.n_detectors, 4)
+
 
 if __name__ == '__main__':
     unittest.main()
