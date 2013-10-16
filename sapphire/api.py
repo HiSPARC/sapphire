@@ -41,7 +41,10 @@ API = {"stations": 'stations/',
        "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
        "has_weather": 'station/{station_number}/weather/{year}/{month}/{day}/',
        "configuration": 'station/{station_number}/config/{year}/{month}/{day}/',
-       "number_of_events": 'station/{station_number}/num_events/{year}/{month}/{day}/{hour}/'}
+       "number_of_events": 'station/{station_number}/num_events/{year}/{month}/{day}/{hour}/',
+       "event_trace": 'station/{station_number}/trace/{ext_timestamp}/',
+       "pulseheight_fit": 'station/{station_number}/plate/{plate_number}/pulseheight/fit/{year}/{month}/{day}/',
+       "pulseheight_drift": 'station/{station_number}/plate/{plate_number}/pulseheight/drift/{year}/{month}/{day}/{number_of_days}/'}
 
 __api = 'http://data.hisparc.nl/api/'
 
@@ -188,6 +191,7 @@ class Station(object):
 
     @property
     def n_detectors(self):
+        """Get the number of detectors in this station"""
         return len(self.info['scintillators'])
 
     def detectors(self, date=None):
@@ -238,7 +242,6 @@ class Station(object):
                                            day=date.day)
 
         return _get_json(path)
-
 
     def n_events(self, year='', month='', day='', hour=''):
         """Get number of events
@@ -300,6 +303,23 @@ class Station(object):
         path = (API['has_weather'].format(station_number=self.station,
                                                year=year, month=month, day=day)
                                        .strip("/"))
+        return _get_json(path)
+
+    def event_trace(self, timestamp, nanoseconds):
+        """Get the traces for a specific event
+
+        The exact timestamp and nanoseconds for the event have to be
+        given.
+
+        :param timestamp,nanoseconds: the extended timestamp for which
+            to get the traces
+        :return: an array with the traces for each detector in ADCcounts
+
+        """
+        ext_timestamp = '%d%09d' % (timestamp, nanoseconds)
+        path = (API['event_trace'].format(station_number=self.station,
+                                          ext_timestamp=ext_timestamp)
+                                  .strip("/"))
         return _get_json(path)
 
 
