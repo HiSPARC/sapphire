@@ -10,6 +10,9 @@ The following packages and modules are included:
 :mod:`~sapphire.analysis`
     package containing analysis-related modules
 
+:mod:`~sapphire.api`
+    publicdb api interface
+
 :mod:`~sapphire.clusters`
     definitions for HiSPARC detectors, stations and clusters
 

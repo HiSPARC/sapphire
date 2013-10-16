@@ -11,6 +11,7 @@ Contents:
 .. toctree::
 
    analysis
+   api
    clusters
    gpstime
    kascade
