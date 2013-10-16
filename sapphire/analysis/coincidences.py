@@ -42,7 +42,6 @@ from sapphire import storage
 
 
 class Coincidences(object):
-
     """Search for and store coincidences between HiSPARC stations.
 
     Suppose you want to search for coincidences between stations 501 and
@@ -64,7 +63,6 @@ class Coincidences(object):
     See the corresponding docstrings.
 
     """
-
     ProcessWithTraces = process_events.ProcessIndexedEventsWithLINT
     ProcessWithoutTraces = process_events.ProcessIndexedEventsWithoutTraces
 
@@ -431,6 +429,109 @@ class Coincidences(object):
                     prev_coincidence = c
 
         return coincidences
+
+
+class CoincidencesESD(Coincidences):
+    """Store coincidences differently for the ESD
+
+    This subclass stores the paths to the station_groups that where
+    used to look for coincidences in a lookup-table, and also
+    stores the original event_id and station info for each coincidence.
+
+    """
+    def search_and_store_coincidences(self, cluster=None):
+        """Search and store coincidences.
+
+        This is a semi-automatic method to search for coincidences
+        and then store the results in the coincidences group.
+
+        """
+        self.search_coincidences()
+        self.store_coincidences(cluster)
+
+    def search_coincidences(self, window=200000, shifts=None, limit=None):
+        """Search for coincidences.
+
+        Instead of storing the results in the tables `_src_c_index` and
+        `_src_timestamps`, they are stored in attributes by the same
+        name in the class.
+
+        """
+        c_index, timestamps = self._search_coincidences(window, shifts, limit)
+        self._src_timestamps = np.array(timestamps, dtype=np.uint64)
+        self._src_c_index = c_index
+
+    def store_coincidences(self, cluster=None):
+        """Store the previously found coincidences.
+
+        After having searched for coincidences, you can store the more
+        user-friendly results in the `coincidences` group using this
+        method. It also created a `c_index` and `s_index` table to find
+        the source events.
+
+        """
+        if cluster:
+            self.coincidence_group._v_attrs.cluster = cluster
+
+        self.c_index = []
+        stations_description = {'s%d' % n: tables.BoolCol()
+                                for n in range(len(self.station_groups))}
+        description = storage.Coincidence
+        description.columns.update(stations_description)
+        self.coincidences = self.data.createTable(self.coincidence_group,
+                                                  'coincidences', description)
+
+        print "Storing coincidences"
+        progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                           pb.ETA()])
+        for coincidence in progress(self._src_c_index):
+            self._store_coincidence(coincidence)
+
+        c_index = self.data.createVLArray(self.coincidence_group, 'c_index',
+                                          tables.UInt32Col(shape=2))
+        for coincidence in self.c_index:
+            c_index.append(coincidence)
+        c_index.flush()
+        self.c_index = c_index
+
+        s_index = self.data.createVLArray(self.coincidence_group, 's_index',
+                                          tables.VLStringAtom())
+        for station_group in self.station_groups:
+            s_index.append(station_group._v_pathname)
+        s_index.flush()
+
+    def _store_coincidence(self, coincidence):
+        """Store a single coincidence in the coincidence group.
+
+        Stores coincidence in the coincidences table and references
+        to the observables making up each coincidence in `c_index`.
+
+        """
+        row = self.coincidences.row
+        coincidence_id = len(self.coincidences)
+        row['id'] = coincidence_id
+        row['N'] = len(coincidence)
+
+        observables_idx = []
+        timestamps = []
+        for index in coincidence:
+            event_desc = self._src_timestamps[index]
+            station_id = event_desc[1]
+            event_index = event_desc[2]
+            row['s%d' % station_id] = True
+
+            group = self.data.getNode(self.station_groups[station_id])
+            event = group.events[event_index]
+            observables_idx.append((station_id, event_index))
+            timestamps.append((event['ext_timestamp'], event['timestamp'],
+                               event['nanoseconds']))
+
+        first_timestamp = sorted(timestamps)[0]
+        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
+            first_timestamp
+        row.append()
+        self.c_index.append(observables_idx)
+        self.coincidences.flush()
 
 
 def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
