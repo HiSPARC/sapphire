@@ -37,7 +37,7 @@ API = {"stations": 'stations/',
        "countries": 'countries/',
        "stations_with_data": 'stations/data/{year}/{month}/{day}/',
        "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
-       "station_info": 'station/{station_number}/',
+       "station_info": 'station/{station_number}/{year}/{month}/{day}/',
        "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
        "has_weather": 'station/{station_number}/weather/{year}/{month}/{day}/',
        "configuration": 'station/{station_number}/config/{year}/{month}/{day}/',
@@ -158,14 +158,20 @@ class Network(object):
 class Station(object):
     """Access data about a single station"""
 
-    def __init__(self, station):
+    def __init__(self, station, date=None):
         """Initialize station
 
         :param station: station number
+        :param date: date object for which to get the station information
 
         """
         self.station = station
-        path = API['station_info'].format(station_number=self.station)
+        if date is None:
+            date = datetime.date.today()
+        path = API['station_info'].format(station_number=self.station,
+                                          year=date.year,
+                                          month=date.month,
+                                          day=date.day)
         self.info = _get_json(path)
 
     @property
@@ -192,11 +198,10 @@ class Station(object):
 
         """
         if date is None:
-            dict = self.info
+            return self.info['scintillators']
         else:
-            raise Exception('Not supported yet')
-
-        return dict['scintillators']
+            station = Station(self.station, date)
+            return station.detectors()
 
     def location(self, date=None):
         """Get gps location of the station
