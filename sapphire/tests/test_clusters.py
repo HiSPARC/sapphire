@@ -172,6 +172,16 @@ class StationTests(unittest.TestCase):
         self.assertAlmostEqual(r ** 2, 10 ** 2 + 10 ** 2)
         self.assertAlmostEqual(phi, pi / 4)
 
+    def test_calc_xy_center_of_mass_coordinates(self):
+        cluster = Mock()
+        cluster.get_xyalpha_coordinates.return_value = (0, 0, 0)
+        station = clusters.Station(cluster, 1, position=(0, 0), angle=0,
+                                   detectors=[(0, 0, 'LR'), (10., 9., 'LR')])
+
+        x, y = station.calc_xy_center_of_mass_coordinates()
+        self.assertAlmostEqual(x, 5)
+        self.assertAlmostEqual(y, 4.5)
+
     def assertTupleAlmostEqual(self, actual, expected):
         self.assertTrue(type(actual) == type(expected) == tuple)
 
@@ -248,6 +258,17 @@ class BaseClusterTests(unittest.TestCase):
         self.assertAlmostEqual(cluster._x, 0.)
         self.assertAlmostEqual(cluster._y, 10.)
         self.assertAlmostEqual(cluster._alpha, 0.)
+
+    def test_calc_xy_center_of_mass_coordinates(self):
+        cluster = clusters.BaseCluster()
+        cluster._add_station((0, 0), 0, [(0, 5 * sqrt(3), 'UD'),
+                                         (0, 5 * sqrt(3) / 3, 'UD'),
+                                         (-10, 0, 'LR'),
+                                         (10, 0, 'LR')])
+
+        x, y = cluster.calc_xy_center_of_mass_coordinates()
+        self.assertAlmostEqual(x, 0)
+        self.assertAlmostEqual(y, 5 * sqrt(3) / 3)
 
 
 class SimpleClusterTests(unittest.TestCase):

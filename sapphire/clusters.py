@@ -9,6 +9,7 @@ from __future__ import division
 
 from math import sqrt, pi, sin, cos, atan2
 
+from numpy import mean
 import transformations
 
 
@@ -67,11 +68,11 @@ class Detector(object):
         dy = size[1] / 2
 
         if orientation == 'UD':
-            corners = [(x - dx, y - dy), (x + dx, y - dy), (x + dx, y + dy),
-                       (x - dx, y + dy)]
+            corners = [(x - dx, y - dy), (x + dx, y - dy),
+                       (x + dx, y + dy), (x - dx, y + dy)]
         elif orientation == 'LR':
-            corners = [(x - dy, y - dx), (x + dy, y - dx), (x + dy, y + dx),
-                       (x - dy, y + dx)]
+            corners = [(x - dy, y - dx), (x + dy, y - dx),
+                       (x + dy, y + dx), (x - dy, y + dx)]
         else:
             raise Exception("Unknown detector orientation: %s" % orientation)
 
@@ -112,9 +113,9 @@ class Station(object):
             # detector positions for a standard station
             station_size = 10
             a = station_size / 2
-            b = a / 3 * sqrt(3)
-            detectors = [(0., 2 * b, 'UD'), (0., 0., 'UD'),
-                         (-a, -b, 'LR'), (a, -b, 'LR')]
+            b = a * sqrt(3)
+            detectors = [(0., b, 'UD'), (0., b / 3, 'UD'),
+                         (-a, 0., 'LR'), (a, 0., 'LR')]
 
         for x, y, orientation in detectors:
             self._add_detector(x, y, orientation)
@@ -172,6 +173,21 @@ class Station(object):
         phi = atan2((y2 - y1), (x2 - x1))
 
         return r, phi
+
+    def calc_xy_center_of_mass_coordinates(self):
+        """Calculate center of mass coordinates of detectors in station
+
+        :return: x, y; coordinates of station center relative to
+            absolute coordinate system
+
+        """
+        x, y = zip(*[detector.get_xy_coordinates()
+                     for detector in self.detectors])
+
+        x0 = mean(x)
+        y0 = mean(y)
+
+        return x0, y0
 
 
 class BaseCluster(object):
@@ -241,6 +257,22 @@ class BaseCluster(object):
 
         return r, phi
 
+    def calc_xy_center_of_mass_coordinates(self):
+        """Calculate center of mass coordinates of all detectors in cluster
+
+        :return: x, y; coordinates of cluster center relative to
+            absolute coordinate system
+
+        """
+        x, y = zip(*[detector.get_xy_coordinates()
+                     for station in self.stations
+                     for detector in station.detectors])
+
+        x0 = mean(x)
+        y0 = mean(y)
+
+        return x0, y0
+
 
 class SimpleCluster(BaseCluster):
     """Define a simple cluster containing four stations"""
@@ -253,7 +285,7 @@ class SimpleCluster(BaseCluster):
         # calculate station positions.  the cluster resembles a single
         # four-detector HiSPARC station, but scaled up
         A = size / 2
-        B = A / 3 * sqrt(3)
+        B = A / sqrt(3)
         self._add_station((0, 2 * B), 0)
         self._add_station((0, 0), 0)
         self._add_station((-A, -B), 2 * pi / 3)
@@ -263,12 +295,44 @@ class SimpleCluster(BaseCluster):
 class SingleStation(BaseCluster):
     """Define a cluster containing a single station"""
 
-    def __init__(self, station_size=10):
+    def __init__(self):
         """Build the cluster"""
 
         super(SingleStation, self).__init__()
 
         self._add_station((0, 0), 0)
+
+
+class SingleTwoDetectorStation(BaseCluster):
+    """Define a cluster containing a single 2 detector station"""
+
+    def __init__(self):
+        super(SingleTwoDetectorStation, self).__init__()
+
+        detectors = [(-5, 0, 'UD'), (5, 0, 'UD')]
+
+        self._add_station((0, 0), 0, detectors)
+
+
+class SingleDiamondStation(BaseCluster):
+    """Define a cluster containing a single diamond shaped station
+
+    Detectors 1, 3 and 4 are in the usual position for a 4 detector
+    layout, detector 2 is moved out of the center and positioned to
+    create a second equilateral triangle with detectors 1, 2 and 4.
+
+    """
+
+    def __init__(self):
+        super(SingleDiamondStation, self).__init__()
+
+        station_size = 10
+        a = station_size / 2
+        b = a * sqrt(3)
+        detectors = [(0., b, 'UD'), (a * 2, b, 'UD'),
+                     (-a, 0., 'LR'), (a, 0., 'LR')]
+
+        self._add_station((0, 0), 0, detectors)
 
 
 class ScienceParkCluster(BaseCluster):
@@ -295,7 +359,7 @@ class ScienceParkCluster(BaseCluster):
     # 502, 505, 508 are now diamond shapes, rotation has less
     # meaning, need positions of every detector to GPS
     station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
-                         506: 267, 508: 135, 509: 135}
+                         506: 267, 508: -135, 509: 135}
 
     def __init__(self, stations=range(501, 507)):
         super(ScienceParkCluster, self).__init__()
@@ -307,7 +371,7 @@ class ScienceParkCluster(BaseCluster):
         for station in stations:
             easting, northing, up = \
                 transformation.transform(self.gps_coordinates[station])
-            alpha = self.station_rotations[station] / 180. * pi
+            alpha = self.station_rotations[station] / 180 * pi
 
             # disable diamond-shaped 502, for the moment
             if station not in [501]:
@@ -315,17 +379,18 @@ class ScienceParkCluster(BaseCluster):
                              (-5, 0, 'LR'), (5, 0, 'LR')]
                 self._add_station((easting, northing), alpha, detectors)
             elif station == 502:
-                # Currently, never executed
-                # 502 is diamond-shaped, with detector 2 to the side
+                # Currently, never executed.
+                # 502 is (since 17 October 2011) diamond-shaped,
+                # with detector 2 moved to the side in LR orientation.
                 # Furthermore, detectors 3 and 4 are reversed (cabling issue)
-                a = 5
-                b = sqrt(75)
-                detectors = [(0, 2. / 3 * b, 'UD'),
-                             (2 * a, 2. / 3 * b, 'UD'),
-                             (a, -1. / 3 * b, 'LR'),
-                             (-a, -1. / 3 * b, 'LR')]
+                station_size = 10
+                a = station_size / 2
+                b = a * sqrt(3)
+                detectors = [(0., b, 'UD'), (a * 2, b, 'LR'),
+                             (a, 0., 'LR'), (-a, 0., 'LR')]
                 self._add_station((easting, northing), alpha, detectors)
             elif station == 501:
+                # Precise position measurement of 501
                 detectors = [(0.37, 8.62, 'UD'), (.07, 2.15, 'UD'),
                              (-5.23, 0, 'LR'), (5.08, 0, 'LR')]
                 self._add_station((easting, northing), alpha, detectors)
