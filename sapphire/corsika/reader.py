@@ -131,6 +131,7 @@ class CorsikaFile(object):
             if a != b:
                 raise Exception('Block #{block} is not right: ({head}, {tail})'
                                 .format(block=block, head=a, tail=b))
+        return True
 
     def GetSubBlocks(self):
         """
