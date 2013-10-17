@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import matplotlib.pyplot as plt
-import corsika
+import sapphire.corsika
 
 
 def plot_ground(x, y, eventheader, title='Ground particles'):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import corsika
+import sapphire.corsika
 
 if len(sys.argv) != 2 or sys.argv[1] == '-h':
     print "Usage: %s <filename>"%sys.argv[0]
