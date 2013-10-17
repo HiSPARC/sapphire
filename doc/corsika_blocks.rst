@@ -1,6 +1,6 @@
 Corsika Blocks
 ==============
 
-.. automodule:: corsika.blocks
+.. automodule:: sapphire.corsika.blocks
    :members:
    :undoc-members:

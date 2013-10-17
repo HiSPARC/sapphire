@@ -1,6 +1,6 @@
 Corsika Particles
 =================
 
-.. automodule:: corsika.particles
+.. automodule:: sapphire.corsika.particles
    :members:
    :undoc-members:

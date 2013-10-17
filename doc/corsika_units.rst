@@ -1,6 +1,6 @@
 Corsika Units
 =============
 
-.. automodule:: corsika.units
+.. automodule:: sapphire.corsika.units
    :members:
    :undoc-members:

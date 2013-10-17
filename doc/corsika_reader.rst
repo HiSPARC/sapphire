@@ -1,6 +1,6 @@
 Corsika Reader
 ==============
 
-.. automodule:: corsika.reader
+.. automodule:: sapphire.corsika.reader
    :members:
    :undoc-members:
