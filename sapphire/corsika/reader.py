@@ -102,6 +102,10 @@ class CorsikaFile(object):
         self.fFile = open(filename, 'rb')
         self.fEvents = None
         self.fRuns = None
+        self._header = None
+        self._header_index = None
+        self._trailer = None
+        self._trailer_index = None
         self.fContents = self.fFile.read()
         self.fFile.close()
         self.format = Format()
@@ -150,6 +154,32 @@ class CorsikaFile(object):
                 pos = b + s * self.format.subblock_size + self.format.block_padding_size
                 yield unpack(self.format.subblock_format,
                              self.fContents[pos:pos + self.format.subblock_size])
+
+    def get_header(self):
+        """Get the Run header
+
+        :return: an instance of RunHeader
+
+        """
+        if not self._header_index:
+            self._header_index, self._trailer_index = self._get_run_indices()
+        if not self._header:
+            self._header = self._get_run_header(self._header_index)
+
+        return self._header
+
+    def get_trailer(self):
+        """Get the Run trailer
+
+        :return: an instance of RunTrailer
+
+        """
+        if not self._trailer_index:
+            self._header_index, self._trailer_index = self._get_run_indices()
+        if not self._trailer:
+            self._trailer = self._get_run_trailer(self._trailer_index)
+
+        return self._trailer
 
     def GetEvents(self):
         """Generator over the Events in the file
@@ -202,15 +232,33 @@ class CorsikaFile(object):
         return EventTrailer(unpack(self.format.subblock_format,
                                    self.fContents[word:self.format.subblock_size + word]))
 
-    def _GetRunHeader(self, word):
-        """Private method. DO NOT USE! EVER!"""
-        return RunHeader(unpack(self.format.subblock_format,
-                                self.fContents[word:self.format.subblock_size + word]))
+    def _get_run_indices(self):
+        """Get the indices for the start of the run header and end"""
+        for block in self._SubBlocksIndices():
+            type = unpack('4s', self.fContents[block:block + self.format.field_size])[0]
+            if  type == 'RUNH':
+                head = block
+            elif type == 'RUNE':
+                tail = block
+        return head, tail
 
-    def _GetRunTrailer(self, word):
-        """Private method. DO NOT USE! EVER!"""
+    def _get_run_header(self, word):
+        """Get the run header from the contents
+
+        :param word: the index where the run header starts
+
+        """
+        return RunHeader(unpack(self.format.subblock_format,
+                                self.fContents[word:word + self.format.subblock_size]))
+
+    def _get_run_trailer(self, word):
+        """Get the run trailer from the contents
+
+        :param word: the index where the run trailer starts
+
+        """
         return RunTrailer(unpack(self.format.subblock_format,
-                                 self.fContents[word:self.format.subblock_size + word]))
+                                 self.fContents[word:word + self.format.subblock_size]))
 
     def _GetParticleRecord(self, word):
         """Private method. DO NOT USE! EVER!"""

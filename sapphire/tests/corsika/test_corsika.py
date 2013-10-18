@@ -18,8 +18,20 @@ class CorsikaFileTests(unittest.TestCase):
 
         self.assertTrue(self.file.Check())
 
+    def test_run(self):
+        """Verify that the Run is properly read"""
+
+        header = self.file.get_header()
+        self.assertIsInstance(header, corsika.blocks.RunHeader)
+        self.assertEqual(header.fId, 'RUNH')
+        self.assertAlmostEqual(header.fVersion, 7.4, 4)
+
+        trailer = self.file.get_trailer()
+        self.assertIsInstance(trailer, corsika.blocks.RunTrailer)
+        self.assertEqual(trailer.fId, 'RUNE')
+
     def test_events(self):
-        """Verify that the Event is properly read"""
+        """Verify that the Events are properly read"""
 
         events = self.file.GetEvents()
         event = events.next()
@@ -45,7 +57,7 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertEqual(trailer.fMuons, 1729)
 
     def test_particles(self):
-        """Verify that the Event trailer is properly read"""
+        """Verify that the Particles are properly read"""
 
         events = self.file.GetEvents()
         event = events.next()
