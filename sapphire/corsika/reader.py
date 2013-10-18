@@ -1,15 +1,15 @@
 from struct import unpack
 
 from blocks import (RunHeader, RunTrailer, EventHeader, EventTrailer,
-                           ParticleData, Format, ParticleDataThin, FormatThin)
+                    ParticleData, Format, ParticleDataThin, FormatThin)
 
 
 class CorsikaEvent(object):
     def __init__(self, raw_file, header_index, trailer_index):
-        """
-        CorsikaEvent constructor.
+        """CorsikaEvent constructor.
 
         The user never calls this. The CorsikaFile does.
+
         """
         self.fRawFile = raw_file
         self.fHeaderIndex = header_index
@@ -21,8 +21,10 @@ class CorsikaEvent(object):
         self.fTrailer = None
 
     def GetHeader(self):
-        """
-        Returns an instance of EventHeader
+        """Get the Event Header
+
+        :return: an instance of EventHeader
+
         """
         if not self.fHeader:
             self.fHeader = EventHeader(unpack(self.format.subblock_format,
@@ -30,8 +32,10 @@ class CorsikaEvent(object):
         return self.fHeader
 
     def GetTrailer(self):
-        """
-        Returns an instance of EventTrailer
+        """Get the Event end sub-block
+
+        :return: an instance of EventTrailer
+
         """
         if not self.fTrailer:
             self.fTrailer = EventTrailer(unpack(self.format.subblock_format,
@@ -39,15 +43,16 @@ class CorsikaEvent(object):
         return self.fTrailer
 
     def GetParticles(self):
-        """
-        Generator over particles in the event.
+        """Generator over particles in the event.
 
         Use like this::
 
             for particle in event.GetParticles():
                 pass
-        """
 
+        :yield: each particle in the event
+
+        """
         types = {}
         levels = {}
         done = False
@@ -72,9 +77,7 @@ class CorsikaEvent(object):
                 yield particle
 
     def __str__(self):
-        """
-        String representation (a summary of the event)
-        """
+        """String representation (a summary of the event)"""
         out = self.GetHeader().__str__()
         out += "\n"
         out += self.GetTrailer().__str__()
@@ -82,7 +85,7 @@ class CorsikaEvent(object):
 
 
 class CorsikaFile(object):
-    """ Corsika output file handler
+    """Corsika output file handler
 
     This class will probide an interface for Corsika output files.
     Allowing you go get at the events and particles in the file.
@@ -90,10 +93,10 @@ class CorsikaFile(object):
 
     """
     def __init__(self, filename):
-        """
-        CorsikaFile constructor
+        """CorsikaFile constructor
 
-        It takes a file name as argument
+        :param: the filemame of the CORSIKA data file
+
         """
         self.fFilename = filename
         self.fFile = open(filename, 'rb')
@@ -103,9 +106,9 @@ class CorsikaFile(object):
         self.fFile.close()
         self.format = Format()
 
-
     def Check(self):
-        """
+        """Check DAT file format
+
         Some basic sanity checks.
 
         Fortran unformatted files are written in 'blocks'. Each block
@@ -117,6 +120,7 @@ class CorsikaFile(object):
 
         Here would be the place to dynamically check for endiannes and
         field size.
+
         """
         if len(self.fContents) % self.format.block_size != 0:
             raise Exception('File "{name}" does not have an integer number '
@@ -134,11 +138,11 @@ class CorsikaFile(object):
         return True
 
     def GetSubBlocks(self):
-        """
-        Get the sub-blocks in the file.
+        """Get the sub-blocks in the file.
 
         Normally one would not need this function but it is here because
         I have used it.
+
         """
         n_blocks = len(self.fContents) / self.format.block_size
         for b in xrange(0, n_blocks * self.format.block_size, self.format.block_size):
@@ -148,14 +152,14 @@ class CorsikaFile(object):
                              self.fContents[pos:pos + self.format.subblock_size])
 
     def GetEvents(self):
-        """
-        Generator of Events
+        """Generator over the Events in the file
 
         This method is a generator over the events in the file.
         Use it like this::
 
             for event in my_file.GetEvents():
                 pass
+
         """
         event_head = None
         for block in self._SubBlocksIndices():
@@ -167,11 +171,11 @@ class CorsikaFile(object):
                 event_head = None
 
     def _SubBlocksIndices(self, min_sub_block=None, max_sub_block=None):
-        """
-        Private method. DO NOT USE! EVER!
+        """Private method. DO NOT USE! EVER!
 
         The idea of this method is to get the field indices for the
         beginning and end of the events. It does not unpack the data.
+
         """
         n_blocks = len(self.fContents) / self.format.block_size
         for b in xrange(0, n_blocks * self.format.block_size, self.format.block_size):
@@ -183,45 +187,33 @@ class CorsikaFile(object):
                 yield pos
 
     def _GetEvents(self):
-        """
-        Private method. DO NOT USE! EVER!
-        """
+        """Private method. DO NOT USE! EVER!"""
         heads = [b for b in self._SubBlocksIndices() if unpack('4s', self.fContents[b:b + self.format.field_size])[0] == 'EVTH']
         tails = [b for b in self._SubBlocksIndices() if unpack('4s', self.fContents[b:b + self.format.field_size])[0] == 'EVTE']
         return (heads, tails)
 
     def _GetEventHeader(self, word):
-        """
-        Private method. DO NOT USE! EVER!
-        """
+        """Private method. DO NOT USE! EVER!"""
         return EventHeader(unpack(self.format.subblock_format,
                                   self.fContents[word:self.format.subblock_size + word]))
 
     def _GetEventTrailer(self, word):
-        """
-        Private method. DO NOT USE! EVER!
-        """
+        """Private method. DO NOT USE! EVER!"""
         return EventTrailer(unpack(self.format.subblock_format,
                                    self.fContents[word:self.format.subblock_size + word]))
 
     def _GetRunHeader(self, word):
-        """
-        Private method. DO NOT USE! EVER!
-        """
+        """Private method. DO NOT USE! EVER!"""
         return RunHeader(unpack(self.format.subblock_format,
                                 self.fContents[word:self.format.subblock_size + word]))
 
     def _GetRunTrailer(self, word):
-        """
-        Private method. DO NOT USE! EVER!
-        """
+        """Private method. DO NOT USE! EVER!"""
         return RunTrailer(unpack(self.format.subblock_format,
                                  self.fContents[word:self.format.subblock_size + word]))
 
     def _GetParticleRecord(self, word):
-        """
-        Private method. DO NOT USE! EVER!
-        """
+        """Private method. DO NOT USE! EVER!"""
         if self.format.particle_format == '7f':
             return ParticleData(unpack(self.format.particle_format,
                                        self.fContents[word:self.format.particle_size + word]))
@@ -237,7 +229,7 @@ class CorsikaFile(object):
 
 
 class CorsikaFileThin(CorsikaFile):
-    """ Corsika thinned output file handler
+    """Corsika thinned output file handler
 
     Same as the unthinned output handler, but with support for
     the different format, particles also have the weight property.
@@ -245,10 +237,10 @@ class CorsikaFileThin(CorsikaFile):
 
     """
     def __init__(self, filename):
-        """
-        CorsikaFileThin constructor
+        """CorsikaFileThin constructor
 
-        It takes a file name as argument
+        It takes a filename as argument
+
         """
         super(CorsikaFileThin, self).__init__(filename)
         self.format = FormatThin()
