@@ -47,33 +47,6 @@ class Format(object):
         self.particle_size = struct.calcsize(self.particle_format)
         self.particles_per_subblock = 39
 
-    def __test__(self):
-        # a couple of sanity checks for the formats
-        if (self.block_size - 2 * self.block_padding_size) / self.subblock_size != self.subblocks_per_block:
-            raise Exception('The block format ({block}) and sub-block format '
-                            '({sub_block}) do not agree! block size is {block_size} '
-                            'and sub-block size is {sub_block_size}. Block size should'
-                            ' be {subblocks_per_block} times the sub-block size plus '
-                            'padding (usually 8 bytes).'
-                            .format(block=self.block_format,
-                                    sub_block=self.subblock_format,
-                                    block_size=self.block_size,
-                                    sub_block_size=self.subblock_size,
-                                    subblocks_per_block=self.subblocks_per_block))
-
-
-        if self.subblock_size / self.particle_size != self.particles_per_subblock:
-            raise Exception('The sub_block format ({sub_block}) and particle format '
-                            '({particle}) do not agree! sub-block size is '
-                            '{sub_block_size} and particle record size is '
-                            '{particle_size}. Sub-block size should be '
-                            '{particles_per_subblock} times the particle record size.'
-                            .format(sub_block=self.subblock_format,
-                                    particle=self.particle_format,
-                                    sub_block_size=self.subblock_size,
-                                    particle_size=self.particle_size,
-                                    particles_per_subblock=self.particles_per_subblock))
-
 
 # From here on, things should not depend on the field size as everything is
 
