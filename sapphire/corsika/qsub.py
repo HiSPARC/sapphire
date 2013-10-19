@@ -196,6 +196,7 @@ class CorsikaBatch(object):
         file = open(scriptpath, 'w')
         file.write(script)
         file.close()
+        os.chmod(scriptpath, 0774)
 
     def symlink_corsika(self):
         """Create symbolic links to CORSIKA run files
