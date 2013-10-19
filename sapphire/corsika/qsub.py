@@ -52,6 +52,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     NAME="his_{seed1}_{seed2}"
     SCRIPT=/tmp/$NAME
 
+    # Start Stoomboot script
     cat >> $SCRIPT << EOF
     #!/usr/bin/env bash
     echo "--- PBS job configuration ---"
@@ -76,6 +77,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     mv {rundir} data/
 
     EOF
+    # End of Stoomboot script
 
     chmod ug+x $SCRIPT
 
@@ -86,7 +88,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
 
 class CorsikaBatch(object):
 
-    def __init__(self, energy=7, particle='proton', queue='stbc'):
+    def __init__(self, energy=7, particle='proton', queue='stbcq'):
         self.energy = energy
         self.particle = eval('particles.' + particle)
         self.queue = queue
