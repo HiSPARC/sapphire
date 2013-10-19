@@ -16,7 +16,7 @@ class CorsikaFileTests(unittest.TestCase):
     def test_validate_file(self):
         """Verify that the data file is valid"""
 
-        self.assertTrue(self.file.Check())
+        self.assertTrue(self.file.check())
 
     def test_run(self):
         """Verify that the Run is properly read"""
@@ -33,35 +33,35 @@ class CorsikaFileTests(unittest.TestCase):
     def test_events(self):
         """Verify that the Events are properly read"""
 
-        events = self.file.GetEvents()
+        events = self.file.get_events()
         event = events.next()
         self.assertIsInstance(event, corsika.reader.CorsikaEvent)
-        self.assertEqual(event.fLastParticle, 1086892)
+        self.assertEqual(event.last_particle_index, 1086892)
 
     def test_event_header(self):
         """Verify that the Event header is properly read"""
 
-        events = self.file.GetEvents()
+        events = self.file.get_events()
         event = events.next()
-        header = event.GetHeader()
+        header = event.get_header()
         self.assertIsInstance(header, corsika.blocks.EventHeader)
         self.assertEqual(header.fEnergy, 1e14)
 
     def test_event_trailer(self):
         """Verify that the Event trailer is properly read"""
 
-        events = self.file.GetEvents()
+        events = self.file.get_events()
         event = events.next()
-        trailer = event.GetTrailer()
+        trailer = event.get_trailer()
         self.assertIsInstance(trailer, corsika.blocks.EventTrailer)
         self.assertEqual(trailer.fMuons, 1729)
 
     def test_particles(self):
         """Verify that the Particles are properly read"""
 
-        events = self.file.GetEvents()
+        events = self.file.get_events()
         event = events.next()
-        particles = event.GetParticles()
+        particles = event.get_particles()
         particle = particles.next()
         self.assertIsInstance(particle, corsika.blocks.ParticleData)
         self.assertEqual(particle.fParticle, corsika.particles.muon_p)

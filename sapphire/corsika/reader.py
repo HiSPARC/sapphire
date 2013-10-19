@@ -11,43 +11,45 @@ class CorsikaEvent(object):
         The user never calls this. The CorsikaFile does.
 
         """
-        self.fRawFile = raw_file
-        self.fHeaderIndex = header_index
-        self.fTrailerIndex = trailer_index
-        self.format = self.fRawFile.format
-        self.fFirstParticle = self.fHeaderIndex + self.format.subblock_size
-        self.fLastParticle = self.fTrailerIndex - self.format.particle_size
-        self.fHeader = None
-        self.fTrailer = None
+        self._raw_file = raw_file
+        self._header_index = header_index
+        self._trailer_index = trailer_index
+        self._header = None
+        self._trailer = None
+        self.format = self._raw_file.format
+        self.first_particle_index = self._header_index + self.format.subblock_size
+        self.last_particle_index = self._trailer_index - self.format.particle_size
 
-    def GetHeader(self):
+    def get_header(self):
         """Get the Event Header
 
         :return: an instance of EventHeader
 
         """
-        if not self.fHeader:
-            self.fHeader = EventHeader(unpack(self.format.subblock_format,
-                                              self.fRawFile.fContents[self.fHeaderIndex:self.format.subblock_size + self.fHeaderIndex]))
-        return self.fHeader
+        if not self._header:
+            self._header = EventHeader(unpack(self.format.subblock_format,
+                                              self._raw_file._contents[self._header_index:
+                                                                       self._header_index + self.format.subblock_size]))
+        return self._header
 
-    def GetTrailer(self):
+    def get_trailer(self):
         """Get the Event end sub-block
 
         :return: an instance of EventTrailer
 
         """
-        if not self.fTrailer:
-            self.fTrailer = EventTrailer(unpack(self.format.subblock_format,
-                                                self.fRawFile.fContents[self.fTrailerIndex:self.format.subblock_size + self.fTrailerIndex]))
-        return self.fTrailer
+        if not self._trailer:
+            self._trailer = EventTrailer(unpack(self.format.subblock_format,
+                                                self._raw_file._contents[self._trailer_index:
+                                                                         self._trailer_index + self.format.subblock_size]))
+        return self._trailer
 
-    def GetParticles(self):
+    def get_particles(self):
         """Generator over particles in the event.
 
         Use like this::
 
-            for particle in event.GetParticles():
+            for particle in event.get_particles():
                 pass
 
         :yield: each particle in the event
@@ -56,11 +58,11 @@ class CorsikaEvent(object):
         types = {}
         levels = {}
         done = False
-        for sub_block_index in self.fRawFile._SubBlocksIndices(self.fHeaderIndex,
-                                                               self.fTrailerIndex):
+        for sub_block_index in self._raw_file._subblocks_indices(self._header_index,
+                                                                 self._trailer_index):
             for p in range(self.format.particles_per_subblock):
                 pos = sub_block_index + p * self.format.particle_size
-                particle = self.fRawFile._GetParticleRecord(pos)
+                particle = self._raw_file._get_particle_record(pos)
                 t = int(particle.fDescription / 1000)
                 l = particle.fDescription % 10
                 if t in types.keys():
@@ -78,9 +80,9 @@ class CorsikaEvent(object):
 
     def __str__(self):
         """String representation (a summary of the event)"""
-        out = self.GetHeader().__str__()
+        out = self.get_header().__str__()
         out += "\n"
-        out += self.GetTrailer().__str__()
+        out += self.get_trailer().__str__()
         return out
 
 
@@ -98,19 +100,17 @@ class CorsikaFile(object):
         :param: the filemame of the CORSIKA data file
 
         """
-        self.fFilename = filename
-        self.fFile = open(filename, 'rb')
-        self.fEvents = None
-        self.fRuns = None
-        self._header = None
+        self._filename = filename
+        self._file = open(filename, 'rb')
         self._header_index = None
-        self._trailer = None
         self._trailer_index = None
-        self.fContents = self.fFile.read()
-        self.fFile.close()
+        self._header = None
+        self._trailer = None
+        self._contents = self._file.read()
+        self._file.close()
         self.format = Format()
 
-    def Check(self):
+    def check(self):
         """Check DAT file format
 
         Some basic sanity checks.
@@ -126,34 +126,34 @@ class CorsikaFile(object):
         field size.
 
         """
-        if len(self.fContents) % self.format.block_size != 0:
+        if len(self._contents) % self.format.block_size != 0:
             raise Exception('File "{name}" does not have an integer number '
-                            'of blocks!'.format(name=self.fFilename))
+                            'of blocks!'.format(name=self._filename))
 
-        n_blocks = len(self.fContents) / self.format.block_size
+        n_blocks = len(self._contents) / self.format.block_size
         for block in range(n_blocks):
-            a = unpack('i', self.fContents[block * self.format.block_size:block *
+            a = unpack('i', self._contents[block * self.format.block_size:block *
                             self.format.block_size + self.format.block_padding_size])[0]
-            b = unpack('i', self.fContents[(block + 1) * self.format.block_size -
+            b = unpack('i', self._contents[(block + 1) * self.format.block_size -
                             self.format.block_padding_size:(block + 1) * self.format.block_size])[0]
             if a != b:
                 raise Exception('Block #{block} is not right: ({head}, {tail})'
                                 .format(block=block, head=a, tail=b))
         return True
 
-    def GetSubBlocks(self):
+    def get_sub_blocks(self):
         """Get the sub-blocks in the file.
 
         Normally one would not need this function but it is here because
         I have used it.
 
         """
-        n_blocks = len(self.fContents) / self.format.block_size
+        n_blocks = len(self._contents) / self.format.block_size
         for b in xrange(0, n_blocks * self.format.block_size, self.format.block_size):
             for s in xrange(0, self.format.subblocks_per_block):
                 pos = b + s * self.format.subblock_size + self.format.block_padding_size
                 yield unpack(self.format.subblock_format,
-                             self.fContents[pos:pos + self.format.subblock_size])
+                             self._contents[pos:pos + self.format.subblock_size])
 
     def get_header(self):
         """Get the Run header
@@ -181,33 +181,33 @@ class CorsikaFile(object):
 
         return self._trailer
 
-    def GetEvents(self):
+    def get_events(self):
         """Generator over the Events in the file
 
         This method is a generator over the events in the file.
         Use it like this::
 
-            for event in my_file.GetEvents():
+            for event in my_file.get_events():
                 pass
 
         """
         event_head = None
-        for block in self._SubBlocksIndices():
-            tag = unpack('4s', self.fContents[block:block + self.format.field_size])[0]
+        for block in self._subblocks_indices():
+            tag = unpack('4s', self._contents[block:block + self.format.field_size])[0]
             if tag == 'EVTH':
                 event_head = block
             if tag == 'EVTE':
                 yield CorsikaEvent(self, event_head, block)
                 event_head = None
 
-    def _SubBlocksIndices(self, min_sub_block=None, max_sub_block=None):
+    def _subblocks_indices(self, min_sub_block=None, max_sub_block=None):
         """Private method. DO NOT USE! EVER!
 
         The idea of this method is to get the field indices for the
         beginning and end of the events. It does not unpack the data.
 
         """
-        n_blocks = len(self.fContents) / self.format.block_size
+        n_blocks = len(self._contents) / self.format.block_size
         for b in xrange(0, n_blocks * self.format.block_size, self.format.block_size):
             for s in xrange(0, self.format.subblocks_per_block):
                 pos = b + s * self.format.subblock_size + self.format.block_padding_size
@@ -216,26 +216,26 @@ class CorsikaFile(object):
                     continue
                 yield pos
 
-    def _GetEvents(self):
+    def _get_events(self):
         """Private method. DO NOT USE! EVER!"""
-        heads = [b for b in self._SubBlocksIndices() if unpack('4s', self.fContents[b:b + self.format.field_size])[0] == 'EVTH']
-        tails = [b for b in self._SubBlocksIndices() if unpack('4s', self.fContents[b:b + self.format.field_size])[0] == 'EVTE']
+        heads = [b for b in self._subblocks_indices() if unpack('4s', self._contents[b:b + self.format.field_size])[0] == 'EVTH']
+        tails = [b for b in self._subblocks_indices() if unpack('4s', self._contents[b:b + self.format.field_size])[0] == 'EVTE']
         return (heads, tails)
 
-    def _GetEventHeader(self, word):
+    def _get_event_header(self, word):
         """Private method. DO NOT USE! EVER!"""
         return EventHeader(unpack(self.format.subblock_format,
-                                  self.fContents[word:self.format.subblock_size + word]))
+                                  self._contents[word:self.format.subblock_size + word]))
 
-    def _GetEventTrailer(self, word):
+    def _get_event_trailer(self, word):
         """Private method. DO NOT USE! EVER!"""
         return EventTrailer(unpack(self.format.subblock_format,
-                                   self.fContents[word:self.format.subblock_size + word]))
+                                   self._contents[word:self.format.subblock_size + word]))
 
     def _get_run_indices(self):
         """Get the indices for the start of the run header and end"""
-        for block in self._SubBlocksIndices():
-            type = unpack('4s', self.fContents[block:block + self.format.field_size])[0]
+        for block in self._subblocks_indices():
+            type = unpack('4s', self._contents[block:block + self.format.field_size])[0]
             if  type == 'RUNH':
                 head = block
             elif type == 'RUNE':
@@ -249,7 +249,7 @@ class CorsikaFile(object):
 
         """
         return RunHeader(unpack(self.format.subblock_format,
-                                self.fContents[word:word + self.format.subblock_size]))
+                                self._contents[word:word + self.format.subblock_size]))
 
     def _get_run_trailer(self, word):
         """Get the run trailer from the contents
@@ -258,16 +258,16 @@ class CorsikaFile(object):
 
         """
         return RunTrailer(unpack(self.format.subblock_format,
-                                 self.fContents[word:word + self.format.subblock_size]))
+                                 self._contents[word:word + self.format.subblock_size]))
 
-    def _GetParticleRecord(self, word):
+    def _get_particle_record(self, word):
         """Private method. DO NOT USE! EVER!"""
         if self.format.particle_format == '7f':
             return ParticleData(unpack(self.format.particle_format,
-                                       self.fContents[word:self.format.particle_size + word]))
+                                       self._contents[word:word + self.format.particle_size]))
         elif self.format.particle_format == '8f':
             return ParticleDataThin(unpack(self.format.particle_format,
-                                           self.fContents[word:self.format.particle_size + word]))
+                                           self._contents[word:word + self.format.particle_size]))
         else:
             raise Exception('Unknown particle format: {format}'
                             .format(format=self.format.particle_format))

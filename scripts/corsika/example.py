@@ -11,13 +11,13 @@ if len(sys.argv) != 2 or sys.argv[1] == '-h':
 
 cors_file = corsika.CorsikaFile(sys.argv[1])
 
-cors_file.Check()
+cors_file.check()
 
-for event in cors_file.GetEvents():
-    print event.GetHeader()
-    print event.GetTrailer()
+for event in cors_file.get_events():
+    print event.get_header()
+    print event.get_trailer()
     count = 0
-    for particle in event.GetParticles():
+    for particle in event.get_particles():
         count += 1
 
     print count, " particles"
