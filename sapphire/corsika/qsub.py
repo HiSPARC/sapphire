@@ -87,7 +87,19 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
 
 
 class CorsikaBatch(object):
+    """Run many simultaneous CORSIKA simulations using Stoomboot
 
+    Stoomboot is the Nikhef computer cluster.
+
+    :param energy: the energy of the primary particle in log10(GeV)
+    :param particle: string name of primary particle as given in particles
+    :param queue: Choose a queue to sumbit the job to
+                  Several queues are available:
+                  stbcq - max 8 hours, 1000 jobs, 240 cpus
+                  qlong - max 48 hours, ...
+                  short - max .. hours, ...
+
+    """
     def __init__(self, energy=7, particle='proton', queue='stbcq'):
         self.energy = energy
         self.particle = eval('particles.' + particle)
@@ -186,7 +198,12 @@ class CorsikaBatch(object):
         file.close()
 
     def symlink_corsika(self):
-        """Create symbolic links to CORSIKA executable and cross-section data"""
+        """Create symbolic links to CORSIKA run files
+
+        CORSIKA requires files from the run directory to be available in
+        the PWD. So we create symlinks to all files in the run dir.
+
+        """
         subprocess.check_output('ln -s {source}/* {dest}'
                                 .format(source=CORSIKADIR,
                                         dest=TEMPDIR + self.rundir),
