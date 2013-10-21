@@ -216,7 +216,19 @@ class CorsikaBatch(object):
     #     subprocess.check_output('find {dir} -type l -delete'
     #                             .format(dir=TEMPDIR + self.rundir))
 
-if __name__ == '__main__':
-    for i in range(2):
-        batch = CorsikaBatch()
+def multiple_jobs(n, E, p, q):
+    """Use this to sumbit multiple jobs to stoomboot
+
+    :param n: Number of jobs to submit
+    :param E: log10(GeV) energy of primary particle
+    :param p: particle kind (as string, see particles for possibilities)
+    :param q: Stoomboot queue to submit to
+
+    """
+    for _ in arange(n):
+        batch = CorsikaBatch(E, p, q)
         batch.batch_run()
+
+
+if __name__ == '__main__':
+    multiple_jobs(100, 7, 'proton', 'stbcq')
