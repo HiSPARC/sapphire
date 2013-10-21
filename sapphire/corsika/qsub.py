@@ -49,12 +49,17 @@ INPUT_TEMPLATE = textwrap.dedent("""\
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
 
+    umask 002
+
     NAME="his_{seed1}_{seed2}"
     SCRIPT=/tmp/$NAME
 
     # Start Stoomboot script
     cat >> $SCRIPT << EOF
     #!/usr/bin/env bash
+
+    umask 002
+
     echo "--- PBS job configuration ---"
     echo "PBS_O_HOST = " \$PBS_O_HOST
     echo "PBS_O_QUEUE = " \$PBS_O_QUEUE
@@ -210,11 +215,6 @@ class CorsikaBatch(object):
                                         dest=TEMPDIR + self.rundir),
                                 shell=True)
 
-    # def remove_symlinks(self):
-    #     """Remove symbolic links to CORSIKA executable and cross-section data"""
-    #
-    #     subprocess.check_output('find {dir} -type l -delete'
-    #                             .format(dir=TEMPDIR + self.rundir))
 
 def multiple_jobs(n, E, p, q):
     """Use this to sumbit multiple jobs to stoomboot
