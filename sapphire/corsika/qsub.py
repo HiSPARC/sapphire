@@ -95,9 +95,9 @@ class CorsikaBatch(object):
     :param particle: string name of primary particle as given in particles
     :param queue: Choose a queue to sumbit the job to
                   Several queues are available:
+                  short - max 4 hours, ...
                   stbcq - max 8 hours, 1000 jobs, 240 cpus
-                  qlong - max 48 hours, ...
-                  short - max .. hours, ...
+                  qlong - max 48 hours, 80 jobs
 
     """
     def __init__(self, energy=7, particle='proton', queue='stbcq'):
