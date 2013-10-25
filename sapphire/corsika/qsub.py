@@ -193,7 +193,7 @@ class CorsikaBatch(object):
 
         scriptpath = TEMPDIR + self.rundir + 'run.sh'
         script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
-                                        queue=self.queue, corsika=self.corsika
+                                        queue=self.queue, corsika=self.corsika,
                                         rundir=TEMPDIR + self.rundir)
         file = open(scriptpath, 'w')
         file.write(script)
