@@ -25,6 +25,11 @@ This documentation sometimes refers to the |corsika| users manual, this
 users manual can be found here `CORSIKA User's Guide
 <http://www-ik.fzk.de/~corsika/usersguide/corsika_tech.html>`_
 
+In addition to reading |corsika| output, functionally is provided to
+easily submit many |corsika| jobs to the Nikhef batch facility
+(Stoomboot).
+
+
 .. _CorsikaModule:
 
 Corsika Module
@@ -43,3 +48,4 @@ Contents
    corsika_blocks
    corsika_units
    corsika_particles
+   corsika_qsub
