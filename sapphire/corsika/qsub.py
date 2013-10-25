@@ -74,7 +74,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     export PATH=\${{PBS_O_PATH}}
 
     # Run CORSIKA
-    /usr/bin/time -o time.log ./corsika74000Linux_QGSII_gheisha < input-hisparc > corsika-output.log
+    /usr/bin/time -o time.log ./{corsika} < input-hisparc > corsika-output.log
 
     # Clean up after run
     find -type l -delete
@@ -98,17 +98,21 @@ class CorsikaBatch(object):
 
     :param energy: the energy of the primary particle in log10(GeV)
     :param particle: string name of primary particle as given in particles
-    :param queue: Choose a queue to sumbit the job to
-                  Several queues are available:
+    :param queue: choose a queue to sumbit the job to:
                   short - max 4 hours, ...
                   stbcq - max 8 hours, 1000 jobs, 240 cpus
                   qlong - max 48 hours, 80 jobs
+    :param corsika: name of the compiled CORSIKA executable to use:
+                    corsika74000Linux_QGSII_gheisha
+                    corsika74000Linux_EPOS_gheisha
 
     """
-    def __init__(self, energy=7, particle='proton', queue='stbcq'):
+    def __init__(self, energy=7, particle='proton', queue='stbcq',
+                 corsika='corsika74000Linux_QGSII_gheisha'):
         self.energy = energy
         self.particle = eval('particles.' + particle)
         self.queue = queue
+        self.corsika = corsika
         self.seed1 = None
         self.seed2 = None
         self.rundir = None
@@ -139,12 +143,6 @@ class CorsikaBatch(object):
 
         subprocess.check_output('./run.sh', shell=True)
 
-    # def finish_job(self):
-    #     """Clean up after run"""
-    #
-    #     remove_symlinks()
-    #     move_results()
-
     def taken_seeds(self):
         """Get list of seeds already used"""
 
@@ -153,8 +151,12 @@ class CorsikaBatch(object):
         return taken
 
     def gen_random_seeds(self, taken):
-        """Get unused combination of two seeds for CORSIKA"""
+        """Get unused combination of two seeds for CORSIKA
 
+        :param taken: List of seed combinations already taken
+                      each is formatted like this: 'seed1_seed2'
+
+        """
         seed1 = random.randint(1, 900000000)
         seed2 = random.randint(1, 900000000)
         seed = "{seed1}_{seed2}".format(seed1=seed1, seed2=seed2)
@@ -175,11 +177,6 @@ class CorsikaBatch(object):
 
         os.chdir(TEMPDIR + self.rundir)
 
-    # def move_results(self):
-    #     """Move results to data directory"""
-    #
-    #     shutil.move(TEMPDIR + self.rundir, DATADIR)
-
     def create_input(self):
         """Make CORSIKA steering file"""
 
@@ -196,7 +193,7 @@ class CorsikaBatch(object):
 
         scriptpath = TEMPDIR + self.rundir + 'run.sh'
         script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
-                                        queue=self.queue,
+                                        queue=self.queue, corsika=self.corsika
                                         rundir=TEMPDIR + self.rundir)
         file = open(scriptpath, 'w')
         file.write(script)
