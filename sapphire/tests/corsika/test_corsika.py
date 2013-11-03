@@ -23,12 +23,12 @@ class CorsikaFileTests(unittest.TestCase):
 
         header = self.file.get_header()
         self.assertIsInstance(header, corsika.blocks.RunHeader)
-        self.assertEqual(header.fId, 'RUNH')
-        self.assertAlmostEqual(header.fVersion, 7.4, 4)
+        self.assertEqual(header.id, 'RUNH')
+        self.assertAlmostEqual(header.version, 7.4, 4)
 
-        trailer = self.file.get_trailer()
-        self.assertIsInstance(trailer, corsika.blocks.RunTrailer)
-        self.assertEqual(trailer.fId, 'RUNE')
+        end = self.file.get_end()
+        self.assertIsInstance(end, corsika.blocks.RunEnd)
+        self.assertEqual(end.id, 'RUNE')
 
     def test_events(self):
         """Verify that the Events are properly read"""
@@ -45,16 +45,19 @@ class CorsikaFileTests(unittest.TestCase):
         event = events.next()
         header = event.get_header()
         self.assertIsInstance(header, corsika.blocks.EventHeader)
-        self.assertEqual(header.fEnergy, 1e14)
+        self.assertEqual(header.id, 'EVTH')
+        self.assertEqual(corsika.particles.id[header.particle_id], 'proton')
+        self.assertEqual(header.energy, 1e14)
 
-    def test_event_trailer(self):
-        """Verify that the Event trailer is properly read"""
+    def test_event_end(self):
+        """Verify that the Event end is properly read"""
 
         events = self.file.get_events()
         event = events.next()
-        trailer = event.get_trailer()
-        self.assertIsInstance(trailer, corsika.blocks.EventTrailer)
-        self.assertEqual(trailer.fMuons, 1729)
+        end = event.get_end()
+        self.assertIsInstance(end, corsika.blocks.EventEnd)
+        self.assertEqual(end.id, 'EVTE')
+        self.assertEqual(end.n_muons_output, 1729)
 
     def test_particles(self):
         """Verify that the Particles are properly read"""
@@ -64,9 +67,9 @@ class CorsikaFileTests(unittest.TestCase):
         particles = event.get_particles()
         particle = particles.next()
         self.assertIsInstance(particle, corsika.blocks.ParticleData)
-        self.assertEqual(particle.fParticle, corsika.particles.muon_p)
+        self.assertEqual(corsika.particles.id[particle.id], 'muon_p')
         particle = particles.next()
-        self.assertEqual(particle.fParticle, corsika.particles.muon_m)
+        self.assertEqual(corsika.particles.id[particle.id], 'muon_m')
 
 
 if __name__ == '__main__':

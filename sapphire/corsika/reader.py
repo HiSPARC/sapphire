@@ -1,11 +1,11 @@
 from struct import unpack
 
-from blocks import (RunHeader, RunTrailer, EventHeader, EventTrailer,
+from blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
                     ParticleData, Format, ParticleDataThin, FormatThin)
 
 
 class CorsikaEvent(object):
-    def __init__(self, raw_file, header_index, trailer_index):
+    def __init__(self, raw_file, header_index, end_index):
         """CorsikaEvent constructor.
 
         The user never calls this. The CorsikaFile does.
@@ -13,12 +13,12 @@ class CorsikaEvent(object):
         """
         self._raw_file = raw_file
         self._header_index = header_index
-        self._trailer_index = trailer_index
+        self._end_index = end_index
         self._header = None
-        self._trailer = None
+        self._end = None
         self.format = self._raw_file.format
         self.first_particle_index = self._header_index + self.format.subblock_size
-        self.last_particle_index = self._trailer_index - self.format.particle_size
+        self.last_particle_index = self._end_index - self.format.particle_size
 
     def get_header(self):
         """Get the Event Header
@@ -32,17 +32,17 @@ class CorsikaEvent(object):
                                                                        self._header_index + self.format.subblock_size]))
         return self._header
 
-    def get_trailer(self):
+    def get_end(self):
         """Get the Event end sub-block
 
-        :return: an instance of EventTrailer
+        :return: an instance of EventEnd
 
         """
-        if not self._trailer:
-            self._trailer = EventTrailer(unpack(self.format.subblock_format,
-                                                self._raw_file._contents[self._trailer_index:
-                                                                         self._trailer_index + self.format.subblock_size]))
-        return self._trailer
+        if not self._end:
+            self._end = EventEnd(unpack(self.format.subblock_format,
+                                                self._raw_file._contents[self._end_index:
+                                                                         self._end_index + self.format.subblock_size]))
+        return self._end
 
     def get_particles(self):
         """Generator over particles in the event.
@@ -59,12 +59,12 @@ class CorsikaEvent(object):
         levels = {}
         done = False
         for sub_block_index in self._raw_file._subblocks_indices(self._header_index,
-                                                                 self._trailer_index):
+                                                                 self._end_index):
             for p in range(self.format.particles_per_subblock):
                 pos = sub_block_index + p * self.format.particle_size
                 particle = self._raw_file._get_particle_record(pos)
-                t = int(particle.fDescription / 1000)
-                l = particle.fDescription % 10
+                t = int(particle.description / 1000)
+                l = particle.description % 10
                 if t in types.keys():
                     types[t] += 1
                 else:
@@ -82,7 +82,7 @@ class CorsikaEvent(object):
         """String representation (a summary of the event)"""
         out = self.get_header().__str__()
         out += "\n"
-        out += self.get_trailer().__str__()
+        out += self.get_end().__str__()
         return out
 
 
@@ -103,9 +103,9 @@ class CorsikaFile(object):
         self._filename = filename
         self._file = open(filename, 'rb')
         self._header_index = None
-        self._trailer_index = None
+        self._end_index = None
         self._header = None
-        self._trailer = None
+        self._end = None
         self._contents = self._file.read()
         self._file.close()
         self.format = Format()
@@ -116,11 +116,11 @@ class CorsikaFile(object):
         Some basic sanity checks.
 
         Fortran unformatted files are written in 'blocks'. Each block
-        has a header and trailer. They both contain the same
+        has a header and end. They both contain the same
         information: the number of bytes in the block.
 
         This function only checks if there is an integer number of
-        blocks in the file and if the header and trailer are equal.
+        blocks in the file and if the header and end are equal.
 
         Here would be the place to dynamically check for endiannes and
         field size.
@@ -162,24 +162,24 @@ class CorsikaFile(object):
 
         """
         if not self._header_index:
-            self._header_index, self._trailer_index = self._get_run_indices()
+            self._header_index, self._end_index = self._get_run_indices()
         if not self._header:
             self._header = self._get_run_header(self._header_index)
 
         return self._header
 
-    def get_trailer(self):
-        """Get the Run trailer
+    def get_end(self):
+        """Get the Run end
 
-        :return: an instance of RunTrailer
+        :return: an instance of RunEnd
 
         """
-        if not self._trailer_index:
-            self._header_index, self._trailer_index = self._get_run_indices()
-        if not self._trailer:
-            self._trailer = self._get_run_trailer(self._trailer_index)
+        if not self._end_index:
+            self._header_index, self._end_index = self._get_run_indices()
+        if not self._end:
+            self._end = self._get_run_end(self._end_index)
 
-        return self._trailer
+        return self._end
 
     def get_events(self):
         """Generator over the Events in the file
@@ -227,9 +227,9 @@ class CorsikaFile(object):
         return EventHeader(unpack(self.format.subblock_format,
                                   self._contents[word:self.format.subblock_size + word]))
 
-    def _get_event_trailer(self, word):
+    def _get_event_end(self, word):
         """Private method. DO NOT USE! EVER!"""
-        return EventTrailer(unpack(self.format.subblock_format,
+        return EventEnd(unpack(self.format.subblock_format,
                                    self._contents[word:self.format.subblock_size + word]))
 
     def _get_run_indices(self):
@@ -251,13 +251,13 @@ class CorsikaFile(object):
         return RunHeader(unpack(self.format.subblock_format,
                                 self._contents[word:word + self.format.subblock_size]))
 
-    def _get_run_trailer(self, word):
-        """Get the run trailer from the contents
+    def _get_run_end(self, word):
+        """Get the run end from the contents
 
-        :param word: the index where the run trailer starts
+        :param word: the index where the run end starts
 
         """
-        return RunTrailer(unpack(self.format.subblock_format,
+        return RunEnd(unpack(self.format.subblock_format,
                                  self._contents[word:word + self.format.subblock_size]))
 
     def _get_particle_record(self, word):
