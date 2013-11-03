@@ -12,6 +12,8 @@ from math import sqrt, pi, sin, cos, atan2
 from numpy import mean
 import transformations
 
+import sapphire.api
+
 
 class Detector(object):
     """A HiSPARC detector"""
@@ -336,30 +338,41 @@ class SingleDiamondStation(BaseCluster):
 
 
 class ScienceParkCluster(BaseCluster):
-    # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
-    # 2 dec, 2011) + 508/509 (from site on 8 jul 2013)
-    gps_coordinates = {501: (52.355924173294305, 4.951144021644267,
-                             56.102345941588283),
-                       502: (52.355293344895919, 4.9501047083812697,
-                             55.954367009922862),
-                       503: (52.356254735127557, 4.9529437445598328,
-                             51.582641703076661),
-                       504: (52.357178777910278, 4.9543838852175561,
-                             54.622688433155417),
-                       505: (52.357251580629246, 4.9484007564706891,
-                             47.730995402671397),
-                       506: (52.3571787512, 4.95198605591,
-                             43.8700314863),
-                       508: (52.3563513341, 4.95070840124,
-                             52.51091104),
-                       509: (52.3545582682, 4.95569730394,
-                             59.942809986),
-                      }
+    try:
+        network = sapphire.api.Network()
+        sp_stations = network.stations(subcluster=500)
+        gps_coordinates = {}
+        for station in sp_stations:
+            coordinates = sapphire.api.Station(station['number']).location()
+            gps_coordinates[station['number']] = (coordinates['latitude'],
+                                                  coordinates['longitude'],
+                                                  coordinates['altitude'])
+    except:
+        # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
+        # 2 dec, 2011) + 508/509 (from site on 8 jul 2013)
+        gps_coordinates = {501: (52.355924173294305, 4.951144021644267,
+                                 56.102345941588283),
+                           502: (52.355293344895919, 4.9501047083812697,
+                                 55.954367009922862),
+                           503: (52.356254735127557, 4.9529437445598328,
+                                 51.582641703076661),
+                           504: (52.357178777910278, 4.9543838852175561,
+                                 54.622688433155417),
+                           505: (52.357251580629246, 4.9484007564706891,
+                                 47.730995402671397),
+                           506: (52.3571787512, 4.95198605591,
+                                 43.8700314863),
+                           507: (52.3560055099, 4.95147879159,
+                                 56.7735242238),
+                           508: (52.3563513341, 4.95070840124,
+                                 52.51091104),
+                           509: (52.3545582682, 4.95569730394,
+                                 59.942809986)}
 
     # 502, 505, 508 are now diamond shapes, rotation has less
     # meaning, need positions of every detector to GPS
     station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
-                         506: 267, 508: -135, 509: 135}
+                         506: 267, 507: 0, 508: -135, 509: 135}
 
     def __init__(self, stations=range(501, 507)):
         super(ScienceParkCluster, self).__init__()
@@ -374,12 +387,16 @@ class ScienceParkCluster(BaseCluster):
             alpha = self.station_rotations[station] / 180 * pi
 
             # disable diamond-shaped 502, for the moment
-            if station not in [501]:
+            if station not in [501, 502, 505, 508]:
                 detectors = [(0, 8.66, 'UD'), (0, 2.89, 'UD'),
                              (-5, 0, 'LR'), (5, 0, 'LR')]
                 self._add_station((easting, northing), alpha, detectors)
+            elif station == 501:
+                # Precise position measurement of 501
+                detectors = [(0.37, 8.62, 'UD'), (.07, 2.15, 'UD'),
+                             (-5.23, 0, 'LR'), (5.08, 0, 'LR')]
+                self._add_station((easting, northing), alpha, detectors)
             elif station == 502:
-                # Currently, never executed.
                 # 502 is (since 17 October 2011) diamond-shaped,
                 # with detector 2 moved to the side in LR orientation.
                 # Furthermore, detectors 3 and 4 are reversed (cabling issue)
@@ -389,10 +406,22 @@ class ScienceParkCluster(BaseCluster):
                 detectors = [(0., b, 'UD'), (a * 2, b, 'LR'),
                              (a, 0., 'LR'), (-a, 0., 'LR')]
                 self._add_station((easting, northing), alpha, detectors)
-            elif station == 501:
-                # Precise position measurement of 501
-                detectors = [(0.37, 8.62, 'UD'), (.07, 2.15, 'UD'),
-                             (-5.23, 0, 'LR'), (5.08, 0, 'LR')]
+            elif station == 505:
+                # 505 is (since 24 April 2013) square-shaped,
+                # detector 1 is moved to the left and detector 2 next to it.
+                station_size = 10
+                a = station_size / 2
+                detectors = [(-a, station_size, 'UD'), (a, station_size, 'UD'),
+                             (-a, 0., 'LR'), (a, 0., 'LR')]
+                self._add_station((easting, northing), alpha, detectors)
+            elif station == 508:
+                # 508 is diamond-shaped,
+                # with detector 2 moved to the side of detector 1 in UD orientation.
+                station_size = 10
+                a = station_size / 2
+                b = a * sqrt(3)
+                detectors = [(0., b, 'UD'), (a * 2, b, 'UD'),
+                             (-a, 0., 'LR'), (a, 0., 'LR')]
                 self._add_station((easting, northing), alpha, detectors)
             else:
                 raise RuntimeError("Programming error. Station unknown.")
