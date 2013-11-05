@@ -328,6 +328,20 @@ class ProcessEvents(object):
     def _get_blobs(self):
         return self.group.blobs
 
+    def _reconstruct_trigger_time_from_traces(self, traces):
+        """Reconstruct the moment of trigger from the traces
+
+        The timestamp for an event is based on the moment of the
+        trigger. This moment is reconstructed in this function. Using
+        this result the arrival times in each detector can be corrected
+        to be relative to the timestamp.
+
+        :param traces: the traces for an event
+        :returns: time in the trace for the trigger
+
+        """
+        pass
+
     def _reconstruct_time_from_trace(self, trace, baseline):
         """Reconstruct time of measurement from a trace.
 
