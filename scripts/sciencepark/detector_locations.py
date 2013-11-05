@@ -9,6 +9,9 @@ import sapphire.simulations
 from sapphire.simulations.ldf import KascadeLdf
 
 
+DETECTOR_COLORS = ['black', 'r', 'g', 'b']
+
+
 def sciencepark_stations():
     network = sapphire.api.Network()
     stations = network.stations(subcluster=500)
@@ -30,10 +33,14 @@ def plot_scintillators_in_cluster(cluster):
     for station in cluster.stations:
         for i, detector in enumerate(station.detectors):
             detector_x, detector_y = detector.get_xy_coordinates()
-            plt.scatter(detector_x, detector_y, marker=',', c='m', edgecolor='none', s=6)
-            plt.text(detector_x, detector_y + 3, i + 1, fontsize=8)
+            plt.scatter(detector_x, detector_y, marker='h',
+                        c=DETECTOR_COLORS[i], edgecolor='none', s=25)
         station_x, station_y, station_a = station.get_xyalpha_coordinates()
-        plt.scatter(station_x, station_y, marker=',', c='b', edgecolor='none', s=3)
+        plt.scatter(station_x, station_y, marker='o', c='m', edgecolor='none',
+                    s=7)
+    plt.title('Science Park detector locations')
+    plt.xlabel('Easting (meters)')
+    plt.ylabel('Northing (meters)')
 
 
 def draw_background_map(background_path):
