@@ -29,6 +29,7 @@ class CorsikaFileTests(unittest.TestCase):
         end = self.file.get_end()
         self.assertIsInstance(end, corsika.blocks.RunEnd)
         self.assertEqual(end.id, 'RUNE')
+        self.assertEqual(end.n_events_processed, 1)
 
     def test_events(self):
         """Verify that the Events are properly read"""
@@ -48,6 +49,7 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertEqual(header.id, 'EVTH')
         self.assertEqual(corsika.particles.id[header.particle_id], 'proton')
         self.assertEqual(header.energy, 1e14)
+        self.assertEqual(header.hadron_model_high(), 'QGSJET')
 
     def test_event_end(self):
         """Verify that the Event end is properly read"""
@@ -68,6 +70,9 @@ class CorsikaFileTests(unittest.TestCase):
         particle = particles.next()
         self.assertIsInstance(particle, corsika.blocks.ParticleData)
         self.assertEqual(corsika.particles.id[particle.id], 'muon_p')
+        self.assertAlmostEqual(particle.x, -172.535859375)
+        self.assertAlmostEqual(particle.y, 56.2846679688)
+        self.assertAlmostEqual(particle.r, 181.484397728)
         particle = particles.next()
         self.assertEqual(corsika.particles.id[particle.id], 'muon_m')
 

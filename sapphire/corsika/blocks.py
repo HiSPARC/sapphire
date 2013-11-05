@@ -389,9 +389,6 @@ class ParticleData(object):
     """
     def __init__(self, subblock):
         self.description = subblock[0]
-        self.id = numpy.floor(self.description / 1000)
-        self.hadron_generation = numpy.floor(self.description / 10) % 100
-        self.observation_level = self.description % 10
         self.p_x = subblock[1] * units.GeV
         self.p_y = subblock[2] * units.GeV
         self.p_z = - subblock[3] * units.GeV
@@ -399,30 +396,49 @@ class ParticleData(object):
         self.y = subblock[5] * units.cm
         self.t = subblock[6] * units.ns  # or z for additional muon info
 
-    def is_detectable(self):
-        return particles[self.id] in ['positron', 'electron',
-                                      'muon_p', 'muon_m']  # and 'gamma'
+        self.id = numpy.floor(self.description / 1000)
+        self.r = numpy.sqrt(self.x ** 2 + self.y ** 2)
+        self.is_particle = 0 < self.id < 200
+        self.particle = particles.id[self.id] if self.is_particle else None
+        self.is_detectable = self.particle in ['positron', 'electron',
+                                               'muon_p', 'muon_m']  # + 'gamma'
 
-    def is_particle(self):
-        return 0 < self.description < 100000
+    @property
+    def hadron_generation(self):
+        return numpy.floor(self.description / 10) % 100
 
+    @property
+    def observation_level(self):
+        return self.description % 10
+
+    @property
+    def phi(self):
+        return numpy.arctan2(self.y, self.x)
+
+    @property
     def is_nucleus(self):
-        return 100000 <= self.description < 9900000
+        return 200 <= self.id < 9900 or self.id == 14
 
+    @property
     def is_Cherenkov(self):
-        return 9900000 <= self.description
+        return 9900 <= self.id
 
+    @property
     def atomic_number(self):
-        if self.is_nucleus():
-            return self.id % 100
+        if self.is_nucleus:
+            if self.id == 14:
+                return 1
+            else:
+                return self.id % 100
         else:
             return -1
 
+    @property
     def atom(self):
-        if self.is_nucleus():
-            return particles.atomic_number[self.id % 100]
+        if self.is_nucleus:
+            return particles.atomic_number[self.atomic_number]
         else:
-            return ''
+            return None
 
     def __str__(self):
         return textwrap.dedent("""\
