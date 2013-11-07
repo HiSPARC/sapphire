@@ -164,6 +164,7 @@ class EventHeader(object):
         self.id = subblock[0]
         self.event_number = subblock[1]
         self.particle_id = subblock[2]
+        self.particle = particles.id[subblock[2]]
         self.energy = subblock[3] * units.GeV
         self.starting_altitude = subblock[4] * units.g / units.cm2
         self.first_target = subblock[5]
@@ -276,20 +277,21 @@ class EventHeader(object):
         self.weightlimit_sampling_muons_CONEX = subblock[171]
         self.weightlimit_sampling_EM_CONEX = subblock[172]
 
+    @property
     def hadron_model_low(self):
         hadron_models_low = {1: 'GHEISHA', 2: 'UrQMD', 3: 'FLUKA'}
         return hadron_models_low.get(self.flag_hadron_model_low, 'unknown')
 
+    @property
     def hadron_model_high(self):
         hadron_models_high = {0: 'HDPM', 1: 'VENUS', 2: 'SIBYLL', 3: 'QGSJET',
                               4: 'DPMJET', 5: 'NEXUS', 6: 'EPOS'}
         return hadron_models_high.get(self.flag_hadron_model_high, 'unknown')
 
+    @property
     def computer(self):
         computers = {3: 'UNIX', 4: 'Macintosh'}
         return computers.get(self.flag_computer, 'unknown')
-
-
 
     def __str__(self):
         return textwrap.dedent("""\
