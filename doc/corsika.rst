@@ -33,7 +33,7 @@ easily submit many |corsika| jobs to the Nikhef batch facility
 .. _CorsikaModule:
 
 Corsika Module
-==============
+--------------
 
 .. automodule:: sapphire.corsika
    :members:
