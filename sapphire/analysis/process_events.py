@@ -13,6 +13,8 @@ from sapphire.analysis.find_mpv import FindMostProbableValueInSpectrum
 
 
 ADC_THRESHOLD = 20
+ADC_LOW_THRESHOLD = 253
+ADC_HIGH_THRESHOLD = 323
 ADC_TIME_PER_SAMPLE = 2.5e-9
 
 
@@ -340,7 +342,31 @@ class ProcessEvents(object):
         :returns: time in the trace for the trigger
 
         """
-        pass
+        low_idx = []
+        high_idx = []
+        for trace in traces:
+            low_idx.append(self._first_above_threshold(trace,
+                                                       ADC_LOW_THRESHOLD))
+            if not low_idx[-1] == np.nan:
+                high_idx.append(self._first_above_threshold(trace[low_idx[-1]:],
+                                                            ADC_HIGH_THRESHOLD))
+                high_idx[-1] += low_idx[-1]
+            else:
+                high_idx.append(np.nan)
+        low_idx.sort()
+        high_idx.sort()
+
+        if len(traces) == 2:
+            trigger_idx = low_idx[1]
+        elif len(traces) == 4:
+            trigger_idx = min(low_idx[2], high_idx[1])
+        else:
+            raise LookupError('Unsupported number of traces')
+
+        if trigger_idx == np.nan:
+            raise LookupError('No trigger found!')
+
+        return trigger_idx * ADC_TIME_PER_SAMPLE
 
     def _reconstruct_time_from_trace(self, trace, baseline):
         """Reconstruct time of measurement from a trace.
@@ -353,14 +379,19 @@ class ProcessEvents(object):
 
         """
         threshold = baseline + ADC_THRESHOLD
-
-        value = np.nan
-        for i, t in enumerate(trace):
-            if t >= threshold:
-                value = i
-                break
+        value = self._first_above_threshold(trace, threshold)
 
         return value * ADC_TIME_PER_SAMPLE
+
+    def _first_above_threshold(self, trace, threshold):
+        """Find the first element in the list equal or above threshold
+
+        If no element matches the condition the length of the list plus
+        one will be returned.
+
+        """
+        return next((i for i, x in enumerate(trace) if x >= threshold),
+                    np.nan)
 
     def _store_number_of_particles(self):
         """Store number of particles in the detectors.
