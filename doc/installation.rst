@@ -6,7 +6,7 @@ Installation
 In theory, installing a Python package should be as easy as py.  Er, pie.
 Using `Pip <http://www.pip-installer.org/>`_.  Like so::
 
-    $ pip install sapphire
+    $ pip install hisparc-sapphire
 
 Then, the Python package called ``sapphire`` would be retrieved from the
 internet.  It would have its dependencies listed and ``pip`` would pull
@@ -163,23 +163,29 @@ handled by the Python package management software.
 Installing |sapphire|
 ---------------------
 
-When |sapphire| reaches 1.0, we will upload it to `PyPI
-<http://pypi.python.org>`_ so that Pip knows where to find it.  That is
-currently, however, not the case.
+The |sapphire| package has been uploaded to `PyPI
+<http://pypi.python.org>`_ so that Pip knows where to find it.
 
-There are two scenarios for installing |sapphire|: with or without
-fetching the code.
+There are now several scenarios for installing |sapphire|: let Pip
+install the release or development version or download the source code
+and use setup.py to install it.
 
 
 Just let me get to work!
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-This scenario does not involve fetching the code.  It will just install
-|sapphire|, so that you can get to work.  Quickly, issue:
+These scenarios do not involve fetching the code.  They will just
+install |sapphire|, so that you can get to work.  To get the latest
+stable release version, simply issue::
 
-    $ pip install https://github.com/hisparc/sapphire/zipball/master
+    $ pip install hisparc-sapphire
 
 Done.  Now get to work.
+
+If you like living on the edge with a possibly broken version of
+|sapphire|, get the latest development version::
+
+    $ pip install https://github.com/hisparc/sapphire/zipball/master
 
 
 Let me see the code!
@@ -193,9 +199,9 @@ yourself.  For that, please see the `GitHub Help pages
 <https://help.github.com/articles/set-up-git>`_.
 
 To just download the code and install |sapphire|, first go to
-https://github.com/hisparc/sapphire/.  Then, click on the *Zip* button
-(see image below).  This will start a download of all the code bundled in
-a zip file.
+https://github.com/hisparc/sapphire/.  Then, click on the *Download ZIP*
+button (see image below).  This will start a download of all the code
+bundled in a zip file.
 
 .. image:: images/github-zipball.png
 
