@@ -16,6 +16,9 @@ The following packages and modules are included:
 :mod:`~sapphire.clusters`
     definitions for HiSPARC detectors, stations and clusters
 
+:mod:`~sapphire.corsika`
+    package containing CORSIKA simulation related modules
+
 :mod:`~sapphire.gpstime`
     conversion functions for converting GPS time to UTC and vice versa
 

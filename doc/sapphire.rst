@@ -13,6 +13,7 @@ Contents:
    analysis
    api
    clusters
+   corsika
    gpstime
    kascade
    publicdb
