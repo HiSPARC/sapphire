@@ -19,5 +19,7 @@ setup(name='hisparc-sapphire',
                    'Topic :: Scientific/Engineering',
                    'Topic :: Education',
                    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'],
+      package_data={'sapphire': ['simulations/qsub.sh',
+                                 'corsika/LICENSE']},
       install_requires=['numpy', 'scipy', 'tables', 'matplotlib',
                         'progressbar', 'mock'])
