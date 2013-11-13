@@ -39,7 +39,7 @@ installation instructions are available in the documentation in the
 ``doc/`` directory.  You can compile them using Sphinx, or you can
 follow this link: http://docs.hisparc.nl/sapphire/.
 
-To check if it worked start Python and load the package::
+To check if it worked start Python and load the package:
 
 .. code-block:: python
 

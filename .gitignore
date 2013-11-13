@@ -3,7 +3,9 @@
 # Specific
 _build/
 build/
+dist/
 sapphire.egg-info/
+hisparc_sapphire.egg-info/
 
 # Python
 *.pyc
