@@ -40,8 +40,8 @@ class CorsikaEvent(object):
         """
         if not self._end:
             self._end = EventEnd(unpack(self.format.subblock_format,
-                                                self._raw_file._contents[self._end_index:
-                                                                         self._end_index + self.format.subblock_size]))
+                                        self._raw_file._contents[self._end_index:
+                                                                 self._end_index + self.format.subblock_size]))
         return self._end
 
     def get_particles(self):
@@ -218,8 +218,14 @@ class CorsikaFile(object):
 
     def _get_events(self):
         """Private method. DO NOT USE! EVER!"""
-        heads = [b for b in self._subblocks_indices() if unpack('4s', self._contents[b:b + self.format.field_size])[0] == 'EVTH']
-        tails = [b for b in self._subblocks_indices() if unpack('4s', self._contents[b:b + self.format.field_size])[0] == 'EVTE']
+        heads = []
+        tails = []
+        for block in self._subblocks_indices():
+            type = unpack('4s', self._contents[block:block + self.format.field_size])[0]
+            if  type == 'EVTH':
+                heads.append(block)
+            elif type == 'EVTE':
+                tails.append(block)
         return (heads, tails)
 
     def _get_event_header(self, word):
@@ -230,7 +236,7 @@ class CorsikaFile(object):
     def _get_event_end(self, word):
         """Private method. DO NOT USE! EVER!"""
         return EventEnd(unpack(self.format.subblock_format,
-                                   self._contents[word:self.format.subblock_size + word]))
+                               self._contents[word:self.format.subblock_size + word]))
 
     def _get_run_indices(self):
         """Get the indices for the start of the run header and end"""
@@ -258,7 +264,7 @@ class CorsikaFile(object):
 
         """
         return RunEnd(unpack(self.format.subblock_format,
-                                 self._contents[word:word + self.format.subblock_size]))
+                             self._contents[word:word + self.format.subblock_size]))
 
     def _get_particle_record(self, word):
         """Private method. DO NOT USE! EVER!"""
