@@ -102,7 +102,4 @@ def create_table(file, group):
         head, tail = os.path.split(group)
         file.createGroup(head, tail)
 
-    if 'events' in file.getNode(group):
-        file.removeNode(group, 'events')
-
     return file.createTable(group, 'events', description)
