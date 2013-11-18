@@ -40,48 +40,32 @@ def download_data(file, group, station_id, start, end):
         ... datetime.datetime(2013, 9, 1), datetime.datetime(2013, 9, 2))
 
     """
+    # build and open url
     url = URL % station_id
     query_string = urllib.urlencode({'start': start, 'end': end})
     url += '?' + query_string
+    data = urllib2.urlopen(url)
 
+    # keep track of event timestamp within [start, end] interval for
+    # progressbar
     t_start = calendar.timegm(start.utctimetuple())
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
-
-    data = urllib2.urlopen(url)
-
-    table = create_table(file, group)
-
     pbar = progressbar.ProgressBar(maxval=1.,
                                    widgets=[progressbar.Percentage(),
                                    progressbar.Bar(),
                                    progressbar.ETA()]).start()
+
+    # create events table
+    table = create_table(file, group)
+
+    # event loop
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
     for line in reader:
-        if line[0][0] == '#':
-            continue
+        timestamp = read_line_and_store_event(line, table)
 
-        (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
-         int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4) = line
-
-        timestamp = int(timestamp)
-        nanoseconds = int(nanoseconds)
-        ext_timestamp = timestamp * int(1e9) + nanoseconds
-        pulseheights = [int(ph1), int(ph2), int(ph3), int(ph4)]
-        integrals = [int(int1), int(int2), int(int3), int(int4)]
-        n1 = float(n1)
-        n2 = float(n2)
-        n3 = float(n3)
-        n4 = float(n4)
-        t1 = float(t1)
-        t2 = float(t2)
-        t3 = float(t3)
-        t4 = float(t4)
-        table.append([[timestamp, nanoseconds, ext_timestamp,
-                       pulseheights, integrals, n1, n2, n3, n4, t1, t2,
-                       t3, t4]])
-
+        # update progressbar every .5 seconds
         if time.time() - prev_update > .5:
             pbar.update((1. * timestamp - t_start) / t_delta)
             prev_update = time.time()
@@ -89,6 +73,16 @@ def download_data(file, group, station_id, start, end):
 
 
 def create_table(file, group):
+    """Create event table in PyTables file
+
+    Create an event table containing the ESD data columns which are
+    available in the CSV download.
+
+    :param file: PyTables file
+    :param group: the group to contain the events table, which need not
+        exist
+
+    """
     description = {'timestamp': tables.Time32Col(pos=0),
                    'nanoseconds': tables.UInt32Col(pos=1),
                    'ext_timestamp': tables.UInt64Col(pos=2),
@@ -108,3 +102,45 @@ def create_table(file, group):
         file.createGroup(head, tail)
 
     return file.createTable(group, 'events', description)
+
+
+def read_line_and_store_event(line, table):
+    """Read CSV line and store event
+
+    Read a line from the CSV download and store event.  Return the event
+    timestamp to keep track of the progress.
+
+    :param line: text line from the CSV file
+    :param table: pytables table for event storage
+    :return: event timestamp
+
+    """
+    # ignore comment lines
+    if line[0][0] == '#':
+        return 0.
+
+    # break up CSV line
+    (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
+     int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4) = line
+
+    # convert string values to correct data types
+    timestamp = int(timestamp)
+    nanoseconds = int(nanoseconds)
+    ext_timestamp = timestamp * 1000000000 + nanoseconds
+    pulseheights = [int(ph1), int(ph2), int(ph3), int(ph4)]
+    integrals = [int(int1), int(int2), int(int3), int(int4)]
+    n1 = float(n1)
+    n2 = float(n2)
+    n3 = float(n3)
+    n4 = float(n4)
+    t1 = float(t1)
+    t2 = float(t2)
+    t3 = float(t3)
+    t4 = float(t4)
+
+    # store event
+    table.append([[timestamp, nanoseconds, ext_timestamp,
+                   pulseheights, integrals, n1, n2, n3, n4, t1, t2,
+                   t3, t4]])
+
+    return timestamp
