@@ -10,6 +10,7 @@ import urllib
 import csv
 import os.path
 import calendar
+import time
 
 import tables
 import progressbar
@@ -51,16 +52,17 @@ def download_data(file, group, station_id, start, end):
 
     table = create_table(file, group)
 
-    reader = csv.reader(data, delimiter='\t')
     pbar = progressbar.ProgressBar(maxval=1.,
                                    widgets=[progressbar.Percentage(),
                                    progressbar.Bar(),
                                    progressbar.ETA()]).start()
+    prev_update = time.time()
+    reader = csv.reader(data, delimiter='\t')
     for line in reader:
         if line[0][0] == '#':
             continue
 
-        (date, time, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
+        (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
          int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4) = line
 
         timestamp = int(timestamp)
@@ -79,7 +81,10 @@ def download_data(file, group, station_id, start, end):
         table.append([[timestamp, nanoseconds, ext_timestamp,
                        pulseheights, integrals, n1, n2, n3, n4, t1, t2,
                        t3, t4]])
-        pbar.update((1. * timestamp - t_start) / t_delta)
+
+        if time.time() - prev_update > .5:
+            pbar.update((1. * timestamp - t_start) / t_delta)
+            prev_update = time.time()
     pbar.finish()
 
 
