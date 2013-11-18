@@ -9,8 +9,10 @@ import urllib2
 import urllib
 import csv
 import os.path
+import calendar
 
 import tables
+import progressbar
 
 
 URL = 'http://data.hisparc.nl/data/%d/events'
@@ -41,11 +43,19 @@ def download_data(file, group, station_id, start, end):
     query_string = urllib.urlencode({'start': start, 'end': end})
     url += '?' + query_string
 
+    t_start = calendar.timegm(start.utctimetuple())
+    t_end = calendar.timegm(end.utctimetuple())
+    t_delta = t_end - t_start
+
     data = urllib2.urlopen(url)
 
     table = create_table(file, group)
 
     reader = csv.reader(data, delimiter='\t')
+    pbar = progressbar.ProgressBar(maxval=1.,
+                                   widgets=[progressbar.Percentage(),
+                                   progressbar.Bar(),
+                                   progressbar.ETA()]).start()
     for line in reader:
         if line[0][0] == '#':
             continue
@@ -69,6 +79,8 @@ def download_data(file, group, station_id, start, end):
         table.append([[timestamp, nanoseconds, ext_timestamp,
                        pulseheights, integrals, n1, n2, n3, n4, t1, t2,
                        t3, t4]])
+        pbar.update((1. * timestamp - t_start) / t_delta)
+    pbar.finish()
 
 
 def create_table(file, group):
