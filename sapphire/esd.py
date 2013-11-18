@@ -83,19 +83,20 @@ def create_table(file, group):
         exist
 
     """
-    description = {'timestamp': tables.Time32Col(pos=0),
-                   'nanoseconds': tables.UInt32Col(pos=1),
-                   'ext_timestamp': tables.UInt64Col(pos=2),
-                   'pulseheights': tables.Int16Col(pos=3, shape=4),
-                   'integrals': tables.Int32Col(pos=4, shape=4),
-                   'n1': tables.Float32Col(pos=5),
-                   'n2': tables.Float32Col(pos=6),
-                   'n3': tables.Float32Col(pos=7),
-                   'n4': tables.Float32Col(pos=8),
-                   't1': tables.Float32Col(pos=9),
-                   't2': tables.Float32Col(pos=10),
-                   't3': tables.Float32Col(pos=11),
-                   't4': tables.Float32Col(pos=12)}
+    description = {'event_id': tables.UInt32Col(pos=0),
+                   'timestamp': tables.Time32Col(pos=1),
+                   'nanoseconds': tables.UInt32Col(pos=2),
+                   'ext_timestamp': tables.UInt64Col(pos=3),
+                   'pulseheights': tables.Int16Col(pos=4, shape=4),
+                   'integrals': tables.Int32Col(pos=5, shape=4),
+                   'n1': tables.Float32Col(pos=6),
+                   'n2': tables.Float32Col(pos=7),
+                   'n3': tables.Float32Col(pos=8),
+                   'n4': tables.Float32Col(pos=9),
+                   't1': tables.Float32Col(pos=10),
+                   't2': tables.Float32Col(pos=11),
+                   't3': tables.Float32Col(pos=12),
+                   't4': tables.Float32Col(pos=13)}
 
     if group not in file:
         head, tail = os.path.split(group)
@@ -123,7 +124,8 @@ def read_line_and_store_event(line, table):
     (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
      int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4) = line
 
-    # convert string values to correct data types
+    # convert string values to correct data types or calculate values
+    event_id = len(table)
     timestamp = int(timestamp)
     nanoseconds = int(nanoseconds)
     ext_timestamp = timestamp * 1000000000 + nanoseconds
@@ -139,7 +141,7 @@ def read_line_and_store_event(line, table):
     t4 = float(t4)
 
     # store event
-    table.append([[timestamp, nanoseconds, ext_timestamp,
+    table.append([[event_id, timestamp, nanoseconds, ext_timestamp,
                    pulseheights, integrals, n1, n2, n3, n4, t1, t2,
                    t3, t4]])
 
