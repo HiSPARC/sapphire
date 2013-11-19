@@ -42,10 +42,24 @@ class CorsikaBlocksTests(unittest.TestCase):
                                       particle_size=self.format.particle_size,
                                       particles_per_subblock=self.format.particles_per_subblock)))
 
+    def test_validate_particle_format(self):
+        """Verify that the particle format is correct"""
+
+        self.assertEqual(self.format.particle_format, '7f',
+                         msg=('The particle format ({particle}) is incorrect.'
+                              .format(particle=self.format.particle_format)))
+
 
 class CorsikaBlocksThinTests(CorsikaBlocksTests):
     def setUp(self):
         self.format = blocks.FormatThin()
+
+    def test_validate_particle_format(self):
+        """Verify that the particle format is correct"""
+
+        self.assertEqual(self.format.particle_format, '8f',
+                         msg=('The thinned particle format ({particle}) is incorrect.'
+                              .format(particle=self.format.particle_format)))
 
 
 if __name__ == '__main__':

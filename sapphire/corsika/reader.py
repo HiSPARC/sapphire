@@ -193,7 +193,8 @@ class CorsikaFile(object):
         """
         event_head = None
         for block in self._subblocks_indices():
-            tag = unpack('4s', self._contents[block:block + self.format.field_size])[0]
+            endblock = block + self.format.field_size
+            tag = unpack('4s', self._contents[block:endblock])[0]
             if tag == 'EVTH':
                 event_head = block
             if tag == 'EVTE':
@@ -221,7 +222,8 @@ class CorsikaFile(object):
         heads = []
         tails = []
         for block in self._subblocks_indices():
-            type = unpack('4s', self._contents[block:block + self.format.field_size])[0]
+            endblock = block + self.format.field_size
+            type = unpack('4s', self._contents[block:endblock])[0]
             if  type == 'EVTH':
                 heads.append(block)
             elif type == 'EVTE':
@@ -230,18 +232,21 @@ class CorsikaFile(object):
 
     def _get_event_header(self, word):
         """Private method. DO NOT USE! EVER!"""
+        endword = word + self.format.subblock_size
         return EventHeader(unpack(self.format.subblock_format,
-                                  self._contents[word:self.format.subblock_size + word]))
+                                  self._contents[word:endword]))
 
     def _get_event_end(self, word):
         """Private method. DO NOT USE! EVER!"""
+        endword = word + self.format.subblock_size
         return EventEnd(unpack(self.format.subblock_format,
-                               self._contents[word:self.format.subblock_size + word]))
+                               self._contents[word:endword]))
 
     def _get_run_indices(self):
         """Get the indices for the start of the run header and end"""
         for block in self._subblocks_indices():
-            type = unpack('4s', self._contents[block:block + self.format.field_size])[0]
+            endblock = block + self.format.field_size
+            type = unpack('4s', self._contents[block:endblock])[0]
             if  type == 'RUNH':
                 head = block
             elif type == 'RUNE':
@@ -254,8 +259,9 @@ class CorsikaFile(object):
         :param word: the index where the run header starts
 
         """
+        endword = word + self.format.subblock_size
         return RunHeader(unpack(self.format.subblock_format,
-                                self._contents[word:word + self.format.subblock_size]))
+                                self._contents[word:endword]))
 
     def _get_run_end(self, word):
         """Get the run end from the contents
@@ -263,20 +269,15 @@ class CorsikaFile(object):
         :param word: the index where the run end starts
 
         """
+        endword = word + self.format.subblock_size
         return RunEnd(unpack(self.format.subblock_format,
-                             self._contents[word:word + self.format.subblock_size]))
+                             self._contents[word:endword]))
 
     def _get_particle_record(self, word):
         """Private method. DO NOT USE! EVER!"""
-        if self.format.particle_format == '7f':
-            return ParticleData(unpack(self.format.particle_format,
-                                       self._contents[word:word + self.format.particle_size]))
-        elif self.format.particle_format == '8f':
-            return ParticleDataThin(unpack(self.format.particle_format,
-                                           self._contents[word:word + self.format.particle_size]))
-        else:
-            raise Exception('Unknown particle format: {format}'
-                            .format(format=self.format.particle_format))
+        endword = word + self.format.particle_size
+        return ParticleData(unpack(self.format.particle_format,
+                                   self._contents[word:endword]))
 
     def Blocks():
         pass
@@ -298,3 +299,9 @@ class CorsikaFileThin(CorsikaFile):
         """
         super(CorsikaFileThin, self).__init__(filename)
         self.format = FormatThin()
+
+    def _get_particle_record(self, word):
+        """Private method. DO NOT USE! EVER!"""
+        endword = word + self.format.particle_size
+        return ParticleDataThin(unpack(self.format.particle_format,
+                                       self._contents[word:endword]))

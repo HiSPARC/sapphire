@@ -49,7 +49,7 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertEqual(header.id, 'EVTH')
         self.assertEqual(corsika.particles.id[header.particle_id], 'proton')
         self.assertEqual(header.energy, 1e14)
-        self.assertEqual(header.hadron_model_high(), 'QGSJET')
+        self.assertEqual(header.hadron_model_high, 'QGSJET')
 
     def test_event_end(self):
         """Verify that the Event end is properly read"""
