@@ -276,6 +276,63 @@ class BaseCluster(object):
         return x0, y0
 
 
+class DetectorRAlphaBeta(Detector):
+    """A HiSPARC detector"""
+
+    __detector_size = (.5, 1.)
+
+    def __init__(self, station, r, alpha, beta):
+        """Initialize detector
+
+        :param station: station instance this detector is part of
+        :param r, alpha: these define the position of the detector
+            relative to the GPS. r is the distance between the center of
+            the scintillator and the GPS in meters. alpha is the
+            clock-wise turning angle between North and the detector
+            relative to the GPS.
+        :param beta: defines the orientation of the detector, like
+            alpha this is the clock-wise turning angle relative to
+            North. The angle is the orientation of the long side of
+            the detector.
+
+        """
+        self.station = station
+        self.x = sin(alpha) * r
+        self.y = cos(alpha) * r
+        self.orientation = beta
+
+    def get_corners(self):
+        """Get the x, y coordinates of the detector corners
+
+        :return: x, y coordinates of detector corners
+        :rtype: list of (x, y) tuples
+
+        """
+        X, Y, alpha = self.station.get_xyalpha_coordinates()
+
+        x = self.x
+        y = self.y
+        beta = self.orientation
+        size = self.detector_size
+
+        dx = size[0] / 2
+        dy = size[1] / 2
+        corners = [(x - dx, y - dy), (x + dx, y - dy),
+                   (x + dx, y + dy), (x - dx, y + dy)]
+
+        cosb = cos(-beta)
+        sinb = sin(-beta)
+        corners = [[x * cosb - y * sinb, x * sinb + y * cosb] for x, y in
+                   corners]
+
+        sina = sin(alpha)
+        cosa = cos(alpha)
+        corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
+                   corners]
+
+        return [(X + x, Y + y) for x, y in corners]
+
+
 class SimpleCluster(BaseCluster):
     """Define a simple cluster containing four stations"""
 
