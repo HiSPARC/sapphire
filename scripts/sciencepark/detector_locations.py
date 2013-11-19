@@ -13,9 +13,12 @@ DETECTOR_COLORS = ['black', 'r', 'g', 'b']
 
 
 def sciencepark_stations():
-    network = sapphire.api.Network()
-    stations = network.stations(subcluster=500)
-    return [station['number'] for station in stations]
+    try:
+        network = sapphire.api.Network()
+        stations = network.stations(subcluster=500)
+        return [station['number'] for station in stations]
+    except:
+        return [501, 502, 503, 504, 505, 506, 508, 509]
 
 
 def get_cluster(stations):
