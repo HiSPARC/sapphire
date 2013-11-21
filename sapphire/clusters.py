@@ -18,7 +18,7 @@ import sapphire.api
 class Detector(object):
     """A HiSPARC detector"""
 
-    __detector_size = (.5, 1.)
+    _detector_size = (.5, 1.)
 
     def __init__(self, station, x, y, orientation):
         """Initialize detector
@@ -38,10 +38,10 @@ class Detector(object):
 
     @property
     def detector_size(self):
-        return self.__detector_size
+        return self._detector_size
 
     def get_area(self):
-        return self.__detector_size[0] * self.__detector_size[1]
+        return self._detector_size[0] * self._detector_size[1]
 
     def get_xy_coordinates(self):
         X, Y, alpha = self.station.get_xyalpha_coordinates()
@@ -89,7 +89,7 @@ class Detector(object):
 class Station(object):
     """A HiSPARC station"""
 
-    __detectors = None
+    _detectors = None
 
     def __init__(self, cluster, station_id, position, angle, detectors=None):
         """Initialize station
@@ -132,13 +132,13 @@ class Station(object):
             respectively.
 
         """
-        if self.__detectors is None:
-            self.__detectors = []
-        self.__detectors.append(Detector(self, x, y, orientation))
+        if self._detectors is None:
+            self._detectors = []
+        self._detectors.append(Detector(self, x, y, orientation))
 
     @property
     def detectors(self):
-        return self.__detectors
+        return self._detectors
 
     def get_xyalpha_coordinates(self):
         """Calculate coordinates of a station
@@ -195,7 +195,7 @@ class Station(object):
 class BaseCluster(object):
     """Base class for HiSPARC clusters"""
 
-    __stations = None
+    _stations = None
 
     def __init__(self, position=(0., 0.), angle=0.):
         """Override this function to build your cluster"""
@@ -219,18 +219,18 @@ class BaseCluster(object):
             >>> cluster = BaseCluster()
             >>> cluster._add_station((0, 0), pi / 2, [(-5, 0, 'UD'), (5, 0, 'UD')])
         """
-        # Need to make __stations an instance variable to be able to
+        # Need to make _stations an instance variable to be able to
         # pickle it.  An assignment takes care of that.
-        if self.__stations is None:
-            self.__stations = []
+        if self._stations is None:
+            self._stations = []
         # 1-based (0 is reserved, see e.g. use of headers in groundparticlesim)
-        station_id = len(self.__stations) + 1
-        self.__stations.append(Station(self, station_id, position, angle,
+        station_id = len(self._stations) + 1
+        self._stations.append(Station(self, station_id, position, angle,
                                        detectors))
 
     @property
     def stations(self):
-        return self.__stations
+        return self._stations
 
     def get_xyalpha_coordinates(self):
         return self._x, self._y, self._alpha
@@ -279,8 +279,6 @@ class BaseCluster(object):
 class DetectorRAlphaBeta(Detector):
     """A HiSPARC detector"""
 
-    __detector_size = (.5, 1.)
-
     def __init__(self, station, r, alpha, beta):
         """Initialize detector
 
@@ -313,8 +311,8 @@ class DetectorRAlphaBeta(Detector):
         x = self.x
         y = self.y
         beta = self.orientation
-        size = self.detector_size
 
+        size = self._detector_size
         dx = size[0] / 2
         dy = size[1] / 2
         corners = [(x - dx, y - dy), (x + dx, y - dy),
@@ -379,10 +377,9 @@ class StationRAlphaBeta(Station):
             the detector.
 
         """
-        if self._Station__detectors is None:
-            self._Station__detectors = []
-        self._Station__detectors.append(DetectorRAlphaBeta(self, r, alpha,
-                                                           beta))
+        if self._detectors is None:
+            self._detectors = []
+        self._detectors.append(DetectorRAlphaBeta(self, r, alpha, beta))
 
 
 class ClusterRAlphaBeta(BaseCluster):
@@ -409,15 +406,14 @@ class ClusterRAlphaBeta(BaseCluster):
                                                       (5, pi / 2., pi / 2.)])
 
         """
-        # Need to make __stations an instance variable to be able to
+        # Need to make _stations an instance variable to be able to
         # pickle it.  An assignment takes care of that.
-        if self._BaseCluster__stations is None:
-            self._BaseCluster__stations = []
+        if self._stations is None:
+            self._stations = []
         # 1-based (0 is reserved, see e.g. use of headers in groundparticlesim)
-        station_id = len(self._BaseCluster__stations) + 1
-        self._BaseCluster__stations.append(StationRAlphaBeta(self, station_id,
-                                                             position, angle,
-                                                             detectors))
+        station_id = len(self._stations) + 1
+        self._stations.append(StationRAlphaBeta(self, station_id, angle,
+                                                position, detectors))
 
 
 class SimpleCluster(BaseCluster):
