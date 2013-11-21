@@ -12,7 +12,7 @@ from matplotlib.path import Path
 import matplotlib.patches as patches
 
 import sapphire.clusters
-
+import sapphire.api
 
 DETECTOR_COLORS = ['black', 'r', 'g', 'b']
 PATH_CODES = [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
@@ -43,8 +43,14 @@ def get_cluster():
     cluster._add_station((15, 15), [(5, -pi / 2, 0.),
                                     (5, pi / 2, 0.)])
     # Random - Swirl
-    detectors = [(2 + (i % 7), a, a)
-                 for i, a in enumerate(np.arange(0, 2 * pi, pi / 14))]
+#     detectors = [(2 + (i % 7), a, a)
+#                  for i, a in enumerate(np.arange(0, 2 * pi, pi / 14))]
+#     cluster._add_station((-15, 15), detectors)
+    # HiSPARC Station from API (503, 504 or 505)
+    station = sapphire.api.Station(504)
+    detectors = station.detectors()
+    detectors = [(d['radius'], np.radians(d['alpha']), np.radians(d['beta']))
+                 for d in detectors]
     cluster._add_station((-15, 15), detectors)
     return cluster
 
