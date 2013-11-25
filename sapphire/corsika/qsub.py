@@ -222,7 +222,7 @@ def multiple_jobs(n, E, p, q):
     :param q: Stoomboot queue to submit to
 
     """
-    for _ in arange(n):
+    for _ in xrange(n):
         batch = CorsikaBatch(E, p, q)
         batch.batch_run()
 
