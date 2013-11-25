@@ -110,7 +110,7 @@ class CorsikaBatch(object):
     def __init__(self, energy=7, particle='proton', queue='stbcq',
                  corsika='corsika74000Linux_QGSII_gheisha'):
         self.energy = energy
-        self.particle = eval('particles.' + particle)
+        self.particle = [i for i, p in particles.id.items() if p == particle][0]
         self.queue = queue
         self.corsika = corsika
         self.seed1 = None
