@@ -168,7 +168,7 @@ class EventHeader(object):
         self.energy = subblock[3] * units.GeV
         self.starting_altitude = subblock[4] * units.g / units.cm2
         self.first_target = subblock[5]
-        self.first_interaction_altitude = subblock[6] * units.cm2  # Bad units?
+        self.first_interaction_altitude = subblock[6] * units.cm
         self.p_x = subblock[7] * units.GeV
         self.p_y = subblock[8] * units.GeV
         self.p_z = - subblock[9] * units.GeV

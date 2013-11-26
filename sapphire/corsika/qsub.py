@@ -97,7 +97,7 @@ class CorsikaBatch(object):
     Stoomboot is the Nikhef computer cluster.
 
     :param energy: the energy of the primary particle in log10(GeV)
-    :param particle: string name of primary particle as given in particles
+    :param particle: name of primary particle, e.g. proton, gamma or iron
     :param queue: choose a queue to sumbit the job to:
                   short - max 4 hours, ...
                   stbcq - max 8 hours, 1000 jobs, 240 cpus
