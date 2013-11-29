@@ -266,7 +266,7 @@ def multiple_jobs(n, E, p, T, q, c):
 
     progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
     for i in progress(xrange(n)):
-        if not check_queue(queue):
+        if not check_queue(q):
             progress.finish()
             print 'Stopped after {i} jobs because queue is full.'.format(i=i)
             break
