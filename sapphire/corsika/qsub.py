@@ -231,14 +231,18 @@ def check_queue(queue):
     :return: boolean, True if slots are available, False otherwise.
 
     """
-    jobs = int(subprocess.check_output('qstat -u $USER | grep {queue} | wc -l'
-                                       .format(queue=queue), shell=True))
+    all_jobs = int(subprocess.check_output('qstat | grep {queue} | wc -l'
+                                           .format(queue=queue), shell=True))
+    user_jobs = int(subprocess.check_output('qstat -u $USER | grep {queue}'
+                                            ' | wc -l'.format(queue=queue),
+                                            shell=True))
+
     if queue == 'short':
-        return 1000 - jobs
+        return 1000 - user_jobs
     elif queue == 'stbcq':
-        return 1000 - jobs
+        return min(1000 - user_jobs, 10000 - all_jobs)
     elif queue == 'qlong':
-        return 500 - jobs
+        return min(500 - user_jobs, 1000 - all_jobs)
     else:
         raise KeyError('Unknown queue name: {queue}'.format(queue))
 
