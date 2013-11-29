@@ -234,13 +234,13 @@ def check_queue(queue):
     jobs = int(subprocess.check_output('qstat -u $USER | grep {queue} | wc -l'
                                        .format(queue=queue), shell=True))
     if queue == 'short':
-        return jobs < 1000
+        return 1000 - jobs
     elif queue == 'stbcq':
-        return jobs < 1000
+        return 1000 - jobs
     elif queue == 'qlong':
-        return jobs < 500
+        return 500 - jobs
     else:
-        return False
+        raise KeyError('Unknown queue name: {queue}'.format(queue))
 
 
 def multiple_jobs(n, E, p, T, q, c):
@@ -264,12 +264,16 @@ def multiple_jobs(n, E, p, T, q, c):
         CORSIKA executable  {c}
         """.format(n=n, E=E, p=p, T=T, q=q, c=c))
 
+    available_slots = check_queue(q)
+    if available_slots <= 0:
+        n = 0
+        print 'Submitting no jobs because queue is full.'
+    elif available_slots < n:
+        n = available_slots
+        print 'Submitting {n} jobs because queue is almost full.'.format(n=n)
+
     progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
-    for i in progress(xrange(n)):
-        if not check_queue(q):
-            progress.finish()
-            print 'Stopped after {i} jobs because queue is full.'.format(i=i)
-            break
+    for _ in progress(xrange(n)):
         batch = CorsikaBatch(energy=E, particle=p, theta=T, queue=q, corsika=c)
         batch.batch_run()
     print 'Done.'
