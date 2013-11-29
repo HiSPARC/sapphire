@@ -7,6 +7,8 @@ import random
 import textwrap
 import subprocess
 
+import progressbar as pb
+
 import particles
 
 
@@ -26,7 +28,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     PRMPAR    {particle}               particle type of prim. particle (14=proton, 1=photon, 3=electron)
     ERANGE    1.E{energy}  1.E{energy} energy range of primary particle (GeV)
     ESLOPE    -2.7                     slope of primary energy spectrum (E^y)
-    THETAP    0.   0.                  range of zenith angle (degree)
+    THETAP    {theta}   {theta}        range of zenith angle (degree)
     PHIP      0.   0.                  range of azimuth angle (degree)
     FIXCHI    0.                       starting altitude (g/cm**2)
     FIXHEI    0.   0                   height and target type of first interaction (cm, [1=N, 2=O, 3=Ar])
@@ -98,19 +100,22 @@ class CorsikaBatch(object):
 
     :param energy: the energy of the primary particle in log10(GeV)
     :param particle: name of primary particle, e.g. proton, gamma or iron
+    :param theta: zenith angle of the primary particle (in degrees)
     :param queue: choose a queue to sumbit the job to:
-                  short - max 4 hours, ...
-                  stbcq - max 8 hours, 1000 jobs, 240 cpus
-                  qlong - max 48 hours, 80 jobs
+                  short - max 4 hours, max 1000 jobs
+                  stbcq - max 8 hours, max 1000 jobs
+                  qlong - max 48 hours, max 500 jobs, max 64 running
     :param corsika: name of the compiled CORSIKA executable to use:
                     corsika74000Linux_QGSII_gheisha
                     corsika74000Linux_EPOS_gheisha
 
     """
-    def __init__(self, energy=7, particle='proton', queue='stbcq',
+    def __init__(self, energy=7, particle='proton', theta=22.5, queue='stbcq',
                  corsika='corsika74000Linux_QGSII_gheisha'):
         self.energy = energy
-        self.particle = [i for i, p in particles.id.items() if p == particle][0]
+        self.particle = [i for i, p in particles.id.items()
+                         if p == particle][0]
+        self.theta = theta
         self.queue = queue
         self.corsika = corsika
         self.seed1 = None
@@ -180,10 +185,10 @@ class CorsikaBatch(object):
     def create_input(self):
         """Make CORSIKA steering file"""
 
-        inputpath = TEMPDIR + self.rundir + 'input-hisparc'
+        inputpath = os.path.join(TEMPDIR, self.rundir, 'input-hisparc')
         input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                       particle=self.particle,
-                                      energy=self.energy)
+                                      energy=self.energy, theta=self.theta)
         file = open(inputpath, 'w')
         file.write(input)
         file.close()
@@ -191,7 +196,7 @@ class CorsikaBatch(object):
     def create_script(self):
         """Make Stoomboot script file"""
 
-        scriptpath = TEMPDIR + self.rundir + 'run.sh'
+        scriptpath = os.path.join(TEMPDIR, self.rundir, 'run.sh')
         script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                         queue=self.queue, corsika=self.corsika,
                                         rundir=TEMPDIR + self.rundir)
@@ -207,25 +212,69 @@ class CorsikaBatch(object):
         the PWD. So we create symlinks to all files in the run dir.
 
         """
-        subprocess.check_output('ln -s {source}/* {dest}'
-                                .format(source=CORSIKADIR,
-                                        dest=TEMPDIR + self.rundir),
+        source = os.path.join(CORSIKADIR, '*')
+        destination = os.path.join(TEMPDIR, self.rundir)
+        subprocess.check_output('ln -s {source} {destination}'
+                                .format(source=source,
+                                        destination=destination),
                                 shell=True)
 
 
-def multiple_jobs(n, E, p, q):
-    """Use this to sumbit multiple jobs to stoomboot
+def check_queue(queue):
+    """Check for available job slots on the selected queue for current user
+
+    Caveat: also counts completed jobs still listed in qstat,
+            add `grep [RQ]` to fix.
+
+    :param queue: queue name for which to check current number of job
+                  slots in use.
+    :return: boolean, True if slots are available, False otherwise.
+
+    """
+    jobs = int(subprocess.check_output('qstat -u $USER | grep {queue} | wc -l'
+                                       .format(queue=queue), shell=True))
+    if queue == 'short':
+        return jobs < 1000
+    elif queue == 'stbcq':
+        return jobs < 1000
+    elif queue == 'qlong':
+        return jobs < 500
+    else:
+        return False
+
+
+def multiple_jobs(n, E, p, T, q, c):
+    """Use this to sumbit multiple jobs to Stoomboot
 
     :param n: Number of jobs to submit
     :param E: log10(GeV) energy of primary particle
-    :param p: particle kind (as string, see particles for possibilities)
+    :param p: Particle kind (as string, see particles.py for possibilities)
+    :param T: Zenith angle in degrees of the primary particle
     :param q: Stoomboot queue to submit to
+    :param c: Name of the CORSIKA executable to use
 
     """
-    for _ in xrange(n):
-        batch = CorsikaBatch(E, p, q)
+    print textwrap.dedent("""\
+        Batch submitting jobs to Stoomboot:
+        Number of jobs      {n}
+        Particle energy     10^{E} GeV
+        Primary particle    {p}
+        Zenith angle        {T} degrees
+        Stoomboot queue     {q}
+        CORSIKA executable  {c}
+        """.format(n=n, E=E, p=p, T=T, q=q, c=c))
+
+    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
+    for i in progress(xrange(n)):
+        if not check_queue(queue):
+            progress.finish()
+            print 'Stopped after {i} jobs because queue is full.'.format(i=i)
+            break
+        batch = CorsikaBatch(energy=E, particle=p, theta=T, queue=q, corsika=c)
         batch.batch_run()
+    print 'Done.'
 
 
 if __name__ == '__main__':
-    multiple_jobs(100, 7, 'proton', 'stbcq')
+    multiple_jobs(100, 7, 'proton', 22.5, 'stbcq',
+                  'corsika74000Linux_QGSII_gheisha')
