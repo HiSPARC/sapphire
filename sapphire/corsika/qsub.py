@@ -268,6 +268,7 @@ def multiple_jobs(n, E, p, T, q, c):
     if available_slots <= 0:
         n = 0
         print 'Submitting no jobs because queue is full.'
+        return
     elif available_slots < n:
         n = available_slots
         print 'Submitting {n} jobs because queue is almost full.'.format(n=n)
