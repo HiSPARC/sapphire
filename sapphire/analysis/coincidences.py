@@ -404,16 +404,21 @@ class Coincidences(object):
         # traverse all timestamps
         prev_coincidence = []
         for i in xrange(len(timestamps)):
+            stations_hit = []
 
             # build coincidence, starting with the current timestamp
             c = [i]
             t0 = timestamps[i][0]
 
+            stations_hit.append(timestamps[i][1])
+
             # traverse the rest of the timestamps
             for j in xrange(i + 1, len(timestamps)):
                 # if a timestamp is within the coincidence window, add it
                 if timestamps[j][0] - t0 < window:
-                    c.append(j)
+                    if timestamps[j][1] not in stations_hit:
+                        stations_hit.append(timestamps[j][1])
+                        c.append(j)
                 else:
                     # coincidence window has passed, break for-loop
                     break
