@@ -386,7 +386,6 @@ class ScienceParkCluster(BaseCluster):
                 transformation.transform(self.gps_coordinates[station])
             alpha = self.station_rotations[station] / 180 * pi
 
-            # disable diamond-shaped 502, for the moment
             if station not in [501, 502, 505, 508]:
                 detectors = [(0, 8.66, 'UD'), (0, 2.89, 'UD'),
                              (-5, 0, 'LR'), (5, 0, 'LR')]
