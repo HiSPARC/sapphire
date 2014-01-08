@@ -98,9 +98,11 @@ class CorsikaBatch(object):
 
     Stoomboot is the Nikhef computer cluster.
 
-    :param energy: the energy of the primary particle in log10(GeV)
+    :param energy: the energy of the primary particle in log10(GeV),
+                   so an energy of 7 corresponds to 10**6 eV.
     :param particle: name of primary particle, e.g. proton, gamma or iron
-    :param theta: zenith angle of the primary particle (in degrees)
+    :param theta: zenith angle of the primary particle (in degrees),
+                  common choices: 0, 7.5, 15, 22.5, 30, 37.5 and 45.
     :param queue: choose a queue to sumbit the job to:
                   short - max 4 hours, max 1000 jobs
                   stbcq - max 8 hours, max 1000 jobs
