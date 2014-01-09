@@ -47,6 +47,10 @@ class CorsikaEvent(object):
     def get_particles(self):
         """Generator over particles in the event.
 
+        .. note::
+            This generator filters out additional muon information and
+            all particles at observation levels other than 1.
+
         Use like this::
 
             for particle in event.get_particles():
