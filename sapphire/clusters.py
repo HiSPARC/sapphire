@@ -445,7 +445,7 @@ class SingleDiamondStation(BaseCluster):
         self._add_station((0, 0), 0, detectors)
 
 
-class ScienceParkCluster(BaseCluster):
+class ScienceParkCluster(ClusterXYZ):
     try:
         network = sapphire.api.Network()
         sp_stations = network.stations(subcluster=500)
@@ -495,14 +495,12 @@ class ScienceParkCluster(BaseCluster):
             alpha = self.station_rotations[station] / 180 * pi
 
             if station not in [501, 502, 505, 508]:
-                detectors = [(0, 8.66, 'UD'), (0, 2.89, 'UD'),
-                             (-5, 0, 'LR'), (5, 0, 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(0, 8.66, 0, 'UD'), (0, 2.89, 0, 'UD'),
+                             (-5, 0, 0, 'LR'), (5, 0, 0, 'LR')]
             elif station == 501:
                 # Precise position measurement of 501
-                detectors = [(0.37, 8.62, 'UD'), (.07, 2.15, 'UD'),
-                             (-5.23, 0, 'LR'), (5.08, 0, 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(0.37, 8.62, 0, 'UD'), (.07, 2.15, 0, 'UD'),
+                             (-5.23, 0, 0, 'LR'), (5.08, 0, 0, 'LR')]
             elif station == 502:
                 # 502 is (since 17 October 2011) diamond-shaped,
                 # with detector 2 moved to the side in LR orientation.
@@ -510,25 +508,24 @@ class ScienceParkCluster(BaseCluster):
                 station_size = 10
                 a = station_size / 2
                 b = a * sqrt(3)
-                detectors = [(0., b, 'UD'), (a * 2, b, 'LR'),
-                             (a, 0., 'LR'), (-a, 0., 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(0., b, 0, 'UD'), (a * 2, b, 0, 'LR'),
+                             (a, 0., 0, 'LR'), (-a, 0., 0, 'LR')]
             elif station == 505:
                 # 505 is (since 24 April 2013) square-shaped,
                 # detector 1 is moved to the left and detector 2 next to it.
                 station_size = 10
                 a = station_size / 2
-                detectors = [(-a, station_size, 'UD'), (a, station_size, 'UD'),
-                             (-a, 0., 'LR'), (a, 0., 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(-a, station_size, 0, 'UD'), (a, station_size, 0, 'UD'),
+                             (-a, 0., 0, 'LR'), (a, 0., 0, 'LR')]
             elif station == 508:
                 # 508 is diamond-shaped,
                 # with detector 2 moved to the side of detector 1 in UD orientation.
                 station_size = 10
                 a = station_size / 2
                 b = a * sqrt(3)
-                detectors = [(0., b, 'UD'), (a * 2, b, 'UD'),
-                             (-a, 0., 'LR'), (a, 0., 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(0., b, 0, 'UD'), (a * 2, b, 0, 'UD'),
+                             (-a, 0., 0, 'LR'), (a, 0., 0, 'LR')]
             else:
                 raise RuntimeError("Programming error. Station unknown.")
+
+            self._add_station((easting, northing, up), alpha, detectors)
