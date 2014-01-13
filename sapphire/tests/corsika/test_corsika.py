@@ -1,9 +1,11 @@
 import unittest
+import os.path
 
 from sapphire import corsika
 
 
-DATA_FILE = 'DAT000000'
+data_file_dir = os.path.dirname(__file__)
+DATA_FILE = os.path.join(data_file_dir, 'DAT000000')
 
 
 class CorsikaFileTests(unittest.TestCase):
