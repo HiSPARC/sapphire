@@ -161,6 +161,7 @@ id = {1: 'gamma',
       # A x 100 + Z
       201: 'deuteron',
       301: 'tritium',
+      302: 'helium3',
       402: 'alpha',
       1206: 'carbon',
       1407: 'nitrogen',
