@@ -15,8 +15,10 @@ from numpy import *
 
 from sapphire import corsika
 
-SOURCE_FILE = '/Users/niekschultheiss/corsika/corsika-74000/run/DAT000002'
-DEST_FILE = '/Users/niekschultheiss/data/data.h5'
+SEED_NUMBERS = '131245_34234536'
+
+SOURCE_FILE = '/Users/niekschultheiss/corsika_data/' + SEED_NUMBERS + '/DAT000000'
+DEST_FILE = '/Users/niekschultheiss/corsika_data/' + SEED_NUMBERS + '/data.h5'
 
 
 class GroundParticles(tables.IsDescription):
@@ -53,12 +55,14 @@ def save_particle(row, p):
 
 
 def store_corsika_data(source, destination, table_name='groundparticles'):
+
     """Store particles from a CORSIKA simulation in a HDF5 file
 
     :param source: CorsikaFile instance of the source DAT file
     :param destination: PyTables file instance of the destination file
 
     """
+
     print "Storing CORSIKA data (%s) in %s" % (source._filename,
                                                destination.filename)
     source.check()
@@ -75,6 +79,19 @@ def store_corsika_data(source, destination, table_name='groundparticles'):
         particle_row = table.row
         for particle in event.get_particles():
             save_particle(particle_row, particle)
+
+    table.flush()
+
+    run_header = source.get_header()
+    run_end = source.get_end()
+    for event in source.get_events():
+        event_header = event.get_header()
+        event_end = event.get_end()
+
+    table._v_attrs.run_header = run_header
+    table._v_attrs.run_end = run_end
+    table._v_attrs.event_header = event_header
+    table._v_attrs.event_end = event_end
 
     table.flush()
 
