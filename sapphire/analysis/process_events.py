@@ -8,7 +8,6 @@ from scipy.stats import norm
 from scipy.optimize import curve_fit
 import progressbar as pb
 
-from sapphire.storage import ProcessedHisparcEvent
 from sapphire.analysis.find_mpv import FindMostProbableValueInSpectrum
 
 
@@ -19,13 +18,36 @@ ADC_TIME_PER_SAMPLE = 2.5e-9
 
 
 class ProcessEvents(object):
-
     """Process HiSPARC events to obtain several observables.
 
     This class can be used to process a set of HiSPARC events and adds a
     few observables like particle arrival time and number of particles in
     the detector to a copy of the event table.
+
     """
+    processed_events_description = {
+        'event_id': tables.UInt32Col(pos=0),
+        'timestamp': tables.Time32Col(pos=1),
+        'nanoseconds': tables.UInt32Col(pos=2),
+        'ext_timestamp': tables.UInt64Col(pos=3),
+        'data_reduction': tables.BoolCol(pos=4),
+        'trigger_pattern': tables.UInt32Col(pos=5),
+        'baseline': tables.Int16Col(pos=6, shape=4, dflt=-1),
+        'std_dev': tables.Int16Col(pos=7, shape=4, dflt=-1),
+        'n_peaks': tables.Int16Col(pos=8, shape=4, dflt=-1),
+        'pulseheights': tables.Int16Col(pos=9, shape=4, dflt=-1),
+        'integrals': tables.Int32Col(pos=10, shape=4, dflt=-1),
+        'traces': tables.Int32Col(pos=11, shape=4, dflt=-1),
+        'event_rate': tables.Float32Col(pos=12),
+        't1': tables.Float32Col(pos=13, dflt=-1),
+        't2': tables.Float32Col(pos=14, dflt=-1),
+        't3': tables.Float32Col(pos=15, dflt=-1),
+        't4': tables.Float32Col(pos=16, dflt=-1),
+        'n1': tables.Float32Col(pos=17, dflt=-1),
+        'n2': tables.Float32Col(pos=18, dflt=-1),
+        'n3': tables.Float32Col(pos=19, dflt=-1),
+        'n4': tables.Float32Col(pos=20, dflt=-1)}
+
 
     def __init__(self, data, group, source=None):
         """Initialize the class.
@@ -201,7 +223,7 @@ class ProcessEvents(object):
         if '_t_events' in self.group:
             self.data.removeNode(self.group, '_t_events')
         table = self.data.createTable(self.group, '_t_events',
-                                      ProcessedHisparcEvent,
+                                      self.processed_events_description,
                                       expectedrows=length)
 
         for x in xrange(length):
