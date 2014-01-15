@@ -312,7 +312,7 @@ class ProcessEvents(object):
 
         :param event: row from the events table.
         :returns: arrival times in the detectors relative to trace start
-                  in ns
+                  in ns.
 
         """
         timings = []
@@ -359,8 +359,8 @@ class ProcessEvents(object):
         This method is doing the hard work.
 
         :param trace: array containing pulseheight values.
-        :param baseline: baseline of the trace
-        :returns: index in trace for arrival time of first particle
+        :param baseline: baseline of the trace.
+        :returns: index in trace for arrival time of first particle.
 
         """
         threshold = baseline + ADC_THRESHOLD
@@ -592,8 +592,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         super(ProcessEventsWithTriggerOffset, self).__init__(data, group, source)
 
         trigger_column = {'t_trigger': tables.Float32Col(pos=21, dflt=-1)}
-        self.processed_events_description = (self.processed_events_description
-                                                 .update(trigger_column))
+        self.processed_events_description.update(trigger_column)
 
     def _store_results_from_traces(self):
         table = self._tmp_events
@@ -604,7 +603,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         for idx in range(4):
             col = 't%d' % (idx + 1)
             getattr(table.cols, col)[:] = timings[:, idx]
-        getattr(table.cols, 't_trigger') = timings[:, 4]
+        getattr(table.cols, 't_trigger')[:] = timings[:, 4]
         table.flush()
 
     def _reconstruct_time_from_traces(self, event):
@@ -635,7 +634,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                 timings.append(self._reconstruct_time_from_trace(trace,
                                                                  baseline))
         timings.append(self._reconstruct_trigger_time_from_traces(traces,
-                                                                  n_detectors)
+                                                                  n_detectors))
         timings = [time * ADC_TIME_PER_SAMPLE * 1e9
                    if not time in [-1, -999] else time
                    for time in timings]
@@ -653,9 +652,9 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         data filter in the HiSPARC DAQ can distort the peaks/pulses in
         traces, preventing reconstruction.
 
-        :param traces: the traces for an event
-        :param n_detectors: number of detectors, for trigger conditions
-        :returns: index in the trace for the trigger
+        :param traces: the traces for an event.
+        :param n_detectors: number of detectors, for trigger conditions.
+        :returns: index in the trace for the trigger.
 
         """
         if not n_detectors:
@@ -668,13 +667,13 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         for trace in traces:
             low_idx.append(self._first_above_threshold(trace,
                                                        ADC_LOW_THRESHOLD))
-            if n_detectors == 4 and not low_idx[-1] == -1:
+            if n_detectors == 4 and not low_idx[-1] == -999:
                 high_idx.append(self._first_above_threshold(trace[low_idx[-1]:],
                                                             ADC_HIGH_THRESHOLD))
-                if not high_idx[-1] == -1:
+                if not high_idx[-1] == -999:
                     high_idx[-1] += low_idx[-1]
-        low_idx = [idx for idx in low_idx if idx != -1]
-        high_idx = [idx for idx in high_idx if idx != -1]
+        low_idx = [idx for idx in low_idx if idx != -999]
+        high_idx = [idx for idx in high_idx if idx != -999]
         low_idx.sort()
         high_idx.sort()
 
@@ -690,8 +689,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             elif len(low_idx) >= 3 and len(high_idx) >= 2:
                 trigger_idx = min([low_idx[2], high_idx[1]])
         else:
-            print "Trigger to low or filtered trace? max signals: ",
-            print [max(trace) for trace in traces]
+            # print "Trigger to low or filtered trace? max signals: ",
+            # print [max(trace) for trace in traces]
             trigger_idx = -999
 
         return trigger_idx
