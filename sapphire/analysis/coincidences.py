@@ -436,7 +436,7 @@ class CoincidencesESD(Coincidences):
 
     This subclass stores the paths to the station_groups that where
     used to look for coincidences in a lookup-table, and also
-    stores the original event_id and station info for each coincidence.
+    stores the original station info and event_id for each coincidence.
 
     """
     def search_and_store_coincidences(self, cluster=None):
@@ -497,7 +497,7 @@ class CoincidencesESD(Coincidences):
         s_index = self.data.createVLArray(self.coincidence_group, 's_index',
                                           tables.VLStringAtom())
         for station_group in self.station_groups:
-            s_index.append(station_group._v_pathname)
+            s_index.append(station_group)
         s_index.flush()
 
     def _store_coincidence(self, coincidence):
