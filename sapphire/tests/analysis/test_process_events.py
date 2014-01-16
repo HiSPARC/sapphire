@@ -4,9 +4,6 @@ import os
 import shutil
 import tables
 import sys
-import cPickle as pickle
-
-import numpy as np
 
 from sapphire.analysis import process_events
 
@@ -69,16 +66,53 @@ class ProcessEventsTests(unittest.TestCase):
         return os.path.join(dir_path, TEST_DATA_FILE)
 
     def redirect_stdout_stderr_to_devnull(self):
-        self.__stdout = sys.stdout
-        self.__stderr = sys.stderr
+        self._stdout = sys.stdout
+        self._stderr = sys.stderr
         sys.stdout = open(os.devnull, 'w')
         sys.stderr = open(os.devnull, 'w')
 
     def restore_stdout_stderr(self):
         sys.stdout.close()
         sys.stderr.close()
-        sys.stdout = self.__stdout
-        sys.stderr = self.__stderr
+        sys.stdout = self._stdout
+        sys.stderr = self._stderr
+
+
+class ProcessIndexedEventsTests(ProcessEventsTests):
+    def setUp(self):
+        self.data_path = self.create_tempfile_from_testdata()
+        self.data = tables.openFile(self.data_path, 'a')
+        self.proc = process_events.ProcessIndexedEvents(self.data, DATA_GROUP, [0, 10])
+
+#     def test_process_traces(self):
+#         self.redirect_stdout_stderr_to_devnull()
+#         timings = self.proc.process_traces()
+#         self.restore_stdout_stderr()
+#         self.assertEqual(timings[1][0], 162.5)
+#         self.assertEqual(timings[1][1], -999)
+
+    def test_get_traces_for_indexed_event_index(self):
+        self.assertEqual(self.proc.get_traces_for_indexed_event_index(0)[12][3], 1334)
+
+
+class ProcessEventsWithLINTTests(ProcessEventsTests):
+    def setUp(self):
+        self.data_path = self.create_tempfile_from_testdata()
+        self.data = tables.openFile(self.data_path, 'a')
+        self.proc = process_events.ProcessEventsWithLINT(self.data, DATA_GROUP)
+
+    def test__reconstruct_time_from_traces(self):
+        event = self.proc.source[10]
+        times = self.proc._reconstruct_time_from_traces(event)
+        self.assertAlmostEqual(times[0], 160.685483871)
+        self.assertEqual(times[2], -999)
+
+    def test__reconstruct_time_from_trace(self):
+        trace = [200, 220]
+        self.assertEqual(self.proc._reconstruct_time_from_trace(trace, 180), 0)
+        self.assertEqual(self.proc._reconstruct_time_from_trace(trace, 190), 0.5)
+        self.assertEqual(self.proc._reconstruct_time_from_trace(trace, 200), 1)
+        self.assertEqual(self.proc._reconstruct_time_from_trace(trace, 210), -999)
 
 
 class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
