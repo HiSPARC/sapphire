@@ -5,6 +5,7 @@ import shutil
 import tables
 import sys
 
+from mock import patch
 from sapphire.analysis import process_events
 
 
@@ -17,6 +18,11 @@ class ProcessEventsTests(unittest.TestCase):
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.openFile(self.data_path, 'a')
         self.proc = process_events.ProcessEvents(self.data, DATA_GROUP)
+
+        # make progressbar(list) do nothing (i.e., return list)
+        self.progressbar_patcher = patch('progressbar.ProgressBar')
+        self.progressbar_mock = self.progressbar_patcher.start()
+        self.progressbar_mock.return_value.side_effect = lambda x: x
 
     def tearDown(self):
         self.data.close()
@@ -65,18 +71,6 @@ class ProcessEventsTests(unittest.TestCase):
         dir_path = os.path.dirname(__file__)
         return os.path.join(dir_path, TEST_DATA_FILE)
 
-    def redirect_stdout_stderr_to_devnull(self):
-        self._stdout = sys.stdout
-        self._stderr = sys.stderr
-        sys.stdout = open(os.devnull, 'w')
-        sys.stderr = open(os.devnull, 'w')
-
-    def restore_stdout_stderr(self):
-        sys.stdout.close()
-        sys.stderr.close()
-        sys.stdout = self._stdout
-        sys.stderr = self._stderr
-
 
 class ProcessIndexedEventsTests(ProcessEventsTests):
     def setUp(self):
@@ -84,12 +78,10 @@ class ProcessIndexedEventsTests(ProcessEventsTests):
         self.data = tables.openFile(self.data_path, 'a')
         self.proc = process_events.ProcessIndexedEvents(self.data, DATA_GROUP, [0, 10])
 
-#     def test_process_traces(self):
-#         self.redirect_stdout_stderr_to_devnull()
-#         timings = self.proc.process_traces()
-#         self.restore_stdout_stderr()
-#         self.assertEqual(timings[1][0], 162.5)
-#         self.assertEqual(timings[1][1], -999)
+    def test_process_traces(self):
+        timings = self.proc.process_traces()
+        self.assertEqual(timings[1][0], 162.5)
+        self.assertEqual(timings[1][1], -999)
 
     def test_get_traces_for_indexed_event_index(self):
         self.assertEqual(self.proc.get_traces_for_indexed_event_index(0)[12][3], 1334)
