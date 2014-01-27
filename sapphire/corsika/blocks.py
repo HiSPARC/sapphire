@@ -10,6 +10,7 @@ Author: Javier Gonzalez <jgonzalez@ik.fzk.de>
 import textwrap
 import struct
 
+import math
 import numpy
 
 import units
@@ -390,7 +391,7 @@ class ParticleData(object):
 
     """
     def __init__(self, subblock):
-        self.description = subblock[0]
+        self.description = int(subblock[0])
         self.p_x = subblock[1] * units.GeV
         self.p_y = subblock[2] * units.GeV
         self.p_z = - subblock[3] * units.GeV
@@ -398,8 +399,8 @@ class ParticleData(object):
         self.y = subblock[5] * units.cm
         self.t = subblock[6] * units.ns  # or z for additional muon info
 
-        self.id = numpy.floor(self.description / 1000)
-        self.r = numpy.sqrt(self.x ** 2 + self.y ** 2)
+        self.id = self.description / 1000
+        self.r = math.sqrt(self.x ** 2 + self.y ** 2)
         self.is_particle = 0 < self.id < 200
         self.particle = particles.id[self.id] if self.is_particle else None
         self.is_detectable = self.particle in ['positron', 'electron',
@@ -407,7 +408,7 @@ class ParticleData(object):
 
     @property
     def hadron_generation(self):
-        return numpy.floor(self.description / 10) % 100
+        return self.description / 10 % 100
 
     @property
     def observation_level(self):
@@ -415,7 +416,7 @@ class ParticleData(object):
 
     @property
     def phi(self):
-        return numpy.arctan2(self.y, self.x)
+        return math.atan2(self.y, self.x)
 
     @property
     def is_nucleus(self):
