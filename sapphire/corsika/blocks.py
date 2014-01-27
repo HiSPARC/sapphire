@@ -384,6 +384,35 @@ class EventEnd(object):
                        particles=self.n_particles_levels))
 
 
+def particle_data(subblock):
+    """Get particle data.
+
+    High-performing version of the ParticleData class, but without all the
+    easy-to-use attribute access.
+
+    :returns: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+        observation_level, phi data.
+
+    """
+    description = int(subblock[0])
+    p_x = subblock[1] * units.GeV
+    p_y = subblock[2] * units.GeV
+    p_z = - subblock[3] * units.GeV
+    x = subblock[4] * units.cm
+    y = subblock[5] * units.cm
+    t = subblock[6] * units.ns  # or z for additional muon info
+
+    id = description / 1000
+    hadron_generation = description / 10 % 100
+    observation_level = description % 10
+
+    r = math.sqrt(x ** 2 + y ** 2)
+    phi = math.atan2(y, x)
+
+    return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+            observation_level, phi)
+
+
 class ParticleData(object):
     """
     Class representing the particle data sub-block

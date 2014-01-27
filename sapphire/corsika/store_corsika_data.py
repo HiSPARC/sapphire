@@ -40,17 +40,20 @@ class GroundParticles(tables.IsDescription):
 def save_particle(row, p):
     """Write the information of a particle into a row"""
 
-    row['particle_id'] = p.id
-    row['r'] = p.r
-    row['phi'] = p.phi
-    row['x'] = p.x
-    row['y'] = p.y
-    row['t'] = p.t
-    row['p_x'] = p.p_x
-    row['p_y'] = p.p_y
-    row['p_z'] = p.p_z
-    row['hadron_generation'] = p.hadron_generation
-    row['observation_level'] = p.observation_level
+    (p_x, p_y, p_z, x, y, t, id, r, hadron_generation, observation_level,
+     phi) = p
+
+    row['particle_id'] = id
+    row['r'] = r
+    row['phi'] = phi
+    row['x'] = x
+    row['y'] = y
+    row['t'] = t
+    row['p_x'] = p_x
+    row['p_y'] = p_y
+    row['p_z'] = p_z
+    row['hadron_generation'] = hadron_generation
+    row['observation_level'] = observation_level
     row.append()
 
 

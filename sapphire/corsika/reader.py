@@ -1,7 +1,8 @@
 from struct import unpack
 
 from blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
-                    ParticleData, Format, ParticleDataThin, FormatThin)
+                    ParticleData, Format, ParticleDataThin, FormatThin,
+                    particle_data)
 
 
 class CorsikaEvent(object):
@@ -66,9 +67,9 @@ class CorsikaEvent(object):
                                                                  self._end_index):
             for p in range(self.format.particles_per_subblock):
                 pos = sub_block_index + p * self.format.particle_size
-                particle = self._raw_file._get_particle_record(pos)
-                t = int(particle.description / 1000)
-                l = particle.description % 10
+                particle = self._raw_file._get_particle_record_tuple(pos)
+                t = particle[6] # particle type
+                l = particle[9] # observation level
                 if t in types.keys():
                     types[t] += 1
                 else:
@@ -282,6 +283,12 @@ class CorsikaFile(object):
         endword = word + self.format.particle_size
         return ParticleData(unpack(self.format.particle_format,
                                    self._contents[word:endword]))
+
+    def _get_particle_record_tuple(self, word):
+        """Private method. DO NOT USE! EVER!"""
+        endword = word + self.format.particle_size
+        return particle_data(unpack(self.format.particle_format,
+                                    self._contents[word:endword]))
 
     def Blocks():
         pass
