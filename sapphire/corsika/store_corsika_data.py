@@ -7,11 +7,8 @@
     can then be used as input for the detector simulation.
 
 """
-import os
-import sys
 
 import tables
-from numpy import *
 
 from sapphire import corsika
 
