@@ -7,15 +7,11 @@
     can then be used as input for the detector simulation.
 
 """
+import argparse
 
 import tables
 
 from sapphire import corsika
-
-SEED_NUMBERS = '131245_34234536'
-
-SOURCE_FILE = '/Users/niekschultheiss/corsika_data/' + SEED_NUMBERS + '/DAT000000'
-DEST_FILE = '/Users/niekschultheiss/corsika_data/' + SEED_NUMBERS + '/data.h5'
 
 
 class GroundParticles(tables.IsDescription):
@@ -97,12 +93,12 @@ def store_corsika_data(source, destination, table_name='groundparticles'):
 
 
 if __name__ == '__main__':
-    # Source
-    corsika_data = corsika.CorsikaFile(SOURCE_FILE)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('source', help="path of the CORSIKA source file")
+    parser.add_argument('destination',
+                        help="path of the HDF5 destination file")
+    args = parser.parse_args()
 
-    # Destination
-    hdf_data = tables.openFile(DEST_FILE, 'w')
-
-    store_corsika_data(corsika_data, hdf_data)
-
-    hdf_data.close()
+    corsika_data = corsika.CorsikaFile(args.source)
+    with tables.openFile(args.destination, 'a') as hdf_data:
+        store_corsika_data(corsika_data, hdf_data)
