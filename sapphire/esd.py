@@ -66,7 +66,7 @@ def download_data(file, group, station_id, start, end):
         timestamp = read_line_and_store_event(line, table)
 
         # update progressbar every .5 seconds
-        if time.time() - prev_update > .5:
+        if time.time() - prev_update > .5 and not timestamp == 0.:
             pbar.update((1. * timestamp - t_start) / t_delta)
             prev_update = time.time()
     pbar.finish()
