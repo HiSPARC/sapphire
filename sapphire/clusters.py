@@ -347,6 +347,20 @@ class StationXYZ(Station):
 
         return x, y, z, angle
 
+    def get_xyalpha_coordinates(self):
+        """Calculate coordinates of a station
+
+        :return: x, y, alpha; coordinates and rotation of station relative to
+            absolute coordinate system
+
+        """
+        sx, sy, sz = self.position
+        self.position = (sx, sy)
+        x, y, angle = super(StationXYZ, self).get_xyalpha_coordinates()
+        self.position = (sx, sy, sz)
+
+        return x, y, angle
+
 
 class ClusterXYZ(BaseCluster):
 
@@ -447,6 +461,7 @@ class SingleDiamondStation(BaseCluster):
 
 class ScienceParkCluster(ClusterXYZ):
     try:
+        raise Exception
         network = sapphire.api.Network()
         sp_stations = network.stations(subcluster=500)
         gps_coordinates = {}
