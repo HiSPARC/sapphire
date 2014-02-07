@@ -10,7 +10,7 @@ class BaseSimulation(object):
     
     """
 
-    def __init__(self, cluster, datafile, output_path, N=1):
+    def __init__(self, cluster, datafile, output_path='/', N=1):
         self.cluster = cluster
         self.datafile = datafile
         self.output_path = output_path
