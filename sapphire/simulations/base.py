@@ -111,9 +111,49 @@ class BaseSimulation(object):
 
     def store_coincidence(self, shower_id, shower_parameters,
                           station_events):
-        """Store coincidence."""
+        """Store coincidence.
 
-        pass
+        Store the information to find events of different stations
+        belonging to the same simulated shower in the coincidences
+        tables.
+
+        :param shower_id: The shower number for the coincidence id.
+        :param shower_parameters: A dictionary with the parameters of
+            the simulated shower.
+        :param station_events: A list of tuples containing the
+            station_id and event_index referring to the events that
+            participated in the coincidence.
+
+        """
+        row = self.coincidences.row
+        row['id'] = shower_id
+        row['N'] = len(station_events)
+        # row['shower_phi'] = shower_parameters['azimuth']
+        # row['shower_theta'] = shower_parameters['zenith']
+        # row['shower_size'] = shower_parameters['energy']
+        # row['x'] = shower_parameters['x']
+        # row['y'] = shower_parameters['y']
+
+        timestamps = []
+        for station_id, event_index in station_events:
+            row['s%d' % station_id] = True
+            station_group = self.station_groups[station_id]
+            event = station_group.events[event_index]
+            timestamps.append((event['ext_timestamp'], event['timestamp'],
+                               event['nanoseconds']))
+
+        try:
+            first_timestamp = sorted(timestamps)[0]
+        except IndexError:
+            first_timestamp = (0, 0, 0)
+
+        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
+                first_timestamp
+        row.append()
+        self.coincidences.flush()
+
+        self.c_index.append(station_events)
+        self.c_index.flush()
 
     def _prepare_coincidence_tables(self):
         """Create coincidence tables
