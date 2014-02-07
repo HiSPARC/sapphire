@@ -1,3 +1,8 @@
+import tables
+
+from sapphire import storage
+
+
 class BaseSimulation(object):
 
     """Base class for simulations.
@@ -7,7 +12,7 @@ class BaseSimulation(object):
     :param output_path: path (as string) to the PyTables group (need not
                         exist) in which the result tables will be created.
     :param N: number of simulations to perform.
-    
+
     """
 
     def __init__(self, cluster, datafile, output_path='/', N=1):
@@ -19,9 +24,18 @@ class BaseSimulation(object):
         self._prepare_output_tables()
 
     def _prepare_output_tables(self):
-        """Prepare output tables in datafile."""
+        """Prepare output tables in datafile.
 
-        pass
+        The groups and tables will be created in the output_path.
+
+        :raises tables.NodeError: If any of the groups (e.g.
+            '/coincidences') already exist a exception will be raised.
+        :raises tables.FileModeError: If the datafile is not writeable.
+
+        """
+        self._prepare_coincidence_tables()
+        self._prepare_station_tables()
+        self._store_station_index()
 
     def run(self):
         """Run the simulations."""
@@ -82,3 +96,57 @@ class BaseSimulation(object):
         """Store coincidence."""
 
         pass
+
+    def _prepare_coincidence_tables(self):
+        """Create coincidence tables
+
+        These are the same as the tables created by
+        :class:`sapphire.analysis.coincidences.CoincidencesESD`.
+        This makes it easy to link events detected by multiple stations.
+
+        """
+        self.coincidence_group = self.datafile.createGroup(self.output_path,
+                                                           'coincidences',
+                                                           createparents=True)
+        self.coincidence_group._v_attrs.cluster = self.cluster
+
+        description = storage.Coincidence
+        stations_description = {'s%d' % n: tables.BoolCol()
+                                for n in range(len(self.cluster.stations))}
+        description.columns.update(stations_description)
+
+        self.coincidences = self.datafile.createTable(
+                self.coincidence_group, 'coincidences', description)
+
+        self.c_index = self.datafile.createVLArray(
+                self.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
+
+        self.s_index = self.datafile.createVLArray(
+                self.coincidence_group, 's_index', tables.VLStringAtom())
+
+    def _prepare_station_tables(self):
+        """Create the groups and events table to store the observables
+
+        :param id: the station number, used for the group name
+        :param station: a :class:`sapphire.clusters.Station` object
+
+        """
+        self.cluster_group = self.datafile.createGroup(self.output_path,
+                                                      'cluster_simulations',
+                                                      createparents=True)
+        self.station_groups = []
+        for id, station in enumerate(self.cluster.stations):
+            station_group = self.datafile.createGroup(self.cluster_group,
+                                                      'station_%d' % id)
+            events_table = \
+                    self.datafile.createTable(station_group, 'events',
+                                              storage.ProcessedHisparcEvent,
+                                              expectedrows=self.N)
+            self.station_groups.append(station_group)
+
+    def _store_station_index(self):
+        """Stores the references to the station groups for coincidences"""
+
+        for station_group in self.station_groups:
+            self.s_index.append(station_group._v_pathname)
+        self.s_index.flush()
