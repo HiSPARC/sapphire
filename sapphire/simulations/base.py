@@ -44,14 +44,15 @@ class BaseSimulation(object):
             station_events = []
             shower_parameters = self.generate_shower_parameters()
 
-            for station in self.cluster.stations:
+            for station_id, station in enumerate(self.cluster.stations):
                 has_triggered, station_observables = \
-                    self.simulate_station_response(station,
-                                                   shower_parameters)
+                        self.simulate_station_response(station,
+                                                       shower_parameters)
                 if has_triggered:
-                    self.store_station_observables(station,
-                                                   station_observables)
-                    station_events.append((station, station_observables))
+                    event_index = \
+                            self.store_station_observables(station_id,
+                                                           station_observables)
+                    station_events.append((station_id, event_index))
 
             self.store_coincidence(shower_id, shower_parameters,
                                    station_events)
@@ -72,7 +73,7 @@ class BaseSimulation(object):
 
         has_triggered = self.simulate_trigger(station_observables)
         return has_triggered, station_observables
-    
+
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower."""
 
@@ -86,10 +87,27 @@ class BaseSimulation(object):
 
         return True
 
-    def store_station_observables(self, station, station_observables):
-        """Store station observables."""
+    def store_station_observables(self, station_id, station_observables):
+        """Store station observables.
 
-        pass
+        :param station_id: the id of the station in self.cluster
+        :param station_observables: A dictionary containing the
+            variables to be stored for this event.
+        :return: The index (row number) of the newly added event.
+
+        """
+        events_table = self.station_groups[station_id].events
+        row = events_table.row
+        row['event_id'] = events_table.nrows
+        # for key, value in station_observables.iteritems():
+        #     if key in events_table.colnames:
+        #         row[key] = value
+        #     else:
+        #         pass
+        row.append()
+        events_table.flush()
+
+        return events_table.nrows - 1
 
     def store_coincidence(self, shower_id, shower_parameters,
                           station_events):
