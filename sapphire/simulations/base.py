@@ -190,8 +190,8 @@ class BaseSimulation(object):
 
         """
         self.cluster_group = self.datafile.createGroup(self.output_path,
-                                                      'cluster_simulations',
-                                                      createparents=True)
+                                                       'cluster_simulations',
+                                                       createparents=True)
         self.station_groups = []
         for id, station in enumerate(self.cluster.stations):
             station_group = self.datafile.createGroup(self.cluster_group,
