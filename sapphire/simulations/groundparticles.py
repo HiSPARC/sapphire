@@ -4,7 +4,7 @@ import warnings
 
 import numpy as np
 
-from base import BaseSimulation
+from .base import BaseSimulation
 
 
 class GroundParticlesSimulation(BaseSimulation):
