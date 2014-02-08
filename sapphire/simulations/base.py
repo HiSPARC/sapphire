@@ -40,10 +40,10 @@ class BaseSimulation(object):
     def run(self):
         """Run the simulations."""
 
-        for shower_id in range(self.N):
-            station_events = []
-            shower_parameters = self.generate_shower_parameters()
+        for (shower_id, shower_parameters) in enumerate(
+            self.generate_shower_parameters()):
 
+            station_events = []
             for station_id, station in enumerate(self.cluster.stations):
                 has_triggered, station_observables = \
                         self.simulate_station_response(station,
