@@ -5,7 +5,7 @@ import os
 import numpy as np
 import sys
 
-from sapphire.simulations.ldf import BaseLdfSimulation
+from sapphire.old_simulations.ldf import BaseLdfSimulation
 from sapphire import clusters
 
 
@@ -43,3 +43,7 @@ class LdfSimulationAcceptanceTest(unittest.TestCase):
         sys.stderr.close()
         sys.stdout = self.__stdout
         sys.stderr = self.__stderr
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -7,7 +7,7 @@ import shutil
 import sys
 
 from sapphire import clusters
-from sapphire.simulations.groundparticles import GroundParticlesSimulation
+from sapphire.old_simulations.groundparticles import GroundParticlesSimulation
 
 
 class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):

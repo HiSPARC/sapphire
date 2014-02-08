@@ -1,7 +1,7 @@
 from mock import sentinel, Mock, patch, MagicMock
 import unittest
 
-from sapphire.simulations.base import BaseSimulation
+from sapphire.old_simulations.base import BaseSimulation
 import sapphire.clusters
 
 
@@ -51,3 +51,7 @@ class BaseSimulationTest(unittest.TestCase):
 
     def test_init_stores_cluster_in_attrs(self):
         self.assertIs(self.simulation.output._v_attrs.cluster, sentinel.cluster)
+
+
+if __name__ == '__main__':
+    unittest.main()
