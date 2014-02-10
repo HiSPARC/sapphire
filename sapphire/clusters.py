@@ -233,17 +233,45 @@ class BaseCluster(object):
         return self._stations
 
     def get_xyalpha_coordinates(self):
+        """Get cluster coordinates (x, y, alpha).
+
+        The coordinates should be interpreted as follows: first, the
+        cluster is rotated over angle alpha, around its original center.
+        Than, the cluster is translated to (x, y).
+
+        """
         return self._x, self._y, self._alpha
 
     def get_rphialpha_coordinates(self):
+        """Get cluster coordinates (r, phi, alpha).
+
+        The coordinates should be interpreted as follows: first, the
+        cluster is rotated over angle alpha, around its original center.
+        Than, the cluster is translated to (r, phi).
+
+        """
         r = sqrt(self._x ** 2 + self._y ** 2)
         phi = atan2(self._y, self._x)
         return r, phi, self._alpha
 
     def set_xyalpha_coordinates(self, x, y, alpha):
+        """Set cluster coordinates (x, y, alpha).
+
+        The coordinates should be interpreted as follows: first, the
+        cluster is rotated over angle alpha, around its original center.
+        Than, the cluster is translated to (x, y).
+
+        """
         self._x, self._y, self._alpha = x, y, alpha
 
     def set_rphialpha_coordinates(self, r, phi, alpha):
+        """Set cluster coordinates (r, phi, alpha).
+
+        The coordinates should be interpreted as follows: first, the
+        cluster is rotated over angle alpha, around its original center.
+        Than, the cluster is translated to (r, phi).
+
+        """
         self._x = r * cos(phi)
         self._y = r * sin(phi)
         self._alpha = alpha
