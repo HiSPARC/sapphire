@@ -472,3 +472,63 @@ class ScienceParkCluster(BaseCluster):
                 raise RuntimeError("Programming error. Station unknown.")
 
             self._add_station((easting, northing), alpha, detectors, station)
+
+
+class HiSPARCStations(BaseCluster):
+
+    """A cluster containing any real station from the HiSPARC network
+
+    The gps position and number of detectors are taken from the API.
+    TODO: The detector positions are not retrieved at the moment!
+
+    :param stations: A list of station numbers to include. The
+        coordinates are retrieved from the Public Database API.
+        The first station is used as the origin of the cluster.
+
+    """
+
+    def __init__(self, stations):
+        super(HiSPARCStations, self).__init__()
+
+        for i, station in enumerate(stations):
+            try:
+                station_info = sapphire.api.Station(station)
+            except:
+                warnings.warn('Could not get info for station %d, Skipping.' %
+                              station, UserWarning)
+            location = station_info.location()
+            n_detectors = station_info.n_detectors
+            gps = (location['latitude'],
+                   location['longitude'],
+                   location['altitude'])
+
+            if i == 0:
+                transformation = \
+                    transformations.FromWGS84ToENUTransformation(gps)
+
+            easting, northing, up = transformation.transform(gps)
+            alpha = 0
+
+            if n_detectors == 2:
+                detectors = [(-5, 0, 'UD'), (5, 0, 'UD')]
+            elif n_detectors == 4:
+                detectors = [(0, 8.66, 'UD'), (0, 2.89, 'UD'),
+                             (-5, 0, 'LR'), (5, 0, 'LR')]
+            else:
+                raise RuntimeError("Detector count unknown for station %d." %
+                                   station)
+
+            self._add_station((easting, northing), alpha, detectors, station)
+
+        warnings.warn('Real detector positions are not taken into account',
+                      UserWarning)
+
+
+class HiSPARCNetwork(HiSPARCStations):
+
+    """A cluster containing all station from the HiSPARC network"""
+
+    def __init__(self):
+        network = sapphire.api.Network()
+        stations = [station['number'] for station in network.stations()]
+        super(HiSPARCNetwork, self).__init__(stations)
