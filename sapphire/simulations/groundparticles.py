@@ -12,6 +12,7 @@ class GroundParticlesSimulation(BaseSimulation):
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
 
         self.corsikafile = corsikafile
+        self.groundparticles = corsikafile.getNode('/groundparticles')
         self.max_core_distance = max_core_distance
 
     def generate_shower_parameters(self):
@@ -67,14 +68,41 @@ class GroundParticlesSimulation(BaseSimulation):
         self.cluster.set_xyalpha_coordinates(-xp, -yp, -alpha)
 
     def simulate_detector_response(self, detector, shower_parameters):
-        """Simulate detector response to a shower."""
+        """Simulate detector response to a shower.
 
-        # implement this!
-        observables = None
+        Checks if leptons have passed a detector. If so, it returns the number
+        of leptons in the detector and the arrival time of the first lepton
+        passing the detector.
+
+        """
+        detector_boundary = 0.3535534
+        x, y = detector.get_xy_coordinates()
+
+        query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+                 ' & (particle_id >= 2) & (particle_id <= 6)' %
+                 (x - detector_boundary, x + detector_boundary,
+                  y - detector_boundary, x + detector_boundary))
+        detected = [row['t'] for row in self.groundparticles.where(query)]
+
+        observables = {'n': len(detected), 't': min(detected)}
 
         return observables
 
     def simulate_trigger(self, station_observables):
-        """Simulate a trigger response."""
+        """Simulate a trigger response.
 
-        return True
+        :returns: True if at least 2 detectors detect at least one particle,
+                  False otherwise.
+
+        """
+        trigger = False
+        hitted_plates = 0
+
+        for observables in station_observables:
+            if observables['n'] > 0:
+                hitted_plates += 1
+
+        if hitted_plates > 1:
+            trigger = True
+
+        return trigger
