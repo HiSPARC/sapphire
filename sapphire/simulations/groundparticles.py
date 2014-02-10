@@ -92,7 +92,10 @@ class GroundParticlesSimulation(BaseSimulation):
                   y - detector_boundary, x + detector_boundary))
         detected = [row['t'] for row in self.groundparticles.where(query)]
 
-        observables = {'n': len(detected), 't': min(detected)}
+        if detected:
+            observables = {'n': len(detected), 't': min(detected)}
+        else:
+            observables = {'n': 0., 't': -999}
 
         return observables
 
