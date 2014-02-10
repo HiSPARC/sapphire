@@ -60,7 +60,8 @@ class BaseSimulation(object):
     def generate_shower_parameters(self):
         """Generate shower parameters like core position, energy, etc."""
 
-        pass
+        for i in range(self.N):
+            yield None
 
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
