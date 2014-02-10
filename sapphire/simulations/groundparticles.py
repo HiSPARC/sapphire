@@ -2,17 +2,18 @@ from math import pi, sin, cos, sqrt
 import warnings
 
 import numpy as np
+import tables
 
 from .base import BaseSimulation
 
 
 class GroundParticlesSimulation(BaseSimulation):
 
-    def __init__(self, corsikafile, max_core_distance, *args, **kwargs):
+    def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
 
-        self.corsikafile = corsikafile
-        self.groundparticles = corsikafile.getNode('/groundparticles')
+        self.corsikafile = tables.openFile(corsikafile_path, 'r')
+        self.groundparticles = self.corsikafile.getNode('/groundparticles')
         self.max_core_distance = max_core_distance
 
     def generate_shower_parameters(self):
@@ -74,10 +75,17 @@ class GroundParticlesSimulation(BaseSimulation):
         of leptons in the detector and the arrival time of the first lepton
         passing the detector.
 
+        The detector is approximated by a square with a surface of 0.5
+        square meter which is *not* correctly rotated.  In fact, during
+        the simulation, the rotation of the detector is undefined.  This
+        might be faster than a more thorough implementation.
+
         """
         detector_boundary = 0.3535534
         x, y = detector.get_xy_coordinates()
 
+        # particle ids 2, 3, 5, 6 are electrons and muons, and id 4 is no
+        # longer used (were neutrino's).
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
@@ -88,7 +96,10 @@ class GroundParticlesSimulation(BaseSimulation):
 
         detected = detected + transporttimes
 
-        observables = {'n': len(detected), 't': min(detected)}
+        if detected:
+            observables = {'n': len(detected), 't': min(detected)}
+        else:
+            observables = {'n': 0., 't': -999}
 
         return observables
 
@@ -117,14 +128,12 @@ class GroundParticlesSimulation(BaseSimulation):
                   False otherwise.
 
         """
-        trigger = False
         hitted_plates = 0
-
         for observables in station_observables:
             if observables['n'] > 0:
                 hitted_plates += 1
 
-        if hitted_plates > 1:
-            trigger = True
-
-        return trigger
+        if hitted_plates >= 2:
+            return True
+        else:
+            return False
