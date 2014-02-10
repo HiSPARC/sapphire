@@ -1,3 +1,25 @@
+"""Perform simulations of air showers on a cluster of stations
+
+This base sclass can be subclassed to provide various kinds of
+simulations. These simulations will inherit the base functionallity from
+this class, including the creation of event and coincidence tables to
+store the results, which will look similar to regular HiSPARC data, such
+that the same reconstruction analysis can be applied to both.
+
+Example usage::
+
+    import tables
+
+    from sapphire.simulations.base import BaseSimulation
+    from sapphire.clusters import ScienceParkCluster
+
+    datafile = tables.openFile('/tmp/test_base_simulation.h5', 'w')
+    cluster = ScienceParkCluster()
+
+    sim = BaseSimulation(cluster, datafile, '/simulations/this_run', 10)
+    sim.run()
+
+"""
 import warnings
 
 import tables
