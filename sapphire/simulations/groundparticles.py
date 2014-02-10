@@ -102,14 +102,12 @@ class GroundParticlesSimulation(BaseSimulation):
                   False otherwise.
 
         """
-        trigger = False
         hitted_plates = 0
-
         for observables in station_observables:
             if observables['n'] > 0:
                 hitted_plates += 1
 
-        if hitted_plates > 1:
-            trigger = True
-
-        return trigger
+        if hitted_plates >= 2:
+            return True
+        else:
+            return False
