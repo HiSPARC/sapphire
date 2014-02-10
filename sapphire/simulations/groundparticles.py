@@ -84,9 +84,31 @@ class GroundParticlesSimulation(BaseSimulation):
                   y - detector_boundary, x + detector_boundary))
         detected = [row['t'] for row in self.groundparticles.where(query)]
 
+        transporttimes = simulate_signal_transport_time(len(detected))
+
+        detected = detected + transporttimes
+
         observables = {'n': len(detected), 't': min(detected)}
 
         return observables
+
+    def simulate_signal_transport_time(self, size):
+        """ Simulate transport times of scintillation light to the PMT
+
+        Generates random transit times within a given distribution and adds it
+        to the times the particles passed the detector.
+
+        """
+        numbers = np.random.random(size)
+        dt = []
+
+        for x in numbers:
+            if  x < 0.39377:
+                dt.append(2.5507 + 2.39885 * x)
+            else:
+                dt.append(1.56764 + 4.89536 * x)
+
+        return dt
 
     def simulate_trigger(self, station_observables):
         """Simulate a trigger response.
