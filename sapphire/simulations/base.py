@@ -106,7 +106,7 @@ class BaseSimulation(object):
         """Simulate detector response to a shower."""
 
         # implement this!
-        observables = None
+        observables = {'n': 0., 't': -999}
 
         return observables
 
