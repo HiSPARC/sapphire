@@ -121,7 +121,7 @@ class GroundParticlesSimulation(BaseSimulation):
 
         return dt
 
-    def simulate_trigger(self, station_observables):
+    def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
 
         :returns: True if at least 2 detectors detect at least one particle,
@@ -129,7 +129,7 @@ class GroundParticlesSimulation(BaseSimulation):
 
         """
         hitted_plates = 0
-        for observables in station_observables:
+        for observables in detector_observables:
             if observables['n'] > 0:
                 hitted_plates += 1
 

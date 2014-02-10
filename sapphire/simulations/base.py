@@ -68,13 +68,16 @@ class BaseSimulation(object):
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
 
-        station_observables = []
+        detector_observables = []
         for detector in station.detectors:
             observables = self.simulate_detector_response(detector,
                                                           shower_parameters)
-            station_observables.append(observables)
+            detector_observables.append(observables)
 
-        has_triggered = self.simulate_trigger(station_observables)
+        has_triggered = self.simulate_trigger(detector_observables)
+        station_observables = \
+            self.process_detector_observables(detector_observables)
+
         return has_triggered, station_observables
 
     def simulate_detector_response(self, detector, shower_parameters):
@@ -85,10 +88,37 @@ class BaseSimulation(object):
 
         return observables
 
-    def simulate_trigger(self, station_observables):
+    def simulate_trigger(self, detector_observables):
         """Simulate a trigger response."""
 
         return True
+
+    def process_detector_observables(self, detector_observables):
+        """Process detector observables for a station.
+
+        The list of detector observables is converted into a dictionary
+        containing the familiar observables like pulseheights, n1, n2,
+        ..., t1, t2, ..., integrals, etc.
+
+        :param detector_observables: list of observables of the detectors
+                                     making up a station.
+        :returns: dictionary containing the familiar station observables
+                  like n1, n2, n3, etc.
+        """
+        station_observables = {'pulseheights': 4 * [-1.],
+                               'integrals': 4 * [-1.]}
+
+        for detector_id, observables in enumerate(detector_observables,
+                                                  1):
+            for key, value in observables.iteritems():
+                if key in ['n', 't']:
+                    key = key + str(detector_id)
+                    station_observables[key] = value
+                elif key in ['pulseheights', 'integrals']:
+                    idx = detector_id - 1
+                    station_observables[key][idx] = value
+
+        return station_observables
 
     def store_station_observables(self, station_id, station_observables):
         """Store station observables.
@@ -102,11 +132,11 @@ class BaseSimulation(object):
         events_table = self.station_groups[station_id].events
         row = events_table.row
         row['event_id'] = events_table.nrows
-        # for key, value in station_observables.iteritems():
-        #     if key in events_table.colnames:
-        #         row[key] = value
-        #     else:
-        #         warnings.warn('Unsupported variable', UserWarning)
+        for key, value in station_observables.iteritems():
+            if key in events_table.colnames:
+                row[key] = value
+            else:
+                warnings.warn('Unsupported variable', UserWarning)
         row.append()
         events_table.flush()
 
