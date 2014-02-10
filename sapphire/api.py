@@ -50,7 +50,7 @@ API = {"stations": 'stations/',
        "pulseheight_fit": 'station/{station_number}/plate/{plate_number}/pulseheight/fit/{year}/{month}/{day}/',
        "pulseheight_drift": 'station/{station_number}/plate/{plate_number}/pulseheight/drift/{year}/{month}/{day}/{number_of_days}/'}
 
-__api = 'http://data.hisparc.nl/api/'
+API_BASE = 'http://data.hisparc.nl/api/'
 
 
 class Network(object):
@@ -349,7 +349,7 @@ def _retrieve_url(urlpath):
     :return: the data returned by the api as a string
 
     """
-    url = __api + urlpath
+    url = API_BASE + urlpath
     logging.debug('Getting: ' + url)
     try:
         result = urlopen(url).read()
