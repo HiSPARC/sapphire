@@ -1,3 +1,5 @@
+import warnings
+
 import tables
 
 from sapphire import storage
@@ -104,7 +106,7 @@ class BaseSimulation(object):
         #     if key in events_table.colnames:
         #         row[key] = value
         #     else:
-        #         pass
+        #         warnings.warn('Unsupported variable', UserWarning)
         row.append()
         events_table.flush()
 
