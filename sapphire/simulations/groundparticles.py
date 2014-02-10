@@ -1,5 +1,4 @@
-import math
-from math import pi
+from math import pi, sin, cos, sqrt
 import warnings
 
 import numpy as np
@@ -39,15 +38,33 @@ class GroundParticlesSimulation(BaseSimulation):
         # suggested by HM).
 
         for i in range(self.N):
-            r = math.sqrt(np.random.uniform(0, R ** 2))
+            r = sqrt(np.random.uniform(0, R ** 2))
             phi = np.random.uniform(-pi, pi)
             alpha = np.random.uniform(-pi, pi)
 
-            x = r * math.cos(phi)
-            y = r * math.sin(phi)
+            x = r * cos(phi)
+            y = r * sin(phi)
 
             shower_parameters = {'core_pos': (x, y), 'azimuth': alpha}
+            self._prepare_cluster_for_shower(shower_parameters)
             yield shower_parameters
+
+    def _prepare_cluster_for_shower(self, shower_parameters):
+        """Prepare the cluster object for the simulation of a shower.
+
+        Rotate and translate the cluster so that (0, 0) coincides with the
+        shower core position and 'East' coincides with the shower azimuth
+        direction.
+
+        """
+        x, y = shower_parameters['core_pos']
+        alpha = shower_parameters['azimuth']
+
+        # rotate the core position around the original cluster center
+        xp = x * cos(-alpha) - y * sin(-alpha)
+        yp = x * sin(-alpha) + y * cos(-alpha)
+
+        self.cluster.set_xyalpha_coordinates(-xp, -yp, -alpha)
 
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower."""
