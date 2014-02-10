@@ -191,7 +191,7 @@ class BaseSimulation(object):
 
         timestamps = []
         for station_id, event_index in station_events:
-            row['s%d' % station_id] = True
+            row['s%d' % self.cluster.stations[station_id].station_number = True
             station_group = self.station_groups[station_id]
             event = station_group.events[event_index]
             timestamps.append((event['ext_timestamp'], event['timestamp'],
@@ -224,9 +224,9 @@ class BaseSimulation(object):
         self.coincidence_group._v_attrs.cluster = self.cluster
 
         description = storage.Coincidence
-        stations_description = {'s%d' % n: tables.BoolCol()
-                                for n in range(len(self.cluster.stations))}
-        description.columns.update(stations_description)
+        station_columns = {'s%d' % station.station_number: tables.BoolCol()
+                           for station in self.cluster.stations)}
+        description.columns.update(station_columns)
 
         self.coincidences = self.datafile.createTable(
                 self.coincidence_group, 'coincidences', description)
@@ -248,9 +248,10 @@ class BaseSimulation(object):
                                                        'cluster_simulations',
                                                        createparents=True)
         self.station_groups = []
-        for id, station in enumerate(self.cluster.stations):
+        for station in self.cluster.stations:
             station_group = self.datafile.createGroup(self.cluster_group,
-                                                      'station_%d' % id)
+                                                      'station_%d' %
+                                                      station.station_number)
             events_table = \
                     self.datafile.createTable(station_group, 'events',
                                               storage.ProcessedHisparcEvent,
