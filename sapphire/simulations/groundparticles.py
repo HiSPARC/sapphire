@@ -2,17 +2,18 @@ from math import pi, sin, cos, sqrt
 import warnings
 
 import numpy as np
+import tables
 
 from .base import BaseSimulation
 
 
 class GroundParticlesSimulation(BaseSimulation):
 
-    def __init__(self, corsikafile, max_core_distance, *args, **kwargs):
+    def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
 
-        self.corsikafile = corsikafile
-        self.groundparticles = corsikafile.getNode('/groundparticles')
+        self.corsikafile = tables.openFile(corsikafile_path, 'r')
+        self.groundparticles = self.corsikafile.getNode('/groundparticles')
         self.max_core_distance = max_core_distance
 
     def generate_shower_parameters(self):
