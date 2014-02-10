@@ -191,7 +191,8 @@ class BaseSimulation(object):
 
         timestamps = []
         for station_id, event_index in station_events:
-            row['s%d' % self.cluster.stations[station_id].station_number = True
+            station = self.cluster.stations[station_id]
+            row['s%d' % station.station_number] = True
             station_group = self.station_groups[station_id]
             event = station_group.events[event_index]
             timestamps.append((event['ext_timestamp'], event['timestamp'],
@@ -225,7 +226,7 @@ class BaseSimulation(object):
 
         description = storage.Coincidence
         station_columns = {'s%d' % station.station_number: tables.BoolCol()
-                           for station in self.cluster.stations)}
+                           for station in self.cluster.stations}
         description.columns.update(station_columns)
 
         self.coincidences = self.datafile.createTable(
