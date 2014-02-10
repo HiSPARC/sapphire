@@ -74,10 +74,17 @@ class GroundParticlesSimulation(BaseSimulation):
         of leptons in the detector and the arrival time of the first lepton
         passing the detector.
 
+        The detector is approximated by a square with a surface of 0.5
+        square meter which is *not* correctly rotated.  In fact, during
+        the simulation, the rotation of the detector is undefined.  This
+        might be faster than a more thorough implementation.
+
         """
         detector_boundary = 0.3535534
         x, y = detector.get_xy_coordinates()
 
+        # particle ids 2, 3, 5, 6 are electrons and muons, and id 4 is no
+        # longer used (were neutrino's).
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
