@@ -551,6 +551,7 @@ class HiSPARCStations(RAlphaBetaStations):
             easting, northing, up = transformation.transform(gps)
             alpha = 0
 
+            # Default positions in (r, alpha, beta)
             if n_detectors == 2:
                 default_detectors = [(5, 90, 0), (5, 270, 0)]
             elif n_detectors == 4:
@@ -566,8 +567,8 @@ class HiSPARCStations(RAlphaBetaStations):
 
             self._add_station((easting, northing), detectors, station)
 
-        warnings.warn('Detector positions may be wrong, defauls used if not '
-                      'available!', UserWarning)
+        warnings.warn('Detector positions may be wrong, defaults are used '
+                      'when not available from API!', UserWarning)
 
 
 class HiSPARCNetwork(HiSPARCStations):
