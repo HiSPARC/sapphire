@@ -183,11 +183,10 @@ class BaseSimulation(object):
         row = self.coincidences.row
         row['id'] = shower_id
         row['N'] = len(station_events)
-        # row['shower_phi'] = shower_parameters['azimuth']
-        # row['shower_theta'] = shower_parameters['zenith']
-        # row['shower_size'] = shower_parameters['energy']
-        # row['x'] = shower_parameters['x']
-        # row['y'] = shower_parameters['y']
+        row['shower_phi'] = shower_parameters['azimuth']
+        row['shower_theta'] = shower_parameters['zenith']
+        row['shower_size'] = shower_parameters['energy']
+        row['x'], row['y'] = shower_parameters['core_pos']
 
         timestamps = []
         for station_id, event_index in station_events:

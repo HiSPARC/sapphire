@@ -28,9 +28,13 @@ class GroundParticlesSimulation(BaseSimulation):
                   (x, y-tuple) and azimuth.
 
         """
-        warnings.warn("Read some parameters from CORSIKA data!")
-
         R = self.max_core_distance
+
+        event_header = self.groundparticles._v_attrs['event_header']
+        corsika_parameters = {'azimuth': event_header.azimuth,
+                              'zenith': event_header.zenith,
+                              'energy': event_header.energy,
+                              'particle': event_header.particle}
 
         # This is the fastest implementation I could come up with.  I
         # timed several permutations of numpy / math, and tried a Monte
@@ -48,7 +52,9 @@ class GroundParticlesSimulation(BaseSimulation):
             y = r * sin(phi)
 
             shower_parameters = {'core_pos': (x, y), 'azimuth': alpha}
+            shower_parameters.update(corsika_parameters)
             self._prepare_cluster_for_shower(shower_parameters)
+
             yield shower_parameters
 
     def _prepare_cluster_for_shower(self, shower_parameters):
