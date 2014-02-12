@@ -212,10 +212,17 @@ class Coincidences(object):
                                                  storage.EventObservables)
 
         print "Storing coincidences"
-        progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                           pb.ETA()])
-        for coincidence in progress(self.coincidence_group._src_c_index):
-            self._store_coincidence(coincidence)
+
+        # ProgressBar does not work for empty iterables.
+        if len(self.coincidence_group._src_c_index):
+            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                      pb.ETA()])
+            for coincidence in progress(self.coincidence_group._src_c_index):
+                self._store_coincidence(coincidence)
+        else:
+            print "Creating empty tables, no coincidences found"
+            for coincidence in self.coincidence_group._src_c_index:
+                self._store_coincidence(coincidence)
 
         c_index = self.data.createVLArray(self.coincidence_group, 'c_index',
                                           tables.UInt32Col())
@@ -482,10 +489,17 @@ class CoincidencesESD(Coincidences):
                                                   'coincidences', description)
 
         print "Storing coincidences"
-        progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                           pb.ETA()])
-        for coincidence in progress(self._src_c_index):
-            self._store_coincidence(coincidence)
+
+        # ProgressBar does not work for empty iterables.
+        if len(self._src_c_index):
+            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                      pb.ETA()])
+            for coincidence in progress(self._src_c_index):
+                self._store_coincidence(coincidence)
+        else:
+            print "Creating empty tables, no coincidences found"
+            for coincidence in self._src_c_index:
+                self._store_coincidence(coincidence)
 
         c_index = self.data.createVLArray(self.coincidence_group, 'c_index',
                                           tables.UInt32Col(shape=2))
