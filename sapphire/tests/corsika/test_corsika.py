@@ -70,13 +70,14 @@ class CorsikaFileTests(unittest.TestCase):
         event = events.next()
         particles = event.get_particles()
         particle = particles.next()
-        self.assertIsInstance(particle, corsika.blocks.ParticleData)
-        self.assertEqual(corsika.particles.id[particle.id], 'muon_p')
-        self.assertAlmostEqual(particle.x, -172.535859375)
-        self.assertAlmostEqual(particle.y, 56.2846679688)
-        self.assertAlmostEqual(particle.r, 181.484397728)
+        self.assertIsInstance(particle, tuple)
+        self.assertEqual(len(particle), 11)
+        self.assertEqual(corsika.particles.id[particle[6]], 'muon_p')
+        self.assertAlmostEqual(particle[3], -172.535859375)
+        self.assertAlmostEqual(particle[4], 56.2846679688)
+        self.assertAlmostEqual(particle[7], 181.484397728)
         particle = particles.next()
-        self.assertEqual(corsika.particles.id[particle.id], 'muon_m')
+        self.assertEqual(corsika.particles.id[particle[6]], 'muon_m')
 
 
 if __name__ == '__main__':
