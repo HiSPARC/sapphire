@@ -31,8 +31,7 @@ class GroundParticlesSimulation(BaseSimulation):
         R = self.max_core_distance
 
         event_header = self.groundparticles._v_attrs['event_header']
-        corsika_parameters = {'azimuth': event_header.azimuth,
-                              'zenith': event_header.zenith,
+        corsika_parameters = {'zenith': event_header.zenith,
                               'energy': event_header.energy,
                               'particle': event_header.particle}
 
@@ -51,13 +50,22 @@ class GroundParticlesSimulation(BaseSimulation):
             x = r * cos(phi)
             y = r * sin(phi)
 
-            shower_parameters = {'core_pos': (x, y), 'azimuth': alpha}
+            # Add Corsika shower azimuth to generated alpha
+            # and make them fit in (-pi, pi].
+            shower_azimuth = alpha + event_header.azimuth
+            if shower_azimuth > pi:
+                shower_azimuth -= 2 * pi
+            elif shower_azimuth <= -pi:
+                shower_azimuth += 2 * pi
+
+            shower_parameters = {'core_pos': (x, y),
+                                 'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
-            self._prepare_cluster_for_shower(shower_parameters)
+            self._prepare_cluster_for_shower(x, y, alpha)
 
             yield shower_parameters
 
-    def _prepare_cluster_for_shower(self, shower_parameters):
+    def _prepare_cluster_for_shower(self, x, y, alpha):
         """Prepare the cluster object for the simulation of a shower.
 
         Rotate and translate the cluster so that (0, 0) coincides with the
@@ -65,9 +73,6 @@ class GroundParticlesSimulation(BaseSimulation):
         direction.
 
         """
-        x, y = shower_parameters['core_pos']
-        alpha = shower_parameters['azimuth']
-
         # rotate the core position around the original cluster center
         xp = x * cos(-alpha) - y * sin(-alpha)
         yp = x * sin(-alpha) + y * cos(-alpha)

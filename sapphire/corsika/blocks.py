@@ -174,7 +174,15 @@ class EventHeader(object):
         self.p_y = subblock[8] * units.GeV
         self.p_z = - subblock[9] * units.GeV
         self.zenith = subblock[10] * units.rad
-        self.azimuth = subblock[11] * units.rad
+
+        # Corsika defines azimuth as the direction the shower points to
+        # HiSPARC defines azimuth as the direction the shower comes from.
+        # Corsika allows azimuths in [-2pi, 2pi], HiSPARC uses (-pi, pi]
+        azimuth = subblock[11] * units.rad + math.pi
+        if azimuth > math.pi:
+            self.azimuth = azimuth - (2 * math.pi)
+        else:
+            self.azimuth = azimuth
 
         self.n_seeds = subblock[12]
         self.seeds = numpy.array(zip(subblock[13:41:3],
