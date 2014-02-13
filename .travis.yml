@@ -15,7 +15,7 @@ before_install:
   - conda update --yes conda
 
 install:
-  - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib
+  - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib cython
   - pip install numexpr cython
   - pip install coverage coveralls
   - python setup.py develop
