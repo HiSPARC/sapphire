@@ -11,9 +11,11 @@ hisparc_sapphire.egg-info/
 *.pyc
 *.pyo
 
+# Coverage
+.coverage
+
 # OS generated files
 .DS_Store*
 ehthumbs.db
 Icon?
 Thumbs.db
-

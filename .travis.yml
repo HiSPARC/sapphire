@@ -17,7 +17,11 @@ before_install:
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib
   - pip install numexpr cython
+  - pip install coverage coveralls
   - python setup.py develop
 
 script:
-  - python -m unittest discover
+  - coverage run --source=sapphire setup.py test
+
+after_success:
+  coveralls
