@@ -10,6 +10,7 @@
 import argparse
 
 import tables
+import progressbar
 
 from sapphire import corsika
 
@@ -72,9 +73,18 @@ def store_corsika_data(source, destination, table_name='groundparticles'):
         except tables.NodeError:
             print '%s already exists, doing nothing' % table_name
             return
+        pbar = progressbar.ProgressBar(maxval=n_particles - 1,
+                                       widgets=[progressbar.Percentage(),
+                                                progressbar.Bar(),
+                                                progressbar.ETA()]).start()
+        prev_update = 0
         particle_row = table.row
-        for particle in event.get_particles():
+        for row, particle in enumerate(event.get_particles()):
             save_particle(particle_row, particle)
+            if row - prev_update > 5000:
+                pbar.update(row)
+                prev_update = row
+        pbar.finish()
 
     table.flush()
 
