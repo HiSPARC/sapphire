@@ -3,6 +3,7 @@ import warnings
 
 import numpy as np
 import tables
+import progressbar
 
 from .base import BaseSimulation
 
@@ -35,6 +36,10 @@ class GroundParticlesSimulation(BaseSimulation):
                               'energy': event_header.energy,
                               'particle': event_header.particle}
 
+        pbar = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
+                                                progressbar.Bar(),
+                                                progressbar.ETA()])
+
         # This is the fastest implementation I could come up with.  I
         # timed several permutations of numpy / math, and tried a Monte
         # Carlo method in which I pick x and y in a square (fast) and then
@@ -42,7 +47,7 @@ class GroundParticlesSimulation(BaseSimulation):
         # slow, because of an if-statement, and despite some optimizations
         # suggested by HM).
 
-        for i in range(self.N):
+        for i in pbar(range(self.N)):
             r = sqrt(np.random.uniform(0, R ** 2))
             phi = np.random.uniform(-pi, pi)
             alpha = np.random.uniform(-pi, pi)

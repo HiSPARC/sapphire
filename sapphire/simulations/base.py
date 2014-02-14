@@ -23,6 +23,7 @@ Example usage::
 import warnings
 
 import tables
+import progressbar
 
 from sapphire import storage
 
@@ -84,8 +85,16 @@ class BaseSimulation(object):
     def generate_shower_parameters(self):
         """Generate shower parameters like core position, energy, etc."""
 
-        for i in range(self.N):
-            yield None
+        pbar = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
+                                                progressbar.Bar(),
+                                                progressbar.ETA()])
+        shower_parameters = {'azimuth': None,
+                             'zenith': None,
+                             'energy': None,
+                             'core_pos': (None, None)}
+
+        for i in pbar(range(self.N)):
+            yield shower_parameters
 
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
