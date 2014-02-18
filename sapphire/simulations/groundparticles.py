@@ -17,6 +17,11 @@ class GroundParticlesSimulation(BaseSimulation):
         self.groundparticles = self.corsikafile.getNode('/groundparticles')
         self.max_core_distance = max_core_distance
 
+    def finish(self):
+        """Clean-up after simulation"""
+
+        self.corsikafile.close()
+
     def generate_shower_parameters(self):
         """Generate shower parameters like core position, energy, etc.
 
