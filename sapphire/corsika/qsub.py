@@ -29,7 +29,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     ERANGE    1.E{energy}  1.E{energy} energy range of primary particle (GeV)
     ESLOPE    -2.7                     slope of primary energy spectrum (E^y)
     THETAP    {theta}   {theta}        range of zenith angle (degree)
-    PHIP      0.   0.                  range of azimuth angle (degree)
+    PHIP      0.   0.                  range of azimuth angle, direction the shower points to (degree)
     FIXCHI    0.                       starting altitude (g/cm**2)
     FIXHEI    0.   0                   height and target type of first interaction (cm, [1=N, 2=O, 3=Ar])
     MAGNET    18.908 45.261            magnetic field DAin Amsterdam (uT)
@@ -94,6 +94,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
 
 
 class CorsikaBatch(object):
+
     """Run many simultaneous CORSIKA simulations using Stoomboot
 
     Stoomboot is the Nikhef computer cluster.
@@ -112,6 +113,7 @@ class CorsikaBatch(object):
                     corsika74000Linux_EPOS_gheisha
 
     """
+
     def __init__(self, energy=7, particle='proton', theta=22.5, queue='stbcq',
                  corsika='corsika74000Linux_QGSII_gheisha'):
         self.energy = energy

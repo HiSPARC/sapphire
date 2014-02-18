@@ -1,4 +1,5 @@
 from struct import unpack
+import warnings
 
 from blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
                     ParticleData, Format, ParticleDataThin, FormatThin,
@@ -75,16 +76,21 @@ class CorsikaEvent(object):
                 else:
                     types[t] = 1
                 # muon additional information
-                if t == 75 or t == 76:
+                if t in [75, 76]:
+                    warnings.warn('Not reading muon additional information.',
+                                  UserWarning)
                     continue
                 # ignore all observation levels except for nr. 1
                 if l != 1:
+                    warnings.warn('Only observation level 1 will be read!',
+                                  UserWarning)
                     continue
 
                 yield particle
 
     def __str__(self):
         """String representation (a summary of the event)"""
+
         out = self.get_header().__str__()
         out += "\n"
         out += self.get_end().__str__()
@@ -92,6 +98,7 @@ class CorsikaEvent(object):
 
 
 class CorsikaFile(object):
+
     """Corsika output file handler
 
     This class will probide an interface for Corsika output files.
@@ -99,6 +106,7 @@ class CorsikaFile(object):
     This class is meant for unthinned simulations.
 
     """
+
     def __init__(self, filename):
         """CorsikaFile constructor
 
@@ -224,6 +232,7 @@ class CorsikaFile(object):
 
     def _get_events(self):
         """Private method. DO NOT USE! EVER!"""
+
         heads = []
         tails = []
         for block in self._subblocks_indices():
@@ -237,12 +246,14 @@ class CorsikaFile(object):
 
     def _get_event_header(self, word):
         """Private method. DO NOT USE! EVER!"""
+
         endword = word + self.format.subblock_size
         return EventHeader(unpack(self.format.subblock_format,
                                   self._contents[word:endword]))
 
     def _get_event_end(self, word):
         """Private method. DO NOT USE! EVER!"""
+
         endword = word + self.format.subblock_size
         return EventEnd(unpack(self.format.subblock_format,
                                self._contents[word:endword]))
@@ -280,12 +291,14 @@ class CorsikaFile(object):
 
     def _get_particle_record(self, word):
         """Private method. DO NOT USE! EVER!"""
+
         endword = word + self.format.particle_size
         return ParticleData(unpack(self.format.particle_format,
                                    self._contents[word:endword]))
 
     def _get_particle_record_tuple(self, word):
         """Private method. DO NOT USE! EVER!"""
+
         endword = word + self.format.particle_size
         return particle_data(unpack(self.format.particle_format,
                                     self._contents[word:endword]))
@@ -295,6 +308,7 @@ class CorsikaFile(object):
 
 
 class CorsikaFileThin(CorsikaFile):
+
     """Corsika thinned output file handler
 
     Same as the unthinned output handler, but with support for
@@ -302,6 +316,7 @@ class CorsikaFileThin(CorsikaFile):
     This class is meant for thinned simulations.
 
     """
+
     def __init__(self, filename):
         """CorsikaFileThin constructor
 
@@ -313,6 +328,7 @@ class CorsikaFileThin(CorsikaFile):
 
     def _get_particle_record(self, word):
         """Private method. DO NOT USE! EVER!"""
+
         endword = word + self.format.particle_size
         return ParticleDataThin(unpack(self.format.particle_format,
                                        self._contents[word:endword]))

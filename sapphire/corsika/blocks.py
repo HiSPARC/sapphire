@@ -20,11 +20,13 @@ import particles
 # All sizes are in bytes
 
 class Format(object):
-    """
-    Class containing the format information of the file
-    as specified in Corsika user manual, Section 10.2.1.
+
+    """The binary format information of the file.
+
+    As specified in the Corsika user manual, Section 10.2.1.
 
     """
+
     def __init__(self):
         # in 32 bit, one field is a float
         self.field_size = struct.calcsize('f')
@@ -53,11 +55,13 @@ class Format(object):
 # From here on, things should not depend on the field size as everything is
 
 class RunHeader(object):
-    """
-    Class representing the run header sub-block
-    as specified in Corsika user manual, Table 7.
+
+    """The run header sub-block
+
+    As specified in the Corsika user manual, Table 7.
 
     """
+
     def __init__(self, subblock):
         self.id = subblock[0]
         self.run_number = subblock[1]
@@ -156,11 +160,13 @@ class RunHeader(object):
 
 
 class EventHeader(object):
-    """
-    Class representing the event header sub-block
-    as specified in Corsika user manual, Table 8.
+
+    """The event header sub-block
+
+    As specified in the Corsika user manual, Table 8.
 
     """
+
     def __init__(self, subblock):
         self.id = subblock[0]
         self.event_number = subblock[1]
@@ -317,11 +323,13 @@ class EventHeader(object):
 
 
 class RunEnd(object):
-    """
-    Class representing the run end sub-block
-    as specified in Corsika user manual, Table 14.
+
+    """The run end sub-block
+
+    As specified in the Corsika user manual, Table 14.
 
     """
+
     def __init__(self, subblock):
         self.id = subblock[0]
         self.run_number = subblock[1]
@@ -337,11 +345,13 @@ class RunEnd(object):
 
 
 class EventEnd(object):
-    """
-    Class representing the event end sub-block
-    as specified in Corsika user manual, Table 13.
+
+    """The event end sub-block
+
+    As specified in the Corsika user manual, Table 13.
 
     """
+
     def __init__(self, subblock):
         self.id = subblock[0]
         self.event_number = subblock[1]
@@ -422,11 +432,13 @@ def particle_data(subblock):
 
 
 class ParticleData(object):
-    """
-    Class representing the particle data sub-block
-    as specified in Corsika user manual, Table 10.
+
+    """The particle data sub-block
+
+    As specified in the Corsika user manual, Table 10.
 
     """
+
     def __init__(self, subblock):
         self.description = int(subblock[0])
         self.p_x = subblock[1] * units.GeV
@@ -496,14 +508,16 @@ class ParticleData(object):
 
 
 class CherenkovData(object):
-    """
-    Class representing the cherenkov photon sub-block
-    as specified in Corsika user manual, Table 11.
+
+    """The cherenkov photon sub-block
+
+    As specified in Corsika user manual, Table 11.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
 
     """
+
     def __init__(self, subblock):
         self.photons_in_bunch = subblock[0]
         self.x = subblock[1] * units.cm
@@ -531,11 +545,13 @@ class CherenkovData(object):
 # THIN versions
 
 class FormatThin(Format):
-    """
-    Class containing the format information of the thinned file
-    as specified in Corsika user manual, Section 10.2.2.
+
+    """The format information of the thinned file
+
+    As specified in Corsika user manual, Section 10.2.2.
 
     """
+
     def __init__(self):
         super(FormatThin, self).__init__()
 
@@ -558,11 +574,13 @@ class FormatThin(Format):
 
 
 class ParticleDataThin(ParticleData):
-    """
-    Class representing the thinned particle data sub-block
-    as specified in Corsika user manual, Table 10.
+
+    """The thinned particle data sub-block
+
+    As specified in the Corsika user manual, Table 10.
 
     """
+
     def __init__(self, subblock):
         self.weight = subblock[7]
         super(ParticleDataThin, self).__init__(subblock)
@@ -585,14 +603,16 @@ class ParticleDataThin(ParticleData):
 
 
 class CherenkovDataThin(CherenkovData):
-    """
-    Class representing the thinned cherenkov photon sub-block
-    as specified in Corsika user manual, Table 11.
+
+    """The thinned cherenkov photon sub-block
+
+    As specified in Corsika user manual, Table 11.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
 
     """
+
     def __init__(self, subblock):
         self.weight = subblock[7]
         super(CherenkovDataThin, self).__init__(subblock)
