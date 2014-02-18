@@ -45,7 +45,7 @@ class GroundParticlesSimulation(BaseSimulation):
                                                 progressbar.Bar(),
                                                 progressbar.ETA()])
 
-        # This is the fastest implementation I could come up with.  I
+        # DF: This is the fastest implementation I could come up with.  I
         # timed several permutations of numpy / math, and tried a Monte
         # Carlo method in which I pick x and y in a square (fast) and then
         # determine if they fall inside a circle or not (surprisingly
@@ -68,7 +68,8 @@ class GroundParticlesSimulation(BaseSimulation):
             elif shower_azimuth <= -pi:
                 shower_azimuth += 2 * pi
 
-            shower_parameters = {'core_pos': (x, y),
+            shower_parameters = {'ext_timestamp': i * 1000000000,
+                                 'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
             self._prepare_cluster_for_shower(x, y, alpha)
@@ -149,12 +150,31 @@ class GroundParticlesSimulation(BaseSimulation):
                   False otherwise.
 
         """
-        hitted_plates = 0
-        for observables in detector_observables:
-            if observables['n'] > 0:
-                hitted_plates += 1
+        detectors_hit = [True for observables in detector_observables
+                         if observables['n'] > 0]
 
-        if hitted_plates >= 2:
+        if sum(detectors_hit) >= 2:
             return True
         else:
             return False
+
+    def simulate_gps(self, station_observables, shower_parameters):
+        """Simulate gps timestamp."""
+
+        arrival_times = [station_observables['t%d' % id]
+                         for id in range(1, 5)
+                         if station_observables.get('n%d' % id, -1) > 0]
+
+        if len(arrival_times) > 1:
+            trigger_time = sorted(arrival_times)[1]
+
+            timestamp = int(shower_parameters['ext_timestamp'] / 1000000000)
+            nanoseconds = trigger_time
+            ext_timestamp = shower_parameters['ext_timestamp'] + nanoseconds
+
+            gps_timestamp = {'ext_timestamp': ext_timestamp,
+                             'timestamp': timestamp, 'nanoseconds': nanoseconds}
+            station_observables.update(gps_timestamp)
+
+        return station_observables
+

@@ -91,6 +91,7 @@ class BaseSimulation(object):
         shower_parameters = {'azimuth': None,
                              'zenith': None,
                              'energy': None,
+                             'ext_timestamp': None,
                              'core_pos': (None, None)}
 
         for i in pbar(range(self.N)):
@@ -108,6 +109,8 @@ class BaseSimulation(object):
         has_triggered = self.simulate_trigger(detector_observables)
         station_observables = \
             self.process_detector_observables(detector_observables)
+        station_observables = self.simulate_gps(station_observables,
+                                                shower_parameters)
 
         return has_triggered, station_observables
 
@@ -124,6 +127,14 @@ class BaseSimulation(object):
 
         return True
 
+    def simulate_gps(self, station_observables, shower_parameters):
+        """Simulate gps timestamp."""
+
+        gps_timestamp = {'ext_timestamp': 0, 'timestamp': 0, 'nanoseconds': 0}
+        station_observables.update(gps_timestamp)
+
+        return station_observables
+
     def process_detector_observables(self, detector_observables):
         """Process detector observables for a station.
 
@@ -139,8 +150,7 @@ class BaseSimulation(object):
         station_observables = {'pulseheights': 4 * [-1.],
                                'integrals': 4 * [-1.]}
 
-        for detector_id, observables in enumerate(detector_observables,
-                                                  1):
+        for detector_id, observables in enumerate(detector_observables, 1):
             for key, value in observables.iteritems():
                 if key in ['n', 't']:
                     key = key + str(detector_id)
