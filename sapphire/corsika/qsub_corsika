@@ -102,7 +102,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
 
     chmod ug+x $SCRIPT
 
-    qsub -N ${{NAME}} -q {queue} {walltime} -V -j oe -d {rundir} $SCRIPT
+    qsub -N ${{NAME}} -q {queue} {walltime} -V -z -j oe -d {rundir} $SCRIPT
 
     rm $SCRIPT""")
 
@@ -172,7 +172,11 @@ class CorsikaBatch(object):
     def submit_job(self):
         """Submit job to Stoomboot"""
 
-        subprocess.check_output('./run.sh', shell=True)
+        result = subprocess.check_output('./run.sh', stderr=subprocess.STDOUT,
+                                         shell=True)
+        if not result == '':
+            print 'Error occured: ', result
+            raise Exception
 
     def taken_seeds(self):
         """Get list of seeds already used"""
