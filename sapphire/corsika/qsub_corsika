@@ -57,6 +57,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     OBSLEV    10.E2                    observation level -maaiveld -3.7m (cm)
     MAXPRT    1                        max. number of printed events
     ECTMAP    1.E4                     cut on gamma factor for printout
+    DATDIR    {datadir}                location of the input data tables
     DIRECT    ./                       output directory
     USER      hisparc                  user
     DEBUG     F  6  F  1000000         debug flag and log.unit for out
@@ -165,6 +166,7 @@ class CorsikaBatch(object):
         # Create/copy files
         self.create_input()
         self.create_script()
+        self.copy_config()
         self.symlink_corsika()
 
     def submit_job(self):
@@ -212,7 +214,8 @@ class CorsikaBatch(object):
         inputpath = os.path.join(TEMPDIR, self.rundir, 'input-hisparc')
         input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                       particle=self.particle, phi=self.phi
-                                      energy=self.energy, theta=self.theta)
+                                      energy=self.energy, theta=self.theta,
+                                      datadir=CORSIKADIR)
         file = open(inputpath, 'w')
         file.write(input)
         file.close()
@@ -235,14 +238,28 @@ class CorsikaBatch(object):
         file.close()
         os.chmod(scriptpath, 0774)
 
+    def copy_config(self):
+        """Copy the CORSIKA config file to the output directory
+
+        This way we can always check how CORSIKA was configured for each
+        run.
+
+        """
+        source = os.path.join(CORSIKADIR, self.corsika, '.log')
+        destination = os.path.join(TEMPDIR, self.rundir)
+        subprocess.check_output('cp {source} {destination}'
+                                .format(source=source,
+                                        destination=destination),
+                                shell=True)
+
     def symlink_corsika(self):
         """Create symbolic links to CORSIKA run files
 
-        CORSIKA requires files from the run directory to be available in
-        the PWD. So we create symlinks to all files in the run dir.
+        Only link the CORSIKA executable, it can find the the input data
+        files in the run directory through the DATDIR in the input file.
 
         """
-        source = os.path.join(CORSIKADIR, '*')
+        source = os.path.join(CORSIKADIR, self.corsika)
         destination = os.path.join(TEMPDIR, self.rundir)
         subprocess.check_output('ln -s {source} {destination}'
                                 .format(source=source,
