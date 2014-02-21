@@ -41,7 +41,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     PRMPAR    {particle}               particle type of prim. particle (14=proton, 1=photon, 3=electron)
     ERANGE    1.E{energy}  1.E{energy} energy range of primary particle (GeV)
     ESLOPE    -2.7                     slope of primary energy spectrum (E^y)
-    THETAP    {zenith}   {zenith}      range of zenith angle (degree)
+    THETAP    {theta}   {theta}        range of zenith angle (degree)
     PHIP      {phi}   {phi}            range of azimuth angle, phi is direction the shower points to (degree)
     FIXCHI    0.                       starting altitude (g/cm**2)
     FIXHEI    0.   0                   height and target type of first interaction (cm, [1=N, 2=O, 3=Ar])
