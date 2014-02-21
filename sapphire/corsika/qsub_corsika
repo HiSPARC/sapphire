@@ -249,7 +249,7 @@ class CorsikaBatch(object):
         run.
 
         """
-        source = os.path.join(CORSIKADIR, self.corsika, '.log')
+        source = os.path.join(CORSIKADIR, self.corsika + '.log')
         destination = os.path.join(TEMPDIR, self.rundir)
         subprocess.check_output('cp {source} {destination}'
                                 .format(source=source,
