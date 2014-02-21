@@ -213,7 +213,7 @@ class CorsikaBatch(object):
 
         inputpath = os.path.join(TEMPDIR, self.rundir, 'input-hisparc')
         input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
-                                      particle=self.particle, phi=self.phi
+                                      particle=self.particle, phi=self.phi,
                                       energy=self.energy, theta=self.theta,
                                       datadir=CORSIKADIR)
         file = open(inputpath, 'w')
@@ -223,7 +223,7 @@ class CorsikaBatch(object):
     def create_script(self):
         """Make Stoomboot script file"""
 
-        if self.queue = 'long':
+        if self.queue == 'long':
             walltime = "-l walltime=96:00:00"
         else:
             walltime = ""
