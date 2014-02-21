@@ -1,15 +1,28 @@
 #!/usr/bin/env python
 
+""" Run CORSIKA simulations on Stoomboot
+
+    This module submits CORSIKA simulation jobs to Stoomboot, the
+    Nikhef computer cluster. It ensures that a unique combination
+    of seeds for the random number sequences are used for each
+    simulation.
+
+    Update the PATH and PYTHONPATH paths in your ~/.bash_profile:
+    export PATH=/data/hisparc/corsika_env/python/bin:$PATH
+    export PYTHONPATH=/data/hisparc/corsika_env/sapphire:$PYTHONPATH
+
+"""
 import os
 import sys
 import shutil
 import random
 import textwrap
 import subprocess
+import argparse
 
 import progressbar as pb
 
-import particles
+from sapphire.corsika import particles
 
 
 TEMPDIR = '/data/hisparc/corsika/running/'
@@ -28,8 +41,8 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     PRMPAR    {particle}               particle type of prim. particle (14=proton, 1=photon, 3=electron)
     ERANGE    1.E{energy}  1.E{energy} energy range of primary particle (GeV)
     ESLOPE    -2.7                     slope of primary energy spectrum (E^y)
-    THETAP    {theta}   {theta}        range of zenith angle (degree)
-    PHIP      0.   0.                  range of azimuth angle, direction the shower points to (degree)
+    THETAP    {zenith}   {zenith}      range of zenith angle (degree)
+    PHIP      {phi}   {phi}            range of azimuth angle, phi is direction the shower points to (degree)
     FIXCHI    0.                       starting altitude (g/cm**2)
     FIXHEI    0.   0                   height and target type of first interaction (cm, [1=N, 2=O, 3=Ar])
     MAGNET    18.908 45.261            magnetic field DAin Amsterdam (uT)
@@ -88,7 +101,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
 
     chmod ug+x $SCRIPT
 
-    qsub -N ${{NAME}} -q {queue} -V -j oe -d {rundir} $SCRIPT
+    qsub -N ${{NAME}} -q {queue} {walltime} -V -j oe -d {rundir} $SCRIPT
 
     rm $SCRIPT""")
 
@@ -99,34 +112,41 @@ class CorsikaBatch(object):
 
     Stoomboot is the Nikhef computer cluster.
 
-    :param energy: the energy of the primary particle in log10(GeV),
-                   so an energy of 7 corresponds to 10**6 eV.
+    :param energy: the energy of the primary particle in log10(E[eV]),
+                   so an energy of 16 (10**16 eV) corresponds to 10**7 GeV.
     :param particle: name of primary particle, e.g. proton, gamma or iron
-    :param theta: zenith angle of the primary particle (in degrees),
-                  common choices: 0, 7.5, 15, 22.5, 30, 37.5 and 45.
+    :param zenith: zenith angle of the primary particle (in degrees),
+                   common choices: 0, 7.5, 15, 22.5, 30, 37.5, 45 and 52.5.
+    :param azimuth: azimuth angle of the primary particle (in degrees),
+                    common choices: 0, 45, 90, 135, 180, 225, 270 and 315.
     :param queue: choose a queue to sumbit the job to:
+                  express - max 10 minutes, max 2 jobs
                   short - max 4 hours, max 1000 jobs
                   stbcq - max 8 hours, max 1000 jobs
-                  qlong - max 48 hours, max 500 jobs, max 64 running
+                  generic - max 24 hours, max 500 jobs
+                  long - max 96 hours (default 48 hours), max 500 jobs
     :param corsika: name of the compiled CORSIKA executable to use:
-                    corsika74000Linux_QGSII_gheisha
                     corsika74000Linux_EPOS_gheisha
+                    corsika74000Linux_QGSII_gheisha
+                    corsika74000Linux_QGSJET_gheisha
+                    corsika74000Linux_SIBYLL_gheisha
 
     """
 
-    def __init__(self, energy=7, particle='proton', theta=22.5, queue='stbcq',
-                 corsika='corsika74000Linux_QGSII_gheisha'):
-        self.energy = energy
+    def __init__(self, energy=16, particle='proton', zenith=22.5, azimuth=180,
+                 queue='stbcq', corsika='corsika74000Linux_QGSII_gheisha'):
+        self.energy = energy - 9  # Stored as log10(E[GeV])
         self.particle = [i for i, p in particles.id.items()
-                         if p == particle][0]
-        self.theta = theta
+                         if p == particle][0]  # Stored as particle id
+        self.theta = zenith
+        self.phi = azimuth - 180  # Stored as phi defined by CORSIKA
         self.queue = queue
         self.corsika = corsika
         self.seed1 = None
         self.seed2 = None
         self.rundir = None
 
-    def batch_run(self):
+    def run(self):
         self.prepare_env()
         self.submit_job()
 
@@ -191,7 +211,7 @@ class CorsikaBatch(object):
 
         inputpath = os.path.join(TEMPDIR, self.rundir, 'input-hisparc')
         input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
-                                      particle=self.particle,
+                                      particle=self.particle, phi=self.phi
                                       energy=self.energy, theta=self.theta)
         file = open(inputpath, 'w')
         file.write(input)
@@ -200,9 +220,15 @@ class CorsikaBatch(object):
     def create_script(self):
         """Make Stoomboot script file"""
 
+        if self.queue = 'long':
+            walltime = "-l walltime=96:00:00"
+        else:
+            walltime = ""
+
         scriptpath = os.path.join(TEMPDIR, self.rundir, 'run.sh')
         script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
-                                        queue=self.queue, corsika=self.corsika,
+                                        queue=self.queue, walltime=walltime,
+                                        corsika=self.corsika,
                                         rundir=TEMPDIR + self.rundir)
         file = open(scriptpath, 'w')
         file.write(script)
@@ -227,6 +253,8 @@ class CorsikaBatch(object):
 def check_queue(queue):
     """Check for available job slots on the selected queue for current user
 
+    Maximum numbers from `qstat -Q -f`
+
     Caveat: also counts completed jobs still listed in qstat,
             add `grep [RQ]` to fix.
 
@@ -241,38 +269,45 @@ def check_queue(queue):
                                             ' | wc -l'.format(queue=queue),
                                             shell=True))
 
-    if queue == 'short':
+    if queue == 'express':
+        return 2 - user_jobs
+    elif queue == 'short':
         return 1000 - user_jobs
     elif queue == 'stbcq':
         return min(1000 - user_jobs, 10000 - all_jobs)
-    elif queue == 'qlong':
+    elif queue == 'generic':
+        return min(500 - user_jobs, 1000 - all_jobs)
+    elif queue == 'long':
         return min(500 - user_jobs, 1000 - all_jobs)
     else:
         raise KeyError('Unknown queue name: {queue}'.format(queue))
 
 
-def multiple_jobs(n, E, p, T, q, c):
+def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
     """Use this to sumbit multiple jobs to Stoomboot
 
     :param n: Number of jobs to submit
-    :param E: log10(GeV) energy of primary particle
-    :param p: Particle kind (as string, see particles.py for possibilities)
-    :param T: Zenith angle in degrees of the primary particle
-    :param q: Stoomboot queue to submit to
-    :param c: Name of the CORSIKA executable to use
+    :param energy: log10(E[eV]) energy of primary particle
+    :param particle: Particle kind (as string, see particles.py for possibilities)
+    :param zenith: Zenith angle in degrees of the primary particle
+    :param azimuth: Azimuth angle in degrees of the primary particle
+    :param queue: Stoomboot queue to submit to
+    :param corsika: Name of the CORSIKA executable to use
 
     """
     print textwrap.dedent("""\
         Batch submitting jobs to Stoomboot:
         Number of jobs      {n}
-        Particle energy     10^{E} GeV
+        Particle energy     10^{e} eV
         Primary particle    {p}
-        Zenith angle        {T} degrees
+        Zenith angle        {z} degrees
+        Azimuth angle       {a} degrees
         Stoomboot queue     {q}
         CORSIKA executable  {c}
-        """.format(n=n, E=E, p=p, T=T, q=q, c=c))
+        """.format(n=n, e=energy, p=particle, z=zenith, a=azimuth, q=queue,
+                   c=corsika))
 
-    available_slots = check_queue(q)
+    available_slots = check_queue(queue)
     if available_slots <= 0:
         n = 0
         print 'Submitting no jobs because queue is full.'
@@ -283,11 +318,36 @@ def multiple_jobs(n, E, p, T, q, c):
 
     progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
     for _ in progress(xrange(n)):
-        batch = CorsikaBatch(energy=E, particle=p, theta=T, queue=q, corsika=c)
-        batch.batch_run()
+        batch = CorsikaBatch(energy=energy, particle=particle, zenith=zenith,
+                             azimuth=azimuth, queue=queue, corsika=corsika)
+        batch.run()
     print 'Done.'
 
 
 if __name__ == '__main__':
-    multiple_jobs(100, 7, 'proton', 22.5, 'stbcq',
-                  'corsika74000Linux_QGSII_gheisha')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('n', type=int, help="Number of jobs to submit")
+    parser.add_argument('energy', type=int, help="Energy of the primary "
+                        "particle (in log10(E[eV]))", choices=range(12, 19))
+    parser.add_argument('particle', help="Primary particle kind")
+    parser.add_argument('zenith',
+                        help="Zenith angle of primary particle [degrees]",
+                        type=float,
+                        choices=[0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5])
+    parser.add_argument('-a', '--azimuth',
+                        help="Azimuth angle of primary particle [degrees]",
+                        type=int,
+                        default=180,
+                        choices=[0, 45, 90, 135, 180, 225, 270, 315])
+    parser.add_argument('-q', '--queue',
+                        help="Name of the stoomboot queue to use",
+                        default='stbcq',
+                        choices=['express', 'short', 'stbcq', 'generic',
+                                 'long'])
+    parser.add_argument('-c', '--corsika',
+                        help="Name of the CORSIKA executable to use",
+                        default="corsika74000Linux_QGSII_gheisha")
+    args = parser.parse_args()
+
+    multiple_jobs(args.n, args.energy, args.particle, args.zenith,
+                  args.azimuth, args.queue, args.corsika)
