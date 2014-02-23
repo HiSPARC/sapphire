@@ -68,7 +68,7 @@ class GroundParticlesSimulation(BaseSimulation):
             elif shower_azimuth <= -pi:
                 shower_azimuth += 2 * pi
 
-            shower_parameters = {'ext_timestamp': i * 1000000000,
+            shower_parameters = {'ext_timestamp': (long(1e9) + i) * long(1e9),
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
