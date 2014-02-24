@@ -108,7 +108,6 @@ class Network(object):
             path = API['subclusters_in_cluster'].format(cluster_number=cluster)
             return _get_json(path)
 
-
     def stations(self, country=None, cluster=None, subcluster=None):
         """Get a list of stations
 
@@ -160,6 +159,41 @@ class Network(object):
                 cluster.update({'subclusters': subclusters})
             country.update({'clusters': clusters})
         return countries
+
+    def stations_with_data(self, year='', month='', day=''):
+        """Get a list of stations with data on the specified date
+
+        :param year,month,day: the date for which to check. It is
+            possible to be less specific.
+        :return: all stations with data.
+
+        """
+        if year == '' and (month != '' or day != ''):
+            raise Exception('You must also specify the year')
+        elif month == '' and day != '':
+            raise Exception('You must also specify the month')
+
+        path = (API['stations_with_data'].format(year=year, month=month,
+                                                 day=day).strip("/"))
+        return _get_json(path)
+
+
+    def stations_with_weather(self, year='', month='', day=''):
+        """Get a list of stations with weather data on the specified date
+
+        :param year,month,day: the date for which to check. It is
+            possible to be less specific.
+        :return: all stations with weather data.
+
+        """
+        if year == '' and (month != '' or day != ''):
+            raise Exception('You must also specify the year')
+        elif month == '' and day != '':
+            raise Exception('You must also specify the month')
+
+        path = (API['stations_with_weather'].format(year=year, month=month,
+                                                    day=day).strip("/"))
+        return _get_json(path)
 
 
 class Station(object):
