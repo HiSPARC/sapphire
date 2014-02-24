@@ -69,8 +69,16 @@ class Network(object):
         path = API['stations']
         self.all_stations = _get_json(path)
 
+    def countries(self):
+        """Get a list of countries
+
+        :return: all countries in the region
+
+        """
+        return self.all_countries
+
     def clusters(self, country=None):
-        """Get a list of stations
+        """Get a list of clusters
 
         :param country: the number of the country for which to get all
             clusters.
@@ -78,11 +86,11 @@ class Network(object):
 
         """
         if country is None:
-            return self.all_clusters
+            clusters = self.all_clusters
         else:
-            stations = []
             path = API['clusters_in_country'].format(country_number=country)
-            return _get_json(path)
+            clusters = _get_json(path)
+        return clusters
 
     def subclusters(self, country=None, cluster=None):
         """Get a list of subclusters
@@ -94,7 +102,7 @@ class Network(object):
 
         """
         if country is None and cluster is None:
-            return self.all_subclusters
+            subclusters = self.all_subclusters
         elif not country is None:
             subclusters = []
             path = API['clusters_in_country'].format(country_number=country)
@@ -103,10 +111,10 @@ class Network(object):
                 path = (API['subclusters_in_cluster']
                         .format(cluster_number=cluster['number']))
                 subclusters.extend(_get_json(path))
-            return subclusters
         else:
             path = API['subclusters_in_cluster'].format(cluster_number=cluster)
-            return _get_json(path)
+            subclusters = _get_json(path)
+        return subclusters
 
     def stations(self, country=None, cluster=None, subcluster=None):
         """Get a list of stations
@@ -118,7 +126,7 @@ class Network(object):
 
         """
         if country is None and cluster is None and subcluster is None:
-            return self.all_stations
+            stations = self.all_stations
         elif not country is None:
             stations = []
             path = API['clusters_in_country'].format(country_number=country)
@@ -131,7 +139,6 @@ class Network(object):
                     path = (API['stations_in_subcluster']
                             .format(subcluster_number=subcluster['number']))
                     stations.extend(_get_json(path))
-            return stations
         elif not cluster is None:
             stations = []
             path = API['subclusters_in_cluster'].format(cluster_number=cluster)
@@ -140,11 +147,11 @@ class Network(object):
                 path = (API['stations_in_subcluster']
                         .format(subcluster_number=subcluster['number']))
                 stations.extend(_get_json(path))
-            return stations
-        elif not subcluster is None:
+        else:
             path = (API['stations_in_subcluster']
                     .format(subcluster_number=subcluster))
-            return _get_json(path)
+            stations = _get_json(path)
+        return stations
 
     def nested_network(self):
         """Get a nested list of the full network"""
