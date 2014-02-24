@@ -5,6 +5,15 @@ from sapphire import gpstime
 
 class GPSTimeTests(unittest.TestCase):
     def setUp(self):
+        """Setup combinations of calendar dates, timestamps and leap seconds
+
+        The UTC timestamps follow from:
+
+            import time
+            import calendar
+            t = calendar.timegm(time.strptime(date, '%B %d, %Y'))
+
+        """
         self.combinations = (('January 1, 1999', 915148800, 13),
                              ('January 1, 2004', 1072915200, 13),
                              ('December 31, 2005', 1135987200, 13),
