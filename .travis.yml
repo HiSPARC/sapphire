@@ -6,7 +6,6 @@ python:
 # https://gist.github.com/dan-blanchard/7045057
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libhdf5-serial-dev
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran
   - wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
