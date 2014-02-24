@@ -41,6 +41,20 @@ class NetworkTests(unittest.TestCase):
         bad_subcluster = 1
         self.assertRaises(Exception, self.network.stations, subcluster=bad_subcluster)
 
+    def test_stations_with_data(self):
+        self.assertEqual(self.network.stations_with_data(2004, 1, 9)[0]['number'], 2)
+        self.assertEqual(len(self.network.stations_with_data(2004, 1, 1)), 0)
+        self.assertRaises(Exception, self.network.stations_with_data, day=1)
+        self.assertRaises(Exception, self.network.stations_with_data, month=1)
+        self.assertRaises(Exception, self.network.stations_with_data, day=1, month=1)
+
+    def test_stations_with_weather(self):
+        self.assertEqual(self.network.stations_with_weather(2004, 10, 9)[0]['number'], 3)
+        self.assertEqual(len(self.network.stations_with_weather(2004, 1, 1)), 0)
+        self.assertRaises(Exception, self.network.stations_with_weather, day=1)
+        self.assertRaises(Exception, self.network.stations_with_weather, month=1)
+        self.assertRaises(Exception, self.network.stations_with_weather, day=1, month=1)
+
 
 class StationTests(unittest.TestCase):
     def setUp(self):
