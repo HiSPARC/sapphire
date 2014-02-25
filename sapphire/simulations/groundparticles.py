@@ -18,9 +18,10 @@ class GroundParticlesSimulation(BaseSimulation):
         self.max_core_distance = max_core_distance
 
         for station in self.cluster.stations:
-            station.gps_offset = np.random.normal(0, 18)
-            # The distribution and spread has to be determined more accurate.
-            # At a later stage this has to be adjusted.
+            station.gps_offset = np.random.normal(0, 16.05)
+            # The actual distribution is not very clear.
+            # We assume it is gaussian for convenience.
+            # Then the stddev is about 16.05
 
         self.coincidence_group._v_attrs.cluster = self.cluster
 
