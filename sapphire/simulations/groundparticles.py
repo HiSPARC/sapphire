@@ -169,7 +169,7 @@ class GroundParticlesSimulation(BaseSimulation):
             trigger_time = sorted(arrival_times)[1]
 
             timestamp = int(shower_parameters['ext_timestamp'] / 1000000000)
-            nanoseconds = trigger_time
+            nanoseconds = int(trigger_time + self.simulate_gps_uncertainty())
             ext_timestamp = shower_parameters['ext_timestamp'] + nanoseconds
 
             gps_timestamp = {'ext_timestamp': ext_timestamp,
@@ -178,3 +178,7 @@ class GroundParticlesSimulation(BaseSimulation):
 
         return station_observables
 
+    def simulate_gps_uncertainty(self):
+        """Simulate uncertainty from GPS receiver"""
+
+        return np.random.normal(0, 4.5)
