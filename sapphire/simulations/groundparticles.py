@@ -17,6 +17,13 @@ class GroundParticlesSimulation(BaseSimulation):
         self.groundparticles = self.corsikafile.getNode('/groundparticles')
         self.max_core_distance = max_core_distance
 
+        for station in self.cluster.stations:
+            station.gps_offset = np.random.normal(0, 18)
+            # The distribution and spread has to be determined more accurate.
+            # At a later stage this has to be adjusted.
+
+        self.coincidence_group._v_attrs.cluster = self.cluster
+
     def finish(self):
         """Clean-up after simulation"""
 
@@ -158,7 +165,7 @@ class GroundParticlesSimulation(BaseSimulation):
         else:
             return False
 
-    def simulate_gps(self, station_observables, shower_parameters):
+    def simulate_gps(self, station_observables, shower_parameters, station):
         """Simulate gps timestamp."""
 
         arrival_times = [station_observables['t%d' % id]
@@ -169,7 +176,8 @@ class GroundParticlesSimulation(BaseSimulation):
             trigger_time = sorted(arrival_times)[1]
 
             timestamp = int(shower_parameters['ext_timestamp'] / 1000000000)
-            nanoseconds = int(trigger_time + self.simulate_gps_uncertainty())
+            nanoseconds = int(trigger_time + self.simulate_gps_uncertainty() +
+                              station.gps_offset)
             ext_timestamp = shower_parameters['ext_timestamp'] + nanoseconds
 
             gps_timestamp = {'ext_timestamp': ext_timestamp,

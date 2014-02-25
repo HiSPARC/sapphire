@@ -110,7 +110,7 @@ class BaseSimulation(object):
         station_observables = \
             self.process_detector_observables(detector_observables)
         station_observables = self.simulate_gps(station_observables,
-                                                shower_parameters)
+                                                shower_parameters, station)
 
         return has_triggered, station_observables
 
@@ -127,7 +127,7 @@ class BaseSimulation(object):
 
         return True
 
-    def simulate_gps(self, station_observables, shower_parameters):
+    def simulate_gps(self, station_observables, shower_parameters, station):
         """Simulate gps timestamp."""
 
         gps_timestamp = {'ext_timestamp': 0, 'timestamp': 0, 'nanoseconds': 0}
