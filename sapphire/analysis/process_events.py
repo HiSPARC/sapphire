@@ -1,3 +1,34 @@
+""" Process HiSPARC events
+
+    This module can be used analyse data to get observables like arrival
+    times and particle count in each detector for each event.
+
+    Example usage::
+
+        import datetime
+
+        import tables
+
+        from sapphire.publicdb import download_data
+        from sapphire.analysis import process_events
+
+
+        STATIONS = [501, 503, 506]
+        START = datetime.datetime(2013, 1, 1)
+        END = datetime.datetime(2013, 1, 2)
+
+
+        if __name__ == '__main__':
+            station_groups = ['/s%d' % u for u in STATIONS]
+
+            data = tables.openFile('data.h5', 'w')
+            for station, group in zip(STATIONS, station_groups):
+                download_data(data, group, station, START, END, get_blobs=True)
+                proc = process_events.ProcessEvents(data, group)
+                proc.process_and_store_results()
+            data.close()
+
+"""
 import zlib
 from itertools import izip
 import operator
@@ -130,7 +161,8 @@ class ProcessEvents(object):
         """Check if the destination is valid"""
 
         if destination == '_events':
-            raise RuntimeError("The _events table is reserved for internal use.  Choose another destination.")
+            raise RuntimeError("The _events table is reserved for internal "
+                               "use.  Choose another destination.")
         elif destination is None:
             destination = 'events'
 
@@ -138,7 +170,8 @@ class ProcessEvents(object):
         # worry.  Otherwise, destination may not exist or will be overwritten
         if self.source.name != destination:
             if destination in self.group and not overwrite:
-                raise RuntimeError("I will not overwrite previous results (unless you specify overwrite=True)")
+                raise RuntimeError("I will not overwrite previous results "
+                                   "(unless you specify overwrite=True)")
 
         self.destination = destination
 

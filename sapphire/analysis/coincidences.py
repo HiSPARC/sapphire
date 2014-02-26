@@ -25,9 +25,9 @@
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END)
 
-            coincidences = coincidences.Coincidences(data, '/coincidences',
-                                                     station_groups)
-            coincidences.search_and_store_coincidences()
+            coin = coincidences.Coincidences(data, '/coincidences',
+                                             station_groups)
+            coin.search_and_store_coincidences()
 
 """
 import time
