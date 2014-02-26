@@ -175,7 +175,7 @@ class CorsikaBatch(object):
         result = subprocess.check_output('./run.sh', stderr=subprocess.STDOUT,
                                          shell=True)
         if not result == '':
-            print 'Error occured: ', result
+            print '%sError occured: %s' % (self.rundir, result)
             raise Exception
 
     def taken_seeds(self):
@@ -205,12 +205,12 @@ class CorsikaBatch(object):
     def make_rundir(self):
         """Make the run directory"""
 
-        os.mkdir(TEMPDIR + self.rundir)
+        os.mkdir(os.path.join(TEMPDIR, self.rundir))
 
     def goto_rundir(self):
         """Move into the run directory"""
 
-        os.chdir(TEMPDIR + self.rundir)
+        os.chdir(os.path.join(TEMPDIR + self.rundir))
 
     def create_input(self):
         """Make CORSIKA steering file"""
@@ -348,24 +348,30 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('n', type=int, help="Number of jobs to submit")
-    parser.add_argument('energy', type=int, help="Energy of the primary "
-                        "particle (in log10(E[eV]))", choices=range(12, 19))
-    parser.add_argument('particle', help="Primary particle kind")
-    parser.add_argument('zenith',
-                        help="Zenith angle of primary particle [degrees]",
+    parser.add_argument('energy', metavar='energy', type=int,
+                        help="Energy of the primary particle in range 12..19 "
+                             "(log10(E[eV]))",
+                        choices=range(12, 19))
+    parser.add_argument('particle', help="Primary particle kind (e.g. proton "
+                                         "or iron)")
+    parser.add_argument('zenith', metavar='zenith',
+                        help="Zenith angle of primary particle in range 0..60 "
+                             "steps of 7.5 [degrees]",
                         type=float,
-                        choices=[0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5])
-    parser.add_argument('-a', '--azimuth',
-                        help="Azimuth angle of primary particle [degrees]",
+                        choices=[0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60])
+    parser.add_argument('-a', metavar='<azimuth>',
+                        help="Azimuth angle of primary particle in range "
+                             "0..315 steps of 45 [degrees]",
                         type=int,
                         default=180,
                         choices=[0, 45, 90, 135, 180, 225, 270, 315])
-    parser.add_argument('-q', '--queue',
-                        help="Name of the stoomboot queue to use",
+    parser.add_argument('-q', metavar='<queue>',
+                        help="Name of the stoomboot queue to use, choose from "
+                             "[express, short, stbcq, generic, long]",
                         default='stbcq',
                         choices=['express', 'short', 'stbcq', 'generic',
                                  'long'])
-    parser.add_argument('-c', '--corsika',
+    parser.add_argument('-c', metavar='<name>',
                         help="Name of the CORSIKA executable to use",
                         default="corsika74000Linux_QGSII_gheisha")
     args = parser.parse_args()
