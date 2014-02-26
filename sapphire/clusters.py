@@ -276,6 +276,128 @@ class BaseCluster(object):
         return x0, y0
 
 
+class DetectorXYZ(Detector):
+
+    def __init__(self, station, x, y, z, orientation):
+        super(DetectorXYZ, self).__init__(station, x, y, orientation)
+        self.z = z
+
+    def get_xyz_coordinates(self):
+        X, Y, Z, alpha = self.station.get_xyzalpha_coordinates()
+
+        sina = sin(alpha)
+        cosa = cos(alpha)
+        x, y = self.x * cosa - self.y * sina, self.x * sina + self.y * cosa
+
+        return X + x, Y + y, Z + self.z
+
+    def get_corners(self):
+        corners = super(DetectorXYZ, self).get_corners()
+
+        _, _, Z, _ = self.station.get_xyzalpha_coordinates()
+        z = Z + self.z
+
+        return [corner.append(z) for corner in corners]
+
+
+class StationXYZ(Station):
+
+    def __init__(self, cluster, station_id, position, angle, detectors=None):
+        super(StationXYZ, self).__init__(cluster, station_id, position, angle, [])
+
+        if detectors is None:
+            # detector positions for a standard station
+            station_size = 10
+            a = station_size / 2
+            b = a * sqrt(3)
+            detectors = [(0., b, 0., 'UD'), (0., b / 3, 0., 'UD'),
+                         (-a, 0., 0., 'LR'), (a, 0., 0., 'LR')]
+
+        for x, y, z, orientation in detectors:
+            self._add_detector(x, y, z, orientation)
+
+
+    def _add_detector(self, x, y, z, orientation):
+        """Add detector to station
+
+        :param x, y, z, orientation:
+
+        """
+        if self._detectors is None:
+            self._detectors = []
+        self._detectors.append(DetectorXYZ(self, x, y, z, orientation))
+
+    def get_xyzalpha_coordinates(self):
+        """Calculate coordinates of a station
+
+        :return: x, y, z, alpha; coordinates and rotation of station relative to
+            absolute coordinate system
+
+        """
+        X, Y, Z, alpha = self.cluster.get_xyzalpha_coordinates()
+
+        sx, sy, sz = self.position
+        xp = sx * cos(alpha) - sy * sin(alpha)
+        yp = sx * sin(alpha) + sy * cos(alpha)
+
+        x = X + xp
+        y = Y + yp
+        z = Z + sz
+        angle = alpha + self.angle
+
+        return x, y, z, angle
+
+    def get_xyalpha_coordinates(self):
+        """Calculate coordinates of a station
+
+        :return: x, y, alpha; coordinates and rotation of station relative to
+            absolute coordinate system
+
+        """
+        sx, sy, sz = self.position
+        self.position = (sx, sy)
+        x, y, angle = super(StationXYZ, self).get_xyalpha_coordinates()
+        self.position = (sx, sy, sz)
+
+        return x, y, angle
+
+
+class ClusterXYZ(BaseCluster):
+
+    def __init__(self, position=(0., 0., 0.), angle=0.):
+        super(ClusterXYZ, self).__init__(angle=angle)
+        self._x, self._y, self._z = position
+
+    def _add_station(self, position, angle, detectors=None):
+        """Add a station to the cluster
+
+        :param position: tuple of (x, y, z) values
+        :param angle: angle of rotation of the station in radians
+        :param detectors: list of tuples.  Each tuple consists of
+            (dx, dy, dz, orientation)
+
+        Example::
+
+            >>> cluster = BaseCluster()
+            >>> cluster._add_station((0, 0, 0), pi / 2,
+                                     [(-5, 0, 0, 'UD'), (5, 0, 0, 'UD')])
+        """
+        # Need to make _stations an instance variable to be able to
+        # pickle it.  An assignment takes care of that.
+        if self._stations is None:
+            self._stations = []
+        # 1-based (0 is reserved, see e.g. use of headers in groundparticlesim)
+        station_id = len(self._stations) + 1
+        self._stations.append(StationXYZ(self, station_id, position, angle,
+                                         detectors))
+
+    def get_xyzalpha_coordinates(self):
+        return self._x, self._y, self._z, self._alpha
+
+    def set_xyzalpha_coordinates(self, x, y, z, alpha):
+        self._x, self._y, self._z, self._alpha = x, y, z, alpha
+
+
 class SimpleCluster(BaseCluster):
     """Define a simple cluster containing four stations"""
 
@@ -337,8 +459,9 @@ class SingleDiamondStation(BaseCluster):
         self._add_station((0, 0), 0, detectors)
 
 
-class ScienceParkCluster(BaseCluster):
+class ScienceParkCluster(ClusterXYZ):
     try:
+        raise Exception
         network = sapphire.api.Network()
         sp_stations = network.stations(subcluster=500)
         gps_coordinates = {}
@@ -387,14 +510,12 @@ class ScienceParkCluster(BaseCluster):
             alpha = self.station_rotations[station] / 180 * pi
 
             if station not in [501, 502, 505, 508]:
-                detectors = [(0, 8.66, 'UD'), (0, 2.89, 'UD'),
-                             (-5, 0, 'LR'), (5, 0, 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(0, 8.66, 0, 'UD'), (0, 2.89, 0, 'UD'),
+                             (-5, 0, 0, 'LR'), (5, 0, 0, 'LR')]
             elif station == 501:
                 # Precise position measurement of 501
-                detectors = [(0.37, 8.62, 'UD'), (.07, 2.15, 'UD'),
-                             (-5.23, 0, 'LR'), (5.08, 0, 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(0.37, 8.62, 0, 'UD'), (.07, 2.15, 0, 'UD'),
+                             (-5.23, 0, 0, 'LR'), (5.08, 0, 0, 'LR')]
             elif station == 502:
                 # 502 is (since 17 October 2011) diamond-shaped,
                 # with detector 2 moved to the side in LR orientation.
@@ -402,25 +523,24 @@ class ScienceParkCluster(BaseCluster):
                 station_size = 10
                 a = station_size / 2
                 b = a * sqrt(3)
-                detectors = [(0., b, 'UD'), (a * 2, b, 'LR'),
-                             (a, 0., 'LR'), (-a, 0., 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(0., b, 0, 'UD'), (a * 2, b, 0, 'LR'),
+                             (a, 0., 0, 'LR'), (-a, 0., 0, 'LR')]
             elif station == 505:
                 # 505 is (since 24 April 2013) square-shaped,
                 # detector 1 is moved to the left and detector 2 next to it.
                 station_size = 10
                 a = station_size / 2
-                detectors = [(-a, station_size, 'UD'), (a, station_size, 'UD'),
-                             (-a, 0., 'LR'), (a, 0., 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(-a, station_size, 0, 'UD'), (a, station_size, 0, 'UD'),
+                             (-a, 0., 0, 'LR'), (a, 0., 0, 'LR')]
             elif station == 508:
                 # 508 is diamond-shaped,
                 # with detector 2 moved to the side of detector 1 in UD orientation.
                 station_size = 10
                 a = station_size / 2
                 b = a * sqrt(3)
-                detectors = [(0., b, 'UD'), (a * 2, b, 'UD'),
-                             (-a, 0., 'LR'), (a, 0., 'LR')]
-                self._add_station((easting, northing), alpha, detectors)
+                detectors = [(0., b, 0, 'UD'), (a * 2, b, 0, 'UD'),
+                             (-a, 0., 0, 'LR'), (a, 0., 0, 'LR')]
             else:
                 raise RuntimeError("Programming error. Station unknown.")
+
+            self._add_station((easting, northing, up), alpha, detectors)
