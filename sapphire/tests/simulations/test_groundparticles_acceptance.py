@@ -88,3 +88,7 @@ class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
         sys.stderr.close()
         sys.stdout = self.__stdout
         sys.stderr = self.__stderr
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -49,7 +49,8 @@ class GroundParticlesSimulation(BaseSimulation):
 
         self.shower_theta = self.get_shower_theta_from_grdpcles_group()
 
-        super(GroundParticlesSimulation, self).__init__(cluster, data, output, R, N, force, *args, **kwargs)
+        super(GroundParticlesSimulation, self).__init__(cluster, data,
+            output, R, N, force=force, *args, **kwargs)
 
     def get_shower_theta_from_grdpcles_group(self):
         group_name = self.grdpcles._v_pathname

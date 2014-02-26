@@ -30,29 +30,19 @@ In fact, it is probably being cleaned up at this very moment!
 Installation
 ------------
 
-The complete installation instructions are available in the documentation
-in the ``doc/`` directory.  You can compile them using Sphinx, or you can
+Using pip simply open a Terminal and do::
+
+    $ pip install hisparc-sapphire
+
+This should install sapphire with all requirements. More extensive
+installation instructions are available in the documentation in the
+``doc/`` directory.  You can compile them using Sphinx, or you can
 follow this link: http://docs.hisparc.nl/sapphire/.
 
+To check if it worked start Python and load the package:
 
-Quick installation
-^^^^^^^^^^^^^^^^^^
+.. code-block:: python
 
-For the impatient, here are some quick installation instructions.  Make
-sure you have python and pip installed.  For the Mac, I recommend to
-install Homebrew and then ``brew install python`` to get the job done.
-For Windows, install `Python(x,y) <http://code.google.com/p/pythonxy/>`_.
-For Linux, use your favorite package manager.
-
-Then::
-
-    $ pip install numpy
-    $ pip install numexpr
-    $ pip install cython
-    $ pip install matplotlib
-
-And, finally::
-
-    $ pip install https://github.com/hisparc/sapphire/zipball/master
+    import sapphire
 
 You're done!

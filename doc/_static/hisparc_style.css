@@ -25,10 +25,14 @@ div.sphinxsidebar h3 a {
 div.sphinxsidebar a {
     color: #333;}
 
+div.sphinxsidebarwrapper ul {
+    margin-right: 5px;}
+
 p.searchtip {
     display: none;}
 
 div.body {
+    padding: 0 25px 25px 30px;
     color: #333;}
 
 div.body h1,
@@ -58,7 +62,6 @@ div.body h4 {
     font-size: 150%;
     margin-top: 20px;
     padding-left: 3px;}
-
 
 div.related {
     background-color: #0071E2;}

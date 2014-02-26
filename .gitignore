@@ -1,8 +1,19 @@
 *.swp
-*.pyc
-.project
-.pydevproject
-.DS_Store
 
-sapphire.egg-info/
+# Specific
+_build/
 build/
+dist/
+sapphire.egg-info/
+hisparc_sapphire.egg-info/
+
+# Python
+*.pyc
+*.pyo
+
+# OS generated files
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+

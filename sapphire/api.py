@@ -23,10 +23,14 @@
          u'/hisparc/cluster_bristol/station_13005']
 
 """
+import logging
+
 import datetime
 from urllib2 import urlopen, HTTPError, URLError
 import json
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('api')
 
 API = {"stations": 'stations/',
        "stations_in_subcluster": 'subclusters/{subcluster_number}/',
@@ -282,8 +286,8 @@ class Station(object):
             raise Exception('You must also specify the month')
 
         path = (API['has_data'].format(station_number=self.station,
-                                               year=year, month=month, day=day)
-                                       .strip("/"))
+                                       year=year, month=month, day=day)
+                               .strip("/"))
         return _get_json(path)
 
     def has_weather(self, year='', month='', day=''):
@@ -301,8 +305,8 @@ class Station(object):
             raise Exception('You must also specify the month')
 
         path = (API['has_weather'].format(station_number=self.station,
-                                               year=year, month=month, day=day)
-                                       .strip("/"))
+                                          year=year, month=month, day=day)
+                                  .strip("/"))
         return _get_json(path)
 
     def event_trace(self, timestamp, nanoseconds):
@@ -346,7 +350,7 @@ def _retrieve_url(urlpath):
 
     """
     url = __api + urlpath
-
+    logging.debug('Getting: ' + url)
     try:
         result = urlopen(url).read()
     except HTTPError, e:
