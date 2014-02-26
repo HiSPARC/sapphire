@@ -1,3 +1,34 @@
+""" Process HiSPARC events
+
+    This module can be used analyse data to get observables like arrival
+    times and particle count in each detector for each event.
+
+    Example usage::
+
+        import datetime
+
+        import tables
+
+        from sapphire.publicdb import download_data
+        from sapphire.analysis import process_events
+
+
+        STATIONS = [501, 503, 506]
+        START = datetime.datetime(2013, 1, 1)
+        END = datetime.datetime(2013, 1, 2)
+
+
+        if __name__ == '__main__':
+            station_groups = ['/s%d' % u for u in STATIONS]
+
+            data = tables.openFile('data.h5', 'w')
+            for station, group in zip(STATIONS, station_groups):
+                download_data(data, group, station, START, END, get_blobs=True)
+                proc = process_events.ProcessEvents(data, group)
+                proc.process_and_store_results()
+            data.close()
+
+"""
 import zlib
 from itertools import izip
 import operator
@@ -8,22 +39,46 @@ from scipy.stats import norm
 from scipy.optimize import curve_fit
 import progressbar as pb
 
-from sapphire.storage import ProcessedHisparcEvent
 from sapphire.analysis.find_mpv import FindMostProbableValueInSpectrum
 
 
 ADC_THRESHOLD = 20
+ADC_LOW_THRESHOLD = 253
+ADC_HIGH_THRESHOLD = 323
 ADC_TIME_PER_SAMPLE = 2.5e-9
 
 
 class ProcessEvents(object):
-
     """Process HiSPARC events to obtain several observables.
 
     This class can be used to process a set of HiSPARC events and adds a
     few observables like particle arrival time and number of particles in
     the detector to a copy of the event table.
+
     """
+    processed_events_description = {
+        'event_id': tables.UInt32Col(pos=0),
+        'timestamp': tables.Time32Col(pos=1),
+        'nanoseconds': tables.UInt32Col(pos=2),
+        'ext_timestamp': tables.UInt64Col(pos=3),
+        'data_reduction': tables.BoolCol(pos=4),
+        'trigger_pattern': tables.UInt32Col(pos=5),
+        'baseline': tables.Int16Col(pos=6, shape=4, dflt=-1),
+        'std_dev': tables.Int16Col(pos=7, shape=4, dflt=-1),
+        'n_peaks': tables.Int16Col(pos=8, shape=4, dflt=-1),
+        'pulseheights': tables.Int16Col(pos=9, shape=4, dflt=-1),
+        'integrals': tables.Int32Col(pos=10, shape=4, dflt=-1),
+        'traces': tables.Int32Col(pos=11, shape=4, dflt=-1),
+        'event_rate': tables.Float32Col(pos=12),
+        't1': tables.Float32Col(pos=13, dflt=-1),
+        't2': tables.Float32Col(pos=14, dflt=-1),
+        't3': tables.Float32Col(pos=15, dflt=-1),
+        't4': tables.Float32Col(pos=16, dflt=-1),
+        'n1': tables.Float32Col(pos=17, dflt=-1),
+        'n2': tables.Float32Col(pos=18, dflt=-1),
+        'n3': tables.Float32Col(pos=19, dflt=-1),
+        'n4': tables.Float32Col(pos=20, dflt=-1)}
+
 
     def __init__(self, data, group, source=None):
         """Initialize the class.
@@ -106,7 +161,8 @@ class ProcessEvents(object):
         """Check if the destination is valid"""
 
         if destination == '_events':
-            raise RuntimeError("The _events table is reserved for internal use.  Choose another destination.")
+            raise RuntimeError("The _events table is reserved for internal "
+                               "use.  Choose another destination.")
         elif destination is None:
             destination = 'events'
 
@@ -114,7 +170,8 @@ class ProcessEvents(object):
         # worry.  Otherwise, destination may not exist or will be overwritten
         if self.source.name != destination:
             if destination in self.group and not overwrite:
-                raise RuntimeError("I will not overwrite previous results (unless you specify overwrite=True)")
+                raise RuntimeError("I will not overwrite previous results "
+                                   "(unless you specify overwrite=True)")
 
         self.destination = destination
 
@@ -199,7 +256,7 @@ class ProcessEvents(object):
         if '_t_events' in self.group:
             self.data.removeNode(self.group, '_t_events')
         table = self.data.createTable(self.group, '_t_events',
-                                      ProcessedHisparcEvent,
+                                      self.processed_events_description,
                                       expectedrows=length)
 
         for x in xrange(length):
@@ -263,10 +320,6 @@ class ProcessEvents(object):
             result.append(timings)
         timings = np.array(result)
 
-        # Replace NaN with -999
-        timings = np.where(np.isnan(timings), -999, timings)
-        # Get valid timings in ns
-        timings = np.where(timings >= 0, 1e9 * timings, timings)
         return timings
 
     def _create_progressbar_from_iterable(self, iterable, length=None):
@@ -291,6 +344,8 @@ class ProcessEvents(object):
         This method loops over the traces.
 
         :param event: row from the events table.
+        :returns: arrival times in the detectors relative to trace start
+                  in ns.
 
         """
         timings = []
@@ -301,11 +356,14 @@ class ProcessEvents(object):
                 # retain -1, -999 status flags in timing
                 timings.append(pulseheight)
             elif pulseheight < ADC_THRESHOLD:
-                timings.append(np.nan)
+                timings.append(-999)
             else:
                 trace = self._get_trace(trace_idx)
                 timings.append(self._reconstruct_time_from_trace(trace,
                                                                  baseline))
+        timings = [time * ADC_TIME_PER_SAMPLE * 1e9
+                   if not time in [-1, -999] else time
+                   for time in timings]
         return timings
 
     def _get_trace(self, idx):
@@ -334,19 +392,22 @@ class ProcessEvents(object):
         This method is doing the hard work.
 
         :param trace: array containing pulseheight values.
-        :param baseline: baseline of the trace
-        :returns: arrival time
+        :param baseline: baseline of the trace.
+        :returns: index in trace for arrival time of first particle.
 
         """
         threshold = baseline + ADC_THRESHOLD
+        value = self._first_above_threshold(trace, threshold)
 
-        value = np.nan
-        for i, t in enumerate(trace):
-            if t >= threshold:
-                value = i
-                break
+        return value
 
-        return value * ADC_TIME_PER_SAMPLE
+    def _first_above_threshold(self, trace, threshold):
+        """Find the first element in the list equal or above threshold
+
+        If no element matches the condition -999 will be returned.
+
+        """
+        return next((i for i, x in enumerate(trace) if x >= threshold), -999)
 
     def _store_number_of_particles(self):
         """Store number of particles in the detectors.
@@ -429,14 +490,13 @@ class ProcessEvents(object):
 
 
 class ProcessIndexedEvents(ProcessEvents):
-
     """Process a subset of events using an index.
 
     This is a subclass of :class:`ProcessEvents`.  Using an index, this
     class will only process a subset of events, thus saving time.  For
     example, this class can only process events making up a coincidence.
-    """
 
+    """
     def __init__(self, data, group, indexes, source=None):
         """Initialize the class.
 
@@ -484,14 +544,12 @@ class ProcessIndexedEvents(ProcessEvents):
 
 
 class ProcessEventsWithLINT(ProcessEvents):
-
     """Process events using LInear INTerpolation for arrival times.
 
     This is a subclass of :class:`ProcessEvents`.  Use a linear
     interpolation method to determine the arrival times of particles.
 
     """
-
     def _reconstruct_time_from_trace(self, trace, baseline):
         """Reconstruct time of measurement from a trace (LINT timings).
 
@@ -503,24 +561,21 @@ class ProcessEventsWithLINT(ProcessEvents):
 
         """
         threshold = baseline + ADC_THRESHOLD
+        i = self._first_above_threshold(trace, threshold)
 
-        # FIXME: apparently, there are a few bugs here. I see, in my
-        # cluster reconstruction analysis, timings like -inf and
-        # -something. Guesses: sometimes y0 == y1, and sometimes y1 < y0.
+        if i == 0:
+            value = i
+        elif not i == -999:
+            x0, x1 = i - 1, i
+            y0, y1 = trace[x0], trace[x1]
+            value = 1. * (threshold - y0) / (y1 - y0) + x0
+        else:
+            value = -999
 
-        value = np.nan
-        for i, t in enumerate(trace):
-            if t >= threshold:
-                x0, x1 = i - 1, i
-                y0, y1 = trace[x0], trace[x1]
-                value = 1. * (threshold - y0) / (y1 - y0) + x0
-                break
-
-        return value * ADC_TIME_PER_SAMPLE
+        return value
 
 
 class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
-
     """Process a subset of events using LInear INTerpolation.
 
     This is a subclass of :class:`ProcessIndexedEvents` and
@@ -531,7 +586,6 @@ class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
 
 
 class ProcessEventsWithoutTraces(ProcessEvents):
-
     """Process events without traces
 
     This is a subclass of :class:`ProcessEvents`.  Processing events
@@ -541,15 +595,14 @@ class ProcessEventsWithoutTraces(ProcessEvents):
     processing time and data size.
 
     """
-
     def _store_results_from_traces(self):
         """Fake storing results from traces."""
 
         pass
 
+
 class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
                                         ProcessIndexedEvents):
-
     """Process a subset of events without traces
 
     This is a subclass of :class:`ProcessIndexedEvents` and
@@ -561,3 +614,114 @@ class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
 
     """
     pass
+
+
+class ProcessEventsWithTriggerOffset(ProcessEvents):
+    """Process events and reconstruct trigger time from traces"""
+
+    def __init__(self, data, group, source=None):
+        super(ProcessEventsWithTriggerOffset, self).__init__(data, group, source)
+
+        trigger_column = {'t_trigger': tables.Float32Col(pos=21, dflt=-1)}
+        self.processed_events_description.update(trigger_column)
+
+    def _store_results_from_traces(self):
+        table = self._tmp_events
+
+        timings = self.process_traces()
+
+        # Assign values to full table, column-wise.
+        for idx in range(4):
+            col = 't%d' % (idx + 1)
+            getattr(table.cols, col)[:] = timings[:, idx]
+        getattr(table.cols, 't_trigger')[:] = timings[:, 4]
+        table.flush()
+
+    def _reconstruct_time_from_traces(self, event):
+        """Reconstruct arrival times for a single event.
+
+        This method loops over the traces.
+
+        :param event: row from the events table.
+        :returns: arrival times in the detectors and trigger time
+                  relative to start of trace in ns
+
+        """
+        timings = []
+        traces = []
+        n_detectors = 4
+        for baseline, pulseheight, trace_idx in zip(event['baseline'],
+                                                    event['pulseheights'],
+                                                    event['traces']):
+            if pulseheight < 0:
+                # retain -1, -999 status flags in timing
+                timings.append(pulseheight)
+                n_detectors -= 1
+            elif pulseheight < ADC_THRESHOLD:
+                timings.append(-999)
+            else:
+                trace = self._get_trace(trace_idx)
+                traces.append(trace)
+                timings.append(self._reconstruct_time_from_trace(trace,
+                                                                 baseline))
+        timings.append(self._reconstruct_trigger_time_from_traces(traces,
+                                                                  n_detectors))
+        timings = [time * ADC_TIME_PER_SAMPLE * 1e9
+                   if not time in [-1, -999] else time
+                   for time in timings]
+        return timings
+
+    def _reconstruct_trigger_time_from_traces(self, traces, n_detectors=None):
+        """Reconstruct the moment of trigger from the traces
+
+        The timestamp for an event is based on the moment of the
+        trigger. This moment is reconstructed in this function. Using
+        this result the arrival times in each detector can be corrected
+        to be relative to the timestamp.
+
+        This function assumes traces with no data filter applied. The
+        data filter in the HiSPARC DAQ can distort the peaks/pulses in
+        traces, preventing reconstruction.
+
+        :param traces: the traces for an event.
+        :param n_detectors: number of detectors, for trigger conditions.
+        :returns: index in the trace for the trigger.
+
+        """
+        if not n_detectors:
+            n_detectors = len(traces)
+        if not n_detectors in [2, 4]:
+            raise LookupError('Unsupported number of detectors')
+
+        low_idx = []
+        high_idx = []
+        for trace in traces:
+            low_idx.append(self._first_above_threshold(trace,
+                                                       ADC_LOW_THRESHOLD))
+            if n_detectors == 4 and not low_idx[-1] == -999:
+                high_idx.append(self._first_above_threshold(trace[low_idx[-1]:],
+                                                            ADC_HIGH_THRESHOLD))
+                if not high_idx[-1] == -999:
+                    high_idx[-1] += low_idx[-1]
+        low_idx = [idx for idx in low_idx if idx != -999]
+        high_idx = [idx for idx in high_idx if idx != -999]
+        low_idx.sort()
+        high_idx.sort()
+
+        if n_detectors == 2 and len(low_idx) > 1:
+            # Two low
+            trigger_idx = low_idx[1]
+        elif n_detectors == 4 and (len(low_idx) >= 3 or len(high_idx) >= 2):
+            # Two high or three low
+            if len(low_idx) < 3 and len(high_idx) >= 2:
+                trigger_idx = high_idx[1]
+            elif len(low_idx) >= 3 and len(high_idx) < 2:
+                trigger_idx = low_idx[2]
+            elif len(low_idx) >= 3 and len(high_idx) >= 2:
+                trigger_idx = min([low_idx[2], high_idx[1]])
+        else:
+            # print "Trigger to low or filtered trace? max signals: ",
+            # print [max(trace) for trace in traces]
+            trigger_idx = -999
+
+        return trigger_idx
