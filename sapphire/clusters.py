@@ -276,6 +276,140 @@ class BaseCluster(object):
         return x0, y0
 
 
+class DetectorRAlphaBeta(Detector):
+    """A HiSPARC detector"""
+
+    def __init__(self, station, r, alpha, beta):
+        """Initialize detector
+
+        :param station: station instance this detector is part of
+        :param r, alpha: these define the position of the detector
+            relative to the GPS. r is the distance between the center of
+            the scintillator and the GPS in meters. alpha is the
+            clock-wise turning angle between North and the detector
+            relative to the GPS in radians.
+        :param beta: defines the orientation of the detector, like
+            alpha this is the clock-wise turning angle relative to
+            North. The angle is the orientation of the long side of
+            the detector in radians.
+
+        """
+        self.station = station
+        self.x = sin(alpha) * r
+        self.y = cos(alpha) * r
+        self.orientation = beta
+
+    def get_corners(self):
+        """Get the x, y coordinates of the detector corners
+
+        :return: x, y coordinates of detector corners
+        :rtype: list of (x, y) tuples
+
+        """
+        station_x, station_y, _ = self.station.get_xyalpha_coordinates()
+
+        detector_x = self.x + station_x
+        detector_y = self.y + station_y
+
+        size = self._detector_size
+        dx = size[0] / 2
+        dy = size[1] / 2
+
+        beta = self.orientation
+        cosb = cos(-beta)
+        sinb = sin(-beta)
+
+        corners = [(-dx, -dy), (+dx, -dy),
+                   (+dx, +dy), (-dx, +dy)]
+
+        corners = [[x * cosb - y * sinb, x * sinb + y * cosb]
+                   for x, y in corners]
+        return [(cx + detector_x, cy + detector_y) for cx, cy in corners]
+
+
+class StationRAlphaBeta(Station):
+    """A HiSPARC station"""
+
+    def __init__(self, cluster, station_id, position, detectors=None):
+        """Initialize station
+
+        :param cluster: cluster this station is a part of
+        :param station_id: int (unique identifier)
+        :param position: tuple of (x, y) values
+        :param detectors: list of tuples.  Each tuple consists of (r,
+            alpha, beta) which denote the location and orientation of
+            the detectors.
+
+        """
+        self.cluster = cluster
+        self.station_id = station_id
+        self.position = position
+        self.angle = 0.
+
+        if detectors is None:
+            # detector positions for a standard station
+            station_size = 10
+            a = station_size / 2
+            b = a * sqrt(3)
+            q = pi / 2
+            detectors = [(b, 0., 0.), (b / 3, 0., 0.),
+                         (a, -q, q), (a, q, q)]
+
+        for r, alpha, beta in detectors:
+            self._add_detector(r, alpha, beta)
+
+    def _add_detector(self, r, alpha, beta):
+        """Add detector to station
+
+        :param r, alpha: these define the position of the detector
+            relative to the GPS. r is the distance between the center of
+            the scintillator and the GPS in meters. alpha is the
+            clock-wise turning angle between North and the detector
+            relative to the GPS.
+        :param beta: defines the orientation of the detector, like
+            alpha this is the clock-wise turning angle relative to
+            North. The angle is the orientation of the long side of
+            the detector.
+
+        """
+        if self._detectors is None:
+            self._detectors = []
+        self._detectors.append(DetectorRAlphaBeta(self, r, alpha, beta))
+
+
+class ClusterRAlphaBeta(BaseCluster):
+    """Base class for HiSPARC clusters"""
+
+    def __init__(self, position=(0., 0.)):
+        """Override this function to build your cluster"""
+        self._x, self._y = position
+        self._alpha = 0
+
+    def _add_station(self, position, detectors=None):
+        """Add a station to the cluster
+
+        :param position: tuple of (x, y) values
+        :param detectors: list of tuples.  Each tuple consists of (r,
+            alpha, beta) which denote the location and orientation of
+            the detectors.
+
+        Example::
+
+            >>> cluster = ClusterRAlphaBeta()
+            >>> cluster._add_station((0, 0), [(5, -pi / 2., pi / 2.),
+                                              (5, pi / 2., pi / 2.)])
+
+        """
+        # Need to make _stations an instance variable to be able to
+        # pickle it.  An assignment takes care of that.
+        if self._stations is None:
+            self._stations = []
+        # 1-based (0 is reserved, see e.g. use of headers in groundparticlesim)
+        station_id = len(self._stations) + 1
+        self._stations.append(StationRAlphaBeta(self, station_id, position,
+                                                detectors))
+
+
 class SimpleCluster(BaseCluster):
     """Define a simple cluster containing four stations"""
 

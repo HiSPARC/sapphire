@@ -2,6 +2,8 @@
 
 import pylab as plt
 import numpy as np
+from matplotlib.path import Path
+import matplotlib.patches as patches
 
 import sapphire.api
 import sapphire.clusters
@@ -10,12 +12,17 @@ from sapphire.simulations.ldf import KascadeLdf
 
 
 DETECTOR_COLORS = ['black', 'r', 'g', 'b']
+PATH_CODES = [Path.MOVETO, Path.LINETO, Path.LINETO, Path.LINETO,
+              Path.CLOSEPOLY]
 
 
 def sciencepark_stations():
-    network = sapphire.api.Network()
-    stations = network.stations(subcluster=500)
-    return [station['number'] for station in stations]
+    try:
+        network = sapphire.api.Network()
+        stations = network.stations(subcluster=500)
+        return [station['number'] for station in stations]
+    except:
+        return [501, 502, 503, 504, 505, 506, 508, 509]
 
 
 def get_cluster(stations):
@@ -30,11 +37,17 @@ def plot_detector_locations(cluster, background_path="backgrounds/ScienceParkMap
 
 def plot_scintillators_in_cluster(cluster):
     # Draw detector locations on a map
+    ax = plt.gca()
     for station in cluster.stations:
         for i, detector in enumerate(station.detectors):
-            detector_x, detector_y = detector.get_xy_coordinates()
-            plt.scatter(detector_x, detector_y, marker='h',
-                        c=DETECTOR_COLORS[i], edgecolor='none', s=25)
+#             detector_x, detector_y = detector.get_xy_coordinates()
+#             plt.scatter(detector_x, detector_y, marker='h',
+#                         c=DETECTOR_COLORS[i], edgecolor='none', s=25)
+            corners = detector.get_corners()
+            corners.append(corners[0])  # Add first corner to complete outline
+            path = Path(corners, PATH_CODES)
+            patch = patches.PathPatch(path, facecolor=DETECTOR_COLORS[i], lw=2)
+            ax.add_patch(patch)
         station_x, station_y, station_a = station.get_xyalpha_coordinates()
         plt.scatter(station_x, station_y, marker='o', c='m', edgecolor='none',
                     s=7)
