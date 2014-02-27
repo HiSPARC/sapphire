@@ -9,8 +9,8 @@ Author: Javier Gonzalez <jgonzalez@ik.fzk.de>
 
 import textwrap
 import struct
-
 import math
+
 import numpy
 
 import units
@@ -110,41 +110,45 @@ class RunHeader(object):
         self.NFLCHE = subblock[272] % 100
 
     def thickness_to_height(self, thickness):
-        """"Calculate height (cm) for given thickness (gramms/cm**2)"""
+        """"Calculate height (m) for given thickness (gramms/cm**2)
 
-        if (thickness > 631.1):
-            height = c_atmospheric[1] * numpy.log(b_atmospheric[1] /
-                                                  (thickness - a_atmospheric[1]))
-        elif (thickness > 271.7):
-            height = c_atmospheric[2] * numpy.log(b_atmospheric[2] /
-                                                  (thickness - a_atmospheric[2]))
-        elif (thickness > 3.0395):
-            height = c_atmospheric[3] * numpy.log(b_atmospheric[3] /
-                                                  (thickness - a_atmospheric[3]))
-        elif (thickness > 1.28292e-3):
-            height = c_atmospheric[4] * numpy.log(b_atmospheric[4] /
-                                                  (thickness - a_atmospheric[4]))
+        As specified in the CORSIKA user manual, Appendix D.
+
+        """
+        a, b, c = self.a_atmospheric, self.b_atmospheric, self.c_atmospheric
+
+        if thickness > self.height_to_thickness(4.e5 * units.cm):
+            height = c[0] * math.log(b[0] / (thickness - a[0]))
+        elif thickness > self.height_to_thickness(1.e6 * units.cm):
+            height = c[1] * math.log(b[1] / (thickness - a[1]))
+        elif thickness > self.height_to_thickness(4.e6 * units.cm):
+            height = c[2] * math.log(b[2] / (thickness - a[2]))
+        elif thickness > self.height_to_thickness(1.e7 * units.cm):
+            height = c[3] * math.log(b[3] / (thickness - a[3]))
         else:
-            height = (a_atmospheric[5] - thickness) / c_atmospheric[5]
-        return height
+            height = (a[4] - thickness) * c[4] / b[4]
+
+        return height * units.cm
 
     def height_to_thickness(self, height):
-        """Thickness (gramms/cm**2) of atmosphere given a height (cm)"""
+        """Thickness (gramms/cm**2) of atmosphere given a height (m)
 
-        if (height < 4.e5):
-            thickness = (a_atmospheric[1] + b_atmospheric[1] *
-                         numpy.exp(-height / c_atmospheric[1]))
-        elif (height < 1.e6):
-            thickness = (a_atmospheric[2] + b_atmospheric[2] *
-                         numpy.exp(-height / c_atmospheric[2]))
-        elif (height < 4.e6):
-            thickness = (a_atmospheric[3] + b_atmospheric[3] *
-                         numpy.exp(-height / c_atmospheric[3]))
-        elif (height < 1.e7):
-            thickness = (a_atmospheric[4] + b_atmospheric[4] *
-                         numpy.exp(-height / c_atmospheric[4]))
+        As specified in the CORSIKA user manual, Appendix D.
+
+        """
+        height = height * units.m / units.cm
+        a, b, c = self.a_atmospheric, self.b_atmospheric, self.c_atmospheric
+
+        if height < 4.e5:
+            thickness = a[0] + b[0] * math.exp(-height / c[0])
+        elif height < 1.e6:
+            thickness = a[1] + b[1] * math.exp(-height / c[1])
+        elif height < 4.e6:
+            thickness = a[2] + b[2] * math.exp(-height / c[2])
+        elif height < 1.e7:
+            thickness = a[3] + b[3] * math.exp(-height / c[3])
         else:
-            thickness = a_atmospheric[5] - height * c_atmospheric[5]
+            thickness = a[4] - b[4] * height / c[4]
 
         return thickness
 
