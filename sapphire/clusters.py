@@ -297,8 +297,13 @@ class BaseCluster(object):
         self._alpha = alpha
 
     def calc_r_and_phi_for_stations(self, s1, s2):
-        """Calculate angle between detectors (phi1, phi2)"""
+        """Calculate distance between and direction of two stations
 
+        :param s1, s2: The station ids for the two stations.
+        :return: r, phi; the distance between and direction of the two
+            given stations.
+
+        """
         x1, y1, alpha1 = self.stations[s1].get_xyalpha_coordinates()
         x2, y2, alpha2 = self.stations[s2].get_xyalpha_coordinates()
 
@@ -353,7 +358,7 @@ class RAlphaBetaStations(BaseCluster):
 
         Example::
 
-            >>> cluster = HiSPARCStations()
+            >>> cluster = RAlphaBetaStations()
             >>> cluster._add_station((0, 0), [(5, 90, 0), (5, 270, 0)], 104)
 
         """
@@ -524,6 +529,10 @@ class HiSPARCStations(RAlphaBetaStations):
     :param stations: A list of station numbers to include. The
         coordinates are retrieved from the Public Database API.
         The first station is used as the origin of the cluster.
+
+    Example::
+
+        >>> cluster = HiSPARCStations([7001, 7002, 7003])
 
     """
 
