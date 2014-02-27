@@ -1,3 +1,23 @@
+"""Perform simulations of CORSIKA air showers on a cluster of stations
+
+This simulation uses a HDF5 file created from a CORSIKA simulation with
+the `store_corsika_data` script. The shower is 'thrown' on the cluster
+with random core positions and azimuth angles.
+
+Example usage::
+
+    import tables
+
+    from sapphire.simulations.groundparticles import GroundParticlesSimulation
+    from sapphire.clusters import ScienceParkCluster
+
+    data = tables.openFile('/tmp/test_groundparticle_simulation.h5', 'w')
+    cluster = ScienceParkCluster()
+
+    sim = GroundParticlesSimulation('corsika.h5', 500, cluster, data, '/', 10)
+    sim.run()
+
+"""
 from math import pi, sin, cos, sqrt
 import warnings
 

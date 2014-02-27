@@ -481,7 +481,7 @@ class CoincidencesESD(Coincidences):
             self.coincidence_group._v_attrs.cluster = cluster
 
         self.c_index = []
-        stations_description = {'s%d' % n: tables.BoolCol()
+        stations_description = {'s%d' % n: tables.BoolCol(pos=(n + 12))
                                 for n in range(len(self.station_groups))}
         description = storage.Coincidence
         description.columns.update(stations_description)

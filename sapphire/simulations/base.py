@@ -1,6 +1,6 @@
 """Perform simulations of air showers on a cluster of stations
 
-This base sclass can be subclassed to provide various kinds of
+This base class can be subclassed to provide various kinds of
 simulations. These simulations will inherit the base functionallity from
 this class, including the creation of event and coincidence tables to
 store the results, which will look similar to regular HiSPARC data, such
@@ -210,7 +210,7 @@ class BaseSimulation(object):
         timestamps = []
         for station_id, event_index in station_events:
             station = self.cluster.stations[station_id]
-            row['s%d' % station.station_number] = True
+            row['s%d' % station.number] = True
             station_group = self.station_groups[station_id]
             event = station_group.events[event_index]
             timestamps.append((event['ext_timestamp'], event['timestamp'],
@@ -243,9 +243,9 @@ class BaseSimulation(object):
         self.coincidence_group._v_attrs.cluster = self.cluster
 
         description = storage.Coincidence
-        station_columns = {'s%d' % station.station_number: tables.BoolCol()
-                           for station in self.cluster.stations}
-        description.columns.update(station_columns)
+        s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
+                     for p, station in enumerate(self.cluster.stations, 12)}
+        description.columns.update(s_columns)
 
         self.coincidences = self.datafile.createTable(
                 self.coincidence_group, 'coincidences', description)
@@ -270,7 +270,7 @@ class BaseSimulation(object):
         for station in self.cluster.stations:
             station_group = self.datafile.createGroup(self.cluster_group,
                                                       'station_%d' %
-                                                      station.station_number)
+                                                      station.number)
             events_table = \
                     self.datafile.createTable(station_group, 'events',
                                               storage.ProcessedHisparcEvent,
