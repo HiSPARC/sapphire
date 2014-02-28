@@ -211,3 +211,95 @@ class GroundParticlesSimulation(BaseSimulation):
         """Simulate uncertainty from GPS receiver"""
 
         return np.random.normal(0, 4.5)
+
+
+class AccurateDetectorSimulation(GroundParticlesSimulation):
+
+    """ More accuratly simulate the detection area of the detectors.
+
+    This requires a slightly more complex query which is a bit slower.
+
+    """
+
+    def simulate_detector_response(self, detector, shower_parameters):
+        """Simulate the detector detection area accurately.
+
+        First particles are filtered to see which fall inside a
+        non-rotated square box around the detector (i.e. sides of 1.2m).
+        For the remaining particles a more accurate query is used to see
+        which actually hit the detector. The advantage of using the
+        square is that column indexes can be used, which may speed up
+        queries.
+
+        """
+        detector_boundary = 0.6
+
+        x, y = detector.get_xy_coordinates()
+        c = detector.get_corners()
+
+        b11, line1, b12 = self.get_line_boundary_eqs(c[0], c[1], c[2])
+        b21, line2, b22 = self.get_line_boundary_eqs(c[1], c[2], c[3])
+        query = ("(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & "
+                 "(b11 < %s) & (%s < b12) & (b21 < %s) & (%s < b22) & "
+                 "(particle_id >= 2) & (particle_id <= 6)" %
+                 (x - detector_boundary, x + detector_boundary,
+                  y - detector_boundary, x + detector_boundary,
+                  line1, line1, line2, line2))
+
+        detected = [row['t'] for row in self.groundparticles.where(query)]
+        if detected:
+            n_detected = len(detected)
+            transporttimes = self.simulate_signal_transport_time(n_detected)
+            for i in range(n_detected):
+                detected[i] += transporttimes[i]
+            observables = {'n': n_detected, 't': min(detected)}
+        else:
+            observables = {'n': 0., 't': -999}
+
+        return observables
+
+    def get_line_boundary_eqs(self, p0, p1, p2):
+        """Get line equations using three points
+
+        Given three points, this function computes the equations for two
+        parallel lines going through these points.  The first and second
+        point are on the same line, whereas the third point is taken to
+        be on a line which runs parallel to the first.  The return value
+        is an equation and two boundaries which can be used to test if a
+        point is between the two lines.
+
+        :param p0, p1: (x, y) tuples on the same line
+        :param p2: (x, y) tuple on the parallel line
+
+        :return: value1, equation, value2, such that points satisfying
+            value1 < equation < value2 are between the parallel lines
+
+        Example::
+
+            >>> get_line_boundary_eqs((0, 0), (1, 1), (0, 2))
+            (0.0, 'y - 1.000000 * x', 2.0)
+
+        """
+        (x0, y0), (x1, y1), (x2, y2) = p0, p1, p2
+
+        # Compute the general equation for the lines
+        if not (x0 == x1):
+            # First, compute the slope
+            a = (y1 - y0) / (x1 - x0)
+
+            # Calculate the y-intercepts of both lines
+            b1 = y0 - a * x0
+            b2 = y2 - a * x2
+
+            line = "y - %f * x" % a
+        else:
+            # line is exactly vertical
+            line = "x"
+            b1, b2 = x0, x2
+
+        # And order the y-intercepts
+        if b1 > b2:
+            b1, b2 = b2, b1
+
+        return b1, line, b2
+
