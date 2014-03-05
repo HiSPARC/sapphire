@@ -123,7 +123,6 @@ class CorsikaBatch(object):
     :param queue: choose a queue to sumbit the job to:
                   express - max 10 minutes, max 2 jobs
                   short - max 4 hours, max 1000 jobs
-                  stbcq - max 8 hours, max 1000 jobs
                   generic - max 24 hours, max 500 jobs
                   long - max 96 hours (default 48 hours), max 500 jobs
     :param corsika: name of the compiled CORSIKA executable to use:
@@ -135,7 +134,7 @@ class CorsikaBatch(object):
     """
 
     def __init__(self, energy=16, particle='proton', zenith=22.5, azimuth=180,
-                 queue='stbcq', corsika='corsika74000Linux_QGSII_gheisha'):
+                 queue='generic', corsika='corsika74000Linux_QGSII_gheisha'):
         self.energy = energy - 9  # Stored as log10(E[GeV])
         self.particle = [i for i, p in particles.id.items()
                          if p == particle][0]  # Stored as particle id
@@ -284,8 +283,9 @@ def check_queue(queue):
     :return: boolean, True if slots are available, False otherwise.
 
     """
-    all_jobs = int(subprocess.check_output('qstat | grep {queue} | wc -l'
-                                           .format(queue=queue), shell=True))
+    all_jobs = int(subprocess.check_output('qstat | grep {queue} | grep [QR] |'
+                                           ' wc -l' .format(queue=queue),
+                                           shell=True))
     user_jobs = int(subprocess.check_output('qstat -u $USER | grep {queue}'
                                             ' | wc -l'.format(queue=queue),
                                             shell=True))
@@ -294,8 +294,6 @@ def check_queue(queue):
         return 2 - user_jobs
     elif queue == 'short':
         return 1000 - user_jobs
-    elif queue == 'stbcq':
-        return min(1000 - user_jobs, 10000 - all_jobs)
     elif queue == 'generic':
         return min(500 - user_jobs, 1000 - all_jobs)
     elif queue == 'long':
@@ -349,9 +347,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('n', type=int, help="Number of jobs to submit")
     parser.add_argument('energy', metavar='energy', type=int,
-                        help="Energy of the primary particle in range 12..19 "
+                        help="Energy of the primary particle in range 12..17 "
                              "(log10(E[eV]))",
-                        choices=range(12, 19))
+                        choices=range(12, 18))
     parser.add_argument('particle', help="Primary particle kind (e.g. proton "
                                          "or iron)")
     parser.add_argument('zenith', metavar='zenith',
@@ -366,11 +364,10 @@ if __name__ == '__main__':
                         default=180,
                         choices=[0, 45, 90, 135, 180, 225, 270, 315])
     parser.add_argument('-q', metavar='<queue>',
-                        help="Name of the stoomboot queue to use, choose from "
-                             "[express, short, stbcq, generic, long]",
-                        default='stbcq',
-                        choices=['express', 'short', 'stbcq', 'generic',
-                                 'long'])
+                        help="Name of the Stoomboot queue to use, choose from "
+                             "[express, short, generic, long]",
+                        default='generic',
+                        choices=['express', 'short', 'generic', 'long'])
     parser.add_argument('-c', metavar='<name>',
                         help="Name of the CORSIKA executable to use",
                         default="corsika74000Linux_QGSII_gheisha")
