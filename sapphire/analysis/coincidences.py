@@ -479,12 +479,16 @@ class CoincidencesESD(Coincidences):
         """
         if cluster:
             self.coincidence_group._v_attrs.cluster = cluster
+            s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
+                         for p, station in enumerate(cluster.stations, 12)}
+        else:
+            s_columns = {'s%d' % n: tables.BoolCol(pos=(n + 12))
+                         for n, _ in enumerate(self.station_groups)}
 
         self.c_index = []
-        stations_description = {'s%d' % n: tables.BoolCol(pos=(n + 12))
-                                for n in range(len(self.station_groups))}
+
         description = storage.Coincidence
-        description.columns.update(stations_description)
+        description.columns.update(s_columns)
         self.coincidences = self.data.createTable(self.coincidence_group,
                                                   'coincidences', description)
 
@@ -493,7 +497,7 @@ class CoincidencesESD(Coincidences):
         # ProgressBar does not work for empty iterables.
         if len(self._src_c_index):
             progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                      pb.ETA()])
+                                               pb.ETA()])
             for coincidence in progress(self._src_c_index):
                 self._store_coincidence(coincidence)
         else:
