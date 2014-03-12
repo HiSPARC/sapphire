@@ -528,7 +528,7 @@ class HiSPARCStations(RAlphaBetaStations):
 
     :param stations: A list of station numbers to include. The
         coordinates are retrieved from the Public Database API.
-        The first station is used as the origin of the cluster.
+        The first station is placed at the origin of the cluster.
 
     Example::
 
