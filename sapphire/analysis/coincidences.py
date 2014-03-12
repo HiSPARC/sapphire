@@ -478,6 +478,7 @@ class CoincidencesESD(Coincidences):
 
         """
         if cluster:
+            self.cluster = cluster
             self.coincidence_group._v_attrs.cluster = cluster
             s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
                          for p, station in enumerate(cluster.stations, 12)}
@@ -536,7 +537,12 @@ class CoincidencesESD(Coincidences):
             event_desc = self._src_timestamps[index]
             station_id = event_desc[1]
             event_index = event_desc[2]
-            row['s%d' % station_id] = True
+            if self.cluster:
+                station_number = self.cluster.stations[station_id].number
+                row['s%d' % station_number] = True
+            else:
+                row['s%d' % station_id] = True
+
 
             group = self.data.getNode(self.station_groups[station_id])
             event = group.events[event_index]
