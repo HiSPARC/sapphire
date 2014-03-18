@@ -98,7 +98,7 @@ class RunHeader(object):
 
         self.x_scatter_Cherenkov = subblock[247]
         self.y_scatter_Cherenkov = subblock[248]
-        self.atmospheric_layer_coundaries = numpy.array(subblock[249:254])
+        self.atmospheric_layer_boundaries = numpy.array(subblock[249:254])
         self.a_atmospheric = numpy.array(subblock[254:259])
         self.b_atmospheric = numpy.array(subblock[259:264])
         self.c_atmospheric = numpy.array(subblock[264:269])
