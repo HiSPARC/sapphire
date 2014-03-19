@@ -69,6 +69,12 @@ class Network(object):
         path = API['stations']
         self.all_stations = _get_json(path)
 
+    def country_numbers(self):
+        """Same as countries but only retuns a list of country numbers"""
+
+        countries = self.all_countries()
+        return [country['number'] for country in countries]
+
     def clusters(self, country=None):
         """Get a list of stations
 
@@ -83,6 +89,12 @@ class Network(object):
             stations = []
             path = API['clusters_in_country'].format(country_number=country)
             return _get_json(path)
+
+    def cluster_numbers(self, country=None):
+        """Same as clusters but only retuns a list of cluster numbers"""
+
+        clusters = self.clusters(country=country)
+        return [cluster['number'] for cluster in clusters]
 
     def subclusters(self, country=None, cluster=None):
         """Get a list of subclusters
@@ -108,6 +120,11 @@ class Network(object):
             path = API['subclusters_in_cluster'].format(cluster_number=cluster)
             return _get_json(path)
 
+    def subcluster_numbers(self, country=None, cluster=None):
+        """Same as subclusters but only retuns a list of subcluster numbers"""
+
+        subclusters = self.subclusters(country=country, cluster=cluster)
+        return [subcluster['number'] for subcluster in subclusters]
 
     def stations(self, country=None, cluster=None, subcluster=None):
         """Get a list of stations
@@ -146,6 +163,13 @@ class Network(object):
             path = (API['stations_in_subcluster']
                     .format(subcluster_number=subcluster))
             return _get_json(path)
+
+    def stations_numbers(self, country=None, cluster=None, subcluster=None):
+        """Same as stations but only retuns a list of station numbers"""
+
+        stations = self.stations(country=country, cluster=cluster,
+                                 subcluster=subcluster)
+        return [station['number'] for station in stations]
 
     def nested_network(self):
         """Get a nested list of the full network"""
