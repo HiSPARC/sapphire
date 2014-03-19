@@ -7,9 +7,10 @@
     of seeds for the random number sequences are used for each
     simulation.
 
-    Update the PATH and PYTHONPATH paths in your ~/.bash_profile:
-    export PATH=/data/hisparc/corsika_env/python/bin:$PATH
-    export PYTHONPATH=/data/hisparc/corsika_env/sapphire:$PYTHONPATH
+    To run this file correctly do it in the correct env::
+
+        source activate /data/hisparc/corsika_env
+        qsub_corsika 10 16 proton 22.5 -q generic -a 90
 
 """
 import os
