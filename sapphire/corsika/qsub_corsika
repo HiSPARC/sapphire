@@ -358,18 +358,18 @@ if __name__ == '__main__':
                              "steps of 7.5 [degrees]",
                         type=float,
                         choices=[0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60])
-    parser.add_argument('-a', metavar='<azimuth>',
+    parser.add_argument('-a', metavar='azimuth',
                         help="Azimuth angle of primary particle in range "
                              "0..315 steps of 45 [degrees]",
                         type=int,
                         default=180,
                         choices=[0, 45, 90, 135, 180, 225, 270, 315])
-    parser.add_argument('-q', metavar='<queue>',
+    parser.add_argument('-q', metavar='queue',
                         help="Name of the Stoomboot queue to use, choose from "
                              "[express, short, generic, long]",
                         default='generic',
                         choices=['express', 'short', 'generic', 'long'])
-    parser.add_argument('-c', metavar='<name>',
+    parser.add_argument('-c', metavar='corsika',
                         help="Name of the CORSIKA executable to use",
                         default="corsika74000Linux_QGSII_gheisha")
     args = parser.parse_args()
