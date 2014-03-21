@@ -121,10 +121,16 @@ if __name__ == '__main__':
     parser.add_argument('source', help="path of the CORSIKA source file")
     parser.add_argument('destination',
                         help="path of the HDF5 destination file")
+    parser.add_argument('--overwrite', action='store_true',
+                        help='overwrite destination file it is already exists')
     args = parser.parse_args()
 
     corsika_data = corsika.CorsikaFile(args.source)
-    with tables.openFile(args.destination, 'a') as hdf_data:
+    if args.overwrite:
+        mode = 'w'
+    else:
+        mode = 'a'
+    with tables.openFile(args.destination, mode) as hdf_data:
         store_corsika_data(corsika_data, hdf_data)
     with tables.openFile(args.destination, 'a') as hdf_data:
         create_index(hdf_data)
