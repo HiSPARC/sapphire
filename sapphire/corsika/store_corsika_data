@@ -109,8 +109,11 @@ def create_index(hdf_data, table_name='groundparticles'):
 
     """
     table = hdf_data.getNode('/', table_name)
-    print 'Indexing the x column for table %s' % table_name
-    table.cols.x.createCSIndex()
+    print 'Ensuring the x column for table %s is indexed.' % table_name
+    try:
+        table.cols.x.createCSIndex()
+    except ValueError:
+        table.reIndexDirty()
 
 
 if __name__ == '__main__':

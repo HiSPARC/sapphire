@@ -75,6 +75,9 @@ class CorsikaEvent(object):
                     types[t] += 1
                 else:
                     types[t] = 1
+                # skip padding, used to fill a subblock
+                if t == 0:
+                    continue
                 # muon additional information
                 if t in [75, 76]:
                     warnings.warn('Not reading muon additional information.',
