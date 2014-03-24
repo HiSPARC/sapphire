@@ -8,9 +8,12 @@ from sapphire import storage
 
 
 class BaseSimulationTest(unittest.TestCase):
-    def setUp(self):
-        self.cluster = MagicMock(name='cluster')
-        self.datafile = MagicMock(name='data')
+    
+    @patch.object(BaseSimulation, '_prepare_output_tables')
+    def setUp(self, mock_method):
+        self.mock_prepare_output_tables = mock_method
+        self.cluster = sentinel.cluster
+        self.datafile = sentinel.datafile
         self.output_path = sentinel.output_path
         self.N = sentinel.N
 
@@ -23,10 +26,8 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertIs(self.simulation.output_path, self.output_path)
         self.assertIs(self.simulation.N, self.N)
 
-    @patch.object(BaseSimulation, '_prepare_output_tables')
-    def test_init_calls_prepare_output_tables(self, mock_method):
-        BaseSimulation(Mock(), Mock(), Mock(), Mock())
-        mock_method.assert_called_once_with()
+    def test_init_calls_prepare_output_tables(self):
+        self.mock_prepare_output_tables.assert_called_once_with()
 
     @unittest.skip("Does not test this unit")
     def test_init_creates_coincidences_output_group(self):
