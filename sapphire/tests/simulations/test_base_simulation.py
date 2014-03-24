@@ -29,6 +29,16 @@ class BaseSimulationTest(unittest.TestCase):
     def test_init_calls_prepare_output_tables(self):
         self.mock_prepare_output_tables.assert_called_once_with()
 
+    @patch.object(BaseSimulation, '_prepare_coincidence_tables')
+    @patch.object(BaseSimulation, '_prepare_station_tables')
+    @patch.object(BaseSimulation, '_store_station_index')
+    def test_prepare_output_tables_calls(self, mock_method3, mock_method2,
+                                         mock_method1):
+        self.simulation._prepare_output_tables()
+        mock_method1.assert_called_once_with()
+        mock_method2.assert_called_once_with()
+        mock_method3.assert_called_once_with()
+
     @unittest.skip("Does not test this unit")
     def test_init_creates_coincidences_output_group(self):
         self.datafile.createGroup.assert_any_call(self.output_path, 'coincidences', createparents=True)
