@@ -65,7 +65,9 @@ class GroundParticlesSimulation(BaseSimulation):
         R = self.max_core_distance
 
         event_header = self.groundparticles._v_attrs['event_header']
+        event_end = self.groundparticles._v_attrs['event_end']
         corsika_parameters = {'zenith': event_header.zenith,
+                              'size': event_end.n_electrons_levels,
                               'energy': event_header.energy,
                               'particle': event_header.particle}
 

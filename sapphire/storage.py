@@ -306,13 +306,12 @@ class Coincidence(tables.IsDescription):
     ext_timestamp = tables.UInt64Col(pos=3)
 
     N = tables.UInt8Col(pos=4)
-    r = tables.Float32Col(pos=5)
-    phi = tables.Float32Col(pos=6)
-    x = tables.Float32Col(pos=7)
-    y = tables.Float32Col(pos=8)
-    shower_theta = tables.Float32Col(pos=9)
-    shower_phi = tables.Float32Col(pos=10)
-    shower_size = tables.Float32Col(pos=11)
+    x = tables.Float32Col(pos=5)
+    y = tables.Float32Col(pos=6)
+    zenith = tables.Float32Col(pos=7)
+    azimuth = tables.Float32Col(pos=8)
+    size = tables.Float32Col(pos=9)
+    energy = tables.Float32Col(pos=10)
 
 
 class ReconstructedEvent(tables.IsDescription):
