@@ -101,9 +101,8 @@ def submit_job(seed):
     qsub = ('qsub -q short -V -z -j oe -N {name} {script}'
             .format(name=script_name, script=script_path))
 
-    try:
-        result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
-                                         shell=True)
+    result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
+                                     shell=True)
     if not result == '':
         print '%s - Error occured: %s' % (self.seed, result)
         raise Exception
