@@ -39,6 +39,54 @@ class BaseSimulationTest(unittest.TestCase):
         mock_method2.assert_called_once_with()
         mock_method3.assert_called_once_with()
 
+    @unittest.skip("WIP")
+    def test_run(self):
+        pass
+
+    @unittest.skip("WIP")
+    def test_generate_shower_parameters(self):
+        pass
+
+    @unittest.skip("WIP")
+    def test_simulate_station_response(self, station, shower_parameters):
+        pass
+
+    @unittest.skip("WIP")
+    def test_simulate_detector_response(self, detector, shower_parameters):
+        pass
+
+    @unittest.skip("WIP")
+    def test_simulate_trigger(self, detector_observables):
+        pass
+
+    @unittest.skip("WIP")
+    def test_simulate_gps(self, station_observables, shower_parameters, station):
+        pass
+
+    @unittest.skip("WIP")
+    def test_process_detector_observables(self, detector_observables):
+        pass
+
+    @unittest.skip("WIP")
+    def test_store_station_observables(self, station_id, station_observables):
+        pass
+
+    @unittest.skip("WIP")
+    def test_store_coincidence(self, shower_id, shower_parameters, station_events):
+        pass
+
+    @unittest.skip("WIP")
+    def test_prepare_coincidence_tables(self):
+        pass
+
+    @unittest.skip("WIP")
+    def test_prepare_station_tables(self):
+        pass
+
+    @unittest.skip("WIP")
+    def test_store_station_index(self):
+        pass
+
     @unittest.skip("Does not test this unit")
     def test_init_creates_coincidences_output_group(self):
         self.datafile.createGroup.assert_any_call(self.output_path, 'coincidences', createparents=True)
