@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import glob
 import textwrap
@@ -11,6 +13,7 @@ DESTINATION_FILE = 'corsika.h5'
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
     umask 002
+    source activate /data/hisparc/corsika_env
     {command}""")
 
 
@@ -53,7 +56,7 @@ def append_queued_seeds(seeds):
     """Add seed to the queued seeds file"""
 
     queued = seeds_in_queue()
-    updated_queued = queued.union(seeds)
+    updated_queued = queued.union(seeds).difference([''])
     write_queued_seeds(updated_queued)
 
 
@@ -79,6 +82,7 @@ def store_command(seed):
 
     return command
 
+
 def create_script(seed):
     """Create script as temp file to run on Stoomboot"""
 
@@ -92,6 +96,7 @@ def create_script(seed):
     os.chmod(script_path, 0774)
 
     return script_path, script_name
+
 
 def submit_job(seed):
     """Submit job to Stoomboot"""
@@ -108,13 +113,31 @@ def submit_job(seed):
         raise Exception
 
 
+def check_queue():
+    """Check for available job slots on the short queue
+
+    Maximum numbers from `qstat -Q -f`
+
+    :return: Number of available slots in the queue.
+
+    """
+    queue_check = 'qstat -u $USER | grep short | grep [RQ] | wc -l'
+    user_jobs = int(subprocess.check_output(queue_check, shell=True))
+
+    return 1000 - user_jobs
+
+
 def run():
     """Get list of seeds to process, then submit jobs to process them"""
 
     seeds = get_seeds_todo()
-    for seed in seeds[:10]:
-        submit_job(seed)
-        append_queued_seeds([seed])
+    try:
+        for _ in xrange(min(len(seeds), check_queue())):
+            seed = seeds.pop()
+            submit_job(seed)
+            append_queued_seeds([seed])
+    except KeyError:
+        print 'Out of seeds!'
 
 
 if __name__ == '__main__':
