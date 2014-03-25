@@ -8,6 +8,9 @@ from sapphire import corsika
 DAT_URL = '/data/hisparc/corsika/data'
 OUTPUT_PATH = '/data/hisparc/corsika'
 
+DAT_URL = '/Users/niekschultheiss/data/data'
+OUTPUT_PATH = '/Users/niekschultheiss/data'
+
 
 class Simulations(tables.IsDescription):
     """Store information about shower particles reaching ground level"""
@@ -23,9 +26,13 @@ class Simulations(tables.IsDescription):
     zenith = tables.Float32Col(pos=8)
     azimuth = tables.Float32Col(pos=9)
     observation_height = tables.Float32Col(pos=10)
+    n_photon = tables.Float32Col(pos=11)
+    n_electron = tables.Float32Col(pos=12)
+    n_muon = tables.Float32Col(pos=13)
+    n_hadron = tables.Float32Col(pos=14)
 
 
-def save_seed(row, seeds, header):
+def save_seed(row, seeds, header, footer):
     """Write the information of a particle into a row"""
 
     seed1, seed2 = seeds.split('_')
@@ -40,6 +47,10 @@ def save_seed(row, seeds, header):
     row['zenith'] = header.zenith
     row['azimuth'] = header.azimuth
     row['observation_height'] = header.observation_heights[0]
+    row['n_photon'] = footer.n_photons_levels
+    row['n_electron'] = footer.n_electrons_levels
+    row['n_muon'] = footer.n_muons_levels
+    row['n_hadron'] = footer.n_hadrons_levels
     row.append()
 
 
@@ -49,18 +60,19 @@ def write_row(output_row, seeds):
     with tables.openFile(os.path.join(DAT_URL, seeds, 'corsika.h5'),
                          'r') as corsika_data:
         header = corsika_data.root.groundparticles._v_attrs.event_header
+        footer = corsika_data.root.groundparticles._v_attrs.event_end
 
-    save_seed(output_row, seeds, header)
+    save_seed(output_row, seeds, header, footer)
 
 
 def get_simulations(simulations_data):
     """Get the information of the simulations and create a table."""
 
     files = glob.glob(os.path.join(DAT_URL, '*/corsika.h5'))
+#     print files
     simulations_table = simulations_data.getNode('/simulations')
     for file in files:
         output_row = simulations_table.row
-        os.path.dirname(file)
         dir = os.path.dirname(file)
         seeds = os.path.basename(dir)
         write_row(output_row, seeds)
