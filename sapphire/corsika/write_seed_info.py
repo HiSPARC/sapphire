@@ -8,9 +8,6 @@ from sapphire import corsika
 DAT_URL = '/data/hisparc/corsika/data'
 OUTPUT_PATH = '/data/hisparc/corsika'
 
-DAT_URL = '/Users/niekschultheiss/data/data'
-OUTPUT_PATH = '/Users/niekschultheiss/data'
-
 
 class Simulations(tables.IsDescription):
     """Store information about shower particles reaching ground level"""
