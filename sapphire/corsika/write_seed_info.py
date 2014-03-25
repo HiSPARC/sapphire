@@ -56,10 +56,13 @@ def write_row(output_row, seeds):
 
     with tables.openFile(os.path.join(DAT_URL, seeds, 'corsika.h5'),
                          'r') as corsika_data:
-        header = corsika_data.root.groundparticles._v_attrs.event_header
-        footer = corsika_data.root.groundparticles._v_attrs.event_end
-
-    save_seed(output_row, seeds, header, footer)
+        try:
+            groundparticles = corsika_data.getNode('/groundparticles')
+            header = groundparticles._v_attrs.event_header
+            footer = groundparticles._v_attrs.event_end
+            save_seed(output_row, seeds, header, footer)
+        except tables.NoSuchNodeError:
+            print 'No groundparticles table for %s' % seeds
 
 
 def get_simulations(simulations_data):
