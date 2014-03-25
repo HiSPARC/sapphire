@@ -4,8 +4,12 @@ import os
 import glob
 import textwrap
 import subprocess
+import logging
+
+import progressbar
 
 
+LOGFILE = '/data/hisparc/corsika/logs/qsub_store_corsika.log'
 DATADIR = '/data/hisparc/corsika/data'
 QUEUED_SEEDS = '/data/hisparc/corsika/queued.log'
 SOURCE_FILE = 'DAT000000'
@@ -15,6 +19,11 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     umask 002
     source activate /data/hisparc/corsika_env
     {command}""")
+
+logging.basicConfig(filename=LOGFILE, filemode='a',
+                    format='%(asctime)s %(name)s %(levelname)8s: %(message)s',
+                    datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def all_seeds():
@@ -109,7 +118,7 @@ def submit_job(seed):
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
                                      shell=True)
     if not result == '':
-        print '%s - Error occured: %s' % (self.seed, result)
+        logger.error('%s - Error occured: %s' % (seed, result))
         raise Exception
 
 
@@ -130,10 +139,15 @@ def check_queue():
 def run():
     """Get list of seeds to process, then submit jobs to process them"""
 
+    logger.info('Getting todo list of seeds still to be converted.')
     seeds = get_seeds_todo()
+    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
+    n_jobs_to_submit = min(len(seeds), check_queue())
+    logger.info('Submitting jobs for %d simulations.' % n_jobs_to_submit)
     try:
-        for _ in xrange(min(len(seeds), check_queue())):
+        for _ in progress(xrange(n_jobs_to_submit)):
             seed = seeds.pop()
+            logger.info('Submitting job for %s.' % seed)
             submit_job(seed)
             append_queued_seeds([seed])
     except KeyError:
@@ -141,4 +155,6 @@ def run():
 
 
 if __name__ == '__main__':
+    logger.info('Starting to submit new jobs.')
     run()
+    logger.info('Finished submitting jobs.')
