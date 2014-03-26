@@ -6,8 +6,6 @@ import textwrap
 import subprocess
 import logging
 
-import progressbar
-
 
 LOGFILE = '/data/hisparc/corsika/logs/qsub_store_corsika.log'
 DATADIR = '/data/hisparc/corsika/data'
@@ -21,9 +19,9 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     {command}""")
 
 logging.basicConfig(filename=LOGFILE, filemode='a',
-                    format='%(asctime)s %(name)s %(levelname)8s: %(message)s',
+                    format='%(asctime)s %(name)s %(levelname)s: %(message)s',
                     datefmt='%y%m%d_%H%M%S', level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('qsub_store_corsika_data')
 
 
 def all_seeds():
@@ -132,8 +130,10 @@ def check_queue():
     """
     queue_check = 'qstat -u $USER | grep short | grep [RQ] | wc -l'
     user_jobs = int(subprocess.check_output(queue_check, shell=True))
+    max_user_jobs = 1000
+    keep_free_slots = 50
 
-    return 1000 - user_jobs
+    return max_user_jobs - keep_free_slots - user_jobs
 
 
 def run():
@@ -141,11 +141,10 @@ def run():
 
     logger.info('Getting todo list of seeds still to be converted.')
     seeds = get_seeds_todo()
-    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
     n_jobs_to_submit = min(len(seeds), check_queue())
     logger.info('Submitting jobs for %d simulations.' % n_jobs_to_submit)
     try:
-        for _ in progress(xrange(n_jobs_to_submit)):
+        for _ in xrange(n_jobs_to_submit):
             seed = seeds.pop()
             logger.info('Submitting job for %s.' % seed)
             submit_job(seed)
