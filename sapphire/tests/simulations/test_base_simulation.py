@@ -106,5 +106,16 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertIs(self.simulation.coincidence_group._v_attrs.cluster, self.cluster)
 
 
+@patch.object(BaseSimulation, 'generate_shower_parameters')
+class BaseSimulationRunMethodTest(unittest.TestCase):
+
+    @patch.object(BaseSimulation, '_prepare_output_tables')
+    def setUp(self, mock_prepare_output_tables):
+        self.simulation = BaseSimulation(Mock(), Mock(), Mock(), Mock())
+
+    def test_run(self, mock_generate_shower_parameters):
+        self.simulation.run()
+
+
 if __name__ == '__main__':
     unittest.main()
