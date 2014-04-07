@@ -26,6 +26,11 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
 
         self.validate_table('/coincidences/coincidences', expected_file,
                             actual_file)
+        self.validate_array('/coincidences/c_index', expected_file,
+                            actual_file)
+        self.validate_array('/coincidences/s_index', expected_file,
+                            actual_file)
+
     def validate_table(self, table, expected_file, actual_file):
         expected_node = expected_file.getNode(table)
         actual_node = actual_file.getNode(table)
@@ -37,6 +42,22 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
                 self.assertTrue((expected_col == actual_col).all())
             else:
                 self.fail("Columns do not have the same length.")
+
+    def validate_array(self, table, expected_file, actual_file):
+        expected_node = expected_file.getNode(table)
+        actual_node = actual_file.getNode(table)
+
+        expected = expected_node.read()
+        actual = actual_node.read()
+
+        self.assertEqual(len(expected), len(actual))
+
+        if str(expected_node.atom) == 'VLStringAtom()':
+            for i, j in zip(expected, actual):
+                self.assertTrue(i == j)
+        else:
+            for i, j in zip(expected, actual):
+                self.assertTrue((i == j).all())
 
 
 if __name__ == '__main__':
