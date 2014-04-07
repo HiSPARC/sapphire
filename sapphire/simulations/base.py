@@ -90,6 +90,8 @@ class BaseSimulation(object):
             yield shower_parameters
 
     def simulate_events_for_shower(self, shower_parameters):
+        """Simulate station events for a single shower"""
+
         station_events = []
         for station_id, station in enumerate(self.cluster.stations):
             has_triggered, station_observables = \

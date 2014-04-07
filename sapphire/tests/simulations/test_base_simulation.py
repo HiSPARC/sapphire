@@ -74,6 +74,37 @@ class BaseSimulationTest(unittest.TestCase):
                     'size': None, 'energy': None, 'ext_timestamp': None}
         self.assertDictEqual(output[0], expected)
 
+    @patch.object(BaseSimulation, 'simulate_station_response')
+    @patch.object(BaseSimulation, 'store_station_observables')
+    def test_simulate_events_for_shower(self, mock_store, mock_simulate):
+        self.simulation.cluster = Mock()
+        self.simulation.cluster.stations = [sentinel.station1,
+                                            sentinel.station2,
+                                            sentinel.station3]
+
+        mock_simulate.side_effect = [(True, sentinel.obs1), (False, None),
+                                     (True, sentinel.obs3)]
+        mock_store.side_effect = [sentinel.index1, sentinel.index2]
+        events = self.simulation.simulate_events_for_shower(
+            sentinel.params)
+
+        # test simulate_station_response called for each station, with
+        # shower parameters
+        expected = [call(sentinel.station1, sentinel.params),
+                    call(sentinel.station2, sentinel.params),
+                    call(sentinel.station3, sentinel.params)]
+        self.assertEqual(mock_simulate.call_args_list, expected)
+
+        # test store_station_observables called only for triggered
+        # stations, with observables
+        expected = [call(0, sentinel.obs1), call(2, sentinel.obs3)]
+        self.assertEqual(mock_store.call_args_list, expected)
+
+        # test returned events consists of list of station indexes and
+        # stored event indexes
+        self.assertListEqual(events, [(0, sentinel.index1),
+                                      (2, sentinel.index2)])
+
     @unittest.skip("WIP")
     def test_simulate_station_response(self, station, shower_parameters):
         pass
