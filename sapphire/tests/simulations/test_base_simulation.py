@@ -1,4 +1,4 @@
-from mock import sentinel, Mock, patch, MagicMock
+from mock import sentinel, Mock, patch, MagicMock, call
 import unittest
 
 import tables
@@ -39,9 +39,23 @@ class BaseSimulationTest(unittest.TestCase):
         mock_method2.assert_called_once_with()
         mock_method3.assert_called_once_with()
 
-    @unittest.skip("WIP")
-    def test_run(self):
-        pass
+    @patch.object(BaseSimulation, 'generate_shower_parameters')
+    @patch.object(BaseSimulation, 'simulate_events_for_shower')
+    @patch.object(BaseSimulation, 'store_coincidence')
+    def test_run(self, mock_store, mock_simulate, mock_generate):
+        mock_generate.return_value = [sentinel.params1, sentinel.params2]
+        mock_simulate.return_value = sentinel.events
+        self.simulation.run()
+
+        # test simulate_events_for_shower called two times with
+        # shower_parameters
+        expected = [call(sentinel.params1), call(sentinel.params2)]
+        self.assertEqual(mock_simulate.call_args_list, expected)
+
+        # test store_coincidence called 2nd time with shower_id 1,
+        # parameters and events
+        mock_store.assert_called_with(1, sentinel.params2,
+                                      sentinel.events)
 
     @unittest.skip("WIP")
     def test_generate_shower_parameters(self):
@@ -104,29 +118,6 @@ class BaseSimulationTest(unittest.TestCase):
     @unittest.skip("Does not test this unit")
     def test_init_stores_cluster_in_attrs(self):
         self.assertIs(self.simulation.coincidence_group._v_attrs.cluster, self.cluster)
-
-
-@patch.object(BaseSimulation, 'store_coincidence')
-@patch.object(BaseSimulation, 'store_station_observables')
-@patch.object(BaseSimulation, 'simulate_station_response')
-@patch.object(BaseSimulation, 'generate_shower_parameters')
-class BaseSimulationRunMethodTest(unittest.TestCase):
-
-    @patch.object(BaseSimulation, '_prepare_output_tables')
-    def setUp(self, mock_prepare_output_tables):
-        self.mock_cluster = Mock()
-        self.mock_cluster.stations = [sentinel.station1,
-                                      sentinel.station2]
-        self.simulation = BaseSimulation(self.mock_cluster, Mock(),
-                                         Mock(), Mock())
-
-    def test_run(self, mock_generate_shower_parameters,
-                 mock_simulate_station_response,
-                 mock_store_station_observables, mock_store_coincidence):
-        mock_generate_shower_parameters.return_value = range(5)
-        mock_simulate_station_response.return_value = False, sentinel.obs
-        self.simulation.run()
-
 
 
 if __name__ == '__main__':

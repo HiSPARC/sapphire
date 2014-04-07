@@ -68,17 +68,8 @@ class BaseSimulation(object):
         for (shower_id, shower_parameters) in enumerate(
                 self.generate_shower_parameters()):
 
-            station_events = []
-            for station_id, station in enumerate(self.cluster.stations):
-                has_triggered, station_observables = \
-                        self.simulate_station_response(station,
-                                                       shower_parameters)
-                if has_triggered:
-                    event_index = \
-                            self.store_station_observables(station_id,
-                                                           station_observables)
-                    station_events.append((station_id, event_index))
-
+            station_events = self.simulate_events_for_shower(
+                shower_parameters)
             self.store_coincidence(shower_id, shower_parameters,
                                    station_events)
 
@@ -97,6 +88,19 @@ class BaseSimulation(object):
 
         for i in pbar(range(self.N)):
             yield shower_parameters
+
+    def simulate_events_for_shower(self, shower_parameters):
+        station_events = []
+        for station_id, station in enumerate(self.cluster.stations):
+            has_triggered, station_observables = \
+                    self.simulate_station_response(station,
+                                                   shower_parameters)
+            if has_triggered:
+                event_index = \
+                        self.store_station_observables(station_id,
+                                                       station_observables)
+                station_events.append((station_id, event_index))
+        return station_events
 
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
