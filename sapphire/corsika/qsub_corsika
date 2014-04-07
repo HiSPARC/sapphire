@@ -7,9 +7,10 @@
     of seeds for the random number sequences are used for each
     simulation.
 
-    Update the PATH and PYTHONPATH paths in your ~/.bash_profile:
-    export PATH=/data/hisparc/corsika_env/python/bin:$PATH
-    export PYTHONPATH=/data/hisparc/corsika_env/sapphire:$PYTHONPATH
+    To run this file correctly do it in the correct env::
+
+        source activate /data/hisparc/corsika_env
+        qsub_corsika 10 16 proton 22.5 -q generic -a 90
 
 """
 import os
@@ -57,7 +58,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     OBSLEV    10.E2                    observation level -maaiveld -3.7m (cm)
     MAXPRT    1                        max. number of printed events
     ECTMAP    1.E4                     cut on gamma factor for printout
-    DATDIR    {datadir}                location of the input data tables
+    DATDIR    {tablesdir}              location of the input data tables
     DIRECT    ./                       output directory
     USER      hisparc                  user
     DEBUG     F  6  F  1000000         debug flag and log.unit for out
@@ -90,10 +91,9 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     export PATH=\${{PBS_O_PATH}}
 
     # Run CORSIKA
-    /usr/bin/time -o time.log ./{corsika} < input-hisparc > corsika-output.log
+    /usr/bin/time -o time.log {corsika} < input-hisparc > corsika-output.log
 
     # Clean up after run
-    find -type l -delete
     cd ../..
     mv {rundir} data/
 
@@ -166,7 +166,6 @@ class CorsikaBatch(object):
         self.create_input()
         self.create_script()
         self.copy_config()
-        self.symlink_corsika()
 
     def submit_job(self):
         """Submit job to Stoomboot"""
@@ -218,7 +217,7 @@ class CorsikaBatch(object):
         input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                       particle=self.particle, phi=self.phi,
                                       energy=self.energy, theta=self.theta,
-                                      datadir=CORSIKADIR)
+                                      tablesdir=CORSIKADIR)
         file = open(inputpath, 'w')
         file.write(input)
         file.close()
@@ -231,15 +230,17 @@ class CorsikaBatch(object):
         else:
             walltime = ""
 
-        scriptpath = os.path.join(TEMPDIR, self.rundir, 'run.sh')
+        exec_path = os.path.join(CORSIKADIR, self.corsika)
+        run_path = os.path.join(TEMPDIR, self.rundir)
+        script_path = os.path.join(run_path, 'run.sh')
+
         script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                         queue=self.queue, walltime=walltime,
-                                        corsika=self.corsika,
-                                        rundir=TEMPDIR + self.rundir)
-        file = open(scriptpath, 'w')
+                                        corsika=exec_path, rundir=run_path)
+        file = open(script_path, 'w')
         file.write(script)
         file.close()
-        os.chmod(scriptpath, 0774)
+        os.chmod(script_path, 0774)
 
     def copy_config(self):
         """Copy the CORSIKA config file to the output directory
@@ -258,8 +259,8 @@ class CorsikaBatch(object):
     def symlink_corsika(self):
         """Create symbolic links to CORSIKA run files
 
-        Only link the CORSIKA executable, it can find the the input data
-        files in the run directory through the DATDIR in the input file.
+        No longer used, was used to symlink the CORSIKA executable
+        to the output directory.
 
         """
         source = os.path.join(CORSIKADIR, self.corsika)
@@ -357,18 +358,18 @@ if __name__ == '__main__':
                              "steps of 7.5 [degrees]",
                         type=float,
                         choices=[0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60])
-    parser.add_argument('-a', metavar='<azimuth>',
+    parser.add_argument('-a', '--azimuth', metavar='angle',
                         help="Azimuth angle of primary particle in range "
                              "0..315 steps of 45 [degrees]",
                         type=int,
                         default=180,
                         choices=[0, 45, 90, 135, 180, 225, 270, 315])
-    parser.add_argument('-q', metavar='<queue>',
+    parser.add_argument('-q', '--queue', metavar='name',
                         help="Name of the Stoomboot queue to use, choose from "
                              "[express, short, generic, long]",
                         default='generic',
                         choices=['express', 'short', 'generic', 'long'])
-    parser.add_argument('-c', metavar='<name>',
+    parser.add_argument('-c', '--corsika', metavar='exec',
                         help="Name of the CORSIKA executable to use",
                         default="corsika74000Linux_QGSII_gheisha")
     args = parser.parse_args()

@@ -109,8 +109,11 @@ def create_index(hdf_data, table_name='groundparticles'):
 
     """
     table = hdf_data.getNode('/', table_name)
-    print 'Indexing the x column for table %s' % table_name
-    table.cols.x.createCSIndex()
+    print 'Ensuring the x column for table %s is indexed.' % table_name
+    try:
+        table.cols.x.createCSIndex()
+    except ValueError:
+        table.reIndexDirty()
 
 
 if __name__ == '__main__':
@@ -118,10 +121,16 @@ if __name__ == '__main__':
     parser.add_argument('source', help="path of the CORSIKA source file")
     parser.add_argument('destination',
                         help="path of the HDF5 destination file")
+    parser.add_argument('--overwrite', action='store_true',
+                        help='overwrite destination file it is already exists')
     args = parser.parse_args()
 
     corsika_data = corsika.CorsikaFile(args.source)
-    with tables.openFile(args.destination, 'a') as hdf_data:
+    if args.overwrite:
+        mode = 'w'
+    else:
+        mode = 'a'
+    with tables.openFile(args.destination, mode) as hdf_data:
         store_corsika_data(corsika_data, hdf_data)
     with tables.openFile(args.destination, 'a') as hdf_data:
         create_index(hdf_data)

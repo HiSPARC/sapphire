@@ -88,11 +88,12 @@ class BaseSimulation(object):
         pbar = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
                                                 progressbar.Bar(),
                                                 progressbar.ETA()])
-        shower_parameters = {'azimuth': None,
+        shower_parameters = {'core_pos': (None, None),
                              'zenith': None,
+                             'azimuth': None,
+                             'size': None,
                              'energy': None,
-                             'ext_timestamp': None,
-                             'core_pos': (None, None)}
+                             'ext_timestamp': None}
 
         for i in pbar(range(self.N)):
             yield shower_parameters
@@ -202,10 +203,11 @@ class BaseSimulation(object):
         row = self.coincidences.row
         row['id'] = shower_id
         row['N'] = len(station_events)
-        row['shower_phi'] = shower_parameters['azimuth']
-        row['shower_theta'] = shower_parameters['zenith']
-        row['shower_size'] = shower_parameters['energy']
         row['x'], row['y'] = shower_parameters['core_pos']
+        row['zenith'] = shower_parameters['zenith']
+        row['azimuth'] = shower_parameters['azimuth']
+        row['size'] = shower_parameters['size']
+        row['energy'] = shower_parameters['energy']
 
         timestamps = []
         for station_id, event_index in station_events:
