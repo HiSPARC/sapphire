@@ -1,4 +1,5 @@
 from mock import sentinel, Mock, patch, MagicMock, call
+import types
 import unittest
 
 import tables
@@ -57,9 +58,21 @@ class BaseSimulationTest(unittest.TestCase):
         mock_store.assert_called_with(1, sentinel.params2,
                                       sentinel.events)
 
-    @unittest.skip("WIP")
-    def test_generate_shower_parameters(self):
-        pass
+    @patch('progressbar.ProgressBar')
+    def test_generate_shower_parameters(self, mock_progress):
+        # disable progressbar
+        mock_progress.return_value.side_effect = lambda x: x
+
+        self.simulation.N = 10
+        output = self.simulation.generate_shower_parameters()
+        self.assertIsInstance(output, types.GeneratorType)
+
+        output = list(output)
+        self.assertEqual(len(output), 10)
+
+        expected = {'core_pos': (None, None), 'zenith': None, 'azimuth': None,
+                    'size': None, 'energy': None, 'ext_timestamp': None}
+        self.assertDictEqual(output[0], expected)
 
     @unittest.skip("WIP")
     def test_simulate_station_response(self, station, shower_parameters):
