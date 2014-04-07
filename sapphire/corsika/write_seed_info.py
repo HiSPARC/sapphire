@@ -69,14 +69,13 @@ def get_simulations(simulations_data):
     """Get the information of the simulations and create a table."""
 
     files = glob.glob(os.path.join(DAT_URL, '*/corsika.h5'))
-#     print files
     simulations_table = simulations_data.getNode('/simulations')
     for file in files:
         output_row = simulations_table.row
         dir = os.path.dirname(file)
         seeds = os.path.basename(dir)
         write_row(output_row, seeds)
-    simulations_table.flush()
+        simulations_table.flush()
 
 
 def prepare_output():
@@ -89,11 +88,11 @@ def prepare_output():
     return simulations_data
 
 
-def main():
+def generate_simulation_overview():
     simulations_data = prepare_output()
     get_simulations(simulations_data)
     simulations_data.close()
 
 
 if __name__ == '__main__':
-    simulation_info = main()
+    generate_simulation_overview()
