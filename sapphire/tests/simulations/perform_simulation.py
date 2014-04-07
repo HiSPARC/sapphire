@@ -13,6 +13,8 @@ from sapphire.simulations.groundparticles import GroundParticlesSimulation
 
 
 self_path = os.path.dirname(__file__)
+test_data_path = os.path.join(self_path,
+                              'test_data/groundparticles_sim.h5')
 
 
 def perform_simulation(filename):
@@ -39,12 +41,11 @@ def create_tempfile_path():
 def create_and_store_test_data():
     """Create test data for future acceptance testing"""
 
-    filepath = os.path.join(self_path, 'test_data/groundparticles_sim.h5')
     tmppath = create_tempfile_path()
 
     perform_simulation(tmppath)
     subprocess.check_call(['ptrepack', '-o', '--complevel', '1', tmppath,
-                           filepath])
+                           test_data_path])
 
 
 if __name__ == '__main__':
