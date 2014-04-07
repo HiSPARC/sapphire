@@ -24,6 +24,8 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
                           station_id
             self.validate_table(events_path, expected_file, actual_file)
 
+        self.validate_table('/coincidences/coincidences', expected_file,
+                            actual_file)
     def validate_table(self, table, expected_file, actual_file):
         expected_node = expected_file.getNode(table)
         actual_node = actual_file.getNode(table)
