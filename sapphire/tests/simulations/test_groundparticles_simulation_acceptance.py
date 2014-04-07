@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from mock import patch
 import tables
 
 from perform_simulation import (create_tempfile_path, perform_simulation,
@@ -9,7 +10,10 @@ from perform_simulation import (create_tempfile_path, perform_simulation,
 
 class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
 
-    def test_simulation_output(self):
+    @patch('progressbar.ProgressBar')
+    def test_simulation_output(self, mock_progressbar):
+        mock_progressbar.return_value.side_effect = lambda x: x
+
         output_path = create_tempfile_path()
         perform_simulation(output_path)
         self.validate_results(test_data_path, output_path)
@@ -30,6 +34,9 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
                             actual_file)
         self.validate_array('/coincidences/s_index', expected_file,
                             actual_file)
+
+        expected_file.close()
+        actual_file.close()
 
     def validate_table(self, table, expected_file, actual_file):
         expected_node = expected_file.getNode(table)

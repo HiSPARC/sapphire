@@ -45,6 +45,9 @@ class GroundParticlesSimulation(BaseSimulation):
 
         self.coincidence_group._v_attrs.cluster = self.cluster
 
+    def __del__(self):
+        self.finish()
+
     def finish(self):
         """Clean-up after simulation"""
 
