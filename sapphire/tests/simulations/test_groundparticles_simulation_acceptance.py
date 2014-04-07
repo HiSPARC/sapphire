@@ -16,17 +16,18 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
         os.remove(output_path)
 
     def validate_results(self, expected_path, actual_path):
-        expected = tables.open_file(expected_path)
-        actual = tables.open_file(actual_path)
+        expected_file = tables.open_file(expected_path)
+        actual_file = tables.open_file(actual_path)
         
         for station_id in range(4):
             events_path = '/cluster_simulations/station_%d/events' % \
                           station_id
-            expected_node = expected.getNode(events_path)
-            actual_node = actual.getNode(events_path)
-            self.validate_table(expected_node, actual_node)
+            self.validate_table(events_path, expected_file, actual_file)
 
-    def validate_table(self, expected_node, actual_node):
+    def validate_table(self, table, expected_file, actual_file):
+        expected_node = expected_file.getNode(table)
+        actual_node = actual_file.getNode(table)
+
         for colname in expected_node.colnames:
             expected_col = expected_node.col(colname)
             actual_col = actual_node.col(colname)
