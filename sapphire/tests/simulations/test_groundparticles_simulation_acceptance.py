@@ -12,6 +12,8 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
 
     @patch('progressbar.ProgressBar')
     def test_simulation_output(self, mock_progressbar):
+        """Perform a simulation and verify the output"""
+
         mock_progressbar.return_value.side_effect = lambda x: x
 
         output_path = create_tempfile_path()
@@ -20,6 +22,8 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
         os.remove(output_path)
 
     def validate_results(self, expected_path, actual_path):
+        """Validate simulation results"""
+
         expected_file = tables.open_file(expected_path)
         actual_file = tables.open_file(actual_path)
         
@@ -39,6 +43,8 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
         actual_file.close()
 
     def validate_table(self, table, expected_file, actual_file):
+        """Verify that two tables are identical"""
+
         expected_node = expected_file.getNode(table)
         actual_node = actual_file.getNode(table)
 
@@ -51,6 +57,8 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
                 self.fail("Columns do not have the same length.")
 
     def validate_array(self, table, expected_file, actual_file):
+        """Verify that two arrays are identical"""
+
         expected_node = expected_file.getNode(table)
         actual_node = actual_file.getNode(table)
 
