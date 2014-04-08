@@ -9,7 +9,7 @@ import progressbar as pb
 from sapphire import corsika
 
 LOGFILE = '/data/hisparc/corsika/logs/generate_overview.log'
-DAT_URL = '/data/hisparc/corsika/data'
+DATA_PATH = '/data/hisparc/corsika/data'
 OUTPUT_PATH = '/data/hisparc/corsika'
 
 logging.basicConfig(filename=LOGFILE, filemode='a',
@@ -69,8 +69,8 @@ def write_row(output_row, seeds):
     """Read the header of a simulation and write this to the output."""
 
     try:
-        with tables.openFile(os.path.join(DAT_URL, seeds, 'corsika.h5'), 'r') \
-                as corsika_data:
+        with tables.openFile(os.path.join(DATA_PATH, seeds, 'corsika.h5'),
+                             'r') as corsika_data:
             try:
                 groundparticles = corsika_data.getNode('/groundparticles')
                 header = groundparticles._v_attrs.event_header
@@ -81,38 +81,40 @@ def write_row(output_row, seeds):
             except AttributeError:
                 logger.info('Missing attribute (header or footer) for %s' %
                             seeds)
-    except tables.HDF5ExtError:
+    except (IOError, tables.HDF5ExtError):
         logger.info('Unable to open file for %s' % seeds)
 
 
-def get_simulations(simulations_data):
+def get_simulations(simulations, overview):
     """Get the information of the simulations and create a table."""
 
-    files = glob.glob(os.path.join(DAT_URL, '*/corsika.h5'))
-    simulations_table = simulations_data.getNode('/simulations')
+    simulations_table = overview.getNode('/simulations')
     progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
-    for file in progress(files):
+    for seeds in progress(simulations):
         output_row = simulations_table.row
         dir = os.path.dirname(file)
         seeds = os.path.basename(dir)
         write_row(output_row, seeds)
-        simulations_table.flush()
+    simulations_table.flush()
 
 
-def prepare_output():
-    """Write the table to seed_info.h5"""
+def prepare_output(n):
+    """Write the table to seed_info.h5
 
-    simulations_data = tables.openFile(os.path.join(OUTPUT_PATH,
-                                                    'seed_info.h5'), 'w')
-    simulations_data.createTable('/', 'simulations', Simulations,
-                                 'Simulations overview')
-    return simulations_data
+    :param n: the number of simulations, i.e. expected number of rows.
+
+    """
+    overview = tables.openFile(os.path.join(OUTPUT_PATH, 'seed_info.h5'), 'w')
+    overview.createTable('/', 'simulations', Simulations,
+                         'Simulations overview', expectedrows=n)
+    return overview
 
 
 def generate_simulation_overview():
-    simulations_data = prepare_output()
-    get_simulations(simulations_data)
-    simulations_data.close()
+    simulations = os.walk(DATA_PATH).next()[1]
+    overview = prepare_output(len(simulations))
+    get_simulations(simulations, overview)
+    overview.close()
 
 
 if __name__ == '__main__':
