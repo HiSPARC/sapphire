@@ -2,13 +2,20 @@ import os
 import os.path
 import tables
 import glob
+import logging
 
 import progressbar as pb
 
 from sapphire import corsika
 
+LOGFILE = '/data/hisparc/corsika/logs/generate_overview.log'
 DAT_URL = '/data/hisparc/corsika/data'
 OUTPUT_PATH = '/data/hisparc/corsika'
+
+logging.basicConfig(filename=LOGFILE, filemode='a',
+                    format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+                    datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+logger = logging.getLogger('generate_overview')
 
 
 class Simulations(tables.IsDescription):
@@ -70,11 +77,12 @@ def write_row(output_row, seeds):
                 end = groundparticles._v_attrs.event_end
                 save_seed(output_row, seeds, header, end)
             except tables.NoSuchNodeError:
-                print 'No groundparticles table for %s' % seeds
+                logger.INFO('No groundparticles table for %s' % seeds)
             except AttributeError:
-                print 'Missing attribute (header or footer) for %s' % seeds
+                logger.INFO('Missing attribute (header or footer) for %s' %
+                            seeds)
     except tables.HDF5ExtError:
-        print 'Unable to open file for %s' % seeds
+        logger.INFO('Unable to open file for %s' % seeds)
 
 
 def get_simulations(simulations_data):
