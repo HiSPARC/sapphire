@@ -38,15 +38,16 @@ class Simulations(tables.IsDescription):
     n_hadron = tables.Float32Col(pos=14)
 
 
-def save_seed(row, seeds, header, end):
+def write_row(table, seeds, header, end):
     """Write the information of one simulation into a row
 
-    :param row: a new row instance to be appended to the table
-    :param seeds: the unique id consisting of the two seeds
-    :param header, end: the event header and end for the simulation
+    :param table: the table where the new data should be appended.
+    :param seeds: the unique id consisting of the two seeds.
+    :param header, end: the event header and end for the simulation.
 
     """
     seed1, seed2 = seeds.split('_')
+    row = table.row
     row['seed1'] = seed1
     row['seed2'] = seed2
     row['particle_id'] = header.particle_id
@@ -65,7 +66,7 @@ def save_seed(row, seeds, header, end):
     row.append()
 
 
-def write_row(output_row, seeds):
+def read_seeds(simulations_table, seeds):
     """Read the header of a simulation and write this to the output."""
 
     try:
@@ -75,7 +76,7 @@ def write_row(output_row, seeds):
                 groundparticles = corsika_data.getNode('/groundparticles')
                 header = groundparticles._v_attrs.event_header
                 end = groundparticles._v_attrs.event_end
-                save_seed(output_row, seeds, header, end)
+                write_row(simulations_table, seeds, header, end)
             except tables.NoSuchNodeError:
                 logger.info('No groundparticles table for %s' % seeds)
             except AttributeError:
@@ -91,10 +92,7 @@ def get_simulations(simulations, overview):
     simulations_table = overview.getNode('/simulations')
     progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
     for seeds in progress(simulations):
-        output_row = simulations_table.row
-        dir = os.path.dirname(file)
-        seeds = os.path.basename(dir)
-        write_row(output_row, seeds)
+        read_seeds(simulations_table, seeds)
     simulations_table.flush()
 
 
