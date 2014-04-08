@@ -77,12 +77,12 @@ def write_row(output_row, seeds):
                 end = groundparticles._v_attrs.event_end
                 save_seed(output_row, seeds, header, end)
             except tables.NoSuchNodeError:
-                logger.INFO('No groundparticles table for %s' % seeds)
+                logger.info('No groundparticles table for %s' % seeds)
             except AttributeError:
-                logger.INFO('Missing attribute (header or footer) for %s' %
+                logger.info('Missing attribute (header or footer) for %s' %
                             seeds)
     except tables.HDF5ExtError:
-        logger.INFO('Unable to open file for %s' % seeds)
+        logger.info('Unable to open file for %s' % seeds)
 
 
 def get_simulations(simulations_data):
