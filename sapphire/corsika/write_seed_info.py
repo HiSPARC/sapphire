@@ -3,6 +3,8 @@ import os.path
 import tables
 import glob
 
+import progressbar as pb
+
 from sapphire import corsika
 
 DAT_URL = '/data/hisparc/corsika/data'
@@ -29,9 +31,14 @@ class Simulations(tables.IsDescription):
     n_hadron = tables.Float32Col(pos=14)
 
 
-def save_seed(row, seeds, header, footer):
-    """Write the information of a particle into a row"""
+def save_seed(row, seeds, header, end):
+    """Write the information of one simulation into a row
 
+    :param row: a new row instance to be appended to the table
+    :param seeds: the unique id consisting of the two seeds
+    :param header, end: the event header and end for the simulation
+
+    """
     seed1, seed2 = seeds.split('_')
     row['seed1'] = seed1
     row['seed2'] = seed2
@@ -44,25 +51,30 @@ def save_seed(row, seeds, header, footer):
     row['zenith'] = header.zenith
     row['azimuth'] = header.azimuth
     row['observation_height'] = header.observation_heights[0]
-    row['n_photon'] = footer.n_photons_levels
-    row['n_electron'] = footer.n_electrons_levels
-    row['n_muon'] = footer.n_muons_levels
-    row['n_hadron'] = footer.n_hadrons_levels
+    row['n_photon'] = end.n_photons_levels
+    row['n_electron'] = end.n_electrons_levels
+    row['n_muon'] = end.n_muons_levels
+    row['n_hadron'] = end.n_hadrons_levels
     row.append()
 
 
 def write_row(output_row, seeds):
     """Read the header of a simulation and write this to the output."""
 
-    with tables.openFile(os.path.join(DAT_URL, seeds, 'corsika.h5'),
-                         'r') as corsika_data:
-        try:
-            groundparticles = corsika_data.getNode('/groundparticles')
-            header = groundparticles._v_attrs.event_header
-            footer = groundparticles._v_attrs.event_end
-            save_seed(output_row, seeds, header, footer)
-        except tables.NoSuchNodeError:
-            print 'No groundparticles table for %s' % seeds
+    try:
+        with tables.openFile(os.path.join(DAT_URL, seeds, 'corsika.h5'), 'r') \
+                as corsika_data:
+            try:
+                groundparticles = corsika_data.getNode('/groundparticles')
+                header = groundparticles._v_attrs.event_header
+                end = groundparticles._v_attrs.event_end
+                save_seed(output_row, seeds, header, end)
+            except tables.NoSuchNodeError:
+                print 'No groundparticles table for %s' % seeds
+            except AttributeError:
+                print 'Missing attribute (header or footer) for %s' % seeds
+    except tables.HDF5ExtError:
+        print 'Unable to open file for %s' % seeds
 
 
 def get_simulations(simulations_data):
@@ -70,7 +82,8 @@ def get_simulations(simulations_data):
 
     files = glob.glob(os.path.join(DAT_URL, '*/corsika.h5'))
     simulations_table = simulations_data.getNode('/simulations')
-    for file in files:
+    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
+    for file in progress(files):
         output_row = simulations_table.row
         dir = os.path.dirname(file)
         seeds = os.path.basename(dir)
