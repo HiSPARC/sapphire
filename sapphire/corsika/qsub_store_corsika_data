@@ -105,6 +105,15 @@ def create_script(seed):
     return script_path, script_name
 
 
+def delete_script(seed):
+    """Delete script"""
+
+    script_name = 'store_{seed}.sh'.format(seed=seed)
+    script_path = os.path.join('/tmp', script_name)
+
+    os.remove(script_path)
+
+
 def submit_job(seed):
     """Submit job to Stoomboot"""
 
@@ -118,6 +127,8 @@ def submit_job(seed):
     if not result == '':
         logger.error('%s - Error occured: %s' % (seed, result))
         raise Exception
+
+    delete_script(seed)
 
 
 def check_queue():
