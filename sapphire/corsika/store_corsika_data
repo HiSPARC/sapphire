@@ -65,6 +65,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
 
     for event in source.get_events():
         n_particles = event.get_end().n_particles_levels
+        progress = progress and n_particles > 1
         try:
             table = destination.createTable('/', table_name, GroundParticles,
                                             'All groundparticles',
@@ -97,10 +98,10 @@ def store_corsika_data(source, destination, table_name='groundparticles',
         event_header = event.get_header()
         event_end = event.get_end()
 
-    table._v_attrs.run_header = run_header
-    table._v_attrs.run_end = run_end
-    table._v_attrs.event_header = event_header
-    table._v_attrs.event_end = event_end
+    destination.root._v_attrs.run_header = run_header
+    destination.root._v_attrs.run_end = run_end
+    destination.root._v_attrs.event_header = event_header
+    destination.root._v_attrs.event_end = event_end
 
     table.flush()
 
