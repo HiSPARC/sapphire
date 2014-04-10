@@ -92,6 +92,8 @@ def get_simulations(simulations, overview):
     simulations_table = overview.getNode('/simulations')
     progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
     for seeds in progress(simulations):
+        if progress.currval % 5000 == 0:
+            simulations_table.flush()
         read_seeds(simulations_table, seeds)
     simulations_table.flush()
 
