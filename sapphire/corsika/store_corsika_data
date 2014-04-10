@@ -78,14 +78,14 @@ def store_corsika_data(source, destination, table_name='groundparticles',
                                            widgets=[progressbar.Percentage(),
                                                     progressbar.Bar(),
                                                     progressbar.ETA()]).start()
-            prev_update = 0
 
         particle_row = table.row
         for row, particle in enumerate(event.get_particles()):
             save_particle(particle_row, particle)
-            if progress and row - prev_update > 5000:
+            if progress and not row % 5000:
                 pbar.update(row)
-                prev_update = row
+            if not row % 1000000:
+                table.flush()
 
         if progress:
             pbar.finish()
@@ -102,8 +102,6 @@ def store_corsika_data(source, destination, table_name='groundparticles',
     destination.root._v_attrs.run_end = run_end
     destination.root._v_attrs.event_header = event_header
     destination.root._v_attrs.event_end = event_end
-
-    table.flush()
 
 
 def create_index(hdf_data, table_name='groundparticles'):
