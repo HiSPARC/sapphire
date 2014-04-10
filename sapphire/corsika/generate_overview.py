@@ -73,14 +73,11 @@ def read_seeds(simulations_table, seeds):
         with tables.openFile(os.path.join(DATA_PATH, seeds, 'corsika.h5'),
                              'r') as corsika_data:
             try:
-                groundparticles = corsika_data.getNode('/groundparticles')
-                header = groundparticles._v_attrs.event_header
-                end = groundparticles._v_attrs.event_end
+                header = corsika_data.root._v_attrs.event_header
+                end = corsika_data.root._v_attrs.event_end
                 write_row(simulations_table, seeds, header, end)
-            except tables.NoSuchNodeError:
-                logger.info('No groundparticles table for %s' % seeds)
             except AttributeError:
-                logger.info('Missing attribute (header or footer) for %s' %
+                logger.info('Missing attribute (header or end) for %s' %
                             seeds)
     except (IOError, tables.HDF5ExtError):
         logger.info('Unable to open file for %s' % seeds)
