@@ -21,8 +21,8 @@ class ShowerParticle(tables.IsDescription):
 
     .. attribute:: pid
 
-        a particle identifier.  Possible values are determined by the simulation
-        package.
+        a particle identifier. Possible values are determined by the
+        simulation package.
 
     .. attribute:: core_distance
 
@@ -123,8 +123,8 @@ class SimulationParticle(tables.IsDescription):
 
     .. attribute:: pid
 
-        a particle identifier.  Possible values are determined by the simulation
-        package.
+        a particle identifier. Possible values are determined by the
+        simulation package.
 
     .. attribute:: r, phi
 

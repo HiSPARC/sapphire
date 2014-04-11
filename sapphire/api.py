@@ -184,7 +184,6 @@ class Network(object):
                                                  day=day).strip("/"))
         return _get_json(path)
 
-
     def stations_with_weather(self, year='', month='', day=''):
         """Get a list of stations with weather data on the specified date
 
