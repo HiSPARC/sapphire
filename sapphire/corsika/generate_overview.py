@@ -101,7 +101,8 @@ def prepare_output(n):
     :param n: the number of simulations, i.e. expected number of rows.
 
     """
-    overview = tables.openFile(os.path.join(OUTPUT_PATH, 'seed_info.h5'), 'w')
+    output = os.path.join(OUTPUT_PATH, 'simulation_overview.h5')
+    overview = tables.openFile(output, 'w')
     overview.createTable('/', 'simulations', Simulations,
                          'Simulations overview', expectedrows=n)
     return overview
