@@ -1,8 +1,8 @@
 import os
-import os.path
 import tables
 import glob
 import logging
+import shutil
 
 import progressbar as pb
 
@@ -101,11 +101,17 @@ def prepare_output(n):
     :param n: the number of simulations, i.e. expected number of rows.
 
     """
-    output = os.path.join(OUTPUT_PATH, 'simulation_overview.h5')
-    overview = tables.openFile(output, 'w')
+    tmp_output = os.path.join(OUTPUT_PATH, 'temp_simulation_overview.h5')
+    overview = tables.openFile(tmp_output, 'w')
     overview.createTable('/', 'simulations', Simulations,
                          'Simulations overview', expectedrows=n)
     return overview
+
+
+def move_tempfile_to_destination():
+    tmp_path = os.path.join(OUTPUT_PATH, 'temp_simulation_overview.h5')
+    data_path = os.path.join(OUTPUT_PATH, 'simulation_overview.h5')
+    shutil.move(tmp_path, data_path)
 
 
 def generate_simulation_overview():
@@ -113,6 +119,7 @@ def generate_simulation_overview():
     overview = prepare_output(len(simulations))
     get_simulations(simulations, overview)
     overview.close()
+    move_tempfile_to_destination()
 
 
 if __name__ == '__main__':
