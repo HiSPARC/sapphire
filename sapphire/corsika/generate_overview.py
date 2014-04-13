@@ -96,7 +96,7 @@ def get_simulations(simulations, overview):
 
 
 def prepare_output(n):
-    """Write the table to seed_info.h5
+    """Create a temporary file in which to store the overview
 
     :param n: the number of simulations, i.e. expected number of rows.
 
