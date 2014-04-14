@@ -1,6 +1,7 @@
 from mock import sentinel, Mock, patch, MagicMock, call
 import types
 import unittest
+import warnings
 
 import tables
 
@@ -187,9 +188,38 @@ class BaseSimulationTest(unittest.TestCase):
 
         self.assertEqual(expected, actual)
 
-    @unittest.skip("WIP")
-    def test_store_station_observables(self, station_id, station_observables):
-        pass
+    def test_store_station_observables(self):
+        station_groups = MagicMock()
+        self.simulation.station_groups = station_groups
+        table = station_groups.__getitem__.return_value.events
+        table.nrows = 123
+
+        observables = {'key1': 1., 'key2': 2.}
+        table.colnames = ['key1', 'key2']
+        idx = self.simulation.store_station_observables(
+            sentinel.station_id, observables)
+
+        # tests
+        station_groups.__getitem__.assert_called_once_with(sentinel.station_id)
+
+        expected = [call('event_id', table.nrows), call('key2', 2.),
+                    call('key1', 1.)]
+        self.assertEqual(table.row.__setitem__.call_args_list, expected)
+        table.row.append.assert_called_once_with()
+        table.flush.assert_called_once_with()
+        self.assertEqual(idx, table.nrows - 1)
+
+    def test_store_station_observables_raises_warning(self):
+        station_groups = MagicMock()
+        self.simulation.station_groups = station_groups
+        table = station_groups.__getitem__.return_value.events
+        observables = {'key1': 1., 'key2': 2.}
+        table.colnames = ['key1']
+
+        warnings.simplefilter('error')
+        self.assertRaises(UserWarning,
+                          self.simulation.store_station_observables,
+                          sentinel.station_id, observables)
 
     @unittest.skip("WIP")
     def test_store_coincidence(self, shower_id, shower_parameters, station_events):
