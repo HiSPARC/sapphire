@@ -101,6 +101,7 @@ def prepare_output(n):
     :param n: the number of simulations, i.e. expected number of rows.
 
     """
+    os.umask(002)
     tmp_output = os.path.join(OUTPUT_PATH, 'temp_simulation_overview.h5')
     overview = tables.openFile(tmp_output, 'w')
     overview.createTable('/', 'simulations', Simulations,
