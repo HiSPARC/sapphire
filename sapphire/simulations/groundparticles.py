@@ -24,6 +24,8 @@ import warnings
 import numpy as np
 import tables
 import progressbar
+import ROOT
+import random
 
 from .base import BaseSimulation
 
@@ -248,13 +250,49 @@ class AccurateDetectorSimulation(GroundParticlesSimulation):
                   y - detector_boundary, x + detector_boundary,
                   line1, line1, line2, line2))
 
-        detected = [row['t'] for row in self.groundparticles.where(query)]
+        detected = [[row['t'], row['p_x'], row['p_y'], row['p_z']]
+                    for row in self.groundparticles.where(query)]
         if detected:
             n_detected = len(detected)
+
+            mips = 0.
+            for i in range(n_detected):
+                # determination of lepton angle of incidence
+                px = detected[i][1]
+                py = detected[i][2]
+                pz = detected[i][3]
+                costheta = abs(pz) / np.sqrt(px * px + py * py + pz * pz)
+                xi = 0.171 / costheta
+
+                # simulation of Landau distribution of electron and muon energy losses
+
+                seednr = int(random.random() * 1000000000)
+                lambdadraw = ROOT.TRandom3(seednr).Landau()
+                delta = xi * (lambdadraw + np.log(xi) + 21.94)
+
+                mip0 = delta / 3.7
+
+                # simulation of scintillator plate efficiency distribution
+
+                y = random.random()
+
+                mip1 = 1.82957 - 1.31402 * np.sqrt(1. - y)
+                if y < 0.85513:
+                    mip1 = 1.4705 - 0.69786 * np.sqrt(0.89599 - y)
+                if y < 0.442324:
+                    mip1 = 0.54217 + 0.68908 * np.sqrt(y)
+
+                mip = mip0 * mip1
+
+                mips += mip
+
+
+            # simulation of transport times
+
             transporttimes = self.simulate_signal_transport_time(n_detected)
             for i in range(n_detected):
-                detected[i] += transporttimes[i]
-            observables = {'n': n_detected, 't': min(detected)}
+                detected[i][0] += transporttimes[i]
+            observables = {'n': mips, 't': np.min(detected, 0)[0]}
         else:
             observables = {'n': 0., 't': -999}
 
