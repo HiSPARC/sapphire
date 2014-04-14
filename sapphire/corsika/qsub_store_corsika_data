@@ -150,6 +150,7 @@ def check_queue():
 def run():
     """Get list of seeds to process, then submit jobs to process them"""
 
+    os.umask(002)
     logger.info('Getting todo list of seeds still to be converted.')
     seeds = get_seeds_todo()
     n_jobs_to_submit = min(len(seeds), check_queue())
