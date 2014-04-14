@@ -105,9 +105,28 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertListEqual(events, [(0, sentinel.index1),
                                       (2, sentinel.index2)])
 
-    @unittest.skip("WIP")
-    def test_simulate_station_response(self, station, shower_parameters):
-        pass
+    @patch.object(BaseSimulation, 'simulate_all_detectors')
+    @patch.object(BaseSimulation, 'simulate_trigger')
+    @patch.object(BaseSimulation, 'process_detector_observables')
+    @patch.object(BaseSimulation, 'simulate_gps')
+    def test_simulate_station_response(self, mock_gps, mock_process,
+                                       mock_trigger, mock_detectors):
+        mock_detectors.return_value = sentinel.detector_observables
+        mock_trigger.return_value = sentinel.has_triggered
+        mock_process.return_value = sentinel.station_observables
+        mock_gps.return_value = sentinel.gps_observables
+
+        mock_station = Mock()
+        mock_station.detectors = sentinel.detectors
+
+        self.simulation.simulate_station_response(mock_station,
+                                                  sentinel.parameters)
+
+        # Tests
+        mock_detectors.assert_called_once_with(sentinel.detectors,
+                                               sentinel.parameters)
+
+
 
     @unittest.skip("WIP")
     def test_simulate_detector_response(self, detector, shower_parameters):
