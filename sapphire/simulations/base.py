@@ -133,8 +133,15 @@ class BaseSimulation(object):
         return detector_observables
 
     def simulate_detector_response(self, detector, shower_parameters):
-        """Simulate detector response to a shower."""
+        """Simulate detector response to a shower.
 
+        :param detector: :class:`sapphire.clusters.Detector` instance
+        :param shower_parameters: shower parameters
+
+        :returns: dictionary with keys 'n' (number of particles in
+            detector) and 't' (time of arrival of first detected particle)
+
+        """
         # implement this!
         observables = {'n': 0., 't': -999}
 
