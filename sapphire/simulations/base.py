@@ -107,12 +107,8 @@ class BaseSimulation(object):
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
 
-        detector_observables = []
-        for detector in station.detectors:
-            observables = self.simulate_detector_response(detector,
-                                                          shower_parameters)
-            detector_observables.append(observables)
-
+        detector_observables = self.simulate_all_detectors(
+            station.detectors, shower_parameters)
         has_triggered = self.simulate_trigger(detector_observables)
         station_observables = \
             self.process_detector_observables(detector_observables)
@@ -120,6 +116,21 @@ class BaseSimulation(object):
                                                 shower_parameters, station)
 
         return has_triggered, station_observables
+
+    def simulate_all_detectors(self, detectors, shower_parameters):
+        """Simulate response of all detectors in a station.
+
+        :param detectors: list of detectors
+        :param shower_parameters: parameters of the shower
+
+        """
+        detector_observables = []
+        for detector in detectors:
+            observables = self.simulate_detector_response(detector,
+                                                          shower_parameters)
+            detector_observables.append(observables)
+
+        return detector_observables
 
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower."""
