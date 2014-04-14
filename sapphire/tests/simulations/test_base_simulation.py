@@ -72,7 +72,7 @@ class BaseSimulationTest(unittest.TestCase):
 
         expected = {'core_pos': (None, None), 'zenith': None, 'azimuth': None,
                     'size': None, 'energy': None, 'ext_timestamp': None}
-        self.assertDictEqual(output[0], expected)
+        self.assertEqual(output[0], expected)
 
     @patch.object(BaseSimulation, 'simulate_station_response')
     @patch.object(BaseSimulation, 'store_station_observables')
@@ -102,8 +102,8 @@ class BaseSimulationTest(unittest.TestCase):
 
         # test returned events consists of list of station indexes and
         # stored event indexes
-        self.assertListEqual(events, [(0, sentinel.index1),
-                                      (2, sentinel.index2)])
+        self.assertEqual(events, [(0, sentinel.index1),
+                                  (2, sentinel.index2)])
 
     @patch.object(BaseSimulation, 'simulate_all_detectors')
     @patch.object(BaseSimulation, 'simulate_trigger')
@@ -147,8 +147,8 @@ class BaseSimulationTest(unittest.TestCase):
                     call(sentinel.detector2, sentinel.parameters)]
         self.assertEqual(mock_response.call_args_list, expected)
 
-        self.assertListEqual(observables, [sentinel.observables1,
-                                           sentinel.observables2])
+        self.assertEqual(observables, [sentinel.observables1,
+                                       sentinel.observables2])
 
     @unittest.skip("WIP")
     def test_simulate_detector_response(self, detector, shower_parameters):
