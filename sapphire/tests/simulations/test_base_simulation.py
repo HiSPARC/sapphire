@@ -161,9 +161,17 @@ class BaseSimulationTest(unittest.TestCase):
         has_triggered = self.simulation.simulate_trigger(Mock())
         self.assertIsInstance(has_triggered, bool)
 
-    @unittest.skip("WIP")
-    def test_simulate_gps(self, station_observables, shower_parameters, station):
-        pass
+    def test_simulate_gps(self):
+        mock_observables = Mock()
+        observables = self.simulation.simulate_gps(mock_observables,
+                                                   Mock(), Mock())
+        self.assertEqual(mock_observables.update.call_count, 1)
+        args, kwargs = mock_observables.update.call_args
+        gps_dict = args[0]
+        self.assertIsInstance(gps_dict, dict)
+        self.assertIn('ext_timestamp', gps_dict)
+        self.assertIn('timestamp', gps_dict)
+        self.assertIn('nanoseconds', gps_dict)
 
     @unittest.skip("WIP")
     def test_process_detector_observables(self, detector_observables):
