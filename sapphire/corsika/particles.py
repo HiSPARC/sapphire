@@ -23,6 +23,45 @@ So to find e+/e-:
 
 """
 
+import re
+
+
+def name(particle_id):
+    """Get the name for a CORSIKA particle code
+
+    :param particle_id: code for the particle
+    :return: name of the particle. In case of atoms the weight is added
+             to the name.
+
+    """
+    try:
+        return id[particle_id]
+    except KeyError:
+        return atomic_number[particle_id % 100] + str(int(particle_id / 100))
+
+
+def particle_id(name):
+    """Get the CORSIKA particle code for a partice name
+
+    :param name: name of the particle/atom, for atoms the mass
+                 (neutrons + protons) can be appended to the name.
+    :return: CORSIKA code for the particle.
+             For atoms the code is: A x 100 + Z
+
+    """
+    for pid, particle_name in id.iteritems():
+        if name == particle_name:
+            return pid
+    for z, atom_name in atomic_number.iteritems():
+        # Note; the mass number assumes no neutrons. To get a correct
+        # weight append the weight to the name, e.g. helium4 or carbon14
+        if name == atom_name:
+            return z * 100 + z
+    atom = re.match("^([a-z]+)(\d+)$", name)
+    if not atom is None:
+        return int(atom.group(2)) * 100 + (particle_id(atom.group(1)) % 100)
+
+
 id = {1: 'gamma',
       2: 'positron',
       3: 'electron',
@@ -159,20 +198,28 @@ id = {1: 'gamma',
       195: 'anti_Omega_b_p',
 
       # A x 100 + Z
+      101: 'hydrogen',
       201: 'deuteron',
       301: 'tritium',
       302: 'helium3',
       402: 'alpha',
+      703: 'lithium',
+      904: 'beryllium',
+      1105: 'boron',
       1206: 'carbon',
       1407: 'nitrogen',
       1608: 'oxygen',
       2713: 'aluminium',
       2814: 'silicon',
       3216: 'sulfur',
+      4020: 'calcium',
       5626: 'iron',
+      5828: 'nickel',
 
       9900: 'cherenkov_photons'}
 
+
+# Z numbers
 atomic_number = {1: 'hydrogen',
                  2: 'helium',
                  3: 'lithium',
