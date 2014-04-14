@@ -150,9 +150,11 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertEqual(observables, [sentinel.observables1,
                                        sentinel.observables2])
 
-    @unittest.skip("WIP")
-    def test_simulate_detector_response(self, detector, shower_parameters):
-        pass
+    def test_simulate_detector_response(self):
+        observables = self.simulation.simulate_detector_response(Mock(),
+                                                                 Mock())
+        self.assertIn('n', observables)
+        self.assertIn('t', observables)
 
     @unittest.skip("WIP")
     def test_simulate_trigger(self, detector_observables):
