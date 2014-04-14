@@ -12,8 +12,8 @@
 """
 import warnings
 
-from numpy import pi, Inf, sin, cos, exp, log, arctan, vectorize, \
-                  convolve, linspace, interp, arange
+from numpy import (pi, Inf, sin, cos, exp, log, arctan, vectorize,
+                   convolve, linspace, interp, arange)
 from scipy import integrate, stats
 
 
@@ -40,8 +40,8 @@ def pdf_kernel2(u, lf):
 
 
 class Scintillator(object):
-    thickness = .02 # m
-    xi = 0.172018 # MeV
+    thickness = .02  # m
+    xi = 0.172018  # MeV
     epsilon = 3.10756e-11
     delta = 2.97663
     Euler = 0.577215665
@@ -54,7 +54,6 @@ class Scintillator(object):
     full_domain = linspace(-100, 100, 1000)
     pdf_values = None
     pdf_domain = full_domain.compress(-5 <= full_domain)
-
 
     def landau_pdf(self, Delta):
         lf = Delta / self.xi - self._lf0

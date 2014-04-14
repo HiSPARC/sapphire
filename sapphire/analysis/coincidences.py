@@ -543,7 +543,6 @@ class CoincidencesESD(Coincidences):
             else:
                 row['s%d' % station_id] = True
 
-
             group = self.data.getNode(self.station_groups[station_id])
             event = group.events[event_index]
             observables_idx.append((station_id, event_index))

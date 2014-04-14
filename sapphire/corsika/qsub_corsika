@@ -76,18 +76,6 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
 
     umask 002
-
-    echo "--- PBS job configuration ---"
-    echo "PBS_O_HOST = " \$PBS_O_HOST
-    echo "PBS_O_QUEUE = " \$PBS_O_QUEUE
-    echo "PBS_O_WORKDIR = " \$PBS_O_WORKDIR
-    echo "PBS_ENVIRONMENT = " \$PBS_ENVIRONMENT
-    echo "PBS_JOBID = " \$PBS_JOBID
-    echo "PBS_JOBNAME = " \$PBS_JOBNAME
-    echo "PBS_NODEFILE = " \$PBS_NODEFILE
-    echo "PBS_QUEUE = " \$PBS_QUEUE
-    echo "-----------------------------"
-
     export PATH=\${{PBS_O_PATH}}
 
     # Run CORSIKA
@@ -101,9 +89,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     # End of Stoomboot script
 
     chmod ug+x $SCRIPT
-
     qsub -N ${{NAME}} -q {queue} {walltime} -V -z -j oe -d {rundir} $SCRIPT
-
     rm $SCRIPT""")
 
 

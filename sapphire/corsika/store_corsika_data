@@ -51,21 +51,21 @@ def save_particle(row, p):
     row.append()
 
 
-def store_corsika_data(source, destination, table_name='groundparticles'):
-
+def store_corsika_data(source, destination, table_name='groundparticles',
+                       progress=False):
     """Store particles from a CORSIKA simulation in a HDF5 file
 
     :param source: CorsikaFile instance of the source DAT file
     :param destination: PyTables file instance of the destination file
 
     """
-
     print "Storing CORSIKA data (%s) in %s" % (source._filename,
                                                destination.filename)
     source.check()
 
     for event in source.get_events():
         n_particles = event.get_end().n_particles_levels
+        progress = progress and n_particles > 1
         try:
             table = destination.createTable('/', table_name, GroundParticles,
                                             'All groundparticles',
@@ -73,18 +73,22 @@ def store_corsika_data(source, destination, table_name='groundparticles'):
         except tables.NodeError:
             print '%s already exists, doing nothing' % table_name
             return
-        pbar = progressbar.ProgressBar(maxval=n_particles - 1,
-                                       widgets=[progressbar.Percentage(),
-                                                progressbar.Bar(),
-                                                progressbar.ETA()]).start()
-        prev_update = 0
+        if progress:
+            pbar = progressbar.ProgressBar(maxval=n_particles - 1,
+                                           widgets=[progressbar.Percentage(),
+                                                    progressbar.Bar(),
+                                                    progressbar.ETA()]).start()
+
         particle_row = table.row
         for row, particle in enumerate(event.get_particles()):
             save_particle(particle_row, particle)
-            if row - prev_update > 5000:
+            if progress and not row % 5000:
                 pbar.update(row)
-                prev_update = row
-        pbar.finish()
+            if not row % 1000000:
+                table.flush()
+
+        if progress:
+            pbar.finish()
 
     table.flush()
 
@@ -94,12 +98,10 @@ def store_corsika_data(source, destination, table_name='groundparticles'):
         event_header = event.get_header()
         event_end = event.get_end()
 
-    table._v_attrs.run_header = run_header
-    table._v_attrs.run_end = run_end
-    table._v_attrs.event_header = event_header
-    table._v_attrs.event_end = event_end
-
-    table.flush()
+    destination.root._v_attrs.run_header = run_header
+    destination.root._v_attrs.run_end = run_end
+    destination.root._v_attrs.event_header = event_header
+    destination.root._v_attrs.event_end = event_end
 
 
 def create_index(hdf_data, table_name='groundparticles'):
@@ -123,6 +125,8 @@ if __name__ == '__main__':
                         help="path of the HDF5 destination file")
     parser.add_argument('--overwrite', action='store_true',
                         help='overwrite destination file it is already exists')
+    parser.add_argument('--progress', action='store_true',
+                        help='show progressbar during conversion')
     args = parser.parse_args()
 
     corsika_data = corsika.CorsikaFile(args.source)
@@ -131,6 +135,6 @@ if __name__ == '__main__':
     else:
         mode = 'a'
     with tables.openFile(args.destination, mode) as hdf_data:
-        store_corsika_data(corsika_data, hdf_data)
+        store_corsika_data(corsika_data, hdf_data, progress=args.progress)
     with tables.openFile(args.destination, 'a') as hdf_data:
         create_index(hdf_data)

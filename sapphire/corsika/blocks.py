@@ -384,7 +384,8 @@ class EventEnd(object):
 
         self.NKG_level_height_mass = numpy.array(subblock[215:225])
         self.NKG_level_height_distance = numpy.array(subblock[225:235])
-        self.NKG_distance_bins_local_pseudo_age = numpy.array(subblock[235:245]) * units.cm
+        self.NKG_distance_bins_local_pseudo_age = \
+            numpy.array(subblock[235:245]) * units.cm
         self.NKG_local_pseudo_age_2 = numpy.array(subblock[245:255])
 
         # Longitudinal distribution
