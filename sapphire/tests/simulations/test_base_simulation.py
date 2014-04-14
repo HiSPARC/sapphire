@@ -173,9 +173,19 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertIn('timestamp', gps_dict)
         self.assertIn('nanoseconds', gps_dict)
 
-    @unittest.skip("WIP")
-    def test_process_detector_observables(self, detector_observables):
-        pass
+    def test_process_detector_observables(self):
+        detector_observables = [{'n': 1., 't': 2., 'pulseheights': 3.,
+                                 'integrals': 4.},
+                                {'n': 5., 't': 6., 'pulseheights': 7.,
+                                 'integrals': 8.}]
+
+        expected = {'n1': 1., 'n2': 5., 't1': 2., 't2': 6.,
+                    'pulseheights': [3., 7., -1., -1.],
+                    'integrals': [4., 8., -1, -1]}
+        actual = self.simulation.process_detector_observables(
+            detector_observables)
+
+        self.assertEqual(expected, actual)
 
     @unittest.skip("WIP")
     def test_store_station_observables(self, station_id, station_observables):
