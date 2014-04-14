@@ -153,6 +153,7 @@ class BaseSimulationTest(unittest.TestCase):
     def test_simulate_detector_response(self):
         observables = self.simulation.simulate_detector_response(Mock(),
                                                                  Mock())
+        self.assertIsInstance(observables, dict)
         self.assertIn('n', observables)
         self.assertIn('t', observables)
 
