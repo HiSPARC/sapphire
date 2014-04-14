@@ -119,14 +119,20 @@ class BaseSimulationTest(unittest.TestCase):
         mock_station = Mock()
         mock_station.detectors = sentinel.detectors
 
-        self.simulation.simulate_station_response(mock_station,
-                                                  sentinel.parameters)
+        has_triggered, station_observables = \
+            self.simulation.simulate_station_response(mock_station,
+                                                      sentinel.parameters)
 
         # Tests
         mock_detectors.assert_called_once_with(sentinel.detectors,
                                                sentinel.parameters)
-
-
+        mock_trigger.assert_called_once_with(sentinel.detector_observables)
+        mock_process.assert_called_once_with(sentinel.detector_observables)
+        mock_gps.assert_called_once_with(sentinel.station_observables,
+                                         sentinel.parameters,
+                                         mock_station)
+        self.assertIs(has_triggered, sentinel.has_triggered)
+        self.assertIs(station_observables, sentinel.gps_observables)
 
     @unittest.skip("WIP")
     def test_simulate_detector_response(self, detector, shower_parameters):
