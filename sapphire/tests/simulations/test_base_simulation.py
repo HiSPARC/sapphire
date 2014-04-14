@@ -157,9 +157,9 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertIn('n', observables)
         self.assertIn('t', observables)
 
-    @unittest.skip("WIP")
-    def test_simulate_trigger(self, detector_observables):
-        pass
+    def test_simulate_trigger(self):
+        has_triggered = self.simulation.simulate_trigger(Mock())
+        self.assertIsInstance(has_triggered, bool)
 
     @unittest.skip("WIP")
     def test_simulate_gps(self, station_observables, shower_parameters, station):
