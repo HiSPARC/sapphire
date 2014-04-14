@@ -134,6 +134,22 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertIs(has_triggered, sentinel.has_triggered)
         self.assertIs(station_observables, sentinel.gps_observables)
 
+    @patch.object(BaseSimulation, 'simulate_detector_response')
+    def test_simulate_all_detectors(self, mock_response):
+        detectors = [sentinel.detector1, sentinel.detector2]
+        mock_response.side_effect = [sentinel.observables1,
+                                     sentinel.observables2]
+
+        observables = self.simulation.simulate_all_detectors(detectors,
+            sentinel.parameters)
+
+        expected = [call(sentinel.detector1, sentinel.parameters),
+                    call(sentinel.detector2, sentinel.parameters)]
+        self.assertEqual(mock_response.call_args_list, expected)
+
+        self.assertListEqual(observables, [sentinel.observables1,
+                                           sentinel.observables2])
+
     @unittest.skip("WIP")
     def test_simulate_detector_response(self, detector, shower_parameters):
         pass
