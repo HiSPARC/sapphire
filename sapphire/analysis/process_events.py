@@ -49,6 +49,7 @@ ADC_TIME_PER_SAMPLE = 2.5e-9
 
 
 class ProcessEvents(object):
+
     """Process HiSPARC events to obtain several observables.
 
     This class can be used to process a set of HiSPARC events and adds a
@@ -56,6 +57,7 @@ class ProcessEvents(object):
     the detector to a copy of the event table.
 
     """
+
     processed_events_description = {
         'event_id': tables.UInt32Col(pos=0),
         'timestamp': tables.Time32Col(pos=1),
@@ -78,7 +80,6 @@ class ProcessEvents(object):
         'n2': tables.Float32Col(pos=18, dflt=-1),
         'n3': tables.Float32Col(pos=19, dflt=-1),
         'n4': tables.Float32Col(pos=20, dflt=-1)}
-
 
     def __init__(self, data, group, source=None):
         """Initialize the class.
@@ -490,6 +491,7 @@ class ProcessEvents(object):
 
 
 class ProcessIndexedEvents(ProcessEvents):
+
     """Process a subset of events using an index.
 
     This is a subclass of :class:`ProcessEvents`.  Using an index, this
@@ -497,6 +499,7 @@ class ProcessIndexedEvents(ProcessEvents):
     example, this class can only process events making up a coincidence.
 
     """
+
     def __init__(self, data, group, indexes, source=None):
         """Initialize the class.
 
@@ -544,12 +547,14 @@ class ProcessIndexedEvents(ProcessEvents):
 
 
 class ProcessEventsWithLINT(ProcessEvents):
+
     """Process events using LInear INTerpolation for arrival times.
 
     This is a subclass of :class:`ProcessEvents`.  Use a linear
     interpolation method to determine the arrival times of particles.
 
     """
+
     def _reconstruct_time_from_trace(self, trace, baseline):
         """Reconstruct time of measurement from a trace (LINT timings).
 
@@ -576,16 +581,19 @@ class ProcessEventsWithLINT(ProcessEvents):
 
 
 class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
+
     """Process a subset of events using LInear INTerpolation.
 
     This is a subclass of :class:`ProcessIndexedEvents` and
     :class:`ProcessEventsWithLint`.
 
     """
+
     pass
 
 
 class ProcessEventsWithoutTraces(ProcessEvents):
+
     """Process events without traces
 
     This is a subclass of :class:`ProcessEvents`.  Processing events
@@ -595,6 +603,7 @@ class ProcessEventsWithoutTraces(ProcessEvents):
     processing time and data size.
 
     """
+
     def _store_results_from_traces(self):
         """Fake storing results from traces."""
 
@@ -603,6 +612,7 @@ class ProcessEventsWithoutTraces(ProcessEvents):
 
 class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
                                         ProcessIndexedEvents):
+
     """Process a subset of events without traces
 
     This is a subclass of :class:`ProcessIndexedEvents` and
@@ -613,14 +623,25 @@ class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
     processing time and data size.
 
     """
+
     pass
 
 
 class ProcessEventsWithTriggerOffset(ProcessEvents):
-    """Process events and reconstruct trigger time from traces"""
+
+    """Process events and reconstruct trigger time from traces
+
+    The trigger times are stored in the columnt_trigger, they are
+    relative to the start of traces, just like the t# columns.
+
+    If no trigger can be found, possibly due to the data filter,
+    a value of -999 will be entered.
+
+    """
 
     def __init__(self, data, group, source=None):
-        super(ProcessEventsWithTriggerOffset, self).__init__(data, group, source)
+        super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
+                                                             source)
 
         trigger_column = {'t_trigger': tables.Float32Col(pos=21, dflt=-1)}
         self.processed_events_description.update(trigger_column)
@@ -703,8 +724,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                                                             ADC_HIGH_THRESHOLD))
                 if not high_idx[-1] == -999:
                     high_idx[-1] += low_idx[-1]
-        low_idx = [idx for idx in low_idx if idx != -999]
-        high_idx = [idx for idx in high_idx if idx != -999]
+        low_idx = [idx for idx in low_idx if not idx == -999]
+        high_idx = [idx for idx in high_idx if not idx == -999]
         low_idx.sort()
         high_idx.sort()
 
