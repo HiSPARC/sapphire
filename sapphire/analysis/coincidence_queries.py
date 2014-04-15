@@ -32,6 +32,7 @@ class CoincidenceQuery(object):
         events = cq.all_events(coincidences)
         specific_events = cq.events_from_stations(coincidences,
                                                   [501, 502, 503, 504])
+        cq.data.close()
 
     """
 
@@ -190,7 +191,7 @@ class CoincidenceQuery(object):
 
         """
         network = api.Network()
-        stations = [s['number'] for s in network.stations(cluster=cluster)]
+        stations = network.stations_numbers(cluster=cluster)
         filtered_events = self.events_from_stations(coincidences, stations)
 
         return filtered_events
