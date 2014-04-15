@@ -122,8 +122,7 @@ class CorsikaBatch(object):
     def __init__(self, energy=16, particle='proton', zenith=22.5, azimuth=180,
                  queue='generic', corsika='corsika74000Linux_QGSII_gheisha'):
         self.energy = energy - 9  # Stored as log10(E[GeV])
-        self.particle = [i for i, p in particles.id.items()
-                         if p == particle][0]  # Stored as particle id
+        self.particle = particles.particle_id(particle)  # Stored as particle id
         self.theta = zenith
         self.phi = azimuth - 180  # Stored as phi defined by CORSIKA
         self.queue = queue

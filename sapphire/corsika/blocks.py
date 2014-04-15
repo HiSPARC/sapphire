@@ -175,7 +175,7 @@ class EventHeader(object):
         self.id = subblock[0]
         self.event_number = subblock[1]
         self.particle_id = subblock[2]
-        self.particle = particles.id[subblock[2]]
+        self.particle = particles.name(subblock[2])
         self.energy = subblock[3] * units.GeV
         self.starting_altitude = subblock[4] * units.g / units.cm2
         self.first_target = subblock[5]
@@ -456,7 +456,7 @@ class ParticleData(object):
         self.id = self.description / 1000
         self.r = math.sqrt(self.x ** 2 + self.y ** 2)
         self.is_particle = 0 < self.id < 200
-        self.particle = particles.id[self.id] if self.is_particle else None
+        self.particle = particles.name(self.id) if self.is_particle else None
         self.is_detectable = self.particle in ['positron', 'electron',
                                                'muon_p', 'muon_m']  # + 'gamma'
 
@@ -493,7 +493,7 @@ class ParticleData(object):
     @property
     def atom(self):
         if self.is_nucleus:
-            return particles.atomic_number[self.atomic_number]
+            return particles.name(self.atomic_number)
         else:
             return None
 
