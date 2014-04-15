@@ -269,12 +269,12 @@ def check_queue(queue):
     :return: boolean, True if slots are available, False otherwise.
 
     """
-    all_jobs = int(subprocess.check_output('qstat | grep {queue} | grep [QR] |'
-                                           ' wc -l' .format(queue=queue),
-                                           shell=True))
-    user_jobs = int(subprocess.check_output('qstat -u $USER | grep {queue}'
-                                            ' | wc -l'.format(queue=queue),
-                                            shell=True))
+    all_jobs = int(subprocess.check_output('qstat | grep {queue} | '
+                                           'grep " [QR] " | wc -l'
+                                           .format(queue=queue), shell=True))
+    user_jobs = int(subprocess.check_output('qstat -u $USER | grep {queue} | '
+                                            'grep " [QR] " | wc -l'
+                                            .format(queue=queue), shell=True))
 
     if queue == 'express':
         return 2 - user_jobs
