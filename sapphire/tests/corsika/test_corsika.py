@@ -52,7 +52,7 @@ class CorsikaFileTests(unittest.TestCase):
         header = event.get_header()
         self.assertIsInstance(header, corsika.blocks.EventHeader)
         self.assertEqual(header.id, 'EVTH')
-        self.assertEqual(corsika.particles.id[header.particle_id], 'proton')
+        self.assertEqual(corsika.particles.name(header.particle_id), 'proton')
         self.assertEqual(header.energy, 1e14)
         self.assertEqual(header.hadron_model_high, 'QGSJET')
 
@@ -75,12 +75,12 @@ class CorsikaFileTests(unittest.TestCase):
         particle = particles.next()
         self.assertIsInstance(particle, tuple)
         self.assertEqual(len(particle), 11)
-        self.assertEqual(corsika.particles.id[particle[6]], 'muon_p')
+        self.assertEqual(corsika.particles.name(particle[6]), 'muon_p')
         self.assertAlmostEqual(particle[3], -172.535859375)
         self.assertAlmostEqual(particle[4], 56.2846679688)
         self.assertAlmostEqual(particle[7], 181.484397728)
         particle = particles.next()
-        self.assertEqual(corsika.particles.id[particle[6]], 'muon_m')
+        self.assertEqual(corsika.particles.name(particle[6]), 'muon_m')
 
 
 if __name__ == '__main__':

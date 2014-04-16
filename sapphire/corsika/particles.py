@@ -14,11 +14,12 @@ So to find e+/e-:
     from sapphire.corsika import particles
 
     particle.id = 2
-    if particles.id[particle.id] in ['positron', 'electron']:
+    if particles.name(particle.id) in ['positron', 'electron']:
         pass
+
     particle.id = 1206
     if particle.id > 200:
-        print 'atom: %s' % particles.atomic_number[particle.id % 100]
+        print 'atom: %s' % particles.ATOMIC_NUMBER[particle.id % 100]
 
 
 """
@@ -35,9 +36,9 @@ def name(particle_id):
 
     """
     try:
-        return id[particle_id]
+        return ID[particle_id]
     except KeyError:
-        return atomic_number[particle_id % 100] + str(int(particle_id / 100))
+        return ATOMIC_NUMBER[particle_id % 100] + str(int(particle_id / 100))
 
 
 def particle_id(name):
@@ -49,10 +50,10 @@ def particle_id(name):
              For atoms the code is: A x 100 + Z
 
     """
-    for pid, particle_name in id.iteritems():
+    for pid, particle_name in ID.iteritems():
         if name == particle_name:
             return pid
-    for z, atom_name in atomic_number.iteritems():
+    for z, atom_name in ATOMIC_NUMBER.iteritems():
         # Note; the mass number assumes no neutrons. To get a correct
         # weight append the weight to the name, e.g. helium4 or carbon14
         if name == atom_name:
@@ -62,7 +63,7 @@ def particle_id(name):
         return int(atom.group(2)) * 100 + (particle_id(atom.group(1)) % 100)
 
 
-id = {1: 'gamma',
+ID = {1: 'gamma',
       2: 'positron',
       3: 'electron',
       4: 'neutrino',  # No longer used?
@@ -220,7 +221,7 @@ id = {1: 'gamma',
 
 
 # Z numbers
-atomic_number = {1: 'hydrogen',
+ATOMIC_NUMBER = {1: 'hydrogen',
                  2: 'helium',
                  3: 'lithium',
                  4: 'beryllium',
