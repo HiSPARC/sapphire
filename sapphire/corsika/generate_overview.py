@@ -3,6 +3,7 @@ import tables
 import glob
 import logging
 import shutil
+import argparse
 
 import progressbar as pb
 
@@ -77,20 +78,19 @@ def read_seeds(simulations_table, seeds):
                 end = corsika_data.root._v_attrs.event_end
                 write_row(simulations_table, seeds, header, end)
             except AttributeError:
-                logger.info('Missing attribute (header or end) for %s' %
-                            seeds)
+                logger.info('%19s: Missing attribute (header or end).' % seeds)
     except (IOError, tables.HDF5ExtError):
-        logger.info('Unable to open file for %s' % seeds)
+        logger.info('%19s: Unable to open file.' % seeds)
 
 
-def get_simulations(simulations, overview):
+def get_simulations(simulations, overview, progress=False):
     """Get the information of the simulations and create a table."""
 
     simulations_table = overview.getNode('/simulations')
-    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
-    for seeds in progress(simulations):
-        if progress.currval % 5000 == 0:
-            simulations_table.flush()
+    if progress:
+        pbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
+        simulations = pbar(simulations)
+    for seeds in simulations:
         read_seeds(simulations_table, seeds)
     simulations_table.flush()
 
@@ -115,13 +115,19 @@ def move_tempfile_to_destination():
     shutil.move(tmp_path, data_path)
 
 
-def generate_simulation_overview():
+def generate_simulation_overview(progress=False):
+    logger.info('Getting simulation list.')
     simulations = os.walk(DATA_PATH).next()[1]
     overview = prepare_output(len(simulations))
-    get_simulations(simulations, overview)
+    get_simulations(simulations, overview, progress=progress)
     overview.close()
     move_tempfile_to_destination()
+    logger.info('Finished generating overview.')
 
 
 if __name__ == '__main__':
-    generate_simulation_overview()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--progress', action='store_true',
+                        help='show progressbar during generation')
+    args = parser.parse_args()
+    generate_simulation_overview(progress=args.progress)
