@@ -67,7 +67,7 @@ class Coincidences(object):
     ProcessWithoutTraces = process_events.ProcessIndexedEventsWithoutTraces
 
     def __init__(self, data, coincidence_group, station_groups,
-                 overwrite=False):
+                 overwrite=False, progress=True):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -76,6 +76,8 @@ class Coincidences(object):
             data.
         :param overwrite: if True, overwrite a previous coincidences
             group.
+        :param progress: if True, show a progressbar while storing
+            coincidences.
 
         """
         self.data = data
@@ -94,6 +96,7 @@ class Coincidences(object):
 
         self.trig_threshold = .5
         self.overwrite = overwrite
+        self.progress = progress
 
     def search_and_store_coincidences(self, cluster=None):
         """Search, process and store coincidences.
@@ -215,9 +218,13 @@ class Coincidences(object):
 
         # ProgressBar does not work for empty iterables.
         if len(self.coincidence_group._src_c_index):
-            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                      pb.ETA()])
-            for coincidence in progress(self.coincidence_group._src_c_index):
+            if self.progress:
+                progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                                   pb.ETA()])
+                src_c_index = progress(self.coincidence_group._src_c_index)
+            else:
+                src_c_index = self.coincidence_group._src_c_index
+            for coincidence in src_c_index:
                 self._store_coincidence(coincidence)
         else:
             print "Creating empty tables, no coincidences found"
@@ -492,9 +499,13 @@ class CoincidencesESD(Coincidences):
 
         # ProgressBar does not work for empty iterables.
         if len(self._src_c_index):
-            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                      pb.ETA()])
-            for coincidence in progress(self._src_c_index):
+            if self.progress:
+                progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                                   pb.ETA()])
+                src_c_index = progress(self._src_c_index)
+            else:
+                src_c_index = self._src_c_index
+            for coincidence in src_c_index:
                 self._store_coincidence(coincidence)
         else:
             print "Creating empty tables, no coincidences found"
