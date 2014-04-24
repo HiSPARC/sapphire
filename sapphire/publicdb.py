@@ -15,7 +15,7 @@ import calendar
 import re
 
 import logging
-logging.basicConfig(level=logging.INFO)
+
 logger = logging.getLogger('hisparc.publicdb')
 
 #PUBLICDB_XMLRPC_URL = 'http://localhost:8000/raw_data/rpc'
