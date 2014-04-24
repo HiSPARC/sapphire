@@ -29,7 +29,6 @@ import datetime
 from urllib2 import urlopen, HTTPError, URLError
 import json
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('api')
 
 API = {"stations": 'stations/',
