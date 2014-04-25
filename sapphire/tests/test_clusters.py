@@ -199,8 +199,10 @@ class BaseClusterTests(unittest.TestCase):
             pos = Mock(name='pos')
             angle = Mock(name='angle')
             detector_list = Mock(name='detector_list')
-            cluster._add_station(pos, angle, detector_list)
-            mock_station.assert_called_with(cluster, 1, pos, angle, detector_list)
+            number = Mock(name='number')
+            cluster._add_station(pos, angle, detector_list, number)
+            mock_station.assert_called_with(cluster, 0, pos, angle,
+                                            detector_list, number)
 
     def test_attributes(self):
         with patch('sapphire.clusters.Station') as mock_station:
