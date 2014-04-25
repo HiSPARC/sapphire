@@ -100,9 +100,9 @@ def create_table(file, group):
 
     if group not in file:
         head, tail = os.path.split(group)
-        file.createGroup(head, tail)
+        file.create_group(head, tail)
 
-    return file.createTable(group, 'events', description)
+    return file.create_table(group, 'events', description)
 
 
 def read_line_and_store_event(line, table):

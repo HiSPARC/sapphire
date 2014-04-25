@@ -15,7 +15,7 @@ class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
         """Verify that simulation output matches prerecorded output"""
 
         data_path = self.create_tempfile_from_testdata()
-        self.data = tables.openFile(data_path, 'a')
+        self.data = tables.open_file(data_path, 'a')
 
         self.create_test_simulation_output()
         self.validate_simulation_results()
@@ -38,10 +38,10 @@ class GroundParticlesSimulationAcceptanceTest(unittest.TestCase):
 
     def validate_simulation_results(self):
         expected_path = os.path.join('/simulations', self.sim)
-        expected = self.data.getNode(expected_path)
+        expected = self.data.get_node(expected_path)
 
         actual_path = os.path.join('/test_output', self.sim)
-        actual = self.data.getNode(actual_path)
+        actual = self.data.get_node(actual_path)
 
         self.validate_column_data(expected.observables, actual.observables)
         self.validate_column_data(expected.coincidences, actual.coincidences)

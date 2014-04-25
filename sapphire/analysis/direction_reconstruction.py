@@ -25,13 +25,13 @@ class DirectionReconstruction(object):
             if not overwrite:
                 raise RuntimeError("Reconstruction table %s already exists" % table_path)
             else:
-                self.data.removeNode(group, tablename)
+                self.data.remove_node(group, tablename)
 
         table = self._create_output_table(group, tablename)
         return table
 
     def _create_output_table(self, group, tablename):
-        table = self.data.createTable(group, tablename,
+        table = self.data.create_table(group, tablename,
                                       storage.ReconstructedEvent,
                                       createparents=True)
         return table
@@ -39,13 +39,13 @@ class DirectionReconstruction(object):
     def reconstruct_angles_for_shower_group(self, groupname):
         """Reconstruct angles from simulation for minimum particle density"""
 
-        shower_group = self.data.getNode(groupname)
+        shower_group = self.data.get_node(groupname)
 
         progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                               pb.ETA()],
                                      fd=sys.stderr)
 
-        for shower in progressbar(self.data.listNodes(shower_group)):
+        for shower in progressbar(self.data.list_nodes(shower_group)):
             self.reconstruct_angles(shower)
 
 
@@ -266,18 +266,18 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
 
 class KascadeDirectionReconstruction(DirectionReconstruction):
     def _create_output_table(self, group, tablename):
-        table = self.data.createTable(group, tablename,
+        table = self.data.create_table(group, tablename,
                                       storage.ReconstructedKascadeEvent,
                                       createparents=True)
         return table
 
     def reconstruct_angles(self, hisparc_group, kascade_group,
                            hisparc_table='events', offsets=None):
-        hisparc_group = self.data.getNode(hisparc_group)
+        hisparc_group = self.data.get_node(hisparc_group)
 
-        hisparc_table = self.data.getNode(hisparc_group, hisparc_table)
-        c_index = self.data.getNode(kascade_group, 'c_index')
-        kascade_table = self.data.getNode(kascade_group, 'events')
+        hisparc_table = self.data.get_node(hisparc_group, hisparc_table)
+        c_index = self.data.get_node(kascade_group, 'c_index')
+        kascade_table = self.data.get_node(kascade_group, 'events')
 
         self.station, = hisparc_group._v_attrs.cluster.stations
         if not 'cluster' in self.results_table.attrs:

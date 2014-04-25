@@ -70,7 +70,7 @@ def store_corsika_data(source, destination, table_name='groundparticles'):
     for event in source.get_events():
         n_particles = event.get_end().n_particles_levels
         try:
-            table = destination.createTable('/', table_name, GroundParticles,
+            table = destination.create_table('/', table_name, GroundParticles,
                                             'All groundparticles',
                                             expectedrows=n_particles)
         except tables.NodeError:
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     corsika_data = corsika.CorsikaFile(SOURCE_FILE)
 
     # Destination
-    hdf_data = tables.openFile(DEST_FILE, 'w')
+    hdf_data = tables.open_file(DEST_FILE, 'w')
 
     store_corsika_data(corsika_data, hdf_data)
 

@@ -42,7 +42,7 @@ class GroundParticlesSimulation(BaseSimulation):
         """
 
         try:
-            self.grdpcles = data.getNode(grdpcles)
+            self.grdpcles = data.get_node(grdpcles)
         except tables.NoSuchNodeError:
             raise RuntimeError("Cancelling simulation; %s not found in "
                                 "tree." % grdpcles)
@@ -103,7 +103,7 @@ class GroundParticlesSimulation(BaseSimulation):
         b21, line2, b22 = self.get_line_boundary_eqs(c[1], c[2], c[3])
 
         # particles satisfying all equations are inside the detector
-        return self.grdpcles.readWhere("(b11 < %s) & (%s < b12) & "
+        return self.grdpcles.read_where("(b11 < %s) & (%s < b12) & "
                                        "(b21 < %s) & (%s < b22)" % \
                                        (line1, line1, line2, line2))
 
@@ -168,9 +168,9 @@ class GroundParticlesSimulation(BaseSimulation):
         if not positions:
             positions = self.generate_positions()
 
-        self.headers = self.data.createTable(self.output, '_headers',
+        self.headers = self.data.create_table(self.output, '_headers',
                                              storage.SimulationEventHeader)
-        self.particles = self.data.createTable(self.output, '_particles',
+        self.particles = self.data.create_table(self.output, '_particles',
                                                storage.SimulationParticle)
 
         progress = pb.ProgressBar(maxval=self.N, widgets=[pb.Percentage(),

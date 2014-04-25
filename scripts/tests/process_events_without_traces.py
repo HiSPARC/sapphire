@@ -15,7 +15,7 @@ from sapphire.analysis import process_events
 
 
 if __name__ == '__main__':
-    data = tables.openFile('testdata.h5', 'a')
+    data = tables.open_file('testdata.h5', 'a')
     if '/s501' not in data:
         download_data(data, '/s501', 501, datetime.datetime(2013, 1, 1),
                       datetime.datetime(2013, 1, 2), get_blobs=False)

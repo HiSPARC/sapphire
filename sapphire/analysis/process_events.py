@@ -21,7 +21,7 @@
         if __name__ == '__main__':
             station_groups = ['/s%d' % u for u in STATIONS]
 
-            data = tables.openFile('data.h5', 'w')
+            data = tables.open_file('data.h5', 'w')
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END, get_blobs=True)
                 proc = process_events.ProcessEvents(data, group)
@@ -92,7 +92,7 @@ class ProcessEvents(object):
 
         """
         self.data = data
-        self.group = data.getNode(group)
+        self.group = data.get_node(group)
         self.source = self._get_source(source)
 
     def process_and_store_results(self, destination=None, overwrite=False,
@@ -155,7 +155,7 @@ class ProcessEvents(object):
             else:
                 source = self.group.events
         else:
-            source = self.data.getNode(self.group, source)
+            source = self.data.get_node(self.group, source)
         return source
 
     def _check_destination(self, destination, overwrite):
@@ -218,12 +218,12 @@ class ProcessEvents(object):
             the destination table.
 
         """
-        tmptable = self.data.createTable(self.group, 't__events',
+        tmptable = self.data.create_table(self.group, 't__events',
                                          description=table.description)
-        selected_rows = table.readCoordinates(row_ids)
+        selected_rows = table.read_coordinates(row_ids)
         tmptable.append(selected_rows)
         tmptable.flush()
-        self.data.renameNode(tmptable, table.name, overwrite=True)
+        self.data.rename_node(tmptable, table.name, overwrite=True)
         return tmptable
 
     def _normalize_event_ids(self, events):
@@ -238,7 +238,7 @@ class ProcessEvents(object):
 
         """
         row_ids = range(len(events))
-        events.modifyColumn(column=row_ids, colname='event_id')
+        events.modify_column(column=row_ids, colname='event_id')
 
     def _create_results_table(self):
         """Create results table containing the events."""
@@ -255,8 +255,8 @@ class ProcessEvents(object):
             length = len(self.source)
 
         if '_t_events' in self.group:
-            self.data.removeNode(self.group, '_t_events')
-        table = self.data.createTable(self.group, '_t_events',
+            self.data.remove_node(self.group, '_t_events')
+        table = self.data.create_table(self.group, '_t_events',
                                       self.processed_events_description,
                                       expectedrows=length)
 
@@ -463,13 +463,13 @@ class ProcessEvents(object):
             self.source = self.group._events
 
         if self.destination in self.group:
-            self.data.removeNode(self.group, self.destination)
+            self.data.remove_node(self.group, self.destination)
         self._tmp_events.rename(self.destination)
 
     def determine_detector_timing_offsets(self, timings_table='events'):
         """Determine the offsets between the station detectors."""
 
-        table = self.data.getNode(self.group, timings_table)
+        table = self.data.get_node(self.group, timings_table)
         t2 = table.col('t2')
 
         gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)

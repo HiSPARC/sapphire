@@ -6,7 +6,7 @@ from itertools import izip
 def plot_ldf_and_models(data, group):
     global binned_densities
     clf()
-    particles = data.getNode(group)
+    particles = data.get_node(group)
 
     bins = logspace(1, 3, 50)
     x = (bins[:-1] + bins[1:]) / 2
@@ -44,7 +44,7 @@ def plot_ldf_and_models(data, group):
 
 
 def plot_ldf_ldf(data, group):
-    group = data.getNode(group)
+    group = data.get_node(group)
 
     bins = logspace(1, 3, 50)
     x = (bins[:-1] + bins[1:]) / 2
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('data-e15-S250.h5', 'r')
+        data = tables.open_file('data-e15-S250.h5', 'r')
 
     sim = data.root.simulations.E_1PeV.zenith_0
     plot_ldf_and_models(data, '/showers/E_1PeV/zenith_0/electrons')

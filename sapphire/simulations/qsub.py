@@ -58,8 +58,8 @@ class QSubSimulation(GroundParticlesSimulation):
             hash = hashlib.sha1(str(time.time()) + str(i)).hexdigest()[:8]
             hashes.append(hash)
 
-            data = tables.openFile(JOB_FILE % hash, 'w')
-            data.createArray('/', 'positions', batch)
+            data = tables.open_file(JOB_FILE % hash, 'w')
+            data.create_array('/', 'positions', batch)
             data.root._v_attrs.cluster = self.cluster
             data.root._v_attrs.data = self.data.filename
             data.root._v_attrs.grdpcles = self.grdpcles._v_pathname
@@ -175,16 +175,16 @@ class QSubSimulation(GroundParticlesSimulation):
     def collect_results(self, hashes):
         """Collect all results into main HDF5 file"""
 
-        headers = self.data.createTable(self.output, '_headers',
+        headers = self.data.create_table(self.output, '_headers',
                                          storage.SimulationEventHeader)
-        particles = self.data.createTable(self.output, '_particles',
+        particles = self.data.create_table(self.output, '_particles',
                                          storage.SimulationParticle)
 
         base_id = 0
         for hash in hashes:
-            job_data = tables.openFile(JOB_FILE % hash, 'r')
-            job_headers = job_data.getNode(self.output, '_headers').read()
-            job_particles = job_data.getNode(self.output,
+            job_data = tables.open_file(JOB_FILE % hash, 'r')
+            job_headers = job_data.get_node(self.output, '_headers').read()
+            job_particles = job_data.get_node(self.output,
                                              '_particles').read()
 
             job_headers['id'] += base_id
@@ -235,7 +235,7 @@ class QSubChild(GroundParticlesSimulation):
 
         output = attrs.output
         head, tail = os.path.split(output)
-        self.output = self.data.createGroup(head, tail,
+        self.output = self.data.create_group(head, tail,
                                             createparents=True)
 
         self.attr_shower_data = attrs.data
@@ -248,15 +248,15 @@ class QSubChild(GroundParticlesSimulation):
         simulation
 
         """
-        shower_data = tables.openFile(self.attr_shower_data, 'r')
-        self.grdpcles = shower_data.getNode(self.attr_grdpcles)
+        shower_data = tables.open_file(self.attr_shower_data, 'r')
+        self.grdpcles = shower_data.get_node(self.attr_grdpcles)
 
         self._run_welcome_msg()
         positions = self.data.root.positions.read()
 
-        self.headers = self.data.createTable(self.output, '_headers',
+        self.headers = self.data.create_table(self.output, '_headers',
                                              storage.SimulationEventHeader)
-        self.particles = self.data.createTable(self.output, '_particles',
+        self.particles = self.data.create_table(self.output, '_particles',
                                                storage.SimulationParticle)
 
         N = 0
@@ -281,7 +281,7 @@ if __name__ == '__main__':
     hash = os.environ['JOB_HASH']
     print "Running job", hash
 
-    data = tables.openFile(JOB_FILE % hash, 'a')
+    data = tables.open_file(JOB_FILE % hash, 'a')
     sim = QSubChild(data, hash)
     sim.run()
     data.close()

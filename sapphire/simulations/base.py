@@ -49,15 +49,15 @@ class BaseSimulation(object):
             raise RuntimeError("Cancelling simulation; %s already exists?"
                                % output)
         elif output in data:
-            data.removeNode(output, recursive=True)
+            data.remove_node(output, recursive=True)
 
         head, tail = os.path.split(output)
-        self.output = data.createGroup(head, tail, createparents=True)
-        self.observables = self.data.createTable(self.output, 'observables',
+        self.output = data.create_group(head, tail, createparents=True)
+        self.observables = self.data.create_table(self.output, 'observables',
                                                  storage.SimulationEventObservables)
-        self.coincidences = self.data.createTable(self.output, 'coincidences',
+        self.coincidences = self.data.create_table(self.output, 'coincidences',
                                                   storage.Coincidence)
-        self.c_index = self.data.createVLArray(self.output, 'c_index',
+        self.c_index = self.data.create_vlarray(self.output, 'c_index',
                                                tables.UInt32Atom())
 
         self.output._v_attrs.cluster = cluster

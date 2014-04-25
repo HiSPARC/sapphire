@@ -35,7 +35,7 @@ def plot_trace(station_group, idx):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('master.h5')
+        data = tables.open_file('master.h5')
 
     station = data.root.s501
     ph = station.events.col('pulseheights')
