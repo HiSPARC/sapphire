@@ -15,16 +15,16 @@ class StoreKascadeData(object):
                  force=False):
 
         self.data = data
-        self.hisparc = data.getNode(hisparc_path, 'events')
+        self.hisparc = data.get_node(hisparc_path, 'events')
 
         if kascade_path in data:
             if not force:
                 raise RuntimeError("Cancelling data storage; %s already exists?"
                                    % kascade_path)
             else:
-                data.removeNode(kascade_path, recursive=True)
+                data.remove_node(kascade_path, recursive=True)
 
-        self.kascade = data.createTable(kascade_path, 'events', KascadeEvent,
+        self.kascade = data.create_table(kascade_path, 'events', KascadeEvent,
                                         "KASCADE events", createparents=True)
         self.kascade_filename = kascade_filename
 
@@ -117,14 +117,14 @@ class KascadeCoincidences(object):
     def __init__(self, data, hisparc_group, kascade_group, overwrite=False,
                  ignore_existing=False):
         self.data = data
-        self.hisparc_group = data.getNode(hisparc_group)
-        self.kascade_group = data.getNode(kascade_group)
+        self.hisparc_group = data.get_node(hisparc_group)
+        self.kascade_group = data.get_node(kascade_group)
 
         if 'c_index' in self.kascade_group:
             if not overwrite and not ignore_existing:
                 raise RuntimeError("I found existing coincidences stored in the KASCADE group")
             elif overwrite:
-                data.removeNode(kascade_group, 'c_index')
+                data.remove_node(kascade_group, 'c_index')
 
     def search_coincidences(self, timeshift=0, dtlimit=None, limit=None):
         """Search for coincidences
@@ -214,7 +214,7 @@ class KascadeCoincidences(object):
                                               names='dt, h_idx, k_idx')
 
     def store_coincidences(self):
-        self.data.createTable(self.kascade_group, 'c_index', self.coincidences)
+        self.data.create_table(self.kascade_group, 'c_index', self.coincidences)
 
     def _get_cached_sorted_id_and_timestamp_arrays(self):
         if not hasattr(self, '_h'):

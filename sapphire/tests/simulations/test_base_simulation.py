@@ -28,10 +28,10 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertIs(self.simulation.N, self.N)
 
     def test_init_creates_output_group(self):
-        self.data.createGroup.assert_called_with(self.output_head,
+        self.data.create_group.assert_called_with(self.output_head,
                                                  self.output_tail,
                                                  createparents=True)
-        self.assertIs(self.simulation.output, self.data.createGroup.return_value)
+        self.assertIs(self.simulation.output, self.data.create_group.return_value)
 
     @patch('os.path.split')
     def test_init_raises_runtimeerror_if_output_exists(self, os_path_split_mock):
@@ -47,7 +47,7 @@ class BaseSimulationTest(unittest.TestCase):
 
         self.data.__contains__.return_value = True
         BaseSimulation(self.cluster, self.data, self.output, self.R, self.N, force=True)
-        self.data.removeNode.assert_called_with(self.output, recursive=True)
+        self.data.remove_node.assert_called_with(self.output, recursive=True)
 
     def test_init_stores_cluster_in_attrs(self):
         self.assertIs(self.simulation.output._v_attrs.cluster, sentinel.cluster)

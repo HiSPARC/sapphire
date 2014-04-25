@@ -17,7 +17,7 @@ DATA_GROUP = '/s501'
 class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
-        self.data = tables.openFile(self.data_path, 'a')
+        self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessEvents(self.data, DATA_GROUP)
 
         # make progressbar(list) do nothing (i.e., return list)
@@ -76,7 +76,7 @@ class ProcessEventsTests(unittest.TestCase):
 class ProcessIndexedEventsTests(ProcessEventsTests):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
-        self.data = tables.openFile(self.data_path, 'a')
+        self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessIndexedEvents(self.data, DATA_GROUP, [0, 10])
 
     def test_process_traces(self):
@@ -91,7 +91,7 @@ class ProcessIndexedEventsTests(ProcessEventsTests):
 class ProcessEventsWithLINTTests(ProcessEventsTests):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
-        self.data = tables.openFile(self.data_path, 'a')
+        self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessEventsWithLINT(self.data, DATA_GROUP)
 
     def test__reconstruct_time_from_traces(self):
@@ -111,7 +111,7 @@ class ProcessEventsWithLINTTests(ProcessEventsTests):
 class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
-        self.data = tables.openFile(self.data_path, 'a')
+        self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessEventsWithTriggerOffset(self.data, DATA_GROUP)
 
     def test__reconstruct_trigger_time_from_traces(self):

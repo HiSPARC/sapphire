@@ -31,8 +31,8 @@ def get_tcc_values(data, force_new=False):
 
         tcc = array(tcc)
         if 'tcc' in data.root:
-            data.removeNode('/tcc')
-        data.createArray('/', 'tcc', tcc)
+            data.remove_node('/tcc')
+        data.create_array('/', 'tcc', tcc)
         return tcc
 
 
@@ -115,10 +115,10 @@ def _get_core_positions(data, sel_str, limit=None):
 
     sel = eval(sel_str)
     sel_indices = sel.nonzero()[0]
-    indices = c_index.readCoordinates(sel_indices)
+    indices = c_index.read_coordinates(sel_indices)
     k_idx = indices['k_idx']
 
-    core_pos = k_events.readCoordinates(k_idx, field='core_pos')
+    core_pos = k_events.read_coordinates(k_idx, field='core_pos')
     if limit:
         core_pos = core_pos[:limit]
 
@@ -133,11 +133,11 @@ def plot_energy(data, sel_str):
 
     sel = eval(sel_str)
     sel_indices = sel.nonzero()[0]
-    indices = c_index.readCoordinates(sel_indices)
+    indices = c_index.read_coordinates(sel_indices)
     k_idx = indices['k_idx']
 
-    energy = k_events.readCoordinates(k_idx, field='energy')
-    false_energy = k_events.readCoordinates(k_idx + 1, field='energy')
+    energy = k_events.read_coordinates(k_idx, field='energy')
+    false_energy = k_events.read_coordinates(k_idx + 1, field='energy')
 
     print len(energy), len(false_energy)
 
@@ -171,11 +171,11 @@ def reconstruct_shower_sizes(data, tcc):
 
 class KascadeCoreReconstruction(CoreReconstruction):
     def reconstruct_core_positions(self, hisparc_group, kascade_group, tcc):
-        hisparc_group = self.data.getNode(hisparc_group)
+        hisparc_group = self.data.get_node(hisparc_group)
 
-        hisparc_table = self.data.getNode(hisparc_group, 'events')
-        c_index = self.data.getNode(kascade_group, 'c_index')
-        kascade_table = self.data.getNode(kascade_group, 'events')
+        hisparc_table = self.data.get_node(hisparc_group, 'events')
+        c_index = self.data.get_node(kascade_group, 'c_index')
+        kascade_table = self.data.get_node(kascade_group, 'events')
 
         self.cluster = hisparc_group._v_attrs.cluster
         self._store_cluster_with_results()
@@ -237,7 +237,7 @@ class KascadeCoreReconstruction(CoreReconstruction):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('kascade.h5', 'a')
+        data = tables.open_file('kascade.h5', 'a')
 
     tcc = get_tcc_values(data, force_new=False)
     reconstruct_shower_sizes(data, tcc)

@@ -22,7 +22,7 @@ mysql_escape_sequences = {r'\0': '\x00',
 
 
 def process_dump(path):
-    datafile = tables.openFile(DATAFILE, 'w')
+    datafile = tables.open_file(DATAFILE, 'w')
 
     id = 0
     buffer = gzip.open(path)

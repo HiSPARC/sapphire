@@ -12,7 +12,7 @@ from sapphire import clusters
 class LdfSimulationAcceptanceTest(unittest.TestCase):
     def test_simulation_yields_results(self):
         data_path = self.create_tempfile_path()
-        self.data = tables.openFile(data_path, 'w')
+        self.data = tables.open_file(data_path, 'w')
 
         self.create_test_simulation_output()
 

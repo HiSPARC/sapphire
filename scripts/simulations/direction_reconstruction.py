@@ -45,7 +45,7 @@ def do_full_reconstruction(data, N=None):
     """Do a reconstruction of all simulated data and store results"""
 
     if '/reconstructions' in data:
-        data.removeNode('/reconstructions', recursive=True)
+        data.remove_node('/reconstructions', recursive=True)
 
     simulation_group = '/simulations/E_1PeV'
     reconstruction_group = simulation_group.replace('simulations', 'reconstructions')
@@ -129,9 +129,9 @@ def plot_uncertainty_mip(group):
     x, y, y2 = [], [], []
     for N in range(1, 5):
         x.append(N)
-        events = table.readWhere('min_n134>=%d' % N)
+        events = table.read_where('min_n134>=%d' % N)
         #query = '(n1 == N) & (n3 == N) & (n4 == N)'
-        #vents = table.readWhere(query)
+        #vents = table.read_where(query)
         print len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -224,8 +224,8 @@ def plot_uncertainty_zenith(group):
     x, y, y2 = [], [], []
     for THETA in 0, 5, 10, 15, 22.5, 30, 35, 45:
         x.append(THETA)
-        table = group._f_getChild('zenith_%s' % str(THETA).replace('.', '_'))
-        events = table.readWhere('min_n134 >= N')
+        table = group._f_get_child('zenith_%s' % str(THETA).replace('.', '_'))
+        events = table.read_where('min_n134 >= N')
         print THETA, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -287,7 +287,7 @@ def plot_uncertainty_core_distance(group):
     x, y, y2 = [], [], []
     for R in range(0, 81, 20):
         x.append(R)
-        events = table.readWhere('(min_n134 == N) & (abs(r - R) <= DR)')
+        events = table.read_where('(min_n134 == N) & (abs(r - R) <= DR)')
         print len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -341,11 +341,11 @@ def plot_uncertainty_size(group):
     for size in [5, 10, 20]:
         x.append(size)
         if size != 10:
-            table = group._f_getChild('zenith_22_5_size%d' % size)
+            table = group._f_get_child('zenith_22_5_size%d' % size)
         else:
-            table = group._f_getChild('zenith_22_5')
+            table = group._f_get_child('zenith_22_5')
 
-        events = table.readWhere('min_n134 >= N')
+        events = table.read_where('min_n134 >= N')
         print size, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -413,10 +413,10 @@ def plot_uncertainty_binsize(group):
     for bin_size in [0, 1, 2.5, 5]:
         x.append(bin_size)
         if bin_size != 0:
-            table = group._f_getChild('zenith_22_5_binned_randomized_%s' % str(bin_size).replace('.', '_'))
+            table = group._f_get_child('zenith_22_5_binned_randomized_%s' % str(bin_size).replace('.', '_'))
         else:
             table = group.zenith_22_5
-        events = table.readWhere('min_n134 >= 2')
+        events = table.read_where('min_n134 >= 2')
 
         print bin_size, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
@@ -488,7 +488,7 @@ std_t = lambda n: sqrt(expv_tsqv(n) - expv_tv(n) ** 2)
 def plot_phi_reconstruction_results_for_MIP(group, N):
     table = group.E_1PeV.zenith_22_5
 
-    events = table.readWhere('min_n134 >= %d' % N)
+    events = table.read_where('min_n134 >= %d' % N)
     sim_phi = events['reference_phi']
     r_phi = events['reconstructed_phi']
 
@@ -520,8 +520,8 @@ def boxplot_theta_reconstruction_results_for_MIP(group, N):
     r_dtheta = []
     d25, d50, d75 = [], [], []
     for angle in angles:
-        table = group._f_getChild('zenith_%s' % str(angle).replace('.', '_'))
-        sel = table.readWhere('min_n134 >= %d' % N)
+        table = group._f_get_child('zenith_%s' % str(angle).replace('.', '_'))
+        sel = table.read_where('min_n134 >= %d' % N)
         dtheta = sel[:]['reconstructed_theta'] - sel[:]['reference_theta']
         r_dtheta.append(rad2deg(dtheta))
 
@@ -564,7 +564,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
         rad_low = deg2rad(low)
         rad_high = deg2rad(high)
         query = '(min_n134 >= N) & (rad_low < reference_phi) & (reference_phi < rad_high)'
-        sel = table.readWhere(query)
+        sel = table.read_where(query)
         dphi = sel[:]['reconstructed_phi'] - sel[:]['reference_phi']
         dphi = (dphi + pi) % (2 * pi) - pi
         r_dphi.append(rad2deg(dphi))
@@ -603,7 +603,7 @@ def boxplot_phi_reconstruction_results_for_MIP(group, N):
 def boxplot_arrival_times(group, N):
     table = group.E_1PeV.zenith_0
 
-    sel = table.readWhere('min_n134 >= N')
+    sel = table.read_where('min_n134 >= N')
     t1 = sel[:]['t1']
     t3 = sel[:]['t3']
     t4 = sel[:]['t4']
@@ -617,7 +617,7 @@ def boxplot_arrival_times(group, N):
     t25, t50, t75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         query = '(min_n134 >= N) & (low <= r) & (r < high)'
-        sel = table.readWhere(query)
+        sel = table.read_where(query)
         t1 = sel[:]['t1']
         t2 = sel[:]['t2']
         ct1 = t1.compress((t1 > -999) & (t2 > -999))
@@ -658,9 +658,9 @@ def get_median_core_distances_for_mips(group, N_list):
     r25, r50, r75 = [], [], []
     x = []
     for N in N_list:
-        sel = table.readWhere('min_n134 >= N')
+        sel = table.read_where('min_n134 >= N')
         #query = '(n1 == N) & (n3 == N) & (n4 == N)'
-        #sel = table.readWhere(query)
+        #sel = table.read_where(query)
         r = sel[:]['r']
         r_list.append(r)
         x.append(N)
@@ -682,7 +682,7 @@ def boxplot_core_distances_for_mips(group):
     r25, r50, r75 = [], [], []
     x = []
     for N in range(1, 5):
-        sel = table.readWhere('min_n134 >= N')
+        sel = table.read_where('min_n134 >= N')
         r = sel[:]['r']
         r_list.append(r)
         x.append(N)
@@ -719,7 +719,7 @@ def save_for_kascade_boxplot_core_distances_for_mips(group):
     r75_list = []
     x = []
     for N in range(1, 5):
-        sel = table.readWhere('(min_n134 == N) & (r <= 80)')
+        sel = table.read_where('(min_n134 == N) & (r <= 80)')
         r = sel[:]['r']
         r25_list.append(scoreatpercentile(r, 25))
         r50_list.append(scoreatpercentile(r, 50))
@@ -745,11 +745,11 @@ def plot_detection_efficiency_vs_R_for_angles(N):
         efficiencies = []
         for low, high in zip(bin_edges[:-1], bin_edges[1:]):
             shower_results = []
-            for shower in data.listNodes(shower_group):
+            for shower in data.list_nodes(shower_group):
                 sel_query = '(low <= r) & (r < high)'
-                coinc_sel = shower.coincidences.readWhere(sel_query)
+                coinc_sel = shower.coincidences.read_where(sel_query)
                 ids = coinc_sel['id']
-                obs_sel = shower.observables.readCoordinates(ids)
+                obs_sel = shower.observables.read_coordinates(ids)
                 assert (obs_sel['id'] == ids).all()
 
                 o = obs_sel
@@ -790,23 +790,23 @@ def plot_reconstruction_efficiency_vs_R_for_angles(N):
     for angle in [0, 22.5, 35]:
         angle_str = str(angle).replace('.', '_')
         shower_group = '/simulations/E_1PeV/zenith_%s' % angle_str
-        reconstructions = group._f_getChild('zenith_%s' % angle_str)
+        reconstructions = group._f_get_child('zenith_%s' % angle_str)
 
         efficiencies = []
         for low, high in zip(bin_edges[:-1], bin_edges[1:]):
             shower_results = []
-            for shower in data.listNodes(shower_group):
+            for shower in data.list_nodes(shower_group):
                 sel_query = '(low <= r) & (r < high)'
-                coinc_sel = shower.coincidences.readWhere(sel_query)
+                coinc_sel = shower.coincidences.read_where(sel_query)
                 ids = coinc_sel['id']
-                obs_sel = shower.observables.readCoordinates(ids)
+                obs_sel = shower.observables.read_coordinates(ids)
                 assert (obs_sel['id'] == ids).all()
 
                 o = obs_sel
                 sel = obs_sel.compress((o['n1'] >= N) & (o['n3'] >= N) &
                                        (o['n4'] >= N))
                 shower_results.append(len(sel))
-            ssel = reconstructions.readWhere('(min_n134 >= N) & (low <= r) & (r < high)')
+            ssel = reconstructions.read_where('(min_n134 >= N) & (low <= r) & (r < high)')
             efficiencies.append(len(ssel) / sum(shower_results))
 
         all_data.append(efficiencies)
@@ -858,18 +858,18 @@ def plot_reconstruction_efficiency_vs_R_for_mips():
         efficiencies = []
         for low, high in zip(bin_edges[:-1], bin_edges[1:]):
             shower_results = []
-            for shower in data.listNodes(shower_group):
+            for shower in data.list_nodes(shower_group):
                 sel_query = '(low <= r) & (r < high)'
-                coinc_sel = shower.coincidences.readWhere(sel_query)
+                coinc_sel = shower.coincidences.read_where(sel_query)
                 ids = coinc_sel['id']
-                obs_sel = shower.observables.readCoordinates(ids)
+                obs_sel = shower.observables.read_coordinates(ids)
                 assert (obs_sel['id'] == ids).all()
 
                 o = obs_sel
                 sel = o.compress(amin(array([o['n1'], o['n3'], o['n4']]), 0) == N)
 
                 shower_results.append(len(sel))
-            ssel = reconstructions.readWhere('(min_n134 == N) & (low <= r) & (r < high)')
+            ssel = reconstructions.read_where('(min_n134 == N) & (low <= r) & (r < high)')
             print sum(shower_results), len(ssel), len(ssel) / sum(shower_results)
             efficiencies.append(len(ssel) / sum(shower_results))
 
@@ -1050,7 +1050,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('master-ch4v2.h5', 'r')
+        data = tables.open_file('master-ch4v2.h5', 'r')
 
     if '/reconstructions' not in data:
         print "Reconstructing shower direction..."

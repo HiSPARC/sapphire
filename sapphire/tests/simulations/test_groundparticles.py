@@ -22,7 +22,7 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.data = MagicMock(name='data')
         self.grdpcles = Mock(name='grdpcles')
         self.grdpcles._v_pathname = '/E_1PeV/zenith_22_5/shower_0'
-        self.data.getNode.return_value = self.grdpcles
+        self.data.get_node.return_value = self.grdpcles
         self.output = sentinel.output
         self.R = sentinel.R
         self.N = sentinel.N
@@ -45,23 +45,23 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.assertIs(self.simulation.N, self.N)
 
     def test_init_gets_grdpcles_node(self):
-        self.data.getNode.assert_called_with(self.grdpcles._v_pathname)
-        self.assertIs(self.simulation.grdpcles, self.data.getNode.return_value)
+        self.data.get_node.assert_called_with(self.grdpcles._v_pathname)
+        self.assertIs(self.simulation.grdpcles, self.data.get_node.return_value)
 
     @patch('os.path.split')
     def test_init_raises_runtimeerror_if_grdpcles_not_found(self, os_path_split_mock):
         os_path_split_mock.return_value = Mock(), Mock()
 
         data = MagicMock()
-        data.getNode.side_effect = tables.NoSuchNodeError
+        data.get_node.side_effect = tables.NoSuchNodeError
         with self.assertRaises(RuntimeError):
             groundparticles.GroundParticlesSimulation(Mock(), data, Mock(), Mock(), Mock(), Mock())
 
     def test_init_creates_output_group(self):
-        self.data.createGroup.assert_called_with(self.output_head,
+        self.data.create_group.assert_called_with(self.output_head,
                                                  self.output_tail,
                                                  createparents=True)
-        self.assertIs(self.simulation.output, self.data.createGroup.return_value)
+        self.assertIs(self.simulation.output, self.data.create_group.return_value)
 
     def test_generate_positions_is_generator(self):
         self.assertEqual(type(self.simulation.generate_positions()), types.GeneratorType)
@@ -120,9 +120,9 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.simulation.get_line_boundary_eqs = get_line_boundary_eqs
 
         results = self.simulation.get_detector_particles(detector)
-        self.simulation.grdpcles.readWhere.assert_called_with(
+        self.simulation.grdpcles.read_where.assert_called_with(
             "(b11 < y + x) & (y + x < b12) & (b21 < y - x) & (y - x < b22)")
-        self.assertIs(results, self.simulation.grdpcles.readWhere.return_value)
+        self.assertIs(results, self.simulation.grdpcles.read_where.return_value)
 
         get_line_boundary_eqs.assert_called_with(corners[1], corners[2], corners[3])
         pop_last_call(get_line_boundary_eqs)
@@ -170,8 +170,8 @@ class GroundParticleSimulationTests(unittest.TestCase):
                                                          '/output', sentinel.R, sentinel.N)
 
     def setup_datafile_with_real_data(self):
-        data = tables.openFile('/tmp/tmp.h5', 'w')
-        grdpcles = data.createTable('/zenith_22_5', 'grdpcles', storage.ShowerParticle,
+        data = tables.open_file('/tmp/tmp.h5', 'w')
+        grdpcles = data.create_table('/zenith_22_5', 'grdpcles', storage.ShowerParticle,
                                     createparents=True)
         self.create_particle(grdpcles, 0, 0., 0.)
         self.create_particle(grdpcles, 1, .24, .49)
@@ -194,7 +194,7 @@ class GroundParticleSimulationTests(unittest.TestCase):
 
     def test_run_without_arguments(self):
         my_tables = [Mock(), Mock()]
-        self.data.createTable.side_effect = lambda * args: my_tables.pop()
+        self.data.create_table.side_effect = lambda * args: my_tables.pop()
 
         self.simulation._run_welcome_msg = Mock()
         self.simulation._run_exit_msg = Mock()
@@ -204,9 +204,9 @@ class GroundParticleSimulationTests(unittest.TestCase):
         self.simulation.store_observables = Mock()
         self.simulation.run()
 
-        self.data.createTable.assert_called_with(self.simulation.output, '_particles', storage.SimulationParticle)
-        pop_last_call(self.data.createTable)
-        self.data.createTable.assert_called_with(self.simulation.output, '_headers', storage.SimulationEventHeader)
+        self.data.create_table.assert_called_with(self.simulation.output, '_particles', storage.SimulationParticle)
+        pop_last_call(self.data.create_table)
+        self.data.create_table.assert_called_with(self.simulation.output, '_headers', storage.SimulationEventHeader)
         self.simulation.headers.flush.assert_called_with()
         self.simulation.particles.flush.assert_called_with()
         self.simulation.store_observables.assert_called_with()

@@ -104,11 +104,11 @@ def plot_residual_time_differences(data):
     t0 = make_timestamp(2008, 7, 2)
     t1 = make_timestamp(2008, 7, 3)
 
-    idxes = events.getWhereList('(t0 <= timestamp) & (timestamp < t1)')
+    idxes = events.get_where_list('(t0 <= timestamp) & (timestamp < t1)')
     t0_idx = min(idxes)
     t1_idx = max(idxes)
 
-    dts = c_index.readWhere('(t0_idx <= k_idx) & (k_idx < t1_idx)',
+    dts = c_index.read_where('(t0_idx <= k_idx) & (k_idx < t1_idx)',
                             field='dt')
     all_dts = c_index.col('dt')
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('kascade.h5', 'r')
+        data = tables.open_file('kascade.h5', 'r')
 
     utils.set_prefix('MAT-')
     do_matching_plots(data)

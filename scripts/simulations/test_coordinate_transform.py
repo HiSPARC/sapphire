@@ -21,7 +21,7 @@ def plot_station_and_shower_transforms(event_id):
     scatter(0, 0, c='r', alpha=.2)
 
     # plot coordinates stored in 'observables' table
-    for event in test_output.observables.readWhere('id == %d' % event_id):
+    for event in test_output.observables.read_where('id == %d' % event_id):
         scatter(event['x'], event['y'], c='lightgreen')
 
     xlabel("[m]")
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('transform_test.h5')
+        data = tables.open_file('transform_test.h5')
         sim = data.root.simulations.E_100TeV.zenith_0
         test_output = data.root.test_output.E_100TeV.zenith_0
         cluster = test_output._v_attrs.cluster

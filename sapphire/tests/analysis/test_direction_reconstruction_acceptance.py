@@ -18,7 +18,7 @@ SIMULATION_GROUP = '/simulations/E_1PeV/zenith_22_5'
 class DirectionReconstructionTests(unittest.TestCase):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
-        self.data = tables.openFile(self.data_path, 'a')
+        self.data = tables.open_file(self.data_path, 'a')
 
     def tearDown(self):
         self.data.close()
@@ -87,8 +87,8 @@ class DirectionReconstructionTests(unittest.TestCase):
         self.restore_stdout_stderr()
 
     def validate_reconstruction_results(self, expected, actual):
-        expected = self.data.getNode(expected)
-        actual = self.data.getNode(actual)
+        expected = self.data.get_node(expected)
+        actual = self.data.get_node(actual)
         self.validate_column_data(expected, actual)
         self.assertIn('cluster', actual.attrs)
         self.assertEqual(pickle.dumps(expected.attrs.cluster),

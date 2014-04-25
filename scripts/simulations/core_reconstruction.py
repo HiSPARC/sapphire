@@ -63,7 +63,7 @@ def plot_N_reconstructions_vs_R(table):
 
     sim_path = table._v_pathname.replace('reconstructions', 'ldfsim')
     try:
-        sim = data.getNode(sim_path)
+        sim = data.get_node(sim_path)
     except tables.NoSuchNodeError:
         return
 
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile(DATAFILE, 'a')
+        data = tables.open_file(DATAFILE, 'a')
 
     if '/reconstructions' not in data:
         c = CoreReconstruction(data, '/reconstructions/exact')
