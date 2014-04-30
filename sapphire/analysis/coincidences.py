@@ -214,8 +214,6 @@ class Coincidences(object):
                                                  'observables',
                                                  storage.EventObservables)
 
-        print "Storing coincidences"
-
         # ProgressBar does not work for empty iterables.
         if len(self.coincidence_group._src_c_index):
             if self.progress:
@@ -506,8 +504,6 @@ class CoincidencesESD(Coincidences):
         description.columns.update(stations_description)
         self.coincidences = self.data.create_table(self.coincidence_group,
                                                   'coincidences', description)
-
-        print "Storing coincidences"
 
         # ProgressBar does not work for empty iterables.
         if len(self._src_c_index):
