@@ -37,11 +37,11 @@ class CoincidenceQuery(object):
     """
 
     def __init__(self, data_path, coincidence_group='/coincidences'):
-        self.data = tables.openFile(data_path, 'r')
-        self.coincidences = self.data.getNode(coincidence_group,
+        self.data = tables.open_file(data_path, 'r')
+        self.coincidences = self.data.get_node(coincidence_group,
                                               'coincidences')
-        self.s_index = self.data.getNode(coincidence_group, 's_index')
-        self.c_index = self.data.getNode(coincidence_group, 'c_index')
+        self.s_index = self.data.get_node(coincidence_group, 's_index')
+        self.c_index = self.data.get_node(coincidence_group, 'c_index')
 
     def all_coincidences(self):
         """Get all coincidences
@@ -62,7 +62,7 @@ class CoincidenceQuery(object):
         """
         s_columns = self._get_s_columns(stations)
         any_query = ' | '.join(s_columns)
-        filtered_coincidences = self.coincidences.readWhere(any_query)
+        filtered_coincidences = self.coincidences.read_where(any_query)
         return filtered_coincidences
 
     def all(self, stations):
@@ -75,7 +75,7 @@ class CoincidenceQuery(object):
         """
         s_columns = self._get_s_columns(stations)
         all_query = ' & '.join(s_columns)
-        filtered_coincidences = self.coincidences.readWhere(all_query)
+        filtered_coincidences = self.coincidences.read_where(all_query)
         return filtered_coincidences
 
     def at_least(self, stations, n):
@@ -91,7 +91,7 @@ class CoincidenceQuery(object):
         s_combinations = ['(%s)' % (' & '.join(combo))
                           for combo in itertools.combinations(s_columns, n)]
         at_least_query = ' | '.join(s_combinations)
-        filtered_coincidences = self.coincidences.readWhere(at_least_query)
+        filtered_coincidences = self.coincidences.read_where(at_least_query)
         return filtered_coincidences
 
     def _get_s_columns(self, stations):
@@ -115,7 +115,7 @@ class CoincidenceQuery(object):
         for s_idx, e_idx in c_idx:
             s_path = self.s_index[s_idx]
             station_number = int(s_path.split('station_')[-1])
-            s_group = self.data.getNode(s_path)
+            s_group = self.data.get_node(s_path)
             events.append((station_number, s_group.events[e_idx]))
         return events
 
