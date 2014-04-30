@@ -417,6 +417,12 @@ class Coincidences(object):
 
         # traverse all timestamps
         prev_coincidence = []
+
+        if self.progress and len(timestamps):
+            progress = pb.ProgressBar(maxval=len(timestamps),
+                                      widgets=[pb.Percentage(), pb.Bar(),
+                                               pb.ETA()]).start()
+
         for i in xrange(len(timestamps)):
 
             # build coincidence, starting with the current timestamp
@@ -441,6 +447,12 @@ class Coincidences(object):
                     # no, so it's a new one
                     coincidences.append(c)
                     prev_coincidence = c
+
+            if self.progress and not i % 5000:
+                progress.update(i)
+
+        if self.progress:
+            progress.finish()
 
         return coincidences
 
