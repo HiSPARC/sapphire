@@ -39,7 +39,7 @@ class CoincidenceQuery(object):
     def __init__(self, data_path, coincidence_group='/coincidences'):
         self.data = tables.open_file(data_path, 'r')
         self.coincidences = self.data.get_node(coincidence_group,
-                                              'coincidences')
+                                               'coincidences')
         self.s_index = self.data.get_node(coincidence_group, 's_index')
         self.c_index = self.data.get_node(coincidence_group, 'c_index')
 
