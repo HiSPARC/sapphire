@@ -79,7 +79,8 @@ class ProcessEvents(object):
         'n1': tables.Float32Col(pos=17, dflt=-1),
         'n2': tables.Float32Col(pos=18, dflt=-1),
         'n3': tables.Float32Col(pos=19, dflt=-1),
-        'n4': tables.Float32Col(pos=20, dflt=-1)}
+        'n4': tables.Float32Col(pos=20, dflt=-1),
+        't_trigger': tables.Float32Col(pos=21, dflt=-1)}
 
     def __init__(self, data, group, source=None):
         """Initialize the class.
@@ -638,13 +639,6 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
     a value of -999 will be entered.
 
     """
-
-    def __init__(self, data, group, source=None):
-        super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
-                                                             source)
-
-        trigger_column = {'t_trigger': tables.Float32Col(pos=21, dflt=-1)}
-        self.processed_events_description.update(trigger_column)
 
     def _store_results_from_traces(self):
         table = self._tmp_events
