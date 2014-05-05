@@ -832,3 +832,18 @@ class ProcessEventsFromSource(ProcessEvents):
         """Override method, do not show a progressbar"""
 
         return lambda x: x
+
+
+class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
+                                               ProcessEventsWithTriggerOffset):
+
+    """Process events from a different source and find trigger.
+
+    This is a subclass of :class:`ProcessEventsFromSource` and
+    :class:`ProcessEventsWithTriggerOffset`.  Processing events and
+    finding the trigger time in the traces. And storing the results in a
+    different file that the source.
+
+    """
+
+    pass
