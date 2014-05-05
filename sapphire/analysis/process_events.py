@@ -194,7 +194,7 @@ class ProcessEvents(object):
             self._find_unique_row_ids(enumerated_timestamps)
 
         new_events = self._replace_table_with_selected_rows(events,
-            unique_sorted_ids)
+                                                            unique_sorted_ids)
         self.source = new_events
         self._normalize_event_ids(new_events)
 
@@ -220,7 +220,7 @@ class ProcessEvents(object):
 
         """
         tmptable = self.data.create_table(self.group, 't__events',
-                                         description=table.description)
+                                          description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         tmptable.append(selected_rows)
         tmptable.flush()
@@ -258,8 +258,8 @@ class ProcessEvents(object):
         if '_t_events' in self.group:
             self.data.remove_node(self.group, '_t_events')
         table = self.data.create_table(self.group, '_t_events',
-                                      self.processed_events_description,
-                                      expectedrows=length)
+                                       self.processed_events_description,
+                                       expectedrows=length)
 
         for x in xrange(length):
             table.row.append()
@@ -364,7 +364,7 @@ class ProcessEvents(object):
                 timings.append(self._reconstruct_time_from_trace(trace,
                                                                  baseline))
         timings = [time * ADC_TIME_PER_SAMPLE * 1e9
-                   if not time in [-1, -999] else time
+                   if time not in [-1, -999] else time
                    for time in timings]
         return timings
 
@@ -537,9 +537,9 @@ class ProcessIndexedEvents(ProcessEvents):
 
         """
         events = self.source.itersequence(self.indexes)
+        length = len(self.indexes)
+        timings = self._process_traces_from_event_list(events, length=length)
 
-        timings = self._process_traces_from_event_list(events,
-                                                       length=len(self.indexes))
         return timings
 
     def get_traces_for_indexed_event_index(self, idx):
@@ -581,7 +581,8 @@ class ProcessEventsWithLINT(ProcessEvents):
         return value
 
 
-class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
+class ProcessIndexedEventsWithLINT(ProcessIndexedEvents,
+                                   ProcessEventsWithLINT):
 
     """Process a subset of events using LInear INTerpolation.
 
@@ -682,7 +683,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         timings.append(self._reconstruct_trigger_time_from_traces(traces,
                                                                   n_detectors))
         timings = [time * ADC_TIME_PER_SAMPLE * 1e9
-                   if not time in [-1, -999] else time
+                   if time not in [-1, -999] else time
                    for time in timings]
         return timings
 
@@ -694,9 +695,10 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         this result the arrival times in each detector can be corrected
         to be relative to the timestamp.
 
-        This function assumes traces with no data filter applied. The
-        data filter in the HiSPARC DAQ can distort the peaks/pulses in
-        traces, preventing reconstruction.
+        This function assumes traces with no data filter applied and the
+        default settings for triggers. The data filter in the HiSPARC
+        DAQ can distort the peaks/pulses in traces, possibly preventing
+        reconstruction.
 
         :param traces: the traces for an event.
         :param n_detectors: number of detectors, for trigger conditions.
@@ -705,7 +707,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         """
         if not n_detectors:
             n_detectors = len(traces)
-        if not n_detectors in [2, 4]:
+        if n_detectors not in [2, 4]:
             raise LookupError('Unsupported number of detectors')
 
         low_idx = []
@@ -714,8 +716,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             low_idx.append(self._first_above_threshold(trace,
                                                        ADC_LOW_THRESHOLD))
             if n_detectors == 4 and not low_idx[-1] == -999:
-                high_idx.append(self._first_above_threshold(trace[low_idx[-1]:],
-                                                            ADC_HIGH_THRESHOLD))
+                high_idx.append(self._first_above_threshold(
+                    trace[low_idx[-1]:], ADC_HIGH_THRESHOLD))
                 if not high_idx[-1] == -999:
                     high_idx[-1] += low_idx[-1]
         low_idx = [idx for idx in low_idx if not idx == -999]
