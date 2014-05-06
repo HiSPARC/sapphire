@@ -62,7 +62,7 @@ class CoincidenceQuery(object):
         """
         s_columns = self._get_s_columns(stations)
         any_query = ' | '.join(s_columns)
-        filtered_coincidences = self.coincidences.read_where(any_query)
+        filtered_coincidences = self.perform_query(any_query)
         return filtered_coincidences
 
     def all(self, stations):
@@ -75,7 +75,7 @@ class CoincidenceQuery(object):
         """
         s_columns = self._get_s_columns(stations)
         all_query = ' & '.join(s_columns)
-        filtered_coincidences = self.coincidences.read_where(all_query)
+        filtered_coincidences = self.perform_query(all_query)
         return filtered_coincidences
 
     def at_least(self, stations, n):
@@ -91,7 +91,18 @@ class CoincidenceQuery(object):
         s_combinations = ['(%s)' % (' & '.join(combo))
                           for combo in itertools.combinations(s_columns, n)]
         at_least_query = ' | '.join(s_combinations)
-        filtered_coincidences = self.coincidences.read_where(at_least_query)
+        filtered_coincidences = self.perform_query(at_least_query)
+        return filtered_coincidences
+
+    def perform_query(self, query):
+        """Perform a query on the coincidences table
+
+        :param query: a valid PyTables query string for the coincidences
+                      table.
+        :return: coincidences matching the query.
+
+        """
+        filtered_coincidences = self.coincidences.read_where(query)
         return filtered_coincidences
 
     def _get_s_columns(self, stations):
