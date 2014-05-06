@@ -189,7 +189,7 @@ class CoincidenceQuery(object):
         """
         network = api.Network()
         stations = network.station_numbers(subcluster=subcluster)
-        filtered_events = self.events_from_stations(coincidences)
+        filtered_events = self.events_from_stations(coincidences, stations)
 
         return filtered_events
 
