@@ -64,9 +64,21 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         self.cq.coincidences.read_where.assert_called_once_with(sentinel.query)
         self.assertEqual(result, self.cq.coincidences.read_where.return_value)
 
-    def test_get_s_columns(self):
+    def test__get_s_columns(self):
         result = self.cq._get_s_columns([501])
         self.assertEqual(result, ['s501'])
+
+    @unittest.skip('WIP')
+    def test__get_events(self):
+        pass
+
+    @patch.object(coincidence_queries.CoincidenceQuery, '_get_events')
+    def test_all_events(self, mock_get_events):
+        mock_get_events.return_value = sentinel.events
+        coincidences = [sentinel.coincidence]
+        result = self.cq.all_events(coincidences)
+        mock_get_events.assert_called_once_with(sentinel.coincidence)
+        self.assertEqual(result, [sentinel.events])
 
     def test_minimum_events_for_coincidence(self):
         coincidences_events = [[1], [2, 2], [3, 3, 3], [4, 4, 4, 4]]
@@ -88,6 +100,35 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         mock_get_events.assert_called_once_with(sentinel.coincidence)
         mock_events_from.assert_called_once_with(sentinel.events, sentinel.stations)
         mock_minimum.assert_called_once_with([sentinel.coincidence_events])
+
+    def test__events_from_stations(self):
+        events = ([sentinel.station1, sentinel.event1],
+                  [sentinel.station2, sentinel.event2])
+        stations = [sentinel.station2]
+        result = self.cq._events_from_stations(events, stations)
+        self.assertEqual(result, [[sentinel.station2, sentinel.event2]])
+
+    @patch.object(coincidence_queries.CoincidenceQuery, 'events_from_stations')
+    @patch.object(coincidence_queries.api, 'Network')
+    def test_events_in_subcluster(self, mock_network, mock_events_from):
+        mock_network.return_value.stations_numbers.return_value = sentinel.numbers
+        mock_events_from.return_value = sentinel.coincidence_events
+        result = self.cq.events_in_subcluster(sentinel.coincidences, sentinel.subcluster)
+        mock_network.assert_called_once_with()
+        mock_network.return_value.stations_numbers.assert_called_once_with(subcluster=sentinel.subcluster)
+        mock_events_from.assert_called_once_with(sentinel.coincidences, sentinel.numbers)
+        self.assertEqual(result, sentinel.coincidence_events)
+
+    @patch.object(coincidence_queries.CoincidenceQuery, 'events_from_stations')
+    @patch.object(coincidence_queries.api, 'Network')
+    def test_events_in_cluster(self, mock_network, mock_events_from):
+        mock_network.return_value.stations_numbers.return_value = sentinel.numbers
+        mock_events_from.return_value = sentinel.coincidence_events
+        result = self.cq.events_in_cluster(sentinel.coincidences, sentinel.cluster)
+        mock_network.assert_called_once_with()
+        mock_network.return_value.stations_numbers.assert_called_once_with(cluster=sentinel.cluster)
+        mock_events_from.assert_called_once_with(sentinel.coincidences, sentinel.numbers)
+        self.assertEqual(result, sentinel.coincidence_events)
 
 
 if __name__ == '__main__':
