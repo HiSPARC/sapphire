@@ -67,21 +67,22 @@ class DirectionReconstructionTests(unittest.TestCase):
 
     def create_reconstruction_output(self, output, overwrite=False):
         reconstruction = direction_reconstruction.DirectionReconstruction(
-                            self.data, output, min_n134=1, N=100, overwrite=overwrite)
+            self.data, output, min_n134=1, N=100, overwrite=overwrite)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles_for_shower_group(SIMULATION_GROUP)
         self.restore_stdout_stderr()
 
     def create_binned_reconstruction_output(self, output, overwrite=False):
         reconstruction = direction_reconstruction.BinnedDirectionReconstruction(
-                            self.data, output, min_n134=1, N=100, binning=2.5, overwrite=overwrite)
+            self.data, output, min_n134=1, N=100, binning=2.5, overwrite=overwrite)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles_for_shower_group(SIMULATION_GROUP)
         self.restore_stdout_stderr()
 
     def create_randomized_binned_reconstruction_output(self, output, overwrite=False):
         reconstruction = direction_reconstruction.BinnedDirectionReconstruction(
-                            self.data, output, min_n134=1, N=100, binning=2.5, randomize_binning=True, overwrite=overwrite)
+            self.data, output, min_n134=1, N=100, binning=2.5,
+            randomize_binning=True, overwrite=overwrite)
         self.redirect_stdout_stderr_to_devnull()
         reconstruction.reconstruct_angles_for_shower_group(SIMULATION_GROUP)
         self.restore_stdout_stderr()
