@@ -14,18 +14,21 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         self.data_path = sentinel.data_path
         self.coincidences_group = sentinel.coincidences_group
 
-        self.cq = coincidence_queries.CoincidenceQuery(self.data_path, self.coincidences_group)
+        self.cq = coincidence_queries.CoincidenceQuery(
+            self.data_path, self.coincidences_group)
 
     def test_init_opens_file_and_gets_nodes(self):
         self.mock_open_file.assert_called_once_with(self.data_path, 'r')
         expected = [call(self.coincidences_group, 'coincidences'),
                     call(self.coincidences_group, 's_index'),
                     call(self.coincidences_group, 'c_index')]
-        self.assertEqual(self.mock_open_file.return_value.get_node.call_args_list, expected)
+        call_list = self.mock_open_file.return_value.get_node.call_args_list
+        self.assertEqual(call_list, expected)
 
-        self.assertEqual(self.cq.coincidences, self.mock_open_file.return_value.get_node.return_value)
-        self.assertEqual(self.cq.s_index, self.mock_open_file.return_value.get_node.return_value)
-        self.assertEqual(self.cq.c_index, self.mock_open_file.return_value.get_node.return_value)
+        a_node = self.mock_open_file.return_value.get_node.return_value
+        self.assertEqual(self.cq.coincidences, a_node)
+        self.assertEqual(self.cq.s_index, a_node)
+        self.assertEqual(self.cq.c_index, a_node)
 
     def test_all_coincidences(self):
         result = self.cq.all_coincidences()
@@ -55,7 +58,8 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         n = 2
         self.cq.at_least(sentinel.stations, n)
         mock_columns.assert_called_once_with(sentinel.stations)
-        mock_query.assert_called_once_with('(s501 & s502) | (s501 & s503) | (s502 & s503)')
+        mock_query.assert_called_once_with('(s501 & s502) | (s501 & s503) | '
+                                           '(s502 & s503)')
 
     def test_perform_query(self):
         result = self.cq.perform_query(sentinel.query)
