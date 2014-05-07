@@ -1,7 +1,5 @@
-from mock import sentinel, Mock, patch, MagicMock, call
-import types
+from mock import sentinel, Mock, patch, call
 import unittest
-import warnings
 
 from sapphire.analysis import coincidence_queries
 
@@ -69,6 +67,27 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
     def test_get_s_columns(self):
         result = self.cq._get_s_columns([501])
         self.assertEqual(result, ['s501'])
+
+    def test_minimum_events_for_coincidence(self):
+        coincidences_events = [[1], [2, 2], [3, 3, 3], [4, 4, 4, 4]]
+        filtered = self.cq.minimum_events_for_coincidence(coincidences_events, 0)
+        self.assertEqual(filtered, coincidences_events)
+        filtered = self.cq.minimum_events_for_coincidence(coincidences_events)
+        self.assertEqual(filtered, coincidences_events[1:])
+        filtered = self.cq.minimum_events_for_coincidence(coincidences_events, 5)
+        self.assertEqual(filtered, [])
+
+    @patch.object(coincidence_queries.CoincidenceQuery, 'minimum_events_for_coincidence')
+    @patch.object(coincidence_queries.CoincidenceQuery, '_events_from_stations')
+    @patch.object(coincidence_queries.CoincidenceQuery, '_get_events')
+    def test_events_from_stations(self, mock_get_events, mock_events_from, mock_minimum):
+        mock_get_events.return_value = sentinel.events
+        mock_events_from.return_value = sentinel.coincidence_events
+        coincidences = [sentinel.coincidence]
+        result = self.cq.events_from_stations(coincidences, sentinel.stations)
+        mock_get_events.assert_called_once_with(sentinel.coincidence)
+        mock_events_from.assert_called_once_with(sentinel.events, sentinel.stations)
+        mock_minimum.assert_called_once_with([sentinel.coincidence_events])
 
 
 if __name__ == '__main__':
