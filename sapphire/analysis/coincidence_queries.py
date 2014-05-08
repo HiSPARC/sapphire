@@ -13,7 +13,7 @@ class CoincidenceQuery(object):
     Functions in this class build and perform queries to easily filter
     coincidences based on station participation and station
     organization. This assumes coincidences have been analysed using
-    :class:`sapphire.analysis.CoincidenceESD`.
+    :class:`sapphire.analysis.coincidences.CoincidencesESD`.
 
     First initiate the class so it can get the correct tables, then get
     coincidences using one of the functions (all_coincidences, any, all,
