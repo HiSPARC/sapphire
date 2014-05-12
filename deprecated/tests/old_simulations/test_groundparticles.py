@@ -6,7 +6,7 @@ from numpy import array, deg2rad
 from math import pi, atan2, sqrt
 from mock import Mock, MagicMock, patch, sentinel
 
-from sapphire.simulations import groundparticles, BaseSimulation
+from sapphire.old_simulations import groundparticles, BaseSimulation
 from sapphire import clusters
 from sapphire import storage
 
@@ -258,3 +258,7 @@ def pop_last_call(mock):
         mock.call_args = None
         mock.called = False
     mock.call_count -= 1
+
+
+if __name__ == '__main__':
+    unittest.main()

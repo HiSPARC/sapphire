@@ -12,6 +12,9 @@ sapphire/tests/analysis/PE-testdata.h5
 *.pyc
 *.pyo
 
+# Coverage
+.coverage
+
 # OS generated files
 .DS_Store*
 ehthumbs.db

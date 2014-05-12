@@ -185,15 +185,13 @@ class ProcessEvents(object):
         events = self.source
         events_tablename = self.source.name
 
-        enumerated_timestamps = \
-            list(enumerate(events.col('ext_timestamp')))
+        enumerated_timestamps = list(enumerate(events.col('ext_timestamp')))
         enumerated_timestamps.sort(key=operator.itemgetter(1))
 
-        unique_sorted_ids = \
-            self._find_unique_row_ids(enumerated_timestamps)
+        unique_sorted_ids = self._find_unique_row_ids(enumerated_timestamps)
 
         new_events = self._replace_table_with_selected_rows(events,
-            unique_sorted_ids)
+                                                            unique_sorted_ids)
         self.source = new_events
         self._normalize_event_ids(new_events)
 

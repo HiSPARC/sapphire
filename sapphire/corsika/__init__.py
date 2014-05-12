@@ -3,10 +3,10 @@ This module provides the functionality to read CORSIKA files.
 
 It provides the following main classes:
 
-* :class:`reader.CorsikaFile`: The file class provides a generator over all events
-  in the file.
-* :class:`reader.CorsikaEvent`: The event class that provides a generator over all
-  particles at ground.
+* :class:`reader.CorsikaFile`: The file class provides a generator over
+  all events in the file.
+* :class:`reader.CorsikaEvent`: The event class that provides a generator
+  over all particles at ground.
 
 and the following classes that correspond to the sub-blocks defined in
 the CORSIKA manual:

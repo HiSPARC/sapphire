@@ -22,4 +22,5 @@ This package contains modules for performing various analysis tasks:
     Process HiSPARC events
 
 """
-from direction_reconstruction import DirectionReconstruction, BinnedDirectionReconstruction
+from direction_reconstruction import (DirectionReconstruction,
+                                      BinnedDirectionReconstruction)

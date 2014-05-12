@@ -9,6 +9,7 @@ Author: Javier Gonzalez <jgonzalez@ik.fzk.de>
 
 import textwrap
 import struct
+import math
 
 import numpy
 
@@ -19,11 +20,13 @@ import particles
 # All sizes are in bytes
 
 class Format(object):
-    """
-    Class containing the format information of the file
-    as specified in Corsika user manual, Section 10.2.1.
+
+    """The binary format information of the file.
+
+    As specified in the Corsika user manual, Section 10.2.1.
 
     """
+
     def __init__(self):
         # in 32 bit, one field is a float
         self.field_size = struct.calcsize('f')
@@ -52,11 +55,13 @@ class Format(object):
 # From here on, things should not depend on the field size as everything is
 
 class RunHeader(object):
-    """
-    Class representing the run header sub-block
-    as specified in Corsika user manual, Table 7.
+
+    """The run header sub-block
+
+    As specified in the Corsika user manual, Table 7.
 
     """
+
     def __init__(self, subblock):
         self.id = subblock[0]
         self.run_number = subblock[1]
@@ -93,7 +98,7 @@ class RunHeader(object):
 
         self.x_scatter_Cherenkov = subblock[247]
         self.y_scatter_Cherenkov = subblock[248]
-        self.atmospheric_layer_coundaries = numpy.array(subblock[249:254])
+        self.atmospheric_layer_boundaries = numpy.array(subblock[249:254])
         self.a_atmospheric = numpy.array(subblock[254:259])
         self.b_atmospheric = numpy.array(subblock[259:264])
         self.c_atmospheric = numpy.array(subblock[264:269])
@@ -105,41 +110,45 @@ class RunHeader(object):
         self.NFLCHE = subblock[272] % 100
 
     def thickness_to_height(self, thickness):
-        """"Calculate height (cm) for given thickness (gramms/cm**2)"""
+        """"Calculate height (m) for given thickness (gramms/cm**2)
 
-        if (thickness > 631.1):
-            height = c_atmospheric[1] * numpy.log(b_atmospheric[1] /
-                                                  (thickness - a_atmospheric[1]))
-        elif (thickness > 271.7):
-            height = c_atmospheric[2] * numpy.log(b_atmospheric[2] /
-                                                  (thickness - a_atmospheric[2]))
-        elif (thickness > 3.0395):
-            height = c_atmospheric[3] * numpy.log(b_atmospheric[3] /
-                                                  (thickness - a_atmospheric[3]))
-        elif (thickness > 1.28292e-3):
-            height = c_atmospheric[4] * numpy.log(b_atmospheric[4] /
-                                                  (thickness - a_atmospheric[4]))
+        As specified in the CORSIKA user manual, Appendix D.
+
+        """
+        a, b, c = self.a_atmospheric, self.b_atmospheric, self.c_atmospheric
+
+        if thickness > self.height_to_thickness(4.e5 * units.cm):
+            height = c[0] * math.log(b[0] / (thickness - a[0]))
+        elif thickness > self.height_to_thickness(1.e6 * units.cm):
+            height = c[1] * math.log(b[1] / (thickness - a[1]))
+        elif thickness > self.height_to_thickness(4.e6 * units.cm):
+            height = c[2] * math.log(b[2] / (thickness - a[2]))
+        elif thickness > self.height_to_thickness(1.e7 * units.cm):
+            height = c[3] * math.log(b[3] / (thickness - a[3]))
         else:
-            height = (a_atmospheric[5] - thickness) / c_atmospheric[5]
-        return height
+            height = (a[4] - thickness) * c[4] / b[4]
+
+        return height * units.cm
 
     def height_to_thickness(self, height):
-        """Thickness (gramms/cm**2) of atmosphere given a height (cm)"""
+        """Thickness (gramms/cm**2) of atmosphere given a height (m)
 
-        if (height < 4.e5):
-            thickness = (a_atmospheric[1] + b_atmospheric[1] *
-                         numpy.exp(-height / c_atmospheric[1]))
-        elif (height < 1.e6):
-            thickness = (a_atmospheric[2] + b_atmospheric[2] *
-                         numpy.exp(-height / c_atmospheric[2]))
-        elif (height < 4.e6):
-            thickness = (a_atmospheric[3] + b_atmospheric[3] *
-                         numpy.exp(-height / c_atmospheric[3]))
-        elif (height < 1.e7):
-            thickness = (a_atmospheric[4] + b_atmospheric[4] *
-                         numpy.exp(-height / c_atmospheric[4]))
+        As specified in the CORSIKA user manual, Appendix D.
+
+        """
+        height = height * units.m / units.cm
+        a, b, c = self.a_atmospheric, self.b_atmospheric, self.c_atmospheric
+
+        if height < 4.e5:
+            thickness = a[0] + b[0] * math.exp(-height / c[0])
+        elif height < 1.e6:
+            thickness = a[1] + b[1] * math.exp(-height / c[1])
+        elif height < 4.e6:
+            thickness = a[2] + b[2] * math.exp(-height / c[2])
+        elif height < 1.e7:
+            thickness = a[3] + b[3] * math.exp(-height / c[3])
         else:
-            thickness = a_atmospheric[5] - height * c_atmospheric[5]
+            thickness = a[4] - b[4] * height / c[4]
 
         return thickness
 
@@ -155,16 +164,18 @@ class RunHeader(object):
 
 
 class EventHeader(object):
-    """
-    Class representing the event header sub-block
-    as specified in Corsika user manual, Table 8.
+
+    """The event header sub-block
+
+    As specified in the Corsika user manual, Table 8.
 
     """
+
     def __init__(self, subblock):
         self.id = subblock[0]
         self.event_number = subblock[1]
         self.particle_id = subblock[2]
-        self.particle = particles.id[subblock[2]]
+        self.particle = particles.name(subblock[2])
         self.energy = subblock[3] * units.GeV
         self.starting_altitude = subblock[4] * units.g / units.cm2
         self.first_target = subblock[5]
@@ -173,7 +184,15 @@ class EventHeader(object):
         self.p_y = subblock[8] * units.GeV
         self.p_z = - subblock[9] * units.GeV
         self.zenith = subblock[10] * units.rad
-        self.azimuth = subblock[11] * units.rad
+
+        # Corsika defines azimuth as the direction the shower points to
+        # HiSPARC defines azimuth as the direction the shower comes from.
+        # Corsika allows azimuths in [-2pi, 2pi], HiSPARC uses (-pi, pi]
+        azimuth = subblock[11] * units.rad + math.pi
+        if azimuth > math.pi:
+            self.azimuth = azimuth - (2 * math.pi)
+        else:
+            self.azimuth = azimuth
 
         self.n_seeds = subblock[12]
         self.seeds = numpy.array(zip(subblock[13:41:3],
@@ -308,11 +327,13 @@ class EventHeader(object):
 
 
 class RunEnd(object):
-    """
-    Class representing the run end sub-block
-    as specified in Corsika user manual, Table 14.
+
+    """The run end sub-block
+
+    As specified in the Corsika user manual, Table 14.
 
     """
+
     def __init__(self, subblock):
         self.id = subblock[0]
         self.run_number = subblock[1]
@@ -328,11 +349,13 @@ class RunEnd(object):
 
 
 class EventEnd(object):
-    """
-    Class representing the event end sub-block
-    as specified in Corsika user manual, Table 13.
+
+    """The event end sub-block
+
+    As specified in the Corsika user manual, Table 13.
 
     """
+
     def __init__(self, subblock):
         self.id = subblock[0]
         self.event_number = subblock[1]
@@ -361,7 +384,8 @@ class EventEnd(object):
 
         self.NKG_level_height_mass = numpy.array(subblock[215:225])
         self.NKG_level_height_distance = numpy.array(subblock[225:235])
-        self.NKG_distance_bins_local_pseudo_age = numpy.array(subblock[235:245]) * units.cm
+        self.NKG_distance_bins_local_pseudo_age = \
+            numpy.array(subblock[235:245]) * units.cm
         self.NKG_local_pseudo_age_2 = numpy.array(subblock[245:255])
 
         # Longitudinal distribution
@@ -383,14 +407,45 @@ class EventEnd(object):
                        particles=self.n_particles_levels))
 
 
-class ParticleData(object):
-    """
-    Class representing the particle data sub-block
-    as specified in Corsika user manual, Table 10.
+def particle_data(subblock):
+    """Get particle data.
+
+    High-performing version of the ParticleData class, but without all the
+    easy-to-use attribute access.
+
+    :returns: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+        observation_level, phi data.
 
     """
+    description = int(subblock[0])
+    p_x = subblock[1] * units.GeV
+    p_y = subblock[2] * units.GeV
+    p_z = - subblock[3] * units.GeV
+    x = subblock[4] * units.cm
+    y = subblock[5] * units.cm
+    t = subblock[6] * units.ns  # or z for additional muon info
+
+    id = description / 1000
+    hadron_generation = description / 10 % 100
+    observation_level = description % 10
+
+    r = math.sqrt(x ** 2 + y ** 2)
+    phi = math.atan2(y, x)
+
+    return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+            observation_level, phi)
+
+
+class ParticleData(object):
+
+    """The particle data sub-block
+
+    As specified in the Corsika user manual, Table 10.
+
+    """
+
     def __init__(self, subblock):
-        self.description = subblock[0]
+        self.description = int(subblock[0])
         self.p_x = subblock[1] * units.GeV
         self.p_y = subblock[2] * units.GeV
         self.p_z = - subblock[3] * units.GeV
@@ -398,16 +453,16 @@ class ParticleData(object):
         self.y = subblock[5] * units.cm
         self.t = subblock[6] * units.ns  # or z for additional muon info
 
-        self.id = numpy.floor(self.description / 1000)
-        self.r = numpy.sqrt(self.x ** 2 + self.y ** 2)
+        self.id = self.description / 1000
+        self.r = math.sqrt(self.x ** 2 + self.y ** 2)
         self.is_particle = 0 < self.id < 200
-        self.particle = particles.id[self.id] if self.is_particle else None
+        self.particle = particles.name(self.id) if self.is_particle else None
         self.is_detectable = self.particle in ['positron', 'electron',
                                                'muon_p', 'muon_m']  # + 'gamma'
 
     @property
     def hadron_generation(self):
-        return numpy.floor(self.description / 10) % 100
+        return self.description / 10 % 100
 
     @property
     def observation_level(self):
@@ -415,7 +470,7 @@ class ParticleData(object):
 
     @property
     def phi(self):
-        return numpy.arctan2(self.y, self.x)
+        return math.atan2(self.y, self.x)
 
     @property
     def is_nucleus(self):
@@ -438,7 +493,7 @@ class ParticleData(object):
     @property
     def atom(self):
         if self.is_nucleus:
-            return particles.atomic_number[self.atomic_number]
+            return particles.name(self.atomic_number)
         else:
             return None
 
@@ -458,14 +513,16 @@ class ParticleData(object):
 
 
 class CherenkovData(object):
-    """
-    Class representing the cherenkov photon sub-block
-    as specified in Corsika user manual, Table 11.
+
+    """The cherenkov photon sub-block
+
+    As specified in Corsika user manual, Table 11.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
 
     """
+
     def __init__(self, subblock):
         self.photons_in_bunch = subblock[0]
         self.x = subblock[1] * units.cm
@@ -493,11 +550,13 @@ class CherenkovData(object):
 # THIN versions
 
 class FormatThin(Format):
-    """
-    Class containing the format information of the thinned file
-    as specified in Corsika user manual, Section 10.2.2.
+
+    """The format information of the thinned file
+
+    As specified in Corsika user manual, Section 10.2.2.
 
     """
+
     def __init__(self):
         super(FormatThin, self).__init__()
 
@@ -520,11 +579,13 @@ class FormatThin(Format):
 
 
 class ParticleDataThin(ParticleData):
-    """
-    Class representing the thinned particle data sub-block
-    as specified in Corsika user manual, Table 10.
+
+    """The thinned particle data sub-block
+
+    As specified in the Corsika user manual, Table 10.
 
     """
+
     def __init__(self, subblock):
         self.weight = subblock[7]
         super(ParticleDataThin, self).__init__(subblock)
@@ -547,14 +608,16 @@ class ParticleDataThin(ParticleData):
 
 
 class CherenkovDataThin(CherenkovData):
-    """
-    Class representing the thinned cherenkov photon sub-block
-    as specified in Corsika user manual, Table 11.
+
+    """The thinned cherenkov photon sub-block
+
+    As specified in Corsika user manual, Table 11.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
 
     """
+
     def __init__(self, subblock):
         self.weight = subblock[7]
         super(CherenkovDataThin, self).__init__(subblock)

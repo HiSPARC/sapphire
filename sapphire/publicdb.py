@@ -44,7 +44,9 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         >>> import datetime
         >>> import sapphire.publicdb
         >>> data = tables.open_file('data.h5', 'w')
-        >>> sapphire.publicdb.download_data(data, '/s501', 501, datetime.datetime(2010, 9, 1), datetime.datetime(2010, 9, 2))
+        >>> start = datetime.datetime(2010, 9, 1)
+        >>> end = datetime.datetime(2010, 9, 2)
+        >>> sapphire.publicdb.download_data(data, '/s501', 501, start, end)
         INFO:hisparc.publicdb:2010-09-01 00:00:00 None
         INFO:hisparc.publicdb:Getting server data URL (2010-09-01 00:00:00)
         INFO:hisparc.publicdb:Downloading data...
@@ -153,7 +155,8 @@ def datetimerange(start, stop):
         ...                        datetime.datetime(2010, 1, 1, 13)):
         ...     x
         ...
-        (datetime.datetime(2010, 1, 1, 11, 0), datetime.datetime(2010, 1, 1, 13, 0))
+        (datetime.datetime(2010, 1, 1, 11, 0),
+         datetime.datetime(2010, 1, 1, 13, 0))
 
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 2)):
@@ -166,7 +169,8 @@ def datetimerange(start, stop):
         ...     x
         ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
-        (datetime.datetime(2010, 1, 2, 0, 0), datetime.datetime(2010, 1, 2, 13, 0))
+        (datetime.datetime(2010, 1, 2, 0, 0),
+         datetime.datetime(2010, 1, 2, 13, 0))
 
         >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
         ...                        datetime.datetime(2010, 1, 5, 13)):
@@ -176,7 +180,8 @@ def datetimerange(start, stop):
         (datetime.datetime(2010, 1, 2, 0, 0), None)
         (datetime.datetime(2010, 1, 3, 0, 0), None)
         (datetime.datetime(2010, 1, 4, 0, 0), None)
-        (datetime.datetime(2010, 1, 5, 0, 0), datetime.datetime(2010, 1, 5, 13, 0))
+        (datetime.datetime(2010, 1, 5, 0, 0),
+         datetime.datetime(2010, 1, 5, 13, 0))
 
     """
     if start.date() == stop.date():
@@ -184,8 +189,8 @@ def datetimerange(start, stop):
         return
     else:
         yield start, None
-        cur = start.replace(hour=0, minute=0, second=0, microsecond=0) + \
-              datetime.timedelta(days=1)
+        cur = (start.replace(hour=0, minute=0, second=0, microsecond=0) +
+               datetime.timedelta(days=1))
         while cur.date() < stop.date():
             yield cur, None
             cur += datetime.timedelta(days=1)

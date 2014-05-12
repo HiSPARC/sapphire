@@ -1,195 +1,312 @@
-"""Simulation classes
+"""Perform simulations of air showers on a cluster of stations
 
-Define simulations as a class, so they can be subclassed.  This way, only
-bits of simulation logic need to be overridden.
+This base class can be subclassed to provide various kinds of
+simulations. These simulations will inherit the base functionallity from
+this class, including the creation of event and coincidence tables to
+store the results, which will look similar to regular HiSPARC data, such
+that the same reconstruction analysis can be applied to both.
+
+Example usage::
+
+    import tables
+
+    from sapphire.simulations.base import BaseSimulation
+    from sapphire.clusters import ScienceParkCluster
+
+    datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
+    cluster = ScienceParkCluster()
+
+    sim = BaseSimulation(cluster, datafile, '/simulations/this_run', 10)
+    sim.run()
 
 """
+import warnings
+
 import tables
-import os.path
-import textwrap
-from math import pi, sin, cos, sqrt
-import numpy as np
+import progressbar
 
 from sapphire import storage
+from sapphire.analysis.process_events import ProcessEvents
 
 
 class BaseSimulation(object):
 
-    """Base class
+    """Base class for simulations.
 
-    This class is intended to be subclassed.  It provides no functionality, but
-    shows the interface you can expect from simulations.
+    :param cluster: :class:`sapphire.clusters.BaseCluster` instance.
+    :param datafile: writeable PyTables file handle.
+    :param output_path: path (as string) to the PyTables group (need not
+                        exist) in which the result tables will be created.
+    :param N: number of simulations to perform.
 
     """
 
-    def __init__(self, cluster, data, output, R, N,
-                 use_poisson=None, gauss=None, trig_threshold=1.,
-                 force=False):
-        """Simulation initialization
-
-        :param cluster: BaseCluster (or derived) instance
-        :param data: the HDF5 file
-        :param output: name of the destination group to store results
-        :param R: maximum distance of shower to center of cluster
-        :param N: number of simulations to perform
-        :param force: if True, ignore pre-existing simulations; they will be
-            overwritten!
-
-        """
+    def __init__(self, cluster, datafile, output_path='/', N=1):
         self.cluster = cluster
-        self.data = data
-        self.R = R
+        self.datafile = datafile
+        self.output_path = output_path
         self.N = N
 
-        self.use_poisson = use_poisson
-        self.gauss = gauss
-        self.trig_threshold = trig_threshold
+        self._prepare_output_tables()
 
-        if output in data and not force:
-            raise RuntimeError("Cancelling simulation; %s already exists?"
-                               % output)
-        elif output in data:
-            data.remove_node(output, recursive=True)
+    def _prepare_output_tables(self):
+        """Prepare output tables in datafile.
 
-        head, tail = os.path.split(output)
-        self.output = data.create_group(head, tail, createparents=True)
-        self.observables = self.data.create_table(self.output, 'observables',
-                                                 storage.SimulationEventObservables)
-        self.coincidences = self.data.create_table(self.output, 'coincidences',
-                                                  storage.Coincidence)
-        self.c_index = self.data.create_vlarray(self.output, 'c_index',
-                                               tables.UInt32Atom())
+        The groups and tables will be created in the output_path.
 
-        self.output._v_attrs.cluster = cluster
-
-    def run(self, positions=None):
-        """Run a simulation
-
-        This is the code which performs the simulation.  It creates a list
-        of positions, creates all necessary tables and performs the
-        simulation.
-
-        :param positions: if given, use these coordinates instead of
-            generating new ones
+        :raises tables.NodeError: If any of the groups (e.g.
+            '/coincidences') already exist a exception will be raised.
+        :raises tables.FileModeError: If the datafile is not writeable.
 
         """
-        self._run_welcome_msg()
+        self._prepare_coincidence_tables()
+        self._prepare_station_tables()
+        self._store_station_index()
 
-        if not positions:
-            positions = self.generate_positions()
+    def run(self):
+        """Run the simulations."""
 
-        # Example simulation loop
-        #
-        #for event_id, (r, phi) in enumerate(positions):
-        #    self.simulate_event(event_id, r, phi)
+        for (shower_id, shower_parameters) in enumerate(
+                self.generate_shower_parameters()):
 
-        self._run_exit_msg()
+            station_events = self.simulate_events_for_shower(
+                shower_parameters)
+            self.store_coincidence(shower_id, shower_parameters,
+                                   station_events)
 
-    def _run_welcome_msg(self):
-        """Print a welcome message at start of simulation run"""
+    def generate_shower_parameters(self):
+        """Generate shower parameters like core position, energy, etc."""
 
-        print 74 * '-'
-        print textwrap.dedent("""\
-            Running simulation
+        pbar = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
+                                                progressbar.Bar(),
+                                                progressbar.ETA()])
+        shower_parameters = {'core_pos': (None, None),
+                             'zenith': None,
+                             'azimuth': None,
+                             'size': None,
+                             'energy': None,
+                             'ext_timestamp': None}
 
-            Output destination: %s
+        for i in pbar(range(self.N)):
+            yield shower_parameters
 
-            Maximum core distance of cluster center:   %f m
-            Number of cluster positions in simulation: %d
-            """ % (self.output._v_pathname, self.R, self.N))
+    def simulate_events_for_shower(self, shower_parameters):
+        """Simulate station events for a single shower"""
 
-    def _run_exit_msg(self):
-        print 74 * '-'
-        print
+        station_events = []
+        for station_id, station in enumerate(self.cluster.stations):
+            has_triggered, station_observables = \
+                    self.simulate_station_response(station,
+                                                   shower_parameters)
+            if has_triggered:
+                event_index = \
+                        self.store_station_observables(station_id,
+                                                       station_observables)
+                station_events.append((station_id, event_index))
+        return station_events
 
-    def generate_positions(self):
-        """Generate positions and an orientation uniformly on a circle
+    def simulate_station_response(self, station, shower_parameters):
+        """Simulate station response to a shower."""
 
-        :return: r, phi, alpha
+        detector_observables = self.simulate_all_detectors(
+            station.detectors, shower_parameters)
+        has_triggered = self.simulate_trigger(detector_observables)
+        station_observables = \
+            self.process_detector_observables(detector_observables)
+        station_observables = self.simulate_gps(station_observables,
+                                                shower_parameters, station)
+
+        return has_triggered, station_observables
+
+    def simulate_all_detectors(self, detectors, shower_parameters):
+        """Simulate response of all detectors in a station.
+
+        :param detectors: list of detectors
+        :param shower_parameters: parameters of the shower
 
         """
-        for i in range(self.N):
-            phi = np.random.uniform(-pi, pi)
-            r = np.sqrt(np.random.uniform(0, self.R ** 2))
-            yield r, phi
+        detector_observables = []
+        for detector in detectors:
+            observables = self.simulate_detector_response(detector,
+                                                          shower_parameters)
+            detector_observables.append(observables)
 
-    def write_observables(self, station, signals, timings):
-        """Write observables from a single event"""
+        return detector_observables
 
-        row = self.observables.row
+    def simulate_detector_response(self, detector, shower_parameters):
+        """Simulate detector response to a shower.
 
-        r = station['r']
-        phi = station['phi']
-        row['id'] = station['id']
-        row['station_id'] = station['station_id']
-        row['r'] = r
-        row['phi'] = phi
-        row['x'] = r * cos(phi)
-        row['y'] = r * sin(phi)
-        row['alpha'] = station['alpha']
-        row['N'] = sum([1 if u >= self.trig_threshold else 0 for u in signals])
-        row['t1'], row['t2'], row['t3'], row['t4'] = timings
-        row['n1'], row['n2'], row['n3'], row['n4'] = signals
+        :param detector: :class:`sapphire.clusters.Detector` instance
+        :param shower_parameters: shower parameters
+
+        :returns: dictionary with keys 'n' (number of particles in
+            detector) and 't' (time of arrival of first detected particle)
+
+        """
+        # implement this!
+        observables = {'n': 0., 't': -999}
+
+        return observables
+
+    def simulate_trigger(self, detector_observables):
+        """Simulate a trigger response."""
+
+        return True
+
+    def simulate_gps(self, station_observables, shower_parameters, station):
+        """Simulate gps timestamp."""
+
+        gps_timestamp = {'ext_timestamp': 0, 'timestamp': 0, 'nanoseconds': 0}
+        station_observables.update(gps_timestamp)
+
+        return station_observables
+
+    def process_detector_observables(self, detector_observables):
+        """Process detector observables for a station.
+
+        The list of detector observables is converted into a dictionary
+        containing the familiar observables like pulseheights, n1, n2,
+        ..., t1, t2, ..., integrals, etc.
+
+        :param detector_observables: list of observables of the detectors
+                                     making up a station.
+        :returns: dictionary containing the familiar station observables
+                  like n1, n2, n3, etc.
+        """
+        station_observables = {'pulseheights': 4 * [-1.],
+                               'integrals': 4 * [-1.]}
+
+        for detector_id, observables in enumerate(detector_observables, 1):
+            for key, value in observables.iteritems():
+                if key in ['n', 't']:
+                    key = key + str(detector_id)
+                    station_observables[key] = value
+                elif key in ['pulseheights', 'integrals']:
+                    idx = detector_id - 1
+                    station_observables[key][idx] = value
+
+        return station_observables
+
+    def store_station_observables(self, station_id, station_observables):
+        """Store station observables.
+
+        :param station_id: the id of the station in self.cluster
+        :param station_observables: A dictionary containing the
+            variables to be stored for this event.
+        :return: The index (row number) of the newly added event.
+
+        """
+        events_table = self.station_groups[station_id].events
+        row = events_table.row
+        row['event_id'] = events_table.nrows
+        for key, value in station_observables.iteritems():
+            if key in events_table.colnames:
+                row[key] = value
+            else:
+                warnings.warn('Unsupported variable', UserWarning)
         row.append()
+        events_table.flush()
 
-    def simulate_timings(self, t):
-        timings = []
-        for detector_arrival_times in t:
-            if len(detector_arrival_times) == 0:
-                timings.append(-999)
-            else:
-                t = np.array(detector_arrival_times)
-                t += self.simulate_signal_transport_time(len(t))
-                timings.append(min(t))
-        return timings
+        return events_table.nrows - 1
 
-    def simulate_signal_transport_time(self, size):
-        numbers = np.random.random(size)
-        dt = []
+    def store_coincidence(self, shower_id, shower_parameters,
+                          station_events):
+        """Store coincidence.
 
-        for x in numbers:
-            if  x < 0.3516:
-                dt.append((x + 1.2362) / 0.4391)
-            else:
-                dt.append((x + 0.3781) / 0.2018)
+        Store the information to find events of different stations
+        belonging to the same simulated shower in the coincidences
+        tables.
 
-        return dt
-
-    def simulate_detector_signals(self, num_particles_in_detectors):
-        signal = []
-        for num_particles in num_particles_in_detectors:
-            signal.append(self.simulate_single_detector_signal(num_particles))
-        return signal
-
-    def simulate_single_detector_signal(self, num_particles):
-        if self.use_poisson:
-            num_particles = np.random.poisson(num_particles)
-
-        if self.gauss is not None and num_particles > 0:
-            signal = np.random.normal(loc=num_particles,
-                                      scale=sqrt(num_particles) * self.gauss)
-        else:
-            signal = num_particles
-
-        return signal
-
-    def write_coincidence(self, event, N):
-        """Write coincidence information
-
-        :param event: simulated shower event information
-        :param N: number of stations which triggered
+        :param shower_id: The shower number for the coincidence id.
+        :param shower_parameters: A dictionary with the parameters of
+            the simulated shower.
+        :param station_events: A list of tuples containing the
+            station_id and event_index referring to the events that
+            participated in the coincidence.
 
         """
         row = self.coincidences.row
+        row['id'] = shower_id
+        row['N'] = len(station_events)
+        row['x'], row['y'] = shower_parameters['core_pos']
+        row['zenith'] = shower_parameters['zenith']
+        row['azimuth'] = shower_parameters['azimuth']
+        row['size'] = shower_parameters['size']
+        row['energy'] = shower_parameters['energy']
 
-        r = event['r']
-        phi = event['phi']
-        row['id'] = event['id']
-        row['N'] = N
-        row['r'] = r
-        row['phi'] = phi
-        row['x'] = r * cos(phi)
-        row['y'] = r * sin(phi)
-        row['shower_theta'] = event['shower_theta']
-        row['shower_phi'] = event['shower_phi']
+        timestamps = []
+        for station_id, event_index in station_events:
+            station = self.cluster.stations[station_id]
+            row['s%d' % station.number] = True
+            station_group = self.station_groups[station_id]
+            event = station_group.events[event_index]
+            timestamps.append((event['ext_timestamp'], event['timestamp'],
+                               event['nanoseconds']))
+
+        try:
+            first_timestamp = sorted(timestamps)[0]
+        except IndexError:
+            first_timestamp = (0, 0, 0)
+
+        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
+                first_timestamp
         row.append()
+        self.coincidences.flush()
+
+        self.c_index.append(station_events)
+        self.c_index.flush()
+
+    def _prepare_coincidence_tables(self):
+        """Create coincidence tables
+
+        These are the same as the tables created by
+        :class:`sapphire.analysis.coincidences.CoincidencesESD`.
+        This makes it easy to link events detected by multiple stations.
+
+        """
+        self.coincidence_group = self.datafile.create_group(self.output_path,
+                                                           'coincidences',
+                                                           createparents=True)
+        self.coincidence_group._v_attrs.cluster = self.cluster
+
+        description = storage.Coincidence
+        s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
+                     for p, station in enumerate(self.cluster.stations, 12)}
+        description.columns.update(s_columns)
+
+        self.coincidences = self.datafile.create_table(
+                self.coincidence_group, 'coincidences', description)
+
+        self.c_index = self.datafile.create_vlarray(
+                self.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
+
+        self.s_index = self.datafile.create_vlarray(
+                self.coincidence_group, 's_index', tables.VLStringAtom())
+
+    def _prepare_station_tables(self):
+        """Create the groups and events table to store the observables
+
+        :param id: the station number, used for the group name
+        :param station: a :class:`sapphire.clusters.Station` object
+
+        """
+        self.cluster_group = self.datafile.create_group(self.output_path,
+                                                       'cluster_simulations',
+                                                       createparents=True)
+        self.station_groups = []
+        for station in self.cluster.stations:
+            station_group = self.datafile.create_group(self.cluster_group,
+                                                      'station_%d' %
+                                                      station.number)
+            events_table = \
+                    self.datafile.create_table(station_group, 'events',
+                        ProcessEvents.processed_events_description,
+                        expectedrows=self.N)
+            self.station_groups.append(station_group)
+
+    def _store_station_index(self):
+        """Stores the references to the station groups for coincidences"""
+
+        for station_group in self.station_groups:
+            self.s_index.append(station_group._v_pathname)
+        self.s_index.flush()
