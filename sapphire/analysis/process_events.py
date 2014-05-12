@@ -79,7 +79,8 @@ class ProcessEvents(object):
         'n1': tables.Float32Col(pos=17, dflt=-1),
         'n2': tables.Float32Col(pos=18, dflt=-1),
         'n3': tables.Float32Col(pos=19, dflt=-1),
-        'n4': tables.Float32Col(pos=20, dflt=-1)}
+        'n4': tables.Float32Col(pos=20, dflt=-1),
+        't_trigger': tables.Float32Col(pos=21, dflt=-1)}
 
     def __init__(self, data, group, source=None):
         """Initialize the class.
@@ -217,7 +218,7 @@ class ProcessEvents(object):
 
         """
         tmptable = self.data.create_table(self.group, 't__events',
-                                         description=table.description)
+                                          description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         tmptable.append(selected_rows)
         tmptable.flush()
@@ -255,8 +256,8 @@ class ProcessEvents(object):
         if '_t_events' in self.group:
             self.data.remove_node(self.group, '_t_events')
         table = self.data.create_table(self.group, '_t_events',
-                                      self.processed_events_description,
-                                      expectedrows=length)
+                                       self.processed_events_description,
+                                       expectedrows=length)
 
         for x in xrange(length):
             table.row.append()
@@ -361,7 +362,7 @@ class ProcessEvents(object):
                 timings.append(self._reconstruct_time_from_trace(trace,
                                                                  baseline))
         timings = [time * ADC_TIME_PER_SAMPLE * 1e9
-                   if not time in [-1, -999] else time
+                   if time not in [-1, -999] else time
                    for time in timings]
         return timings
 
@@ -534,9 +535,9 @@ class ProcessIndexedEvents(ProcessEvents):
 
         """
         events = self.source.itersequence(self.indexes)
+        length = len(self.indexes)
+        timings = self._process_traces_from_event_list(events, length=length)
 
-        timings = self._process_traces_from_event_list(events,
-                                                       length=len(self.indexes))
         return timings
 
     def get_traces_for_indexed_event_index(self, idx):
@@ -578,7 +579,8 @@ class ProcessEventsWithLINT(ProcessEvents):
         return value
 
 
-class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
+class ProcessIndexedEventsWithLINT(ProcessIndexedEvents,
+                                   ProcessEventsWithLINT):
 
     """Process a subset of events using LInear INTerpolation.
 
@@ -637,13 +639,6 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
     """
 
-    def __init__(self, data, group, source=None):
-        super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
-                                                             source)
-
-        trigger_column = {'t_trigger': tables.Float32Col(pos=21, dflt=-1)}
-        self.processed_events_description.update(trigger_column)
-
     def _store_results_from_traces(self):
         table = self._tmp_events
 
@@ -686,7 +681,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         timings.append(self._reconstruct_trigger_time_from_traces(traces,
                                                                   n_detectors))
         timings = [time * ADC_TIME_PER_SAMPLE * 1e9
-                   if not time in [-1, -999] else time
+                   if time not in [-1, -999] else time
                    for time in timings]
         return timings
 
@@ -698,9 +693,10 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         this result the arrival times in each detector can be corrected
         to be relative to the timestamp.
 
-        This function assumes traces with no data filter applied. The
-        data filter in the HiSPARC DAQ can distort the peaks/pulses in
-        traces, preventing reconstruction.
+        This function assumes traces with no data filter applied and the
+        default settings for triggers. The data filter in the HiSPARC
+        DAQ can distort the peaks/pulses in traces, possibly preventing
+        reconstruction.
 
         :param traces: the traces for an event.
         :param n_detectors: number of detectors, for trigger conditions.
@@ -709,7 +705,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         """
         if not n_detectors:
             n_detectors = len(traces)
-        if not n_detectors in [2, 4]:
+        if n_detectors not in [2, 4]:
             raise LookupError('Unsupported number of detectors')
 
         low_idx = []
@@ -718,8 +714,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             low_idx.append(self._first_above_threshold(trace,
                                                        ADC_LOW_THRESHOLD))
             if n_detectors == 4 and not low_idx[-1] == -999:
-                high_idx.append(self._first_above_threshold(trace[low_idx[-1]:],
-                                                            ADC_HIGH_THRESHOLD))
+                high_idx.append(self._first_above_threshold(
+                    trace[low_idx[-1]:], ADC_HIGH_THRESHOLD))
                 if not high_idx[-1] == -999:
                     high_idx[-1] += low_idx[-1]
         low_idx = [idx for idx in low_idx if not idx == -999]
@@ -744,3 +740,110 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             trigger_idx = -999
 
         return trigger_idx
+
+
+class ProcessEventsFromSource(ProcessEvents):
+
+    """Process HiSPARC events from a different source.
+
+    This class is a subclass of ProcessEvents.  The difference is that in
+    this class, the source and destination are assumed to be different
+    files.  This also means that the source is untouched (no renaming of
+    original event tables) and the destination is assumed to be empty.
+
+    """
+
+    def __init__(self, source_file, dest_file, source_group, dest_group):
+        """Initialize the class.
+
+        :param source_file: the PyTables source file
+        :param dest_file: the PyTables dest file
+        :param group_path: the pathname of the source (and destination)
+            group
+
+        """
+        self.source_file = source_file
+        self.dest_file = dest_file
+
+        self.source_group = self.source_file.get_node(source_group)
+        self.dest_group = self.dest_file.get_node(dest_group)
+
+        self.source = self._get_source()
+
+    def _get_source(self):
+        """Return the table containing the events.
+
+        :return: table object
+
+        """
+        if '_events' in self.source_group:
+            source = self.source_group._events
+        else:
+            source = self.source_group.events
+        return source
+
+    def _check_destination(self, destination, overwrite):
+        """Override method, the destination is empty"""
+        pass
+
+    def _replace_table_with_selected_rows(self, table, row_ids):
+        """Replace events table with selected rows.
+
+        :param table: original table to be replaced.
+        :param row_ids: row ids of the selected rows which should go in
+            the destination table.
+
+        """
+        new_events = self.dest_file.create_table(self.dest_group, '_events',
+                                                 description=table.description)
+        selected_rows = table.read_coordinates(row_ids)
+        new_events.append(selected_rows)
+        new_events.flush()
+        return new_events
+
+    def _create_empty_results_table(self):
+        """Create empty results table with correct length."""
+
+        if self.limit:
+            length = self.limit
+        else:
+            length = len(self.source)
+
+        table = self.dest_file.create_table(self.dest_group, 'events',
+                                            self.processed_events_description,
+                                            expectedrows=length)
+
+        for x in xrange(length):
+            table.row.append()
+        table.flush()
+
+        return table
+
+    def _move_results_table_into_destination(self):
+        """Override, destination is temporary table"""
+        self.destination = self._tmp_events
+
+    def _get_blobs(self):
+        """Return blobs node"""
+
+        return self.source_group.blobs
+
+    def _create_progressbar_from_iterable(self, iterable, length=None):
+        """Override method, do not show a progressbar"""
+
+        return lambda x: x
+
+
+class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
+                                               ProcessEventsWithTriggerOffset):
+
+    """Process events from a different source and find trigger.
+
+    This is a subclass of :class:`ProcessEventsFromSource` and
+    :class:`ProcessEventsWithTriggerOffset`.  Processing events and
+    finding the trigger time in the traces. And storing the results in a
+    different file that the source.
+
+    """
+
+    pass
