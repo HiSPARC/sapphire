@@ -48,21 +48,21 @@ class CoreReconstruction(object):
                 raise RuntimeError(
                     "Reconstruction group %s already exists" % group_path)
             else:
-                self.data.removeNode(group_path, recursive=True)
+                self.data.remove_node(group_path, recursive=True)
 
         head, tail = os.path.split(group_path)
-        group = self.data.createGroup(head, tail)
+        group = self.data.create_group(head, tail)
         stations_description = {'s%d' % u: tables.BoolCol() for u in
                                 self.stations}
         description = self.reconstruction_description
         description.update(stations_description)
-        self.reconstructions = self.data.createTable(group,
+        self.reconstructions = self.data.create_table(group,
             'reconstructions', description)
 
         return group
 
     def _create_output_table(self, group, tablename):
-        table = self.data.createTable(group, tablename,
+        table = self.data.create_table(group, tablename,
                                       storage.ReconstructedEvent,
                                       createparents=True)
         return table
@@ -88,7 +88,7 @@ class CoreReconstruction(object):
         dst_row.append()
 
     def reconstruct_core_positions(self, source):
-        source = self.data.getNode(source)
+        source = self.data.get_node(source)
         self.source = source
 
         self.cluster = source._v_attrs.cluster
@@ -125,7 +125,8 @@ class CoreReconstruction(object):
 
         r, dens = solver.get_ldf_measurements_for_core_position((xopt, yopt))
         sigma = np.where(dens > 1, sqrt(dens), 1.)
-        popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens, p0=(1e5,), sigma=sigma)
+        popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens,
+                                        p0=(1e5,), sigma=sigma)
         shower_size, = popt
 
         chisq = self._calculate_chi_squared(solver, xopt, yopt,
@@ -185,7 +186,7 @@ class CoreReconstruction(object):
 
 class PlotCoreReconstruction(CoreReconstruction):
     def plot_reconstruct_core_position(self, source, coincidence_idx):
-        source = self.data.getNode(source)
+        source = self.data.get_node(source)
         self.source = source
         self.cluster = source._v_attrs.cluster
         coincidence = source.coincidences[coincidence_idx]
@@ -213,7 +214,7 @@ class PlotCoreReconstruction(CoreReconstruction):
         sel = coincidences.compress(coincidences[:]['N'] >= multiplicity)
         coords = sel['id']
 
-        events = self.source.observables.readCoordinates(coords)
+        events = self.source.observables.read_coordinates(coords)
         events_sel = events.compress(events[:]['N'] == num_detectors)
 
         idx = events_sel[index]['id']
@@ -254,7 +255,8 @@ class PlotCoreReconstruction(CoreReconstruction):
             method = "individual detector signal"
         else:
             method = "station-averaged signal"
-        plt.title("Coincidence (%d-fold) #%d\n%s\n%s" % (coincidence['N'], index, method, type(self.solver).__name__))
+        plt.title("Coincidence (%d-fold) #%d\n%s\n%s" %
+                  (coincidence['N'], index, method, type(self.solver).__name__))
 
     def _do_plot_ldf(self, coincidence, x0, y0, shower_size):
         x = plt.logspace(-1, 3, 100)
@@ -455,9 +457,11 @@ class CorePositionCirclesSolver(CorePositionSolver):
         return chi_squared
 
 
-class CorePositionCirclesSolverWithoutNullMeasurements(CorePositionSolverWithoutNullMeasurements, CorePositionCirclesSolver):
+class CorePositionCirclesSolverWithoutNullMeasurements(
+        CorePositionSolverWithoutNullMeasurements, CorePositionCirclesSolver):
     pass
 
 
-class OverdeterminedCorePositionCirclesSolver(CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
+class OverdeterminedCorePositionCirclesSolver(
+        CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
     pass

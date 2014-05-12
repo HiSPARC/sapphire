@@ -119,6 +119,6 @@ def do_fit_to_data_using_gauss(dataset, max_hist_value, n_bins, guess):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('kascade.h5')
+        data = tables.open_file('kascade.h5')
 
     main(data)

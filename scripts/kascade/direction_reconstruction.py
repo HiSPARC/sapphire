@@ -86,7 +86,7 @@ def plot_uncertainty_mip(table):
     x, y, y2 = [], [], []
     for N in range(1, 6):
         x.append(N)
-        events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
+        events = table.read_where('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
         print len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -117,7 +117,7 @@ def plot_uncertainty_mip(table):
     #ey2 = TIMING_ERROR * std_t(ex) * sqrt(theta_errsq)
 
     R_list = [30, 20, 16, 14, 12]
-    with tables.openFile('master-ch4v2.h5') as data2:
+    with tables.open_file('master-ch4v2.h5') as data2:
         mc = my_std_t_for_R(data2, x, R_list)
     mc = sqrt(mc ** 2 + 1.2 ** 2 + 2.5 ** 2)
     print mc
@@ -180,7 +180,7 @@ def plot_uncertainty_zenith(table):
     for theta in 5, 10, 15, 22.5, 30, 35:
         x.append(theta)
         THETA = deg2rad(theta)
-        events = table.readWhere('(min_n134 >= N) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
+        events = table.read_where('(min_n134 >= N) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
         print theta, len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -259,7 +259,7 @@ def plot_uncertainty_core_distance(table):
     x, y, y2 = [], [], []
     for R in range(0, 81, 20):
         x.append(R)
-        events = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(r - R) <= DR) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
+        events = table.read_where('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(r - R) <= DR) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
         print len(events),
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
@@ -327,7 +327,7 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
     THETA = deg2rad(22.5)
     DTHETA = deg2rad(5.)
 
-    events = table.readWhere('(min_n134 >= N) & (abs(reference_theta - THETA) <= DTHETA)')
+    events = table.read_where('(min_n134 >= N) & (abs(reference_theta - THETA) <= DTHETA)')
     sim_phi = events['reference_phi']
     r_phi = events['reconstructed_phi']
 
@@ -352,7 +352,7 @@ def plot_phi_reconstruction_results_for_MIP(table, N):
 
 
 def plot_theta_reconstruction_results_for_MIP(table, N):
-    events = table.readWhere('min_n134 >= N')
+    events = table.read_where('min_n134 >= N')
     sim_theta = events['reference_theta']
     r_theta = events['reconstructed_theta']
 
@@ -387,7 +387,7 @@ def boxplot_theta_reconstruction_results_for_MIP(table, N):
     d25, d50, d75 = [], [], []
     for angle in angles:
         theta = deg2rad(angle)
-        sel = table.readWhere('(min_n134 >= N) & (abs(reference_theta - theta) <= DTHETA)')
+        sel = table.read_where('(min_n134 >= N) & (abs(reference_theta - theta) <= DTHETA)')
         dtheta = rad2deg(sel[:]['reconstructed_theta'] - sel[:]['reference_theta'])
         r_dtheta.append(dtheta)
 
@@ -433,7 +433,7 @@ def boxplot_phi_reconstruction_results_for_MIP(table, N):
         rad_low = deg2rad(low)
         rad_high = deg2rad(high)
         query = '(min_n134 >= N) & (rad_low < reference_phi) & (reference_phi < rad_high) & (abs(reference_theta - THETA) <= DTHETA)'
-        sel = table.readWhere(query)
+        sel = table.read_where(query)
         dphi = sel[:]['reconstructed_phi'] - sel[:]['reference_phi']
         dphi = (dphi + pi) % (2 * pi) - pi
         r_dphi.append(rad2deg(dphi))
@@ -480,7 +480,7 @@ def boxplot_arrival_times(table, N):
     t25, t50, t75 = [], [], []
     for low, high in zip(bin_edges[:-1], bin_edges[1:]):
         query = '(min_n134 >= N) & (low <= r) & (r < high) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)'
-        sel = table.readWhere(query)
+        sel = table.read_where(query)
         t2 = sel[:]['t2']
         t1 = sel[:]['t1']
         ct1 = t1.compress((t1 > -999) & (t2 > -999))
@@ -565,7 +565,7 @@ def boxplot_core_distances_for_mips(table):
     r75_list = []
     x = []
     for N in range(1, 5):
-        sel = table.readWhere('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(k_energy - ENERGY) <= DENERGY) & (r <= MAX_R)')
+        sel = table.read_where('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(k_energy - ENERGY) <= DENERGY) & (r <= MAX_R)')
         r = sel[:]['r']
         r25_list.append(scoreatpercentile(r, 25))
         r50_list.append(scoreatpercentile(r, 50))
@@ -644,8 +644,8 @@ def plot_fsot_vs_lint_for_zenith(fsot, lint):
         rad_high = deg2rad(high)
 
         query = '(min_n134 >= min_N) & (rad_low <= reference_theta) & (reference_theta < rad_high)'
-        f_sel = fsot.readWhere(query)
-        l_sel = lint.readWhere(query)
+        f_sel = fsot.read_where(query)
+        l_sel = lint.read_where(query)
 
         errors = f_sel['reconstructed_phi'] - f_sel['reference_phi']
         errors2 = f_sel['reconstructed_theta'] - f_sel['reference_theta']
@@ -694,7 +694,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile('kascade.h5', 'r')
+        data = tables.open_file('kascade.h5', 'r')
 
     artist.utils.set_prefix("KAS-")
     utils.set_prefix("KAS-")

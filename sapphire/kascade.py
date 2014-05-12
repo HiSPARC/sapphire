@@ -15,25 +15,25 @@ class StoreKascadeData(object):
                  force=False):
 
         self.data = data
-        self.hisparc = data.getNode(hisparc_path, 'events')
+        self.hisparc = data.get_node(hisparc_path, 'events')
 
         if kascade_path in data:
             if not force:
-                raise RuntimeError("Cancelling data storage; %s already exists?"
+                raise RuntimeError("Cancelling data storage; %s already exists"
                                    % kascade_path)
             else:
-                data.removeNode(kascade_path, recursive=True)
+                data.remove_node(kascade_path, recursive=True)
 
-        self.kascade = data.createTable(kascade_path, 'events', KascadeEvent,
+        self.kascade = data.create_table(kascade_path, 'events', KascadeEvent,
                                         "KASCADE events", createparents=True)
         self.kascade_filename = kascade_filename
 
     def read_and_store_data(self):
         """Read and store KASCADE data matching HiSPARC data
 
-        This function looks at the HiSPARC event data in the specified datafile
-        and then processes and adds KASCADE data surrounding those events, for
-        later coincidence processing.
+        This function looks at the HiSPARC event data in the specified
+        datafile and then processes and adds KASCADE data surrounding
+        those events, for later coincidence processing.
 
         """
         # Determine start and end timestamps from HiSPARC data
@@ -92,7 +92,7 @@ class StoreKascadeData(object):
 
         # read all columns into KASCADE-named variables
         Irun, Ieve, Gt, Mmn, EnergyArray, Xc, Yc, Ze, Az, Size, Nmu, He0, \
-        Hmu0, He1, Hmu1, He2, Hmu2, He3, Hmu3, T200, P200 = data
+            Hmu0, He1, Hmu1, He2, Hmu2, He3, Hmu3, T200, P200 = data
 
         tablerow['run_id'] = Irun
         tablerow['event_id'] = Ieve
@@ -117,25 +117,27 @@ class KascadeCoincidences(object):
     def __init__(self, data, hisparc_group, kascade_group, overwrite=False,
                  ignore_existing=False):
         self.data = data
-        self.hisparc_group = data.getNode(hisparc_group)
-        self.kascade_group = data.getNode(kascade_group)
+        self.hisparc_group = data.get_node(hisparc_group)
+        self.kascade_group = data.get_node(kascade_group)
 
         if 'c_index' in self.kascade_group:
             if not overwrite and not ignore_existing:
-                raise RuntimeError("I found existing coincidences stored in the KASCADE group")
+                raise RuntimeError("I found existing coincidences stored in "
+                                   "the KASCADE group")
             elif overwrite:
-                data.removeNode(kascade_group, 'c_index')
+                data.remove_node(kascade_group, 'c_index')
 
     def search_coincidences(self, timeshift=0, dtlimit=None, limit=None):
         """Search for coincidences
 
-        This function does the actual searching of coincidences. It uses a
-        timeshift to shift the HiSPARC data (we know that these employ GPS
-        time, so not taking UTC leap seconds into account). The shift will also
-        compensate for delays in the experimental setup.
+        This function does the actual searching of coincidences. It uses
+        a timeshift to shift the HiSPARC data (we know that these employ
+        GPS time, so not taking UTC leap seconds into account). The
+        shift will also compensate for delays in the experimental setup.
 
-        The coincidences are stored as an instance variable (self.coincidences).
-        Final storage can be done by calling :meth:`store_coincidences`.
+        The coincidences are stored as an instance variable
+        (self.coincidences). Final storage can be done by calling
+        :meth:`store_coincidences`.
 
         :param timeshift: the amount of time the HiSPARC data are shifted (in
             seconds).  Default: 0.
@@ -210,11 +212,11 @@ class KascadeCoincidences(object):
             # one.
             k_idx += 1
 
-        self.coincidences = np.rec.fromarrays([coinc_dt, coinc_h_idx, coinc_k_idx],
-                                              names='dt, h_idx, k_idx')
+        self.coincidences = np.rec.fromarrays(
+            [coinc_dt, coinc_h_idx, coinc_k_idx], names='dt, h_idx, k_idx')
 
     def store_coincidences(self):
-        self.data.createTable(self.kascade_group, 'c_index', self.coincidences)
+        self.data.create_table(self.kascade_group, 'c_index', self.coincidences)
 
     def _get_cached_sorted_id_and_timestamp_arrays(self):
         if not hasattr(self, '_h'):
@@ -226,6 +228,7 @@ class KascadeCoincidences(object):
     def _get_sorted_id_and_timestamp_array(self, group):
         timestamps = group.events.col('ext_timestamp')
         ids = group.events.col('event_id')
-        data = np.rec.fromarrays([ids, timestamps], names='event_id, ext_timestamp')
+        data = np.rec.fromarrays([ids, timestamps],
+                                 names='event_id, ext_timestamp')
         data.sort(order='ext_timestamp')
         return data

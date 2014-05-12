@@ -21,8 +21,8 @@ class ShowerParticle(tables.IsDescription):
 
     .. attribute:: pid
 
-        a particle identifier.  Possible values are determined by the simulation
-        package.
+        a particle identifier. Possible values are determined by the
+        simulation package.
 
     .. attribute:: core_distance
 
@@ -123,8 +123,8 @@ class SimulationParticle(tables.IsDescription):
 
     .. attribute:: pid
 
-        a particle identifier.  Possible values are determined by the simulation
-        package.
+        a particle identifier. Possible values are determined by the
+        simulation package.
 
     .. attribute:: r, phi
 
@@ -398,27 +398,3 @@ class ReconstructedKascadeEvent(tables.IsDescription):
     k_dens_mu = tables.FloatCol(shape=4)
     k_P200 = tables.FloatCol()
     k_T200 = tables.FloatCol()
-
-
-class ProcessedHisparcEvent(tables.IsDescription):
-    event_id = tables.UInt32Col()
-    timestamp = tables.Time32Col()
-    nanoseconds = tables.UInt32Col()
-    ext_timestamp = tables.UInt64Col()
-    data_reduction = tables.BoolCol()
-    trigger_pattern = tables.UInt32Col()
-    baseline = tables.Int16Col(shape=4, dflt=-1)
-    std_dev = tables.Int16Col(shape=4, dflt=-1)
-    n_peaks = tables.Int16Col(shape=4, dflt=-1)
-    pulseheights = tables.Int16Col(shape=4, dflt=-1)
-    integrals = tables.Int32Col(shape=4, dflt=-1)
-    traces = tables.Int32Col(shape=4, dflt=-1)
-    event_rate = tables.Float32Col()
-    t1 = tables.Float32Col(dflt=-1)
-    t2 = tables.Float32Col(dflt=-1)
-    t3 = tables.Float32Col(dflt=-1)
-    t4 = tables.Float32Col(dflt=-1)
-    n1 = tables.Float32Col(dflt=-1)
-    n2 = tables.Float32Col(dflt=-1)
-    n3 = tables.Float32Col(dflt=-1)
-    n4 = tables.Float32Col(dflt=-1)

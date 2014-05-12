@@ -27,7 +27,7 @@ if USE_TEX:
 
 def main():
     global data
-    data = tables.openFile('master-ch4v2.h5', 'r')
+    data = tables.open_file('master-ch4v2.h5', 'r')
     #utils.set_suffix('E_1PeV')
 
     #scatterplot_core_distance_vs_time()
@@ -73,7 +73,7 @@ def plot_and_fit_statistic(func):
     bins = np.logspace(0, 2, 25)
     x, y = [], []
     for low, high in zip(bins[:-1], bins[1:]):
-        sel = electrons.readWhere('(low < core_distance) & (core_distance <= high)')
+        sel = electrons.read_where('(low < core_distance) & (core_distance <= high)')
         statistic = func(sel[:]['arrival_time'])
         x.append(np.mean([low, high]))
         y.append(statistic)
@@ -100,7 +100,7 @@ def boxplot_core_distance_vs_time():
     x, arrival_time, widths = [], [], []
     t25, t50, t75 = [], [], []
     for low, high in zip(bins[:-1], bins[1:]):
-        sel = leptons.readWhere('(low < core_distance) & (core_distance <= high)')
+        sel = leptons.read_where('(low < core_distance) & (core_distance <= high)')
         x.append(np.mean([low, high]))
         arrival_time.append(sel[:]['arrival_time'])
         widths.append((high - low) / 2)
@@ -136,7 +136,7 @@ def hists_core_distance_vs_time():
 
     bins = np.logspace(0, 2, 5)
     for low, high in zip(bins[:-1], bins[1:]):
-        sel = electrons.readWhere('(low < core_distance) & (core_distance <= high)')
+        sel = electrons.read_where('(low < core_distance) & (core_distance <= high)')
         arrival_time = sel[:]['arrival_time']
         plt.hist(arrival_time, bins=np.logspace(-2, 3, 50), histtype='step',
                  label="%.2f <= log10(R) < %.2f" % (np.log10(low),
@@ -160,7 +160,7 @@ def plot_front_passage():
     low = R - dR
     high = R + dR
     global t
-    t = leptons.readWhere('(low < core_distance) & (core_distance <= high)',
+    t = leptons.read_where('(low < core_distance) & (core_distance <= high)',
                           field='arrival_time')
 
     n, bins, patches = hist(t, bins=linspace(0, 30, 31), histtype='step')

@@ -21,13 +21,13 @@
         if __name__ == '__main__':
             station_groups = ['/s%d' % u for u in STATIONS]
 
-            data = tables.openFile('data.h5', 'w')
+            data = tables.open_file('data.h5', 'w')
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END)
 
-            coincidences = coincidences.Coincidences(data, '/coincidences',
-                                                     station_groups)
-            coincidences.search_and_store_coincidences()
+            coin = coincidences.Coincidences(data, '/coincidences',
+                                             station_groups)
+            coin.search_and_store_coincidences()
 
 """
 import time
@@ -67,7 +67,7 @@ class Coincidences(object):
     ProcessWithoutTraces = process_events.ProcessIndexedEventsWithoutTraces
 
     def __init__(self, data, coincidence_group, station_groups,
-                 overwrite=False):
+                 overwrite=False, progress=True):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -76,24 +76,27 @@ class Coincidences(object):
             data.
         :param overwrite: if True, overwrite a previous coincidences
             group.
+        :param progress: if True, show a progressbar while storing
+            coincidences.
 
         """
         self.data = data
         if coincidence_group is not None:
             if coincidence_group in self.data:
                 if overwrite:
-                    self.data.removeNode(coincidence_group, recursive=True)
+                    self.data.remove_node(coincidence_group, recursive=True)
                 else:
                     raise RuntimeError("Group %s already exists in datafile, "
                                        "and overwrite is False" %
                                        coincidence_group)
             head, tail = os.path.split(coincidence_group)
-            self.coincidence_group = data.createGroup(head, tail,
+            self.coincidence_group = data.create_group(head, tail,
                                                       createparents=True)
         self.station_groups = station_groups
 
         self.trig_threshold = .5
         self.overwrite = overwrite
+        self.progress = progress
 
     def search_and_store_coincidences(self, cluster=None):
         """Search, process and store coincidences.
@@ -142,9 +145,9 @@ class Coincidences(object):
         c_index, timestamps = \
             self._search_coincidences(window, shifts, limit)
         timestamps = np.array(timestamps, dtype=np.uint64)
-        self.data.createArray(self.coincidence_group, '_src_timestamps',
+        self.data.create_array(self.coincidence_group, '_src_timestamps',
                               timestamps)
-        src_c_index = self.data.createVLArray(self.coincidence_group,
+        src_c_index = self.data.create_vlarray(self.coincidence_group,
                                               '_src_c_index',
                                               tables.UInt32Atom())
         for coincidence in c_index:
@@ -173,7 +176,7 @@ class Coincidences(object):
         full_index = np.array(selected_timestamps)
 
         for station_id, station_group in enumerate(self.station_groups):
-            station_group = self.data.getNode(station_group)
+            station_group = self.data.get_node(station_group)
             selected = full_index.compress(full_index[:, 1] == station_id,
                                            axis=0)
             index = selected[:, 2]
@@ -204,27 +207,29 @@ class Coincidences(object):
             self.coincidence_group._v_attrs.cluster = cluster
 
         self.c_index = []
-        self.coincidences = self.data.createTable(self.coincidence_group,
+        self.coincidences = self.data.create_table(self.coincidence_group,
                                                   'coincidences',
                                                   storage.Coincidence)
-        self.observables = self.data.createTable(self.coincidence_group,
+        self.observables = self.data.create_table(self.coincidence_group,
                                                  'observables',
                                                  storage.EventObservables)
 
-        print "Storing coincidences"
-
         # ProgressBar does not work for empty iterables.
         if len(self.coincidence_group._src_c_index):
-            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                      pb.ETA()])
-            for coincidence in progress(self.coincidence_group._src_c_index):
+            if self.progress:
+                progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                                   pb.ETA()])
+                src_c_index = progress(self.coincidence_group._src_c_index)
+            else:
+                src_c_index = self.coincidence_group._src_c_index
+            for coincidence in src_c_index:
                 self._store_coincidence(coincidence)
         else:
             print "Creating empty tables, no coincidences found"
             for coincidence in self.coincidence_group._src_c_index:
                 self._store_coincidence(coincidence)
 
-        c_index = self.data.createVLArray(self.coincidence_group, 'c_index',
+        c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
                                           tables.UInt32Col())
         for coincidence in self.c_index:
             c_index.append(coincidence)
@@ -250,7 +255,7 @@ class Coincidences(object):
             station_id = event_desc[1]
             event_index = event_desc[2]
 
-            group = self.data.getNode(self.station_groups[station_id])
+            group = self.data.get_node(self.station_groups[station_id])
             event = group.events[event_index]
             idx = self._store_event_in_observables(event, coincidence_id,
                                                    station_id)
@@ -317,7 +322,7 @@ class Coincidences(object):
 
             >>> import tables
             >>> from hisparc.analysis.coincidences import search_coincidences
-            >>> data = tables.openFile('test.h5', 'a')
+            >>> data = tables.open_file('test.h5', 'a')
             >>> coincidences, timestamps = search_coincidences(data,
             ... ['/hisparc/station501', '/hisparc/station502',
             ... '/hisparc/station503', '/hisparc/station504',
@@ -331,9 +336,9 @@ class Coincidences(object):
         # get the 'events' tables from the groups or groupnames
         event_tables = []
         for station_group in self.station_groups:
-            station_group = self.data.getNode(station_group)
+            station_group = self.data.get_node(station_group)
             if 'events' in station_group:
-                event_tables.append(self.data.getNode(station_group, 'events'))
+                event_tables.append(self.data.get_node(station_group, 'events'))
         stations = event_tables
 
         # calculate the shifts in nanoseconds and cast them to long.
@@ -410,6 +415,12 @@ class Coincidences(object):
 
         # traverse all timestamps
         prev_coincidence = []
+
+        if self.progress and len(timestamps):
+            progress = pb.ProgressBar(maxval=len(timestamps),
+                                      widgets=[pb.Percentage(), pb.Bar(),
+                                               pb.ETA()]).start()
+
         for i in xrange(len(timestamps)):
 
             # build coincidence, starting with the current timestamp
@@ -434,6 +445,12 @@ class Coincidences(object):
                     # no, so it's a new one
                     coincidences.append(c)
                     prev_coincidence = c
+
+            if self.progress and not i % 5000:
+                progress.update(i)
+
+        if self.progress:
+            progress.finish()
 
         return coincidences
 
@@ -489,31 +506,33 @@ class CoincidencesESD(Coincidences):
         self.c_index = []
 
         description = storage.Coincidence
-        description.columns.update(s_columns)
-        self.coincidences = self.data.createTable(self.coincidence_group,
+        description.columns.update(stations_description)
+        self.coincidences = self.data.create_table(self.coincidence_group,
                                                   'coincidences', description)
-
-        print "Storing coincidences"
 
         # ProgressBar does not work for empty iterables.
         if len(self._src_c_index):
-            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                               pb.ETA()])
-            for coincidence in progress(self._src_c_index):
+            if self.progress:
+                progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
+                                                   pb.ETA()])
+                src_c_index = progress(self._src_c_index)
+            else:
+                src_c_index = self._src_c_index
+            for coincidence in src_c_index:
                 self._store_coincidence(coincidence)
         else:
             print "Creating empty tables, no coincidences found"
             for coincidence in self._src_c_index:
                 self._store_coincidence(coincidence)
 
-        c_index = self.data.createVLArray(self.coincidence_group, 'c_index',
+        c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
                                           tables.UInt32Col(shape=2))
         for coincidence in self.c_index:
             c_index.append(coincidence)
         c_index.flush()
         self.c_index = c_index
 
-        s_index = self.data.createVLArray(self.coincidence_group, 's_index',
+        s_index = self.data.create_vlarray(self.coincidence_group, 's_index',
                                           tables.VLStringAtom())
         for station_group in self.station_groups:
             s_index.append(station_group)
@@ -543,8 +562,7 @@ class CoincidencesESD(Coincidences):
             else:
                 row['s%d' % station_id] = True
 
-
-            group = self.data.getNode(self.station_groups[station_id])
+            group = self.data.get_node(self.station_groups[station_id])
             event = group.events[event_index]
             observables_idx.append((station_id, event_index))
             timestamps.append((event['ext_timestamp'], event['timestamp'],

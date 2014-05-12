@@ -118,8 +118,8 @@ def calc_direction_single_vs_cluster(data, station, cluster, limit=None):
     cluster_query = '(N == 3) & ' + ' & '.join(['s%d' % u for u in cluster])
     cluster_str = [str(u) for u in cluster]
 
-    sel_station = reconstructions.readWhere(station_query)
-    sel_cluster = reconstructions.readWhere(cluster_query)
+    sel_station = reconstructions.read_where(station_query)
+    sel_cluster = reconstructions.read_where(cluster_query)
 
     theta_cluster, theta_station = [], []
     phi_cluster, phi_station = [], []
@@ -146,8 +146,8 @@ def calc_direction_single_vs_single(data, station1, station2):
     station1_query = '(N == 1) & s%d & (min_n134 >= 2.)' % station1
     station2_query = '(N == 1) & s%d & (min_n134 >= 2.)' % station2
 
-    sel_station1 = reconstructions.readWhere(station1_query)
-    sel_station2 = reconstructions.readWhere(station2_query)
+    sel_station1 = reconstructions.read_where(station1_query)
+    sel_station2 = reconstructions.read_where(station2_query)
 
     theta_station2, theta_station1 = [], []
     phi_station2, phi_station1 = [], []
@@ -198,7 +198,7 @@ def hist_phi_single_stations(data):
     for n, station in enumerate(range(501, 507), 1):
         subplot(2, 3, n)
         query = '(N == 1) & s%d' % station
-        phi = reconstructions.readWhere(query, field='reconstructed_phi')
+        phi = reconstructions.read_where(query, field='reconstructed_phi')
         hist(rad2deg(phi), bins=linspace(-180, 180, 21), histtype='step')
         xlabel(r"$\phi$")
         legend([station])
@@ -214,7 +214,7 @@ def hist_theta_single_stations(data):
     for n, station in enumerate(range(501, 507), 1):
         subplot(2, 3, n)
         query = '(N == 1) & s%d' % station
-        theta = reconstructions.readWhere(query, field='reconstructed_theta')
+        theta = reconstructions.read_where(query, field='reconstructed_theta')
         hist(rad2deg(theta), bins=linspace(0, 45, 21), histtype='step')
         xlabel(r"$\theta$")
         legend([station])
@@ -700,8 +700,8 @@ def hist_fav_single_stations(data):
     figure()
     for n, station in enumerate([501, 503, 506], 1):
         query = '(N == 1) & s%d' % station
-        phi = reconstructions.readWhere(query, field='reconstructed_phi')
-        theta = reconstructions.readWhere(query, field='reconstructed_theta')
+        phi = reconstructions.read_where(query, field='reconstructed_phi')
+        theta = reconstructions.read_where(query, field='reconstructed_theta')
 
         subplot(2, 3, n)
         N, bins, patches = hist(rad2deg(phi), bins=linspace(-180, 180, 21),
@@ -758,13 +758,13 @@ def hist_fav_single_stations(data):
 if __name__ == '__main__':
     if 'data' not in globals():
         # For single station plots
-        #data = tables.openFile('month-single.h5')
+        #data = tables.open_file('month-single.h5')
         # For station / cluster plots
-        #data = tables.openFile('new.h5')
-        #data = tables.openFile('newlarge.h5')
-        data = tables.openFile('master.h5')
+        #data = tables.open_file('new.h5')
+        #data = tables.open_file('newlarge.h5')
+        data = tables.open_file('master.h5')
         # For N vs R plot
-        #data = tables.openFile('master-large.h5')
+        #data = tables.open_file('master-large.h5')
         # No data
         #data = None
 

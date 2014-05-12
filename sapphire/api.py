@@ -29,7 +29,6 @@ import datetime
 from urllib2 import urlopen, HTTPError, URLError
 import json
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('api')
 
 API = {"stations": 'stations/',
@@ -77,6 +76,12 @@ class Network(object):
         """
         return self.all_countries
 
+    def country_numbers(self):
+        """Same as countries but only retuns a list of country numbers"""
+
+        countries = self.all_countries()
+        return [country['number'] for country in countries]
+
     def clusters(self, country=None):
         """Get a list of clusters
 
@@ -91,6 +96,12 @@ class Network(object):
             path = API['clusters_in_country'].format(country_number=country)
             clusters = _get_json(path)
         return clusters
+
+    def cluster_numbers(self, country=None):
+        """Same as clusters but only retuns a list of cluster numbers"""
+
+        clusters = self.clusters(country=country)
+        return [cluster['number'] for cluster in clusters]
 
     def subclusters(self, country=None, cluster=None):
         """Get a list of subclusters
@@ -115,6 +126,12 @@ class Network(object):
             path = API['subclusters_in_cluster'].format(cluster_number=cluster)
             subclusters = _get_json(path)
         return subclusters
+
+    def subcluster_numbers(self, country=None, cluster=None):
+        """Same as subclusters but only retuns a list of subcluster numbers"""
+
+        subclusters = self.subclusters(country=country, cluster=cluster)
+        return [subcluster['number'] for subcluster in subclusters]
 
     def stations(self, country=None, cluster=None, subcluster=None):
         """Get a list of stations
@@ -153,6 +170,13 @@ class Network(object):
             stations = _get_json(path)
         return stations
 
+    def stations_numbers(self, country=None, cluster=None, subcluster=None):
+        """Same as stations but only retuns a list of station numbers"""
+
+        stations = self.stations(country=country, cluster=cluster,
+                                 subcluster=subcluster)
+        return [station['number'] for station in stations]
+
     def nested_network(self):
         """Get a nested list of the full network"""
         countries = self.all_countries
@@ -183,7 +207,6 @@ class Network(object):
         path = (API['stations_with_data'].format(year=year, month=month,
                                                  day=day).strip("/"))
         return _get_json(path)
-
 
     def stations_with_weather(self, year='', month='', day=''):
         """Get a list of stations with weather data on the specified date

@@ -26,7 +26,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile(DATAFILE, 'a')
+        data = tables.open_file(DATAFILE, 'a')
 
     if '/simulations' in data:
         print
@@ -39,7 +39,7 @@ if __name__ == '__main__':
             inp = 'Ctrl-C'
 
         if inp.lower() == 'yes':
-            data.removeNode('/simulations', recursive=True)
+            data.remove_node('/simulations', recursive=True)
         else:
             print
             print "Aborting!"

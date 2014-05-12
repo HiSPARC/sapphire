@@ -18,7 +18,7 @@ class Master(object):
     def __init__(self, data_filename):
         if os.path.exists(data_filename):
             warnings.warn("%s already exists, some steps are skipped" % data_filename)
-        self.data = tables.openFile(data_filename, 'a')
+        self.data = tables.open_file(data_filename, 'a')
 
     def main(self):
         self.store_shower_data()
@@ -83,10 +83,10 @@ class Master(object):
             sim.run()
 
     def get_shower_angles_from_shower_data(self):
-        return self.data.listNodes('/showers/E_1PeV')
+        return self.data.list_nodes('/showers/E_1PeV')
 
     def get_showers_in_group(self, group):
-        return self.data.listNodes(group)
+        return self.data.list_nodes(group)
 
     def is_qsub_available(self):
         return os.path.exists('/usr/bin/qsub')

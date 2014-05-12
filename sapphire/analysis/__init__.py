@@ -2,6 +2,10 @@
 
 This package contains modules for performing various analysis tasks:
 
+:mod:`~sapphire.analysis.coincidence_queries`
+    Filter coincidences analysed with
+    :class:`~sapphire.analysis.coincidences.CoincidenceESD`
+
 :mod:`~sapphire.analysis.coincidences`
     Search for coincidences between HiSPARC stations
 
@@ -18,4 +22,5 @@ This package contains modules for performing various analysis tasks:
     Process HiSPARC events
 
 """
-from direction_reconstruction import DirectionReconstruction, BinnedDirectionReconstruction
+from direction_reconstruction import (DirectionReconstruction,
+                                      BinnedDirectionReconstruction)

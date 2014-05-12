@@ -15,7 +15,7 @@ class Master(object):
     kascade_group = '/kascade'
 
     def __init__(self, data_filename, kascade_filename):
-        self.data = tables.openFile(data_filename, 'a')
+        self.data = tables.open_file(data_filename, 'a')
         self.kascade_filename = kascade_filename
 
     def main(self):
@@ -33,7 +33,7 @@ class Master(object):
                                    correct_offsets=True)
 
     def store_cluster_instance(self):
-        group = self.data.getNode(self.hisparc_group)
+        group = self.data.get_node(self.hisparc_group)
 
         if 'cluster' not in group._v_attrs:
             cluster = clusters.SingleStation()
@@ -76,7 +76,7 @@ class Master(object):
     def process_events(self, process_cls, destination=None):
         print "Processing HiSPARC events"
 
-        c_index = self.data.getNode(self.kascade_group, 'c_index')
+        c_index = self.data.get_node(self.kascade_group, 'c_index')
         index = c_index.col('h_idx')
 
         process = process_cls(self.data, self.hisparc_group, index)
