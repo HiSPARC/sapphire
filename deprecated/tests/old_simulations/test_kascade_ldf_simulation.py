@@ -2,7 +2,7 @@ import unittest
 from mock import Mock, MagicMock, sentinel, patch
 from numpy import logspace, array
 
-from sapphire.simulations.ldf import KascadeLdfSimulation, BaseLdfSimulation, KascadeLdf
+from sapphire.old_simulations.ldf import KascadeLdfSimulation, BaseLdfSimulation, KascadeLdf
 
 
 class KascadeLdfSimulationTest(unittest.TestCase):
@@ -76,3 +76,7 @@ class KascadeLdfTest(unittest.TestCase):
         with patch.object(KascadeLdf, '_cache_c_s_value') as mock_cache:
             sim = KascadeLdf()
             mock_cache.assert_called_once_with()
+
+
+if __name__ == '__main__':
+    unittest.main()

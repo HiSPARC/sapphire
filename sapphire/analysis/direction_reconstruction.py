@@ -2,17 +2,20 @@ import sys
 import os
 
 import progressbar as pb
-from numpy import isnan, arcsin, arctan2, cos, floor, inf, sin, sqrt, tan, where, deg2rad, pi
+from numpy import (isnan, arcsin, arctan2, cos, floor, inf, sin, sqrt, tan,
+                   where, deg2rad, pi)
 from numpy.random import uniform
 
 from sapphire import storage
 
 
 class DirectionReconstruction(object):
-    def __init__(self, datafile, results_table=None, min_n134=1., N=None, overwrite=False):
+    def __init__(self, datafile, results_table=None, min_n134=1., N=None,
+                 overwrite=False):
         self.data = datafile
         if results_table:
-            self.results_table = self.create_empty_output_table(results_table, overwrite)
+            self.results_table = self.create_empty_output_table(results_table,
+                                                                overwrite)
         else:
             self.results_table = None
         self.min_n134 = min_n134
@@ -23,7 +26,8 @@ class DirectionReconstruction(object):
 
         if table_path in self.data:
             if not overwrite:
-                raise RuntimeError("Reconstruction table %s already exists" % table_path)
+                raise RuntimeError("Reconstruction table %s already exists" %
+                                   table_path)
             else:
                 self.data.remove_node(group, tablename)
 
@@ -32,8 +36,8 @@ class DirectionReconstruction(object):
 
     def _create_output_table(self, group, tablename):
         table = self.data.create_table(group, tablename,
-                                      storage.ReconstructedEvent,
-                                      createparents=True)
+                                       storage.ReconstructedEvent,
+                                       createparents=True)
         return table
 
     def reconstruct_angles_for_shower_group(self, groupname):
@@ -48,7 +52,6 @@ class DirectionReconstruction(object):
         for shower in progressbar(self.data.list_nodes(shower_group)):
             self.reconstruct_angles(shower)
 
-
     def reconstruct_angles(self, shower):
         shower_table = shower.observables
         coincidence_table = shower.coincidences
@@ -56,18 +59,20 @@ class DirectionReconstruction(object):
         if not 'cluster' in self.results_table.attrs:
             self.results_table.attrs.cluster = shower._v_attrs.cluster
 
-        for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
+        for event, coincidence in zip(shower_table[:self.N],
+                                      coincidence_table[:self.N]):
             assert event['id'] == coincidence['id']
             if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
                 theta, phi = self.reconstruct_angle(event)
 
                 if not isnan(theta) and not isnan(phi):
-                    self.store_reconstructed_event(coincidence, event, theta, phi)
+                    self.store_reconstructed_event(coincidence, event, theta,
+                                                   phi)
 
         self.results_table.flush()
 
-    def store_reconstructed_event(self, coincidence, event, reconstructed_theta,
-                                  reconstructed_phi):
+    def store_reconstructed_event(self, coincidence, event,
+                                  reconstructed_theta, reconstructed_phi):
         dst_row = self.results_table.row
 
         dst_row['id'] = event['id']
@@ -174,8 +179,8 @@ class DirectionReconstruction(object):
         cosphi2 = cos(phi2)
 
         den = ((1 + tanphi ** 2) ** 2 * r1 ** 2 * r2 ** 2 * sin(theta) ** 2
-           * (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2
-           / c ** 2)
+               * (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2
+               / c ** 2)
 
         A = (r1 ** 2 * sinphi1 ** 2
              + r2 ** 2 * sinphi2 ** 2
@@ -245,8 +250,10 @@ class DirectionReconstruction(object):
 
 
 class BinnedDirectionReconstruction(DirectionReconstruction):
-    def __init__(self, datafile, results_table, min_n134=1., binning=2.5, randomize_binning=False, N=None, overwrite=False):
-        super(BinnedDirectionReconstruction, self).__init__(datafile, results_table, min_n134, N, overwrite)
+    def __init__(self, datafile, results_table, min_n134=1., binning=2.5,
+                 randomize_binning=False, N=None, overwrite=False):
+        super(BinnedDirectionReconstruction, self).__init__(
+            datafile, results_table, min_n134, N, overwrite)
         self.binning = binning
         self.randomize_binning = randomize_binning
 
@@ -261,14 +268,15 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
             for idx in 't1', 't2', 't3', 't4':
                 event[idx] += uniform(0, binning)
 
-        return super(BinnedDirectionReconstruction, self).reconstruct_angle(event)
+        return super(BinnedDirectionReconstruction, self).reconstruct_angle(
+            event)
 
 
 class KascadeDirectionReconstruction(DirectionReconstruction):
     def _create_output_table(self, group, tablename):
         table = self.data.create_table(group, tablename,
-                                      storage.ReconstructedKascadeEvent,
-                                      createparents=True)
+                                       storage.ReconstructedKascadeEvent,
+                                       createparents=True)
         return table
 
     def reconstruct_angles(self, hisparc_group, kascade_group,
@@ -296,8 +304,8 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
                 theta, phi = self.reconstruct_angle(hisparc_event, offsets)
 
                 if not isnan(theta) and not isnan(phi):
-                    self.store_reconstructed_event(hisparc_event, kascade_event,
-                                                   theta, phi)
+                    self.store_reconstructed_event(hisparc_event,
+                                                   kascade_event, theta, phi)
 
         self.results_table.flush()
 
@@ -306,8 +314,10 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         dst_row = self.results_table.row
 
         r, phi, alpha = self.station.get_rphialpha_coordinates()
-        core_r, core_phi = self._calc_core_position_rphi_for_kascade_event(kascade_event)
-        reference_phi = self._calc_reference_phi_for_kascade_event(kascade_event)
+        core_r, core_phi = self._calc_core_position_rphi_for_kascade_event(
+            kascade_event)
+        reference_phi = self._calc_reference_phi_for_kascade_event(
+            kascade_event)
 
         dst_row['id'] = hisparc_event['event_id']
         dst_row['station_id'] = 0
@@ -326,7 +336,8 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         dst_row['reference_phi'] = reference_phi
         dst_row['reconstructed_theta'] = reconstructed_theta
         dst_row['reconstructed_phi'] = reconstructed_phi
-        dst_row['min_n134'] = min(hisparc_event['n1'], hisparc_event['n3'], hisparc_event['n4'])
+        dst_row['min_n134'] = min(hisparc_event['n1'], hisparc_event['n3'],
+                                  hisparc_event['n4'])
 
         dst_row['k_energy'] = kascade_event['energy']
         dst_row['k_core_pos'] = kascade_event['core_pos']

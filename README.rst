@@ -4,11 +4,21 @@ SAPPHiRE — A Framework for HiSPARC
 Introduction
 ------------
 
+.. image:: http://img.shields.io/pypi/v/hisparc-sapphire.png
+   :target: https://pypi.python.org/pypi/hisparc-sapphire/
+.. image:: http://img.shields.io/badge/license-GPLv3-blue.png
+   :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
+.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.png
+   :target: https://travis-ci.org/HiSPARC/sapphire
+.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.png
+   :target: https://coveralls.io/r/HiSPARC/sapphire?branch=master
+
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 <http://www.hisparc.nl/>`_ Research and Education.  It was created in the
 process of completing the PhD research of David Fokkema.  The history of
 this repository contains the complete simulation, analysis and plot
-generation code that formed the basis for David's thesis.
+generation code that formed the basis for David's `thesis
+<http://www.nikhef.nl/pub/services/biblio/theses_pdf/thesis_D_Fokkema.pdf>`_.
 
 This repository is created with a sole purpose in mind: to enable HiSPARC
 students, teachers and researchers to easily gain access to the data and
@@ -30,7 +40,10 @@ In fact, it is probably being cleaned up at this very moment!
 Installation
 ------------
 
-Using pip simply open a Terminal and do::
+Required: Python with pip, the HDF5 and ATLAS libraries and a
+Fortran compiler. 
+
+Then, using pip, simply open a Terminal and do::
 
     $ pip install hisparc-sapphire
 

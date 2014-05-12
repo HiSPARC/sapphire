@@ -27,6 +27,9 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertIsInstance(header, corsika.blocks.RunHeader)
         self.assertEqual(header.id, 'RUNH')
         self.assertAlmostEqual(header.version, 7.4, 4)
+        for h in [10., 5000., 30000., 50000., 110000.]:
+            self.assertAlmostEqual(header.thickness_to_height(\
+                                       header.height_to_thickness(h)), h, 8)
 
         end = self.file.get_end()
         self.assertIsInstance(end, corsika.blocks.RunEnd)
@@ -49,7 +52,7 @@ class CorsikaFileTests(unittest.TestCase):
         header = event.get_header()
         self.assertIsInstance(header, corsika.blocks.EventHeader)
         self.assertEqual(header.id, 'EVTH')
-        self.assertEqual(corsika.particles.id[header.particle_id], 'proton')
+        self.assertEqual(corsika.particles.name(header.particle_id), 'proton')
         self.assertEqual(header.energy, 1e14)
         self.assertEqual(header.hadron_model_high, 'QGSJET')
 
@@ -70,13 +73,14 @@ class CorsikaFileTests(unittest.TestCase):
         event = events.next()
         particles = event.get_particles()
         particle = particles.next()
-        self.assertIsInstance(particle, corsika.blocks.ParticleData)
-        self.assertEqual(corsika.particles.id[particle.id], 'muon_p')
-        self.assertAlmostEqual(particle.x, -172.535859375)
-        self.assertAlmostEqual(particle.y, 56.2846679688)
-        self.assertAlmostEqual(particle.r, 181.484397728)
+        self.assertIsInstance(particle, tuple)
+        self.assertEqual(len(particle), 11)
+        self.assertEqual(corsika.particles.name(particle[6]), 'muon_p')
+        self.assertAlmostEqual(particle[3], -172.535859375)
+        self.assertAlmostEqual(particle[4], 56.2846679688)
+        self.assertAlmostEqual(particle[7], 181.484397728)
         particle = particles.next()
-        self.assertEqual(corsika.particles.id[particle.id], 'muon_m')
+        self.assertEqual(corsika.particles.name(particle[6]), 'muon_m')
 
 
 if __name__ == '__main__':

@@ -21,8 +21,8 @@ class ShowerParticle(tables.IsDescription):
 
     .. attribute:: pid
 
-        a particle identifier.  Possible values are determined by the simulation
-        package.
+        a particle identifier. Possible values are determined by the
+        simulation package.
 
     .. attribute:: core_distance
 
@@ -123,8 +123,8 @@ class SimulationParticle(tables.IsDescription):
 
     .. attribute:: pid
 
-        a particle identifier.  Possible values are determined by the simulation
-        package.
+        a particle identifier. Possible values are determined by the
+        simulation package.
 
     .. attribute:: r, phi
 
@@ -300,19 +300,18 @@ class Coincidence(tables.IsDescription):
         The direction of the (simulated) shower.
 
     """
-    id = tables.UInt32Col()
-    timestamp = tables.Time32Col()
-    nanoseconds = tables.UInt32Col()
-    ext_timestamp = tables.UInt64Col()
+    id = tables.UInt32Col(pos=0)
+    timestamp = tables.Time32Col(pos=1)
+    nanoseconds = tables.UInt32Col(pos=2)
+    ext_timestamp = tables.UInt64Col(pos=3)
 
-    N = tables.UInt8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    x = tables.Float32Col()
-    y = tables.Float32Col()
-    shower_theta = tables.Float32Col()
-    shower_phi = tables.Float32Col()
-    shower_size = tables.Float32Col()
+    N = tables.UInt8Col(pos=4)
+    x = tables.Float32Col(pos=5)
+    y = tables.Float32Col(pos=6)
+    zenith = tables.Float32Col(pos=7)
+    azimuth = tables.Float32Col(pos=8)
+    size = tables.Float32Col(pos=9)
+    energy = tables.Float32Col(pos=10)
 
 
 class ReconstructedEvent(tables.IsDescription):

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='hisparc-sapphire',
-      version='0.9.8',
+      version='0.9.9',
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
@@ -22,10 +22,13 @@ setup(name='hisparc-sapphire',
                    'Topic :: Scientific/Engineering',
                    'Topic :: Education',
                    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'],
-      package_data={'sapphire': ['simulations/qsub.sh',
-                                 'corsika/LICENSE',
+      scripts=['sapphire/corsika/store_corsika_data',
+               'sapphire/corsika/qsub_corsika',
+               'sapphire/corsika/qsub_store_corsika_data'],
+      package_data={'sapphire': ['corsika/LICENSE',
                                  'tests/analysis/DIR-testdata.h5',
                                  'tests/corsika/DAT000000',
                                  'tests/simulations/testdata.h5']},
       install_requires=['numpy', 'scipy', 'tables>=3.0.0', 'progressbar>=2.3',
-                        'mock'])
+                        'mock'],
+      test_suite="sapphire.tests",)

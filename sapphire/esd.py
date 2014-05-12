@@ -53,8 +53,8 @@ def download_data(file, group, station_id, start, end):
     t_delta = t_end - t_start
     pbar = progressbar.ProgressBar(maxval=1.,
                                    widgets=[progressbar.Percentage(),
-                                   progressbar.Bar(),
-                                   progressbar.ETA()]).start()
+                                            progressbar.Bar(),
+                                            progressbar.ETA()]).start()
 
     # create events table
     table = create_table(file, group)

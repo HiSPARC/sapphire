@@ -1,7 +1,9 @@
 from struct import unpack
+import warnings
 
 from blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
-                    ParticleData, Format, ParticleDataThin, FormatThin)
+                    ParticleData, Format, ParticleDataThin, FormatThin,
+                    particle_data)
 
 
 class CorsikaEvent(object):
@@ -17,8 +19,8 @@ class CorsikaEvent(object):
         self._header = None
         self._end = None
         self.format = self._raw_file.format
-        self.first_particle_index = self._header_index + self.format.subblock_size
-        self.last_particle_index = self._end_index - self.format.particle_size
+        self.first_particle_index = header_index + self.format.subblock_size
+        self.last_particle_index = end_index - self.format.particle_size
 
     def get_header(self):
         """Get the Event Header
@@ -27,9 +29,7 @@ class CorsikaEvent(object):
 
         """
         if not self._header:
-            self._header = EventHeader(unpack(self.format.subblock_format,
-                                              self._raw_file._contents[self._header_index:
-                                                                       self._header_index + self.format.subblock_size]))
+            self._header = self._raw_file._get_event_header(self._header_index)
         return self._header
 
     def get_end(self):
@@ -39,9 +39,7 @@ class CorsikaEvent(object):
 
         """
         if not self._end:
-            self._end = EventEnd(unpack(self.format.subblock_format,
-                                        self._raw_file._contents[self._end_index:
-                                                                 self._end_index + self.format.subblock_size]))
+            self._end = self._raw_file._get_event_end(self._end_index)
         return self._end
 
     def get_particles(self):
@@ -59,31 +57,33 @@ class CorsikaEvent(object):
         :yield: each particle in the event
 
         """
-        types = {}
-        levels = {}
-        done = False
-        for sub_block_index in self._raw_file._subblocks_indices(self._header_index,
-                                                                 self._end_index):
+        for sub_block_index in self._raw_file._subblocks_indices(
+                self._header_index, self._end_index):
             for p in range(self.format.particles_per_subblock):
                 pos = sub_block_index + p * self.format.particle_size
-                particle = self._raw_file._get_particle_record(pos)
-                t = int(particle.description / 1000)
-                l = particle.description % 10
-                if t in types.keys():
-                    types[t] += 1
-                else:
-                    types[t] = 1
+                particle = self._raw_file._get_particle_record_tuple(pos)
+                type = particle[6]  # particle type
+                level = particle[9]  # observation level
+
+                # skip padding, used to fill a subblock
+                if type == 0:
+                    continue
                 # muon additional information
-                if t == 75 or t == 76:
+                if type in [75, 76]:
+                    warnings.warn('Ignoring muon additional information.',
+                                  UserWarning)
                     continue
                 # ignore all observation levels except for nr. 1
-                if l != 1:
+                if level != 1:
+                    warnings.warn('Only observation level 1 will be read!',
+                                  UserWarning)
                     continue
 
                 yield particle
 
     def __str__(self):
         """String representation (a summary of the event)"""
+
         out = self.get_header().__str__()
         out += "\n"
         out += self.get_end().__str__()
@@ -91,6 +91,7 @@ class CorsikaEvent(object):
 
 
 class CorsikaFile(object):
+
     """Corsika output file handler
 
     This class will probide an interface for Corsika output files.
@@ -98,6 +99,7 @@ class CorsikaFile(object):
     This class is meant for unthinned simulations.
 
     """
+
     def __init__(self, filename):
         """CorsikaFile constructor
 
@@ -105,13 +107,12 @@ class CorsikaFile(object):
 
         """
         self._filename = filename
-        self._file = open(filename, 'rb')
+        with open(filename, 'rb') as corsika_data:
+            self._contents = corsika_data.read()
         self._header_index = None
         self._end_index = None
         self._header = None
         self._end = None
-        self._contents = self._file.read()
-        self._file.close()
         self.format = Format()
 
     def check(self):
@@ -133,13 +134,14 @@ class CorsikaFile(object):
         if len(self._contents) % self.format.block_size != 0:
             raise Exception('File "{name}" does not have an integer number '
                             'of blocks!'.format(name=self._filename))
-
-        n_blocks = len(self._contents) / self.format.block_size
+        block_size = self.format.block_size
+        padding = self.format.block_padding_size
+        n_blocks = len(self._contents) / block_size
         for block in range(n_blocks):
-            a = unpack('i', self._contents[block * self.format.block_size:block *
-                            self.format.block_size + self.format.block_padding_size])[0]
-            b = unpack('i', self._contents[(block + 1) * self.format.block_size -
-                            self.format.block_padding_size:(block + 1) * self.format.block_size])[0]
+            a = unpack('i', self._contents[block * block_size:
+                                           block * block_size + padding])[0]
+            b = unpack('i', self._contents[(block + 1) * block_size - padding:
+                                           (block + 1) * block_size])[0]
             if a != b:
                 raise Exception('Block #{block} is not right: ({head}, {tail})'
                                 .format(block=block, head=a, tail=b))
@@ -152,12 +154,14 @@ class CorsikaFile(object):
         I have used it.
 
         """
-        n_blocks = len(self._contents) / self.format.block_size
-        for b in xrange(0, n_blocks * self.format.block_size, self.format.block_size):
+        block_size = self.format.block_size
+        subblock_size = self.format.subblock_size
+        n_blocks = len(self._contents) / block_size
+        for b in xrange(0, n_blocks * block_size, block_size):
             for s in xrange(0, self.format.subblocks_per_block):
-                pos = b + s * self.format.subblock_size + self.format.block_padding_size
+                pos = b + s * subblock_size + self.format.block_padding_size
                 yield unpack(self.format.subblock_format,
-                             self._contents[pos:pos + self.format.subblock_size])
+                             self._contents[pos:pos + subblock_size])
 
     def get_header(self):
         """Get the Run header
@@ -197,11 +201,11 @@ class CorsikaFile(object):
         """
         event_head = None
         for block in self._subblocks_indices():
-            endblock = block + self.format.field_size
-            tag = unpack('4s', self._contents[block:endblock])[0]
+            endblocktag = block + self.format.field_size
+            tag = unpack('4s', self._contents[block:endblocktag])[0]
             if tag == 'EVTH':
                 event_head = block
-            if tag == 'EVTE':
+            elif tag == 'EVTE':
                 yield CorsikaEvent(self, event_head, block)
                 event_head = None
 
@@ -212,82 +216,98 @@ class CorsikaFile(object):
         beginning and end of the events. It does not unpack the data.
 
         """
-        n_blocks = len(self._contents) / self.format.block_size
-        for b in xrange(0, n_blocks * self.format.block_size, self.format.block_size):
+        block_size = self.format.block_size
+        subblock_size = self.format.subblock_size
+        n_blocks = len(self._contents) / block_size
+        for b in xrange(0, n_blocks * block_size, block_size):
             for s in xrange(0, self.format.subblocks_per_block):
-                pos = b + s * self.format.subblock_size + self.format.block_padding_size
-                if ((not min_sub_block is None and pos <= min_sub_block)
-                    or (not max_sub_block is None and pos >= max_sub_block)):
+                pos = b + s * subblock_size + self.format.block_padding_size
+                if ((not min_sub_block is None and pos <= min_sub_block) or
+                        (not max_sub_block is None and pos >= max_sub_block)):
                     continue
                 yield pos
 
     def _get_events(self):
-        """Private method. DO NOT USE! EVER!"""
+        """Get the start and end blocks indices for all events"""
+
         heads = []
         tails = []
         for block in self._subblocks_indices():
             endblock = block + self.format.field_size
             type = unpack('4s', self._contents[block:endblock])[0]
-            if  type == 'EVTH':
+            if type == 'EVTH':
                 heads.append(block)
             elif type == 'EVTE':
                 tails.append(block)
         return (heads, tails)
 
     def _get_event_header(self, word):
-        """Private method. DO NOT USE! EVER!"""
-        endword = word + self.format.subblock_size
-        return EventHeader(unpack(self.format.subblock_format,
-                                  self._contents[word:endword]))
+        """Get the event header from the contents"""
+
+        return EventHeader(self._unpack_subblock(word))
 
     def _get_event_end(self, word):
-        """Private method. DO NOT USE! EVER!"""
-        endword = word + self.format.subblock_size
-        return EventEnd(unpack(self.format.subblock_format,
-                               self._contents[word:endword]))
+        """Get the event header from the contents"""
+
+        return EventEnd(self._unpack_subblock(word))
 
     def _get_run_indices(self):
         """Get the indices for the start of the run header and end"""
         for block in self._subblocks_indices():
             endblock = block + self.format.field_size
             type = unpack('4s', self._contents[block:endblock])[0]
-            if  type == 'RUNH':
+            if type == 'RUNH':
                 head = block
             elif type == 'RUNE':
                 tail = block
         return head, tail
 
     def _get_run_header(self, word):
-        """Get the run header from the contents
+        """Get the run header from the contents"""
 
-        :param word: the index where the run header starts
-
-        """
-        endword = word + self.format.subblock_size
-        return RunHeader(unpack(self.format.subblock_format,
-                                self._contents[word:endword]))
+        return RunHeader(self._unpack_subblock(word))
 
     def _get_run_end(self, word):
-        """Get the run end from the contents
+        """Get the run end from the contents"""
 
-        :param word: the index where the run end starts
+        return RunEnd(self._unpack_subblock(word))
+
+    def _get_particle_record(self, word):
+        """Get a particle from the contents as a ParticleData instance"""
+
+        return ParticleData(self._unpack_particle(word))
+
+    def _get_particle_record_tuple(self, word):
+        """Get a particle from the contents as a tuple"""
+
+        return particle_data(self._unpack_particle(word))
+
+    def _unpack_subblock(self, word):
+        """Unpack a subblock block
+
+        :param word: the index where the subblock starts
 
         """
         endword = word + self.format.subblock_size
-        return RunEnd(unpack(self.format.subblock_format,
-                             self._contents[word:endword]))
+        return unpack(self.format.subblock_format,
+                      self._contents[word:endword])
 
-    def _get_particle_record(self, word):
-        """Private method. DO NOT USE! EVER!"""
+    def _unpack_particle(self, word):
+        """Unpack a particle block
+
+        :param word: the index where the particle subblock starts
+
+        """
         endword = word + self.format.particle_size
-        return ParticleData(unpack(self.format.particle_format,
-                                   self._contents[word:endword]))
+        return unpack(self.format.particle_format,
+                      self._contents[word:endword])
 
     def Blocks():
         pass
 
 
 class CorsikaFileThin(CorsikaFile):
+
     """Corsika thinned output file handler
 
     Same as the unthinned output handler, but with support for
@@ -295,6 +315,7 @@ class CorsikaFileThin(CorsikaFile):
     This class is meant for thinned simulations.
 
     """
+
     def __init__(self, filename):
         """CorsikaFileThin constructor
 
@@ -305,7 +326,6 @@ class CorsikaFileThin(CorsikaFile):
         self.format = FormatThin()
 
     def _get_particle_record(self, word):
-        """Private method. DO NOT USE! EVER!"""
-        endword = word + self.format.particle_size
-        return ParticleDataThin(unpack(self.format.particle_format,
-                                       self._contents[word:endword]))
+        """Get a particle from the contents as a ParticleDataThin instance"""
+
+        return ParticleDataThin(self._unpack_particle(word))

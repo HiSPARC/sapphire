@@ -125,7 +125,8 @@ class CoreReconstruction(object):
 
         r, dens = solver.get_ldf_measurements_for_core_position((xopt, yopt))
         sigma = np.where(dens > 1, sqrt(dens), 1.)
-        popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens, p0=(1e5,), sigma=sigma)
+        popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens,
+                                        p0=(1e5,), sigma=sigma)
         shower_size, = popt
 
         chisq = self._calculate_chi_squared(solver, xopt, yopt,
@@ -254,7 +255,8 @@ class PlotCoreReconstruction(CoreReconstruction):
             method = "individual detector signal"
         else:
             method = "station-averaged signal"
-        plt.title("Coincidence (%d-fold) #%d\n%s\n%s" % (coincidence['N'], index, method, type(self.solver).__name__))
+        plt.title("Coincidence (%d-fold) #%d\n%s\n%s" %
+                  (coincidence['N'], index, method, type(self.solver).__name__))
 
     def _do_plot_ldf(self, coincidence, x0, y0, shower_size):
         x = plt.logspace(-1, 3, 100)
@@ -455,9 +457,11 @@ class CorePositionCirclesSolver(CorePositionSolver):
         return chi_squared
 
 
-class CorePositionCirclesSolverWithoutNullMeasurements(CorePositionSolverWithoutNullMeasurements, CorePositionCirclesSolver):
+class CorePositionCirclesSolverWithoutNullMeasurements(
+        CorePositionSolverWithoutNullMeasurements, CorePositionCirclesSolver):
     pass
 
 
-class OverdeterminedCorePositionCirclesSolver(CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
+class OverdeterminedCorePositionCirclesSolver(
+        CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
     pass
