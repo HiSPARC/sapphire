@@ -351,18 +351,19 @@ class DetectorSignalSimulation(GroundParticlesSimulation):
                 pz = detected[i][3]
                 costheta = abs(pz) / np.sqrt(px * px + py * py + pz * pz)
 
-                # simulation of convoluted distribution of electron and muon energy losses
-                # and scintillator plate response
+                # Simulation of convoluted distribution of electron and
+                # muon energy losses with the scintillator response
 
                 y = random.random()
 
-                mip = ( 2.28 - 2.1316 * np.sqrt(1-y) ) / costheta
-                if y < 0.9041:
-                    mip = (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta
-                if y < 0.4344:
-                    mip = (0.73 + 0.7366 * y ) / costheta
                 if y < 0.3394:
                     mip = (0.48 + 0.8583 * np.sqrt(y)) / costheta
+                elif y < 0.4344:
+                    mip = (0.73 + 0.7366 * y) / costheta
+                elif y < 0.9041:
+                    mip = (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta
+                else:
+                    mip = (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta
                 mips += mip
 
             # simulation of transport times
