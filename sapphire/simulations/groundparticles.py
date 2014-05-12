@@ -20,12 +20,11 @@ Example usage::
 """
 from math import pi, sin, cos, sqrt
 import warnings
+import random
 
 import numpy as np
 import tables
 import progressbar
-import ROOT
-import random
 
 from .base import BaseSimulation
 
@@ -217,7 +216,7 @@ class GroundParticlesSimulation(BaseSimulation):
         return np.random.normal(0, 4.5)
 
 
-class AccurateDetectorSimulation(GroundParticlesSimulation):
+class DetectorBoundarySimulation(GroundParticlesSimulation):
 
     """ More accuratly simulate the detection area of the detectors.
 
@@ -250,49 +249,13 @@ class AccurateDetectorSimulation(GroundParticlesSimulation):
                   y - detector_boundary, x + detector_boundary,
                   line1, line1, line2, line2))
 
-        detected = [[row['t'], row['p_x'], row['p_y'], row['p_z']]
-                    for row in self.groundparticles.where(query)]
+        detected = [row['t'] for row in self.groundparticles.where(query)]
         if detected:
             n_detected = len(detected)
-
-            mips = 0.
-            for i in range(n_detected):
-                # determination of lepton angle of incidence
-                px = detected[i][1]
-                py = detected[i][2]
-                pz = detected[i][3]
-                costheta = abs(pz) / np.sqrt(px * px + py * py + pz * pz)
-                xi = 0.171 / costheta
-
-                # simulation of Landau distribution of electron and muon energy losses
-
-                seednr = int(random.random() * 1000000000)
-                lambdadraw = ROOT.TRandom3(seednr).Landau()
-                delta = xi * (lambdadraw + np.log(xi) + 21.94)
-
-                mip0 = delta / 3.7
-
-                # simulation of scintillator plate efficiency distribution
-
-                y = random.random()
-
-                mip1 = 1.82957 - 1.31402 * np.sqrt(1. - y)
-                if y < 0.85513:
-                    mip1 = 1.4705 - 0.69786 * np.sqrt(0.89599 - y)
-                if y < 0.442324:
-                    mip1 = 0.54217 + 0.68908 * np.sqrt(y)
-
-                mip = mip0 * mip1
-
-                mips += mip
-
-
-            # simulation of transport times
-
             transporttimes = self.simulate_signal_transport_time(n_detected)
             for i in range(n_detected):
-                detected[i][0] += transporttimes[i]
-            observables = {'n': mips, 't': np.min(detected, 0)[0]}
+                detected[i] += transporttimes[i]
+            observables = {'n': n_detected, 't': min(detected)}
         else:
             observables = {'n': 0., 't': -999}
 
@@ -343,3 +306,69 @@ class AccurateDetectorSimulation(GroundParticlesSimulation):
 
         return b1, line, b2
 
+
+class DetectorSignalSimulation(GroundParticlesSimulation):
+
+    """ More accuratly simulate the detection area of the detectors.
+
+    This requires a slightly more complex query which is a bit slower.
+
+    """
+
+    def simulate_detector_response(self, detector, shower_parameters):
+        """Simulate the detector detection area accurately.
+
+        First particles are filtered to see which fall inside a
+        non-rotated square box around the detector (i.e. sides of 1.2m).
+        For the remaining particles a more accurate query is used to see
+        which actually hit the detector. The advantage of using the
+        square is that column indexes can be used, which may speed up
+        queries.
+
+        """
+        detector_boundary = 0.3535534
+        x, y = detector.get_xy_coordinates()
+
+        # particle ids 2, 3, 5, 6 are electrons and muons, and id 4 is no
+        # longer used (were neutrino's).
+        query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+                 ' & (particle_id >= 2) & (particle_id <= 6)' %
+                 (x - detector_boundary, x + detector_boundary,
+                  y - detector_boundary, x + detector_boundary))
+        detected = [[row['t'], row['p_x'], row['p_y'], row['p_z']]
+                    for row in self.groundparticles.where(query)]
+
+        if detected:
+            n_detected = len(detected)
+            mips = 0.
+            for i in range(n_detected):
+                # determination of lepton angle of incidence
+                px = detected[i][1]
+                py = detected[i][2]
+                pz = detected[i][3]
+                costheta = abs(pz) / np.sqrt(px * px + py * py + pz * pz)
+
+                # simulation of convoluted distribution of electron and muon energy losses
+                # and scintillator plate response
+
+                y = random.random()
+
+                mip = ( 2.28 - 2.1316 * np.sqrt(1-y) ) / costheta
+                if y < 0.9041:
+                    mip = (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta
+                if y < 0.4344:
+                    mip = (0.73 + 0.7366 * y ) / costheta
+                if y < 0.3394:
+                    mip = (0.48 + 0.8583 * np.sqrt(y)) / costheta
+                mips += mip
+
+            # simulation of transport times
+
+            transporttimes = self.simulate_signal_transport_time(n_detected)
+            for i in range(n_detected):
+                detected[i][0] += transporttimes[i]
+            observables = {'n': mips, 't': np.min(detected, 0)[0]}
+        else:
+            observables = {'n': 0., 't': -999}
+
+        return observables
