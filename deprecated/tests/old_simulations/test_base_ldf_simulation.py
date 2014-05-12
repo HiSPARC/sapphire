@@ -2,8 +2,8 @@ from mock import sentinel, Mock, patch, MagicMock
 import unittest
 from math import pi, sqrt
 
-from sapphire.simulations.ldf import BaseLdfSimulation
-from sapphire.simulations.base import BaseSimulation
+from sapphire.old_simulations.ldf import BaseLdfSimulation
+from sapphire.old_simulations.base import BaseSimulation
 import sapphire.clusters
 
 
@@ -206,3 +206,6 @@ def pop_last_call(mock):
         mock.called = False
     mock.call_count -= 1
 
+
+if __name__ == '__main__':
+    unittest.main()

@@ -49,7 +49,7 @@ API = {"stations": 'stations/',
        "pulseheight_fit": 'station/{station_number}/plate/{plate_number}/pulseheight/fit/{year}/{month}/{day}/',
        "pulseheight_drift": 'station/{station_number}/plate/{plate_number}/pulseheight/drift/{year}/{month}/{day}/{number_of_days}/'}
 
-__api = 'http://data.hisparc.nl/api/'
+API_BASE = 'http://data.hisparc.nl/api/'
 
 
 class Network(object):
@@ -68,6 +68,14 @@ class Network(object):
         path = API['stations']
         self.all_stations = _get_json(path)
 
+    def countries(self):
+        """Get a list of countries
+
+        :return: all countries in the region
+
+        """
+        return self.all_countries
+
     def country_numbers(self):
         """Same as countries but only retuns a list of country numbers"""
 
@@ -75,7 +83,7 @@ class Network(object):
         return [country['number'] for country in countries]
 
     def clusters(self, country=None):
-        """Get a list of stations
+        """Get a list of clusters
 
         :param country: the number of the country for which to get all
             clusters.
@@ -83,11 +91,11 @@ class Network(object):
 
         """
         if country is None:
-            return self.all_clusters
+            clusters = self.all_clusters
         else:
-            stations = []
             path = API['clusters_in_country'].format(country_number=country)
-            return _get_json(path)
+            clusters = _get_json(path)
+        return clusters
 
     def cluster_numbers(self, country=None):
         """Same as clusters but only retuns a list of cluster numbers"""
@@ -105,7 +113,7 @@ class Network(object):
 
         """
         if country is None and cluster is None:
-            return self.all_subclusters
+            subclusters = self.all_subclusters
         elif not country is None:
             subclusters = []
             path = API['clusters_in_country'].format(country_number=country)
@@ -114,10 +122,10 @@ class Network(object):
                 path = (API['subclusters_in_cluster']
                         .format(cluster_number=cluster['number']))
                 subclusters.extend(_get_json(path))
-            return subclusters
         else:
             path = API['subclusters_in_cluster'].format(cluster_number=cluster)
-            return _get_json(path)
+            subclusters = _get_json(path)
+        return subclusters
 
     def subcluster_numbers(self, country=None, cluster=None):
         """Same as subclusters but only retuns a list of subcluster numbers"""
@@ -135,7 +143,7 @@ class Network(object):
 
         """
         if country is None and cluster is None and subcluster is None:
-            return self.all_stations
+            stations = self.all_stations
         elif not country is None:
             stations = []
             path = API['clusters_in_country'].format(country_number=country)
@@ -148,7 +156,6 @@ class Network(object):
                     path = (API['stations_in_subcluster']
                             .format(subcluster_number=subcluster['number']))
                     stations.extend(_get_json(path))
-            return stations
         elif not cluster is None:
             stations = []
             path = API['subclusters_in_cluster'].format(cluster_number=cluster)
@@ -157,11 +164,11 @@ class Network(object):
                 path = (API['stations_in_subcluster']
                         .format(subcluster_number=subcluster['number']))
                 stations.extend(_get_json(path))
-            return stations
-        elif not subcluster is None:
+        else:
             path = (API['stations_in_subcluster']
                     .format(subcluster_number=subcluster))
-            return _get_json(path)
+            stations = _get_json(path)
+        return stations
 
     def stations_numbers(self, country=None, cluster=None, subcluster=None):
         """Same as stations but only retuns a list of station numbers"""
@@ -183,6 +190,40 @@ class Network(object):
                 cluster.update({'subclusters': subclusters})
             country.update({'clusters': clusters})
         return countries
+
+    def stations_with_data(self, year='', month='', day=''):
+        """Get a list of stations with data on the specified date
+
+        :param year,month,day: the date for which to check. It is
+            possible to be less specific.
+        :return: all stations with data.
+
+        """
+        if year == '' and (month != '' or day != ''):
+            raise Exception('You must also specify the year')
+        elif month == '' and day != '':
+            raise Exception('You must also specify the month')
+
+        path = (API['stations_with_data'].format(year=year, month=month,
+                                                 day=day).strip("/"))
+        return _get_json(path)
+
+    def stations_with_weather(self, year='', month='', day=''):
+        """Get a list of stations with weather data on the specified date
+
+        :param year,month,day: the date for which to check. It is
+            possible to be less specific.
+        :return: all stations with weather data.
+
+        """
+        if year == '' and (month != '' or day != ''):
+            raise Exception('You must also specify the year')
+        elif month == '' and day != '':
+            raise Exception('You must also specify the month')
+
+        path = (API['stations_with_weather'].format(year=year, month=month,
+                                                    day=day).strip("/"))
+        return _get_json(path)
 
 
 class Station(object):
@@ -372,7 +413,7 @@ def _retrieve_url(urlpath):
     :return: the data returned by the api as a string
 
     """
-    url = __api + urlpath
+    url = API_BASE + urlpath
     logging.debug('Getting: ' + url)
     try:
         result = urlopen(url).read()

@@ -230,6 +230,11 @@ class BaseClusterTests(unittest.TestCase):
 
             self.assertNotEqual(cluster1.stations[0], cluster2.stations[0])
 
+    def test_get_station_by_number(self):
+        cluster = clusters.BaseCluster((0, 0), 0)
+        cluster._add_station((0, 0), 0, number=501)
+        self.assertEqual(cluster.get_station(501), cluster.stations[0])
+
     def test_init_sets_position(self):
         cluster = clusters.BaseCluster((10., 20.), pi / 2)
         self.assertEqual(cluster._x, 10.)
@@ -261,6 +266,14 @@ class BaseClusterTests(unittest.TestCase):
         self.assertAlmostEqual(cluster._y, 10.)
         self.assertAlmostEqual(cluster._alpha, 0.)
 
+    def test_calc_r_and_phi_for_stations(self):
+        cluster = clusters.BaseCluster()
+        cluster._add_station((0, 0), 0)
+        cluster._add_station((1, sqrt(3)), 0)
+        r, phi = cluster.calc_r_and_phi_for_stations(0, 1)
+        self.assertAlmostEqual(r, 2)
+        self.assertAlmostEqual(phi, pi / 3.)
+
     def test_calc_xy_center_of_mass_coordinates(self):
         cluster = clusters.BaseCluster()
         cluster._add_station((0, 0), 0, [(0, 5 * sqrt(3), 'UD'),
@@ -271,6 +284,17 @@ class BaseClusterTests(unittest.TestCase):
         x, y = cluster.calc_xy_center_of_mass_coordinates()
         self.assertAlmostEqual(x, 0)
         self.assertAlmostEqual(y, 5 * sqrt(3) / 3)
+
+
+class RAlphaBetaStationsTests(unittest.TestCase):
+    def test_cluster_stations(self):
+        cluster = clusters.RAlphaBetaStations()
+        cluster._add_station((0, 0), [(5, 270, 0)])
+        stations = cluster.stations
+        self.assertEqual(len(stations), 1)
+        detectors = stations[0].detectors
+        self.assertEqual(len(detectors), 1)
+        self.assertEqual(detectors[0].x, -5.0)
 
 
 class SimpleClusterTests(unittest.TestCase):
@@ -285,6 +309,11 @@ class SimpleClusterTests(unittest.TestCase):
         coordinates = cluster.get_xyalpha_coordinates()
         self.assertEqual(coordinates, (0., 0., 0.))
 
+    def test_cluster_stations(self):
+        cluster = clusters.SimpleCluster()
+        stations = cluster.stations
+        self.assertEqual(len(stations), 4)
+
 
 class SingleStationTests(unittest.TestCase):
     def test_init_calls_super_init(self):
@@ -297,6 +326,51 @@ class SingleStationTests(unittest.TestCase):
         cluster = clusters.SingleStation()
         coordinates = cluster.get_xyalpha_coordinates()
         self.assertEqual(coordinates, (0., 0., 0.))
+
+    def test_single_station(self):
+        cluster = clusters.SingleStation()
+        stations = cluster.stations
+        self.assertEqual(len(stations), 1)
+
+
+class SingleTwoDetectorStationTests(unittest.TestCase):
+    def test_init_calls_super_init(self):
+        with patch.object(clusters.BaseCluster, '__init__',
+                          mocksignature=True) as mock_base_init:
+            clusters.SingleTwoDetectorStation()
+            self.assertTrue(mock_base_init.called)
+
+    def test_get_coordinates_after_init(self):
+        cluster = clusters.SingleTwoDetectorStation()
+        coordinates = cluster.get_xyalpha_coordinates()
+        self.assertEqual(coordinates, (0., 0., 0.))
+
+    def test_single_station(self):
+        cluster = clusters.SingleTwoDetectorStation()
+        stations = cluster.stations
+        self.assertEqual(len(stations), 1)
+        detectors = stations[0].detectors
+        self.assertEqual(len(detectors), 2)
+
+
+class SingleDiamondStationTests(unittest.TestCase):
+    def test_init_calls_super_init(self):
+        with patch.object(clusters.BaseCluster, '__init__',
+                          mocksignature=True) as mock_base_init:
+            clusters.SingleDiamondStation()
+            self.assertTrue(mock_base_init.called)
+
+    def test_get_coordinates_after_init(self):
+        cluster = clusters.SingleDiamondStation()
+        coordinates = cluster.get_xyalpha_coordinates()
+        self.assertEqual(coordinates, (0., 0., 0.))
+
+    def test_single_station(self):
+        cluster = clusters.SingleDiamondStation()
+        stations = cluster.stations
+        self.assertEqual(len(stations), 1)
+        detectors = stations[0].detectors
+        self.assertEqual(len(detectors), 4)
 
 
 if __name__ == '__main__':

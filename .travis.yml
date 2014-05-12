@@ -6,7 +6,6 @@ python:
 # https://gist.github.com/dan-blanchard/7045057
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq libhdf5-serial-dev
   - sudo apt-get install -qq libatlas-dev libatlas-base-dev liblapack-dev gfortran
   - wget http://repo.continuum.io/miniconda/Miniconda-2.2.2-Linux-x86_64.sh -O miniconda.sh
   - chmod +x miniconda.sh
@@ -15,9 +14,12 @@ before_install:
   - conda update --yes conda
 
 install:
-  - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib
-  - pip install numexpr cython
+  - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables matplotlib
+  - pip install coverage coveralls
   - python setup.py develop
 
 script:
-  - python -m unittest discover
+  - coverage run --source=sapphire setup.py test
+
+after_success:
+  coveralls
