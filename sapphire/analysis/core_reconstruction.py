@@ -48,21 +48,21 @@ class CoreReconstruction(object):
                 raise RuntimeError(
                     "Reconstruction group %s already exists" % group_path)
             else:
-                self.data.removeNode(group_path, recursive=True)
+                self.data.remove_node(group_path, recursive=True)
 
         head, tail = os.path.split(group_path)
-        group = self.data.createGroup(head, tail)
+        group = self.data.create_group(head, tail)
         stations_description = {'s%d' % u: tables.BoolCol() for u in
                                 self.stations}
         description = self.reconstruction_description
         description.update(stations_description)
-        self.reconstructions = self.data.createTable(group, 'reconstructions',
-                                                     description)
+        self.reconstructions = self.data.create_table(group,
+            'reconstructions', description)
 
         return group
 
     def _create_output_table(self, group, tablename):
-        table = self.data.createTable(group, tablename,
+        table = self.data.create_table(group, tablename,
                                       storage.ReconstructedEvent,
                                       createparents=True)
         return table
@@ -88,7 +88,7 @@ class CoreReconstruction(object):
         dst_row.append()
 
     def reconstruct_core_positions(self, source):
-        source = self.data.getNode(source)
+        source = self.data.get_node(source)
         self.source = source
 
         self.cluster = source._v_attrs.cluster
@@ -186,7 +186,7 @@ class CoreReconstruction(object):
 
 class PlotCoreReconstruction(CoreReconstruction):
     def plot_reconstruct_core_position(self, source, coincidence_idx):
-        source = self.data.getNode(source)
+        source = self.data.get_node(source)
         self.source = source
         self.cluster = source._v_attrs.cluster
         coincidence = source.coincidences[coincidence_idx]
@@ -214,7 +214,7 @@ class PlotCoreReconstruction(CoreReconstruction):
         sel = coincidences.compress(coincidences[:]['N'] >= multiplicity)
         coords = sel['id']
 
-        events = self.source.observables.readCoordinates(coords)
+        events = self.source.observables.read_coordinates(coords)
         events_sel = events.compress(events[:]['N'] == num_detectors)
 
         idx = events_sel[index]['id']

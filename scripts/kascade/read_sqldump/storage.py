@@ -172,7 +172,7 @@ def open_or_create_file(data_dir, date):
         # create dir and parent dirs with mode rwxr-xr-x
         os.makedirs(dir, 0755)
 
-    return tables.openFile(file, 'a')
+    return tables.open_file(file, 'a')
 
 
 def get_or_create_station_group(file, cluster, station_id):
@@ -186,9 +186,9 @@ def get_or_create_station_group(file, cluster, station_id):
     cluster = get_or_create_cluster_group(file, cluster)
     node_name = 'station_%d' % station_id
     try:
-        station = file.getNode(cluster, node_name)
+        station = file.get_node(cluster, node_name)
     except tables.NoSuchNodeError:
-        station = file.createGroup(cluster, node_name,
+        station = file.create_group(cluster, node_name,
                                    'HiSPARC station %d data' % station_id)
         file.flush()
 
@@ -203,16 +203,16 @@ def get_or_create_cluster_group(file, cluster):
 
     """
     try:
-        hisparc = file.getNode('/', 'hisparc')
+        hisparc = file.get_node('/', 'hisparc')
     except tables.NoSuchNodeError:
-        hisparc = file.createGroup('/', 'hisparc', 'HiSPARC data')
+        hisparc = file.create_group('/', 'hisparc', 'HiSPARC data')
         file.flush()
 
     node_name = 'cluster_' + cluster.lower()
     try:
-        cluster = file.getNode(hisparc, node_name)
+        cluster = file.get_node(hisparc, node_name)
     except tables.NoSuchNodeError:
-        cluster = file.createGroup(hisparc, node_name,
+        cluster = file.create_group(hisparc, node_name,
                                    'HiSPARC cluster %s data' % cluster)
         file.flush()
 
@@ -228,28 +228,28 @@ def get_or_create_node(file, cluster, node):
 
     """
     try:
-        node = file.getNode(cluster, node)
+        node = file.get_node(cluster, node)
     except tables.NoSuchNodeError:
         if node == 'events':
-            node = file.createTable(cluster, 'events', HisparcEvent,
+            node = file.create_table(cluster, 'events', HisparcEvent,
                                    'HiSPARC coincidences table')
         elif node == 'errors':
-            node = file.createTable(cluster, 'errors', HisparcError,
+            node = file.create_table(cluster, 'errors', HisparcError,
                                     'HiSPARC error messages')
         elif node == 'comparator':
-            node = file.createTable(cluster, 'comparator',
+            node = file.create_table(cluster, 'comparator',
                                     HisparcComparatorData,
                                     'HiSPARC comparator messages')
         elif node == 'blobs':
-            node = file.createVLArray(cluster, 'blobs',
+            node = file.create_vlarray(cluster, 'blobs',
                                       tables.VLStringAtom(),
                                       'HiSPARC binary data')
         elif node == 'config':
-            node = file.createTable(cluster, 'config',
+            node = file.create_table(cluster, 'config',
                                     HisparcConfiguration,
                                     'HiSPARC configuration messages')
         elif node == 'weather':
-            node = file.createTable(cluster, 'weather',
+            node = file.create_table(cluster, 'weather',
                                     HisparcWeather,
                                     'HiSPARC weather data')
         file.flush()

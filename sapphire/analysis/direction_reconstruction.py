@@ -2,17 +2,20 @@ import sys
 import os
 
 import progressbar as pb
-from numpy import isnan, arcsin, arctan2, cos, floor, inf, sin, sqrt, tan, where, deg2rad, pi
+from numpy import (isnan, arcsin, arctan2, cos, floor, inf, sin, sqrt, tan,
+                   where, deg2rad, pi)
 from numpy.random import uniform
 
 from sapphire import storage
 
 
 class DirectionReconstruction(object):
-    def __init__(self, datafile, results_table=None, min_n134=1., N=None, overwrite=False):
+    def __init__(self, datafile, results_table=None, min_n134=1., N=None,
+                 overwrite=False):
         self.data = datafile
         if results_table:
-            self.results_table = self.create_empty_output_table(results_table, overwrite)
+            self.results_table = self.create_empty_output_table(results_table,
+                                                                overwrite)
         else:
             self.results_table = None
         self.min_n134 = min_n134
@@ -23,29 +26,30 @@ class DirectionReconstruction(object):
 
         if table_path in self.data:
             if not overwrite:
-                raise RuntimeError("Reconstruction table %s already exists" % table_path)
+                raise RuntimeError("Reconstruction table %s already exists" %
+                                   table_path)
             else:
-                self.data.removeNode(group, tablename)
+                self.data.remove_node(group, tablename)
 
         table = self._create_output_table(group, tablename)
         return table
 
     def _create_output_table(self, group, tablename):
-        table = self.data.createTable(group, tablename,
-                                      storage.ReconstructedEvent,
-                                      createparents=True)
+        table = self.data.create_table(group, tablename,
+                                       storage.ReconstructedEvent,
+                                       createparents=True)
         return table
 
     def reconstruct_angles_for_shower_group(self, groupname):
         """Reconstruct angles from simulation for minimum particle density"""
 
-        shower_group = self.data.getNode(groupname)
+        shower_group = self.data.get_node(groupname)
 
         progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                               pb.ETA()],
                                      fd=sys.stderr)
 
-        for shower in progressbar(self.data.listNodes(shower_group)):
+        for shower in progressbar(self.data.list_nodes(shower_group)):
             self.reconstruct_angles(shower)
 
     def reconstruct_angles(self, shower):
@@ -55,18 +59,20 @@ class DirectionReconstruction(object):
         if not 'cluster' in self.results_table.attrs:
             self.results_table.attrs.cluster = shower._v_attrs.cluster
 
-        for event, coincidence in zip(shower_table[:self.N], coincidence_table[:self.N]):
+        for event, coincidence in zip(shower_table[:self.N],
+                                      coincidence_table[:self.N]):
             assert event['id'] == coincidence['id']
             if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
                 theta, phi = self.reconstruct_angle(event)
 
                 if not isnan(theta) and not isnan(phi):
-                    self.store_reconstructed_event(coincidence, event, theta, phi)
+                    self.store_reconstructed_event(coincidence, event, theta,
+                                                   phi)
 
         self.results_table.flush()
 
-    def store_reconstructed_event(self, coincidence, event, reconstructed_theta,
-                                  reconstructed_phi):
+    def store_reconstructed_event(self, coincidence, event,
+                                  reconstructed_theta, reconstructed_phi):
         dst_row = self.results_table.row
 
         dst_row['id'] = event['id']
@@ -262,23 +268,24 @@ class BinnedDirectionReconstruction(DirectionReconstruction):
             for idx in 't1', 't2', 't3', 't4':
                 event[idx] += uniform(0, binning)
 
-        return super(BinnedDirectionReconstruction, self).reconstruct_angle(event)
+        return super(BinnedDirectionReconstruction, self).reconstruct_angle(
+            event)
 
 
 class KascadeDirectionReconstruction(DirectionReconstruction):
     def _create_output_table(self, group, tablename):
-        table = self.data.createTable(group, tablename,
-                                      storage.ReconstructedKascadeEvent,
-                                      createparents=True)
+        table = self.data.create_table(group, tablename,
+                                       storage.ReconstructedKascadeEvent,
+                                       createparents=True)
         return table
 
     def reconstruct_angles(self, hisparc_group, kascade_group,
                            hisparc_table='events', offsets=None):
-        hisparc_group = self.data.getNode(hisparc_group)
+        hisparc_group = self.data.get_node(hisparc_group)
 
-        hisparc_table = self.data.getNode(hisparc_group, hisparc_table)
-        c_index = self.data.getNode(kascade_group, 'c_index')
-        kascade_table = self.data.getNode(kascade_group, 'events')
+        hisparc_table = self.data.get_node(hisparc_group, hisparc_table)
+        c_index = self.data.get_node(kascade_group, 'c_index')
+        kascade_table = self.data.get_node(kascade_group, 'events')
 
         self.station, = hisparc_group._v_attrs.cluster.stations
         if not 'cluster' in self.results_table.attrs:
@@ -297,8 +304,8 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
                 theta, phi = self.reconstruct_angle(hisparc_event, offsets)
 
                 if not isnan(theta) and not isnan(phi):
-                    self.store_reconstructed_event(hisparc_event, kascade_event,
-                                                   theta, phi)
+                    self.store_reconstructed_event(hisparc_event,
+                                                   kascade_event, theta, phi)
 
         self.results_table.flush()
 
@@ -307,8 +314,10 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         dst_row = self.results_table.row
 
         r, phi, alpha = self.station.get_rphialpha_coordinates()
-        core_r, core_phi = self._calc_core_position_rphi_for_kascade_event(kascade_event)
-        reference_phi = self._calc_reference_phi_for_kascade_event(kascade_event)
+        core_r, core_phi = self._calc_core_position_rphi_for_kascade_event(
+            kascade_event)
+        reference_phi = self._calc_reference_phi_for_kascade_event(
+            kascade_event)
 
         dst_row['id'] = hisparc_event['event_id']
         dst_row['station_id'] = 0

@@ -18,8 +18,8 @@ from sapphire.analysis import process_events
 
 def main():
     # Create bogus data file
-    data = tables.openFile('test.h5', 'w')
-    data.createArray('/', 'events', np.arange(10))
+    data = tables.open_file('test.h5', 'w')
+    data.create_array('/', 'events', np.arange(10))
 
     # Create bogus trace
     trace = np.arange(0, 150)

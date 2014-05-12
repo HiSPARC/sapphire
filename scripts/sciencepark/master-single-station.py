@@ -25,7 +25,7 @@ class Master:
 
 
     def __init__(self, data_path):
-        self.data = tables.openFile(data_path, 'a')
+        self.data = tables.open_file(data_path, 'a')
 
         self.station_groups = ['/s%d' % u for u in self.stations]
         self.cluster = clusters.ScienceParkCluster(self.stations)
@@ -58,7 +58,7 @@ class Master:
     def clean_data(self):
         print "Cleaning data..."
         for group in self.station_groups:
-            group = self.data.getNode(group)
+            group = self.data.get_node(group)
             attrs = group._v_attrs
             if not 'is_clean' in attrs or not attrs.is_clean:
                 self.clean_events_in_group(group)
@@ -77,26 +77,26 @@ class Master:
                 unique_ids.append(row_id)
             prev = timestamp
 
-        tmptable = self.data.createTable(group, 't__events',
+        tmptable = self.data.create_table(group, 't__events',
                                          description=events.description)
-        rows = events.readCoordinates(unique_ids)
+        rows = events.read_coordinates(unique_ids)
         tmptable.append(rows)
         tmptable.flush()
-        self.data.renameNode(tmptable, 'events', overwrite=True)
+        self.data.rename_node(tmptable, 'events', overwrite=True)
 
     def search_coincidences(self):
         print "Searching for coincidences..."
         if '/c_index' not in self.data and '/timestamps' not in self.data:
             c_index, timestamps = [], []
             for id, station in enumerate(self.station_groups):
-                station = self.data.getNode(station)
+                station = self.data.get_node(station)
                 for event_id, event in enumerate(station.events):
                     timestamps.append((event['ext_timestamp'], id,
                                        event_id))
                     c_index.append([len(timestamps) - 1])
             timestamps = np.array(timestamps, dtype=np.uint64)
-            self.data.createArray('/', 'timestamps', timestamps)
-            self.data.createVLArray('/', 'c_index', tables.UInt32Atom())
+            self.data.create_array('/', 'timestamps', timestamps)
+            self.data.create_vlarray('/', 'c_index', tables.UInt32Atom())
             for coincidence in c_index:
                 self.data.root.c_index.append(coincidence)
 
@@ -113,14 +113,14 @@ class Master:
     def store_coincidences(self):
         print "Storing coincidences..."
         if '/coincidences' not in self.data:
-            group = self.data.createGroup('/', 'coincidences')
+            group = self.data.create_group('/', 'coincidences')
             group._v_attrs.cluster = self.cluster
 
             self.c_index = []
-            self.coincidences = self.data.createTable(group,
+            self.coincidences = self.data.create_table(group,
                                                       'coincidences',
                                                       storage.Coincidence)
-            self.observables = self.data.createTable(group, 'observables',
+            self.observables = self.data.create_table(group, 'observables',
                                             storage.EventObservables)
 
             progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
@@ -128,7 +128,7 @@ class Master:
             for coincidence in progress(self.data.root.c_index):
                 self.store_coincidence(coincidence)
 
-            c_index = self.data.createVLArray(group, 'c_index',
+            c_index = self.data.create_vlarray(group, 'c_index',
                                               tables.UInt32Col())
             for coincidence in self.c_index:
                 c_index.append(coincidence)
@@ -136,7 +136,7 @@ class Master:
             self.c_index = c_index
         else:
             # Force new cluster geometry
-            group = self.data.getNode('/', 'coincidences')
+            group = self.data.get_node('/', 'coincidences')
             group._v_attrs.cluster = self.cluster
 
     def store_coincidence(self, coincidence):
@@ -152,7 +152,7 @@ class Master:
             station_id = event_desc[1]
             event_index = event_desc[2]
 
-            group = self.data.getNode(self.station_groups[station_id])
+            group = self.data.get_node(self.station_groups[station_id])
             event = group.events[event_index]
             idx = self.store_event_in_observables(event, coincidence_id,
                                                   station_id)
@@ -230,29 +230,29 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
     def _create_reconstruction_group_and_tables(self, results_group, overwrite):
         if results_group in self.data:
             if overwrite:
-                self.data.removeNode(results_group, recursive=True)
+                self.data.remove_node(results_group, recursive=True)
             else:
                 raise RuntimeError("Result group exists, but overwrite is False")
 
         head, tail = os.path.split(results_group)
-        group = self.data.createGroup(head, tail)
+        group = self.data.create_group(head, tail)
         stations_description = {'s%d' % u: tables.BoolCol() for u in
                                 self.stations}
 
         description = self.reconstruction_description
         description.update(stations_description)
-        self.reconstruction = self.data.createTable(group,
+        self.reconstruction = self.data.create_table(group,
             'reconstructions', description)
 
         description = self.reconstruction_coincidence_description
         description.update(stations_description)
         self.reconstruction_coincidences = \
-            self.data.createTable(group, 'coincidences', description)
+            self.data.create_table(group, 'coincidences', description)
 
         return group
 
     def reconstruct_angles(self, coincidences_group):
-        coincidences_group = self.data.getNode(coincidences_group)
+        coincidences_group = self.data.get_node(coincidences_group)
         self.data_group = coincidences_group
         coincidences = coincidences_group.coincidences
 
@@ -261,7 +261,7 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
                                            pb.ETA()])
-        sel_coincidences = coincidences.readWhere('N >= 1')
+        sel_coincidences = coincidences.read_where('N >= 1')
         for coincidence in progress(sel_coincidences):
             self.reconstruct_individual_stations(coincidence)
             self.reconstruct_cluster_stations(coincidence)
@@ -271,7 +271,7 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
     def reconstruct_individual_stations(self, coincidence):
         coinc_id = coincidence['id']
         event_indexes = self.data_group.c_index[coinc_id]
-        events = self.data_group.observables.readCoordinates(event_indexes)
+        events = self.data_group.observables.read_coordinates(event_indexes)
 
         for event in events:
             if min(event['n1'], event['n3'], event['n4']) >= self.min_n134:
@@ -286,7 +286,7 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
     def reconstruct_cluster_stations(self, coincidence):
         coinc_id = coincidence['id']
         event_indexes = self.data_group.c_index[coinc_id]
-        events = self.data_group.observables.readCoordinates(event_indexes)
+        events = self.data_group.observables.read_coordinates(event_indexes)
 
         indexes = range(len(events))
         for index_group in itertools.combinations(indexes, 3):

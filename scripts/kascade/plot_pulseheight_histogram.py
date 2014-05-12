@@ -53,6 +53,6 @@ def plot_pulseheight_histogram(data):
 
 if __name__ == '__main__':
     if 'data' not in globals():
-        data = tables.openFile('kascade.h5')
+        data = tables.open_file('kascade.h5')
 
     plot_pulseheight_histogram(data)

@@ -589,3 +589,4 @@ class HiSPARCNetwork(HiSPARCStations):
         network = sapphire.api.Network()
         stations = [station['number'] for station in network.stations()]
         super(HiSPARCNetwork, self).__init__(stations)
+

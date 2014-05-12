@@ -12,7 +12,7 @@ def get_front_arrival_time(sim, R, dR, theta):
 
     t_list = []
     for shower in sim:
-        particles = shower.leptons.readWhere(query)
+        particles = shower.leptons.read_where(query)
         x = particles[:]['x']
         t = particles[:]['arrival_time']
 
@@ -113,8 +113,8 @@ def plot_R():
     graph.histogram(n, bins, linestyle='black!50')
 
     shower = data.root.simulations.E_1PeV.zenith_22_5.shower_0
-    ids = shower.observables.getWhereList('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
-    R = shower.coincidences.readCoordinates(ids, field='r')
+    ids = shower.observables.get_where_list('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
+    R = shower.coincidences.read_coordinates(ids, field='r')
     n, bins, patches = hist(R, bins=100, histtype='step')
     graph.histogram(n, bins)
 
@@ -160,7 +160,7 @@ def plot_arrival_times():
 
 if __name__ == '__main__':
     if not 'data' in globals():
-        data = tables.openFile('master-ch4v2.h5')
+        data = tables.open_file('master-ch4v2.h5')
 
     plot_R()
     plot_arrival_times()

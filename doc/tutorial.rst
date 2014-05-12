@@ -84,7 +84,7 @@ the data, we need the ``datetime`` module.  Thus, we have::
 
 Creating an empty data file, with the name ``mydata.h5``, is done easily::
 
-    >>> data = tables.openFile('mydata.h5', 'w')
+    >>> data = tables.open_file('mydata.h5', 'w')
 
 The ``'w'`` means *write*, which creates a file for writing (and reading).
 Mind that this will create an empty file.  If there already was a file
@@ -322,7 +322,7 @@ time span)::
 
     >>> t0 = 1354320000
     >>> t1 = t0 + 3600
-    >>> sel_events = events.readWhere('(t0 <= timestamp) & (timestamp < t1)')
+    >>> sel_events = events.read_where('(t0 <= timestamp) & (timestamp < t1)')
     >>> len(sel_events)
     2836
 
@@ -406,7 +406,7 @@ time on December 2, 2012::
     >>> t1 = sapphire.time_util.GPSTime(2012, 12, 2, 13).gpstimestamp()
     >>> t0, t1
     (1354449600, 1354453200)
-    >>> sel_events = events.readWhere('(t0 <= timestamp) & (timestamp < t1)')
+    >>> sel_events = events.read_where('(t0 <= timestamp) & (timestamp < t1)')
     >>> len(sel_events)
     2817
 
@@ -517,7 +517,7 @@ Consider the following script, which you can hopefully understand by now
         if __name__ == '__main__':
             station_groups = ['/s%d' % u for u in STATIONS]
 
-            data = tables.openFile('data.h5', 'w')
+            data = tables.open_file('data.h5', 'w')
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END)
 

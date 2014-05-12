@@ -21,7 +21,7 @@ END = datetime.datetime(2013, 1, 2)
 if __name__ == '__main__':
     station_groups = ['/s%d' % u for u in STATIONS]
 
-    data = tables.openFile('data.h5', 'w')
+    data = tables.open_file('data.h5', 'w')
     for station, group in zip(STATIONS, station_groups):
         download_data(data, group, station, START, END)
 

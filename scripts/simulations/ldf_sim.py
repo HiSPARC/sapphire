@@ -27,7 +27,7 @@ if __name__ == '__main__':
     try:
         data
     except NameError:
-        data = tables.openFile(DATAFILE, 'w')
+        data = tables.open_file(DATAFILE, 'w')
 
     cluster = clusters.SingleStation()
     simulation = KascadeLdfSimulation(cluster, data, '/ldfsim/exact', R=60, N=N)

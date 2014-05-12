@@ -275,11 +275,11 @@ class ReconstructionEfficiency(object):
         h_index = c_index.col('h_idx')
         k_index = c_index.col('k_idx')
 
-        intg = hisparc.readCoordinates(h_index, 'integrals')[:, 0]
+        intg = hisparc.read_coordinates(h_index, 'integrals')[:, 0]
 
-        dens_e = kascade.readCoordinates(k_index, 'dens_e')[:, 0]
-        dens_mu = kascade.readCoordinates(k_index, 'dens_mu')[:, 0]
-        theta = kascade.readCoordinates(k_index, 'zenith')
+        dens_e = kascade.read_coordinates(k_index, 'dens_e')[:, 0]
+        dens_mu = kascade.read_coordinates(k_index, 'dens_mu')[:, 0]
+        theta = kascade.read_coordinates(k_index, 'zenith')
         dens = dens_e + dens_mu
         dens_on_ground = dens * np.cos(theta)
 
@@ -400,7 +400,7 @@ if __name__ == '__main__':
     np.seterr(invalid='ignore', divide='ignore')
 
     if 'data' not in globals():
-        data = tables.openFile('kascade.h5', 'r')
+        data = tables.open_file('kascade.h5', 'r')
 
     utils.set_prefix('EFF-')
     artist.utils.set_prefix('EFF-')
