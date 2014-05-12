@@ -48,7 +48,6 @@ class DirectionReconstruction(object):
         for shower in progressbar(self.data.listNodes(shower_group)):
             self.reconstruct_angles(shower)
 
-
     def reconstruct_angles(self, shower):
         shower_table = shower.observables
         coincidence_table = shower.coincidences
@@ -174,8 +173,8 @@ class DirectionReconstruction(object):
         cosphi2 = cos(phi2)
 
         den = ((1 + tanphi ** 2) ** 2 * r1 ** 2 * r2 ** 2 * sin(theta) ** 2
-           * (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2
-           / c ** 2)
+               * (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2
+               / c ** 2)
 
         A = (r1 ** 2 * sinphi1 ** 2
              + r2 ** 2 * sinphi2 ** 2
@@ -245,8 +244,10 @@ class DirectionReconstruction(object):
 
 
 class BinnedDirectionReconstruction(DirectionReconstruction):
-    def __init__(self, datafile, results_table, min_n134=1., binning=2.5, randomize_binning=False, N=None, overwrite=False):
-        super(BinnedDirectionReconstruction, self).__init__(datafile, results_table, min_n134, N, overwrite)
+    def __init__(self, datafile, results_table, min_n134=1., binning=2.5,
+                 randomize_binning=False, N=None, overwrite=False):
+        super(BinnedDirectionReconstruction, self).__init__(
+            datafile, results_table, min_n134, N, overwrite)
         self.binning = binning
         self.randomize_binning = randomize_binning
 
@@ -326,7 +327,8 @@ class KascadeDirectionReconstruction(DirectionReconstruction):
         dst_row['reference_phi'] = reference_phi
         dst_row['reconstructed_theta'] = reconstructed_theta
         dst_row['reconstructed_phi'] = reconstructed_phi
-        dst_row['min_n134'] = min(hisparc_event['n1'], hisparc_event['n3'], hisparc_event['n4'])
+        dst_row['min_n134'] = min(hisparc_event['n1'], hisparc_event['n3'],
+                                  hisparc_event['n4'])
 
         dst_row['k_energy'] = kascade_event['energy']
         dst_row['k_core_pos'] = kascade_event['core_pos']

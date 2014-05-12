@@ -7,7 +7,7 @@
 """
 from __future__ import division
 
-from math import sqrt, pi, sin, cos, atan2
+from math import sqrt, pi, sin, cos, atan2, degrees, radians
 import warnings
 
 from numpy import mean
@@ -229,7 +229,8 @@ class BaseCluster(object):
         Example::
 
             >>> cluster = BaseCluster()
-            >>> cluster._add_station((0, 0), pi / 2, [(-5, 0, 'UD'), (5, 0, 'UD')])
+            >>> cluster._add_station((0, 0), pi / 2,
+            ...                      [(-5, 0, 'UD'), (5, 0, 'UD')])
 
         """
         # Need to make _stations an instance variable to be able to
@@ -362,7 +363,7 @@ class RAlphaBetaStations(BaseCluster):
             >>> cluster._add_station((0, 0), [(5, 90, 0), (5, 270, 0)], 104)
 
         """
-        detectors = [(sin(alpha / 180 * pi) * r, cos(alpha / 180 * pi) * r, 'UD')
+        detectors = [(sin(radians(alpha)) * r, cos(radians(alpha)) * r, 'UD')
                      for r, alpha, _ in detectors]
 
         super(RAlphaBetaStations, self)._add_station(position, 0, detectors,
@@ -568,10 +569,11 @@ class HiSPARCStations(RAlphaBetaStations):
             else:
                 raise RuntimeError("Detector count unknown for station %d." %
                                    station)
-            detectors = [(d['radius'] if d['radius'] else default_detectors[i][0],
-                          d['alpha'] if d['alpha'] else default_detectors[i][1],
-                          d['beta'] if d['beta'] else default_detectors[i][2])
-                         for i, d in enumerate(detectors)]
+            detectors = [
+                (d['radius'] if d['radius'] else default_detectors[i][0],
+                 d['alpha'] if d['alpha'] else default_detectors[i][1],
+                 d['beta'] if d['beta'] else default_detectors[i][2])
+                for i, d in enumerate(detectors)]
 
             self._add_station((easting, northing), detectors, station)
 

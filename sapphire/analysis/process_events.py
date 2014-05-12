@@ -106,7 +106,8 @@ class ProcessEvents(object):
         """Check if the destination is valid"""
 
         if destination == '_events':
-            raise RuntimeError("The _events table is reserved for internal use.  Choose another destination.")
+            raise RuntimeError("The _events table is reserved for internal "
+                               "use.  Choose another destination.")
         elif destination is None:
             destination = 'events'
 
@@ -114,7 +115,8 @@ class ProcessEvents(object):
         # worry.  Otherwise, destination may not exist or will be overwritten
         if self.source.name != destination:
             if destination in self.group and not overwrite:
-                raise RuntimeError("I will not overwrite previous results (unless you specify overwrite=True)")
+                raise RuntimeError("I will not overwrite previous results "
+                                   "(unless you specify overwrite=True)")
 
         self.destination = destination
 
@@ -127,15 +129,13 @@ class ProcessEvents(object):
         events = self.source
         events_tablename = self.source.name
 
-        enumerated_timestamps = \
-            list(enumerate(events.col('ext_timestamp')))
+        enumerated_timestamps = list(enumerate(events.col('ext_timestamp')))
         enumerated_timestamps.sort(key=operator.itemgetter(1))
 
-        unique_sorted_ids = \
-            self._find_unique_row_ids(enumerated_timestamps)
+        unique_sorted_ids = self._find_unique_row_ids(enumerated_timestamps)
 
         new_events = self._replace_table_with_selected_rows(events,
-            unique_sorted_ids)
+                                                            unique_sorted_ids)
         self.source = new_events
         self._normalize_event_ids(new_events)
 
@@ -546,6 +546,7 @@ class ProcessEventsWithoutTraces(ProcessEvents):
         """Fake storing results from traces."""
 
         pass
+
 
 class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
                                         ProcessIndexedEvents):
