@@ -8,10 +8,10 @@ Introduction
    :target: https://pypi.python.org/pypi/hisparc-sapphire/
 .. image:: http://img.shields.io/badge/license-GPLv3-blue.png
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
-.. image:: http://img.shields.io/travis/HiSPARC/sapphire/refactor_simulations.png
+.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.png
    :target: https://travis-ci.org/HiSPARC/sapphire
-.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/refactor_simulations.png
-   :target: https://coveralls.io/r/HiSPARC/sapphire?branch=refactor_simulations
+.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.png
+   :target: https://coveralls.io/r/HiSPARC/sapphire?branch=master
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 <http://www.hisparc.nl/>`_ Research and Education.  It was created in the
