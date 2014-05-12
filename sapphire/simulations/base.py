@@ -26,6 +26,7 @@ import tables
 import progressbar
 
 from sapphire import storage
+from sapphire.analysis.process_events import ProcessEvents
 
 
 class BaseSimulation(object):
@@ -299,8 +300,8 @@ class BaseSimulation(object):
                                                       station.number)
             events_table = \
                     self.datafile.create_table(station_group, 'events',
-                                              storage.ProcessedHisparcEvent,
-                                              expectedrows=self.N)
+                        ProcessEvents.processed_events_description,
+                        expectedrows=self.N)
             self.station_groups.append(station_group)
 
     def _store_station_index(self):
