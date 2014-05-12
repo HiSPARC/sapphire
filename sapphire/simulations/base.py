@@ -13,7 +13,7 @@ Example usage::
     from sapphire.simulations.base import BaseSimulation
     from sapphire.clusters import ScienceParkCluster
 
-    datafile = tables.openFile('/tmp/test_base_simulation.h5', 'w')
+    datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
     cluster = ScienceParkCluster()
 
     sim = BaseSimulation(cluster, datafile, '/simulations/this_run', 10)
@@ -68,17 +68,8 @@ class BaseSimulation(object):
         for (shower_id, shower_parameters) in enumerate(
                 self.generate_shower_parameters()):
 
-            station_events = []
-            for station_id, station in enumerate(self.cluster.stations):
-                has_triggered, station_observables = \
-                        self.simulate_station_response(station,
-                                                       shower_parameters)
-                if has_triggered:
-                    event_index = \
-                            self.store_station_observables(station_id,
-                                                           station_observables)
-                    station_events.append((station_id, event_index))
-
+            station_events = self.simulate_events_for_shower(
+                shower_parameters)
             self.store_coincidence(shower_id, shower_parameters,
                                    station_events)
 
@@ -98,15 +89,26 @@ class BaseSimulation(object):
         for i in pbar(range(self.N)):
             yield shower_parameters
 
+    def simulate_events_for_shower(self, shower_parameters):
+        """Simulate station events for a single shower"""
+
+        station_events = []
+        for station_id, station in enumerate(self.cluster.stations):
+            has_triggered, station_observables = \
+                    self.simulate_station_response(station,
+                                                   shower_parameters)
+            if has_triggered:
+                event_index = \
+                        self.store_station_observables(station_id,
+                                                       station_observables)
+                station_events.append((station_id, event_index))
+        return station_events
+
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
 
-        detector_observables = []
-        for detector in station.detectors:
-            observables = self.simulate_detector_response(detector,
-                                                          shower_parameters)
-            detector_observables.append(observables)
-
+        detector_observables = self.simulate_all_detectors(
+            station.detectors, shower_parameters)
         has_triggered = self.simulate_trigger(detector_observables)
         station_observables = \
             self.process_detector_observables(detector_observables)
@@ -115,9 +117,31 @@ class BaseSimulation(object):
 
         return has_triggered, station_observables
 
-    def simulate_detector_response(self, detector, shower_parameters):
-        """Simulate detector response to a shower."""
+    def simulate_all_detectors(self, detectors, shower_parameters):
+        """Simulate response of all detectors in a station.
 
+        :param detectors: list of detectors
+        :param shower_parameters: parameters of the shower
+
+        """
+        detector_observables = []
+        for detector in detectors:
+            observables = self.simulate_detector_response(detector,
+                                                          shower_parameters)
+            detector_observables.append(observables)
+
+        return detector_observables
+
+    def simulate_detector_response(self, detector, shower_parameters):
+        """Simulate detector response to a shower.
+
+        :param detector: :class:`sapphire.clusters.Detector` instance
+        :param shower_parameters: shower parameters
+
+        :returns: dictionary with keys 'n' (number of particles in
+            detector) and 't' (time of arrival of first detected particle)
+
+        """
         # implement this!
         observables = {'n': 0., 't': -999}
 
@@ -239,7 +263,7 @@ class BaseSimulation(object):
         This makes it easy to link events detected by multiple stations.
 
         """
-        self.coincidence_group = self.datafile.createGroup(self.output_path,
+        self.coincidence_group = self.datafile.create_group(self.output_path,
                                                            'coincidences',
                                                            createparents=True)
         self.coincidence_group._v_attrs.cluster = self.cluster
@@ -249,13 +273,13 @@ class BaseSimulation(object):
                      for p, station in enumerate(self.cluster.stations, 12)}
         description.columns.update(s_columns)
 
-        self.coincidences = self.datafile.createTable(
+        self.coincidences = self.datafile.create_table(
                 self.coincidence_group, 'coincidences', description)
 
-        self.c_index = self.datafile.createVLArray(
+        self.c_index = self.datafile.create_vlarray(
                 self.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
 
-        self.s_index = self.datafile.createVLArray(
+        self.s_index = self.datafile.create_vlarray(
                 self.coincidence_group, 's_index', tables.VLStringAtom())
 
     def _prepare_station_tables(self):
@@ -265,16 +289,16 @@ class BaseSimulation(object):
         :param station: a :class:`sapphire.clusters.Station` object
 
         """
-        self.cluster_group = self.datafile.createGroup(self.output_path,
+        self.cluster_group = self.datafile.create_group(self.output_path,
                                                        'cluster_simulations',
                                                        createparents=True)
         self.station_groups = []
         for station in self.cluster.stations:
-            station_group = self.datafile.createGroup(self.cluster_group,
+            station_group = self.datafile.create_group(self.cluster_group,
                                                       'station_%d' %
                                                       station.number)
             events_table = \
-                    self.datafile.createTable(station_group, 'events',
+                    self.datafile.create_table(station_group, 'events',
                                               storage.ProcessedHisparcEvent,
                                               expectedrows=self.N)
             self.station_groups.append(station_group)
