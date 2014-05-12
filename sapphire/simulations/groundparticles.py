@@ -11,7 +11,7 @@ Example usage::
     from sapphire.simulations.groundparticles import GroundParticlesSimulation
     from sapphire.clusters import ScienceParkCluster
 
-    data = tables.openFile('/tmp/test_groundparticle_simulation.h5', 'w')
+    data = tables.open_file('/tmp/test_groundparticle_simulation.h5', 'w')
     cluster = ScienceParkCluster()
 
     sim = GroundParticlesSimulation('corsika.h5', 500, cluster, data, '/', 10)
@@ -33,8 +33,8 @@ class GroundParticlesSimulation(BaseSimulation):
     def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
 
-        self.corsikafile = tables.openFile(corsikafile_path, 'r')
-        self.groundparticles = self.corsikafile.getNode('/groundparticles')
+        self.corsikafile = tables.open_file(corsikafile_path, 'r')
+        self.groundparticles = self.corsikafile.get_node('/groundparticles')
         self.max_core_distance = max_core_distance
 
         for station in self.cluster.stations:

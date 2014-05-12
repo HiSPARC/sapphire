@@ -45,8 +45,8 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
     def validate_table(self, table, expected_file, actual_file):
         """Verify that two tables are identical"""
 
-        expected_node = expected_file.getNode(table)
-        actual_node = actual_file.getNode(table)
+        expected_node = expected_file.get_node(table)
+        actual_node = actual_file.get_node(table)
 
         for colname in expected_node.colnames:
             expected_col = expected_node.col(colname)
@@ -59,8 +59,8 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
     def validate_array(self, table, expected_file, actual_file):
         """Verify that two arrays are identical"""
 
-        expected_node = expected_file.getNode(table)
-        actual_node = actual_file.getNode(table)
+        expected_node = expected_file.get_node(table)
+        actual_node = actual_file.get_node(table)
 
         expected = expected_node.read()
         actual = actual_node.read()
