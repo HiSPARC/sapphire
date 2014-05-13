@@ -23,8 +23,10 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual(self.network.stations_with_weather(2004, 10, 9)[0].keys(), keys)
         nested_network = self.network.nested_network()
         self.assertEqual(nested_network[0].keys(), ['clusters', 'name', 'number'])
-        self.assertEqual(nested_network[0]['clusters'][0].keys(), ['subclusters', 'name', 'number'])
-        self.assertEqual(nested_network[0]['clusters'][0]['subclusters'][0].keys(), ['stations', 'name', 'number'])
+        self.assertEqual(nested_network[0]['clusters'][0].keys(),
+                         ['subclusters', 'name', 'number'])
+        self.assertEqual(nested_network[0]['clusters'][0]['subclusters'][0].keys(),
+                         ['stations', 'name', 'number'])
 
     def test_countries(self):
         self.assertEqual(self.network.all_countries, self.network.countries())
@@ -117,11 +119,13 @@ class StationTests(unittest.TestCase):
         keys = ['latitude',  'altitude', 'longitude']
         self.assertEqual(self.station.location().keys(), keys)
         self.assertEqual(self.station.location()['latitude'], 52.355928561847)
-        self.assertEqual(self.station.location(date(2002, 1, 1))['latitude'], 52.3559179545407)
+        self.assertEqual(self.station.location(date(2002, 1, 1))['latitude'],
+                         52.3559179545407)
 
     def test_config(self):
         self.assertEqual(self.station.config()['detnum'], 501)
-        self.assertEqual(self.station.config(date(2011, 1, 1))['mas_ch1_current'], 7.54901960784279)
+        self.assertEqual(self.station.config(date(2011, 1, 1))['mas_ch1_current'],
+                         7.54901960784279)
 
     def test_num_events(self):
         self.assertIsInstance(self.station.n_events(2003), int)
