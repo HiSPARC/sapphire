@@ -69,6 +69,18 @@ class NetworkTests(unittest.TestCase):
         mock_subclusters.assert_called_once_with(country=sentinel.country,
                                                  cluster=sentinel.cluster)
 
+    @patch.object(api.Network, 'stations')
+    def test_stations_numbers(self, mock_stations):
+        mock_stations.return_value = [{'number': sentinel.number1},
+                                      {'number': sentinel.number2}]
+        self.assertEqual(self.network.stations_numbers(sentinel.country,
+                                                       sentinel.cluster,
+                                                       sentinel.subcluster),
+                         [sentinel.number1, sentinel.number2])
+        mock_stations.assert_called_once_with(country=sentinel.country,
+                                              cluster=sentinel.cluster,
+                                              subcluster=sentinel.subcluster)
+
     def test_bad_stations(self):
         self.assertEqual(self.network.all_stations, self.network.stations())
         self.assertEqual(self.network.stations(country=70000)[0]['number'], 70001)
@@ -82,16 +94,18 @@ class NetworkTests(unittest.TestCase):
     def test_stations_with_data(self):
         self.assertEqual(self.network.stations_with_data(2004, 1, 9)[0]['number'], 2)
         self.assertEqual(len(self.network.stations_with_data(2004, 1, 1)), 0)
-        self.assertRaises(Exception, self.network.stations_with_data, day=1)
+        self.assertRaises(Exception, self.network.stations_with_data, year=2004, day=1)
+        self.assertRaises(Exception, self.network.stations_with_data, month=1, day=1)
         self.assertRaises(Exception, self.network.stations_with_data, month=1)
-        self.assertRaises(Exception, self.network.stations_with_data, day=1, month=1)
+        self.assertRaises(Exception, self.network.stations_with_data, day=1)
 
     def test_stations_with_weather(self):
         self.assertEqual(self.network.stations_with_weather(2004, 10, 9)[0]['number'], 3)
         self.assertEqual(len(self.network.stations_with_weather(2004, 1, 1)), 0)
-        self.assertRaises(Exception, self.network.stations_with_weather, day=1)
+        self.assertRaises(Exception, self.network.stations_with_weather, year=2004, day=1)
+        self.assertRaises(Exception, self.network.stations_with_weather, month=1, day=1)
         self.assertRaises(Exception, self.network.stations_with_weather, month=1)
-        self.assertRaises(Exception, self.network.stations_with_weather, day=1, month=1)
+        self.assertRaises(Exception, self.network.stations_with_weather, day=1)
 
 
 class StationTests(unittest.TestCase):
