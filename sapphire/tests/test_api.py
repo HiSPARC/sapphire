@@ -1,6 +1,8 @@
 import unittest
 from datetime import date
 
+from mock import patch, sentinel
+
 from sapphire import api
 
 
@@ -40,6 +42,30 @@ class NetworkTests(unittest.TestCase):
         bad_number = 1
         self.assertRaises(Exception, self.network.subclusters, country=bad_number)
         self.assertRaises(Exception, self.network.subclusters, cluster=bad_number)
+
+    def test_country_numbers(self):
+        self.network.all_countries = [{'number': sentinel.number1},
+                                      {'number': sentinel.number2}]
+        self.assertEqual(self.network.country_numbers(),
+                         [sentinel.number1, sentinel.number2])
+
+    @patch.object(api.Network, 'clusters')
+    def test_cluster_numbers(self, mock_clusters):
+        mock_clusters.return_value = [{'number': sentinel.number1},
+                                      {'number': sentinel.number2}]
+        self.assertEqual(self.network.cluster_numbers(sentinel.country),
+                         [sentinel.number1, sentinel.number2])
+        mock_clusters.assert_called_once_with(country=sentinel.country)
+
+    @patch.object(api.Network, 'subclusters')
+    def test_subcluster_numbers(self, mock_subclusters):
+        mock_subclusters.return_value = [{'number': sentinel.number1},
+                                         {'number': sentinel.number2}]
+        self.assertEqual(self.network.subcluster_numbers(sentinel.country,
+                                                         sentinel.cluster),
+                         [sentinel.number1, sentinel.number2])
+        mock_subclusters.assert_called_once_with(country=sentinel.country,
+                                                 cluster=sentinel.cluster)
 
     def test_bad_stations(self):
         self.assertEqual(self.network.all_stations, self.network.stations())

@@ -79,7 +79,7 @@ class Network(object):
     def country_numbers(self):
         """Same as countries but only retuns a list of country numbers"""
 
-        countries = self.all_countries()
+        countries = self.all_countries
         return [country['number'] for country in countries]
 
     def clusters(self, country=None):
