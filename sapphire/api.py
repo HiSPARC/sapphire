@@ -31,42 +31,104 @@ import json
 
 logger = logging.getLogger('api')
 
-API = {"stations": 'stations/',
-       "stations_in_subcluster": 'subclusters/{subcluster_number}/',
-       "subclusters": 'subclusters/',
-       "subclusters_in_cluster": 'clusters/{cluster_number}/',
-       "clusters": 'clusters/',
-       "clusters_in_country": 'countries/{country_number}/',
-       "countries": 'countries/',
-       "stations_with_data": 'stations/data/{year}/{month}/{day}/',
-       "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
-       "station_info": 'station/{station_number}/{year}/{month}/{day}/',
-       "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
-       "has_weather": 'station/{station_number}/weather/{year}/{month}/{day}/',
-       "configuration": 'station/{station_number}/config/{year}/{month}/{day}/',
-       "number_of_events": 'station/{station_number}/num_events/{year}/{month}/{day}/{hour}/',
-       "event_trace": 'station/{station_number}/trace/{ext_timestamp}/',
-       "pulseheight_fit": 'station/{station_number}/plate/{plate_number}/pulseheight/fit/{year}/{month}/{day}/',
-       "pulseheight_drift": 'station/{station_number}/plate/{plate_number}/pulseheight/drift/{year}/{month}/{day}/{number_of_days}/'}
-
 API_BASE = 'http://data.hisparc.nl/api/'
 
 
-class Network(object):
+class API(object):
+
+    """Base API class
+
+    This provided the methods to retrieve data from the API.
+    Also converts JSON data to Python objects (dict/list/etc..).
+
+    """
+
+    urls = {"stations": 'stations/',
+            "stations_in_subcluster": 'subclusters/{subcluster_number}/',
+            "subclusters": 'subclusters/',
+            "subclusters_in_cluster": 'clusters/{cluster_number}/',
+            "clusters": 'clusters/',
+            "clusters_in_country": 'countries/{country_number}/',
+            "countries": 'countries/',
+            "stations_with_data": 'stations/data/{year}/{month}/{day}/',
+            "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
+            "station_info": 'station/{station_number}/{year}/{month}/{day}/',
+            "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
+            "has_weather": 'station/{station_number}/weather/{year}/{month}/'
+                           '{day}/',
+            "configuration": 'station/{station_number}/config/{year}/'
+                             '{month}/{day}/',
+            "number_of_events": 'station/{station_number}/num_events/{year}/'
+                                '{month}/{day}/{hour}/',
+            "event_trace": 'station/{station_number}/trace/{ext_timestamp}/',
+            "pulseheight_fit": 'station/{station_number}/plate/{plate_number}/'
+                               'pulseheight/fit/{year}/{month}/{day}/',
+            "pulseheight_drift": 'station/{station_number}/plate/{plate_number}/pulseheight/'
+                                 'drift/{year}/{month}/{day}/{number_of_days}/'}
+
+    def _get_json(self, urlpath):
+        """Retrieve a JSON from the HiSPARC API
+
+        :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
+            to retrieve
+        :return: the data returned by the api as dictionary or integer
+
+        """
+        json_data = self._retrieve_url(urlpath)
+        data = json.loads(json_data)
+
+        return data
+
+    @staticmethod
+    def _retrieve_url(urlpath):
+        """Open a HiSPARC API URL and read the data
+
+        :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
+            to retrieve
+        :return: the data returned by the api as a string
+
+        """
+        url = API_BASE + urlpath
+        logging.debug('Getting: ' + url)
+        try:
+            result = urlopen(url).read()
+        except HTTPError, e:
+            raise Exception('A HTTP %d error occured for the url: %s' %
+                            (e.code, url))
+        except URLError:
+            raise Exception('An URL error occured.')
+
+        return result
+
+    @staticmethod
+    def check_connection():
+        """Open the API man page URL to test the connection
+
+        :return: boolean indicating the internet status
+
+        """
+        try:
+            result = urlopen(API_BASE).read()
+        except URLError:
+            return False
+        return True
+
+
+class Network(API):
     """Get info about the network (countries/clusters/subclusters/stations)"""
 
     def __init__(self):
         """Initialize network
 
         """
-        path = API['countries']
-        self.all_countries = _get_json(path)
-        path = API['clusters']
-        self.all_clusters = _get_json(path)
-        path = API['subclusters']
-        self.all_subclusters = _get_json(path)
-        path = API['stations']
-        self.all_stations = _get_json(path)
+        path = self.urls['countries']
+        self.all_countries = self._get_json(path)
+        path = self.urls['clusters']
+        self.all_clusters = self._get_json(path)
+        path = self.urls['subclusters']
+        self.all_subclusters = self._get_json(path)
+        path = self.urls['stations']
+        self.all_stations = self._get_json(path)
 
     def countries(self):
         """Get a list of countries
@@ -93,8 +155,9 @@ class Network(object):
         if country is None:
             clusters = self.all_clusters
         else:
-            path = API['clusters_in_country'].format(country_number=country)
-            clusters = _get_json(path)
+            path = (self.urls['clusters_in_country']
+                    .format(country_number=country))
+            clusters = self._get_json(path)
         return clusters
 
     def cluster_numbers(self, country=None):
@@ -116,15 +179,17 @@ class Network(object):
             subclusters = self.all_subclusters
         elif not country is None:
             subclusters = []
-            path = API['clusters_in_country'].format(country_number=country)
-            clusters = _get_json(path)
+            path = (self.urls['clusters_in_country']
+                    .format(country_number=country))
+            clusters = self._get_json(path)
             for cluster in clusters:
-                path = (API['subclusters_in_cluster']
+                path = (self.urls['subclusters_in_cluster']
                         .format(cluster_number=cluster['number']))
-                subclusters.extend(_get_json(path))
+                subclusters.extend(self._get_json(path))
         else:
-            path = API['subclusters_in_cluster'].format(cluster_number=cluster)
-            subclusters = _get_json(path)
+            path = (self.urls['subclusters_in_cluster']
+                    .format(cluster_number=cluster))
+            subclusters = self._get_json(path)
         return subclusters
 
     def subcluster_numbers(self, country=None, cluster=None):
@@ -146,28 +211,30 @@ class Network(object):
             stations = self.all_stations
         elif not country is None:
             stations = []
-            path = API['clusters_in_country'].format(country_number=country)
-            clusters = _get_json(path)
+            path = (self.urls['clusters_in_country']
+                    .format(country_number=country))
+            clusters = self._get_json(path)
             for cluster in clusters:
-                path = (API['subclusters_in_cluster']
+                path = (self.urls['subclusters_in_cluster']
                         .format(cluster_number=cluster['number']))
-                subclusters = _get_json(path)
+                subclusters = self._get_json(path)
                 for subcluster in subclusters:
-                    path = (API['stations_in_subcluster']
+                    path = (self.urls['stations_in_subcluster']
                             .format(subcluster_number=subcluster['number']))
-                    stations.extend(_get_json(path))
+                    stations.extend(self._get_json(path))
         elif not cluster is None:
             stations = []
-            path = API['subclusters_in_cluster'].format(cluster_number=cluster)
-            subclusters = _get_json(path)
+            path = (self.urls['subclusters_in_cluster']
+                    .format(cluster_number=cluster))
+            subclusters = self._get_json(path)
             for subcluster in subclusters:
-                path = (API['stations_in_subcluster']
+                path = (self.urls['stations_in_subcluster']
                         .format(subcluster_number=subcluster['number']))
-                stations.extend(_get_json(path))
+                stations.extend(self._get_json(path))
         else:
-            path = (API['stations_in_subcluster']
+            path = (self.urls['stations_in_subcluster']
                     .format(subcluster_number=subcluster))
-            stations = _get_json(path)
+            stations = self._get_json(path)
         return stations
 
     def stations_numbers(self, country=None, cluster=None, subcluster=None):
@@ -204,9 +271,9 @@ class Network(object):
         elif month == '' and day != '':
             raise Exception('You must also specify the month')
 
-        path = (API['stations_with_data'].format(year=year, month=month,
-                                                 day=day).strip("/"))
-        return _get_json(path)
+        path = (self.urls['stations_with_data']
+                .format(year=year, month=month, day=day).strip("/"))
+        return self._get_json(path)
 
     def stations_with_weather(self, year='', month='', day=''):
         """Get a list of stations with weather data on the specified date
@@ -221,12 +288,12 @@ class Network(object):
         elif month == '' and day != '':
             raise Exception('You must also specify the month')
 
-        path = (API['stations_with_weather'].format(year=year, month=month,
-                                                    day=day).strip("/"))
-        return _get_json(path)
+        path = (self.urls['stations_with_weather']
+                .format(year=year, month=month, day=day).strip("/"))
+        return self._get_json(path)
 
 
-class Station(object):
+class Station(API):
     """Access data about a single station"""
 
     def __init__(self, station, date=None):
@@ -239,11 +306,10 @@ class Station(object):
         self.station = station
         if date is None:
             date = datetime.date.today()
-        path = API['station_info'].format(station_number=self.station,
-                                          year=date.year,
-                                          month=date.month,
-                                          day=date.day)
-        self.info = _get_json(path)
+        path = (self.urls['station_info']
+                .format(station_number=self.station, year=date.year,
+                        month=date.month, day=date.day))
+        self.info = self._get_json(path)
 
     @property
     def country(self):
@@ -304,12 +370,11 @@ class Station(object):
         """
         if date is None:
             date = datetime.date.today()
-        path = API['configuration'].format(station_number=self.station,
-                                           year=date.year,
-                                           month=date.month,
-                                           day=date.day)
+        path = (self.urls['configuration']
+                .format(station_number=self.station,
+                        year=date.year, month=date.month, day=date.day))
 
-        return _get_json(path)
+        return self._get_json(path)
 
     def n_events(self, year='', month='', day='', hour=''):
         """Get number of events
@@ -330,10 +395,10 @@ class Station(object):
         elif day == '' and hour != '':
             raise Exception('You must also specify the day')
 
-        path = API['number_of_events'].format(station_number=self.station,
-                                              year=year, month=month, day=day,
-                                              hour=hour).strip("/")
-        return _get_json(path)
+        path = (self.urls['number_of_events']
+                .format(station_number=self.station, year=year, month=month,
+                        day=day, hour=hour).strip("/"))
+        return self._get_json(path)
 
     def has_data(self, year='', month='', day=''):
         """Check for HiSPARC data
@@ -349,10 +414,10 @@ class Station(object):
         elif month == '' and day != '':
             raise Exception('You must also specify the month')
 
-        path = (API['has_data'].format(station_number=self.station,
-                                       year=year, month=month, day=day)
-                               .strip("/"))
-        return _get_json(path)
+        path = (self.urls['has_data'].format(station_number=self.station,
+                                             year=year, month=month, day=day)
+                .strip("/"))
+        return self._get_json(path)
 
     def has_weather(self, year='', month='', day=''):
         """Check for weather data
@@ -368,10 +433,10 @@ class Station(object):
         elif month == '' and day != '':
             raise Exception('You must also specify the month')
 
-        path = (API['has_weather'].format(station_number=self.station,
-                                          year=year, month=month, day=day)
-                                  .strip("/"))
-        return _get_json(path)
+        path = (self.urls['has_weather']
+                .format(station_number=self.station,
+                        year=year, month=month, day=day).strip("/"))
+        return self._get_json(path)
 
     def event_trace(self, timestamp, nanoseconds):
         """Get the traces for a specific event
@@ -385,42 +450,7 @@ class Station(object):
 
         """
         ext_timestamp = '%d%09d' % (timestamp, nanoseconds)
-        path = (API['event_trace'].format(station_number=self.station,
-                                          ext_timestamp=ext_timestamp)
-                                  .strip("/"))
-        return _get_json(path)
-
-
-def _get_json(urlpath):
-    """Retrieve a JSON from the HiSPARC API
-
-    :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
-        to retrieve
-    :return: the data returned by the api as dictionary or integer
-
-    """
-    json_data = _retrieve_url(urlpath)
-    data = json.loads(json_data)
-
-    return data
-
-
-def _retrieve_url(urlpath):
-    """Open a HiSPARC API URL and read the data
-
-    :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
-        to retrieve
-    :return: the data returned by the api as a string
-
-    """
-    url = API_BASE + urlpath
-    logging.debug('Getting: ' + url)
-    try:
-        result = urlopen(url).read()
-    except HTTPError, e:
-        raise Exception('A HTTP %d error occured for the following url: %s' %
-                        (e.code, url))
-    except URLError:
-        raise Exception('An URL error occured.')
-
-    return result
+        path = (self.urls['event_trace'].format(station_number=self.station,
+                                                  ext_timestamp=ext_timestamp)
+                .strip("/"))
+        return self._get_json(path)
