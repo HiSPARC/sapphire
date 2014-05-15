@@ -42,7 +42,7 @@ import progressbar as pb
 from sapphire.analysis.find_mpv import FindMostProbableValueInSpectrum
 
 
-ADC_THRESHOLD = 20
+ADC_THRESHOLD = 20  # This one is relative to the baseline
 ADC_LOW_THRESHOLD = 253
 ADC_HIGH_THRESHOLD = 323
 ADC_TIME_PER_SAMPLE = 2.5e-9
@@ -667,15 +667,18 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         for baseline, pulseheight, trace_idx in zip(event['baseline'],
                                                     event['pulseheights'],
                                                     event['traces']):
-            if pulseheight < 0:
-                # retain -1, -999 status flags in timing
-                timings.append(pulseheight)
+            if trace_idx == -1:
                 n_detectors -= 1
-            elif pulseheight < ADC_THRESHOLD:
-                timings.append(-999)
             else:
                 trace = self._get_trace(trace_idx)
                 traces.append(trace)
+
+            if pulseheight < 0:
+                # retain -1, -999 status flags in timing
+                timings.append(pulseheight)
+            elif pulseheight < ADC_THRESHOLD:
+                timings.append(-999)
+            else:
                 timings.append(self._reconstruct_time_from_trace(trace,
                                                                  baseline))
         timings.append(self._reconstruct_trigger_time_from_traces(traces,
