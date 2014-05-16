@@ -96,7 +96,8 @@ def create_table(file, group):
                    't1': tables.Float32Col(pos=10),
                    't2': tables.Float32Col(pos=11),
                    't3': tables.Float32Col(pos=12),
-                   't4': tables.Float32Col(pos=13)}
+                   't4': tables.Float32Col(pos=13),
+                   't_trigger': tables.Float32Col(pos=14)}
 
     if group not in file:
         head, tail = os.path.split(group)
@@ -122,7 +123,7 @@ def read_line_and_store_event(line, table):
 
     # break up CSV line
     (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
-     int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4) = line
+     int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger) = line
 
     # convert string values to correct data types or calculate values
     event_id = len(table)
@@ -139,10 +140,11 @@ def read_line_and_store_event(line, table):
     t2 = float(t2)
     t3 = float(t3)
     t4 = float(t4)
+    t_trigger = float(t_trigger)
 
     # store event
     table.append([[event_id, timestamp, nanoseconds, ext_timestamp,
                    pulseheights, integrals, n1, n2, n3, n4, t1, t2,
-                   t3, t4]])
+                   t3, t4, t_trigger]])
 
     return timestamp
