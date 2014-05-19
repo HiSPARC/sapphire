@@ -375,10 +375,28 @@ class FitAlgorithm(object):
 
 
 class DirectReconstruction(DirectAlgorithm):
+
+    """Reconstruct event using :class:`DirectAlgorithm`
+
+    This class is aware of 'events' and 'stations'.  Initialize this class
+    with a 'station' and you can reconstruct events using
+    :meth:`reconstruct_event`.
+
+    :param station: :class:`sapphire.clusters.Station` object.
+
+    """
+
     def __init__(self, station):
         self.station = station
 
-    def reconstruct_event(event):
+    def reconstruct_event(event, detector_ids=[0, 2, 3]):
+        """Reconstruct a single event
+
+        :param event: an event (e.g. from an events table), or any
+            dictionary-like object containing the keys necessary for
+            reconstructing the direction of a shower (e.g. arrival times).
+
+        """
         pass
 
 
@@ -387,6 +405,31 @@ class FitClusterReconstruction(FitAlgorithm):
         self.cluster = cluster
 
     def reconstruct_coincidence(coincidence):
+        pass
+
+
+class DirectClusterReconstruction(DirectAlgorithm):
+
+    """Reconstruct coincidence using :class:`DirectAlgorithm`
+
+    This class is aware of 'events' and 'clusters'.  Initialize this class
+    with a 'cluster' and you can reconstruct coincidences using
+    :meth:`reconstruct_coincidence`.
+
+    :param cluster: :class:`sapphire.clusters.Cluster` object.
+
+    """
+
+    def __init__(self, cluster):
+        self.cluster = cluster
+
+    def reconstruct_coincidence(coincidence, station_ids=[0, 1, 2]):
+        """Reconstruct a single coincidence
+
+        :param coincidence: a coincidence (e.g. from a coincidences
+            table)
+
+        """
         pass
 
 
