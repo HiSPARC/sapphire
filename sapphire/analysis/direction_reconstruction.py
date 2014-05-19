@@ -9,61 +9,61 @@ class DirectAlgorithm(object):
     This implements the equations derived in Fokkema2012 sec 4.2.
     (DOI: 10.3990/1.9789036534383)
 
-    Note! The detectors are numbered 1-based, not 0-based.
+    Note! The detectors are 0-based.
 
     Speed of light is in [m / ns]
 
     """
 
     @classmethod
-    def reconstruct(cls, t1, t2, t3, x1, x2, x3, y1, y2, y3, z1=0, z2=0, z3=0):
+    def reconstruct(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
         algorithm.
 
-        :param t#: arrival times in detector 1, 2 and 3 in ns.
-        :param x# y#: position of detector 1, 2 and 3 in m.
-        :param z#: height of detectors 1, 2 and 3 is ignored.
+        :param t#: arrival times in detector 0, 1 and 2 in ns.
+        :param x# y#: position of detector 0, 1 and 2 in m.
+        :param z#: height of detectors 0, 1 and 2 is ignored.
 
         """
-        t2 -= t1
-        t3 -= t1
+        t1 -= t0
+        t2 -= t0
 
-        r2 = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-        r3 = sqrt((x3 - x1) ** 2 + (y3 - x1) ** 2)
+        r1 = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+        r2 = sqrt((x2 - x0) ** 2 + (y2 - x0) ** 2)
 
-        phi2 = arctan2((y2 - y1), (x2 - x1))
-        phi3 = arctan2((y3 - x1), (x3 - x1))
+        phi1 = arctan2((y1 - y0), (x1 - x0))
+        phi2 = arctan2((y2 - x0), (x2 - x0))
 
-        return cls._reconstruct(t2, t3, r2, r3, phi2, phi3)
+        return cls._reconstruct(t1, t2, r1, r2, phi1, phi2)
 
     @classmethod
-    def _reconstruct(cls, t2, t3, r2, r3, phi2, phi3):
+    def _reconstruct(cls, t1, t2, r1, r2, phi1, phi2):
         """Reconstruct angles from 3 detections
 
-        :param t#: arrival times in detector 2 and 3 relative to
-                   detector 1 in ns.
-        :param r#, phi#: position of detector 2 and 3 relative to
-                         detector 1 in m and radians.
+        :param t#: arrival times in detector 1 and 2 relative to
+                   detector 0 in ns.
+        :param r#, phi#: position of detector 1 and 2 relative to
+                         detector 0 in m and radians.
         :return: theta as given by Fokkema2012 eq 4.27,
                  phi as given by Fokkema2012 eq 4.13.
 
         """
         c = .3
 
-        t2 *= -1
-        t3 *= -1
+        t1 = -t1
+        t2 = -t2
 
-        phi = arctan2(-(r2 * t3 * cos(phi2) - r3 * t2 * cos(phi3)),
-                      (r2 * t3 * sin(phi2) - r3 * t2 * sin(phi3)))
+        phi = arctan2(-(r1 * t2 * cos(phi1) - r2 * t1 * cos(phi2)),
+                      (r1 * t2 * sin(phi1) - r2 * t1 * sin(phi2)))
+        theta1 = arcsin(c * t1 / (r1 * cos(phi - phi1)))
         theta2 = arcsin(c * t2 / (r2 * cos(phi - phi2)))
-        theta3 = arcsin(c * t3 / (r3 * cos(phi - phi3)))
 
-        e2 = sqrt(cls.rel_theta2_errorsq(theta2, phi, phi2, phi3, r2, r3))
-        e3 = sqrt(cls.rel_theta3_errorsq(theta3, phi, phi2, phi3, r2, r3))
+        e1 = sqrt(cls.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
+        e2 = sqrt(cls.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
 
-        theta = (1 / e2 * theta2 + 1 / e3 * theta3) / (1 / e2 + 1 / e3)
+        theta = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
         if theta < 0:
             theta *= -1
@@ -73,7 +73,29 @@ class DirectAlgorithm(object):
         return theta, phi
 
     @classmethod
-    def rel_theta2_errorsq(cls, theta, phi, phi2, phi3, r2=10, r3=10):
+    def rel_theta1_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
+        """Fokkema2012, eq 4.23"""
+
+        c = .3
+
+        sintheta = sin(theta)
+        sinphiphi1 = sin(phi - phi1)
+
+        den = r1 ** 2 * (1 - sintheta ** 2) * cos(phi - phi1) ** 2
+
+        A = (r1 ** 2 * sinphiphi1 ** 2 *
+             cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+        B = -(2 * r1 * c * sinphiphi1 *
+              (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
+               cls.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
+        C = 2 * c ** 2
+
+        errsq = (A * sintheta ** 2 + B * sintheta + C) / den
+
+        return where(isnan(errsq), inf, errsq)
+
+    @classmethod
+    def rel_theta2_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.23"""
 
         c = .3
@@ -84,32 +106,10 @@ class DirectAlgorithm(object):
         den = r2 ** 2 * (1 - sintheta ** 2) * cos(phi - phi2) ** 2
 
         A = (r2 ** 2 * sinphiphi2 ** 2 *
-             cls.rel_phi_errorsq(theta, phi, phi2, phi3, r2, r3))
+             cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
         B = -(2 * r2 * c * sinphiphi2 *
-              (cls.dphi_dt1(theta, phi, phi2, phi3, r2, r3) -
-               cls.dphi_dt2(theta, phi, phi2, phi3, r2, r3)))
-        C = 2 * c ** 2
-
-        errsq = (A * sintheta ** 2 + B * sintheta + C) / den
-
-        return where(isnan(errsq), inf, errsq)
-
-    @classmethod
-    def rel_theta3_errorsq(cls, theta, phi, phi2, phi3, r2=10, r3=10):
-        """Fokkema2012, eq 4.23"""
-
-        c = .3
-
-        sintheta = sin(theta)
-        sinphiphi3 = sin(phi - phi3)
-
-        den = r3 ** 2 * (1 - sintheta ** 2) * cos(phi - phi3) ** 2
-
-        A = (r3 ** 2 * sinphiphi3 ** 2 *
-             cls.rel_phi_errorsq(theta, phi, phi2, phi3, r2, r3))
-        B = -(2 * r3 * c * sinphiphi3 *
-              (cls.dphi_dt1(theta, phi, phi2, phi3, r2, r3) -
-               cls.dphi_dt3(theta, phi, phi2, phi3, r2, r3)))
+              (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
+               cls.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
         C = 2 * c ** 2
 
         errsq = (A * sintheta ** 2 + B * sintheta + C) / den
@@ -117,73 +117,73 @@ class DirectAlgorithm(object):
         return where(isnan(errsq), inf, errsq)
 
     @staticmethod
-    def rel_phi_errorsq(theta, phi, phi2, phi3, r2=10, r3=10):
+    def rel_phi_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.22"""
 
         c = .3
 
         tanphi = tan(phi)
+        sinphi1 = sin(phi1)
+        cosphi1 = cos(phi1)
         sinphi2 = sin(phi2)
         cosphi2 = cos(phi2)
-        sinphi3 = sin(phi3)
-        cosphi3 = cos(phi3)
 
-        den = ((1 + tanphi ** 2) ** 2 * r2 ** 2 * r3 ** 2 * sin(theta) ** 2 *
-               (sinphi2 * cos(phi - phi3) - sinphi3 * cos(phi - phi2)) ** 2 /
+        den = ((1 + tanphi ** 2) ** 2 * r1 ** 2 * r2 ** 2 * sin(theta) ** 2 *
+               (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2 /
                c ** 2)
 
-        A = (r2 ** 2 * sinphi2 ** 2 +
-             r3 ** 2 * sinphi3 ** 2 -
-             r2 * r3 * sinphi2 * sinphi3)
-        B = (2 * r2 ** 2 * sinphi2 * cosphi2 +
-             2 * r3 ** 2 * sinphi3 * cosphi3 -
-             r2 * r3 * (sinphi3 * cosphi2 - sinphi2 * cosphi3))
-        C = (r2 ** 2 * cosphi2 ** 2 +
-             r3 ** 2 * cosphi3 ** 2 -
-             r2 * r3 * cosphi2 * cosphi3)
+        A = (r1 ** 2 * sinphi1 ** 2 +
+             r2 ** 2 * sinphi2 ** 2 -
+             r1 * r2 * sinphi1 * sinphi2)
+        B = (2 * r1 ** 2 * sinphi1 * cosphi1 +
+             2 * r2 ** 2 * sinphi2 * cosphi2 -
+             r1 * r2 * (sinphi2 * cosphi1 - sinphi1 * cosphi2))
+        C = (r1 ** 2 * cosphi1 ** 2 +
+             r2 ** 2 * cosphi2 ** 2 -
+             r1 * r2 * cosphi1 * cosphi2)
 
         return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
 
     @classmethod
-    def dphi_dt1(cls, theta, phi, phi2, phi3, r2=10, r3=10):
+    def dphi_dt0(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.19"""
 
-        return -(cls.dphi_dt2(theta, phi, phi2, phi3, r2, r3)
-                 + cls.dphi_dt3(theta, phi, phi2, phi3, r2, r3))
+        return -(cls.dphi_dt1(theta, phi, phi1, phi2, r1, r2) +
+                 cls.dphi_dt2(theta, phi, phi1, phi2, r1, r2))
 
     @staticmethod
-    def dphi_dt2(theta, phi, phi2, phi3, r2=10, r3=10):
+    def dphi_dt1(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.20"""
 
         c = .3
 
         tanphi = tan(phi)
+        sinphi1 = sin(phi1)
         sinphi2 = sin(phi2)
-        sinphi3 = sin(phi3)
-        cosphi3 = cos(phi3)
+        cosphi2 = cos(phi2)
 
-        den = ((1 + tanphi ** 2) * r2 * r3 * sin(theta) *
-               (sinphi3 * cos(phi - phi2) - sinphi2 * cos(phi - phi3)) /
+        den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta) *
+               (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2)) /
                c)
-        num = -r3 * (sinphi3 * tanphi + cosphi3)
+        num = -r2 * (sinphi2 * tanphi + cosphi2)
 
         return num / den
 
     @staticmethod
-    def dphi_dt3(theta, phi, phi2, phi3, r2=10, r3=10):
+    def dphi_dt2(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.21"""
 
         c = .3
 
         tanphi = tan(phi)
+        sinphi1 = sin(phi1)
+        cosphi1 = cos(phi1)
         sinphi2 = sin(phi2)
-        cosphi2 = cos(phi2)
-        sinphi3 = sin(phi3)
 
-        den = ((1 + tanphi ** 2) * r2 * r3 * sin(theta) *
-               (sinphi3 * cos(phi - phi2) - sinphi2 * cos(phi - phi3)) /
+        den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta) *
+               (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2)) /
                c)
-        num = r2 * (sinphi2 * tanphi + cosphi2)
+        num = r1 * (sinphi1 * tanphi + cosphi1)
 
         return num / den
 
@@ -202,47 +202,47 @@ class DirectAlgorithmCartesian2D(object):
     """
 
     @classmethod
-    def reconstruct(cls, t1, t2, t3, x1, x2, x3, y1, y2, y3, z1=0, z2=0, z3=0):
+    def reconstruct(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
         algorithm.
 
-        :param t#: arrival times in detector 1, 2 and 3 in ns.
-        :param x# y#: position of detector 1, 2 and 3 in m.
-        :param z#: height of detectors 1, 2 and 3 is ignored.
+        :param t#: arrival times in detector 0, 1 and 2 in ns.
+        :param x# y#: position of detector 0, 1 and 2 in m.
+        :param z#: height of detectors 0, 1 and 2 is ignored.
 
         """
-        t2 -= t1
-        t3 -= t1
+        t1 -= t0
+        t2 -= t0
 
-        x2 -= x1
-        x3 -= x1
+        x1 -= x0
+        x2 -= x0
 
-        y2 -= y1
-        y3 -= y1
+        y1 -= y0
+        y2 -= y0
 
-        return cls._reconstruct(t2, t3, x2, x3, y2, y3)
+        return cls._reconstruct(t1, t2, x1, x2, y1, y2)
 
     @staticmethod
-    def _reconstruct(t2, t3, x2, x3, y2, y3, z2=0, z3=0):
+    def _reconstruct(t1, t2, x1, x2, y1, y2, z1=0, z2=0):
         """Reconstruct angles from 3 detections
 
-        :param t#: arrival times in detector 2 and 3 relative to
-                   detector 1 in ns.
-        :param x#, y#: position of detector 2 and 3 relative to
-                       detector 1 in m.
-        :param z#: height of detectors 2 and 3 is ignored.
+        :param t#: arrival times in detector 1 and 2 relative to
+                   detector 0 in ns.
+        :param x#, y#: position of detector 1 and 2 relative to
+                       detector 0 in m.
+        :param z#: height of detectors 1 and 2 is ignored.
         :return: theta as given by Montanus2014 eq 27,
                  phi as given by Montanus2014 eq 26.
 
         """
         c = 0.3
 
-        ux = c * (t3 * x2 - t2 * x3)
-        uy = c * (t3 * y2 - t2 * y3)
+        ux = c * (t2 * x1 - t1 * x2)
+        uy = c * (t2 * y1 - t1 * y2)
 
-        vz = x2 * y3 - x3 * y2
+        vz = x1 * y2 - x2 * y1
 
         usquared = ux * ux + uy * uy
         vzsquared = vz * vz
@@ -270,52 +270,52 @@ class DirectAlgorithmCartesian3D(object):
     """
 
     @classmethod
-    def reconstruct(cls, t1, t2, t3, x1, x2, x3, y1, y2, y3, z1=0, z2=0, z3=0):
+    def reconstruct(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
         algorithm.
 
-        :param t#: arrival times in detector 1, 2 and 3 in ns.
-        :param x# y# z#: position of detector 1, 2 and 3 in m.
+        :param t#: arrival times in detector 0, 1 and 2 in ns.
+        :param x# y# z#: position of detector 0, 1 and 2 in m.
 
         """
-        t2 -= t1
-        t3 -= t1
+        t1 -= t0
+        t2 -= t0
 
-        x2 -= x1
-        x3 -= x1
+        x1 -= x0
+        x2 -= x0
 
-        y2 -= y1
-        y3 -= y1
+        y1 -= y0
+        y2 -= y0
 
-        z2 -= z1
-        z3 -= z1
+        z1 -= z0
+        z2 -= z0
 
-        return cls._reconstruct(t2, t3, x2, x3, y2, y3, z2=0, z3=0)
+        return cls._reconstruct(t1, t2, x1, x2, y1, y2, z1=0, z2=0)
 
 
     @staticmethod
-    def _reconstruct(t2, t3, x2, x3, y2, y3, z2=0, z3=0):
+    def _reconstruct(t1, t2, x1, x2, y1, y2, z1=0, z2=0):
         """Reconstruct angles from 3 detections
 
-        :param t#: arrival times in detector 2 and 3 relative to
-                   detector 1 in ns.
-        :param x#, y#, z#: position of detector 2 and 3 relative to
-                           detector 1 in m.
+        :param t#: arrival times in detector 1 and 2 relative to
+                   detector 0 in ns.
+        :param x#, y#, z#: position of detector 1 and 2 relative to
+                           detector 0 in m.
         :return: theta as given by Montanus2014 eq 24,
                  phi as given by Montanus2014 eq 22.
 
         """
         c = .3
 
-        ux = c * (t3 * x2 - t2 * x3)
-        uy = c * (t3 * y2 - t2 * y3)
-        uz = c * (t3 * z2 - t2 * z3)
+        ux = c * (t2 * x1 - t1 * x2)
+        uy = c * (t2 * y1 - t1 * y2)
+        uz = c * (t2 * z1 - t1 * z2)
 
-        vx = y2 * z3 - y3 * z2
-        vy = x3 * z2 - x2 * z3
-        vz = x2 * y3 - x3 * y2
+        vx = y1 * z2 - y2 * z1
+        vy = x2 * z1 - x1 * z2
+        vz = x1 * y2 - x2 * y1
 
         ucrossvx = uy * vz - uz * vy
         ucrossvy = uz * vx - ux * vz
