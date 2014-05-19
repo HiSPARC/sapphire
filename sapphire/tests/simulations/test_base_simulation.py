@@ -10,7 +10,7 @@ from sapphire import storage
 
 
 class BaseSimulationTest(unittest.TestCase):
-    
+
     @patch.object(BaseSimulation, '_prepare_output_tables')
     def setUp(self, mock_method):
         self.mock_prepare_output_tables = mock_method
@@ -178,7 +178,8 @@ class BaseSimulationTest(unittest.TestCase):
         detector_observables = [{'n': 1., 't': 2., 'pulseheights': 3.,
                                  'integrals': 4.},
                                 {'n': 5., 't': 6., 'pulseheights': 7.,
-                                 'integrals': 8.}]
+                                 'integrals': 8.},
+                                {'foo': -999.}]
 
         expected = {'n1': 1., 'n2': 5., 't1': 2., 't2': 6.,
                     'pulseheights': [3., 7., -1., -1.],
