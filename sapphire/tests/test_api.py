@@ -8,7 +8,7 @@ from sapphire import api
 
 STATION = 501
 
-
+@unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class NetworkTests(unittest.TestCase):
     def setUp(self):
         self.network = api.Network()
@@ -107,7 +107,7 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.stations_with_weather, month=1)
         self.assertRaises(Exception, self.network.stations_with_weather, day=1)
 
-
+@unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class StationTests(unittest.TestCase):
     def setUp(self):
         self.station = api.Station(STATION)

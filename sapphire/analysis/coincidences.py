@@ -506,7 +506,7 @@ class CoincidencesESD(Coincidences):
         self.c_index = []
 
         description = storage.Coincidence
-        description.columns.update(stations_description)
+        description.columns.update(s_columns)
         self.coincidences = self.data.create_table(self.coincidence_group,
                                                   'coincidences', description)
 
