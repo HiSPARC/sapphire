@@ -35,7 +35,6 @@ using the following script:
     import tables
     from datetime import datetime
     from sapphire.publicdb import download_data
-    data = tables.openFile('PE-testdata.h5', 'w')
-    download_data(data, '/s501', 501, datetime(2010, 9, 1),
-                  datetime(2010, 9, 2), get_blobs=True)
-    data.close()
+    with tables.openFile('PE-testdata.h5', 'w') as data:
+        download_data(data, '/s501', 501, datetime(2010, 9, 1),
+                      datetime(2010, 9, 2), get_blobs=True)
