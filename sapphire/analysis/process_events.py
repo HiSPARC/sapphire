@@ -45,7 +45,7 @@ from sapphire.analysis.find_mpv import FindMostProbableValueInSpectrum
 ADC_THRESHOLD = 20  # This one is relative to the baseline
 ADC_LOW_THRESHOLD = 253
 ADC_HIGH_THRESHOLD = 323
-ADC_TIME_PER_SAMPLE = 2.5e-9
+ADC_TIME_PER_SAMPLE = 2.5 # in ns
 
 
 class ProcessEvents(object):
@@ -125,7 +125,8 @@ class ProcessEvents(object):
         :returns: the traces: an array of pulseheight values.
 
         """
-        traces = [self._get_trace(idx) for idx in event['traces'] if idx >= 0]
+        traces = [list(self._get_trace(idx)) for idx in event['traces']
+                  if idx >= 0]
 
         # Make traces follow NumPy conventions
         traces = np.array(traces).T
@@ -361,7 +362,7 @@ class ProcessEvents(object):
                 trace = self._get_trace(trace_idx)
                 timings.append(self._reconstruct_time_from_trace(trace,
                                                                  baseline))
-        timings = [time * ADC_TIME_PER_SAMPLE * 1e9
+        timings = [time * ADC_TIME_PER_SAMPLE
                    if time not in [-1, -999] else time
                    for time in timings]
         return timings
@@ -372,7 +373,7 @@ class ProcessEvents(object):
         Decompress a trace from the blobs array.
 
         :param idx: index into the blobs array
-        :returns: array of pulseheight values
+        :returns: iterator over the pulseheight values
 
         """
         blobs = self._get_blobs()
@@ -380,7 +381,7 @@ class ProcessEvents(object):
         trace = zlib.decompress(blobs[idx]).split(',')
         if trace[-1] == '':
             del trace[-1]
-        trace = np.array([int(x) for x in trace])
+        trace = (int(x) for x in trace)
         return trace
 
     def _get_blobs(self):
@@ -565,6 +566,7 @@ class ProcessEventsWithLINT(ProcessEvents):
 
         """
         threshold = baseline + ADC_THRESHOLD
+        trace = list(trace)
         i = self._first_above_threshold(trace, threshold)
 
         if i == 0:
@@ -662,65 +664,46 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
         """
         timings = []
+        low_idx = []
+        high_idx = []
         traces = []
-        n_detectors = 4
+        n_detectors = sum(1 for idx in event['traces'] if idx != -1)
         for baseline, pulseheight, trace_idx in zip(event['baseline'],
                                                     event['pulseheights'],
                                                     event['traces']):
-            if trace_idx == -1:
-                n_detectors -= 1
-            else:
-                trace = self._get_trace(trace_idx)
-                traces.append(trace)
-
             if pulseheight < 0:
                 # retain -1, -999 status flags in timing
                 timings.append(pulseheight)
+                continue
             elif pulseheight < ADC_THRESHOLD:
                 timings.append(-999)
-            else:
-                timings.append(self._reconstruct_time_from_trace(trace,
-                                                                 baseline))
-        timings.append(self._reconstruct_trigger_time_from_traces(traces,
-                                                                  n_detectors))
-        timings = [time * ADC_TIME_PER_SAMPLE * 1e9
-                   if time not in [-1, -999] else time
-                   for time in timings]
-        return timings
+                if baseline + pulseheight < ADC_LOW_THRESHOLD:
+                    # Not over Low threshold, did not participate in trigger
+                    continue
 
-    def _reconstruct_trigger_time_from_traces(self, traces, n_detectors=None):
-        """Reconstruct the moment of trigger from the traces
+            adc_threshold = baseline + ADC_THRESHOLD
+            trace = self._get_trace(trace_idx)
 
-        The timestamp for an event is based on the moment of the
-        trigger. This moment is reconstructed in this function. Using
-        this result the arrival times in each detector can be corrected
-        to be relative to the timestamp.
+            if adc_threshold < ADC_LOW_THRESHOLD:
+                t, value = self._first_value_above_threshold(trace, adc_threshold)
+                timings.append(t)
 
-        This function assumes traces with no data filter applied and the
-        default settings for triggers. The data filter in the HiSPARC
-        DAQ can distort the peaks/pulses in traces, possibly preventing
-        reconstruction.
+                # Trace has to at least cross the Low threshold
+                if baseline + pulseheight >= ADC_LOW_THRESHOLD:
+                    if value >= ADC_LOW_THRESHOLD:
+                        low_idx.append(t)
+                    else:
+                        t, value = self._first_value_above_threshold(trace, ADC_LOW_THRESHOLD, t)
+                        low_idx.append(t)
 
-        :param traces: the traces for an event.
-        :param n_detectors: number of detectors, for trigger conditions.
-        :returns: index in the trace for the trigger.
+                    # Check if trace crosses high threshold
+                    if n_detectors == 4 and baseline + pulseheight >= ADC_HIGH_THRESHOLD:
+                        if value >= ADC_HIGH_THRESHOLD:
+                            high_idx.append(t)
+                        else:
+                            t, value = self._first_value_above_threshold(trace, ADC_HIGH_THRESHOLD, t)
+                            high_idx.append(t)
 
-        """
-        if not n_detectors:
-            n_detectors = len(traces)
-        if n_detectors not in [2, 4]:
-            raise LookupError('Unsupported number of detectors')
-
-        low_idx = []
-        high_idx = []
-        for trace in traces:
-            low_idx.append(self._first_above_threshold(trace,
-                                                       ADC_LOW_THRESHOLD))
-            if n_detectors == 4 and not low_idx[-1] == -999:
-                high_idx.append(self._first_above_threshold(
-                    trace[low_idx[-1]:], ADC_HIGH_THRESHOLD))
-                if not high_idx[-1] == -999:
-                    high_idx[-1] += low_idx[-1]
         low_idx = [idx for idx in low_idx if not idx == -999]
         high_idx = [idx for idx in high_idx if not idx == -999]
         low_idx.sort()
@@ -728,21 +711,33 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
         if n_detectors == 2 and len(low_idx) > 1:
             # Two low
-            trigger_idx = low_idx[1]
+            timings.append(low_idx[1])
         elif n_detectors == 4 and (len(low_idx) >= 3 or len(high_idx) >= 2):
             # Two high or three low
             if len(low_idx) < 3 and len(high_idx) >= 2:
-                trigger_idx = high_idx[1]
+                timings.append(high_idx[1])
             elif len(low_idx) >= 3 and len(high_idx) < 2:
-                trigger_idx = low_idx[2]
+                timings.append(low_idx[2])
             elif len(low_idx) >= 3 and len(high_idx) >= 2:
-                trigger_idx = min([low_idx[2], high_idx[1]])
+                timings.append(min([low_idx[2], high_idx[1]]))
         else:
-            # print "Trigger to low or filtered trace? max signals: ",
-            # print [max(trace) for trace in traces]
-            trigger_idx = -999
+            timings.append(-999)
 
-        return trigger_idx
+        timings = [time * ADC_TIME_PER_SAMPLE
+                   if time not in [-1, -999] else time
+                   for time in timings]
+        return timings
+
+    def _first_value_above_threshold(self, trace, threshold, t=0):
+        """Find the first element in the list equal or above threshold"""
+
+        return next(((i, x) for i, x in enumerate(trace, t) if x >= threshold),
+                    (-999, 0))
+
+    def _reconstruct_trigger(self, low_idx, high_idx, n_detectors=None):
+        """Reconstruct the moment of trigger from the threshold info"""
+
+        pass
 
 
 class ProcessEventsFromSource(ProcessEvents):
