@@ -710,8 +710,13 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                    for time in timings]
         return timings
 
-    def _first_above_thresholds(self, trace, thresholds, max_signal):
+    @classmethod
+    def _first_above_thresholds(cls, trace, thresholds, max_signal):
         """Check for multiple thresholds when the traces crosses it
+
+        First the thresholds are sorted to make sure they are looked for
+        in the correct order, because the trace is a generator you can
+        not go back.
 
         :param trace: generator over the trace.
         :param thresholds: list of thresholds.
@@ -735,12 +740,13 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                     t += 1
                 else:
                     t = 0
-                t, last_value = self._first_value_above_threshold(trace,
-                                                                  threshold, t)
+                t, last_value = cls._first_value_above_threshold(trace,
+                                                                 threshold, t)
                 results[i] = t
         return results
 
-    def _first_value_above_threshold(self, trace, threshold, t=0):
+    @staticmethod
+    def _first_value_above_threshold(trace, threshold, t=0):
         """Find the first element in the list equal or above threshold
 
         :param trace: iterable trace.
