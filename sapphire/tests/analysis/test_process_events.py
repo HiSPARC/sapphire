@@ -13,7 +13,8 @@ TEST_DATA_FILE = 'PE-testdata.h5'
 DATA_GROUP = '/s501'
 
 
-@unittest.skipIf(not os.path.exists(TEST_DATA_FILE), 'Missing test datafile.')
+@unittest.skipIf(not os.path.exists(os.path.join(os.path.dirname(__file__), TEST_DATA_FILE)),
+                 'Missing test datafile.')
 class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
