@@ -398,11 +398,12 @@ class ProcessEvents(object):
 
         """
         threshold = baseline + ADC_THRESHOLD
-        value = self._first_above_threshold(trace, threshold)
+        value = self.first_above_threshold(trace, threshold)
 
         return value
 
-    def _first_above_threshold(self, trace, threshold):
+    @staticmethod
+    def first_above_threshold(trace, threshold):
         """Find the first element in the list equal or above threshold
 
         If no element matches the condition -999 will be returned.
@@ -567,7 +568,7 @@ class ProcessEventsWithLINT(ProcessEvents):
         """
         threshold = baseline + ADC_THRESHOLD
         trace = list(trace)
-        i = self._first_above_threshold(trace, threshold)
+        i = self.first_above_threshold(trace, threshold)
 
         if i == 0:
             value = i
@@ -666,7 +667,6 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         timings = []
         low_idx = []
         high_idx = []
-        traces = []
         n_detectors = sum(1 for idx in event['traces'] if idx != -1)
         for baseline, pulseheight, trace_idx in zip(event['baseline'],
                                                     event['pulseheights'],
@@ -675,35 +675,93 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                 # retain -1, -999 status flags in timing
                 timings.append(pulseheight)
                 continue
-            elif pulseheight < ADC_THRESHOLD:
-                timings.append(-999)
-                if baseline + pulseheight < ADC_LOW_THRESHOLD:
-                    # Not over Low threshold, did not participate in trigger
-                    continue
 
+            max_signal = baseline + pulseheight
             adc_threshold = baseline + ADC_THRESHOLD
+
+            if max_signal < adc_threshold and max_signal < ADC_LOW_THRESHOLD:
+                # No significant pulse
+                timings.append(-999)
+                continue
+            elif baseline > ADC_LOW_THRESHOLD:
+                # Bad baseline
+                timings.append(-999)
+                continue
+
             trace = self._get_trace(trace_idx)
 
-            if adc_threshold < ADC_LOW_THRESHOLD:
-                t, value = self._first_value_above_threshold(trace, adc_threshold)
-                timings.append(t)
+            if n_detectors == 2:
+                thresholds = (adc_threshold, ADC_LOW_THRESHOLD)
+            else:
+                thresholds = (adc_threshold, ADC_LOW_THRESHOLD,
+                              ADC_HIGH_THRESHOLD)
 
-                # Trace has to at least cross the Low threshold
-                if baseline + pulseheight >= ADC_LOW_THRESHOLD:
-                    if value >= ADC_LOW_THRESHOLD:
-                        low_idx.append(t)
-                    else:
-                        t, value = self._first_value_above_threshold(trace, ADC_LOW_THRESHOLD, t)
-                        low_idx.append(t)
+            t, l, h = self._first_above_thresholds(trace, thresholds,
+                                                   max_signal)
+            timings.append(t)
+            low_idx.append(l)
+            high_idx.append(h)
 
-                    # Check if trace crosses high threshold
-                    if n_detectors == 4 and baseline + pulseheight >= ADC_HIGH_THRESHOLD:
-                        if value >= ADC_HIGH_THRESHOLD:
-                            high_idx.append(t)
-                        else:
-                            t, value = self._first_value_above_threshold(trace, ADC_HIGH_THRESHOLD, t)
-                            high_idx.append(t)
+        t_trigger = self._reconstruct_trigger(low_idx, high_idx, n_detectors)
+        timings.append(t_trigger)
 
+        timings = [time * ADC_TIME_PER_SAMPLE
+                   if time not in [-1, -999] else time
+                   for time in timings]
+        return timings
+
+    def _first_above_thresholds(self, trace, thresholds, max_signal):
+        """Check for multiple thresholds when the traces crosses it
+
+        :param trace: generator over the trace.
+        :param thresholds: list of thresholds.
+        :param max_signal: expected max value in trace, based on
+                           baseline and pulseheight
+        :returns: list with three indexes into the trace for the three
+                  thresholds
+
+        """
+        results = [-999, -999, -999]
+        ordered_thresholds = sorted([(x, i) for i, x in enumerate(thresholds)])
+        last_value = None
+
+        for threshold, i in ordered_thresholds:
+            if max_signal < threshold:
+                break
+            elif last_value is not None and last_value >= threshold:
+                results[i] = t
+            else:
+                if last_value is not None:
+                    t += 1
+                else:
+                    t = 0
+                t, last_value = self._first_value_above_threshold(trace,
+                                                                  threshold, t)
+                results[i] = t
+        return results
+
+    def _first_value_above_threshold(self, trace, threshold, t=0):
+        """Find the first element in the list equal or above threshold
+
+        :param trace: iterable trace.
+        :param threshold: value the trace has to be greater or equal to.
+        :param t: index of first value in trace.
+        :return: index in trace where a value is greater or equal to
+                 threshold, and the value.
+
+        """
+        return next(((i, x) for i, x in enumerate(trace, t) if x >= threshold),
+                    (-999, 0))
+
+    def _reconstruct_trigger(self, low_idx, high_idx, n_detectors=None):
+        """Reconstruct the moment of trigger from the threshold info
+
+        :param low_idx, high_idx: list of trace indexes when a detector
+                                   crossed a given threshold.
+        :param n_detectors: number of detectors (2 or 4).
+        :returns: index in trace where the trigger happened.
+
+        """
         low_idx = [idx for idx in low_idx if not idx == -999]
         high_idx = [idx for idx in high_idx if not idx == -999]
         low_idx.sort()
@@ -711,33 +769,17 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
         if n_detectors == 2 and len(low_idx) > 1:
             # Two low
-            timings.append(low_idx[1])
+            return low_idx[1]
         elif n_detectors == 4 and (len(low_idx) >= 3 or len(high_idx) >= 2):
             # Two high or three low
             if len(low_idx) < 3 and len(high_idx) >= 2:
-                timings.append(high_idx[1])
+                return high_idx[1]
             elif len(low_idx) >= 3 and len(high_idx) < 2:
-                timings.append(low_idx[2])
+                return low_idx[2]
             elif len(low_idx) >= 3 and len(high_idx) >= 2:
-                timings.append(min([low_idx[2], high_idx[1]]))
+                return min([low_idx[2], high_idx[1]])
         else:
-            timings.append(-999)
-
-        timings = [time * ADC_TIME_PER_SAMPLE
-                   if time not in [-1, -999] else time
-                   for time in timings]
-        return timings
-
-    def _first_value_above_threshold(self, trace, threshold, t=0):
-        """Find the first element in the list equal or above threshold"""
-
-        return next(((i, x) for i, x in enumerate(trace, t) if x >= threshold),
-                    (-999, 0))
-
-    def _reconstruct_trigger(self, low_idx, high_idx, n_detectors=None):
-        """Reconstruct the moment of trigger from the threshold info"""
-
-        pass
+            return -999
 
 
 class ProcessEventsFromSource(ProcessEvents):
