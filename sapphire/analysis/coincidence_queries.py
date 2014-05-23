@@ -148,8 +148,8 @@ class CoincidenceQuery(object):
     def _get_allowed_s_columns(self, stations):
         """Get column names for given stations
 
-        This ensures that the columnnames actually exist, otherwise an
-        exception may be raised.
+        This ensures that the columnnames actually exist and are unique,
+        otherwise an exception may be raised.
 
         :param stations: list of station numbers.
         :return: list of strings with column titles for each station,
@@ -185,10 +185,11 @@ class CoincidenceQuery(object):
             events.append((station_number, s_group.events[e_idx]))
         return events
 
-    def all_events(self, coincidences, n):
+    def all_events(self, coincidences, n=2):
         """Get all events for the given coincidences.
 
         :param coincidences: list of coincidence rows.
+        :param n: minimum number of events per coincidence.
         :return: list of events for each coincidence.
 
         """
