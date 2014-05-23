@@ -52,7 +52,7 @@ class CoincidenceQuery(object):
         coincidences = self.coincidences.read()
         return coincidences
 
-    def any(self, stations):
+    def any(self, stations, start=None, stop=None):
         """Filter for coincidences that contain any of the given stations
 
         :param stations: list of stations from which any need to be in
@@ -60,12 +60,16 @@ class CoincidenceQuery(object):
         :return: coincidences matching the query.
 
         """
-        s_columns = self._get_s_columns(stations)
-        any_query = ' | '.join(s_columns)
-        filtered_coincidences = self.perform_query(any_query)
+        s_columns = self._get_allowed_s_columns(stations)
+        if len(s_columns) == 0:
+            # no stations would result in a bad query string
+            return []
+        query = '(%s)' % ' | '.join(s_columns)
+        query = self._add_timestamp_filter(query, start, stop)
+        filtered_coincidences = self.perform_query(query)
         return filtered_coincidences
 
-    def all(self, stations):
+    def all(self, stations, start=None, stop=None):
         """Filter for coincidences that contain all of the given stations
 
         :param stations: list of stations which all need to be in a
@@ -73,12 +77,17 @@ class CoincidenceQuery(object):
         :return: coincidences matching the query.
 
         """
-        s_columns = self._get_s_columns(stations)
-        all_query = ' & '.join(s_columns)
-        filtered_coincidences = self.perform_query(all_query)
+        s_columns = self._get_allowed_s_columns(stations)
+        if len(s_columns) < len(stations):
+            # Not all requested stations exist in the data so it's
+            # impossible to find a coincidence with all stations.
+            return []
+        query = '(%s)' % ' & '.join(s_columns)
+        query = self._add_timestamp_filter(query, start, stop)
+        filtered_coincidences = self.perform_query(query)
         return filtered_coincidences
 
-    def at_least(self, stations, n):
+    def at_least(self, stations, n, start=None, stop=None):
         """Filter coincidences to contain at least n of the given stations
 
         :param stations: list of stations from which any at least n of
@@ -87,12 +96,43 @@ class CoincidenceQuery(object):
         :return: coincidences matching the query.
 
         """
-        s_columns = self._get_s_columns(stations)
+        s_columns = self._get_allowed_s_columns(stations)
+        if len(s_columns) < n:
+            # No combinations possible because there are to few stations
+            return []
         s_combinations = ['(%s)' % (' & '.join(combo))
                           for combo in itertools.combinations(s_columns, n)]
-        at_least_query = ' | '.join(s_combinations)
-        filtered_coincidences = self.perform_query(at_least_query)
+        query = '(%s)' % ' | '.join(s_combinations)
+        query = self._add_timestamp_filter(query, start, stop)
+        filtered_coincidences = self.perform_query(query)
         return filtered_coincidences
+
+    def timerange(self, start, stop):
+        """Query based on timestamps
+
+        :param start: timestamp from which to look for coincidences.
+        :param stop: end timestamp for coincidences.
+        :return: coincidences within the specified timerange.
+
+        """
+        query = '(%d <= timestamp) & (timestamp < %d)' % (start, stop)
+        filtered_coincidences = self.perform_query(query)
+        return filtered_coincidences
+
+    def _add_timestamp_filter(self, query, start=None, stop=None):
+        """Add timestamp filter to the query
+
+        :param start: timestamp from which to look for coincidences.
+        :param stop: end timestamp for coincidences.
+        :return: query with added timestamp filter.
+
+        """
+        if start:
+            query += ' & (%d <= timestamp)' % start
+        if stop:
+            query += ' & (timestamp < %d)' % stop
+
+        return query
 
     def perform_query(self, query):
         """Perform a query on the coincidences table
@@ -105,7 +145,22 @@ class CoincidenceQuery(object):
         filtered_coincidences = self.coincidences.read_where(query)
         return filtered_coincidences
 
-    def _get_s_columns(self, stations):
+    def _get_allowed_s_columns(self, stations):
+        """Get column names for given stations
+
+        This ensures that the columnnames actually exist and are unique,
+        otherwise an exception may be raised.
+
+        :param stations: list of station numbers.
+        :return: list of strings with column titles for each station,
+                 but only if the column exists.
+
+        """
+        s_columns = self._get_s_columns(stations)
+        return set(self.coincidences.colnames).intersection(s_columns)
+
+    @staticmethod
+    def _get_s_columns(stations):
         """Get column names for given stations
 
         :param stations: list of station numbers.
@@ -130,16 +185,17 @@ class CoincidenceQuery(object):
             events.append((station_number, s_group.events[e_idx]))
         return events
 
-    def all_events(self, coincidences):
-        """Get events for all coincidences.
+    def all_events(self, coincidences, n=2):
+        """Get all events for the given coincidences.
 
         :param coincidences: list of coincidence rows.
+        :param n: minimum number of events per coincidence.
         :return: list of events for each coincidence.
 
         """
-        coincidence_events = [self._get_events(coincidence)
-                              for coincidence in coincidences]
-        return coincidence_events
+        coincidence_events = (self._get_events(coincidence)
+                              for coincidence in coincidences)
+        return self.minimum_events_for_coincidence(coincidence_events, n)
 
     def minimum_events_for_coincidence(self, coincidences_events, n=2):
         """Filter coincidences to only include those with at least n events.
@@ -148,12 +204,12 @@ class CoincidenceQuery(object):
         :param n: minimum number of events per coincidence.
 
         """
-        filtered_coincidences = [coincidence
+        filtered_coincidences = (coincidence
                                  for coincidence in coincidences_events
-                                 if len(coincidence) >= n]
+                                 if len(coincidence) >= n)
         return filtered_coincidences
 
-    def events_from_stations(self, coincidences, stations):
+    def events_from_stations(self, coincidences, stations, n=2):
         """Only get events for specific stations for coincidences.
 
         :param coincidences: list of coincidence rows.
@@ -163,9 +219,9 @@ class CoincidenceQuery(object):
         """
         events_iterator = (self._get_events(coincidence)
                            for coincidence in coincidences)
-        coincidences_events = [self._events_from_stations(events, stations)
-                               for events in events_iterator]
-        return self.minimum_events_for_coincidence(coincidences_events)
+        coincidences_events = (self._events_from_stations(events, stations)
+                               for events in events_iterator)
+        return self.minimum_events_for_coincidence(coincidences_events, n)
 
     def _events_from_stations(self, events, stations):
         """Get only events from the chosen stations
@@ -179,7 +235,7 @@ class CoincidenceQuery(object):
         filtered_events = [event for event in events if event[0] in stations]
         return filtered_events
 
-    def events_in_subcluster(self, coincidences, subcluster):
+    def events_in_subcluster(self, coincidences, subcluster, n=2):
         """Filter to only events from stations in a specific subcluster
 
         :param coincidences: list of events for each coincidence.
@@ -189,11 +245,11 @@ class CoincidenceQuery(object):
         """
         network = api.Network()
         stations = network.stations_numbers(subcluster=subcluster)
-        filtered_events = self.events_from_stations(coincidences, stations)
+        filtered_events = self.events_from_stations(coincidences, stations, n)
 
         return filtered_events
 
-    def events_in_cluster(self, coincidences, cluster):
+    def events_in_cluster(self, coincidences, cluster, n=2):
         """Filter to only events from stations in a specific subcluster
 
         :param coincidences: list of events for each coincidence.
@@ -203,6 +259,6 @@ class CoincidenceQuery(object):
         """
         network = api.Network()
         stations = network.stations_numbers(cluster=cluster)
-        filtered_events = self.events_from_stations(coincidences, stations)
+        filtered_events = self.events_from_stations(coincidences, stations, n)
 
         return filtered_events
