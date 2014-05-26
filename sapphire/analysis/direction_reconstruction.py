@@ -18,7 +18,7 @@ class DirectAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
+    def reconstruct_common(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -29,8 +29,8 @@ class DirectAlgorithm(object):
         :param z#: height of detectors 0, 1 and 2 is ignored.
 
         """
-        t1 -= t0
-        t2 -= t0
+        dt1 = t1 - t0
+        dt2 = t2 - t0
 
         r1 = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
         r2 = sqrt((x2 - x0) ** 2 + (y2 - x0) ** 2)
@@ -38,14 +38,14 @@ class DirectAlgorithm(object):
         phi1 = arctan2((y1 - y0), (x1 - x0))
         phi2 = arctan2((y2 - x0), (x2 - x0))
 
-        return cls._reconstruct(t1, t2, r1, r2, phi1, phi2)
+        return cls.reconstruct(dt1, dt2, r1, r2, phi1, phi2)
 
     @classmethod
-    def _reconstruct(cls, t1, t2, r1, r2, phi1, phi2):
+    def reconstruct(cls, dt1, dt2, r1, r2, phi1, phi2):
         """Reconstruct angles from 3 detections
 
-        :param t#: arrival times in detector 1 and 2 relative to
-                   detector 0 in ns.
+        :param dt#: arrival times in detector 1 and 2 relative to
+                    detector 0 in ns (!).
         :param r#, phi#: position of detector 1 and 2 relative to
                          detector 0 in m and radians.
         :return: theta as given by Fokkema2012 eq 4.27,
@@ -54,19 +54,18 @@ class DirectAlgorithm(object):
         """
         c = .3
 
-        t1 = -t1
-        t2 = -t2
-
-        phi = arctan2(-(r1 * t2 * cos(phi1) - r2 * t1 * cos(phi2)),
-                      (r1 * t2 * sin(phi1) - r2 * t1 * sin(phi2)))
-        theta1 = arcsin(c * t1 / (r1 * cos(phi - phi1)))
-        theta2 = arcsin(c * t2 / (r2 * cos(phi - phi2)))
+        phi = arctan2(-(r1 * dt2 * cos(phi1) - r2 * dt1 * cos(phi2)),
+                      (r1 * dt2 * sin(phi1) - r2 * dt1 * sin(phi2)))
+        theta1 = arcsin(c * dt1 / (r1 * cos(phi - phi1)))
+        theta2 = arcsin(c * dt2 / (r2 * cos(phi - phi2)))
 
         e1 = sqrt(cls.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
         e2 = sqrt(cls.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
 
         theta = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
+        # We limit theta to positive values.  If theta is negative, we
+        # make it positive, but need to rotate phi by 180 degrees.
         if theta < 0:
             theta *= -1
             phi += pi
@@ -204,7 +203,7 @@ class DirectAlgorithmCartesian2D(object):
     """
 
     @classmethod
-    def reconstruct(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
+    def reconstruct_common(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -215,36 +214,36 @@ class DirectAlgorithmCartesian2D(object):
         :param z#: height of detectors 0, 1 and 2 is ignored.
 
         """
-        t1 -= t0
-        t2 -= t0
+        dt1 = t1 - t0
+        dt2 = t2 - t0
 
-        x1 -= x0
-        x2 -= x0
+        dx1 = x1 - x0
+        dx2 = x2 - x0
 
-        y1 -= y0
-        y2 -= y0
+        dy1 = y1 - y0
+        dy2 = y2 - y0
 
-        return cls._reconstruct(t1, t2, x1, x2, y1, y2)
+        return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2)
 
     @staticmethod
-    def _reconstruct(t1, t2, x1, x2, y1, y2, z1=0, z2=0):
+    def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1=0, dz2=0):
         """Reconstruct angles from 3 detections
 
-        :param t#: arrival times in detector 1 and 2 relative to
-                   detector 0 in ns.
-        :param x#, y#: position of detector 1 and 2 relative to
-                       detector 0 in m.
-        :param z#: height of detectors 1 and 2 is ignored.
+        :param dt#: arrival times in detector 1 and 2 relative to
+                    detector 0 in ns.
+        :param dx#, dy#: position of detector 1 and 2 relative to
+                         detector 0 in m.
+        :param dz#: height of detectors 1 and 2 is ignored.
         :return: theta as given by Montanus2014 eq 27,
                  phi as given by Montanus2014 eq 26.
 
         """
         c = 0.3
 
-        ux = c * (t2 * x1 - t1 * x2)
-        uy = c * (t2 * y1 - t1 * y2)
+        ux = c * (dt2 * dx1 - dt1 * dx2)
+        uy = c * (dt2 * dy1 - dt1 * dy2)
 
-        vz = x1 * y2 - x2 * y1
+        vz = dx1 * dy2 - dx2 * dy1
 
         usquared = ux * ux + uy * uy
         vzsquared = vz * vz
@@ -272,7 +271,7 @@ class DirectAlgorithmCartesian3D(object):
     """
 
     @classmethod
-    def reconstruct(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
+    def reconstruct_common(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -282,42 +281,41 @@ class DirectAlgorithmCartesian3D(object):
         :param x# y# z#: position of detector 0, 1 and 2 in m.
 
         """
-        t1 -= t0
-        t2 -= t0
+        dt1 = t1 - t0
+        dt2 = t2 - t0
 
-        x1 -= x0
-        x2 -= x0
+        dx1 = x1 - x0
+        dx2 = x2 - x0
 
-        y1 -= y0
-        y2 -= y0
+        dy1 = y1 - y0
+        dy2 = y2 - y0
 
-        z1 -= z0
-        z2 -= z0
+        dz1 = z1 - z0
+        dz2 = z2 - z0
 
-        return cls._reconstruct(t1, t2, x1, x2, y1, y2, z1=0, z2=0)
-
+        return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1, dz2)
 
     @staticmethod
-    def _reconstruct(t1, t2, x1, x2, y1, y2, z1=0, z2=0):
+    def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1=0, dz2=0):
         """Reconstruct angles from 3 detections
 
-        :param t#: arrival times in detector 1 and 2 relative to
-                   detector 0 in ns.
-        :param x#, y#, z#: position of detector 1 and 2 relative to
-                           detector 0 in m.
+        :param dt#: arrival times in detector 1 and 2 relative to
+                    detector 0 in ns.
+        :param dx#, dy#, dz#: position of detector 1 and 2 relative to
+                              detector 0 in m.
         :return: theta as given by Montanus2014 eq 24,
                  phi as given by Montanus2014 eq 22.
 
         """
         c = .3
 
-        ux = c * (t2 * x1 - t1 * x2)
-        uy = c * (t2 * y1 - t1 * y2)
-        uz = c * (t2 * z1 - t1 * z2)
+        ux = c * (dt2 * dx1 - dt1 * dx2)
+        uy = c * (dt2 * dy1 - dt1 * dy2)
+        uz = c * (dt2 * dz1 - dt1 * dz2)
 
-        vx = y1 * z2 - z1 * y2
-        vy = z1 * x2 - x1 * z2
-        vz = x1 * y2 - y1 * x2
+        vx = dy1 * dz2 - dz1 * dy2
+        vy = dz1 * dx2 - dx1 * dz2
+        vz = dx1 * dy2 - dy1 * dx2
 
         ucrossvx = uy * vz - uz * vy
         ucrossvy = uz * vx - ux * vz
