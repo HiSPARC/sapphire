@@ -1,6 +1,8 @@
+import warnings
+
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, floor, where, deg2rad, pi, inf)
-
+from scipy.optimize import minimize
 
 class DirectAlgorithm(object):
 
@@ -313,9 +315,9 @@ class DirectAlgorithmCartesian3D(object):
         uy = c * (t2 * y1 - t1 * y2)
         uz = c * (t2 * z1 - t1 * z2)
 
-        vx = y1 * z2 - y2 * z1
-        vy = x2 * z1 - x1 * z2
-        vz = x1 * y2 - x2 * y1
+        vx = y1 * z2 - z1 * y2
+        vy = z1 * x2 - x1 * z2
+        vz = x1 * y2 - y1 * x2
 
         ucrossvx = uy * vz - uz * vy
         ucrossvy = uz * vx - ux * vz
@@ -351,18 +353,17 @@ class DirectAlgorithmCartesian3D(object):
         if isnan(thetamin):
             thetamin = pi
 
-        phi = phiplus
-        theta = thetaplus
-
         if thetamin < thetaplus:
             phi = phimin
             theta = thetamin
+        else:
+            phi = phiplus
+            theta = thetaplus
 
         if thetamin < pi / 2 and thetaplus < pi / 2:
             phi = nan
             theta = nan
-
-        if thetamin > pi / 2 and thetaplus > pi / 2:
+        elif thetamin > pi / 2 and thetaplus > pi / 2:
             phi = nan
             theta = nan
 
@@ -370,8 +371,67 @@ class DirectAlgorithmCartesian3D(object):
 
 
 class FitAlgorithm(object):
-    def reconstruct(times_list, positions_list):
+
+    @classmethod
+    def reconstruct(cls, t, x, y, z):
+        """Reconstruct angles for many detections
+
+        :param t#: arrival times in the detectors in ns.
+        :param x#, y#, z#: position of the detectors in m.
+        :return: theta as given by Montanus2014 eq 21,
+                 phi as given by Montanus2014 eq 22.
+
+        """
+        dt = cls.make_relative(t)
+        dx = cls.make_relative(x)
+        dy = cls.make_relative(y)
+        dz = cls.make_relative(z)
+
+        cons = ({'type': 'eq', 'fun': cls.constraint_normal_vector})
+        fit = minimize(cls.best_fit, x0=(0, 0, 1), args=(dt, dx, dy, dz),
+                       method="SLSQP", bounds=((-1,1), (-1,1), (-1,1)),
+                       constraints=cons)
+        phi = arctan2(fit.x[1], fit.x[0])
+        theta = arccos(fit.x[2])
+
+        if theta < 0:
+            warnings.warn('Theta was less than 0')
+            theta *= -1
+            phi += pi
+            phi = (phi + pi) % (2 * pi) - pi
+
         return theta, phi
+
+    @staticmethod
+    def make_relative(x):
+        """Make first element the origin and make rest relative to it."""
+
+        return [xi - x[0] for xi in x[1:]]
+
+    @staticmethod
+    def constraint_normal_vector(n):
+        """This should be equal to zero"""
+
+        return n[0]**2 + n[1]**2 + n[2]**2 - 1
+
+    @staticmethod
+    def best_fit(n_xyz, dt, dx, dy, dz):
+        """The function to be minimized to find the direction
+
+        :param n_xyz: list containing the unit vector.
+        :param dt: list of relative arrival times in the detectors in ns.
+        :param dx, dy, dz: list of relative detector positions in m.
+        :return: least sum of squares as in Montanus2014, eq 36
+
+        """
+        c = .3
+        nx = n_xyz[0]
+        ny = n_xyz[1]
+        nz = n_xyz[2]
+
+        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti)**2
+                   for ti, xi, yi, zi in zip(dt, dx, dy, dz)])
+        return slq
 
 
 class DirectReconstruction(DirectAlgorithm):
