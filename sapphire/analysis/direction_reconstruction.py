@@ -52,6 +52,10 @@ class DirectAlgorithm(object):
                  phi as given by Fokkema2012 eq 4.13.
 
         """
+        if dt1 == 0 and dt2 == 0:
+            # No time difference means shower came from zenith.
+            return 0, 0
+
         c = .3
 
         phi = arctan2(-(r1 * dt2 * cos(phi1) - r2 * dt1 * cos(phi2)),
