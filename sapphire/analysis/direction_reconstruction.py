@@ -252,11 +252,13 @@ class DirectAlgorithmCartesian2D(object):
 
         vz = dx1 * dy2 - dx2 * dy1
 
-        usquared = ux * ux + uy * uy
-        vzsquared = vz * vz
-
-        phi = arctan2(-ux * vz, uy * vz)
-        theta = arcsin(sqrt(usquared / vzsquared))
+        if vz == 0:
+            theta = nan
+        else:
+            usquared = ux * ux + uy * uy
+            vzsquared = vz * vz
+            phi = arctan2(-ux * vz, uy * vz)
+            theta = arcsin(sqrt(usquared / vzsquared))
 
         if isnan(theta):
             phi = nan
