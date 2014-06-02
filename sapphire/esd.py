@@ -11,6 +11,7 @@ import csv
 import os.path
 import calendar
 import time
+import datetime
 
 import tables
 import progressbar
@@ -19,7 +20,7 @@ import progressbar
 URL = 'http://data.hisparc.nl/data/%d/events'
 
 
-def download_data(file, group, station_id, start, end):
+def download_data(file, group, station_id, start=None, end=None):
     """Download event summary data
 
     :param file: The PyTables datafile handler
@@ -29,6 +30,11 @@ def download_data(file, group, station_id, start, end):
         interval
     :param end: a datetime instance defining the end of the search
         interval
+
+    The start and stop parameters may both be None.  In that case,
+    yesterday's data is downloaded.  If only end is None, a single day's
+    worth of data is downloaded, starting at the datetime specified with
+    start.
 
     Example::
 
@@ -40,6 +46,16 @@ def download_data(file, group, station_id, start, end):
         ... datetime.datetime(2013, 9, 1), datetime.datetime(2013, 9, 2))
 
     """
+    # sensible defaults for start and end
+    if start is None:
+        if end is not None:
+            raise RuntimeError("Start is None, but end is not.  I can't go on like this.")
+        else:
+            yesterday = datetime.date.today() - datetime.timedelta(days=1)
+            start = datetime.datetime.combine(yesterday, datetime.time(0, 0))
+    if end is None:
+        end = start + datetime.timedelta(days=1)
+
     # build and open url
     url = URL % station_id
     query_string = urllib.urlencode({'start': start, 'end': end})
