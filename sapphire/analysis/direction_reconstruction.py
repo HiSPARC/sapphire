@@ -432,9 +432,7 @@ class FitAlgorithm(object):
 
         """
         c = .3
-        nx = n_xyz[0]
-        ny = n_xyz[1]
-        nz = n_xyz[2]
+        nx, ny, nz = n_xyz
 
         slq = sum([(nx * xi + ny * yi + zi * nz + c * ti)**2
                    for ti, xi, yi, zi in zip(dt, dx, dy, dz)])

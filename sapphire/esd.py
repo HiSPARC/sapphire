@@ -18,6 +18,7 @@ import os.path
 import calendar
 import time
 import datetime
+import itertools
 
 import tables
 import progressbar
@@ -48,11 +49,9 @@ def _first_available_numbered_path():
     If data1.h5 is taken, return data2.h5, etc.
 
     """
-    idx = 1
     path = 'data%d.h5'
-    while os.path.exists(path % idx):
-        idx += 1
-    return path % idx
+    return next(path % idx for idx in itertools.count(start=1)
+                if not os.path.exists(path % idx))
 
 
 def download_data(file, group, station_id, start=None, end=None):
