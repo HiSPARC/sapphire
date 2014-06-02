@@ -71,6 +71,9 @@ class DirectAlgorithm(object):
             phi += pi
             phi = (phi + pi) % (2 * pi) - pi
 
+        if isnan(theta):
+            phi = nan
+
         return theta, phi
 
     @classmethod
