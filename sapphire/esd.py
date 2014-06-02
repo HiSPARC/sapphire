@@ -4,6 +4,12 @@
 
     For convenience, you'll want the :func:`download_data` function.
 
+    If you are in a hurry (and took the time to read this far), you can
+    call the :func:`quick_download` function like this::
+
+        >>> import sapphire.esd
+        >>> data = sapphire.esd.quick_download(501)
+
 """
 import urllib2
 import urllib
@@ -18,6 +24,35 @@ import progressbar
 
 
 URL = 'http://data.hisparc.nl/data/%d/events'
+
+
+def quick_download(station_id):
+    """Quickly download some data
+
+    :param station_id: The HiSPARC station number
+    :returns: handle to an open PyTables file
+
+    Everything is handled by this function, including file creation.
+    Expect no frills: you just get yesterday's data.
+
+    """
+    path = _first_available_numbered_path()
+    data = tables.open_file(path, 'w')
+    download_data(data, None, station_id)
+    return data
+
+
+def _first_available_numbered_path():
+    """Find first available file name in sequence
+
+    If data1.h5 is taken, return data2.h5, etc.
+
+    """
+    idx = 1
+    path = 'data%d.h5'
+    while os.path.exists(path % idx):
+        idx += 1
+    return path % idx
 
 
 def download_data(file, group, station_id, start=None, end=None):
