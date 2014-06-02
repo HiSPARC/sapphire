@@ -31,6 +31,8 @@ def download_data(file, group, station_id, start=None, end=None):
     :param end: a datetime instance defining the end of the search
         interval
 
+    If group is None, use '/s<station_id>' as a default.
+
     The start and stop parameters may both be None.  In that case,
     yesterday's data is downloaded.  If only end is None, a single day's
     worth of data is downloaded, starting at the datetime specified with
@@ -46,6 +48,10 @@ def download_data(file, group, station_id, start=None, end=None):
         ... datetime.datetime(2013, 9, 1), datetime.datetime(2013, 9, 2))
 
     """
+    # sensible default for group name
+    if group is None:
+        group = '/s%d' % station_id
+
     # sensible defaults for start and end
     if start is None:
         if end is not None:
