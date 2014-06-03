@@ -395,19 +395,42 @@ class FitAlgorithm(object):
         dz = cls.make_relative(z)
 
         cons = ({'type': 'eq', 'fun': cls.constraint_normal_vector})
-        fit = minimize(cls.best_fit, x0=(0, 0, 1), args=(dt, dx, dy, dz),
-                       method="SLSQP", bounds=((-1,1), (-1,1), (-1,1)),
-                       constraints=cons)
-        phi = arctan2(fit.x[1], fit.x[0])
-        theta = arccos(fit.x[2])
+        fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989),
+                       args=(dt, dx, dy, dz), method="SLSQP",
+                       bounds=((-1,1), (-1,1), (-1,1)), constraints=cons,
+                       options={'ftol': 1e-5, 'eps': 1e-5,'maxiter': 50})
 
-        if theta < 0:
-            warnings.warn('Theta was less than 0')
-            theta *= -1
-            phi += pi
-            phi = (phi + pi) % (2 * pi) - pi
+        phi1 = arctan2(fit.x[1], fit.x[0])
+        theta1 = arccos(fit.x[2])
 
-        return theta, phi
+        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989),
+                       args=(dt, dx, dy, dz), method="SLSQP",
+                       bounds=((-1,1), (-1,1), (-1,1)), constraints=cons,
+                       options={'ftol': 1e-5, 'eps': 1e-5,'maxiter': 50})
+
+        phi2 = arctan2(fit.x[1], fit.x[0])
+        theta2 = arccos(fit.x[2])
+
+        # in case one of the theta's is smaller than pi/2 (shower from above)
+        # and one larger than pi/2 (shower from below),
+        # the first one is considered correct.
+        # if both come from above (or from below), both theta's are rejected
+
+        if theta2 < theta1:
+            phi = phi2
+            theta = theta2
+        else:
+            phi = phi1
+            theta = theta1
+
+        if theta2 < pi / 2 and theta1 < pi / 2:
+            phi = nan
+            theta = nan
+        elif theta2 > pi / 2 and theta1 > pi / 2:
+            phi = nan
+            theta = nan
+
+        return theta1, phi1, theta2, phi2, theta, phi
 
     @staticmethod
     def make_relative(x):
