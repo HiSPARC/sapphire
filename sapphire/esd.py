@@ -16,15 +16,16 @@ import tables
 import progressbar
 
 
-URL = 'http://data.hisparc.nl/data/%d/events'
+EVENTS_URL = 'http://data.hisparc.nl/data/{station_number:d}/events?{query}'
+WEATHER_URL = 'http://data.hisparc.nl/data/{station_number:d}/weather?{query}'
 
 
-def download_data(file, group, station_id, start, end):
+def download_data(file, group, station_number, start, end):
     """Download event summary data
 
     :param file: The PyTables datafile handler
     :param group: The PyTables destination group, which need not exist
-    :param station_id: The HiSPARC station number for which to get events
+    :param station_number: The HiSPARC station number for which to get events
     :param start: a datetime instance defining the start of the search
         interval
     :param end: a datetime instance defining the end of the search
@@ -41,9 +42,8 @@ def download_data(file, group, station_id, start, end):
 
     """
     # build and open url
-    url = URL % station_id
     query_string = urllib.urlencode({'start': start, 'end': end})
-    url += '?' + query_string
+    url = EVENTS_URL.format(station_number=station_number, query=query_string)
     data = urllib2.urlopen(url)
 
     # keep track of event timestamp within [start, end] interval for
@@ -72,6 +72,58 @@ def download_data(file, group, station_id, start, end):
     pbar.finish()
 
 
+def download_weather(file, group, station_number, start, end):
+    """Download event summary data
+
+    :param file: The PyTables datafile handler
+    :param group: The PyTables destination group, which need not exist
+    :param station_id: The HiSPARC station number for which to get weather
+    :param start: a datetime instance defining the start of the search
+        interval
+    :param end: a datetime instance defining the end of the search
+        interval
+
+    Example::
+
+        >>> import tables
+        >>> import datetime
+        >>> import sapphire.esd
+        >>> data = tables.open_file('data.h5', 'w')
+        >>> sapphire.esd.download_weather(data, '/s501', 501,
+        ... datetime.datetime(2014, 4, 1), datetime.datetime(2014, 4, 2))
+
+    """
+    # build and open url
+    query_string = urllib.urlencode({'start': start, 'end': end})
+    url = WEATHER_URL.format(station_number=station_number, query=query_string)
+    data = urllib2.urlopen(url)
+
+    # keep track of event timestamp within [start, end] interval for
+    # progressbar
+    t_start = calendar.timegm(start.utctimetuple())
+    t_end = calendar.timegm(end.utctimetuple())
+    t_delta = t_end - t_start
+    pbar = progressbar.ProgressBar(maxval=1.,
+                                   widgets=[progressbar.Percentage(),
+                                            progressbar.Bar(),
+                                            progressbar.ETA()]).start()
+
+    # create weather table
+    table = create_weather_table(file, group)
+
+    # event loop
+    prev_update = time.time()
+    reader = csv.reader(data, delimiter='\t')
+    for line in reader:
+        timestamp = read_line_and_store_weather(line, table)
+
+        # update progressbar every .5 seconds
+        if time.time() - prev_update > .5 and not timestamp == 0.:
+            pbar.update((1. * timestamp - t_start) / t_delta)
+            prev_update = time.time()
+    pbar.finish()
+
+
 def create_table(file, group):
     """Create event table in PyTables file
 
@@ -80,7 +132,7 @@ def create_table(file, group):
 
     :param file: PyTables file
     :param group: the group to contain the events table, which need not
-        exist
+                  exist
 
     """
     description = {'event_id': tables.UInt32Col(pos=0),
@@ -99,11 +151,38 @@ def create_table(file, group):
                    't4': tables.Float32Col(pos=13),
                    't_trigger': tables.Float32Col(pos=14)}
 
-    if group not in file:
-        head, tail = os.path.split(group)
-        file.create_group(head, tail)
+    return file.create_table(group, 'events', description, createparents=True)
 
-    return file.create_table(group, 'events', description)
+
+def create_weather_table(file, group):
+    """Create weather table in PyTables file
+
+    Create a weather table containing the ESD weather columns which are
+    available in the CSV download.
+
+    :param file: PyTables file
+    :param group: the group to contain the weather table, which need not
+                  exist
+
+    """
+    description = {'event_id': tables.UInt32Col(pos=0),
+                   'timestamp': tables.Time32Col(pos=1),
+                   'temp_inside': tables.Float32Col(pos=2),
+                   'temp_outside': tables.Float32Col(pos=3),
+                   'humidity_inside': tables.Int16Col(pos=4),
+                   'humidity_outside': tables.Int16Col(pos=5),
+                   'barometer': tables.Float32Col(pos=6),
+                   'wind_dir': tables.Int16Col(pos=7),
+                   'wind_speed': tables.Int16Col(pos=8),
+                   'solar_rad': tables.Int16Col(pos=9),
+                   'uv': tables.Int16Col(pos=10),
+                   'evapotranspiration': tables.Float32Col(pos=11),
+                   'rain_rate': tables.Float32Col(pos=12),
+                   'heat_index': tables.Int16Col(pos=13),
+                   'dew_point': tables.Float32Col(pos=14),
+                   'wind_chill': tables.Float32Col(pos=15)}
+
+    return file.create_table(group, 'weather', description, createparents=True)
 
 
 def read_line_and_store_event(line, table):
@@ -146,5 +225,54 @@ def read_line_and_store_event(line, table):
     table.append([[event_id, timestamp, nanoseconds, ext_timestamp,
                    pulseheights, integrals, n1, n2, n3, n4, t1, t2,
                    t3, t4, t_trigger]])
+
+    return timestamp
+
+
+def read_line_and_store_weather(line, table):
+    """Read CSV line and store weather data
+
+    Read a line from the CSV download and store weather.  Return the
+    weather timestamp to keep track of the progress.
+
+    :param line: text line from the CSV file
+    :param table: pytables table for weather storage
+    :return: weather timestamp
+
+    """
+    # ignore comment lines
+    if line[0][0] == '#':
+        return 0.
+
+    # break up CSV line
+
+    (date, time, timestamp, temperature_inside, temperature_outside,
+     humidity_inside, humidity_outside, atmospheric_pressure,
+     wind_direction, wind_speed, solar_radiation, uv_index,
+     evapotranspiration, rain_rate, heat_index, dew_point, wind_chill) = line
+
+    # convert string values to correct data types
+    event_id = len(table)
+    timestamp = int(timestamp)
+    temp_inside = float(temperature_inside)
+    temp_outside = float(temperature_outside)
+    humidity_inside = int(humidity_inside)
+    humidity_outside = int(humidity_outside)
+    barometer = float(atmospheric_pressure)
+    wind_dir = int(wind_direction)
+    wind_speed = int(wind_speed)
+    solar_rad = int(solar_radiation)
+    uv = int(uv_index)
+    evapotranspiration = float(evapotranspiration)
+    rain_rate = float(rain_rate)
+    heat_index = int(heat_index)
+    dew_point = float(dew_point)
+    wind_chill = float(wind_chill)
+
+    # store event
+    table.append([[event_id, timestamp, temp_inside, temp_outside,
+                   humidity_inside, humidity_outside, barometer, wind_dir,
+                   wind_speed, solar_rad, uv, evapotranspiration, rain_rate,
+                   heat_index, dew_point, wind_chill]])
 
     return timestamp
