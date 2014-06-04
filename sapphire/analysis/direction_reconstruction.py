@@ -360,19 +360,15 @@ class DirectAlgorithmCartesian3D(object):
         if isnan(thetamin):
             thetamin = pi
 
-        if thetamin < thetaplus:
-            phi = phimin
-            theta = thetamin
-        else:
-            phi = phiplus
+        if thetaplus <= pi / 2. and thetamin > pi / 2.:
             theta = thetaplus
-
-        if thetamin < pi / 2 and thetaplus < pi / 2:
-            phi = nan
+            phi = phiplus
+        elif thetaplus > pi / 2. and thetamin <= pi / 2.:
+            theta = thetamin
+            phi = phimin
+        else:
             theta = nan
-        elif thetamin > pi / 2 and thetaplus > pi / 2:
             phi = nan
-            theta = nan
 
         return theta, phi
 
@@ -395,42 +391,46 @@ class FitAlgorithm(object):
         dz = cls.make_relative(z)
 
         cons = ({'type': 'eq', 'fun': cls.constraint_normal_vector})
+
         fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989),
                        args=(dt, dx, dy, dz), method="SLSQP",
                        bounds=((-1,1), (-1,1), (-1,1)), constraints=cons,
-                       options={'ftol': 1e-5, 'eps': 1e-5,'maxiter': 50})
-
-        phi1 = arctan2(fit.x[1], fit.x[0])
-        theta1 = arccos(fit.x[2])
+                       options={'ftol': 1e-9, 'eps': 1e-7,'maxiter': 50})
+        if fit.success:
+            phi1 = arctan2(fit.x[1], fit.x[0])
+            theta1 = arccos(fit.x[2])
+        else:
+            phi1 = nan
+            theta1 = nan
 
         fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989),
                        args=(dt, dx, dy, dz), method="SLSQP",
                        bounds=((-1,1), (-1,1), (-1,1)), constraints=cons,
-                       options={'ftol': 1e-5, 'eps': 1e-5,'maxiter': 50})
-
-        phi2 = arctan2(fit.x[1], fit.x[0])
-        theta2 = arccos(fit.x[2])
+                       options={'ftol': 1e-9, 'eps': 1e-7,'maxiter': 50})
+        if fit.success:
+            phi2 = arctan2(fit.x[1], fit.x[0])
+            theta2 = arccos(fit.x[2])
+        else:
+            phi2 = nan
+            theta2 = nan
 
         # in case one of the theta's is smaller than pi/2 (shower from above)
         # and one larger than pi/2 (shower from below),
         # the first one is considered correct.
         # if both come from above (or from below), both theta's are rejected
+        # the check is preceeded by a check if the fit has not delivered nans.
 
-        if theta2 < theta1:
-            phi = phi2
-            theta = theta2
-        else:
-            phi = phi1
+        if theta1 <= pi / 2. and (isnan(theta2) or theta2 > pi / 2.):
             theta = theta1
-
-        if theta2 < pi / 2 and theta1 < pi / 2:
-            phi = nan
+            phi = phi1
+        elif (isnan(theta1) or theta1 > pi / 2.) and theta2 <= pi / 2.:
+            theta = theta2
+            phi = phi2
+        else:
             theta = nan
-        elif theta2 > pi / 2 and theta1 > pi / 2:
             phi = nan
-            theta = nan
 
-        return theta1, phi1, theta2, phi2, theta, phi
+        return theta, phi
 
     @staticmethod
     def make_relative(x):
