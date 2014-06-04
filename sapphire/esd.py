@@ -20,16 +20,17 @@ EVENTS_URL = 'http://data.hisparc.nl/data/{station_number:d}/events?{query}'
 WEATHER_URL = 'http://data.hisparc.nl/data/{station_number:d}/weather?{query}'
 
 
-def download_data(file, group, station_number, start, end):
+def download_data(file, group, station_number, start, end, type='events'):
     """Download event summary data
 
     :param file: The PyTables datafile handler
     :param group: The PyTables destination group, which need not exist
-    :param station_number: The HiSPARC station number for which to get events
+    :param station_number: The HiSPARC station number for which to get data
     :param start: a datetime instance defining the start of the search
         interval
     :param end: a datetime instance defining the end of the search
         interval
+    :param type: the datatype to download, either 'events' or 'weather'.
 
     Example::
 
@@ -38,12 +39,22 @@ def download_data(file, group, station_number, start, end):
         >>> import sapphire.esd
         >>> data = tables.open_file('data.h5', 'w')
         >>> sapphire.esd.download_data(data, '/s501', 501,
-        ... datetime.datetime(2013, 9, 1), datetime.datetime(2013, 9, 2))
+        ...     datetime.datetime(2013, 9, 1), datetime.datetime(2013, 9, 2))
 
     """
-    # build and open url
-    query_string = urllib.urlencode({'start': start, 'end': end})
-    url = EVENTS_URL.format(station_number=station_number, query=query_string)
+    # build and open url, create tables and set read function
+    query = urllib.urlencode({'start': start, 'end': end})
+    if type == 'events':
+        url = EVENTS_URL.format(station_number=station_number, query=query)
+        table = create_table(file, group)
+        read_and_store = read_line_and_store_event
+    elif type == 'weather':
+        url = WEATHER_URL.format(station_number=station_number, query=query)
+        table = create_weather_table(file, group)
+        read_and_store = read_line_and_store_weather
+    else:
+        raise ValueError("Data type not recognized.")
+
     data = urllib2.urlopen(url)
 
     # keep track of event timestamp within [start, end] interval for
@@ -56,66 +67,11 @@ def download_data(file, group, station_number, start, end):
                                             progressbar.Bar(),
                                             progressbar.ETA()]).start()
 
-    # create events table
-    table = create_table(file, group)
-
-    # event loop
+    # loop over lines in csv as they come streaming in
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
     for line in reader:
-        timestamp = read_line_and_store_event(line, table)
-
-        # update progressbar every .5 seconds
-        if time.time() - prev_update > .5 and not timestamp == 0.:
-            pbar.update((1. * timestamp - t_start) / t_delta)
-            prev_update = time.time()
-    pbar.finish()
-
-
-def download_weather(file, group, station_number, start, end):
-    """Download event summary data
-
-    :param file: The PyTables datafile handler
-    :param group: The PyTables destination group, which need not exist
-    :param station_id: The HiSPARC station number for which to get weather
-    :param start: a datetime instance defining the start of the search
-        interval
-    :param end: a datetime instance defining the end of the search
-        interval
-
-    Example::
-
-        >>> import tables
-        >>> import datetime
-        >>> import sapphire.esd
-        >>> data = tables.open_file('data.h5', 'w')
-        >>> sapphire.esd.download_weather(data, '/s501', 501,
-        ... datetime.datetime(2014, 4, 1), datetime.datetime(2014, 4, 2))
-
-    """
-    # build and open url
-    query_string = urllib.urlencode({'start': start, 'end': end})
-    url = WEATHER_URL.format(station_number=station_number, query=query_string)
-    data = urllib2.urlopen(url)
-
-    # keep track of event timestamp within [start, end] interval for
-    # progressbar
-    t_start = calendar.timegm(start.utctimetuple())
-    t_end = calendar.timegm(end.utctimetuple())
-    t_delta = t_end - t_start
-    pbar = progressbar.ProgressBar(maxval=1.,
-                                   widgets=[progressbar.Percentage(),
-                                            progressbar.Bar(),
-                                            progressbar.ETA()]).start()
-
-    # create weather table
-    table = create_weather_table(file, group)
-
-    # event loop
-    prev_update = time.time()
-    reader = csv.reader(data, delimiter='\t')
-    for line in reader:
-        timestamp = read_line_and_store_weather(line, table)
+        timestamp = read_and_store(line, table)
 
         # update progressbar every .5 seconds
         if time.time() - prev_update > .5 and not timestamp == 0.:

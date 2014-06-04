@@ -31,7 +31,7 @@ class ESDTest(unittest.TestCase):
                                                   createparents=True)
         self.assertEqual(result, file.create_table.return_value)
 
-    def test_create_table(self):
+    def test_create_weather_table(self):
         description = {'event_id': tables.UInt32Col(pos=0),
                        'timestamp': tables.Time32Col(pos=1),
                        'temp_inside': tables.Float32Col(pos=2),
