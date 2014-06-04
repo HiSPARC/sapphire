@@ -6,6 +6,7 @@ import tables
 import sys
 
 from mock import patch
+
 from sapphire.analysis import process_events
 
 
@@ -55,7 +56,9 @@ class ProcessEventsTests(unittest.TestCase):
 
     def test__process_pulseintegrals(self):
         self.proc.limit = 1
-        self.assertAlmostEqual(self.proc._process_pulseintegrals()[0][3], 4.37504635)
+        # Because of small data sample fit fails for detector 1
+        self.assertEqual(self.proc._process_pulseintegrals()[0][1], -999.)
+        self.assertAlmostEqual(self.proc._process_pulseintegrals()[0][3], 3.98951741969)
         self.proc.limit = None
 
     def create_tempfile_from_testdata(self):
