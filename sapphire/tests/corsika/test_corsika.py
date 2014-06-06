@@ -10,7 +10,7 @@ DATA_FILE = os.path.join(data_file_dir, 'DAT000000')
 
 class CorsikaFileTests(unittest.TestCase):
     def setUp(self):
-        self.file = corsika.CorsikaFile(DATA_FILE)
+        self.file = corsika.reader.CorsikaFile(DATA_FILE)
 
     def tearDown(self):
         pass
