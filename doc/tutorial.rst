@@ -69,7 +69,7 @@ Downloading and accessing |hisparc| data
 ----------------------------------------
 
 The |sapphire| package comprises multiple modules and packages.  To access
-data from the public database, we'll have to import the ``publicdb``
+data from the public database, we'll have to import the :mod:`sapphire.esd`
 module.  Also, we need the ``tables`` module to actually store the data.
 `PyTables <pytables.org>`_ is based on the open HDF5 data format, which is
 used by `many (research) institutes
@@ -79,7 +79,7 @@ the data, we need the ``datetime`` module.  Thus, we have::
 
     >>> import tables
     >>> import datetime
-    >>> import sapphire.publicdb
+    >>> from sapphire import esd
 
 
 Creating an empty data file, with the name ``mydata.h5``, is done easily::
@@ -120,26 +120,19 @@ download data for a station in the Netherlands, we have just said from
 We have not actually done anything yet.  We have just stored our time
 window in two arbitrarily-named variables, ``start`` and ``end``.  To
 download data from station 501 and store it in a group with name ``/s501``,
-we can use the :func:`sapphire.publicdb.download_data` function::
+we can use the :func:`sapphire.esd.download_data` function::
 
-    >>> sapphire.publicdb.download_data(data, '/s501', 501, start, end)
-    INFO:hisparc.publicdb:2012-12-01 00:00:00 None
-    INFO:hisparc.publicdb:Getting server data URL (2012-12-01 00:00:00)
-    INFO:hisparc.publicdb:Downloading data...
-    INFO:hisparc.publicdb:Storing data...
-    INFO:hisparc.publicdb:Done.
-    INFO:hisparc.publicdb:2012-12-02 00:00:00 None
-    INFO:hisparc.publicdb:Getting server data URL (2012-12-02 00:00:00)
-    INFO:hisparc.publicdb:Downloading data...
-    INFO:hisparc.publicdb:Storing data...
-    INFO:hisparc.publicdb:Done.
+    >>> esd.download_data(data, '/s501', 501, start, end)
+    100%|####################################|Time: 0:00:16
+
+It will show a progressbar to indicate the progress of the download.
 
 As you can see in the reference documentation of
-:func:`sapphire.publicdb.download_data`, available by either clicking on
-the link or typing in ``help(sapphire.publicdb.download_data)`` in the
-interpreter, the function takes six arguments: *file, group, station_id,
-start, end* and *get_blobs*.  The last one has the default argument
-*False*, and may be omitted, as we have done here.  In our example, we
+:func:`sapphire.esd.download_data`, available by either clicking on
+the link or typing in ``help(esd.download_data)`` in the
+interpreter, the function takes six arguments: *file, group, station_number,
+start, end* and *type*.  The last one has the default argument
+*'events'*, and may be omitted, as we have done here.  In our example, we
 have opened a file, ``mydata.h5``, and have stored the file *handler* in
 the variable ``data``.  So, we passed ``data`` to the function.  The group
 name is ``/s501``.  Group names in PyTables are just like folders in a
@@ -151,13 +144,21 @@ just a small data file, we have opted for a simple structure.  At the
 moment, just one group named ``s501`` at the root of the hierarchy.  Group
 names must start with a letter, hence the ``s`` for station.
 
-The *station_id* is simply the station number.  Here, we've chosen to
+The *station_number* is simply the station number.  Here, we've chosen to
 download data for station 501, located at Nikhef.  The *start* and *end*
-parameters specify the date/time range.  Finally, *get_blobs* selects
-whether binary data should be downloaded.  This includes the traces of
-individual events, error messages, etc.  We've selected the default, which
-is *False*.  Binary data is often not neccessary, and will increase the
-data size tenfold.
+parameters specify the date/time range. 
+
+Finally, *type* selects whether to download event or weather data should
+be downloaded.  We've selected the default, which is *events*. We can also
+download the weather data by changing the type to ``'weather'``::
+
+    >>> esd.download_data(data, '/s501', 501, start, end, type='weather')
+    100%|####################################|Time: 0:00:10
+
+To access the raw data that includes the original detector traces the
+:func:`sapphire.publicdb.download_data` function can be used instead.
+However, downloading data will take much longer that way. If only some
+traces need to be accessed, the :mod:`sapphire.api` is a better choice.
 
 
 Looking around
@@ -194,52 +195,51 @@ that it will give more detailed information whenever you specify the
 object directly::
 
     >>> data.root.s501.events
-    /s501/events (Table(137600,)) 'HiSPARC coincidences table'
+    /s501/events (Table(137600,)) ''
       description := {
       "event_id": UInt32Col(shape=(), dflt=0, pos=0),
       "timestamp": Time32Col(shape=(), dflt=0, pos=1),
       "nanoseconds": UInt32Col(shape=(), dflt=0, pos=2),
       "ext_timestamp": UInt64Col(shape=(), dflt=0, pos=3),
-      "data_reduction": BoolCol(shape=(), dflt=False, pos=4),
-      "trigger_pattern": UInt32Col(shape=(), dflt=0, pos=5),
-      "baseline": Int16Col(shape=(4,), dflt=-1, pos=6),
-      "std_dev": Int16Col(shape=(4,), dflt=-1, pos=7),
-      "n_peaks": Int16Col(shape=(4,), dflt=-1, pos=8),
-      "pulseheights": Int16Col(shape=(4,), dflt=-1, pos=9),
-      "integrals": Int32Col(shape=(4,), dflt=-1, pos=10),
-      "traces": Int32Col(shape=(4,), dflt=-1, pos=11),
-      "event_rate": Float32Col(shape=(), dflt=0.0, pos=12)}
+      "pulseheights": Int16Col(shape=(4,), dflt=0, pos=4),
+      "integrals": Int32Col(shape=(4,), dflt=0, pos=5),
+      "n1": Float32Col(shape=(), dflt=0.0, pos=6),
+      "n2": Float32Col(shape=(), dflt=0.0, pos=7),
+      "n3": Float32Col(shape=(), dflt=0.0, pos=8),
+      "n4": Float32Col(shape=(), dflt=0.0, pos=9),
+      "t1": Float32Col(shape=(), dflt=0.0, pos=10),
+      "t2": Float32Col(shape=(), dflt=0.0, pos=11),
+      "t3": Float32Col(shape=(), dflt=0.0, pos=12),
+      "t4": Float32Col(shape=(), dflt=0.0, pos=13),
+      "t_trigger": Float32Col(shape=(), dflt=0.0, pos=14)}
       byteorder := 'little'
-      chunkshape := (704,)
+      chunkshape := (819,)
 
 There you go!  But what does it all *mean*?  Well, if you want to get to
 the bottom of it, read the `PyTables documentation
 <http://pytables.github.com/usersguide/index.html>`_.  We'll give a quick
 overview here.
 
-First, this table contains 137600 rows.  In total, there are thirteen
+First, this table contains 137600 rows.  In total, there are fourteen
 columns: ``event_id``, ``timestamp``, ``nanoseconds``, ``ext_timestamp``,
-``data_reduction``, ``trigger_pattern``, ``baseline``, ``std_dev``,
-``n_peaks``, ``pulseheights``, ``integrals``, ``traces`` and
-``event_rate``.
+``pulseheights``, ``integrals``, ``n1``-``n4``, ``t1``-``t4`` and
+``t_trigger``.
 
-Each event has a unique [#event_id]_ identifier, ``event_id``.  Each event
-has a Unix timestamp in GPS time, *not* UTC.  A `Unix timestamp
+Each event has a unique [#event_id]_ identifier, ``event_id``.  Each
+event has a Unix timestamp in GPS time, *not* UTC.  A `Unix timestamp
 <http://en.wikipedia.org/wiki/Unix_time>`_ is the number of seconds that
 have passed since January 1, 1970.  The sub-second part of the timestamp
-is given in ``nanoseconds``.  The ``ext_timestamp`` is the full timestamp
-in ns.  Since there cannot exist another event with the same timestamp,
-this field in combination with the station number uniquely identifies the
-event.  The ``data_reduction`` flag signifies whether the full PMT trace
-(*no* reduction) has been stored, or just the PMT pulse (*reduced*, or
-*zero suppression*).  The ``trigger_pattern`` is a binary value containing
-the exact trigger condition at the time of the event.  The ``baseline``,
-``std_dev``, ``n_peaks``, ``pulseheights`` and ``integrals`` fields are
-values derived from the PMT traces.  Each field contains four values, one
-for each detector.  If a station only has two detectors, the last two
-values for each field are -1.  If the baseline cannot be determined, all
-these values are -999.  The ``event_rate`` is the trigger rate at the time
-of the event.
+is given in ``nanoseconds``.  The ``ext_timestamp`` is the full
+timestamp in ns.  Since there cannot exist another event with the same
+timestamp, this field in combination with the station number uniquely
+identifies the event. The ``pulseheights`` and ``integrals`` fields are
+values derived from the PMT traces by the HiSPARC DAQ.  The ``n#``
+columns are derived from the ``integrals`` and the ``t#`` and
+``t_trigger`` fields are obtained after analyzing the event traces on
+the server. For some field there are four values, one for each detector.
+If a station only has two detectors, the values for the absent two
+detectors are -1.  If the baseline of the trace could not be determined
+all these values are -999.
 
 We'll get to work with this data in a moment.  First, we'll take a look at
 the weather table::
@@ -287,6 +287,8 @@ the first event::
     [195, 197, 197, 197], [658, 763, 646, 771], [1, 0, 1, 0], [173, 3,
     407, 3], [1603, 0, 4019, 0], [0, 1, 2, 3], 0.9111111164093018)
 
+.. Update the event to one from the esd, not raw data.
+
 That's the first event!  It is not, however, immediately clear what
 numbers correspond to which columns.  They are in order, however, so you
 could find out.  It is often easier to specify the column you're
@@ -294,15 +296,13 @@ interested in::
 
     >>> events[0]['pulseheights']
     array([173,   3, 407,   3], dtype=int16)
-    >>> events[0]['n_peaks']
-    array([1, 0, 1, 0], dtype=int16)
 
 Which gives us the pulseheights of the first event.  The pulseheights are
 16-bit integers (that's the ``dtype=int16``) and are determined after
 digitizing the events using an analog-digital converter (ADC).  Each unit
 corresponds to about -0.57 mV.  You can tell that the first and third
 detectors had relatively large pulseheights, and that they were registered
-as a significant *peak* in the signal (see the ``n_peaks`` column).
+as a significant *peak* in the signal.
 
 If you're interested in the pulseheights of *all* events, the fastest way
 to do it is to make use of the :meth:`Table.col`  method of the table::
@@ -505,8 +505,8 @@ Consider the following script, which you can hopefully understand by now
 
         import tables
 
-        from sapphire.publicdb import download_data
-        from sapphire.analysis import coincidences
+        from sapphire.esd import download_data
+        from sapphire.analysis.coincidences import CoincidencesESD
 
 
         STATIONS = [501, 503, 506]
@@ -521,10 +521,9 @@ Consider the following script, which you can hopefully understand by now
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END)
 
-At this point, we have downloaded data for three stations.  Note that we
-didn't specify ``get_blobs=True`` in the
-:func:`sapphire.publicdb.download_data` function.  Thus, we have no traces
-and the download is quick.  Let's see what the datafile now contains::
+At this point, we have downloaded data for three stations. Note that we
+used the :mod:`sapphire.esd`. Thus, we have no traces and the download
+is quick. Let's see what the datafile now contains::
 
     >>> print data
     data.h5 (File) ''
@@ -532,19 +531,17 @@ and the download is quick.  Let's see what the datafile now contains::
     Object Tree: 
     / (RootGroup) ''
     /s501 (Group) 'Data group'
-    /s501/events (Table(70643,)) 'HiSPARC coincidences table'
-    /s501/weather (Table(25199,)) 'HiSPARC weather data'
+    /s501/events (Table(70643,)) ''
     /s503 (Group) 'Data group'
-    /s503/events (Table(34937,)) 'HiSPARC coincidences table'
+    /s503/events (Table(34937,)) ''
     /s506 (Group) 'Data group'
-    /s506/events (Table(68365,)) 'HiSPARC coincidences table'
+    /s506/events (Table(68365,)) ''
 
 It contains three groups, one for each station.  To search for
 coincidences between these stations, we first initialize the
-:class:`sapphire.analysis.coincidences.Coincidences` class like so::
+:class:`sapphire.analysis.coincidences.CoincidencesESD` class like so::
 
-    >>> coincidences = coincidences.Coincidences(data, '/coincidences',
-    ...                                          station_groups)
+    >>> coincidences = CoincidencesESD(data, '/coincidences', station_groups)
 
 From the documentation (click on the class above the example to go to the
 documentation) it is clear that we have to specify the datafile
@@ -554,6 +551,8 @@ is an easy way to search for coincidences, process the events making up
 the coincidences, and store them in the destination group::
 
     >>> coincidences.search_and_store_coincidences()
+    100%|######################################|Time: 0:00:02
+    100%|######################################|Time: 0:00:00
 
 If you want to tweak the process using non-default parameters, see the
 module documentation (:mod:`sapphire.analysis.coincidences`).  For now,
@@ -564,121 +563,86 @@ let us turn to the results::
     Last modif.: 'Mon Jan 14 17:46:23 2013'
     Object Tree: 
     / (RootGroup) ''
-    /coincidences (Group) ''
-    /coincidences/_src_c_index (VLArray(4976,)) ''
-    /coincidences/_src_timestamps (Array(173945, 3)) ''
-    /coincidences/c_index (VLArray(4976,)) ''
-    /coincidences/coincidences (Table(4976,)) ''
-    /coincidences/observables (Table(10479,)) ''
-    /s501 (Group) 'Data group'
-    /s501/_events (Table(70643,)) 'HiSPARC coincidences table'
+    /coincidences (Group) u''
+    /coincidences/c_index (VLArray(2184,)) ''
+    /coincidences/coincidences (Table(2184,)) ''
+    /coincidences/s_index (VLArray(3,)) ''
+    /s501 (Group) ''
     /s501/events (Table(70643,)) ''
-    /s501/weather (Table(25199,)) 'HiSPARC weather data'
-    /s503 (Group) 'Data group'
-    /s503/_events (Table(34937,)) 'HiSPARC coincidences table'
+    /s503 (Group) ''
     /s503/events (Table(34937,)) ''
-    /s506 (Group) 'Data group'
-    /s506/_events (Table(68365,)) 'HiSPARC coincidences table'
-    /s506/events (Table(68365,)) ''
+    /s506 (Group) ''
+    /s506/events (Table(65935,)) ''
 
-The new addition is the ``/coincidences`` group.  It contains two more or
-less private members: ``_src_c_index`` and ``_src_timestamps``.  We won't
-cover them here.  The public tables are ``c_index``, ``coincidences`` and
-``observables``.  Information about the coincidences is stored in the
-``coincidences`` table.  Let's look at the columns:
+The new addition is the ``/coincidences`` group.  It contains three
+tables, which are ``c_index``, ``coincidences`` and ``observables``. 
+Information about the coincidences is stored in the ``coincidences``
+table.  Let's look at the columns:
 
 =============== ===========
 column          description
 =============== ===========
 id              an index number identifying the coincidence
-N               the number of stations taking part in the coincidence
 timestamp       the unix timestamp
 nanoseconds     the nanosecond part of the timestamp
 ext_timestamp   the timestamp in nanoseconds
-r               *compatibility reasons*
-phi             *compatibility reasons*
+N               the number of stations taking part in the coincidence
 x               *compatibility reasons*
 y               *compatibility reasons*
-shower_size     *compatibility reasons*
-shower_theta    *compatibility reasons*
-shower_phi      *compatibility reasons*
+azimuth         *compatibility reasons*
+zenith          *compatibility reasons*
+size            *compatibility reasons*
+energy          *compatibility reasons*
+s0              flag to indicate if the first station is in coincidence
+s1              as previous but for second station
+s2              as previous but for third station
 =============== ===========
 
 The columns included for compatibility reasons are used by the event
-simulation code.  In that case, the ``r``, ``phi`` describe the location
-of the shower core in polar coordinates.  Similarly, the ``x``, ``y``
-columns give the position in cartesian coordinates.  Furthermore, the
-``shower_size`` gives the so-called *shower size*, and ``shower_theta``
-and ``shower_phi`` contain the direction of the (simulated) shower.  These
-are not known for certain when working with |hisparc| data, but are
-included nonetheless.  These columns are all set to 0.0.
+simulation code.  In that case, the ``x``, ``y`` columns give the
+position in cartesian coordinates.  Furthermore, the ``size`` and
+``energy`` give the so-called *shower size*, and ``zenith`` and
+``azimuth`` contain the direction of the (simulated) shower.  These are
+not known for certain when working with |hisparc| data, but are included
+nonetheless.  These columns are all set to 0.0.
 
-The ``c_index`` array is used as an index to look up the individual events
-making up a coincidence.  The fifth coincidence is accessed by::
+The ``c_index`` array is used as an index to look up the tables and
+individual events making up a coincidence.  The fifth coincidence is
+accessed by::
 
-    >>> data.root.coincidences.coincidences[4]
+    >>> data.root.coincidences.coincidences[2]
+    (2L, 1356998460, 730384055L, 1356998460730384055L, 2, 0.0, 0.0, 0.0,
+     0.0, 0.0, 0.0, True, False, True)
 
 Remember, the indexes are zero-based.  The coincidence id is also 4::
 
-    >>> data.root.coincidences.coincidences[4]['id']
-    4
+    >>> data.root.coincidences.coincidences[2]['id']
+    2
 
 and the number of stations participating is 2::
 
-    >>> data.root.coincidences.coincidences[4]['N'] 
+    >>> data.root.coincidences.coincidences[2]['N'] 
     2
 
 To lookup the indexes of the events taking part in this coincidence,
 access the ``c_index`` array using the same id::
 
-    >>> data.root.coincidences.c_index[4]
-    array([8, 9], dtype=uint32)
+    >>> data.root.coincidences.c_index[2]
+    array([[ 0, 40],
+           [ 2, 57]], dtype=uint32)
 
-That is, event ids 8 and 9 are part of this coincidence.  The event
-observables are then stored in the ``observables`` table, and can be
-accessed using these ids::
+That is, event id 40 from station 0, event id 57 from station 2 are part
+of this coincidence.  The event observables are still stored in their
+original location and can be accessed using the ids. To find the
+location of the station group the ``s_index`` contains the paths to the
+station groups.::
 
-    >>> data.root.coincidences.observables[8]
-    (2, 0.0, 1356998421116183027L, 8L, 0.6368421316146851,
-    0.005263158120214939, 0.005263158120214939, 1.0394736528396606,
-    116183027L, 0.0, 0.0, 2, -1.0, -1.0, -1.0, -1.0, 1356998421, 0.0, 0.0)
-
-The columns in this table are:
-
-=============== ===========
-column          description
-=============== ===========
-id              an index number identifying the event
-station_id      an index number identifying the station
-N               the number of detectors with particles
-timestamp       the unix timestamp
-nanoseconds     the nanosecond part of the timestamp
-ext_timestamp   the timestamp in nanoseconds
-n1              the number of particles in detector 1
-n2              the number of particles in detector 2
-n3              the number of particles in detector 3
-n4              the number of particles in detector 4
-t1              the particle arrival time in detector 1
-t2              the particle arrival time in detector 2
-t3              the particle arrival time in detector 3
-t4              the particle arrival time in detector 4
-r               *compatibility reasons*
-phi             *compatibility reasons*
-x               *compatibility reasons*
-y               *compatibility reasons*
-alpha           *compatibility reasons*
-=============== ===========
-
-The columns included for compatibility reasons are again used by the event
-simulation code.  In that case, the ``r``, ``phi``, ``x`` and ``y``
-coordinates refer to the position of the *station*, not the shower.  In
-some types of simulation, the position of the station is changed from
-event to event.  The ``alpha`` column refers to the *orientation* of the
-station in those cases.
-
-The station id is an index into the ``station_groups`` list which was used
-when searching for coincidences.  So, an id of 2 refers to ``/s506``.
-
+    >>> data.root.coincidences.s_index[0]
+    '/s501'
+    >>> data.root.s501.events[40]
+    (40L, 1356998460, 730384055L, 1356998460730384055L, [2, 227, 301, 2],
+     [0, 1657, 3173, 0], 0.0, 0.5117999911308289, 0.9417999982833862,
+     0.0, -999.0, 12.5, 57.5, -999.0, 62.5)
 
 .. rubric:: Footnotes
 

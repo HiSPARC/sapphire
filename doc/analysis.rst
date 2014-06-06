@@ -10,8 +10,10 @@ Contents:
 
 .. toctree::
 
-   coincidences
-   core_reconstruction
-   direction_reconstruction
-   landau
-   process_events
+   analysis/coincidence_queries
+   analysis/coincidences
+   analysis/core_reconstruction
+   analysis/direction_reconstruction
+   analysis/find_mpv
+   analysis/landau
+   analysis/process_events

@@ -1,4 +1,4 @@
-.. include:: subst.inc
+.. include:: ../subst.inc
 
 Search for coincidences between |hisparc| stations
 ==================================================

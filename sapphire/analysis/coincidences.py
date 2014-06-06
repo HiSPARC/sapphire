@@ -500,6 +500,7 @@ class CoincidencesESD(Coincidences):
             s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
                          for p, station in enumerate(cluster.stations, 12)}
         else:
+            self.cluster = None
             s_columns = {'s%d' % n: tables.BoolCol(pos=(n + 12))
                          for n, _ in enumerate(self.station_groups)}
 
