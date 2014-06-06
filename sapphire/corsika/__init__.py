@@ -64,7 +64,13 @@ Authors
 
 - Javier Gonzalez <jgonzalez@ik.fzk.de>
 - Arne de Laat <adelaat@nikhef.nl>
-"""
 
-from reader import *
-import blocks
+"""
+from . import particles
+from . import reader
+from . import units
+
+
+__all__ = ['particles',
+           'reader',
+           'units']
