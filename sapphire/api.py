@@ -66,7 +66,8 @@ class API(object):
             "pulseheight_drift": 'station/{station_number}/plate/{plate_number}/pulseheight/'
                                  'drift/{year}/{month}/{day}/{number_of_days}/'}
 
-    def _get_json(self, urlpath):
+    @classmethod
+    def _get_json(cls, urlpath):
         """Retrieve a JSON from the HiSPARC API
 
         :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
@@ -74,7 +75,7 @@ class API(object):
         :return: the data returned by the api as dictionary or integer
 
         """
-        json_data = self._retrieve_url(urlpath)
+        json_data = cls._retrieve_url(urlpath)
         data = json.loads(json_data)
 
         return data
@@ -121,14 +122,10 @@ class Network(API):
         """Initialize network
 
         """
-        path = self.urls['countries']
-        self.all_countries = self._get_json(path)
-        path = self.urls['clusters']
-        self.all_clusters = self._get_json(path)
-        path = self.urls['subclusters']
-        self.all_subclusters = self._get_json(path)
-        path = self.urls['stations']
-        self.all_stations = self._get_json(path)
+        self.all_countries = self._get_json(self.urls['countries'])
+        self.all_clusters = self._get_json(self.urls['clusters'])
+        self.all_subclusters = self._get_json(self.urls['subclusters'])
+        self.all_stations = self._get_json(self.urls['stations'])
 
     def countries(self):
         """Get a list of countries
@@ -258,7 +255,8 @@ class Network(API):
             country.update({'clusters': clusters})
         return countries
 
-    def stations_with_data(self, year='', month='', day=''):
+    @classmethod
+    def stations_with_data(cls, year='', month='', day=''):
         """Get a list of stations with data on the specified date
 
         :param year,month,day: the date for which to check. It is
@@ -271,11 +269,12 @@ class Network(API):
         elif month == '' and day != '':
             raise Exception('You must also specify the month')
 
-        path = (self.urls['stations_with_data']
+        path = (cls.urls['stations_with_data']
                 .format(year=year, month=month, day=day).strip("/"))
-        return self._get_json(path)
+        return cls._get_json(path)
 
-    def stations_with_weather(self, year='', month='', day=''):
+    @classmethod
+    def stations_with_weather(cls, year='', month='', day=''):
         """Get a list of stations with weather data on the specified date
 
         :param year,month,day: the date for which to check. It is
@@ -288,9 +287,9 @@ class Network(API):
         elif month == '' and day != '':
             raise Exception('You must also specify the month')
 
-        path = (self.urls['stations_with_weather']
+        path = (cls.urls['stations_with_weather']
                 .format(year=year, month=month, day=day).strip("/"))
-        return self._get_json(path)
+        return cls._get_json(path)
 
 
 class Station(API):
