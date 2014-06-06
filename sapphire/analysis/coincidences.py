@@ -404,7 +404,7 @@ class Coincidences(object):
             event_idx) which will be searched
         :param window: the time window in nanoseconds which will be searched
             for coincidences.  Events falling outside this window will not be
-            part of the coincidence.  Default: 200000 (i.e. 200 us).
+            part of the coincidence.
 
         :return: a list of coincidences, which each consist of a list with
             indexes into the timestamps array as a pointer to the events
