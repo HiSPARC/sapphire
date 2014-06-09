@@ -2,13 +2,14 @@
 
     This module enables you to access the event summary data.
 
-    For convenience, you'll want the :func:`download_data` function.
-
-    If you are in a hurry (and took the time to read this far), you can
-    call the :func:`quick_download` function like this::
+    If you are in a real hurry and know what you're doing (and took the
+    time to read this far), you can call the :func:`quick_download`
+    function like this::
 
         >>> import sapphire.esd
         >>> data = sapphire.esd.quick_download(501)
+
+    For regular use, look up :func:`download_data`.
 
 """
 import urllib2
@@ -35,6 +36,18 @@ def quick_download(station_id):
 
     Everything is handled by this function, including file creation.
     Expect no frills: you just get yesterday's data.
+
+    Example usage::
+
+        >>> import sapphire.esd
+        >>> data = sapphire.esd.quick_download(501)
+        >>> print data
+        data1.h5 (File) u''
+        Last modif.: 'Mon Jun  9 22:03:50 2014'
+        Object Tree:
+        / (RootGroup) u''
+        /s501 (Group) u''
+        /s501/events (Table(58898,)) ''
 
     """
     path = _first_available_numbered_path()
@@ -113,13 +126,13 @@ def download_data(file, group, station_id, start=None, end=None):
                                             progressbar.ETA()]).start()
 
     # create events table
-    table = create_table(file, group)
+    table = _create_table(file, group)
 
     # event loop
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
     for line in reader:
-        timestamp = read_line_and_store_event(line, table)
+        timestamp = _read_line_and_store_event(line, table)
 
         # update progressbar every .5 seconds
         if time.time() - prev_update > .5 and not timestamp == 0.:
@@ -128,7 +141,7 @@ def download_data(file, group, station_id, start=None, end=None):
     pbar.finish()
 
 
-def create_table(file, group):
+def _create_table(file, group):
     """Create event table in PyTables file
 
     Create an event table containing the ESD data columns which are
@@ -162,7 +175,7 @@ def create_table(file, group):
     return file.create_table(group, 'events', description)
 
 
-def read_line_and_store_event(line, table):
+def _read_line_and_store_event(line, table):
     """Read CSV line and store event
 
     Read a line from the CSV download and store event.  Return the event
