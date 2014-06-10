@@ -27,7 +27,7 @@ class ESDTest(unittest.TestCase):
                        't_trigger': tables.Float32Col(pos=14)}
         mock_split.return_value = (sentinel.head, sentinel.tail)
         file = MagicMock()
-        result = esd.create_table(file, sentinel.group)
+        result = esd._create_table(file, sentinel.group)
         file.create_group.assert_called_once_with(sentinel.head, sentinel.tail)
         file.create_table.assert_called_once_with(sentinel.group, 'events',
                                                   description)
@@ -43,10 +43,10 @@ class ESDTest(unittest.TestCase):
                    [2, 139, 397, 2], [0, 1085, 5212, 0],
                    0.0, 0.3085, 1.5414, 0.0, -999.0, 15.0, 12.5, -999.0, 17.5]]
         table = []
-        timestamp = esd.read_line_and_store_event(comment_input, table)
+        timestamp = esd._read_line_and_store_event(comment_input, table)
         self.assertEqual(timestamp, 0.)
         self.assertEqual(len(table), 0)
-        timestamp = esd.read_line_and_store_event(input, table)
+        timestamp = esd._read_line_and_store_event(input, table)
         self.assertEqual(timestamp, int(input[2]))
         self.assertEqual(len(table), 1)
         self.assertEqual(table[0], output)
