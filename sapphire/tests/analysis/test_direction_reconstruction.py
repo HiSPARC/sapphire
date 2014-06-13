@@ -81,10 +81,6 @@ class FitAlgorithmTest(unittest.TestCase, BaseAlgorithm):
     def setUp(self):
         self.algorithm = direction_reconstruction.FitAlgorithm()
 
-    def call_reconstruct(self, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0, z1, z2):
-        return self.algorithm.reconstruct((t0, t1, t2), (x0, x1, x2),
-                                          (y0, y1, y2), (z0, z1, z2))
-
 
 if __name__ == '__main__':
     unittest.main()

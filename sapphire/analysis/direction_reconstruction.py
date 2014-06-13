@@ -4,6 +4,7 @@ from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, floor, where, deg2rad, pi, inf)
 from scipy.optimize import minimize
 
+
 class DirectAlgorithm(object):
 
     """Reconstruct angles using direct analytical formula.
@@ -374,6 +375,25 @@ class DirectAlgorithmCartesian3D(object):
 
 
 class FitAlgorithm(object):
+
+    @classmethod
+    def reconstruct_common(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
+        """Reconstruct angles from 3 detections
+
+        This function converts the arguments to be suitable for the
+        algorithm.
+
+        :param t#: arrival times in detector 0, 1 and 2 in ns.
+        :param x# y#: position of detector 0, 1 and 2 in m.
+        :param z#: height of detectors 0, 1 and 2 is ignored.
+
+        """
+        t = (t0, t1, t2)
+        x = (x0, x1, x2)
+        y = (y0, y1, y2)
+        z = (z0, z1, z2)
+
+        return cls.reconstruct(t, x, y, z)
 
     @classmethod
     def reconstruct(cls, t, x, y, z):
