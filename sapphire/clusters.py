@@ -544,8 +544,9 @@ class HiSPARCStations(RAlphaBetaStations):
             try:
                 station_info = sapphire.api.Station(station)
             except:
-                warnings.warn('Could not get info for station %d, Skipping.' %
-                              station, UserWarning)
+                raise KeyError('Could not get info for station %d.' %
+                               station)
+
             location = station_info.location()
             n_detectors = station_info.n_detectors
             detectors = station_info.detectors()
@@ -589,4 +590,3 @@ class HiSPARCNetwork(HiSPARCStations):
         network = sapphire.api.Network()
         stations = [station['number'] for station in network.stations()]
         super(HiSPARCNetwork, self).__init__(stations)
-
