@@ -483,9 +483,9 @@ class FitAlgorithm(object):
         return slq
 
 
-class DirectReconstruction(DirectAlgorithm):
+class DirectEventReconstruction(DirectAlgorithmCartesian2D):
 
-    """Reconstruct event using :class:`DirectAlgorithm`
+    """Reconstruct direction for station events
 
     This class is aware of 'events' and 'stations'.  Initialize this class
     with a 'station' and you can reconstruct events using
@@ -498,15 +498,37 @@ class DirectReconstruction(DirectAlgorithm):
     def __init__(self, station):
         self.station = station
 
-    def reconstruct_event(event, detector_ids=[0, 2, 3]):
+    def reconstruct_event(self, event, detector_ids=[0, 2, 3]):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
             dictionary-like object containing the keys necessary for
             reconstructing the direction of a shower (e.g. arrival times).
+        :param detector_ids: list of the three detectors to use for
+            reconstruction. The detector ids are 0-based, unlike the
+            column names in the esd data.
 
         """
-        pass
+        t = [event['t%d' % (id + 1)] for id in detector_ids]
+        x = [self.station.detectors[id].x for id in detector_ids]
+        y = [self.station.detectors[id].y for id in detector_ids]
+        z = [0, 0, 0]
+        theta, phi = self.reconstruct_common(*(t + x + y + z))
+        return theta, phi
+
+    def reconstruct_events(self, events, detector_ids=[0, 2, 3]):
+        """Reconstruct event
+
+        :param event: an event (e.g. from an events table), or any
+            dictionary-like object containing the keys necessary for
+            reconstructing the direction of a shower (e.g. arrival times).
+        :param detector_ids: detectors which use for the reconstructions.
+
+        """
+        events = events.read_where('n%d > -1 & n%d > -1 & n%d > -1' %
+                                   detector_ids)
+        angles = [self.reconstruct_event(event) for event in events]
+        return angles
 
 
 class FitClusterReconstruction(FitAlgorithm):
@@ -517,13 +539,13 @@ class FitClusterReconstruction(FitAlgorithm):
         pass
 
 
-class DirectClusterReconstruction(DirectAlgorithm):
+class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
 
-    """Reconstruct coincidence using :class:`DirectAlgorithm`
+    """Reconstruct coincidences with three events analytically
 
-    This class is aware of 'events' and 'clusters'.  Initialize this class
-    with a 'cluster' and you can reconstruct coincidences using
-    :meth:`reconstruct_coincidence`.
+    This class is aware of 'coincidences' and 'clusters'.  Initialize
+    this class with a 'cluster' and you can reconstruct a coincidence
+    using :meth:`reconstruct_coincidence`.
 
     :param cluster: :class:`sapphire.clusters.Cluster` object.
 
@@ -535,8 +557,8 @@ class DirectClusterReconstruction(DirectAlgorithm):
     def reconstruct_coincidence(coincidence, station_ids=[0, 1, 2]):
         """Reconstruct a single coincidence
 
-        :param coincidence: a coincidence (e.g. from a coincidences
-            table)
+        :param coincidence: a coincidence list consisting of
+                            (station_number, event) tuples
 
         """
         pass
