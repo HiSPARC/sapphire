@@ -28,10 +28,13 @@ import progressbar
 URL = 'http://data.hisparc.nl/data/%d/events'
 
 
-def quick_download(station_id):
+def quick_download(station_id, date=None):
     """Quickly download some data
 
     :param station_id: The HiSPARC station number
+    :param date: the date for which to get data (datetime.datetime
+        instance), passed unchanged to the :func:`download_data` as
+        :param start:.
     :returns: handle to an open PyTables file
 
     Everything is handled by this function, including file creation.
@@ -52,7 +55,7 @@ def quick_download(station_id):
     """
     path = _first_available_numbered_path()
     data = tables.open_file(path, 'w')
-    download_data(data, None, station_id)
+    download_data(data, None, station_id, date)
     return data
 
 
