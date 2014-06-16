@@ -1,4 +1,5 @@
 import warnings
+import itertools
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, floor, where, deg2rad, pi, inf)
@@ -547,3 +548,37 @@ class ReconstructAllCoincidences():
         if algorithm == None:
             algorithm = search_algorithm()
         self.algorithm = algorithm
+
+
+def logic_checks(t, x, y, z):
+    """Check for impossible reconstructions
+
+    Criteria:
+    - No two detectors are at the same position.
+    - Time difference between two detections should be less than distance / c.
+
+    To add:
+    - All detectors are on a line is bad.
+
+    :param t: arrival times in the detectors in ns.
+    :param x, y, z: positions of the detectors in m.
+    :return: True if the checks pass, False otherwise.
+
+    """
+    # Check for identical positions
+    if not len(zip(x, y, z)) == len(set(zip(x, y, z))):
+        return False
+
+    # Check if the time difference it larger than expected by c
+    c = .3  # m/ns
+    txyz = zip(t, x, y, z)
+    for txyz0, txyz1 in itertools.combinations(txyz, 2):
+        dt = abs(txyz0[0] - txyz1[0])
+        dx = txyz0[1] - txyz1[1]
+        dy = txyz0[2] - txyz1[2]
+        dz = txyz0[3] - txyz1[3]
+        dt_max = sqrt(dx**2 + dy**2 + dz**2) / c
+        if dt_max < dt:
+            return False
+
+    return True
