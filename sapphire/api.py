@@ -321,19 +321,15 @@ class Station(API):
                         month=date.month, day=date.day))
         self.info = self._get_json(path)
 
-    @property
     def country(self):
         return self.info['country']
 
-    @property
     def cluster(self):
         return self.info['cluster']
 
-    @property
     def subcluster(self):
         return self.info['subcluster']
 
-    @property
     def n_detectors(self):
         """Get the number of detectors in this station"""
         return len(self.info['scintillators'])

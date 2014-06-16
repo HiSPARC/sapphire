@@ -120,14 +120,14 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.station, STATION)
 
     def test_properties(self):
-        self.assertEqual(self.station.country, 'Netherlands')
-        self.assertEqual(self.station.cluster, 'Amsterdam')
-        self.assertEqual(self.station.subcluster, 'Science Park')
-        self.assertEqual(self.station.n_detectors, 4)
+        self.assertEqual(self.station.country(), 'Netherlands')
+        self.assertEqual(self.station.cluster(), 'Amsterdam')
+        self.assertEqual(self.station.subcluster(), 'Science Park')
+        self.assertEqual(self.station.n_detectors(), 4)
 
     def test_detectors(self):
         keys = ['mpv', 'alpha', 'beta', 'radius', 'height']
-        self.assertEqual(len(self.station.detectors()), self.station.n_detectors)
+        self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
         self.assertEqual(self.station.detectors()[0].keys(), keys)
         self.assertEqual(self.station.detectors(date(2011, 1, 1))[0].keys(), keys)
         self.assertEqual(self.station.detectors()[0]['alpha'], 225)
