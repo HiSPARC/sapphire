@@ -1,7 +1,7 @@
 from mock import sentinel, Mock, patch, call
 import unittest
 
-from numpy import nan, isnan, pi
+from numpy import nan, isnan, pi, degrees
 
 from sapphire.analysis import direction_reconstruction
 
@@ -19,6 +19,9 @@ class BaseAlgorithm(object):
                                                  y0, y1, y2, z0, z1, z2)
 
     def test_stations_in_line(self):
+        """Three detection points on a line does not provide a solution."""
+
+        # On a line in x
         t0, t1, t2 = (0., 2., 3.)
         x0, x1, x2 = (0., 0., 0.)  # same x
         y0, y1, y2 = (0., 5., 10.)
@@ -27,6 +30,7 @@ class BaseAlgorithm(object):
                                        z0, z1, z2)
         self.assertTrue(isnan(result).all())
 
+        # Diagonal line
         t0, t1, t2 = (0., 2., 3.)
         x0, x1, x2 = (0., 5., 10.)
         y0, y1, y2 = (0., 5., 10.)
@@ -36,7 +40,18 @@ class BaseAlgorithm(object):
         self.assertTrue(isnan(result).all())
 
     def test_same_stations(self):
-        """Three detections at same point make reconstruction impossible."""
+        """Multiple detections at same point make reconstruction impossible."""
+
+        # Two at same location
+        t0, t1, t2 = (0., 2., 3.)
+        x0, x1, x2 = (0., 0., 1.)
+        y0, y1, y2 = (5., 5., 6.)
+        z0, z1, z2 = (0., 0., 1.)
+        result = self.call_reconstruct(t0, t1, t2, x0, x1, x2, y0, y1, y2,
+                                       z0, z1, z2)
+        self.assertTrue(isnan(result).all())
+
+        # Three at same location
         t0, t1, t2 = (0., 2., 3.)
         x0, x1, x2 = (0., 0., 0.)  # same x
         y0, y1, y2 = (5., 5., 5.)  # same y
@@ -47,6 +62,7 @@ class BaseAlgorithm(object):
 
     def test_shower_from_above(self):
         """Simple shower from zenith, azimuth can be any allowed value."""
+
         t0, t1, t2 = (0., 0., 0.)  # same t
         x0, x1, x2 = (0., 10., 0.)
         y0, y1, y2 = (0., 0., 10.)
@@ -56,6 +72,18 @@ class BaseAlgorithm(object):
         self.assertEqual(theta, 0)
         # azimuth can be any value between -pi and pi
         self.assertTrue(-pi <= phi <= pi)
+
+    def test_shower_at_angle(self):
+        """Simple shower from zenith, azimuth can be any allowed value."""
+
+        t0, t1, t2 = (0., 9., 9.)  # same t
+        x0, x1, x2 = (0., 10., 0.)
+        y0, y1, y2 = (0., 0., 10.)
+        z0, z1, z2 = (0., 0., 0.)  # same z
+        theta, phi = self.call_reconstruct(t0, t1, t2, x0, x1, x2, y0, y1, y2,
+                                           z0, z1, z2)
+        self.assertAlmostEqual(degrees(theta), 22.4476, 4)
+        self.assertAlmostEqual(degrees(phi), -135.0000, 4)
 
 
 class DirectAlgorithmTest(unittest.TestCase, BaseAlgorithm):

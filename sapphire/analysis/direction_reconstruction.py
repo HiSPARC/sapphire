@@ -62,8 +62,10 @@ class DirectAlgorithm(object):
 
         phi = arctan2(-(r1 * dt2 * cos(phi1) - r2 * dt1 * cos(phi2)),
                       (r1 * dt2 * sin(phi1) - r2 * dt1 * sin(phi2)))
-        theta1 = arcsin(c * dt1 / (r1 * cos(phi - phi1)))
-        theta2 = arcsin(c * dt2 / (r2 * cos(phi - phi2)))
+        # The directional vector c * dt should be negative,
+        # not apparent in Fokkema2012 fig 4.4.
+        theta1 = arcsin(c * -dt1 / (r1 * cos(phi - phi1)))
+        theta2 = arcsin(c * -dt2 / (r2 * cos(phi - phi2)))
 
         e1 = sqrt(cls.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
         e2 = sqrt(cls.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
@@ -406,6 +408,9 @@ class FitAlgorithm(object):
                  phi as given by Montanus2014 eq 22.
 
         """
+        if not logic_checks(t, x, y, z):
+            return nan, nan
+
         dt = cls.make_relative(t)
         dx = cls.make_relative(x)
         dy = cls.make_relative(y)
