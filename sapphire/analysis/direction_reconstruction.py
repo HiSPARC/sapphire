@@ -530,18 +530,10 @@ class DirectEventReconstruction(DirectAlgorithmCartesian2D):
         :param detector_ids: detectors which use for the reconstructions.
 
         """
-        events = events.read_where('n%d > -1 & n%d > -1 & n%d > -1' %
+        events = events.read_where('(n%d > -1) & (n%d > -1) & (n%d > -1)' %
                                    detector_ids)
         angles = [self.reconstruct_event(event) for event in events]
         return angles
-
-
-class FitClusterReconstruction(FitAlgorithm):
-    def __init__(self, cluster):
-        self.cluster = cluster
-
-    def reconstruct_coincidence(coincidence):
-        pass
 
 
 class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
@@ -552,21 +544,49 @@ class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
     this class with a 'cluster' and you can reconstruct a coincidence
     using :meth:`reconstruct_coincidence`.
 
-    :param cluster: :class:`sapphire.clusters.Cluster` object.
+    :param cluster: :class:`sapphire.clusters.BaseCluster` object.
 
     """
 
     def __init__(self, cluster):
         self.cluster = cluster
 
-    def reconstruct_coincidence(coincidence, station_ids=[0, 1, 2]):
+    def reconstruct_coincidence(self, coincidence):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
-                            (station_number, event) tuples
+                            three (station_number, event) tuples
 
         """
-        pass
+        # Subtract base timestamp to prevent loss of precision
+        ts0 = long(coincidence[0][1]['timestamp'] * 1e9)
+        t, x, y, z = ([], [], [], [])
+
+        for station_number, event in coincidence:
+            station = self.cluster.get_station(station_number)
+            sx, sy = station.calc_xy_center_of_mass_coordinates()
+            x.append(sx)
+            y.append(sy)
+            z.append(0)
+            # Get first particle detection in event
+            t_first = min([event['t%d' % i] for i in [1, 2, 3, 4]
+                           if event['t%d' % i] not in [-1, -999]])
+            t.append((event['ext_timestamp'] - ts0) - event['t_trigger'] +
+                     t_first)
+
+        return self.reconstruct_common(*(t + x + y + z))
+
+
+class FitClusterReconstruction(FitAlgorithm, DirectClusterReconstruction):
+
+    """Reconstruct coincidences with more than three events
+
+    Same as DirectClusterReconstruction but uses the FitAlgorithm.
+    So coincidences with more than three events are allowed.
+
+    """
+
+    pass
 
 
 class ReconstructAllCoincidences():
