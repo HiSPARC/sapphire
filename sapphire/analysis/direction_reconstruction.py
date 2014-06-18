@@ -564,10 +564,10 @@ class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
 
         for station_number, event in coincidence:
             station = self.cluster.get_station(station_number)
-            sx, sy = station.calc_xy_center_of_mass_coordinates()
+            sx, sy = station.calc_xyz_center_of_mass_coordinates()
             x.append(sx)
             y.append(sy)
-            z.append(0)
+            z.append(sz)
             # Get first particle detection in event
             t_first = min([event['t%d' % i] for i in [1, 2, 3, 4]
                            if event['t%d' % i] not in [-1, -999]])

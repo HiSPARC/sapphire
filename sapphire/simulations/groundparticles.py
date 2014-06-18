@@ -122,7 +122,7 @@ class GroundParticlesSimulation(BaseSimulation):
         xp = x * cos(-alpha) - y * sin(-alpha)
         yp = x * sin(-alpha) + y * cos(-alpha)
 
-        self.cluster.set_xyalpha_coordinates(-xp, -yp, -alpha)
+        self.cluster.set_coordinates(-xp, -yp, 0, -alpha)
 
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
