@@ -524,8 +524,8 @@ class DirectEventReconstruction(DirectAlgorithmCartesian2D):
         t = [event['t%d' % (id + 1)] for id in detector_ids]
         x = [self.station.detectors[id].x for id in detector_ids]
         y = [self.station.detectors[id].y for id in detector_ids]
-        z = [0, 0, 0]
-        theta, phi = self.reconstruct_common(*(t + x + y + z))
+        z = [self.station.detectors[id].z for id in detector_ids]
+        theta, phi = self.reconstruct_common(t, x, y, z)
         return theta, phi
 
     def reconstruct_events(self, events, detector_ids=[0, 2, 3]):
@@ -571,7 +571,7 @@ class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
 
         for station_number, event in coincidence:
             station = self.cluster.get_station(station_number)
-            sx, sy = station.calc_xyz_center_of_mass_coordinates()
+            sx, sy, sz = station.calc_center_of_mass_coordinates()
             x.append(sx)
             y.append(sy)
             z.append(sz)
@@ -581,7 +581,7 @@ class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
             t.append((event['ext_timestamp'] - ts0) - event['t_trigger'] +
                      t_first)
 
-        return self.reconstruct_common(*(t + x + y + z))
+        return self.reconstruct_common(t, x, y, z)
 
 
 class FitClusterReconstruction(FitAlgorithm, DirectClusterReconstruction):
@@ -596,12 +596,26 @@ class FitClusterReconstruction(FitAlgorithm, DirectClusterReconstruction):
     pass
 
 
-class ReconstructAllCoincidences():
-    def __init__(self, cluster, results_table,
-                 algorithm=FitClusterReconstruction):
-        if algorithm == None:
-            algorithm = search_algorithm()
-        self.algorithm = algorithm
+class ReconstructAllCoincidences(object):
+
+    """Reconstruct coincidences with three or more events"""
+
+    def __init__(self, cluster, algorithm=None):
+        if algorithm is None:
+            self.direct = DirectClusterReconstruction(cluster)
+            self.fit = FitClusterReconstruction(cluster)
+        else:
+            self.algorithm = algorithm
+
+    def reconstruct_coincidence(self, coincidence):
+        if len(coincidence) == 3:
+            return self.direct.reconstruct_coincidence(coincidence)
+        elif len(coincidence) >= 3:
+            return self.fit.reconstruct_coincidence(coincidence)
+
+    def reconstruct_coincidences(self, coincidences):
+        angles = [self.reconstruct_coincidence(c) for c in coincidences]
+        return angles
 
 
 def logic_checks(t, x, y, z):
