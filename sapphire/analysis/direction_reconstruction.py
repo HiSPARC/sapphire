@@ -20,25 +20,28 @@ class DirectAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
+    def reconstruct_common(cls, t, x, y, z=None):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
         algorithm.
 
-        :param t#: arrival times in detector 0, 1 and 2 in ns.
-        :param x# y#: position of detector 0, 1 and 2 in m.
-        :param z#: height of detectors 0, 1 and 2 is ignored.
+        :param t: arrival times in detector 0, 1 and 2 in ns.
+        :param x,y: positions of detector 0, 1 and 2 in m.
+        :param z: height of detectors 0, 1 and 2 is ignored.
 
         """
-        dt1 = t1 - t0
-        dt2 = t2 - t0
+        if len(t) > 3 or len(x) > 3 or len(y) > 3:
+            warning_only_three()
 
-        r1 = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
-        r2 = sqrt((x2 - x0) ** 2 + (y2 - x0) ** 2)
+        dt1 = t[1] - t[0]
+        dt2 = t[2] - t[0]
 
-        phi1 = arctan2((y1 - y0), (x1 - x0))
-        phi2 = arctan2((y2 - x0), (x2 - x0))
+        r1 = sqrt((x[1] - x[0]) ** 2 + (y[1] - y[0]) ** 2)
+        r2 = sqrt((x[2] - x[0]) ** 2 + (y[2] - x[0]) ** 2)
+
+        phi1 = arctan2((y[1] - y[0]), (x[1] - x[0]))
+        phi2 = arctan2((y[2] - x[0]), (x[2] - x[0]))
 
         return cls.reconstruct(dt1, dt2, r1, r2, phi1, phi2)
 
@@ -214,25 +217,28 @@ class DirectAlgorithmCartesian2D(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
+    def reconstruct_common(cls, t, x, y, z=None):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
         algorithm.
 
-        :param t#: arrival times in detector 0, 1 and 2 in ns.
-        :param x# y#: position of detector 0, 1 and 2 in m.
-        :param z#: height of detectors 0, 1 and 2 is ignored.
+        :param t: arrival times in detector 0, 1 and 2 in ns.
+        :param x,y: positions of detector 0, 1 and 2 in m.
+        :param z: height of detectors 0, 1 and 2 is ignored.
 
         """
-        dt1 = t1 - t0
-        dt2 = t2 - t0
+        if len(t) > 3 or len(x) > 3 or len(y) > 3:
+            warning_only_three()
 
-        dx1 = x1 - x0
-        dx2 = x2 - x0
+        dt1 = t[1] - t[0]
+        dt2 = t[2] - t[0]
 
-        dy1 = y1 - y0
-        dy2 = y2 - y0
+        dx1 = x[1] - x[0]
+        dx2 = x[2] - x[0]
+
+        dy1 = y[1] - y[0]
+        dy2 = y[2] - y[0]
 
         return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2)
 
@@ -284,27 +290,30 @@ class DirectAlgorithmCartesian3D(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
+    def reconstruct_common(cls, t, x, y, z=(0, 0, 0)):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
         algorithm.
 
-        :param t#: arrival times in detector 0, 1 and 2 in ns.
-        :param x# y# z#: position of detector 0, 1 and 2 in m.
+        :param t: arrival times in detector 0, 1 and 2 in ns.
+        :param x,y,z: positions of detector 0, 1 and 2 in m.
 
         """
-        dt1 = t1 - t0
-        dt2 = t2 - t0
+        if len(t) > 3 or len(x) > 3 or len(y) > 3 or len(z) > 3:
+            warning_only_three()
 
-        dx1 = x1 - x0
-        dx2 = x2 - x0
+        dt1 = t[1] - t[0]
+        dt2 = t[2] - t[0]
 
-        dy1 = y1 - y0
-        dy2 = y2 - y0
+        dx1 = x[1] - x[0]
+        dx2 = x[2] - x[0]
 
-        dz1 = z1 - z0
-        dz2 = z2 - z0
+        dy1 = y[1] - y[0]
+        dy2 = y[2] - y[0]
+
+        dz1 = z[1] - z[0]
+        dz2 = z[2] - z[0]
 
         return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1, dz2)
 
@@ -380,21 +389,19 @@ class DirectAlgorithmCartesian3D(object):
 class FitAlgorithm(object):
 
     @classmethod
-    def reconstruct_common(cls, t0, t1, t2, x0, x1, x2, y0, y1, y2, z0=0, z1=0, z2=0):
+    def reconstruct_common(cls, t, x, y, z=None):
         """Reconstruct angles from 3 detections
 
         This function converts the arguments to be suitable for the
         algorithm.
 
-        :param t#: arrival times in detector 0, 1 and 2 in ns.
-        :param x# y#: position of detector 0, 1 and 2 in m.
-        :param z#: height of detectors 0, 1 and 2 is ignored.
+        :param t: arrival times of the detectors in ns.
+        :param x,y,z: positions of the detectors in m. The height
+                      for all detector will be set to 0 if not given.
 
         """
-        t = (t0, t1, t2)
-        x = (x0, x1, x2)
-        y = (y0, y1, y2)
-        z = (z0, z1, z2)
+        if z is None:
+            z = [0] * len(x)
 
         return cls.reconstruct(t, x, y, z)
 
@@ -629,3 +636,6 @@ def logic_checks(t, x, y, z):
             return False
 
     return True
+
+def warning_only_three():
+    warnings.warn('Only the first three detections will be used', UserWarning)
