@@ -291,11 +291,11 @@ class Coincidence(tables.IsDescription):
 
         the number of triggered stations
 
-    .. attribute:: r, phi, x, y
+    .. attribute:: x, y
 
         The coordinates of the shower core in a simulation.
 
-    .. attribute:: shower_theta, shower_phi
+    .. attribute:: zenith, azimuth
 
         The direction of the (simulated) shower.
 
@@ -318,30 +318,45 @@ class ReconstructedEvent(tables.IsDescription):
 
     """Store information about reconstructed events"""
 
+    id = tables.UInt32Col(pos=1)
+    station_number = tables.UInt32Col(pos=2)
+    ext_timestamp = tables.UInt32Col(pos=3)
+    x = tables.Float32Col()
+    y = tables.Float32Col()
+    zenith = tables.Float32Col()
+    azimuth = tables.Float32Col()
+    size = tables.Float32Col()
+    energy = tables.Float32Col()
+    min_n134 = tables.Float32Col()
+    reference_x = tables.Float32Col()
+    reference_y = tables.Float32Col()
+    reference_zenith = tables.Float32Col()
+    reference_azimuth = tables.Float32Col()
+    reference_size = tables.Float32Col()
+    reference_energy = tables.Float32Col()
+
+
+class ReconstructedCoincidence(tables.IsDescription):
+
+    """Store information about reconstructed coincidences"""
+
     # r, phi is core position
 
-    id = tables.UInt32Col()
-    station_id = tables.UInt8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    alpha = tables.Float32Col()
-    t1 = tables.Float32Col()
-    t2 = tables.Float32Col()
-    t3 = tables.Float32Col()
-    t4 = tables.Float32Col()
-    n1 = tables.Float32Col()
-    n2 = tables.Float32Col()
-    n3 = tables.Float32Col()
-    n4 = tables.Float32Col()
-    reference_theta = tables.Float32Col()
-    reference_phi = tables.Float32Col()
-    reconstructed_theta = tables.Float32Col()
-    reconstructed_phi = tables.Float32Col()
-    reference_core_pos = tables.Float32Col(shape=2)
-    reconstructed_core_pos = tables.Float32Col(shape=2)
-    reference_shower_size = tables.Float32Col()
-    reconstructed_shower_size = tables.Float32Col()
-    min_n134 = tables.Float32Col()
+    id = tables.UInt32Col(pos=1)
+    ext_timestamp = tables.UInt32Col(pos=3)
+    x = tables.Float32Col()
+    y = tables.Float32Col()
+    zenith = tables.Float32Col()
+    azimuth = tables.Float32Col()
+    size = tables.Float32Col()
+    energy = tables.Float32Col()
+    min_n = tables.Float32Col()
+    reference_x = tables.Float32Col()
+    reference_y = tables.Float32Col()
+    reference_zenith = tables.Float32Col()
+    reference_azimuth = tables.Float32Col()
+    reference_size = tables.Float32Col()
+    reference_energy = tables.Float32Col()
 
 
 class KascadeEvent(tables.IsDescription):
