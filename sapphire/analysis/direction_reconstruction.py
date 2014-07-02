@@ -1,6 +1,8 @@
 import warnings
 import itertools
 
+import progressbar
+
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, floor, where, deg2rad, pi, inf)
 from scipy.optimize import minimize
@@ -51,8 +53,8 @@ class DirectAlgorithm(object):
 
         :param dt#: arrival times in detector 1 and 2 relative to
                     detector 0 in ns (!).
-        :param r#, phi#: position of detector 1 and 2 relative to
-                         detector 0 in m and radians.
+        :param r#,phi#: position of detector 1 and 2 relative to
+                        detector 0 in m and radians.
         :return: theta as given by Fokkema2012 eq 4.27,
                  phi as given by Fokkema2012 eq 4.13.
 
@@ -323,8 +325,8 @@ class DirectAlgorithmCartesian3D(object):
 
         :param dt#: arrival times in detector 1 and 2 relative to
                     detector 0 in ns.
-        :param dx#, dy#, dz#: position of detector 1 and 2 relative to
-                              detector 0 in m.
+        :param dx#,dy#,dz#: position of detector 1 and 2 relative to
+                            detector 0 in m.
         :return: theta as given by Montanus2014 eq 24,
                  phi as given by Montanus2014 eq 22.
 
@@ -509,6 +511,8 @@ class DirectEventReconstruction(DirectAlgorithmCartesian2D):
 
     def __init__(self, station):
         self.station = station
+        detectors = [d.get_coordinates() for d in self.station.detectors]
+        self.x, self.y, self.z = zip(*detectors)
 
     def reconstruct_event(self, event, detector_ids=[0, 2, 3]):
         """Reconstruct a single event
@@ -522,25 +526,77 @@ class DirectEventReconstruction(DirectAlgorithmCartesian2D):
 
         """
         t = [event['t%d' % (id + 1)] for id in detector_ids]
-        x = [self.station.detectors[id].x for id in detector_ids]
-        y = [self.station.detectors[id].y for id in detector_ids]
-        z = [self.station.detectors[id].z for id in detector_ids]
-        theta, phi = self.reconstruct_common(t, x, y, z)
+        x = [self.x[id] for id in detector_ids]
+        y = [self.y[id] for id in detector_ids]
+        z = [self.z[id] for id in detector_ids]
+        if len([i for i in t if i not in [-1, -999]]) == len(detector_ids):
+            theta, phi = self.reconstruct_common(t, x, y, z)
+        else:
+            theta = nan
+            phi = nan
         return theta, phi
 
     def reconstruct_events(self, events, detector_ids=[0, 2, 3]):
-        """Reconstruct event
+        """Reconstruct events
+
+        :param events: the events table for the station from an ESD data
+                       file.
+        :param detector_ids: detectors which use for the reconstructions.
+
+        """
+        angles = [self.reconstruct_event(event, detector_ids)
+                  for event in pbar(events)]
+        theta, phi = zip(*angles)
+        return theta, phi
+
+class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
+
+    """Reconstruct direction for station events
+
+    This class is aware of 'events' and 'stations'.  Initialize this class
+    with a 'station' and you can reconstruct events using
+    :meth:`reconstruct_event`.
+
+    :param station: :class:`sapphire.clusters.Station` object.
+
+    """
+
+    def reconstruct_event(self, event):
+        """Reconstruct a single event
+
+        Each detector with a valid arrival time will be used for the
+        reconstruction.
 
         :param event: an event (e.g. from an events table), or any
             dictionary-like object containing the keys necessary for
             reconstructing the direction of a shower (e.g. arrival times).
-        :param detector_ids: detectors which use for the reconstructions.
 
         """
-        events = events.read_where('(n%d > -1) & (n%d > -1) & (n%d > -1)' %
-                                   detector_ids)
-        angles = [self.reconstruct_event(event) for event in events]
-        return angles
+        detector_ids = range(4)
+        t = []
+        x = []
+        y = []
+        z = []
+        for id in detector_ids:
+            if event['t%d' % (id + 1)] not in [-1, -999]:
+                t.append(event['t%d' % (id + 1)])
+                x.append(self.x[id])
+                y.append(self.y[id])
+                z.append(self.z[id])
+
+        theta, phi = self.reconstruct_common(t, x, y, z)
+        return theta, phi
+
+    def reconstruct_events(self, events):
+        """Reconstruct events
+
+        :param events: the events table for the station from an ESD data
+                       file.
+
+        """
+        angles = [self.reconstruct_event(event) for event in pbar(events)]
+        theta, phi = zip(*angles)
+        return theta, phi
 
 
 class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
@@ -615,7 +671,8 @@ class ReconstructAllCoincidences(object):
 
     def reconstruct_coincidences(self, coincidences):
         angles = [self.reconstruct_coincidence(c) for c in coincidences]
-        return angles
+        theta, phi = zip(*angles)
+        return theta, phi
 
 
 def logic_checks(t, x, y, z):
@@ -650,6 +707,15 @@ def logic_checks(t, x, y, z):
             return False
 
     return True
+
+
+def pbar(iterator):
+    """Get a new progressbar with our default widgets"""
+
+    pb = progressbar.ProgressBar(widgets=[progressbar.ETA(), progressbar.Bar(),
+                                          progressbar.Percentage()])
+    return pb(iterator)
+
 
 def warning_only_three():
     warnings.warn('Only the first three detections will be used', UserWarning)
