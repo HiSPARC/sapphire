@@ -4,7 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sapphire.clusters import HiSPARCStations, ScienceParkCluster
-from sapphire.analysis.direction_reconstruction import DirectAlgorithmCartesian3D, DirectEventReconstruction
+from sapphire.analysis.direction_reconstruction import (DirectAlgorithm,
+                                                        DirectAlgorithmCartesian3D,
+                                                        DirectAlgorithmCartesian2D,
+                                                        FitAlgorithm)
 
 
 TIME_RESOLUTION = 2.5  # nanoseconds
@@ -69,7 +72,8 @@ if __name__ == '__main__':
     layout.axis('equal')
     layout.scatter(x, y, s=15, marker='o', color='black')
     for id in [0, 1, 2, 3]:
-        layout.annotate('%d' % id, (x[id], y[id]), xytext=(3, 3), textcoords='offset points')
+        layout.annotate('%d' % id, (x[id], y[id]), xytext=(3, 3),
+                        textcoords='offset points')
     layout.set_ylabel('easting (m)')
     layout.set_xlabel('northing (m)')
 
