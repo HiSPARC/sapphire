@@ -15,6 +15,8 @@ class DirectAlgorithm(object):
     This implements the equations derived in Fokkema2012 sec 4.2.
     (DOI: 10.3990/1.9789036534383)
 
+    This algorithm assumes each detector is at the same altitude.
+
     Note! The detectors are 0-based.
 
     Speed of light is in [m / ns]
@@ -245,14 +247,13 @@ class DirectAlgorithmCartesian2D(object):
         return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2)
 
     @staticmethod
-    def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1=0, dz2=0):
+    def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2):
         """Reconstruct angles from 3 detections
 
         :param dt#: arrival times in detector 1 and 2 relative to
                     detector 0 in ns.
-        :param dx#, dy#: position of detector 1 and 2 relative to
+        :param dx#,dy#: position of detector 1 and 2 relative to
                          detector 0 in m.
-        :param dz#: height of detectors 1 and 2 is ignored.
         :return: theta as given by Montanus2014 eq 27,
                  phi as given by Montanus2014 eq 26.
 
@@ -497,7 +498,7 @@ class FitAlgorithm(object):
         return slq
 
 
-class DirectEventReconstruction(DirectAlgorithmCartesian2D):
+class DirectEventReconstruction(DirectAlgorithmCartesian3D):
 
     """Reconstruct direction for station events
 
