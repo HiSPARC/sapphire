@@ -1,7 +1,7 @@
 from mock import sentinel, Mock, patch, call
 import unittest
 
-from numpy import nan, isnan, pi, degrees
+from numpy import nan, isnan, pi, degrees, sqrt
 
 from sapphire.analysis import direction_reconstruction
 
@@ -37,8 +37,11 @@ class BaseAlgorithm(object):
         self.assertTrue(isnan(result).all())
 
     def test_same_stations(self):
-        """Multiple detections at same point make reconstruction impossible."""
+        """Multiple detections at same point make reconstruction impossible.
 
+        With different arrival time.
+
+        """
         # Two at same location
         t = (0., 2., 3.)
         x = (0., 0., 1.)
@@ -70,13 +73,39 @@ class BaseAlgorithm(object):
     def test_shower_at_angle(self):
         """Simple shower from a specific angle."""
 
-        t = (0., 9., 9.)
-        x = (0., 10., 0.)
-        y = (0., 0., 10.)
+        x = (0., -5., 5.)
+        y = (sqrt(100 - 25), 0., 0.)
         z = (0., 0., 0.)
+
+        t = (10., 0., 0.)
         theta, phi = self.call_reconstruct(t, x, y, z)
-        self.assertAlmostEqual(degrees(theta), 22.4476, 4)
-        self.assertAlmostEqual(degrees(phi), -135.0000, 4)
+        self.assertAlmostEqual(degrees(phi), -90.000, 3)
+        self.assertAlmostEqual(degrees(theta), 20.268, 3)
+
+        t = (0., 10., 0.)
+        theta, phi = self.call_reconstruct(t, x, y, z)
+        self.assertAlmostEqual(degrees(phi), 30.000, 3)
+        self.assertAlmostEqual(degrees(theta), 20.268, 3)
+
+        t = (0., 0., 10.)
+        theta, phi = self.call_reconstruct(t, x, y, z)
+        self.assertAlmostEqual(degrees(phi), 150.000, 3)
+        self.assertAlmostEqual(degrees(theta), 20.268, 3)
+
+        t = (10., 10., 0.)
+        theta, phi = self.call_reconstruct(t, x, y, z)
+        self.assertAlmostEqual(degrees(phi), -30.000, 3)
+        self.assertAlmostEqual(degrees(theta), 20.268, 3)
+
+        t = (10., 0., 10.)
+        theta, phi = self.call_reconstruct(t, x, y, z)
+        self.assertAlmostEqual(degrees(phi), -150.000, 3)
+        self.assertAlmostEqual(degrees(theta), 20.268, 3)
+
+        t = (0., 10., 10.)
+        theta, phi = self.call_reconstruct(t, x, y, z)
+        self.assertAlmostEqual(degrees(phi), 90.000, 3)
+        self.assertAlmostEqual(degrees(theta), 20.268, 3)
 
 
 class DirectAlgorithmTest(unittest.TestCase, BaseAlgorithm):
