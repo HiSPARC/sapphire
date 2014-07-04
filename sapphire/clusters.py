@@ -35,7 +35,7 @@ class Detector(object):
         self.station = station
         self.x = position[0]
         self.y = position[1]
-        self.z = position[2] if len(position) == 3 else 0
+        self.z = position[2] if len(position) == 3 else 0.
         self.orientation = orientation
 
     @property
@@ -138,7 +138,7 @@ class Station(object):
         self.station_id = station_id
         self.x = position[0]
         self.y = position[1]
-        self.z = position[2] if len(position) == 3 else 0
+        self.z = position[2] if len(position) == 3 else 0.
         self.angle = angle
         self.number = number if number else station_id
 
@@ -260,7 +260,7 @@ class BaseCluster(object):
         """
         self.x = position[0]
         self.y = position[1]
-        self.z = position[2] if len(position) == 3 else 0
+        self.z = position[2] if len(position) == 3 else 0.
         self.alpha = angle
 
     def _add_station(self, position, angle, detectors=None, number=None):
