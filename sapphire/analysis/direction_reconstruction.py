@@ -71,16 +71,10 @@ class DirectAlgorithm(object):
                       (r1 * dt2 * sin(phi1) - r2 * dt1 * sin(phi2)))
         # The directional vector c * dt should be negative,
         # not apparent in Fokkema2012 fig 4.4.
-        theta1 = arcsin(c * -dt1 / (r1 * cos(phi - phi1)))
-        theta2 = arcsin(c * -dt2 / (r2 * cos(phi - phi2)))
-
-        e1 = sqrt(cls.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
-        e2 = sqrt(cls.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
-
-        if around(theta1, 10) == around(theta2, 10):
-            theta = theta1
+        if not dt1 == 0:
+            theta = arcsin(c * -dt1 / (r1 * cos(phi - phi1)))
         else:
-            theta = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
+            theta = arcsin(c * -dt2 / (r2 * cos(phi - phi2)))
 
         # We limit theta to positive values.  If theta is negative, we
         # make it positive, but need to rotate phi by 180 degrees.
