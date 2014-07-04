@@ -42,10 +42,10 @@ class DirectAlgorithm(object):
         dt2 = t[2] - t[0]
 
         r1 = sqrt((x[1] - x[0]) ** 2 + (y[1] - y[0]) ** 2)
-        r2 = sqrt((x[2] - x[0]) ** 2 + (y[2] - x[0]) ** 2)
+        r2 = sqrt((x[2] - x[0]) ** 2 + (y[2] - y[0]) ** 2)
 
         phi1 = arctan2((y[1] - y[0]), (x[1] - x[0]))
-        phi2 = arctan2((y[2] - x[0]), (x[2] - x[0]))
+        phi2 = arctan2((y[2] - y[0]), (x[2] - x[0]))
 
         return cls.reconstruct(dt1, dt2, r1, r2, phi1, phi2)
 
@@ -549,6 +549,7 @@ class DirectEventReconstruction(DirectAlgorithmCartesian3D):
                   for event in pbar(events)]
         theta, phi = zip(*angles)
         return theta, phi
+
 
 class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
 
