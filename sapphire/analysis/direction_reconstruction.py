@@ -156,7 +156,7 @@ class DirectAlgorithm(object):
              r1 * r2 * sinphi1 * sinphi2)
         B = (2 * r1 ** 2 * sinphi1 * cosphi1 +
              2 * r2 ** 2 * sinphi2 * cosphi2 -
-             r1 * r2 * (sinphi2 * cosphi1 - sinphi1 * cosphi2))
+             r1 * r2 * (sinphi2 * cosphi1 + sinphi1 * cosphi2))
         C = (r1 ** 2 * cosphi1 ** 2 +
              r2 ** 2 * cosphi2 ** 2 -
              r1 * r2 * cosphi1 * cosphi2)
