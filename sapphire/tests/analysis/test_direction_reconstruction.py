@@ -1,7 +1,7 @@
 from mock import sentinel, Mock, patch, call
 import unittest
 
-from numpy import nan, isnan, pi, degrees, sqrt
+from numpy import nan, isnan, pi, degrees, sqrt, arcsin
 
 from sapphire.analysis import direction_reconstruction
 
@@ -70,59 +70,50 @@ class BaseAlgorithm(object):
         # azimuth can be any value between -pi and pi
         self.assertTrue(-pi <= phi <= pi)
 
-    def test_shower_at_azimuths(self):
-        """Simple shower from specific azimuth angles."""
+    def test_show_to_large_dt(self):
+        """Time difference larger than expected by speed of light."""
+
+        # TODO: Add better test with smaller tolerance
 
         x = (0., -5., 5.)
         y = (sqrt(100 - 25), 0., 0.)
         z = (0., 0., 0.)
-
-        # combinations of times and azimuths
-        combinations = (((10., 0., 0.), -90.000),
-                        ((0., 10., 0.), 30.000),
-                        ((0., 0., 10.), 150.000),
-                        ((10., 10., 0.), -30.000),
-                        ((10., 0., 10.), -150.000),
-                        ((0., 10., 10.), 90.000))
-
-        for t, azimuth in combinations:
-            theta, phi = self.call_reconstruct(t, x, y, z)
-            self.assertAlmostEqual(degrees(phi), azimuth, 3)
-            self.assertAlmostEqual(degrees(theta), 20.268, 3)
-
-    def test_shower_at_zeniths(self):
-        """Simple shower from specific zenith angles."""
-
-        x = (0., -5., 5.)
-        y = (sqrt(100 - 25), 0., 0.)
-        z = (0., 0., 0.)
-
-        # combinations of times and zeniths
-        combinations = (((2.5, 0., 0.), 4.968),
-                        ((5., 0., 0.), 9.974),
-                        ((7.5, 0., 0.), 15.059),
-                        ((10., 0., 0.), 20.268),
-                        ((12.5, 0., 0.), 25.659),
-                        ((15., 0., 0.), 31.306),
-                        ((17.5, 0., 0.), 37.317),
-                        ((20., 0., 0.), 43.854),
-                        ((22.5, 0., 0.), 51.208),
-                        ((25., 0., 0.), 60.000),
-                        ((27.5, 0., 0.), 72.294))
-
-        for t, zenith in combinations:
-            theta, phi = self.call_reconstruct(t, x, y, z)
-            self.assertAlmostEqual(degrees(phi), -90.00, 3)
-            self.assertAlmostEqual(degrees(theta), zenith, 3)
-
-        t = (0., 0., 0.)
-        theta, phi = self.call_reconstruct(t, x, y, z)
-        self.assertTrue(-pi <= phi <= pi)
-        self.assertAlmostEqual(degrees(theta), 0.000, 3)
 
         t = (35., 0., 0.)
         theta, phi = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(theta))
+
+    def test_showers_at_various_angles(self):
+        """Simple shower from specific zenith angles."""
+
+        c = .3
+
+        x = (0., -5., 5.)
+        y = (sqrt(100 - 25), 0., 0.)
+        z = (0., 0., 0.)
+
+        # triangle height
+        h = sqrt(100 - 25)
+
+        times = (2.5, 5., 7.5, 10., 12.5, 15., 17.5, 20., 22.5, 25., 27.5)
+
+        for time in times:
+            for i in range(3):
+                zenith = arcsin((time * c) / h)
+
+                t = [0., 0., 0.]
+                azimuths = [-pi / 2, pi / 6, pi * 5 / 6]
+                t[i] = time
+                theta, phi = self.call_reconstruct(t, x, y, z)
+                self.assertAlmostEqual(phi, azimuths[i], 2)
+                self.assertAlmostEqual(theta, zenith, 3)
+
+                t = [time] * 3
+                azimuths = [pi / 2, -pi * 5 / 6, -pi / 6]
+                t[i] = 0.
+                theta, phi = self.call_reconstruct(t, x, y, z)
+                self.assertAlmostEqual(phi, azimuths[i], 2)
+                self.assertAlmostEqual(theta, zenith, 3)
 
 
 class DirectAlgorithmTest(unittest.TestCase, BaseAlgorithm):
