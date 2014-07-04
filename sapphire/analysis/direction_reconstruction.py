@@ -4,7 +4,7 @@ import itertools
 import progressbar
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, floor, where, deg2rad, pi, inf)
+                   sqrt, floor, where, deg2rad, pi, inf, around)
 from scipy.optimize import minimize
 
 
@@ -77,7 +77,10 @@ class DirectAlgorithm(object):
         e1 = sqrt(cls.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
         e2 = sqrt(cls.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
 
-        theta = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
+        if around(theta1, 10) == around(theta2, 10):
+            theta = theta1
+        else:
+            theta = (1 / e1 * theta1 + 1 / e2 * theta2) / (1 / e1 + 1 / e2)
 
         # We limit theta to positive values.  If theta is negative, we
         # make it positive, but need to rotate phi by 180 degrees.
