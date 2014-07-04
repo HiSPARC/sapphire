@@ -219,7 +219,7 @@ class Station(object):
         x0, y0, z0 = self.detectors[d0].get_coordinates()
         x1, y1, z1 = self.detectors[d1].get_coordinates()
 
-        r = sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
+        r = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
         phi = atan2((y1 - y0), (x1 - x0))
         dz = z1 - z0
 
@@ -373,7 +373,7 @@ class BaseCluster(object):
         x0, y0, z0, alpha0 = self.stations[s0].get_coordinates()
         x1, y1, z1, alpha1 = self.stations[s1].get_coordinates()
 
-        r = sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
+        r = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
         phi = atan2((y1 - y0), (x1 - x0))
         z = z1 - z0
 
