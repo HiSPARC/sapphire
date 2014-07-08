@@ -378,7 +378,10 @@ class ProcessEvents(object):
         """
         blobs = self._get_blobs()
 
-        trace = zlib.decompress(blobs[idx]).split(',')
+        try:
+            trace = zlib.decompress(blobs[idx]).split(',')
+        except zlib.error:
+            trace = zlib.decompress(blobs[idx][1:-1]).split(',')
         if trace[-1] == '':
             del trace[-1]
         trace = (int(x) for x in trace)
