@@ -74,8 +74,8 @@ if __name__ == '__main__':
     for id in [0, 1, 2, 3]:
         layout.annotate('%d' % id, (x[id], y[id]), xytext=(3, 3),
                         textcoords='offset points')
-    layout.set_ylabel('easting (m)')
-    layout.set_xlabel('northing (m)')
+    layout.set_ylabel('northing (m)')
+    layout.set_xlabel('easting (m)')
 
     colors = ['black', 'red', 'blue', 'green']
 
