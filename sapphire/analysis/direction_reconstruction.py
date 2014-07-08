@@ -705,6 +705,43 @@ def logic_checks(t, x, y, z):
         if dt_max < dt:
             return False
 
+    # Check if all the positions are (almost) on a single line
+    memolssin = 0
+    for txyz0, txyz1, txyz2 in itertools.combinations(txyz, 3):
+        dx1 = txyz0[1] - txyz1[1]
+        dy1 = txyz0[2] - txyz1[2]
+        dz1 = txyz0[3] - txyz1[3]
+        dx2 = txyz0[1] - txyz2[1]
+        dy2 = txyz0[2] - txyz2[2]
+        dz2 = txyz0[3] - txyz2[3]
+        dx3 = dx2 - dx1
+        dy3 = dy2 - dy1
+        dz3 = dz2 - dz1
+        lenvec01 = sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1)
+        lenvec02 = sqrt(dx2 * dx2 + dy2 * dy2 + dz2 * dz2)
+        lenvec12 = sqrt(dx3 * dx3 + dy3 * dy3 + dz3 * dz3)
+
+        # area triangle is |cross product|
+        area = abs(dx1 * dy2 - dx2 * dy1 + dy1 * dz2 - dy2 * dz1 +
+                   dz1 * dx2 - dz2 * dx1)
+
+        # sine of angle is area divided by two sides
+        sin1 = area / lenvec01 / lenvec02
+        sin2 = area / lenvec01 / lenvec12
+        sin3 = area / lenvec02 / lenvec12
+
+        # smallest sine
+        ssin = min(sin1, sin2, sin3)
+
+        # remember largest of smallest sines
+        memolssin = max(memolssin, ssin)
+
+    # discard reconstruction if the largest of the smallest angles of each
+    # is smaller than 0.1 rad  (5.73 degrees)
+
+    if memolssin < 0.1:
+        return False
+
     return True
 
 
