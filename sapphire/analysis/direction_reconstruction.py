@@ -643,6 +643,18 @@ class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
 
         return self.reconstruct_common(t, x, y, z)
 
+    def reconstruct_coincidences(self, coincidences):
+        """Reconstruct all coincidences
+
+        :param coincidences: a list of coincidences, each consisting of
+                             three (station_number, event) tuples
+
+        """
+        angles = [self.reconstruct_coincidence(coincidence)
+                  for event in pbar(coincidence)]
+        theta, phi = zip(*angles)
+        return theta, phi
+
 
 class FitClusterReconstruction(FitAlgorithm, DirectClusterReconstruction):
 
