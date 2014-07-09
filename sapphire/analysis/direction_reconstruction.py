@@ -613,11 +613,13 @@ class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
     def __init__(self, cluster):
         self.cluster = cluster
 
-    def reconstruct_coincidence(self, coincidence):
+    def reconstruct_coincidence(self, coincidence, station_numbers=None):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
                             three (station_number, event) tuples
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
 
         """
         # Subtract base timestamp to prevent loss of precision
@@ -625,6 +627,9 @@ class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
         t, x, y, z = ([], [], [], [])
 
         for station_number, event in coincidence:
+            if not station_numbers is None:
+                if station_number not in station_numbers:
+                    continue
             station = self.cluster.get_station(station_number)
             sx, sy, sz = station.calc_center_of_mass_coordinates()
             x.append(sx)
