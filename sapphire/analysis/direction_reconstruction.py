@@ -672,12 +672,9 @@ class ReconstructAllCoincidences(object):
 
     """Reconstruct coincidences with three or more events"""
 
-    def __init__(self, cluster, algorithm=None):
-        if algorithm is None:
-            self.direct = DirectClusterReconstruction(cluster)
-            self.fit = FitClusterReconstruction(cluster)
-        else:
-            self.algorithm = algorithm
+    def __init__(self, cluster):
+        self.direct = DirectClusterReconstruction(cluster)
+        self.fit = FitClusterReconstruction(cluster)
 
     def reconstruct_coincidence(self, coincidence):
         if len(coincidence) == 3:
