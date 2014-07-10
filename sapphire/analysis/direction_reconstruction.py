@@ -751,7 +751,7 @@ def logic_checks(t, x, y, z):
         memolssin = max(memolssin, ssin)
 
     # discard reconstruction if the largest of the smallest angles of each
-    # is smaller than 0.1 rad  (5.73 degrees)
+    # triangle is smaller than 0.1 rad  (5.73 degrees)
 
     if memolssin < 0.1:
         return False
