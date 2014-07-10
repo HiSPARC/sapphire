@@ -2,7 +2,6 @@ import warnings
 import itertools
 
 import progressbar
-
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, floor, where, deg2rad, pi, inf, around)
 from scipy.optimize import minimize
@@ -666,26 +665,6 @@ class FitClusterReconstruction(FitAlgorithm, DirectClusterReconstruction):
     """
 
     pass
-
-
-class ReconstructAllCoincidences(object):
-
-    """Reconstruct coincidences with three or more events"""
-
-    def __init__(self, cluster):
-        self.direct = DirectClusterReconstruction(cluster)
-        self.fit = FitClusterReconstruction(cluster)
-
-    def reconstruct_coincidence(self, coincidence):
-        if len(coincidence) == 3:
-            return self.direct.reconstruct_coincidence(coincidence)
-        elif len(coincidence) >= 3:
-            return self.fit.reconstruct_coincidence(coincidence)
-
-    def reconstruct_coincidences(self, coincidences):
-        angles = [self.reconstruct_coincidence(c) for c in coincidences]
-        theta, phi = zip(*angles)
-        return theta, phi
 
 
 def logic_checks(t, x, y, z):
