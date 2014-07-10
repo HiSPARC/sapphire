@@ -213,10 +213,10 @@ class ReconstructedEvent(ReconstructedCoincidence):
 
     """
 
-    d0 = tables.BoolCol(pos=23)
-    d1 = tables.BoolCol(pos=24)
-    d2 = tables.BoolCol(pos=25)
-    d3 = tables.BoolCol(pos=26)
+    d0 = tables.BoolCol(pos=22)
+    d1 = tables.BoolCol(pos=23)
+    d2 = tables.BoolCol(pos=24)
+    d3 = tables.BoolCol(pos=25)
 
 
 class KascadeEvent(tables.IsDescription):

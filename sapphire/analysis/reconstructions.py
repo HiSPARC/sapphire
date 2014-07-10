@@ -58,7 +58,7 @@ class ReconstructESDEvents(object):
     def reconstruct_directions(self):
         """Reconstruct all events
 
-        Reconstruct each events in the events tables.
+        Reconstruct each event in the events tables.
 
         """
         events = pbar(self.events) if self.progress else self.events
@@ -95,6 +95,7 @@ class ReconstructESDEvents(object):
                                    self.station_group)
         self.reconstructions = self.data.create_table(
             self.station_group, 'reconstructions', ReconstructedEvent)
+        self.reconstructions._v_attrs.station = self.station
 
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
