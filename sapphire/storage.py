@@ -169,41 +169,9 @@ class Coincidence(tables.IsDescription):
     energy = tables.Float32Col(pos=10)
 
 
-class ReconstructedEvent(tables.IsDescription):
-
-    """Store information about reconstructed events"""
-
-    id = tables.UInt32Col(pos=1)
-    station_number = tables.UInt32Col(pos=2)
-    ext_timestamp = tables.UInt32Col(pos=3)
-    min_n134 = tables.Float32Col(pos=4)
-
-    x = tables.Float32Col(pos=5)
-    y = tables.Float32Col(pos=6)
-    zenith = tables.Float32Col(pos=7)
-    azimuth = tables.Float32Col(pos=8)
-    size = tables.Float32Col(pos=9)
-    energy = tables.Float32Col(pos=10)
-    error_x = tables.Float32Col(pos=11)
-    error_y = tables.Float32Col(pos=12)
-    error_zenith = tables.Float32Col(pos=13)
-    error_azimuth = tables.Float32Col(pos=14)
-    error_size = tables.Float32Col(pos=15)
-    error_energy = tables.Float32Col(pos=16)
-
-    reference_x = tables.Float32Col(pos=17)
-    reference_y = tables.Float32Col(pos=18)
-    reference_zenith = tables.Float32Col(pos=19)
-    reference_azimuth = tables.Float32Col(pos=20)
-    reference_size = tables.Float32Col(pos=21)
-    reference_energy = tables.Float32Col(pos=22)
-
-
 class ReconstructedCoincidence(tables.IsDescription):
 
     """Store information about reconstructed coincidences"""
-
-    # r, phi is core position
 
     id = tables.UInt32Col(pos=1)
     ext_timestamp = tables.UInt32Col(pos=2)
@@ -228,6 +196,27 @@ class ReconstructedCoincidence(tables.IsDescription):
     reference_azimuth = tables.Float32Col(pos=19)
     reference_size = tables.Float32Col(pos=20)
     reference_energy = tables.Float32Col(pos=21)
+
+
+class ReconstructedEvent(ReconstructedCoincidence):
+
+    """Store information about reconstructed events
+
+    .. attribute:: id
+
+        Index referring to the id of the event that was reconstructed.
+
+    .. attribute:: d0,d1,d2,d3
+
+        Booleans indicating which detectors participated in the
+        reconstruction.
+
+    """
+
+    d0 = tables.BoolCol(pos=23)
+    d1 = tables.BoolCol(pos=24)
+    d2 = tables.BoolCol(pos=25)
+    d3 = tables.BoolCol(pos=26)
 
 
 class KascadeEvent(tables.IsDescription):
