@@ -36,12 +36,30 @@ class CoincidenceQuery(object):
 
     """
 
-    def __init__(self, data_path, coincidence_group='/coincidences'):
-        self.data = tables.open_file(data_path, 'r')
+    def __init__(self, data, coincidence_group='/coincidences'):
+        """Setup variables to point to the tables
+
+        :param data: either a PyTables file or path to a HDF5 file
+        :param coincidence_group: path to the coincidences group
+
+        """
+        if not isinstance(data, tables.File):
+            self.data = tables.open_file(data, 'r')
+        else:
+            self.data = data
         self.coincidences = self.data.get_node(coincidence_group,
                                                'coincidences')
         self.s_index = self.data.get_node(coincidence_group, 's_index')
         self.c_index = self.data.get_node(coincidence_group, 'c_index')
+
+    def finish(self):
+        """Clean-up after using
+
+        Do not use if you opened the file yourself and still intent to
+        use it.
+
+        """
+        self.data.close()
 
     def all_coincidences(self):
         """Get all coincidences
