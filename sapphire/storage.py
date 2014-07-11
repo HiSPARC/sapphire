@@ -174,7 +174,7 @@ class ReconstructedCoincidence(tables.IsDescription):
     """Store information about reconstructed coincidences"""
 
     id = tables.UInt32Col(pos=1)
-    ext_timestamp = tables.UInt32Col(pos=2)
+    ext_timestamp = tables.UInt64Col(pos=2)
     min_n = tables.Float32Col(pos=3)
 
     x = tables.Float32Col(pos=4)
