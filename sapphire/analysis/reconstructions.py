@@ -250,12 +250,22 @@ class ReconstructESDCoincidences(object):
         """Store single reconstruction"""
 
         row = self.reconstructions.row
+
         row['id'] = coincidence['id']
         row['ext_timestamp'] = coincidence['ext_timestamp']
         row['zenith'] = theta
         row['azimuth'] = phi
+
+        row['reference_x'] = coincidence['x']
+        row['reference_y'] = coincidence['y']
+        row['reference_zenith'] = coincidence['zenith']
+        row['reference_azimuth'] = coincidence['azimuth']
+        row['reference_size'] = coincidence['size']
+        row['reference_energy'] = coincidence['energy']
+
         for number in station_numbers:
             row['s%d' % number] = True
+
         row.append()
 
 
