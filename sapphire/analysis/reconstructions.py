@@ -120,6 +120,7 @@ class ReconstructESDEvents(object):
         row = self.reconstructions.row
         row['id'] = event['event_id']
         row['ext_timestamp'] = event['ext_timestamp']
+        row['min_n'] = min([event['n%d' % (id + 1)] for id in detector_ids])
         row['zenith'] = theta
         row['azimuth'] = phi
         for id in detector_ids:
