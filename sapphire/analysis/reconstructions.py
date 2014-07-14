@@ -8,8 +8,8 @@ from ..storage import ReconstructedEvent, ReconstructedCoincidence
 from ..clusters import HiSPARCStations, ScienceParkCluster
 from .direction_reconstruction import (DirectEventReconstruction,
                                        FitEventReconstruction,
-                                       DirectClusterReconstruction,
-                                       FitClusterReconstruction)
+                                       DirectCoincidenceReconstruction,
+                                       FitCoincidenceReconstruction)
 from .coincidence_queries import CoincidenceQuery
 
 
@@ -142,7 +142,7 @@ class ReconstructESDCoincidences(object):
         from sapphire.analysis.reconstructions import ReconstructESDCoincidences
 
         data = tables.open_file('2014/1/2014_1_2.h5', 'a')
-        dirrec = ReconstructESDCoincidences(data)
+        dirrec = ReconstructESDCoincidences(data, overwrite=True)
         dirrec.reconstruct_and_store()
 
     """
@@ -168,8 +168,8 @@ class ReconstructESDCoincidences(object):
                      self.coincidences_group._f_getattr('cluster').stations]
         self.cluster = HiSPARCStations(s_numbers)
 
-        self.direct = DirectClusterReconstruction(self.cluster)
-        self.fit = FitClusterReconstruction(self.cluster)
+        self.direct = DirectCoincidenceReconstruction(self.cluster)
+        self.fit = FitCoincidenceReconstruction(self.cluster)
 
     def reconstruct_and_store(self):
         """Shorthand function to reconstruct coincidences and store results"""

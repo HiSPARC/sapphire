@@ -597,7 +597,7 @@ class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
         return theta, phi
 
 
-class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
+class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
 
     """Reconstruct coincidences with three events analytically
 
@@ -655,11 +655,12 @@ class DirectClusterReconstruction(DirectAlgorithmCartesian3D):
         return theta, phi
 
 
-class FitClusterReconstruction(FitAlgorithm, DirectClusterReconstruction):
+class FitCoincidenceReconstruction(FitAlgorithm,
+                                   DirectCoincidenceReconstruction):
 
     """Reconstruct coincidences with more than three events
 
-    Same as DirectClusterReconstruction but uses the FitAlgorithm.
+    Same as DirectCoincidenceReconstruction but uses the FitAlgorithm.
     So coincidences with more than three events are allowed.
 
     """
@@ -673,9 +674,11 @@ def logic_checks(t, x, y, z):
     Criteria:
     - No two detectors are at the same position.
     - Time difference between two detections should be less than distance / c.
+    - All detectors are on a line is bad.
 
     To add:
-    - All detectors are on a line is bad.
+    - Time difference can still be to large in cases where a different
+      distance becomes relevant.
 
     :param t: arrival times in the detectors in ns.
     :param x, y, z: positions of the detectors in m.
