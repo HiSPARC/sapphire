@@ -128,7 +128,7 @@ class ReconstructESDEvents(object):
         row['zenith'] = theta
         row['azimuth'] = phi
         for id in detector_ids:
-            row['d%d' % id] = True
+            row['d%d' % (id + 1)] = True
         row.append()
 
 

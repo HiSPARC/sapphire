@@ -206,17 +206,17 @@ class ReconstructedEvent(ReconstructedCoincidence):
 
         Index referring to the id of the event that was reconstructed.
 
-    .. attribute:: d0,d1,d2,d3
+    .. attribute:: d1,d2,d3,d4
 
         Booleans indicating which detectors participated in the
         reconstruction.
 
     """
 
-    d0 = tables.BoolCol(pos=22)
-    d1 = tables.BoolCol(pos=23)
-    d2 = tables.BoolCol(pos=24)
-    d3 = tables.BoolCol(pos=25)
+    d1 = tables.BoolCol(pos=22)
+    d2 = tables.BoolCol(pos=23)
+    d3 = tables.BoolCol(pos=24)
+    d4 = tables.BoolCol(pos=25)
 
 
 class KascadeEvent(tables.IsDescription):
