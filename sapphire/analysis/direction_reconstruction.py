@@ -511,7 +511,8 @@ class DirectEventReconstruction(DirectAlgorithmCartesian3D):
         detectors = [d.get_coordinates() for d in self.station.detectors]
         self.x, self.y, self.z = zip(*detectors)
 
-    def reconstruct_event(self, event, detector_ids=[0, 2, 3]):
+    def reconstruct_event(self, event, detector_ids=[0, 2, 3],
+                          offsets=[0., 0., 0., 0.]):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -520,6 +521,7 @@ class DirectEventReconstruction(DirectAlgorithmCartesian3D):
         :param detector_ids: list of the three detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
+        :param offsets: time offsets for each detector.
 
         """
         t = [event['t%d' % (id + 1)] for id in detector_ids]
@@ -527,21 +529,24 @@ class DirectEventReconstruction(DirectAlgorithmCartesian3D):
         y = [self.y[id] for id in detector_ids]
         z = [self.z[id] for id in detector_ids]
         if len([i for i in t if i not in [-1, -999]]) == len(detector_ids):
+            t = [t[i] - offsets[id] for i, id in enumerate(detector_ids)]
             theta, phi = self.reconstruct_common(t, x, y, z)
         else:
             theta = nan
             phi = nan
         return theta, phi
 
-    def reconstruct_events(self, events, detector_ids=[0, 2, 3]):
+    def reconstruct_events(self, events, detector_ids=[0, 2, 3],
+                           offsets=[0., 0., 0., 0.]):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
+        :param offsets: time offsets for each detector.
 
         """
-        angles = [self.reconstruct_event(event, detector_ids)
+        angles = [self.reconstruct_event(event, detector_ids, offsets)
                   for event in pbar(events)]
         theta, phi = zip(*angles)
         return theta, phi
@@ -559,7 +564,7 @@ class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
 
     """
 
-    def reconstruct_event(self, event):
+    def reconstruct_event(self, event, offsets=[0., 0., 0., 0.]):
         """Reconstruct a single event
 
         Each detector with a valid arrival time will be used for the
@@ -568,6 +573,7 @@ class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
         :param event: an event (e.g. from an events table), or any
             dictionary-like object containing the keys necessary for
             reconstructing the direction of a shower (e.g. arrival times).
+        :param offsets: time offsets for each detector.
 
         """
         detector_ids = range(4)
@@ -577,7 +583,7 @@ class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
         z = []
         for id in detector_ids:
             if event['t%d' % (id + 1)] not in [-1, -999]:
-                t.append(event['t%d' % (id + 1)])
+                t.append(event['t%d' % (id + 1)] - offsets[id])
                 x.append(self.x[id])
                 y.append(self.y[id])
                 z.append(self.z[id])
@@ -585,14 +591,16 @@ class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
         theta, phi = self.reconstruct_common(t, x, y, z)
         return theta, phi
 
-    def reconstruct_events(self, events):
+    def reconstruct_events(self, events, offsets=[0., 0., 0., 0.]):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
                        file.
+        :param offsets: time offsets for each detector.
 
         """
-        angles = [self.reconstruct_event(event) for event in pbar(events)]
+        angles = [self.reconstruct_event(event, offsets)
+                  for event in pbar(events)]
         theta, phi = zip(*angles)
         return theta, phi
 
@@ -612,21 +620,27 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
     def __init__(self, cluster):
         self.cluster = cluster
 
-    def reconstruct_coincidence(self, coincidence, station_numbers=None):
+    def reconstruct_coincidence(self, coincidence, station_numbers=None,
+                                offsets={}):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
                             three (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
+        :param offsets: dictionary with detector offsets for each station.
+                        These detector offsets should be relative to one
+                        detector from a specific station.
 
         """
+        no_offset = [0., 0., 0., 0.]
+
         # Subtract base timestamp to prevent loss of precision
         ts0 = long(coincidence[0][1]['timestamp'] * 1e9)
         t, x, y, z = ([], [], [], [])
 
         for station_number, event in coincidence:
-            if not station_numbers is None:
+            if station_numbers is not None:
                 if station_number not in station_numbers:
                     continue
             station = self.cluster.get_station(station_number)
@@ -634,22 +648,26 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
             x.append(sx)
             y.append(sy)
             z.append(sz)
+            t_off = offsets.get(station_number, no_offset)
             # Get first particle detection in event
-            t_first = min([event['t%d' % i] for i in [1, 2, 3, 4]
-                           if event['t%d' % i] not in [-1, -999]])
+            t_first = min([event['t%d' % (i + 1)] - t_off[i] for i in range(4)
+                           if event['t%d' % (i + 1)] not in [-1, -999]])
             t.append((event['ext_timestamp'] - ts0) - event['t_trigger'] +
                      t_first)
 
         return self.reconstruct_common(t, x, y, z)
 
-    def reconstruct_coincidences(self, coincidences):
+    def reconstruct_coincidences(self, coincidences, offsets={}):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidences, each consisting of
                              three (station_number, event) tuples
+        :param offsets: dictionary with detector offsets for each station.
+                        These detector offsets should be relative to one
+                        detector from a specific station.
 
         """
-        angles = [self.reconstruct_coincidence(coincidence)
+        angles = [self.reconstruct_coincidence(coincidence, offsets)
                   for event in pbar(coincidence)]
         theta, phi = zip(*angles)
         return theta, phi

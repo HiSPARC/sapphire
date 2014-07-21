@@ -1,7 +1,9 @@
 import itertools
 
 import progressbar
-from numpy import nan, isnan
+from numpy import nan, isnan, arange, histogram
+from scipy.optimize import curve_fit
+from scipy.stats import norm
 import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
@@ -22,9 +24,9 @@ class ReconstructESDEvents(object):
         import tables
         from sapphire.analysis.reconstructions import ReconstructESDEvents
 
-        data = tables.open_file('2014/1/2014_1_2.h5', 'a')
+        data = tables.open_file('2014_1_1.h5', 'a')
         station_path = '/hisparc/cluster_amsterdam/station_506'
-        dirrec = ReconstructESDEvents(data, station_path, 506)
+        dirrec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
         dirrec.reconstruct_and_store()
 
     """
@@ -45,6 +47,7 @@ class ReconstructESDEvents(object):
         self.events = self.station_group.events
         self.overwrite = overwrite
         self.progress = progress
+        self.offsets = [0., 0., 0., 0.]
 
         self.station = (HiSPARCStations([station_number])
                         .get_station(station_number))
@@ -56,6 +59,8 @@ class ReconstructESDEvents(object):
         """Shorthand function to reconstruct event and store the results"""
 
         self.prepare_output()
+        self.determine_detector_timing_offsets()
+        self.store_offsets()
         self.reconstruct_directions()
         self.store_reconstructions()
 
@@ -79,9 +84,10 @@ class ReconstructESDEvents(object):
         detector_ids = [id for id in range(4)
                         if event['t%d' % (id + 1)] not in [-1, -999]]
         if len(detector_ids) == 3:
-            theta, phi = self.direct.reconstruct_event(event, detector_ids)
+            theta, phi = self.direct.reconstruct_event(event, detector_ids,
+                                                       self.offsets)
         elif len(detector_ids) == 4:
-            theta, phi = self.fit.reconstruct_event(event)
+            theta, phi = self.fit.reconstruct_event(event, self.offsets)
         else:
             theta, phi = (nan, nan)
         return theta, phi, detector_ids
@@ -100,6 +106,46 @@ class ReconstructESDEvents(object):
         self.reconstructions = self.data.create_table(
             self.station_group, 'reconstructions', ReconstructedEvent)
         self.reconstructions._v_attrs.station = self.station
+
+    def determine_detector_timing_offsets(self):
+        """Determine the offsets between the station detectors.
+
+        ADL: Currently assumes detector 1 is a good reference.
+        But this is not always the best choice. Perhaps it should be
+        determined using more data (more than one day) to be more
+        accurate. Also assumes the detectors are at the same altitude.
+
+        """
+        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
+        bins = arange(-100 + 1.25, 100, 2.5)
+
+        t2 = self.events.col('t2')
+
+        offsets = []
+        for timings in 't1', 't3', 't4':
+            timings = self.events.col(timings)
+            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
+            y, bins = histogram(dt, bins=bins)
+            x = (bins[:-1] + bins[1:]) / 2
+            popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
+            offsets.append(popt[1])
+
+        self.offsets = offsets[0:1] + [0.] + offsets[1:]
+
+    def store_offsets(self):
+        """Store the determined offset in a table."""
+
+        if 'detector_offsets' in self.station_group:
+            if self.overwrite:
+                self.data.remove_node(self.station_group.detector_offsets,
+                                      recursive=True)
+            else:
+                raise RuntimeError("Detector offset table already exists for "
+                                   "%s, and overwrite is False" %
+                                   self.station_group)
+        self.detector_offsets = self.data.create_array(
+            self.station_group, 'detector_offsets', self.offsets)
+        self.detector_offsets.flush()
 
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
