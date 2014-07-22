@@ -654,7 +654,8 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
                            if event['t%d' % (i + 1)] not in [-1, -999]])
             t.append((event['ext_timestamp'] - ts0) - event['t_trigger'] +
                      t_first)
-
+        if len(t) < 3:
+            return (nan, nan)
         return self.reconstruct_common(t, x, y, z)
 
     def reconstruct_coincidences(self, coincidences, offsets={}):
