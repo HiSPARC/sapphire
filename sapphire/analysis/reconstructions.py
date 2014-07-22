@@ -127,8 +127,11 @@ class ReconstructESDEvents(object):
             dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
             y, bins = histogram(dt, bins=bins)
             x = (bins[:-1] + bins[1:]) / 2
-            popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-            offsets.append(popt[1])
+            try:
+                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
+                offsets.append(popt[1])
+            except RuntimeError:
+                offsets.append(0.)
 
         self.offsets = offsets[0:1] + [0.] + offsets[1:]
 
@@ -187,7 +190,7 @@ class ReconstructESDCoincidences(object):
         import tables
         from sapphire.analysis.reconstructions import ReconstructESDCoincidences
 
-        data = tables.open_file('2014/1/2014_1_2.h5', 'a')
+        data = tables.open_file('2014_1_1.h5', 'a')
         dirrec = ReconstructESDCoincidences(data, overwrite=True)
         dirrec.reconstruct_and_store()
 
@@ -208,6 +211,8 @@ class ReconstructESDCoincidences(object):
         self.coincidences = self.coincidences_group.coincidences
         self.overwrite = overwrite
         self.progress = progress
+        self.offsets = {}
+
         self.cq = CoincidenceQuery(data, self.coincidences_group)
         # Get latest position data
         s_numbers = [station.number for station in
@@ -221,6 +226,7 @@ class ReconstructESDCoincidences(object):
         """Shorthand function to reconstruct coincidences and store results"""
 
         self.prepare_output()
+        self.determine_station_timing_offsets()
         self.reconstruct_directions()
         self.store_reconstructions()
 
@@ -247,9 +253,11 @@ class ReconstructESDCoincidences(object):
         """
         station_numbers = [c[0] for c in coincidence]
         if len(coincidence) == 3:
-            theta, phi = self.direct.reconstruct_coincidence(coincidence)
+            theta, phi = self.direct.reconstruct_coincidence(coincidence,
+                                                             self.offsets)
         elif len(coincidence) >= 4:
-            theta, phi = self.fit.reconstruct_coincidence(coincidence)
+            theta, phi = self.fit.reconstruct_coincidence(coincidence,
+                                                          self.offsets)
         else:
             theta, phi = (nan, nan)
         return theta, phi, station_numbers
@@ -273,6 +281,42 @@ class ReconstructESDCoincidences(object):
         self.reconstructions = self.data.create_table(
             self.coincidences_group, 'reconstructions', description)
         self.reconstructions._v_attrs.cluster = self.cluster
+
+    def determine_station_timing_offsets(self):
+        """Determine the offsets between the stations."""
+
+        for s_path in self.coincidences_group.s_index:
+            station_number = int(s_path.split('station_')[-1])
+            station_group = self.data.get_node(s_path)
+            offsets = self.determine_detector_timing_offsets(station_group)
+            self.offsets[station_number] = offsets
+
+    def determine_detector_timing_offsets(self, station_group):
+        """Determine the offsets between the station detectors.
+
+        ADL: Currently assumes detector 1 is a good reference.
+        But this is not always the best choice. Perhaps it should be
+        determined using more data (more than one day) to be more
+        accurate. Also assumes the detectors are at the same altitude.
+
+        """
+        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
+        bins = arange(-100 + 1.25, 100, 2.5)
+
+        t2 = station_group.events.col('t2')
+
+        offsets = []
+        for timings in 't1', 't3', 't4':
+            timings = station_group.events.col(timings)
+            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
+            y, bins = histogram(dt, bins=bins)
+            x = (bins[:-1] + bins[1:]) / 2
+            try:
+                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
+                offsets.append(popt[1])
+            except RuntimeError:
+                offsets.append(0.)
+        return offsets[0:1] + [0.] + offsets[1:]
 
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
