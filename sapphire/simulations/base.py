@@ -24,6 +24,7 @@ import warnings
 
 import tables
 import progressbar
+import random
 
 from sapphire import storage
 from sapphire.analysis.process_events import ProcessEvents
@@ -41,13 +42,16 @@ class BaseSimulation(object):
 
     """
 
-    def __init__(self, cluster, datafile, output_path='/', N=1):
+    def __init__(self, cluster, datafile, output_path='/', N=1, seed=None):
         self.cluster = cluster
         self.datafile = datafile
         self.output_path = output_path
         self.N = N
 
         self._prepare_output_tables()
+
+        if seed is not None:
+            random.seed(seed)
 
     def _prepare_output_tables(self):
         """Prepare output tables in datafile.
