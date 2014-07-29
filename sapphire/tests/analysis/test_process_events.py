@@ -21,7 +21,7 @@ class ProcessEventsTests(unittest.TestCase):
         self.proc = process_events.ProcessEvents(self.data, DATA_GROUP)
 
         # make progressbar(list) do nothing (i.e., return list)
-        self.progressbar_patcher = patch('progressbar.ProgressBar')
+        self.progressbar_patcher = patch('sapphire.utils.ProgressBar')
         self.progressbar_mock = self.progressbar_patcher.start()
         self.progressbar_mock.return_value.side_effect = lambda x: x
 

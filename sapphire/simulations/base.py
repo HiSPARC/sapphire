@@ -23,11 +23,11 @@ Example usage::
 import warnings
 
 import tables
-import progressbar
 import random
 
-from sapphire import storage
-from sapphire.analysis.process_events import ProcessEvents
+from .. import storage
+from ..analysis.process_events import ProcessEvents
+from ..utils import pbar
 
 
 class BaseSimulation(object):
@@ -81,9 +81,6 @@ class BaseSimulation(object):
     def generate_shower_parameters(self):
         """Generate shower parameters like core position, energy, etc."""
 
-        pbar = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
-                                                progressbar.Bar(),
-                                                progressbar.ETA()])
         shower_parameters = {'core_pos': (None, None),
                              'zenith': None,
                              'azimuth': None,
@@ -176,6 +173,7 @@ class BaseSimulation(object):
                                      making up a station.
         :returns: dictionary containing the familiar station observables
                   like n1, n2, n3, etc.
+
         """
         station_observables = {'pulseheights': 4 * [-1.],
                                'integrals': 4 * [-1.]}

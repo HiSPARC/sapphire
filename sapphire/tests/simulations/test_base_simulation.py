@@ -10,7 +10,7 @@ from sapphire import storage
 
 
 class BaseSimulationTest(unittest.TestCase):
-    
+
     @patch.object(BaseSimulation, '_prepare_output_tables')
     def setUp(self, mock_method):
         self.mock_prepare_output_tables = mock_method
@@ -59,7 +59,7 @@ class BaseSimulationTest(unittest.TestCase):
         mock_store.assert_called_with(1, sentinel.params2,
                                       sentinel.events)
 
-    @patch('progressbar.ProgressBar')
+    @patch('sapphire.utils.ProgressBar')
     def test_generate_shower_parameters(self, mock_progress):
         # disable progressbar
         mock_progress.return_value.side_effect = lambda x: x

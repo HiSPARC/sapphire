@@ -35,10 +35,10 @@ import os.path
 
 import tables
 import numpy as np
-import progressbar as pb
 
-from sapphire.analysis import process_events
-from sapphire import storage
+import .process_events
+from .. import storage
+from ..utils import pbar
 
 
 class Coincidences(object):
@@ -217,9 +217,7 @@ class Coincidences(object):
         # ProgressBar does not work for empty iterables.
         if len(self.coincidence_group._src_c_index):
             if self.progress:
-                progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                                   pb.ETA()])
-                src_c_index = progress(self.coincidence_group._src_c_index)
+                src_c_index = pbar(self.coincidence_group._src_c_index)
             else:
                 src_c_index = self.coincidence_group._src_c_index
             for coincidence in src_c_index:
@@ -513,9 +511,7 @@ class CoincidencesESD(Coincidences):
         # ProgressBar does not work for empty iterables.
         if len(self._src_c_index):
             if self.progress:
-                progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                                   pb.ETA()])
-                src_c_index = progress(self._src_c_index)
+                src_c_index = pbar(self._src_c_index)
             else:
                 src_c_index = self._src_c_index
             for coincidence in src_c_index:

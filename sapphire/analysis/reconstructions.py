@@ -1,6 +1,5 @@
 import itertools
 
-import progressbar
 from numpy import nan, isnan, arange, histogram, linspace
 from scipy.optimize import curve_fit
 from scipy.stats import norm
@@ -13,7 +12,7 @@ from .direction_reconstruction import (DirectEventReconstruction,
                                        DirectCoincidenceReconstruction,
                                        FitCoincidenceReconstruction)
 from .coincidence_queries import CoincidenceQuery
-
+from ..utils import pbar
 
 class ReconstructESDEvents(object):
 
@@ -422,11 +421,3 @@ class ReconstructESDCoincidences(object):
 
 def gauss(x, N, mu, sigma):
     return N * norm.pdf(x, mu, sigma)
-
-
-def pbar(iterator):
-    """Get a new progressbar with our default widgets"""
-
-    pb = progressbar.ProgressBar(widgets=[progressbar.ETA(), progressbar.Bar(),
-                                          progressbar.Percentage()])
-    return pb(iterator)

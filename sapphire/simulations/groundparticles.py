@@ -24,9 +24,9 @@ import random
 
 import numpy as np
 import tables
-import progressbar
 
 from .base import BaseSimulation
+from ..utils import pbar
 
 
 class GroundParticlesSimulation(BaseSimulation):
@@ -74,10 +74,6 @@ class GroundParticlesSimulation(BaseSimulation):
                               'size': event_end.n_electrons_levels,
                               'energy': event_header.energy,
                               'particle': event_header.particle}
-
-        pbar = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
-                                                progressbar.Bar(),
-                                                progressbar.ETA()])
 
         # DF: This is the fastest implementation I could come up with.  I
         # timed several permutations of numpy / math, and tried a Monte

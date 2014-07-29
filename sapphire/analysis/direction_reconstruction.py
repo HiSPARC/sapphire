@@ -1,10 +1,11 @@
 import warnings
 import itertools
 
-import progressbar
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, floor, where, deg2rad, pi, inf, around)
 from scipy.optimize import minimize
+
+from ..utils import pbar
 
 
 class DirectAlgorithm(object):
@@ -758,14 +759,6 @@ def logic_checks(t, x, y, z):
         return False
 
     return True
-
-
-def pbar(iterator):
-    """Get a new progressbar with our default widgets"""
-
-    pb = progressbar.ProgressBar(widgets=[progressbar.ETA(), progressbar.Bar(),
-                                          progressbar.Percentage()])
-    return pb(iterator)
 
 
 def warning_only_three():

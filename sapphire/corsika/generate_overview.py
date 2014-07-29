@@ -5,9 +5,8 @@ import logging
 import shutil
 import argparse
 
-import progressbar as pb
+from ..utils import pbar
 
-from sapphire import corsika
 
 LOGFILE = '/data/hisparc/corsika/logs/generate_overview.log'
 DATA_PATH = '/data/hisparc/corsika/data'
@@ -88,7 +87,6 @@ def get_simulations(simulations, overview, progress=False):
 
     simulations_table = overview.getNode('/simulations')
     if progress:
-        pbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
         simulations = pbar(simulations)
     for seeds in simulations:
         read_seeds(simulations_table, seeds)
