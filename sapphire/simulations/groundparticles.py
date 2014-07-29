@@ -25,11 +25,11 @@ import random
 import numpy as np
 import tables
 
-from .base import BaseSimulation
+from .detector import HiSPARCSimulation
 from ..utils import pbar
 
 
-class GroundParticlesSimulation(BaseSimulation):
+class GroundParticlesSimulation(HiSPARCSimulation):
 
     def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
@@ -156,24 +156,6 @@ class GroundParticlesSimulation(BaseSimulation):
 
         return observables
 
-    def simulate_signal_transport_time(self, size):
-        """ Simulate transport times of scintillation light to the PMT
-
-        Generates random transit times within a given distribution and adds it
-        to the times the particles passed the detector.
-
-        """
-        numbers = np.random.random(size)
-        dt = []
-
-        for x in numbers:
-            if  x < 0.39377:
-                dt.append(2.5507 + 2.39885 * x)
-            else:
-                dt.append(1.56764 + 4.89536 * x)
-
-        return dt
-
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
 
@@ -211,11 +193,6 @@ class GroundParticlesSimulation(BaseSimulation):
 
         return station_observables
 
-    def simulate_gps_uncertainty(self):
-        """Simulate uncertainty from GPS receiver"""
-
-        return np.random.normal(0, 4.5)
-
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
 
@@ -249,8 +226,8 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
                  (x - detector_boundary, x + detector_boundary,
                   y - detector_boundary, x + detector_boundary,
                   line1, line1, line2, line2))
-
         detected = [row['t'] for row in self.groundparticles.where(query)]
+
         if detected:
             n_detected = len(detected)
             transporttimes = self.simulate_signal_transport_time(n_detected)
@@ -338,34 +315,13 @@ class DetectorSignalSimulation(GroundParticlesSimulation):
                   y - detector_boundary, x + detector_boundary))
         detected = [[row['t'], row['p_x'], row['p_y'], row['p_z']]
                     for row in self.groundparticles.where(query)]
-
         if detected:
-            n_detected = len(detected)
-            mips = 0.
-            for i in range(n_detected):
-                # determination of lepton angle of incidence
-                px = detected[i][1]
-                py = detected[i][2]
-                pz = detected[i][3]
-                costheta = abs(pz) / np.sqrt(px * px + py * py + pz * pz)
-
-                # Simulation of convoluted distribution of electron and
-                # muon energy losses with the scintillator response
-
-                y = random.random()
-
-                if y < 0.3394:
-                    mip = (0.48 + 0.8583 * np.sqrt(y)) / costheta
-                elif y < 0.4344:
-                    mip = (0.73 + 0.7366 * y) / costheta
-                elif y < 0.9041:
-                    mip = (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta
-                else:
-                    mip = (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta
-                mips += mip
+            particle_momenta = ((p[1], p[2], p[3]) for p in detected)
+            mips = self.simulate_detector_mips(particle_momenta)
 
             # simulation of transport times
 
+            n_detected = len(detected)
             transporttimes = self.simulate_signal_transport_time(n_detected)
             for i in range(n_detected):
                 detected[i][0] += transporttimes[i]

@@ -21,11 +21,11 @@ from math import pi, sin, cos, sqrt, acos, floor
 
 import numpy as np
 
-from .base import BaseSimulation
+from .detector import HiSPARCSimulation
 from ..utils import pbar
 
 
-class FlatFrontSimulation(BaseSimulation):
+class FlatFrontSimulation(HiSPARCSimulation):
 
     def __init__(self, *args, **kwargs):
         super(FlatFrontSimulation, self).__init__(*args, **kwargs)
@@ -142,24 +142,6 @@ class FlatFrontSimulation(BaseSimulation):
         cdt = r1 * cos(phi - phi1) * sin(theta)
         return cdt / c
 
-    def simulate_signal_transport_time(self, size):
-        """ Simulate transport times of scintillation light to the PMT
-
-        Generates random transit times within a given distribution and adds it
-        to the times the particles passed the detector.
-
-        """
-        numbers = np.random.random(size)
-        dt = []
-
-        for x in numbers:
-            if  x < 0.39377:
-                dt.append(2.5507 + 2.39885 * x)
-            else:
-                dt.append(1.56764 + 4.89536 * x)
-
-        return dt
-
     def simulate_gps(self, station_observables, shower_parameters, station):
         """Simulate gps timestamp
 
@@ -189,8 +171,3 @@ class FlatFrontSimulation(BaseSimulation):
         station_observables.update(gps_timestamp)
 
         return station_observables
-
-    def simulate_gps_uncertainty(self):
-        """Simulate uncertainty from GPS receiver"""
-
-        return np.random.normal(0, 4.5)
