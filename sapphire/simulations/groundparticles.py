@@ -199,10 +199,11 @@ class GroundParticlesSimulation(BaseSimulation):
         if len(arrival_times) > 1:
             trigger_time = sorted(arrival_times)[1]
 
-            timestamp = int(shower_parameters['ext_timestamp'] / 1000000000)
-            nanoseconds = int(trigger_time + self.simulate_gps_uncertainty() +
-                              station.gps_offset)
-            ext_timestamp = shower_parameters['ext_timestamp'] + nanoseconds
+            ext_timestamp = shower_parameters['ext_timestamp']
+            ext_timestamp += int(trigger_time + station.gps_offset +
+                                self.simulate_gps_uncertainty())
+            timestamp = int(ext_timestamp / long(1e9))
+            nanoseconds = int(ext_timestamp % long(1e9))
 
             gps_timestamp = {'ext_timestamp': ext_timestamp,
                              'timestamp': timestamp, 'nanoseconds': nanoseconds}
