@@ -7,7 +7,7 @@ import progressbar
 from sapphire import utils
 
 
-class pbarTests(unittest.TestCase):
+class PbarTests(unittest.TestCase):
 
     def setUp(self):
         self.iterable = range(10)
@@ -51,6 +51,15 @@ class pbarTests(unittest.TestCase):
         pb = utils.pbar(self.iterable, show=True, fd=self.output)
         self.assertEqual(list(pb), self.iterable)
         self.assertNotEqual(self.output.getvalue(), '')
+
+
+class InBaseTests(unittest.TestCase):
+
+    def test_ceil(self):
+        self.assertEqual(utils.ceil_in_base(2.4, 2.5), 2.5)
+
+    def test_floor(self):
+        self.assertEqual(utils.floor_in_base(2.4, 2.5), 0)
 
 
 if __name__ == '__main__':

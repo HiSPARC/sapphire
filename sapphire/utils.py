@@ -3,7 +3,7 @@
 The module contains some commonly functions and classes.
 
 """
-
+import numpy as np
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
 
@@ -33,3 +33,11 @@ def pbar(iterable, length=None, show=True, **kwargs):
         return pb(iterable)
     else:
         return iterable
+
+
+def ceil_in_base(value, base):
+    return base * np.ceil(value / base)
+
+
+def floor_in_base(value, base):
+    return base * np.floor(value / base)
