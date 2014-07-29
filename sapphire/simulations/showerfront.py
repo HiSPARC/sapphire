@@ -18,12 +18,8 @@ Example usage::
 
 """
 from math import pi, sin, cos, sqrt, acos, floor
-import warnings
-import random
 
 import numpy as np
-import tables
-import progressbar
 
 from .base import BaseSimulation
 from ..utils import pbar
@@ -79,7 +75,7 @@ class FlatFrontSimulation(BaseSimulation):
 
         for i in pbar(range(self.N)):
             azimuth = np.random.uniform(-pi, pi)
-            zenith = self.inverse_zenith_probability(np.random.uniform(0, 1))
+            zenith = self.inverse_zenith_probability(np.random.random())
 
             shower_parameters = {'ext_timestamp': (long(1e9) + i) * long(1e9),
                                  'azimuth': azimuth,
@@ -121,7 +117,7 @@ class FlatFrontSimulation(BaseSimulation):
 
         """
         arrival_time = (self.get_arrival_time(detector, shower_parameters) +
-                        self.simulate_signal_transport_time(1))
+                        self.simulate_signal_transport_time(1)[0])
         observables = {'t': arrival_time}
 
         return observables
@@ -162,10 +158,7 @@ class FlatFrontSimulation(BaseSimulation):
             else:
                 dt.append(1.56764 + 4.89536 * x)
 
-        if size == 1:
-            return dt[0]
-        else:
-            return dt
+        return dt
 
     def simulate_gps(self, station_observables, shower_parameters, station):
         """Simulate gps timestamp
