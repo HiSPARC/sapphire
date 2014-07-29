@@ -1,11 +1,9 @@
 """Create test data for future acceptance testing"""
 
 import os
-import random
 import subprocess
 import tempfile
 
-import numpy
 import tables
 
 import sapphire.clusters
@@ -20,13 +18,11 @@ test_data_path = os.path.join(self_path,
 def perform_simulation(filename):
     """Perform a small simulation and store results in filename"""
 
-    random.seed(1)
-    numpy.random.seed(1)
     corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
     cluster = sapphire.clusters.SimpleCluster(size=50)
     with tables.open_file(filename, 'w') as datafile:
         sim = GroundParticlesSimulation(corsika_data_path, 100, cluster,
-                                        datafile, N=10)
+                                        datafile, N=10, seed=1)
         sim.run()
 
 

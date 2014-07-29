@@ -21,9 +21,10 @@ Example usage::
 
 """
 import warnings
-
-import tables
 import random
+
+import numpy as np
+import tables
 
 from .. import storage
 from ..analysis.process_events import ProcessEvents
@@ -52,6 +53,7 @@ class BaseSimulation(object):
 
         if seed is not None:
             random.seed(seed)
+            np.random.seed(seed)
 
     def _prepare_output_tables(self):
         """Prepare output tables in datafile.
