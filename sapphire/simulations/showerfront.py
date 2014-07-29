@@ -39,14 +39,6 @@ class FlatFrontSimulation(HiSPARCSimulation):
         # Store updated version of the cluster
         self.coincidence_group._v_attrs.cluster = self.cluster
 
-    def __del__(self):
-        self.finish()
-
-    def finish(self):
-        """Clean-up after simulation"""
-
-        self.corsikafile.close()
-
     def generate_shower_parameters(self):
         """Generate shower parameters, i.e. azimuth and zenith angles.
 
