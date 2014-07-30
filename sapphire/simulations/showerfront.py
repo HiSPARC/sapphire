@@ -31,10 +31,9 @@ class FlatFrontSimulation(HiSPARCSimulation):
         super(FlatFrontSimulation, self).__init__(*args, **kwargs)
 
         for station in self.cluster.stations:
-            station.gps_offset = np.random.normal(0, 16)
-            # The actual distribution is not yet very clear.
-            # We assume it is gaussian for convenience.
-            # Then the stddev is about 16 ns.
+            station.gps_offset = self.simulate_station_offset()
+            station.detector_offsets = self.simulate_detector_offsets(
+                len(station.detectors))
 
         # Store updated version of the cluster
         self.coincidence_group._v_attrs.cluster = self.cluster

@@ -13,6 +13,33 @@ from .base import BaseSimulation
 
 class HiSPARCSimulation(BaseSimulation):
 
+
+    def simulate_detector_offsets(self, n_detectors):
+        """Get multiple detector offsets
+
+        :param n_detectors: number of offsets to return.
+
+        """
+        return [self.simulate_detector_offset() for _ in range(n_detectors)]
+
+    def simulate_detector_offset(self):
+        """Simulate time offsets between detectors in one station
+
+        This offset should be fixed for each detector for a simulation run.
+
+        """
+        return np.random.normal(0, 2.77)
+
+    def simulate_station_offset(self):
+        """Simulate time offsets between different stations
+
+        This offset should be fixed for each detector for a simulation run.
+        The actual distribution is not yet very clear. We assume it is
+        gaussian for convenience. Then the stddev is about 16 ns.
+
+        """
+        return np.random.normal(0, 16)
+
     def simulate_gps_uncertainty(self):
         """Simulate uncertainty from GPS receiver"""
 
@@ -21,8 +48,8 @@ class HiSPARCSimulation(BaseSimulation):
     def simulate_signal_transport_time(self, n=1):
         """ Simulate transport times of scintillation light to the PMT
 
-        Generates random transit times within a given distribution and adds it
-        to the times the particles passed the detector.
+        Generates random transit times within a given distribution and
+        adds it to the times the particles passed the detector.
 
         :param n: number of times to simulate
         :returns: list of signal transport times
@@ -39,9 +66,12 @@ class HiSPARCSimulation(BaseSimulation):
         return dt
 
     def simulate_detector_mips(self, particle_momenta):
-        """Simulate the detector signal response for particles"""
-        mips = sum(self.simulate_detector_mip(p) for p in particle_momenta)
+        """Simulate the detector signal response for particles
 
+        :param particle_momenta: a list of particle momenta.
+
+        """
+        mips = sum(self.simulate_detector_mip(p) for p in particle_momenta)
         return mips
 
     def simulate_detector_mip(self, p):
