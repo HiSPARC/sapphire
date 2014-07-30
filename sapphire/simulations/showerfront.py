@@ -130,8 +130,8 @@ class FlatFrontSimulation(HiSPARCSimulation):
         r1, phi1, z1 = detector.get_cylindrical_coordinates()
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
-        r11 = r1 - z1 * tan(theta)
-        cdt = r11 * cos(phi - phi1) * sin(theta) + z / cos(theta)
+        r = r1 * cos(phi - phi1) + z1 * tan(theta)
+        cdt = r * sin(theta) - z1 / cos(theta)
         return cdt / c
 
     def simulate_gps(self, station_observables, shower_parameters, station):
