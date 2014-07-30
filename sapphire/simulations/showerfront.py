@@ -17,7 +17,7 @@ Example usage::
     sim.run()
 
 """
-from math import pi, sin, cos, sqrt, acos, floor
+from math import pi, sin, cos, tan, sqrt, acos, floor
 
 import numpy as np
 
@@ -117,20 +117,21 @@ class FlatFrontSimulation(HiSPARCSimulation):
         """Calculate arrival time
 
         Assumes a flat shower front and core position to be
-        the center of the cluster. Does not take detector
-        altitude into account.
+        the center of the cluster.
 
-        Equation from Fokkema2012 sec 4.2, eq 4.9.
+        Equation based on Fokkema2012 sec 4.2, eq 4.9.
+        With additions to account for altitude.
         (DOI: 10.3990/1.9789036534383)
 
         :returns: Shower front arrival time in ns.
 
         """
         c = 0.3
-        r1, phi1 = detector.get_polar_coordinates()
+        r1, phi1, z1 = detector.get_cylindrical_coordinates()
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
-        cdt = r1 * cos(phi - phi1) * sin(theta)
+        r11 = r1 - z1 * tan(theta)
+        cdt = r11 * cos(phi - phi1) * sin(theta) + z / cos(theta)
         return cdt / c
 
     def simulate_gps(self, station_observables, shower_parameters, station):
