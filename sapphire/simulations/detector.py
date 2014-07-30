@@ -33,7 +33,7 @@ class HiSPARCSimulation(BaseSimulation):
     def simulate_station_offset(self):
         """Simulate time offsets between different stations
 
-        This offset should be fixed for each detector for a simulation run.
+        This offset should be fixed for each station for a simulation run.
         The actual distribution is not yet very clear. We assume it is
         gaussian for convenience. Then the stddev is about 16 ns.
 
