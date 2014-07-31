@@ -4,6 +4,7 @@ The module contains some commonly functions and classes.
 
 """
 import numpy as np
+from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
 

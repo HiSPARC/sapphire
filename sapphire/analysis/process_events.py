@@ -35,7 +35,6 @@ import operator
 
 import tables
 import numpy as np
-from scipy.stats import norm
 from scipy.optimize import curve_fit
 
 from ..utils import pbar, gauss

@@ -2,7 +2,6 @@ import itertools
 
 from numpy import nan, isnan, arange, histogram, linspace
 from scipy.optimize import curve_fit
-from scipy.stats import norm
 import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
