@@ -164,3 +164,51 @@ class FlatFrontSimulation(HiSPARCSimulation):
         station_observables.update(gps_timestamp)
 
         return station_observables
+
+
+class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
+
+    def __init__(self, *args, **kwargs):
+        # Use the super of FlatFrontSimulation to avoid setting the offsets.
+        super(FlatFrontSimulation, self).__init__(*args, **kwargs)
+
+    def simulate_detector_response(self, detector, shower_parameters):
+        """Simulate detector response to a shower.
+
+        Return the arrival time of shower front passing the center of
+        the detector.
+
+        """
+        arrival_time = self.get_arrival_time(detector, shower_parameters)
+        observables = {'t': arrival_time}
+
+        return observables
+
+    def simulate_gps(self, station_observables, shower_parameters, station):
+        """Simulate gps timestamp
+
+        Ensure that all detector arrival times are positive.
+
+        """
+        n_detectors = len(station.detectors)
+        ids = range(1, n_detectors + 1)
+        arrival_times = [station_observables['t%d' % id] for id in ids]
+        ext_timestamp = shower_parameters['ext_timestamp']
+
+        first_time = floor(sorted(arrival_times)[0])
+        for id in ids:
+            station_observables['t%d' % id] -= first_time
+
+        arrival_times = [station_observables['t%d' % id] for id in ids]
+        trigger_time = sorted(arrival_times)[1]
+        station_observables['t_trigger'] = trigger_time
+
+        ext_timestamp += int(first_time + trigger_time)
+        timestamp = int(ext_timestamp / long(1e9))
+        nanoseconds = int(ext_timestamp % long(1e9))
+
+        gps_timestamp = {'ext_timestamp': ext_timestamp,
+                         'timestamp': timestamp, 'nanoseconds': nanoseconds}
+        station_observables.update(gps_timestamp)
+
+        return station_observables
