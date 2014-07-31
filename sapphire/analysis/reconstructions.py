@@ -5,13 +5,14 @@ from scipy.optimize import curve_fit
 import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
-from ..clusters import HiSPARCStations, ScienceParkCluster
+from ..clusters import HiSPARCStations, ScienceParkCluster, Station
 from .direction_reconstruction import (DirectEventReconstruction,
                                        FitEventReconstruction,
                                        DirectCoincidenceReconstruction,
                                        FitCoincidenceReconstruction)
 from .coincidence_queries import CoincidenceQuery
 from ..utils import pbar, gauss
+
 
 class ReconstructESDEvents(object):
 
@@ -40,13 +41,13 @@ class ReconstructESDEvents(object):
 
     """
 
-    def __init__(self, data, station_group, station_number,
+    def __init__(self, data, station_group, station,
                  overwrite=False, progress=True):
         """Initialize the class.
 
         :param data: the PyTables datafile.
         :param station_group: the destination group.
-        :param station_number: station identifier.
+        :param station: either a station number or a Station instance.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
 
@@ -58,8 +59,10 @@ class ReconstructESDEvents(object):
         self.progress = progress
         self.offsets = [0., 0., 0., 0.]
 
-        self.station = (HiSPARCStations([station_number])
-                        .get_station(station_number))
+        if isinstance(station, Station):
+            self.station = station
+        else:
+            self.station = HiSPARCStations([station]).get_station(station)
 
         self.direct = DirectEventReconstruction(self.station)
         self.fit = FitEventReconstruction(self.station)
