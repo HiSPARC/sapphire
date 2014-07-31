@@ -76,25 +76,32 @@ class ReconstructESDEvents(object):
         self.reconstruct_directions()
         self.store_reconstructions()
 
-    def reconstruct_directions(self):
+    def reconstruct_directions(self, detector_ids=None):
         """Reconstruct all events
 
         Reconstruct each event in the events tables.
 
+        :param detector_ids: use only these detectors for reconstructions.
+
         """
         events = pbar(self.events) if self.progress else self.events
-        angles = [self._reconstruct_direction(e) for e in events]
+        angles = [self._reconstruct_direction(e, detector_ids) for e in events]
         self.theta, self.phi, self.detector_ids = zip(*angles)
 
-    def _reconstruct_direction(self, event):
+    def _reconstruct_direction(self, event, detector_ids=None):
         """Reconstruct an event
 
         Use direct algorithm if three detectors have an arrival time,
         use fit algorithm in case of four and return (nan, nan) otherwise.
 
         """
-        detector_ids = [id for id in range(4)
-                        if event['t%d' % (id + 1)] not in [-1, -999]]
+        valid_ids = [id for id in range(4)
+                     if event['t%d' % (id + 1)] not in [-1, -999]]
+        if detector_ids is not None:
+           detector_ids = [d for d in detector_ids if d in valid_ids]
+        else:
+            detector_ids = valid_ids
+
         if len(detector_ids) == 3:
             theta, phi = self.direct.reconstruct_event(event, detector_ids,
                                                        self.offsets)
