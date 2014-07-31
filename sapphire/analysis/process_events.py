@@ -38,7 +38,7 @@ import numpy as np
 from scipy.stats import norm
 from scipy.optimize import curve_fit
 
-from ..utils import pbar
+from ..utils import pbar, gauss
 from .find_mpv import FindMostProbableValueInSpectrum
 
 
@@ -453,7 +453,6 @@ class ProcessEvents(object):
         table = self.data.get_node(self.group, timings_table)
         t2 = table.col('t2')
 
-        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
         bins = np.arange(-100 + 1.25, 100, 2.5)
 
         print "Determining offsets based on # events:",

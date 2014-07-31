@@ -36,8 +36,21 @@ def pbar(iterable, length=None, show=True, **kwargs):
 
 
 def ceil_in_base(value, base):
+    """Get nearest multiple of base above the value"""
+
     return base * np.ceil(value / base)
 
 
 def floor_in_base(value, base):
+    """Get nearest multiple of base below the value"""
+
     return base * np.floor(value / base)
+
+
+def gauss(x, N, mu, sigma):
+    """Gaussian distribution
+
+    To be used for fitting where the integral is not 1.
+
+    """
+    return N * norm.pdf(x, mu, sigma)

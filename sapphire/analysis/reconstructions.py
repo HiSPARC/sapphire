@@ -12,7 +12,7 @@ from .direction_reconstruction import (DirectEventReconstruction,
                                        DirectCoincidenceReconstruction,
                                        FitCoincidenceReconstruction)
 from .coincidence_queries import CoincidenceQuery
-from ..utils import pbar
+from ..utils import pbar, gauss
 
 class ReconstructESDEvents(object):
 
@@ -417,7 +417,3 @@ class ReconstructESDCoincidences(object):
             row['s%d' % number] = True
 
         row.append()
-
-
-def gauss(x, N, mu, sigma):
-    return N * norm.pdf(x, mu, sigma)
