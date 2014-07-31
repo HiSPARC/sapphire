@@ -38,6 +38,11 @@ class FlatFrontSimulation(HiSPARCSimulation):
         # Store updated version of the cluster
         self.coincidence_group._v_attrs.cluster = self.cluster
 
+        # Since the cluster is not rotated detector positions can be stored.
+        for station in self.cluster.stations:
+            for detector in station.detectors:
+                detector.cylindrical_coordinates = detector.get_cylindrical_coordinates()
+
     def generate_shower_parameters(self):
         """Generate shower parameters, i.e. azimuth and zenith angles.
 
@@ -91,7 +96,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         c = 0.3
-        r1, phi1, z1 = detector.get_cylindrical_coordinates()
+        r1, phi1, z1 = detector.cylindrical_coordinates
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
         r = r1 * cos(phi - phi1) + z1 * tan(theta)
@@ -134,6 +139,11 @@ class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
     def __init__(self, *args, **kwargs):
         # Use the super of FlatFrontSimulation to avoid setting the offsets.
         super(FlatFrontSimulation, self).__init__(*args, **kwargs)
+
+        # Since the cluster is not rotated detector positions can be stored.
+        for station in self.cluster.stations:
+            for detector in station.detectors:
+                detector.cylindrical_coordinates = detector.get_cylindrical_coordinates()
 
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
