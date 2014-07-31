@@ -3,7 +3,7 @@
 These are some common simulations for HiSPARC detectors.
 
 """
-from math import sqrt
+from math import sqrt, acos
 import random
 
 import numpy as np
@@ -99,6 +99,15 @@ class HiSPARCSimulation(BaseSimulation):
 
         return mip
 
+    def generate_zenith(self):
+        """Generate a random zenith
+
+        Pick from the expected zenith distribution.
+
+        """
+        p = np.random.random()
+        return self.inverse_zenith_probability(p)
+
     def inverse_zenith_probability(self, p):
         """Inverse cumulative probability distribution for zenith
 
@@ -110,3 +119,11 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         return acos((1 - p) ** (1 / 8.))
+
+    def generate_azimuth(self):
+        """Generate a random azimuth
+
+        Showers from each azimuth have equal probability
+
+        """
+        azimuth = np.random.uniform(-pi, pi)

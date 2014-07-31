@@ -17,7 +17,7 @@ Example usage::
     sim.run()
 
 """
-from math import pi, sin, cos, tan, sqrt, acos, floor
+from math import pi, sin, cos, tan, floor
 
 import numpy as np
 
@@ -56,12 +56,9 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         for i in pbar(range(self.N)):
-            azimuth = np.random.uniform(-pi, pi)
-            zenith = self.inverse_zenith_probability(np.random.random())
-
             shower_parameters = {'ext_timestamp': (long(1e9) + i) * long(1e9),
-                                 'azimuth': azimuth,
-                                 'zenith': zenith,
+                                 'azimuth': self.generate_azimuth(),
+                                 'zenith': self.generate_zenith(),
                                  'core_pos': (None, None),
                                  'size': None,
                                  'energy': None}
