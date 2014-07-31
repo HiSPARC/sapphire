@@ -88,6 +88,9 @@ class FlatFrontSimulation(HiSPARCSimulation):
         Equation based on Fokkema2012 sec 4.2, eq 4.9.
         With additions to account for altitude.
         (DOI: 10.3990/1.9789036534383)
+        The directional vector c * dt should be negative,
+        not apparent in Fokkema2012 fig 4.4.
+
 
         :returns: Shower front arrival time in ns.
 
@@ -96,9 +99,10 @@ class FlatFrontSimulation(HiSPARCSimulation):
         r1, phi1, z1 = detector.cylindrical_coordinates
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
-        r = r1 * cos(phi - phi1) + z1 * tan(theta)
-        cdt = r * sin(theta) - z1 / cos(theta)
-        return cdt / c
+        r = r1 * cos(phi - phi1) - z1 * tan(theta)
+        cdt = - (r * sin(theta) + z1 / cos(theta))
+        dt = cdt / c
+        return dt
 
     def simulate_gps(self, station_observables, shower_parameters, station):
         """Simulate gps timestamp
