@@ -3,7 +3,7 @@
 These are some common simulations for HiSPARC detectors.
 
 """
-from math import sqrt, acos
+from math import sqrt, acos, pi
 import random
 
 import numpy as np
@@ -126,4 +126,4 @@ class HiSPARCSimulation(BaseSimulation):
         Showers from each azimuth have equal probability
 
         """
-        azimuth = np.random.uniform(-pi, pi)
+        return np.random.uniform(-pi, pi)
