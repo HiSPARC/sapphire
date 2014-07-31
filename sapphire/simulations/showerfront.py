@@ -32,8 +32,8 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         for station in self.cluster.stations:
             station.gps_offset = self.simulate_station_offset()
-            station.detector_offsets = self.simulate_detector_offsets(
-                len(station.detectors))
+            for detector in station.detectors:
+                detector.offset = self.simulate_detector_offset()
 
         # Store updated version of the cluster
         self.coincidence_group._v_attrs.cluster = self.cluster
@@ -108,7 +108,8 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         arrival_time = (self.get_arrival_time(detector, shower_parameters) +
-                        self.simulate_signal_transport_time(1)[0])
+                        self.simulate_signal_transport_time(1)[0] +
+                        detector.offset)
         observables = {'t': arrival_time}
 
         return observables
