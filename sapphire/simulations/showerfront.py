@@ -63,18 +63,6 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
             yield shower_parameters
 
-    def inverse_zenith_probability(self, p):
-        """Inverse cumulative probability distribution for zenith
-
-        Derrived from Schultheiss "The acceptancy of the HiSPARC Network",
-        (internal note), eq 2.4 from Rossi.
-
-        :param p: probability value between 0 and 1.
-        :returns: zenith with corresponding cumulative probability.
-
-        """
-        return acos((1 - p) ** (1 / 8.))
-
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
 
