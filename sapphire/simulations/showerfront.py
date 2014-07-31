@@ -50,20 +50,6 @@ class FlatFrontSimulation(HiSPARCSimulation):
                   (x, y-tuple) and azimuth.
 
         """
-        shower_parameters = {'core_pos': (None, None),
-                             'zenith': None,
-                             'azimuth': None,
-                             'size': None,
-                             'energy': None,
-                             'ext_timestamp': None}
-
-        # DF: This is the fastest implementation I could come up with.  I
-        # timed several permutations of numpy / math, and tried a Monte
-        # Carlo method in which I pick x and y in a square (fast) and then
-        # determine if they fall inside a circle or not (surprisingly
-        # slow, because of an if-statement, and despite some optimizations
-        # suggested by HM).
-
         for i in pbar(range(self.N)):
             azimuth = np.random.uniform(-pi, pi)
             zenith = self.inverse_zenith_probability(np.random.random())
@@ -74,7 +60,6 @@ class FlatFrontSimulation(HiSPARCSimulation):
                                  'core_pos': (None, None),
                                  'size': None,
                                  'energy': None}
-            self._prepare_cluster_for_shower(azimuth)
 
             yield shower_parameters
 
@@ -89,16 +74,6 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         return acos((1 - p) ** (1 / 8.))
-
-    def _prepare_cluster_for_shower(self, alpha):
-        """Prepare the cluster object for the simulation of a shower.
-
-        Rotate the cluster so that 'East' coincides with the shower
-        azimuth direction.
-
-        """
-        # rotate the around the cluster center
-        self.cluster.set_coordinates(0, 0, 0, -alpha)
 
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
