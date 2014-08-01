@@ -136,22 +136,22 @@ class ReconstructESDEvents(object):
 
         """
         bins = arange(-100 + 1.25, 100, 2.5)
+        c = .3
 
         t2 = self.events.col('t2')
+        z = [d.z for d in self.station.detectors]
 
         offsets = []
-        for timings in 't1', 't3', 't4':
-            timings = self.events.col(timings)
+        for detector in [0, 2, 3]:
+            timings = self.events.col('t%d' % (detector + 1))
             dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
             y, bins = histogram(dt, bins=bins)
             x = (bins[:-1] + bins[1:]) / 2
             try:
                 popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-                offsets.append(popt[1])
+                self.offsets[detector] = popt[1] + (z[detector] - z[1]) / c
             except RuntimeError:
-                offsets.append(0.)
-
-        self.offsets = offsets[0:1] + [0.] + offsets[1:]
+                self.offsets[detector] = 0.
 
     def store_offsets(self):
         """Store the determined offset in a table."""
