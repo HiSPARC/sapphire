@@ -57,7 +57,7 @@ class DirectAlgorithm(object):
                     detector 0 in ns (!).
         :param r#,phi#: position of detector 1 and 2 relative to
                         detector 0 in m and radians.
-        :return: theta as given by Fokkema2012 eq 4.27,
+        :return: theta as given by Fokkema2012 eq 4.14,
                  phi as given by Fokkema2012 eq 4.13.
 
         """
@@ -69,22 +69,29 @@ class DirectAlgorithm(object):
 
         phi = arctan2(-(r1 * dt2 * cos(phi1) - r2 * dt1 * cos(phi2)),
                       (r1 * dt2 * sin(phi1) - r2 * dt1 * sin(phi2)))
+
         # The directional vector c * dt should be negative,
         # not apparent in Fokkema2012 fig 4.4.
-        if not dt1 == 0:
-            theta = arcsin(c * -dt1 / (r1 * cos(phi - phi1)))
-        else:
-            theta = arcsin(c * -dt2 / (r2 * cos(phi - phi2)))
+        theta = nan
+        if r1 == 0 or r2 == 0:
+            pass
+        elif not dt1 == 0 and not phi - phi1 == pi / 2:
+            sintheta = c * -dt1 / (r1 * cos(phi - phi1))
+            if abs(sintheta) <= 1:
+                theta = arcsin(sintheta)
+        elif not dt2 == 0 and not phi - phi2 == pi / 2:
+            sintheta = c * -dt2 / (r2 * cos(phi - phi2))
+            if abs(sintheta) <= 1:
+                theta = arcsin(sintheta)
 
         # We limit theta to positive values.  If theta is negative, we
         # make it positive, but need to rotate phi by 180 degrees.
-        if theta < 0:
+        if isnan(theta):
+            phi = nan
+        elif theta < 0:
             theta *= -1
             phi += pi
             phi = (phi + pi) % (2 * pi) - pi
-
-        if isnan(theta):
-            phi = nan
 
         return theta, phi
 
@@ -262,16 +269,16 @@ class DirectAlgorithmCartesian2D(object):
 
         vz = dx1 * dy2 - dx2 * dy1
 
-        if vz == 0:
-            theta = nan
-        else:
+        theta = nan
+        phi = nan
+
+        if not vz == 0:
             usquared = ux * ux + uy * uy
             vzsquared = vz * vz
-            phi = arctan2(-ux * vz, uy * vz)
-            theta = arcsin(sqrt(usquared / vzsquared))
-
-        if isnan(theta):
-            phi = nan
+            uvzsqrt = sqrt(usquared / vzsquared)
+            if uvzsqrt <= 1.0:
+                theta = arcsin(uvzsqrt)
+                phi = arctan2(-ux * vz, uy * vz)
 
         return theta, phi
 
@@ -346,42 +353,42 @@ class DirectAlgorithmCartesian3D(object):
         usquared = ux * ux + uy * uy + uz * uz
         vsquared = vx * vx + vy * vy + vz * vz
         underroot = vsquared - usquared
-        if underroot < 0:
-            underroot = nan
 
-        termx = vx * sqrt(underroot)
-        termy = vy * sqrt(underroot)
-        termz = vz * sqrt(underroot)
+        theta = nan
+        phi = nan
 
-        nxplus = (ucrossvx + termx) / vsquared
-        nyplus = (ucrossvy + termy) / vsquared
-        nzplus = (ucrossvz + termz) / vsquared
+        if underroot > 0 and not vsquared == 0:
+            termx = vx * sqrt(underroot)
+            termy = vy * sqrt(underroot)
+            termz = vz * sqrt(underroot)
 
-        nxmin = (ucrossvx - termx) / vsquared
-        nymin = (ucrossvy - termy) / vsquared
-        nzmin = (ucrossvz - termz) / vsquared
+            nxplus = (ucrossvx + termx) / vsquared
+            nyplus = (ucrossvy + termy) / vsquared
+            nzplus = (ucrossvz + termz) / vsquared
 
-        phiplus = arctan2(nyplus, nxplus)
-        thetaplus = arccos(nzplus)
+            nxmin = (ucrossvx - termx) / vsquared
+            nymin = (ucrossvy - termy) / vsquared
+            nzmin = (ucrossvz - termz) / vsquared
 
-        phimin = arctan2(nymin, nxmin)
-        thetamin = arccos(nzmin)
+            phiplus = arctan2(nyplus, nxplus)
+            thetaplus = arccos(nzplus)
 
-        if isnan(thetaplus):
-            thetaplus = pi
+            phimin = arctan2(nymin, nxmin)
+            thetamin = arccos(nzmin)
 
-        if isnan(thetamin):
-            thetamin = pi
+            if isnan(thetaplus):
+                thetaplus = pi
 
-        if thetaplus <= pi / 2. and thetamin > pi / 2.:
-            theta = thetaplus
-            phi = phiplus
-        elif thetaplus > pi / 2. and thetamin <= pi / 2.:
-            theta = thetamin
-            phi = phimin
-        else:
-            theta = nan
-            phi = nan
+            if isnan(thetamin):
+                thetamin = pi
+
+            # Allow solution only if it is the only one above horizon
+            if thetaplus <= pi / 2. and thetamin > pi / 2.:
+                theta = thetaplus
+                phi = phiplus
+            elif thetaplus > pi / 2. and thetamin <= pi / 2.:
+                theta = thetamin
+                phi = phimin
 
         return theta, phi
 
