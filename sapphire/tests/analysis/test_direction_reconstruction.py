@@ -102,15 +102,15 @@ class BaseAlgorithm(object):
                 zenith = arcsin((time * c) / h)
 
                 t = [0., 0., 0.]
-                azimuths = [-pi / 2, pi / 6, pi * 5 / 6]
                 t[i] = time
+                azimuths = [-pi / 2, pi / 6, pi * 5 / 6]
                 theta, phi = self.call_reconstruct(t, x, y, z)
                 self.assertAlmostEqual(phi, azimuths[i], 2)
                 self.assertAlmostEqual(theta, zenith, 3)
 
                 t = [time] * 3
-                azimuths = [pi / 2, -pi * 5 / 6, -pi / 6]
                 t[i] = 0.
+                azimuths = [pi / 2, -pi * 5 / 6, -pi / 6]
                 theta, phi = self.call_reconstruct(t, x, y, z)
                 self.assertAlmostEqual(phi, azimuths[i], 2)
                 self.assertAlmostEqual(theta, zenith, 3)
