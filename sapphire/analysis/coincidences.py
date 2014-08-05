@@ -602,8 +602,9 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
         timestamp, station, index = timestamps[event]
         process = process_events.ProcessEvents(data, stations[station])
         event = process.source[index]
-        baseline = event['baseline'][np.where(event['baseline'] >= 0)]
         if not get_raw_traces:
+            baseline = np.where(event['baseline'] != -999, event['baseline'],
+                                200)[np.where(event['traces'] >= 0)]
             # transpose to get expected format
             traces = (process.get_traces_for_event(event) - baseline).T
             traces = traces * -0.57
