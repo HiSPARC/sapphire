@@ -449,7 +449,7 @@ class Coincidences(object):
             if self.progress and not i % 5000:
                 progress.update(i)
 
-        if self.progress:
+        if self.progress and len(timestamps):
             progress.finish()
 
         return coincidences
