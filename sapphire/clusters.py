@@ -67,9 +67,9 @@ class Detector(object):
 
     def get_cylindrical_coordinates(self):
         x, y, z = self.get_coordinates()
-        r = sqrt(self.x ** 2 + self.y ** 2)
-        phi = atan2(self.y, self.x)
-        return r, phi, self.z
+        r = sqrt(x ** 2 + y ** 2)
+        phi = atan2(y, x)
+        return r, phi, z
 
     def get_corners(self):
         """Get the x, y coordinates of the detector corners
