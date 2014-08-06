@@ -644,7 +644,7 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
         no_offset = [0., 0., 0., 0.]
 
         # Subtract base timestamp to prevent loss of precision
-        ts0 = long(coincidence[0][1]['timestamp'] * 1e9)
+        ts0 = long(coincidence[0][1]['timestamp'] * long(1e9))
         t, x, y, z = ([], [], [], [])
 
         for station_number, event in coincidence:
@@ -660,8 +660,9 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
             # Get first particle detection in event
             t_first = min([event['t%d' % (i + 1)] - t_off[i] for i in range(4)
                            if event['t%d' % (i + 1)] not in [-1, -999]])
-            t.append((event['ext_timestamp'] - ts0) - event['t_trigger'] +
+            t.append((long(event['ext_timestamp']) - ts0) - event['t_trigger'] +
                      t_first)
+
         if len(t) < 3:
             return (nan, nan)
         return self.reconstruct_common(t, x, y, z)
