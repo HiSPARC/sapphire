@@ -120,7 +120,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
             station_observables['t%d' % id] -= first_time
 
         arrival_times = [station_observables['t%d' % id] for id in ids]
-        trigger_time = sorted(arrival_times)[1]
+        trigger_time = ceil(sorted(arrival_times)[1])
         station_observables['t_trigger'] = trigger_time
 
         ext_timestamp += int(first_time + trigger_time + station.gps_offset +
@@ -174,7 +174,7 @@ class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
             station_observables['t%d' % id] -= first_time
 
         arrival_times = [station_observables['t%d' % id] for id in ids]
-        trigger_time = sorted(arrival_times)[1]
+        trigger_time = ceil(sorted(arrival_times)[1])
         station_observables['t_trigger'] = trigger_time
 
         ext_timestamp += int(first_time + trigger_time)
