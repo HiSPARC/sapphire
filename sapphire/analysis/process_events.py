@@ -484,7 +484,7 @@ class ProcessIndexedEvents(ProcessEvents):
 
     """
 
-    def __init__(self, data, group, indexes, source=None):
+    def __init__(self, data, group, indexes, source=None, progress=True):
         """Initialize the class.
 
         :param data: the PyTables datafile
@@ -497,6 +497,7 @@ class ProcessIndexedEvents(ProcessEvents):
         """
         super(ProcessIndexedEvents, self).__init__(data, group, source)
         self.indexes = indexes
+        self.progress = progress
 
     def _store_results_from_traces(self):
         table = self._tmp_events

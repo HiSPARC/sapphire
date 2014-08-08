@@ -20,12 +20,7 @@ class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
-        self.proc = process_events.ProcessEvents(self.data, DATA_GROUP)
-
-        # make progressbar(list) do nothing (i.e., return list)
-        self.progressbar_patcher = patch('sapphire.utils.ProgressBar')
-        self.progressbar_mock = self.progressbar_patcher.start()
-        self.progressbar_mock.return_value.side_effect = lambda x: x
+        self.proc = process_events.ProcessEvents(self.data, DATA_GROUP, progress=False)
 
     def tearDown(self):
         self.data.close()
@@ -81,7 +76,7 @@ class ProcessIndexedEventsTests(ProcessEventsTests):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
-        self.proc = process_events.ProcessIndexedEvents(self.data, DATA_GROUP, [0, 10])
+        self.proc = process_events.ProcessIndexedEvents(self.data, DATA_GROUP, [0, 10], progress=False)
 
     def test_process_traces(self):
         timings = self.proc.process_traces()
@@ -96,7 +91,7 @@ class ProcessEventsWithLINTTests(ProcessEventsTests):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
-        self.proc = process_events.ProcessEventsWithLINT(self.data, DATA_GROUP)
+        self.proc = process_events.ProcessEventsWithLINT(self.data, DATA_GROUP, progress=False)
 
     def test__reconstruct_time_from_traces(self):
         event = self.proc.source[10]
@@ -116,7 +111,7 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
-        self.proc = process_events.ProcessEventsWithTriggerOffset(self.data, DATA_GROUP)
+        self.proc = process_events.ProcessEventsWithTriggerOffset(self.data, DATA_GROUP, progress=False)
 
     def test__reconstruct_time_from_traces(self):
         event = self.proc.source[10]
