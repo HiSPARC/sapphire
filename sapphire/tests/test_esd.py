@@ -25,7 +25,7 @@ class ESDTest(unittest.TestCase):
                        't4': tables.Float32Col(pos=13),
                        't_trigger': tables.Float32Col(pos=14)}
         file = MagicMock()
-        result = esd._create_table(file, sentinel.group)
+        result = esd._create_events_table(file, sentinel.group)
         file.create_table.assert_called_once_with(sentinel.group, 'events',
                                                   description,
                                                   createparents=True)

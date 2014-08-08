@@ -20,13 +20,17 @@ import calendar
 import time
 import datetime
 import itertools
+import collections
 
 import tables
 import progressbar
 
+from . import api
+from . import storage
 
 EVENTS_URL = 'http://data.hisparc.nl/data/{station_number:d}/events?{query}'
 WEATHER_URL = 'http://data.hisparc.nl/data/{station_number:d}/weather?{query}'
+COINCIDENCES_URL = 'http://data.hisparc.nl/data/network/coincidences/?{query}'
 
 
 def quick_download(station_number, date=None):
@@ -120,7 +124,7 @@ def download_data(file, group, station_number, start=None, end=None,
     query = urllib.urlencode({'start': start, 'end': end})
     if type == 'events':
         url = EVENTS_URL.format(station_number=station_number, query=query)
-        table = _create_table(file, group)
+        table = _create_events_table(file, group)
         read_and_store = _read_line_and_store_event
     elif type == 'weather':
         url = WEATHER_URL.format(station_number=station_number, query=query)
@@ -153,7 +157,137 @@ def download_data(file, group, station_number, start=None, end=None,
     pbar.finish()
 
 
-def _create_table(file, group):
+def download_coincidences(file, cluster=None, start=None, end=None, n=2):
+    """Download event summary data coincidences
+
+    :param file: The PyTables datafile handler.
+    :param cluster: The HiSPARC cluster name for which to get data.
+    :param start: a datetime instance defining the start of the search
+        interval.
+    :param end: a datetime instance defining the end of the search
+        interval.
+    :param n: the minimum number of events in the coincidence.
+
+    If group is None, use '/' as a default.
+
+    The start and stop parameters may both be None.  In that case,
+    yesterday's data is downloaded.  If only end is None, a single day's
+    worth of data is downloaded, starting at the datetime specified with
+    start.
+
+    """
+    # sensible defaults for start and end
+    if start is None:
+        if end is not None:
+            raise RuntimeError("Start is None, but end is not. "
+                               "I can't go on like this.")
+        else:
+            yesterday = datetime.date.today() - datetime.timedelta(days=1)
+            start = datetime.datetime.combine(yesterday, datetime.time(0, 0))
+    if end is None:
+        end = start + datetime.timedelta(days=1)
+
+    # build and open url, create tables and set read function
+    query = urllib.urlencode({'cluster': cluster, 'start': start, 'end': end,
+                              'n': n})
+    url = COINCIDENCES_URL.format(query=query)
+    station_groups = _get_station_groups()
+    table = _create_coincidences_tables(file, station_groups)
+
+    data = urllib2.urlopen(url)
+
+    # keep track of event timestamp within [start, end] interval for
+    # progressbar
+    t_start = calendar.timegm(start.utctimetuple())
+    t_end = calendar.timegm(end.utctimetuple())
+    t_delta = t_end - t_start
+    pbar = progressbar.ProgressBar(maxval=1.,
+                                   widgets=[progressbar.Percentage(),
+                                            progressbar.Bar(),
+                                            progressbar.ETA()]).start()
+
+    # loop over lines in csv as they come streaming in, keep temporary
+    # lists untill a full coincidence is in.
+    prev_update = time.time()
+    reader = csv.reader(data, delimiter='\t')
+    current_coincidence = 0
+    coincidence = []
+    for line in reader:
+        if line[0][0] == '#':
+            continue
+        elif int(line[0]) == current_coincidence:
+            coincidence.append(line)
+        else:
+            # Full coincidence has been received, store it.
+            timestamp = _read_lines_and_store_coincidence(file,
+                                                          coincidence,
+                                                          station_groups)
+            # update progressbar every .5 seconds
+            if time.time() - prev_update > .5 and not timestamp == 0.:
+                pbar.update((1. * timestamp - t_start) / t_delta)
+                prev_update = time.time()
+            coincidence = [line]
+            current_coincidence = int(line[0])
+
+    if len(coincidence):
+        # Store last coincidence
+        _read_lines_and_store_coincidence(file, coincidence, station_groups)
+    pbar.finish()
+
+
+def _get_station_groups():
+    """Generate groups names for all stations
+
+    Use the same hierarchy (cluster/station) as used in the HiSPARC
+    datastore.
+
+    """
+    groups = collections.OrderedDict()
+    network = api.Network()
+    clusters = network.clusters()
+    s_index = 0
+    for cluster in clusters:
+        stations = api.Network().stations_numbers(cluster=cluster['number'])
+        for station in stations:
+            groups[station] = {'group': ('/hisparc/cluster_%s/station_%d' %
+                                         (cluster['name'].lower(), station)),
+                               's_index': s_index}
+            s_index += 1
+    return groups
+
+
+def _get_or_create_events_table(file, group):
+    """Get or create event table in PyTables file"""
+
+    try:
+        return file.get_node(group, 'events')
+    except tables.NoSuchNodeError:
+        return _create_events_table(file, group)
+
+
+def _create_coincidences_tables(file, station_groups):
+    """Setup coincidence tables"""
+
+    group = '/coincidences'
+
+    # Create coincidences table
+    description = storage.Coincidence
+    s_columns = {'s%d' % station: tables.BoolCol(pos=p)
+                 for p, station in enumerate(station_groups.iterkeys(), 12)}
+    description.columns.update(s_columns)
+    coincidences = file.create_table(group, 'coincidences', description,
+                                     createparents=True)
+
+    # Create c_index
+    c_index = file.create_vlarray(group, 'c_index', tables.UInt32Col(shape=2))
+
+    # Create and fill s_index
+    s_index = file.create_vlarray(group, 's_index', tables.VLStringAtom())
+    for station_group in station_groups.itervalues():
+        s_index.append(station_group['group'])
+
+
+def _create_events_table(file, group):
     """Create event table in PyTables file
 
     Create an event table containing the ESD data columns which are
@@ -214,6 +348,44 @@ def _create_weather_table(file, group):
     return file.create_table(group, 'weather', description, createparents=True)
 
 
+def _read_lines_and_store_coincidence(file, coincidence, station_groups):
+    """Read CSV lines and store coincidence
+
+    Read lines from the CSV download and store the coincidence and events.
+    Return the coincidence timestamp to keep track of the progress.
+
+    :param coincidence: text lines from the CSV file for one coincidence
+    :param file: pytables file for storage
+    :return: coincidence timestamp
+
+    """
+    c_idx = []
+    coincidences = file.get_node('/coincidences', 'coincidences')
+    row = coincidences.row
+    row['id'] = int(coincidence[0][0])
+    row['N'] = len(coincidence)
+    row['timestamp'] = int(coincidence[0][4])
+    row['nanoseconds'] = int(coincidence[0][5])
+    row['ext_timestamp'] = (int(coincidence[0][4]) * long(1e9) +
+                            int(coincidence[0][5]))
+    for event in coincidence:
+        station_number = int(event[1])
+        row['s%d' % station_number] = True
+        group_path = station_groups[station_number]['group']
+        group = _get_or_create_events_table(file, group_path)
+        s_idx = station_groups[station_number]['s_index']
+        e_idx = len(group)
+        c_idx.append((s_idx, e_idx))
+        timestamp = _read_line_and_store_event(event[2:], group)
+
+    row.append()
+    c_index = file.get_node('/coincidences', 'c_index')
+
+    c_index.append(c_idx)
+
+    return int(coincidence[0][4])
+
+
 def _read_line_and_store_event(line, table):
     """Read CSV line and store event
 
@@ -237,7 +409,7 @@ def _read_line_and_store_event(line, table):
     event_id = len(table)
     timestamp = int(timestamp)
     nanoseconds = int(nanoseconds)
-    ext_timestamp = timestamp * 1000000000 + nanoseconds
+    ext_timestamp = timestamp * long(1e9) + nanoseconds
     pulseheights = [int(ph1), int(ph2), int(ph3), int(ph4)]
     integrals = [int(int1), int(int2), int(int3), int(int4)]
     n1 = float(n1)
