@@ -26,7 +26,9 @@ import tables
 import progressbar
 
 from . import api
+from . import clusters
 from . import storage
+
 
 EVENTS_URL = 'http://data.hisparc.nl/data/{station_number:d}/events?{query}'
 WEATHER_URL = 'http://data.hisparc.nl/data/{station_number:d}/weather?{query}'
@@ -212,12 +214,15 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
     reader = csv.reader(data, delimiter='\t')
     current_coincidence = 0
     coincidence = []
+    station_numbers = set()
     for line in reader:
         if line[0][0] == '#':
             continue
         elif int(line[0]) == current_coincidence:
+            station_numbers.add(int(line[1]))
             coincidence.append(line)
         else:
+            station_numbers.add(int(line[1]))
             # Full coincidence has been received, store it.
             timestamp = _read_lines_and_store_coincidence(file,
                                                           coincidence,
@@ -233,6 +238,9 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
         # Store last coincidence
         _read_lines_and_store_coincidence(file, coincidence, station_groups)
     pbar.finish()
+
+    cluster = clusters.HiSPARCStations(station_numbers)
+    file.get_node('/coincidences')._v_attrs.cluster = cluster
 
 
 def _get_station_groups():
