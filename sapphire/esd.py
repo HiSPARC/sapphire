@@ -29,10 +29,10 @@ EVENTS_URL = 'http://data.hisparc.nl/data/{station_number:d}/events?{query}'
 WEATHER_URL = 'http://data.hisparc.nl/data/{station_number:d}/weather?{query}'
 
 
-def quick_download(station_id, date=None):
+def quick_download(station_number, date=None):
     """Quickly download some data
 
-    :param station_id: The HiSPARC station number
+    :param station_number: The HiSPARC station number
     :param date: the date for which to get data (datetime.datetime
         instance), passed unchanged to the :func:`download_data` as
         :param start:.
@@ -56,7 +56,7 @@ def quick_download(station_id, date=None):
     """
     path = _first_available_numbered_path()
     data = tables.open_file(path, 'w')
-    download_data(data, None, station_id, date)
+    download_data(data, None, station_number, date)
     return data
 
 
@@ -84,7 +84,7 @@ def download_data(file, group, station_number, start=None, end=None,
         interval
     :param type: the datatype to download, either 'events' or 'weather'.
 
-    If group is None, use '/s<station_id>' as a default.
+    If group is None, use '/s<station_number>' as a default.
 
     The start and stop parameters may both be None.  In that case,
     yesterday's data is downloaded.  If only end is None, a single day's
@@ -103,7 +103,7 @@ def download_data(file, group, station_number, start=None, end=None,
     """
     # sensible default for group name
     if group is None:
-        group = '/s%d' % station_id
+        group = '/s%d' % station_number
 
     # sensible defaults for start and end
     if start is None:
