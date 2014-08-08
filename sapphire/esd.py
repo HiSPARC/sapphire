@@ -233,6 +233,7 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
                 prev_update = time.time()
             coincidence = [line]
             current_coincidence = int(line[0])
+            file.flush()
 
     if len(coincidence):
         # Store last coincidence
@@ -241,6 +242,7 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
 
     cluster = clusters.HiSPARCStations(station_numbers)
     file.get_node('/coincidences')._v_attrs.cluster = cluster
+    file.flush()
 
 
 def _get_station_groups():
