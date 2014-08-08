@@ -15,7 +15,8 @@ from scipy.interpolate import spline
 
 import utils
 
-from sapphire.analysis import DirectionReconstruction, BinnedDirectionReconstruction
+from sapphire.analysis.direction_reconstruction import (DirectionReconstruction,
+                                                        BinnedDirectionReconstruction)
 from myshowerfront import *
 
 from artist import GraphArtist

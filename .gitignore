@@ -6,7 +6,6 @@ build/
 dist/
 sapphire.egg-info/
 hisparc_sapphire.egg-info/
-sapphire/tests/analysis/PE-testdata.h5
 
 # Python
 *.pyc

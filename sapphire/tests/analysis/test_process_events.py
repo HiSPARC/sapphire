@@ -6,6 +6,7 @@ import tables
 import sys
 
 from mock import patch
+
 from sapphire.analysis import process_events
 
 
@@ -13,7 +14,8 @@ TEST_DATA_FILE = 'PE-testdata.h5'
 DATA_GROUP = '/s501'
 
 
-@unittest.skipIf(not os.path.exists(TEST_DATA_FILE), 'Missing test datafile.')
+@unittest.skipIf(not os.path.exists(os.path.join(os.path.dirname(__file__), TEST_DATA_FILE)),
+                 'Missing test datafile.')
 class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
@@ -45,16 +47,18 @@ class ProcessEventsTests(unittest.TestCase):
         self.assertEqual(self.proc._reconstruct_time_from_trace(trace, 203), 2)
         self.assertEqual(self.proc._reconstruct_time_from_trace(trace, 205), -999)
 
-    def test__first_above_threshold(self):
+    def test_first_above_threshold(self):
         trace = [0, 2, 4, 2, 0]
-        self.assertEqual(self.proc._first_above_threshold(trace, 1), 1)
-        self.assertEqual(self.proc._first_above_threshold(trace, 3), 2)
-        self.assertEqual(self.proc._first_above_threshold(trace, 4), 2)
-        self.assertEqual(self.proc._first_above_threshold(trace, 5), -999)
+        self.assertEqual(self.proc.first_above_threshold(trace, 1), 1)
+        self.assertEqual(self.proc.first_above_threshold(trace, 3), 2)
+        self.assertEqual(self.proc.first_above_threshold(trace, 4), 2)
+        self.assertEqual(self.proc.first_above_threshold(trace, 5), -999)
 
     def test__process_pulseintegrals(self):
         self.proc.limit = 1
-        self.assertAlmostEqual(self.proc._process_pulseintegrals()[0][3], 4.37504635)
+        # Because of small data sample fit fails for detector 1
+        self.assertEqual(self.proc._process_pulseintegrals()[0][1], -999.)
+        self.assertAlmostEqual(self.proc._process_pulseintegrals()[0][3], 3.98951741969)
         self.proc.limit = None
 
     def create_tempfile_from_testdata(self):
@@ -114,30 +118,55 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessEventsWithTriggerOffset(self.data, DATA_GROUP)
 
-    def test__reconstruct_trigger_time_from_traces(self):
+    def test__reconstruct_time_from_traces(self):
+        event = self.proc.source[10]
+        times = self.proc._reconstruct_time_from_traces(event)
+        self.assertEqual(times[0], 162.5)
+        self.assertEqual(times[2], -999)
+        self.assertEqual(times[4], 165)
+
+    def test__first_above_thresholds(self):
         # 2 detectors
-        traces = [[200, 300], [200, 300]]  # 2 low
-        self.assertEqual(self.proc._reconstruct_trigger_time_from_traces(traces), 1)
-        traces = [[200, 300], [200, 200]]  # 1 low, no trigger
-        self.assertEqual(self.proc._reconstruct_trigger_time_from_traces(traces), -999)
+        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400], 900), [2, 2, -999])
+        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 400]), [300, 400], 400), [2, 2, -999])
+        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400], 550), [1, 2, -999])
+        # 4 detectors
+        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400, 500], 900), [2, 2, 2])
+        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 400]), [300, 400, 500], 400), [2, 2, -999])
+        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400, 500], 550), [1, 2, 3])
+        # No signal
+        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 250, 200, 2000]), [300, 400, 500], 250), [-999, -999, -999])
+
+    def test__first_value_above_threshold(self):
+        trace = [200, 200, 300, 200]
+        self.assertEqual(self.proc._first_value_above_threshold(trace, 200), (0, 200))
+        self.assertEqual(self.proc._first_value_above_threshold(trace, 250), (2, 300))
+        self.assertEqual(self.proc._first_value_above_threshold(trace, 250, 4), (6, 300))
+        self.assertEqual(self.proc._first_value_above_threshold(trace, 500), (-999, 0))
+
+    def test__reconstruct_trigger(self):
+        # 2 detectors
+        high_idx = []
+        low_idx = [-999, 3]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=2), -999)
+        low_idx = [0, 3]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=2), 3)
 
         # 4 detectors
-        traces = [[300, 200], [300, 200], [200, 300], [200, 200]]  # 3 low
-        self.assertEqual(self.proc._reconstruct_trigger_time_from_traces(traces), 1)
-        traces = [[400, 200], [300, 400], [200, 200], [200, 200]]  # 2 high (first 2 low)
-        self.assertEqual(self.proc._reconstruct_trigger_time_from_traces(traces), 1)
-        traces = [[400, 200], [400, 200], [200, 300], [200, 200]]  # first 2 high, then 3 low
-        self.assertEqual(self.proc._reconstruct_trigger_time_from_traces(traces), 0)
-        traces = [[300, 200], [300, 400], [300, 400], [200, 200]]  # first 3 low, then 2 high
-        self.assertEqual(self.proc._reconstruct_trigger_time_from_traces(traces), 0)
-        traces = [[200, 200], [200, 200], [200, 200], [200, 200]]  # no trigger
-        self.assertEqual(self.proc._reconstruct_trigger_time_from_traces(traces), -999)
-
-        # 3 detectors?!
-        traces = [[200, 200], [200, 200], [200, 200]]
-        self.assertRaises(LookupError, self.proc._reconstruct_trigger_time_from_traces, traces)
-        traces = [[400, 200], [400, 200], [200, 200]]  # process as if 4 detectors, 2 high
-        self.assertEqual(self.proc._reconstruct_trigger_time_from_traces(traces, 4), 0)
+        high_idx = [-999, -999]
+        low_idx = [-999, 3]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), -999)
+        low_idx = [0, 3, 2]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
+        high_idx = [0, 3]
+        low_idx = [0, 2, 4]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
+        high_idx = [0, 5]
+        low_idx = [0, 2, 3]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
+        high_idx = [0, 5]
+        low_idx = [0, 2]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 5)
 
 
 if __name__ == '__main__':

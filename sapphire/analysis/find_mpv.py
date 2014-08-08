@@ -13,11 +13,11 @@ import warnings
 import numpy as np
 from scipy.stats import norm
 from scipy.optimize import curve_fit
-
 import pylab as plt
 
+from sapphire.api import Network
 
-API_URL = 'http://data.hisparc.nl/api/stations/data/%d/%d/%d/'
+
 HIST_URL = 'http://data.hisparc.nl/show/source/pulseintegral/%d/%d/%d/%d/'
 
 MPV_FIT_WIDTH_FACTOR = .4
@@ -190,13 +190,8 @@ def main():
 def get_station_ids_with_data(date):
     """Return the station ids having data on this day."""
 
-    url = API_URL % (date.year, date.month, date.day)
-
-    reply = urllib2.urlopen(url)
-    reply = reply.read()
-
-    station_list = json.loads(reply)
-    station_ids = [int(u['number']) for u in station_list]
+    station_list = Network.stations_with_data(date.year, date.month, date.day)
+    station_ids = [int(station['number']) for station in station_list]
 
     return station_ids
 

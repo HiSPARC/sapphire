@@ -14,6 +14,7 @@ Contents:
    api
    clusters
    corsika
+   esd
    gpstime
    kascade
    publicdb

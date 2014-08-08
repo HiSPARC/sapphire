@@ -36,7 +36,7 @@ import os.path
 import tables
 import numpy as np
 
-import .process_events
+from . import process_events
 from .. import storage
 from ..utils import pbar
 
@@ -402,7 +402,7 @@ class Coincidences(object):
             event_idx) which will be searched
         :param window: the time window in nanoseconds which will be searched
             for coincidences.  Events falling outside this window will not be
-            part of the coincidence.  Default: 200000 (i.e. 200 us).
+            part of the coincidence.
 
         :return: a list of coincidences, which each consist of a list with
             indexes into the timestamps array as a pointer to the events
@@ -447,7 +447,7 @@ class Coincidences(object):
             if self.progress and not i % 5000:
                 progress.update(i)
 
-        if self.progress:
+        if self.progress and len(timestamps):
             progress.finish()
 
         return coincidences
@@ -498,6 +498,7 @@ class CoincidencesESD(Coincidences):
             s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
                          for p, station in enumerate(cluster.stations, 12)}
         else:
+            self.cluster = None
             s_columns = {'s%d' % n: tables.BoolCol(pos=(n + 12))
                          for n, _ in enumerate(self.station_groups)}
 
@@ -597,8 +598,9 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
         timestamp, station, index = timestamps[event]
         process = process_events.ProcessEvents(data, stations[station])
         event = process.source[index]
-        baseline = event['baseline'][np.where(event['baseline'] >= 0)]
         if not get_raw_traces:
+            baseline = np.where(event['baseline'] != -999, event['baseline'],
+                                200)[np.where(event['traces'] >= 0)]
             # transpose to get expected format
             traces = (process.get_traces_for_event(event) - baseline).T
             traces = traces * -0.57

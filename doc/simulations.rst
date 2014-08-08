@@ -10,7 +10,6 @@ Contents:
 
 .. toctree::
 
-   base
-   groundparticles
-   ldf
-   qsub
+   simulations/base
+   simulations/groundparticles
+   simulations/ldf
