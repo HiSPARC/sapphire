@@ -177,6 +177,15 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
     worth of data is downloaded, starting at the datetime specified with
     start.
 
+    Example::
+
+        import tables
+        import datetime
+        import sapphire.esd
+        data = tables.open_file('data_coincidences.h5', 'w')
+        sapphire.esd.download_coincidences(data, 'Aarhus',
+            datetime.datetime(2013, 9, 1), datetime.datetime(2013, 9, 2), 3)
+
     """
     # sensible defaults for start and end
     if start is None:
