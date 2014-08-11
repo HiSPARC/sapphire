@@ -702,9 +702,9 @@ def logic_checks(t, x, y, z):
     Criteria:
     - No two detectors are at the same position.
     - Time difference between two detections should be less than distance / c.
-    - All detectors are on a line is bad.
+    - All detectors on a line is bad.
 
-    To add:
+    To fix:
     - Time difference can still be to large in cases where a different
       distance becomes relevant.
 
@@ -717,9 +717,10 @@ def logic_checks(t, x, y, z):
     if not len(zip(x, y, z)) == len(set(zip(x, y, z))):
         return False
 
+    txyz = zip(t, x, y, z)
+
     # Check if the time difference it larger than expected by c
     c = .3  # m/ns
-    txyz = zip(t, x, y, z)
     for txyz0, txyz1 in itertools.combinations(txyz, 2):
         dt = abs(txyz0[0] - txyz1[0])
         dx = txyz0[1] - txyz1[1]
