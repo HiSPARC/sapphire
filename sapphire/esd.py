@@ -203,7 +203,7 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
     station_groups = _get_station_groups()
     table = _get_or_create_coincidences_tables(file, station_groups)
 
-    data = urllib2.urlopen(url)
+    data = urllib2.urlopen(url, timeout=1800)
 
     # keep track of event timestamp within [start, end] interval for
     # progressbar
