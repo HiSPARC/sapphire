@@ -159,11 +159,13 @@ def download_data(file, group, station_number, start=None, end=None,
     pbar.finish()
 
 
-def download_coincidences(file, cluster=None, start=None, end=None, n=2):
+def download_coincidences(file, cluster=None, stations=None,
+                          start=None, end=None, n=2):
     """Download event summary data coincidences
 
     :param file: The PyTables datafile handler.
     :param cluster: The HiSPARC cluster name for which to get data.
+    :param stations: A list of HiSPARC station numbers for which to get data.
     :param start: a datetime instance defining the start of the search
         interval.
     :param end: a datetime instance defining the end of the search
@@ -175,14 +177,18 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
     worth of data is downloaded, starting at the datetime specified with
     start.
 
+    Optionally either a cluster or stations can be defined to limit the
+    results to include only events from those stations.
+
     Example::
 
         import tables
         import datetime
         import sapphire.esd
         data = tables.open_file('data_coincidences.h5', 'w')
-        sapphire.esd.download_coincidences(data, 'Aarhus',
-            datetime.datetime(2013, 9, 1), datetime.datetime(2013, 9, 2), 3)
+        sapphire.esd.download_coincidences(data, cluster='Aarhus',
+            start=datetime.datetime(2013, 9, 1),
+            end=datetime.datetime(2013, 9, 2), n=3)
 
     """
     # sensible defaults for start and end
@@ -197,8 +203,8 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
         end = start + datetime.timedelta(days=1)
 
     # build and open url, create tables and set read function
-    query = urllib.urlencode({'cluster': cluster, 'start': start, 'end': end,
-                              'n': n})
+    query = urllib.urlencode({'cluster': cluster, 'stations': stations,
+                              'start': start, 'end': end, 'n': n})
     url = COINCIDENCES_URL.format(query=query)
     station_groups = _get_station_groups()
     table = _get_or_create_coincidences_tables(file, station_groups)
@@ -245,6 +251,7 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
     if len(coincidence):
         # Store last coincidence
         _read_lines_and_store_coincidence(file, coincidence, station_groups)
+
     pbar.finish()
 
     cluster = clusters.HiSPARCStations(station_numbers)
