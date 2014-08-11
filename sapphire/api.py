@@ -24,14 +24,16 @@
 
 """
 import logging
-
 import datetime
-from urllib2 import urlopen, HTTPError, URLError
 import json
+import warnings
+from os import path
+from urllib2 import urlopen, HTTPError, URLError
 
 logger = logging.getLogger('api')
 
 API_BASE = 'http://data.hisparc.nl/api/'
+JSON_FILE = path.join(path.dirname(__file__), 'data/hisparc_stations.json')
 
 
 class API(object):
@@ -309,11 +311,13 @@ class Network(API):
 class Station(API):
     """Access data about a single station"""
 
-    def __init__(self, station, date=None):
+    def __init__(self, station, date=None, allow_stale=True):
         """Initialize station
 
-        :param station: station number
-        :param date: date object for which to get the station information
+        :param station: station number.
+        :param date: date object for which to get the station information.
+        :param allow_stale: set to False to require data to be fresh
+                            from the server.
 
         """
         self.station = station
@@ -322,7 +326,21 @@ class Station(API):
         path = (self.urls['station_info']
                 .format(station_number=self.station, year=date.year,
                         month=date.month, day=date.day))
-        self.info = self._get_json(path)
+        try:
+            self.info = self._get_json(path)
+        except Exception, e:
+            if allow_stale:
+                # Try getting the station info from the JSON.
+                try:
+                    with open(JSON_FILE) as data:
+                        self.info = json.load(data)[str(station)]
+                    warnings.warn('Couldnt get values from the server, using '
+                                  'hard-coded values. Not all info available.',
+                                  UserWarning)
+                except:
+                    raise e
+            else:
+                raise
 
     def country(self):
         return self.info['country']
