@@ -170,8 +170,6 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
         interval.
     :param n: the minimum number of events in the coincidence.
 
-    If group is None, use '/' as a default.
-
     The start and stop parameters may both be None.  In that case,
     yesterday's data is downloaded.  If only end is None, a single day's
     worth of data is downloaded, starting at the datetime specified with
@@ -203,7 +201,7 @@ def download_coincidences(file, cluster=None, start=None, end=None, n=2):
                               'n': n})
     url = COINCIDENCES_URL.format(query=query)
     station_groups = _get_station_groups()
-    table = _create_coincidences_tables(file, station_groups)
+    table = _get_or_create_coincidences_tables(file, station_groups)
 
     data = urllib2.urlopen(url)
 
@@ -275,13 +273,13 @@ def _get_station_groups():
     return groups
 
 
-def _get_or_create_events_table(file, group):
+def _get_or_create_coincidences_tables(file, station_groups):
     """Get or create event table in PyTables file"""
 
     try:
-        return file.get_node(group, 'events')
+        return file.get_node('/', 'coincidences')
     except tables.NoSuchNodeError:
-        return _create_events_table(file, group)
+        return _create_coincidences_tables(file, station_groups)
 
 
 def _create_coincidences_tables(file, station_groups):
@@ -304,6 +302,15 @@ def _create_coincidences_tables(file, station_groups):
     s_index = file.create_vlarray(group, 's_index', tables.VLStringAtom())
     for station_group in station_groups.itervalues():
         s_index.append(station_group['group'])
+
+
+def _get_or_create_events_table(file, group):
+    """Get or create event table in PyTables file"""
+
+    try:
+        return file.get_node(group, 'events')
+    except tables.NoSuchNodeError:
+        return _create_events_table(file, group)
 
 
 def _create_events_table(file, group):
@@ -381,7 +388,7 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
     c_idx = []
     coincidences = file.get_node('/coincidences', 'coincidences')
     row = coincidences.row
-    row['id'] = int(coincidence[0][0])
+    row['id'] = len(coincidences)
     row['N'] = len(coincidence)
     row['timestamp'] = int(coincidence[0][4])
     row['nanoseconds'] = int(coincidence[0][5])
