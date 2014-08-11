@@ -13,7 +13,7 @@ import warnings
 from numpy import mean
 import transformations
 
-import sapphire.api
+from .api import Network, Station
 
 
 class Detector(object):
@@ -522,12 +522,12 @@ class ScienceParkCluster(BaseCluster):
         try:
             gps_coordinates = {}
             for station in stations:
-                coordinates = sapphire.api.Station(station).location()
+                coordinates = Station(station).location()
                 gps_coordinates[station] = (coordinates['latitude'],
                                             coordinates['longitude'],
                                             coordinates['altitude'])
         except:
-            warnings.warn('Could not get values form the server, Using '
+            warnings.warn('Could not get values from the server, Using '
                           'hard-coded values.', UserWarning)
             # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
             # 2 dec, 2011) + 508/509 (from site on 8 jul 2013)
@@ -615,7 +615,7 @@ class HiSPARCStations(RAlphaBetaStations):
 
         for i, station in enumerate(stations):
             try:
-                station_info = sapphire.api.Station(station)
+                station_info = Station(station)
             except:
                 if not allow_missing:
                     raise KeyError('Could not get info for station %d.' %
@@ -665,6 +665,6 @@ class HiSPARCNetwork(HiSPARCStations):
     """A cluster containing all station from the HiSPARC network"""
 
     def __init__(self):
-        network = sapphire.api.Network()
-        stations = [station['number'] for station in network.stations()]
+        network = Network()
+        stations = [station for station in network.station_numbers()]
         super(HiSPARCNetwork, self).__init__(stations, allow_missing=True)

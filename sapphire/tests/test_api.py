@@ -73,12 +73,12 @@ class NetworkTests(unittest.TestCase):
                                                  cluster=sentinel.cluster)
 
     @patch.object(api.Network, 'stations')
-    def test_stations_numbers(self, mock_stations):
+    def test_station_numbers(self, mock_stations):
         mock_stations.return_value = [{'number': sentinel.number1},
                                       {'number': sentinel.number2}]
-        self.assertEqual(self.network.stations_numbers(sentinel.country,
-                                                       sentinel.cluster,
-                                                       sentinel.subcluster),
+        self.assertEqual(self.network.station_numbers(sentinel.country,
+                                                      sentinel.cluster,
+                                                      sentinel.subcluster),
                          [sentinel.number1, sentinel.number2])
         mock_stations.assert_called_once_with(country=sentinel.country,
                                               cluster=sentinel.cluster,

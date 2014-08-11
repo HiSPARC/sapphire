@@ -248,7 +248,7 @@ class Network(API):
             stations = self._get_json(path)
         return stations
 
-    def stations_numbers(self, country=None, cluster=None, subcluster=None):
+    def station_numbers(self, country=None, cluster=None, subcluster=None):
         """Same as stations but only retuns a list of station numbers"""
 
         stations = self.stations(country=country, cluster=cluster,

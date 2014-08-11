@@ -266,7 +266,7 @@ def _get_station_groups():
     clusters = network.clusters()
     s_index = 0
     for cluster in clusters:
-        stations = api.Network().stations_numbers(cluster=cluster['number'])
+        stations = api.Network().station_numbers(cluster=cluster['number'])
         for station in stations:
             groups[station] = {'group': ('/hisparc/cluster_%s/station_%d' %
                                          (cluster['name'].lower(), station)),
