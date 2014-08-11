@@ -13,7 +13,7 @@ import warnings
 from numpy import mean
 import transformations
 
-from .api import Network, Station
+from . import api
 
 
 class Detector(object):
@@ -522,7 +522,7 @@ class ScienceParkCluster(BaseCluster):
         try:
             gps_coordinates = {}
             for station in stations:
-                coordinates = Station(station).location()
+                coordinates = api.Station(station).location()
                 gps_coordinates[station] = (coordinates['latitude'],
                                             coordinates['longitude'],
                                             coordinates['altitude'])
@@ -615,15 +615,15 @@ class HiSPARCStations(RAlphaBetaStations):
 
         for i, station in enumerate(stations):
             try:
-                station_info = Station(station)
+                station_info = api.Station(station)
             except:
-                if not allow_missing:
-                    raise KeyError('Could not get info for station %d.' %
-                                   station)
-                else:
+                if allow_missing:
                     warnings.warn('Could not get info for station %d, '
                                   'skipping.' % station, UserWarning)
                     continue
+                else:
+                    raise KeyError('Could not get info for station %d.' %
+                                   station)
 
             location = station_info.location()
             n_detectors = station_info.n_detectors()
@@ -666,6 +666,6 @@ class HiSPARCNetwork(HiSPARCStations):
     """A cluster containing all station from the HiSPARC network"""
 
     def __init__(self):
-        network = Network()
+        network = api.Network()
         stations = [station for station in network.station_numbers()]
         super(HiSPARCNetwork, self).__init__(stations, allow_missing=True)

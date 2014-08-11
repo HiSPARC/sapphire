@@ -10,7 +10,7 @@ JSON_FILE = path.join(path.dirname(__file__), 'hisparc_stations.json')
 
 
 def generate_json():
-    station_numbers = Network().stations_numbers()
+    station_numbers = Network().station_numbers()
     station_info = {}
 
     for number in pbar(station_numbers):
