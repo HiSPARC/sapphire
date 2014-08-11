@@ -621,8 +621,9 @@ class HiSPARCStations(RAlphaBetaStations):
                     raise KeyError('Could not get info for station %d.' %
                                    station)
                 else:
-                    warnings.warn('Could not get info for station %d.' %
-                                  station, UserWarning)
+                    warnings.warn('Could not get info for station %d, '
+                                  'skipping.' % station, UserWarning)
+                    continue
 
             location = station_info.location()
             n_detectors = station_info.n_detectors()
