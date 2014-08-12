@@ -336,56 +336,63 @@ class ReconstructESDCoincidences(object):
         # Currently disabled station offsets because they do not work well.
 
         # Now determine the station offsets and those to detector offsets
-        #ref_station_number = 501
-        #ref_station = self.cluster.get_station(ref_station_number)
-        #ref_id = ref_station.station_id
-        #ref_z = ref_station.calc_center_of_mass_coordinates()[2]
-        #ref_d_off = self.offsets[ref_station_number]
+        ref_station_number = 501
+        ref_station = self.cluster.get_station(ref_station_number)
+        ref_id = ref_station.station_id
+        ref_z = ref_station.calc_center_of_mass_coordinates()[2]
+        ref_d_off = self.offsets[ref_station_number]
 
-        #for station in self.cluster.stations:
-        #    # Skip reference station
-        #    if station.number == ref_station_number:
-        #        continue
-        #    z = station.calc_center_of_mass_coordinates()[2]
-        #    dt = []
-        #    d_off = self.offsets[station.number]
-        #    stations = [ref_station_number, station.number]
-        #    coincidences = self.cq.all(stations)
-        #    c_events = self.cq.events_from_stations(coincidences, stations)
-        #    for events in c_events:
-        #        # Filter for possibility of same station twice in coincidence
-        #        if len(events) is not 2:
-        #            continue
-        #        if events[0][0] == ref_station:
-        #            ref_event = events[0][1]
-        #            event = events[1][1]
-        #        else:
-        #            ref_event = events[1][1]
-        #            event = events[0][1]
-        #
-        #        ref_t = min([ref_event['t%d' % (i + 1)] - ref_d_off[i]
-        #                     for i in range(4)
-        #                     if ref_event['t%d' % (i + 1)] not in [-1, -999]])
-        #        t = min([event['t%d' % (i + 1)] - d_off[i]
-        #                 for i in range(4)
-        #                 if event['t%d' % (i + 1)] not in [-1, -999]])
-        #        dt.append(event['ext_timestamp'] - ref_event['ext_timestamp'] +
-        #                  event['t_trigger'] - ref_event['t_trigger'] +
-        #                  t - ref_t)
-        #
-        #    r = self.cluster.calc_rphiz_for_stations(station.station_id,
-        #                                             ref_id)[0]
-        #    bins = linspace(-r, r, 20)
-        #    y, bins = histogram(dt, bins=bins)
-        #    x = (bins[:-1] + bins[1:]) / 2
-        #    try:
-        #        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-        #        station_offset = popt[1] + (z - ref_z) / c
-        #    except RuntimeError:
-        #        station_offset = 0.
-        #    self.offsets[station.number] = [detector_offset + station_offset
-        #                                    for detector_offset in
-        #                                    self.offsets[station.number]]
+        for station in pbar(self.cluster.stations):
+            # Skip reference station
+            if station.number == ref_station_number:
+                continue
+            z = station.calc_center_of_mass_coordinates()[2]
+            dt = []
+            d_off = self.offsets[station.number]
+            stations = [ref_station_number, station.number]
+            coincidences = self.cq.all(stations)
+            c_events = self.cq.events_from_stations(coincidences, stations)
+            for events in c_events:
+                # Filter for possibility of same station twice in coincidence
+                if len(events) is not 2:
+                    continue
+                if events[0][0] == ref_station_number:
+                    ref_event = events[0][1]
+                    event = events[1][1]
+                else:
+                    ref_event = events[1][1]
+                    event = events[0][1]
+
+                try:
+                    ref_t = min([ref_event['t%d' % (i + 1)] - ref_d_off[i]
+                                 for i in range(4)
+                                 if ref_event['t%d' % (i + 1)] not in ERR])
+                    t = min([event['t%d' % (i + 1)] - d_off[i]
+                             for i in range(4)
+                             if event['t%d' % (i + 1)] not in ERR])
+                except ValueError:
+                    continue
+                if (ref_event['t_trigger'] in ERR or
+                        event['t_trigger'] in ERR):
+                    continue
+                dt.append((long(event['ext_timestamp']) -
+                           long(ref_event['ext_timestamp'])) -
+                          (event['t_trigger'] - ref_event['t_trigger']) +
+                          (t - ref_t))
+
+            r = self.cluster.calc_rphiz_for_stations(station.station_id,
+                                                     ref_id)[0]
+            bins = linspace(-3*r, 3*r, 200)
+            y, bins = histogram(dt, bins=bins)
+            x = (bins[:-1] + bins[1:]) / 2
+            try:
+                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., r))
+                station_offset = popt[1] + (z - ref_z) / c
+            except RuntimeError:
+                station_offset = 0.
+            self.offsets[station.number] = [detector_offset + station_offset
+                                            for detector_offset in
+                                            self.offsets[station.number]]
 
     def determine_detector_timing_offsets(self, station, station_group):
         """Determine the offsets between the station detectors.
