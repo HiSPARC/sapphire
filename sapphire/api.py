@@ -250,12 +250,29 @@ class Network(API):
             stations = self._get_json(path)
         return stations
 
-    def station_numbers(self, country=None, cluster=None, subcluster=None):
+    def station_numbers(self, country=None, cluster=None, subcluster=None,
+                        allow_stale=True):
         """Same as stations but only retuns a list of station numbers"""
 
-        stations = self.stations(country=country, cluster=cluster,
-                                 subcluster=subcluster)
-        return [station['number'] for station in stations]
+        try:
+            stations = self.stations(country=country, cluster=cluster,
+                                     subcluster=subcluster)
+            return [station['number'] for station in stations]
+        except Exception, e:
+            if allow_stale:
+                # Try getting the station info from the JSON.
+                try:
+                    with open(JSON_FILE) as data:
+                        stations = [int(s) for s in json.load(data).keys()
+                                    if s != '_info']
+                    warnings.warn('Couldnt get values from the server, using '
+                                  'hard-coded values. Possibly outdated.',
+                                  UserWarning)
+                    return sorted(stations)
+                except:
+                    raise e
+            else:
+                raise
 
     def nested_network(self):
         """Get a nested list of the full network"""
