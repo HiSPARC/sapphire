@@ -11,7 +11,7 @@ from .direction_reconstruction import (DirectEventReconstruction,
                                        DirectCoincidenceReconstruction,
                                        FitCoincidenceReconstruction)
 from .coincidence_queries import CoincidenceQuery
-from ..utils import pbar, gauss
+from ..utils import pbar, gauss, ERR
 
 
 class ReconstructESDEvents(object):
@@ -96,7 +96,7 @@ class ReconstructESDEvents(object):
 
         """
         valid_ids = [id for id in range(4)
-                     if event['t%d' % (id + 1)] not in [-1, -999]]
+                     if event['t%d' % (id + 1)] not in ERR]
         if detector_ids is not None:
            detector_ids = [d for d in detector_ids if d in valid_ids]
         else:

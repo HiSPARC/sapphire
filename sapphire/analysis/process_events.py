@@ -37,7 +37,7 @@ import tables
 import numpy as np
 from scipy.optimize import curve_fit
 
-from ..utils import pbar, gauss
+from ..utils import pbar, gauss, ERR
 from .find_mpv import FindMostProbableValueInSpectrum
 
 
@@ -344,7 +344,7 @@ class ProcessEvents(object):
                 timings.append(self._reconstruct_time_from_trace(trace,
                                                                  baseline))
         timings = [time * ADC_TIME_PER_SAMPLE
-                   if time not in [-1, -999] else time
+                   if time not in ERR else time
                    for time in timings]
         return timings
 
@@ -689,8 +689,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         t_trigger = self._reconstruct_trigger(low_idx, high_idx, n_detectors)
         timings.append(t_trigger)
 
-        timings = [time * ADC_TIME_PER_SAMPLE
-                   if time not in [-1, -999] else time
+        timings = [time * ADC_TIME_PER_SAMPLE if time not in ERR else time
                    for time in timings]
         return timings
 

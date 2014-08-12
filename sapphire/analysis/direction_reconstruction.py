@@ -5,7 +5,7 @@ from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, floor, where, deg2rad, pi, inf, around)
 from scipy.optimize import minimize
 
-from ..utils import pbar
+from ..utils import pbar, ERR
 
 
 class DirectAlgorithm(object):
@@ -536,7 +536,7 @@ class DirectEventReconstruction(DirectAlgorithmCartesian3D):
         x = [self.x[id] for id in detector_ids]
         y = [self.y[id] for id in detector_ids]
         z = [self.z[id] for id in detector_ids]
-        if len([i for i in t if i not in [-1, -999]]) == len(detector_ids):
+        if len([i for i in t if i not in ERR]) == len(detector_ids):
             t = [t[i] - offsets[id] for i, id in enumerate(detector_ids)]
             theta, phi = self.reconstruct_common(t, x, y, z)
         else:
@@ -590,7 +590,7 @@ class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
         y = []
         z = []
         for id in detector_ids:
-            if event['t%d' % (id + 1)] not in [-1, -999]:
+            if event['t%d' % (id + 1)] not in ERR:
                 t.append(event['t%d' % (id + 1)] - offsets[id])
                 x.append(self.x[id])
                 y.append(self.y[id])
@@ -658,8 +658,13 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
             z.append(sz)
             t_off = offsets.get(station_number, no_offset)
             # Get first particle detection in event
-            t_first = min([event['t%d' % (i + 1)] - t_off[i] for i in range(4)
-                           if event['t%d' % (i + 1)] not in [-1, -999]])
+            try:
+                t_first = min([event['t%d' % (i + 1)] - t_off[i] for i in range(4)
+                               if event['t%d' % (i + 1)] not in ERR])
+            except ValueError:
+                continue
+            if event['t_trigger'] in ERR:
+                continue
             t.append((long(event['ext_timestamp']) - ts0) - event['t_trigger'] +
                      t_first)
 

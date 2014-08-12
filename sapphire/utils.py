@@ -8,6 +8,10 @@ from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
 
+# Error values used to indicate missing or bad data.
+ERR = [-1, -999]
+
+
 def pbar(iterable, length=None, show=True, **kwargs):
     """Get a new progressbar with our default widgets
 
