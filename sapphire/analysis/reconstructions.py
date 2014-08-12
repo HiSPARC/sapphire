@@ -243,7 +243,7 @@ class ReconstructESDCoincidences(object):
         """Shorthand function to reconstruct coincidences and store results"""
 
         self.prepare_output()
-        self.determine_station_timing_offsets()
+        self.get_station_timing_offsets()
         self.reconstruct_directions()
         self.store_reconstructions()
 
@@ -299,6 +299,17 @@ class ReconstructESDCoincidences(object):
         self.reconstructions = self.data.create_table(
             self.coincidences_group, 'reconstructions', description)
         self.reconstructions._v_attrs.cluster = self.cluster
+
+    def get_station_timing_offsets(self):
+        """Get predetermined station offsets"""
+        self.offsets = {501: [-1.10338,  0.0000, 5.35711, 3.1686],
+                        502: [-8.11711, -8.5528, -8.72451, -9.3388],
+                        503: [-22.9796, -26.6098, -22.7522, -21.8723],
+                        504: [-15.4349, -15.2281, -15.1860, -16.5545],
+                        505: [-21.6035, -21.3060, -19.6826, -25.5366],
+                        506: [-20.2320, -15.8309, -14.1818, -14.1548],
+                        508: [-26.2402, -24.9859, -24.0131, -23.2882],
+                        509: [-24.8369, -23.0218, -20.6011, -24.3757]}
 
     def determine_station_timing_offsets(self):
         """Determine the offsets between the stations.
