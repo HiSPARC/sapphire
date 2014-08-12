@@ -253,10 +253,11 @@ class ReconstructESDCoincidences(object):
         Reconstruct each coincidence in the coincidences tables.
 
         """
+        length = self.coincidences.nrows
         coincidences = self.cq.all_coincidences()
         coincidence_events = self.cq.all_events(coincidences)
         if self.progress:
-            coincidence_events = pbar(coincidence_events)
+            coincidence_events = pbar(coincidence_events, length=length)
         angles = [self._reconstruct_direction(c) for c in coincidence_events]
         self.theta, self.phi, self.station_numbers = zip(*angles)
 
