@@ -149,7 +149,7 @@ class ReconstructESDEvents(object):
             try:
                 popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
                 self.offsets[detector] = popt[1] + (z[detector] - z[1]) / c
-            except RuntimeError:
+            except (IndexError, RuntimeError):
                 self.offsets[detector] = 0.
 
     def store_offsets(self):
@@ -323,9 +323,12 @@ class ReconstructESDCoincidences(object):
 
         # First determine detector offsets for each station
         for s_path in self.coincidences_group.s_index:
+            try:
+                station_group = self.data.get_node(s_path)
+            except tables.NoSuchNodeError:
+                continue
             station_number = int(s_path.split('station_')[-1])
             station = self.cluster.get_station(station_number)
-            station_group = self.data.get_node(s_path)
             offsets = self.determine_detector_timing_offsets(station,
                                                              station_group)
             self.offsets[station_number] = offsets
@@ -408,7 +411,7 @@ class ReconstructESDCoincidences(object):
             try:
                 popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
                 offsets[detector] = (popt[1] + (z[detector] - z[1]) / c)
-            except RuntimeError:
+            except (IndexError, RuntimeError):
                 pass
 
         return offsets
