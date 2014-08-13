@@ -307,6 +307,7 @@ class ReconstructESDCoincidences(object):
         102 for Zaanlands stations, data from 2012/6-2014/8.
         501 for Science Park stations, data from 2010/1-2014/8.
         7001 for Twente University stations, data from 2011/8-2014/8.
+        8001 for Eindhoven University stations, data from 2011/10-2014/8.
 
         """
         self.offsets = {102: [-3.1832, 0.0000, 0.0000, 0.0000],
@@ -322,7 +323,11 @@ class ReconstructESDCoincidences(object):
                         509: [-24.8369, -23.0218, -20.6011, -24.3757],
                         7001: [4.5735, 0.0000, 0.0000, 0.0000],
                         7002: [45.0696, 47.8311, 0.0000, 0.0000],
-                        7003: [-2.2674, -4.9578, 0.0000, 0.0000]}
+                        7003: [-2.2674, -4.9578, 0.0000, 0.0000],
+                        8001: [2.5733, 0.0000, 0.0000, 0.0000],
+                        8004: [-39.3838, -36.1131, 0.0000, 0.0000],
+                        8008: [57.3990, 58.1135, 0.0000, 0.0000],
+                        8009: [-20.3489, -16.9938, 0.0000, 0.0000]}
 
     def determine_station_timing_offsets(self):
         """Determine the offsets between the stations.
