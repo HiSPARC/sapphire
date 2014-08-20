@@ -9,7 +9,7 @@ import random
 import numpy as np
 
 from .base import BaseSimulation
-
+from ..utils import ceil_in_base
 
 class HiSPARCSimulation(BaseSimulation):
 
@@ -44,6 +44,15 @@ class HiSPARCSimulation(BaseSimulation):
         """Simulate uncertainty from GPS receiver"""
 
         return np.random.normal(0, 4.5)
+
+    def simulate_adc_sampling(self, t):
+        """Simulate ADC time binning due to the sampling frequency
+
+        :param t: time to be binned.
+        :returns: time ceiled in 2.5 ns base.
+
+        """
+        return ceil_in_base(t, 2.5)
 
     def simulate_signal_transport_time(self, n=1):
         """ Simulate transport times of scintillation light to the PMT

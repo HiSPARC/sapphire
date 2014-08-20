@@ -149,7 +149,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             transporttimes = self.simulate_signal_transport_time(n_detected)
             for i in range(n_detected):
                 detected[i] += transporttimes[i]
-            observables = {'n': n_detected, 't': min(detected)}
+            observables = {'n': n_detected,
+                           't': self.simulate_adc_sampling(min(detected))}
         else:
             observables = {'n': 0., 't': -999}
 
@@ -232,7 +233,8 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
             transporttimes = self.simulate_signal_transport_time(n_detected)
             for i in range(n_detected):
                 detected[i] += transporttimes[i]
-            observables = {'n': n_detected, 't': min(detected)}
+            observables = {'n': n_detected,
+                           't': self.simulate_adc_sampling(min(detected))}
         else:
             observables = {'n': 0., 't': -999}
 
@@ -312,19 +314,20 @@ class DetectorSignalSimulation(GroundParticlesSimulation):
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
                   y - detector_boundary, x + detector_boundary))
-        detected = [[row['t'], row['p_x'], row['p_y'], row['p_z']]
+        detected = [(row['t'], row['p_x'], row['p_y'], row['p_z'])
                     for row in self.groundparticles.where(query)]
         if detected:
             particle_momenta = ((p[1], p[2], p[3]) for p in detected)
             mips = self.simulate_detector_mips(particle_momenta)
 
             # simulation of transport times
-
+            arrival_times = [t[0] for t in detected]
             n_detected = len(detected)
             transporttimes = self.simulate_signal_transport_time(n_detected)
             for i in range(n_detected):
-                detected[i][0] += transporttimes[i]
-            observables = {'n': mips, 't': np.min(detected, 0)[0]}
+                arrival_times[i] += transporttimes[i]
+            observables = {'n': mips,
+                           't': self.simulate_adc_sampling(min(arrival_times))}
         else:
             observables = {'n': 0., 't': -999}
 

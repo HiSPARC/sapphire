@@ -72,9 +72,10 @@ class FlatFrontSimulation(HiSPARCSimulation):
         the detector.
 
         """
-        arrival_time = (self.get_arrival_time(detector, shower_parameters) +
-                        self.simulate_signal_transport_time(1)[0] +
-                        detector.offset)
+        arrival_time = self.simulate_adc_sampling(
+                           self.get_arrival_time(detector, shower_parameters) +
+                           self.simulate_signal_transport_time(1)[0] +
+                           detector.offset)
         observables = {'t': arrival_time}
 
         return observables
@@ -115,12 +116,12 @@ class FlatFrontSimulation(HiSPARCSimulation):
         arrival_times = [station_observables['t%d' % id] for id in ids]
         ext_timestamp = shower_parameters['ext_timestamp']
 
-        first_time = floor(sorted(arrival_times)[0])
+        first_time = sorted(arrival_times)[0]
         for id in ids:
             station_observables['t%d' % id] -= first_time
 
         arrival_times = [station_observables['t%d' % id] for id in ids]
-        trigger_time = ceil(sorted(arrival_times)[1])
+        trigger_time = sorted(arrival_times)[1]
         station_observables['t_trigger'] = trigger_time
 
         ext_timestamp += int(first_time + trigger_time + station.gps_offset +
@@ -174,7 +175,7 @@ class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
             station_observables['t%d' % id] -= first_time
 
         arrival_times = [station_observables['t%d' % id] for id in ids]
-        trigger_time = ceil(sorted(arrival_times)[1])
+        trigger_time = sorted(arrival_times)[1]
         station_observables['t_trigger'] = trigger_time
 
         ext_timestamp += int(first_time + trigger_time)
