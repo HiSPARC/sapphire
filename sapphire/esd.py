@@ -399,7 +399,7 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
     row['N'] = len(coincidence)
     row['timestamp'] = int(coincidence[0][4])
     row['nanoseconds'] = int(coincidence[0][5])
-    row['ext_timestamp'] = (int(coincidence[0][4]) * long(1e9) +
+    row['ext_timestamp'] = (int(coincidence[0][4]) * int(1e9) +
                             int(coincidence[0][5]))
     for event in coincidence:
         station_number = int(event[1])
@@ -442,7 +442,7 @@ def _read_line_and_store_event(line, table):
     event_id = len(table)
     timestamp = int(timestamp)
     nanoseconds = int(nanoseconds)
-    ext_timestamp = timestamp * long(1e9) + nanoseconds
+    ext_timestamp = timestamp * int(1e9) + nanoseconds
     pulseheights = [int(ph1), int(ph2), int(ph3), int(ph4)]
     integrals = [int(int1), int(int2), int(int3), int(int4)]
     n1 = float(n1)

@@ -98,7 +98,7 @@ class StoreKascadeData(object):
         tablerow['event_id'] = Ieve
         tablerow['timestamp'] = Gt
         tablerow['nanoseconds'] = Mmn
-        tablerow['ext_timestamp'] = Gt * long(1e9) + Mmn
+        tablerow['ext_timestamp'] = Gt * int(1e9) + Mmn
         tablerow['energy'] = EnergyArray
         tablerow['core_pos'] = [Xc, Yc]
         tablerow['zenith'] = Ze
@@ -151,7 +151,7 @@ class KascadeCoincidences(object):
 
         # Shift the kascade data instead of the hisparc data. There is less of
         # it, so this is much faster.
-        k['ext_timestamp'] += long(-1e9) * timeshift
+        k['ext_timestamp'] += int(-1e9) * timeshift
 
         if dtlimit:
             # dtlimit in ns

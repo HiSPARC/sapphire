@@ -98,7 +98,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             elif shower_azimuth <= -pi:
                 shower_azimuth += 2 * pi
 
-            shower_parameters = {'ext_timestamp': (long(1e9) + i) * long(1e9),
+            shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
@@ -184,8 +184,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             ext_timestamp = shower_parameters['ext_timestamp']
             ext_timestamp += int(trigger_time + station.gps_offset +
                                 self.simulate_gps_uncertainty())
-            timestamp = int(ext_timestamp / long(1e9))
-            nanoseconds = int(ext_timestamp % long(1e9))
+            timestamp = int(ext_timestamp / int(1e9))
+            nanoseconds = int(ext_timestamp % int(1e9))
 
             gps_timestamp = {'ext_timestamp': ext_timestamp,
                              'timestamp': timestamp, 'nanoseconds': nanoseconds}

@@ -56,7 +56,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         for i in pbar(range(self.N)):
-            shower_parameters = {'ext_timestamp': (long(1e9) + i) * long(1e9),
+            shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'azimuth': self.generate_azimuth(),
                                  'zenith': self.generate_zenith(),
                                  'core_pos': (None, None),
@@ -126,8 +126,8 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         ext_timestamp += int(first_time + trigger_time + station.gps_offset +
                              self.simulate_gps_uncertainty())
-        timestamp = int(ext_timestamp / long(1e9))
-        nanoseconds = int(ext_timestamp % long(1e9))
+        timestamp = int(ext_timestamp / int(1e9))
+        nanoseconds = int(ext_timestamp % int(1e9))
 
         gps_timestamp = {'ext_timestamp': ext_timestamp,
                          'timestamp': timestamp, 'nanoseconds': nanoseconds}
@@ -179,8 +179,8 @@ class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
         station_observables['t_trigger'] = trigger_time
 
         ext_timestamp += int(first_time + trigger_time)
-        timestamp = int(ext_timestamp / long(1e9))
-        nanoseconds = int(ext_timestamp % long(1e9))
+        timestamp = int(ext_timestamp / ing(1e9))
+        nanoseconds = int(ext_timestamp % int(1e9))
 
         gps_timestamp = {'ext_timestamp': ext_timestamp,
                          'timestamp': timestamp, 'nanoseconds': nanoseconds}
