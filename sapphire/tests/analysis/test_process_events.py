@@ -4,6 +4,7 @@ import os
 import shutil
 import tables
 import sys
+import warnings
 
 from mock import patch
 
@@ -18,11 +19,13 @@ DATA_GROUP = '/s501'
                  'Missing test datafile.')
 class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
+        warnings.filterwarnings('ignore')
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessEvents(self.data, DATA_GROUP, progress=False)
 
     def tearDown(self):
+        warnings.resetwarnings()
         self.data.close()
         os.remove(self.data_path)
 
@@ -49,8 +52,10 @@ class ProcessEventsTests(unittest.TestCase):
         self.assertEqual(self.proc.first_above_threshold(trace, 4), 2)
         self.assertEqual(self.proc.first_above_threshold(trace, 5), -999)
 
+#     @patch.object(process_events.FindMostProbableValueInSpectrum, 'find_mpv')
     def test__process_pulseintegrals(self):
         self.proc.limit = 1
+#         mock_find_mpv.return_value = (-999, False)
         # Because of small data sample fit fails for detector 1
         self.assertEqual(self.proc._process_pulseintegrals()[0][1], -999.)
         self.assertAlmostEqual(self.proc._process_pulseintegrals()[0][3], 3.98951741969)
@@ -74,6 +79,7 @@ class ProcessEventsTests(unittest.TestCase):
 
 class ProcessIndexedEventsTests(ProcessEventsTests):
     def setUp(self):
+        warnings.filterwarnings('ignore')
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessIndexedEvents(self.data, DATA_GROUP, [0, 10], progress=False)
@@ -89,6 +95,7 @@ class ProcessIndexedEventsTests(ProcessEventsTests):
 
 class ProcessEventsWithLINTTests(ProcessEventsTests):
     def setUp(self):
+        warnings.filterwarnings('ignore')
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessEventsWithLINT(self.data, DATA_GROUP, progress=False)
@@ -109,6 +116,7 @@ class ProcessEventsWithLINTTests(ProcessEventsTests):
 
 class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
     def setUp(self):
+        warnings.filterwarnings('ignore')
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
         self.proc = process_events.ProcessEventsWithTriggerOffset(self.data, DATA_GROUP, progress=False)
