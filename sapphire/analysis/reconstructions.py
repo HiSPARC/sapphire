@@ -98,7 +98,7 @@ class ReconstructESDEvents(object):
         valid_ids = [id for id in range(4)
                      if event['t%d' % (id + 1)] not in ERR]
         if detector_ids is not None:
-           detector_ids = [d for d in detector_ids if d in valid_ids]
+            detector_ids = [d for d in detector_ids if d in valid_ids]
         else:
             detector_ids = valid_ids
 
