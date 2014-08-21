@@ -1,7 +1,11 @@
 """Find the most probable value in a HiSPARC spectrum.
 
+:class:`FastFindMostProbableValueInSpectrum`
+    find the most probable value in a HiSPARC spectrum using a fast
+    algorithm
 :class:`FindMostProbableValueInSpectrum`
-   find the most probable value in a HiSPARC spectrum
+    find the most probable value in a HiSPARC spectrum using a more
+    elaborate approach
 
 """
 import datetime
@@ -23,7 +27,8 @@ HIST_URL = 'http://data.hisparc.nl/show/source/pulseintegral/%d/%d/%d/%d/'
 MPV_FIT_WIDTH_FACTOR = .4
 
 
-class FindMostProbableValueInSpectrum(object):
+class FastFindMostProbableValueInSpectrum(object):
+
     """Find the most probable value (MPV) in a HiSPARC spectrum.
 
     This is a fast algorithm to find the MPV value in a HiSPARC spectrum.
@@ -37,6 +42,8 @@ class FindMostProbableValueInSpectrum(object):
          left by the numerically largest bin-to-bin increase in the
          number of counts.
        * the MIP peak can be approximated by a normal distribution.
+
+    This algorithm can fail when the MIP peak is not pronounced.
 
     Public methods:
 
@@ -160,6 +167,108 @@ class FindMostProbableValueInSpectrum(object):
             raise RuntimeError("Fitted MPV value outside range")
 
         return mpv
+
+
+class FindMostProbableValueInSpectrum(FastFindMostProbableValueInSpectrum):
+
+    """Find the most probable value (MPV) in a HiSPARC spectrum.
+
+    This is an improved algorithm to find the MPV value in a HiSPARC spectrum.
+    The MPV value indicates the position of the minimum-ionizing particles
+    (MIP) peak.  The algorithm makes some assumptions about the shape of
+    the spectrum:
+
+       * the spectrum includes the gamma peak (left-most part of
+         spectrum) which has more counts per bin than the MIP peak.
+       * the spectrum can be fit with a power law, and the result loosely
+         follows the spectrum over the complete range
+       * when the power law fit is subtracted from the spectrum, the MIP
+         peak either shows up clearly, or very poorly (when absent).
+
+    This algorithm detects MIP peaks even if there is no clear dip between
+    the gamma slope and MIP peak.  It even succeeds for most 'I think that
+    might be a bump there' situations.
+
+    Public methods:
+
+    :meth:`find_mpv`
+       Find the most probable value
+    :meth:`find_first_guess_mpv`
+       Make a first guess of the most probable value
+    :meth:`fit_mpv`
+       Based on a first guess, fit the MIP peak to obtain the MPV
+
+    """
+
+    def __init__(self, n, bins):
+        """Initialize the class instance.
+
+        On initialization, a power law is fitted to and subtracted from
+        the data.  Then, the data is normalized so its maximum is 1.
+
+        :param n, bins: histogram counts and bins, as obtained using
+            :func:`numpy.histogram`.
+
+        """
+        reduced_y = self.fit_and_subtract_power_law(n, bins)
+        super(FindMostProbableValueInSpectrum, self).__init__(reduced_y,
+                                                              bins)
+
+    def fit_and_subtract_power_law(self, n, bins):
+        x = (bins[:-1] + bins[1:]) / 2
+
+        # cut off trigger from the left
+        left_idx = n.argmax()
+        y = n[left_idx:]
+        x = x[left_idx:]
+
+        # Fit with a power law
+        f = lambda x, a, b: a * x ** b
+        popt, pcov = curve_fit(f, x, y)
+
+        # Subtract power law from data
+        ty = y - f(x, *popt)
+        reduced_y = ty.clip(0, max(ty))
+
+        # Fake single high bin at left, because the 'fast' algorithm will
+        # cut off the maximum
+        reduced_y[0] = max(reduced_y) + 1
+
+        return reduced_y / reduced_y.max()
+
+    def find_mpv(self):
+        """Find the most probable value.
+
+        First perform a first guess, then use that value to fit the MIP
+        peak.
+
+        :return mpv: best guess of the most probable value
+        :return boolean is_fitted: indicates if the fit was successful.
+
+        """
+        smoothness = self.get_smoothness_of_data()
+        if smoothness > 1:
+            # Do not even try to fit, there is no MIP peak.
+            return (-999, False)
+        else:
+            return super(FindMostProbableValueInSpectrum, self).find_mpv()
+
+    def get_smoothness_of_data(self):
+        """Quantify the smoothness of the data.
+
+        After the power law fit and subtraction, the resulting data should
+        either show a smooth bump (the MIP peak) or have a very ragged
+        appearance.  This method quantifies the smoothness of the data.
+
+        A smoothness < 1 is good.  Larger than 1 is bad.
+
+        """
+        # Do not include the fake maximum value in the first bin
+        y = self.n[1:]
+        # Based on two values, linearly extrapolate the third value.
+        # Calculate the difference with the actual value and sum over
+        # them.
+        return ((2 * y[1:-1] - y[:-2] - y[2:]) ** 2).sum()
 
 
 def main():
