@@ -3,9 +3,10 @@
 :class:`FastFindMostProbableValueInSpectrum`
     find the most probable value in a HiSPARC spectrum using a fast
     algorithm
-:class:`FindMostProbableValueInSpectrum`
+:class:`PowerLawFindMostProbableValueInSpectrum`
     find the most probable value in a HiSPARC spectrum using a more
-    elaborate approach
+    elaborate approach, useful if the MIP peak is not clearly separated
+    from the gamma slope.
 
 """
 import datetime
@@ -25,6 +26,18 @@ from sapphire.api import Network
 HIST_URL = 'http://data.hisparc.nl/show/source/pulseintegral/%d/%d/%d/%d/'
 
 MPV_FIT_WIDTH_FACTOR = .4
+
+
+class FindMostProbableValueInSpectrum(object):
+
+    def __init__(self, n, bins):
+        self.n, self.bins = n, bins
+
+    def find_mpv(self):
+        mpv, is_successful = FastFindMostProbableValueInSpectrum(self.n, self.bins).find_mpv()
+        if not is_successful:
+            mpv, is_successful = PowerLawFindMostProbableValueInSpectrum(self.n, self.bins).find_mpv()
+        return mpv, is_successful
 
 
 class FastFindMostProbableValueInSpectrum(object):
@@ -169,14 +182,15 @@ class FastFindMostProbableValueInSpectrum(object):
         return mpv
 
 
-class FindMostProbableValueInSpectrum(FastFindMostProbableValueInSpectrum):
+class PowerLawFindMostProbableValueInSpectrum(FastFindMostProbableValueInSpectrum):
 
     """Find the most probable value (MPV) in a HiSPARC spectrum.
 
-    This is an improved algorithm to find the MPV value in a HiSPARC spectrum.
-    The MPV value indicates the position of the minimum-ionizing particles
-    (MIP) peak.  The algorithm makes some assumptions about the shape of
-    the spectrum:
+    This is an improved algorithm to find the MPV value in a HiSPARC
+    spectrum, in the case that there is no clear separation between the
+    gamma and MIP peak. The MPV value indicates the position of the
+    minimum-ionizing particles (MIP) peak.  The algorithm makes some
+    assumptions about the shape of the spectrum:
 
        * the spectrum includes the gamma peak (left-most part of
          spectrum) which has more counts per bin than the MIP peak.
@@ -187,7 +201,10 @@ class FindMostProbableValueInSpectrum(FastFindMostProbableValueInSpectrum):
 
     This algorithm detects MIP peaks even if there is no clear dip between
     the gamma slope and MIP peak.  It even succeeds for most 'I think that
-    might be a bump there' situations.
+    might be a bump there' situations.  However, it can spectacularly fail
+    in the case of a very steep gamma slope at the very left of the
+    spectrum, with a large separation between gamma and MIP peak.  This
+    happens a lot for four-detector stations.
 
     Public methods:
 
@@ -206,33 +223,41 @@ class FindMostProbableValueInSpectrum(FastFindMostProbableValueInSpectrum):
         On initialization, a power law is fitted to and subtracted from
         the data.  Then, the data is normalized so its maximum is 1.
 
+        Raises RuntimeError if the power law fit fails.
+
         :param n, bins: histogram counts and bins, as obtained using
             :func:`numpy.histogram`.
 
         """
         reduced_y = self.fit_and_subtract_power_law(n, bins)
-        super(FindMostProbableValueInSpectrum, self).__init__(reduced_y,
-                                                              bins)
+        super(PowerLawFindMostProbableValueInSpectrum, self).__init__(
+            reduced_y, bins)
 
     def fit_and_subtract_power_law(self, n, bins):
-        x = (bins[:-1] + bins[1:]) / 2
+        bins_x = (bins[:-1] + bins[1:]) / 2
 
         # cut off trigger from the left
         left_idx = n.argmax()
         y = n[left_idx:]
-        x = x[left_idx:]
+        x = bins_x[left_idx:]
 
         # Fit with a power law
         f = lambda x, a, b: a * x ** b
-        popt, pcov = curve_fit(f, x, y)
+        # first guess: y[0] is (much higher than) maximum, slope is
+        # negative
+        p0 = [y[0], -1]
+        popt, pcov = curve_fit(f, x, y, p0=p0)
 
-        # Subtract power law from data
-        ty = y - f(x, *popt)
+        print popt
+
+        # Subtract power law from original (!) data
+        ty = n - f(bins_x, *popt)
         reduced_y = ty.clip(0, max(ty))
+        reduced_y = ty
 
         # Fake single high bin at left, because the 'fast' algorithm will
         # cut off the maximum
-        reduced_y[0] = max(reduced_y) + 1
+        # reduced_y[0] = max(reduced_y) + 1
 
         return reduced_y / reduced_y.max()
 
@@ -247,11 +272,11 @@ class FindMostProbableValueInSpectrum(FastFindMostProbableValueInSpectrum):
 
         """
         smoothness = self.get_smoothness_of_data()
-        if smoothness > 1:
+        if smoothness > 10:
             # Do not even try to fit, there is no MIP peak.
             return (-999, False)
         else:
-            return super(FindMostProbableValueInSpectrum, self).find_mpv()
+            return super(PowerLawFindMostProbableValueInSpectrum, self).find_mpv()
 
     def get_smoothness_of_data(self):
         """Quantify the smoothness of the data.
@@ -278,13 +303,16 @@ def main():
     yesterday = today - datetime.timedelta(days=1)
     station_ids = get_station_ids_with_data(yesterday)
 
+    station_ids = [2003, 2004, 2101, 13003, 13102, 13201, 20001, 20003]
     for station in station_ids:
         if station == 10:
+            # Problem with only slave traces...?
             continue
         print station
         n, bins = get_histogram_for_station_on_date(station, yesterday)
-        find_mpv = FindMostProbableValueInSpectrum(n, bins)
+        find_mpv = PowerLawFindMostProbableValueInSpectrum(n, bins)
         mpv, is_fitted = find_mpv.find_mpv()
+        print find_mpv.get_smoothness_of_data()
 
         plt.figure()
         plt.plot((bins[:-1] + bins[1:]) / 2., n)
@@ -332,5 +360,5 @@ def get_histogram_for_station_on_date(station_id, date):
 
 if __name__ == '__main__':
     warnings.simplefilter('always')
-    main()
+    # main()
     plt.show()
