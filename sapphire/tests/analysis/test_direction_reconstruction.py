@@ -116,6 +116,84 @@ class BaseAlgorithm(object):
                 self.assertAlmostEqual(theta, zenith, 3)
 
 
+class AltitudeAlgorithm(object):
+
+    """Use this class to check the altitude support
+
+    They should give similar results and errors in some cases.
+
+    """
+
+    def call_reconstruct(self, t, x, y, z):
+        return self.algorithm.reconstruct_common(t, x, y, z)
+
+    def test_stations_altitude(self):
+
+        pass
+
+
+class MultiAlgorithm(object):
+
+    """Use this class to check the different algorithms for more stations
+
+    They should give similar results and errors in some cases.
+
+    """
+
+    def call_reconstruct(self, t, x, y, z):
+        return self.algorithm.reconstruct_common(t, x, y, z)
+
+    def test_diamond_stations(self):
+        """Simple shower from specific zenith angles."""
+
+        c = .3
+
+        x = (0., -5., 5., 10.)
+        y = (sqrt(100 - 25), 0., 0., sqrt(100 - 25))
+        z = (0., 0., 0., 0.)
+
+        # triangle height
+        h = sqrt(100 - 25)
+
+        times = (2.5, 5., 7.5, 10., 12.5, 15., 17.5, 20., 22.5, 25., 27.5)
+
+        for time in times:
+            zenith = arcsin((time * c) / h)
+
+            t = [0., 0., 0., 0.]
+            t[1] = time
+            t[3] = -time
+            azimuth = pi / 6
+            theta, phi = self.call_reconstruct(t, x, y, z)
+            self.assertAlmostEqual(phi, azimuth, 2)
+            self.assertAlmostEqual(theta, zenith, 3)
+
+    def test_square_stations(self):
+        """Simple shower from specific zenith angles."""
+
+        c = .3
+
+        x = (0., 5., 5., 0.)
+        y = (0, 0., 5., 5)
+        z = (0., 0., 0., 0.)
+
+        # triangle height
+        h = sqrt(50. / 4.)
+
+        times = (2.5, 5., 7.5, 10.)
+
+        for time in times:
+            zenith = arcsin((time * c) / h)
+
+            t = [0., 0., 0., 0.]
+            t[0] = -time
+            t[2] = time
+            azimuth = - 3 * pi / 4
+            theta, phi = self.call_reconstruct(t, x, y, z)
+            self.assertAlmostEqual(phi, azimuth, 2)
+            self.assertAlmostEqual(theta, zenith, 3)
+
+
 class DirectAlgorithmTest(unittest.TestCase, BaseAlgorithm):
 
     def setUp(self):
@@ -128,16 +206,25 @@ class DirectAlgorithmCartesian2DTest(unittest.TestCase, BaseAlgorithm):
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian2D()
 
 
-class DirectAlgorithmCartesian3DTest(unittest.TestCase, BaseAlgorithm):
+class DirectAlgorithmCartesian3DTest(unittest.TestCase, BaseAlgorithm,
+                                     AltitudeAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian3D()
 
 
-class FitAlgorithmTest(unittest.TestCase, BaseAlgorithm):
+class FitAlgorithmTest(unittest.TestCase, BaseAlgorithm, AltitudeAlgorithm,
+                       MultiAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.FitAlgorithm()
+
+
+class RegressionTest(unittest.TestCase, BaseAlgorithm, MultiAlgorithm):
+
+    def setUp(self):
+        print 'regress'
+        self.algorithm = direction_reconstruction.Regression()
 
 
 if __name__ == '__main__':
