@@ -65,9 +65,9 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         numbers = np.random.random(n)
-        if n < 25:
-            dt = [2.5507 + 2.39885 * x if x < 0.39377 else
-                  1.56764 + 4.89536 * x for x in numbers]
+        if n < 20:
+            dt = np.array([2.5507 + 2.39885 * number if number < 0.39377 else
+                           1.56764 + 4.89536 * number for number in numbers])
         else:
             dt = np.where(numbers < 0.39377,
                           2.5507 + 2.39885 * numbers,

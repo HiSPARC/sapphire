@@ -127,30 +127,15 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         of leptons in the detector and the arrival time of the first lepton
         passing the detector.
 
-        The detector is approximated by a square with a surface of 0.5
-        square meter which is *not* correctly rotated.  In fact, during
-        the simulation, the rotation of the detector is undefined.  This
-        might be faster than a more thorough implementation.
-
         """
-        detector_boundary = 0.3535534
-        x, y = detector.get_xy_coordinates()
+        particles = self.get_particles_in_detector(detector)
+        n_detected = len(particles)
 
-        # particle ids 2, 3, 5, 6 are electrons and muons, and id 4 is no
-        # longer used (were neutrino's).
-        query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
-                 ' & (particle_id >= 2) & (particle_id <= 6)' %
-                 (x - detector_boundary, x + detector_boundary,
-                  y - detector_boundary, x + detector_boundary))
-        detected = [row['t'] for row in self.groundparticles.where(query)]
-
-        if detected:
-            n_detected = len(detected)
-            transporttimes = self.simulate_signal_transport_time(n_detected)
-            for i in range(n_detected):
-                detected[i] += transporttimes[i]
+        if n_detected:
+            particles['t'] += self.simulate_signal_transport_time(n_detected)
+            first_signal = particles['t'].min()
             observables = {'n': n_detected,
-                           't': self.simulate_adc_sampling(min(detected))}
+                           't': self.simulate_adc_sampling(first_signal)}
         else:
             observables = {'n': 0., 't': -999}
 
@@ -193,6 +178,30 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         return station_observables
 
+    def get_particles_in_detector(self, detector):
+        """Get particles that hit a detector.
+
+        Particle ids 2, 3, 5, 6 are electrons and muons,
+        id 4 is no longer used (were neutrino's).
+
+        The detector is approximated by a square with a surface of 0.5
+        square meter which is *not* correctly rotated.  In fact, during
+        the simulation, the rotation of the detector is undefined.  This
+        is faster than a more thorough implementation.
+
+        *Detector height is ignored!*
+
+        :param detector: detector for which to get particles.
+
+        """
+        x, y = detector.get_xy_coordinates()
+        detector_boundary = 0.3535534
+        query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+                 ' & (particle_id >= 2) & (particle_id <= 6)' %
+                 (x - detector_boundary, x + detector_boundary,
+                  y - detector_boundary, x + detector_boundary))
+        return self.groundparticles.read_where(query)
+
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
 
@@ -202,7 +211,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
     """
 
-    def simulate_detector_response(self, detector, shower_parameters):
+    def get_particles_in_detector(self, detector):
         """Simulate the detector detection area accurately.
 
         First particles are filtered to see which fall inside a
@@ -226,19 +235,8 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
                  (x - detector_boundary, x + detector_boundary,
                   y - detector_boundary, x + detector_boundary,
                   line1, line1, line2, line2))
-        detected = [row['t'] for row in self.groundparticles.where(query)]
 
-        if detected:
-            n_detected = len(detected)
-            transporttimes = self.simulate_signal_transport_time(n_detected)
-            for i in range(n_detected):
-                detected[i] += transporttimes[i]
-            observables = {'n': n_detected,
-                           't': self.simulate_adc_sampling(min(detected))}
-        else:
-            observables = {'n': 0., 't': -999}
-
-        return observables
+        return self.groundparticles.read_where(query)
 
     def get_line_boundary_eqs(self, p0, p1, p2):
         """Get line equations using three points
@@ -305,29 +303,16 @@ class DetectorSignalSimulation(GroundParticlesSimulation):
         queries.
 
         """
-        detector_boundary = 0.3535534
-        x, y = detector.get_xy_coordinates()
+        particles = self.get_particles_in_detector(detector)
+        n_detected = len(particles)
 
-        # particle ids 2, 3, 5, 6 are electrons and muons, and id 4 is no
-        # longer used (were neutrino's).
-        query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
-                 ' & (particle_id >= 2) & (particle_id <= 6)' %
-                 (x - detector_boundary, x + detector_boundary,
-                  y - detector_boundary, x + detector_boundary))
-        detected = [(row['t'], row['p_x'], row['p_y'], row['p_z'])
-                    for row in self.groundparticles.where(query)]
-        if detected:
-            particle_momenta = ((p[1], p[2], p[3]) for p in detected)
+        if n_detected:
+            particle_momenta = ((p['p_x'], p['p_y'], p['p_z']) for p in particles)
             mips = self.simulate_detector_mips(particle_momenta)
-
-            # simulation of transport times
-            arrival_times = [t[0] for t in detected]
-            n_detected = len(detected)
-            transporttimes = self.simulate_signal_transport_time(n_detected)
-            for i in range(n_detected):
-                arrival_times[i] += transporttimes[i]
+            particles['t'] += self.simulate_signal_transport_time(n_detected)
+            first_signal = particles['t'].min()
             observables = {'n': mips,
-                           't': self.simulate_adc_sampling(min(arrival_times))}
+                           't': self.simulate_adc_sampling(first_signal)}
         else:
             observables = {'n': 0., 't': -999}
 
