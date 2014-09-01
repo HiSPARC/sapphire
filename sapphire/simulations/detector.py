@@ -60,6 +60,9 @@ class HiSPARCSimulation(BaseSimulation):
         Generates random transit times within a given distribution and
         adds it to the times the particles passed the detector.
 
+        Be careful when editting this function, be sure to check both
+        the single and vectorized part.
+
         :param n: number of times to simulate
         :returns: list of signal transport times
 
@@ -77,34 +80,53 @@ class HiSPARCSimulation(BaseSimulation):
     def simulate_detector_mips(self, particle_momenta):
         """Simulate the detector signal response for particles
 
-        :param particle_momenta: a list of particle momenta.
+        :param particle_momenta: an array of particle rows.
 
         """
-        mips = sum(self.simulate_detector_mip(p) for p in particle_momenta)
+        if len(particle_momenta) < 4:
+            mips = sum(simulate_detector_mip(p) for p in particle_momenta)
+        else:
+            mips = sum(simulate_detector_mip(particle_momenta))
+
         return mips
 
     def simulate_detector_mip(self, p):
-        """Simulate the detector signal for one particle
+        """Simulate the detector signal for particles
 
-        :param p: tuple with the x, y, z components of the particle momentum.
+        Be careful when editting this function, be sure to check both
+        the single and vectorized part.
+
+        :param p: particle row or rows with the p_[x, y, z] components
+                  of the particle momentum.
 
         """
-        px, py, pz = p
         # determination of lepton angle of incidence
-        costheta = abs(pz) / sqrt(px * px + py * py + pz * pz)
+        costheta = abs(p['p_z']) / sqrt(p['p_x'] ** 2 + p['p_y'] ** 2 +
+                                        p['p_z'] ** 2)
 
         # Simulation of convoluted distribution of electron and
         # muon energy losses with the scintillator response
-        y = random.random()
+        if p.ndim == 0:
+            y = np.random.random()
 
-        if y < 0.3394:
-            mip = (0.48 + 0.8583 * sqrt(y)) / costheta
-        elif y < 0.4344:
-            mip = (0.73 + 0.7366 * y) / costheta
-        elif y < 0.9041:
-            mip = (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta
+            if y < 0.3394:
+                mip = (0.48 + 0.8583 * sqrt(y)) / costheta
+            elif y < 0.4344:
+                mip = (0.73 + 0.7366 * y) / costheta
+            elif y < 0.9041:
+                mip = (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta
+            else:
+                mip = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
         else:
-            mip = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
+            y = np.random.random(len(p))
+
+            mip = np.where(y < 0.3394,
+                           (0.48 + 0.8583 * sqrt(y)) / costheta,
+                           (0.73 + 0.7366 * y) / costheta)
+            mip = np.where(y < 0.4344, mip,
+                           (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta)
+            mip = np.where(y < 0.9041, mip,
+                           (2.28 - 2.1316 * sqrt(1 - y)) / costheta)
 
         return mip
 

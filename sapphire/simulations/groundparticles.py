@@ -132,9 +132,10 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         n_detected = len(particles)
 
         if n_detected:
+            mips = self.simulate_detector_mips(particles)
             particles['t'] += self.simulate_signal_transport_time(n_detected)
             first_signal = particles['t'].min()
-            observables = {'n': n_detected,
+            observables = {'n': mips,
                            't': self.simulate_adc_sampling(first_signal)}
         else:
             observables = {'n': 0., 't': -999}
@@ -284,36 +285,11 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         return b1, line, b2
 
 
-class DetectorSignalSimulation(GroundParticlesSimulation):
+class ParticleCounterSimulation(GroundParticlesSimulation):
 
-    """ More accuratly simulate the detection area of the detectors.
+    """Do not simulate mips, just count the number of particles."""
 
-    This requires a slightly more complex query which is a bit slower.
+    def simulate_detector_mips(self, particle_momenta):
+        """A mip for a mip, count number of particles in a detector."""
 
-    """
-
-    def simulate_detector_response(self, detector, shower_parameters):
-        """Simulate the detector detection area accurately.
-
-        First particles are filtered to see which fall inside a
-        non-rotated square box around the detector (i.e. sides of 1.2m).
-        For the remaining particles a more accurate query is used to see
-        which actually hit the detector. The advantage of using the
-        square is that column indexes can be used, which may speed up
-        queries.
-
-        """
-        particles = self.get_particles_in_detector(detector)
-        n_detected = len(particles)
-
-        if n_detected:
-            particle_momenta = ((p['p_x'], p['p_y'], p['p_z']) for p in particles)
-            mips = self.simulate_detector_mips(particle_momenta)
-            particles['t'] += self.simulate_signal_transport_time(n_detected)
-            first_signal = particles['t'].min()
-            observables = {'n': mips,
-                           't': self.simulate_adc_sampling(first_signal)}
-        else:
-            observables = {'n': 0., 't': -999}
-
-        return observables
+        return len(particle_momenta)
