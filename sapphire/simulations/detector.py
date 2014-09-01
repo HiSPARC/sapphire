@@ -84,9 +84,9 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         if len(particle_momenta) < 4:
-            mips = sum(simulate_detector_mip(p) for p in particle_momenta)
+            mips = sum(self.simulate_detector_mip(p) for p in particle_momenta)
         else:
-            mips = sum(simulate_detector_mip(particle_momenta))
+            mips = sum(self.simulate_detector_mip(particle_momenta))
 
         return mips
 
@@ -100,13 +100,14 @@ class HiSPARCSimulation(BaseSimulation):
                   of the particle momentum.
 
         """
-        # determination of lepton angle of incidence
-        costheta = abs(p['p_z']) / sqrt(p['p_x'] ** 2 + p['p_y'] ** 2 +
-                                        p['p_z'] ** 2)
 
         # Simulation of convoluted distribution of electron and
         # muon energy losses with the scintillator response
         if p.ndim == 0:
+            # determination of lepton angle of incidence
+            costheta = abs(p['p_z']) / sqrt(p['p_x'] ** 2 + p['p_y'] ** 2 +
+                                            p['p_z'] ** 2)
+
             y = np.random.random()
 
             if y < 0.3394:
@@ -118,15 +119,18 @@ class HiSPARCSimulation(BaseSimulation):
             else:
                 mip = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
         else:
+            # determination of lepton angle of incidence
+            costheta = abs(p['p_z']) / np.sqrt(p['p_x'] ** 2 + p['p_y'] ** 2 +
+                                               p['p_z'] ** 2)
             y = np.random.random(len(p))
 
             mip = np.where(y < 0.3394,
-                           (0.48 + 0.8583 * sqrt(y)) / costheta,
+                           (0.48 + 0.8583 * np.sqrt(y)) / costheta,
                            (0.73 + 0.7366 * y) / costheta)
             mip = np.where(y < 0.4344, mip,
-                           (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta)
+                           (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta)
             mip = np.where(y < 0.9041, mip,
-                           (2.28 - 2.1316 * sqrt(1 - y)) / costheta)
+                           (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
 
         return mip
 

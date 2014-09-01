@@ -11,8 +11,7 @@ from sapphire.simulations.groundparticles import GroundParticlesSimulation
 
 
 self_path = os.path.dirname(__file__)
-test_data_path = os.path.join(self_path,
-                              'test_data/groundparticles_sim.h5')
+test_data_path = os.path.join(self_path, 'test_data/groundparticles_sim.h5')
 
 
 def perform_simulation(filename):
@@ -20,7 +19,8 @@ def perform_simulation(filename):
 
     corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
     cluster = sapphire.clusters.SimpleCluster(size=50)
-    with tables.open_file(filename, 'w') as datafile:
+    filters = tables.Filters(complevel=1)
+    with tables.open_file(filename, 'w', filters=filters) as datafile:
         sim = GroundParticlesSimulation(corsika_data_path, 100, cluster,
                                         datafile, N=10, seed=1)
         sim.run()
@@ -37,11 +37,7 @@ def create_tempfile_path():
 def create_and_store_test_data():
     """Create test data for future acceptance testing"""
 
-    tmppath = create_tempfile_path()
-
-    perform_simulation(tmppath)
-    subprocess.check_call(['ptrepack', '-o', '--complevel', '1', tmppath,
-                           test_data_path])
+    perform_simulation(test_data_path)
 
 
 if __name__ == '__main__':

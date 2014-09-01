@@ -1,5 +1,6 @@
 import os
 import unittest
+import warnings
 
 from mock import patch
 import tables
@@ -9,6 +10,12 @@ from perform_simulation import (create_tempfile_path, perform_simulation,
 
 
 class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
+
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+
+    def tearDown(self):
+        warnings.resetwarnings()
 
     @patch('sapphire.utils.ProgressBar')
     def test_simulation_output(self, mock_progressbar):
