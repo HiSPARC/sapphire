@@ -138,6 +138,12 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
 class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
 
+    """This simulation does not simulate errors/uncertainties
+
+    This should result in perfect timing for the detectors.
+
+    """
+
     def __init__(self, *args, **kwargs):
         # Use the super of FlatFrontSimulation to avoid setting the offsets.
         super(FlatFrontSimulation, self).__init__(*args, **kwargs)
@@ -187,3 +193,33 @@ class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
         station_observables.update(gps_timestamp)
 
         return station_observables
+
+
+class FlatFrontSimulation2D(FlatFrontSimulation):
+
+    """This simualtion ignores detector altitudes."""
+
+    def get_arrival_time(self, detector, shower_parameters):
+        """Calculate arrival time
+
+        Ignore detector altitudes
+
+        Equation based on Fokkema2012 sec 4.2, eq 4.9.
+        (DOI: 10.3990/1.9789036534383)
+
+        """
+        c = 0.3
+        r1, phi1, _ = detector.cylindrical_coordinates
+        phi = shower_parameters['azimuth']
+        theta = shower_parameters['zenith']
+        r = r1 * cos(phi - phi1)
+        cdt = -r * sin(theta)
+        dt = cdt / c
+        return dt
+
+class FlatFrontSimulation2DWithoutErrors(FlatFrontSimulation2D,
+                                         FlatFrontSimulationWithoutErrors):
+
+    """Ignore altitude of detectors and do not simulate errors."""
+
+    pass
