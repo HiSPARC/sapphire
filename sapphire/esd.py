@@ -23,7 +23,7 @@ import itertools
 import collections
 
 import tables
-import progressbar
+from progressbar import ProgressBar, ETA, Bar, Percentage
 
 from . import api
 from . import clusters
@@ -142,10 +142,7 @@ def download_data(file, group, station_number, start=None, end=None,
     t_start = calendar.timegm(start.utctimetuple())
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
-    pbar = progressbar.ProgressBar(maxval=1.,
-                                   widgets=[progressbar.Percentage(),
-                                            progressbar.Bar(),
-                                            progressbar.ETA()]).start()
+    pbar = ProgressBar(maxval=1., widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in csv as they come streaming in
     prev_update = time.time()
@@ -216,10 +213,7 @@ def download_coincidences(file, cluster=None, stations=None,
     t_start = calendar.timegm(start.utctimetuple())
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
-    pbar = progressbar.ProgressBar(maxval=1.,
-                                   widgets=[progressbar.Percentage(),
-                                            progressbar.Bar(),
-                                            progressbar.ETA()]).start()
+    pbar = ProgressBar(maxval=1., widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in csv as they come streaming in, keep temporary
     # lists untill a full coincidence is in.

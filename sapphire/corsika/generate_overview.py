@@ -86,8 +86,7 @@ def get_simulations(simulations, overview, progress=False):
     """Get the information of the simulations and create a table."""
 
     simulations_table = overview.getNode('/simulations')
-    if progress:
-        simulations = pbar(simulations)
+    simulations = pbar(simulations, show=progress)
     for seeds in simulations:
         read_seeds(simulations_table, seeds)
     simulations_table.flush()

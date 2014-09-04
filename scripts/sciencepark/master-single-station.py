@@ -7,13 +7,13 @@ import itertools
 import tables
 import numpy as np
 from numpy import arctan2, cos, sin, arcsin, isnan, pi
-import progressbar as pb
 
 from sapphire.publicdb import download_data
 from sapphire.analysis.process_events import ProcessEvents, ProcessEventsWithLINT
 from sapphire.analysis.direction_reconstruction import \
         DirectionReconstruction
 from sapphire import storage, clusters
+from sapphire.utils import pbar
 
 
 class Master:
@@ -123,9 +123,7 @@ class Master:
             self.observables = self.data.create_table(group, 'observables',
                                             storage.EventObservables)
 
-            progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                               pb.ETA()])
-            for coincidence in progress(self.data.root.c_index):
+            for coincidence in pbar(self.data.root.c_index):
                 self.store_coincidence(coincidence)
 
             c_index = self.data.create_vlarray(group, 'c_index',
@@ -259,10 +257,8 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         self.cluster = coincidences_group._v_attrs.cluster
         self.results_group._v_attrs.cluster = self.cluster
 
-        progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                           pb.ETA()])
         sel_coincidences = coincidences.read_where('N >= 1')
-        for coincidence in progress(sel_coincidences):
+        for coincidence in pbar(sel_coincidences):
             self.reconstruct_individual_stations(coincidence)
             self.reconstruct_cluster_stations(coincidence)
 

@@ -35,6 +35,7 @@ import os.path
 
 import tables
 import numpy as np
+from progressbar import ProgressBar, ETA, Bar, Percentage
 
 from . import process_events
 from .. import storage
@@ -216,10 +217,8 @@ class Coincidences(object):
 
         # ProgressBar does not work for empty iterables.
         if len(self.coincidence_group._src_c_index):
-            if self.progress:
-                src_c_index = pbar(self.coincidence_group._src_c_index)
-            else:
-                src_c_index = self.coincidence_group._src_c_index
+            src_c_index = pbar(self.coincidence_group._src_c_index,
+                               show=self.progress)
             for coincidence in src_c_index:
                 self._store_coincidence(coincidence)
         else:
@@ -415,9 +414,8 @@ class Coincidences(object):
         prev_coincidence = []
 
         if self.progress and len(timestamps):
-            progress = pb.ProgressBar(maxval=len(timestamps),
-                                      widgets=[pb.Percentage(), pb.Bar(),
-                                               pb.ETA()]).start()
+            pbar = ProgressBar(maxval=len(timestamps),
+                               widgets=[Percentage(), Bar(), ETA()]).start()
 
         for i in xrange(len(timestamps)):
 
@@ -445,10 +443,10 @@ class Coincidences(object):
                     prev_coincidence = c
 
             if self.progress and not i % 5000:
-                progress.update(i)
+                pbar.update(i)
 
         if self.progress and len(timestamps):
-            progress.finish()
+            pbar.finish()
 
         return coincidences
 
@@ -511,10 +509,7 @@ class CoincidencesESD(Coincidences):
 
         # ProgressBar does not work for empty iterables.
         if len(self._src_c_index):
-            if self.progress:
-                src_c_index = pbar(self._src_c_index)
-            else:
-                src_c_index = self._src_c_index
+            src_c_index = pbar(self._src_c_index, show=self.progress)
             for coincidence in src_c_index:
                 self._store_coincidence(coincidence)
         else:

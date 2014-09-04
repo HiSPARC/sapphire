@@ -10,7 +10,6 @@ import pylab as plt
 from scipy import optimize
 from scipy.misc import comb
 from scipy.stats import scoreatpercentile
-import progressbar as pb
 
 from sapphire.simulations import ldf
 from sapphire import storage

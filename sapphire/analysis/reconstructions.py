@@ -84,7 +84,7 @@ class ReconstructESDEvents(object):
         :param detector_ids: use only these detectors for reconstructions.
 
         """
-        events = pbar(self.events) if self.progress else self.events
+        events = pbar(self.events, show=self.progress)
         angles = [self._reconstruct_direction(e, detector_ids) for e in events]
         self.theta, self.phi, self.detector_ids = zip(*angles)
 
@@ -255,9 +255,8 @@ class ReconstructESDCoincidences(object):
         """
         length = self.coincidences.nrows
         coincidences = self.cq.all_coincidences()
-        coincidence_events = self.cq.all_events(coincidences)
-        if self.progress:
-            coincidence_events = pbar(coincidence_events, length=length)
+        coincidence_events = pbar(self.cq.all_events(coincidences),
+                                  length=length, show=self.progress)
         angles = [self._reconstruct_direction(c) for c in coincidence_events]
         self.theta, self.phi, self.station_numbers = zip(*angles)
 
