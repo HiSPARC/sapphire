@@ -9,7 +9,7 @@
 
         import tables
 
-        from sapphire.publicdb import download_data
+        from sapphire.esd import download_data
         from sapphire.analysis import coincidences
 
 
