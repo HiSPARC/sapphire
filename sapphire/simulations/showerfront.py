@@ -41,7 +41,8 @@ class FlatFrontSimulation(HiSPARCSimulation):
         # Since the cluster is not rotated detector positions can be stored.
         for station in self.cluster.stations:
             for detector in station.detectors:
-                detector.cylindrical_coordinates = detector.get_cylindrical_coordinates()
+                detector.cylindrical_coordinates = \
+                    detector.get_cylindrical_coordinates()
 
     def generate_shower_parameters(self):
         """Generate shower parameters, i.e. azimuth and zenith angles.
@@ -144,15 +145,6 @@ class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
 
     """
 
-    def __init__(self, *args, **kwargs):
-        # Use the super of FlatFrontSimulation to avoid setting the offsets.
-        super(FlatFrontSimulation, self).__init__(*args, **kwargs)
-
-        # Since the cluster is not rotated detector positions can be stored.
-        for station in self.cluster.stations:
-            for detector in station.detectors:
-                detector.cylindrical_coordinates = detector.get_cylindrical_coordinates()
-
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
 
@@ -165,34 +157,20 @@ class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
 
         return observables
 
-    def simulate_gps(self, station_observables, shower_parameters, station):
-        """Simulate gps timestamp
+    def simulate_detector_offset(self):
+        """Disable detector offsets"""
 
-        Ensure that all detector arrival times are positive.
+        return 0.
 
-        """
-        n_detectors = len(station.detectors)
-        ids = range(1, n_detectors + 1)
-        arrival_times = [station_observables['t%d' % id] for id in ids]
-        ext_timestamp = shower_parameters['ext_timestamp']
+    def simulate_station_offset(self):
+        """Disable station offsets"""
 
-        first_time = floor(sorted(arrival_times)[0])
-        for id in ids:
-            station_observables['t%d' % id] -= first_time
+        return 0.
 
-        arrival_times = [station_observables['t%d' % id] for id in ids]
-        trigger_time = sorted(arrival_times)[1]
-        station_observables['t_trigger'] = trigger_time
+    def simulate_gps_uncertainty(self):
+        """Disable GPS uncertainty"""
 
-        ext_timestamp += int(first_time + trigger_time)
-        timestamp = int(ext_timestamp / ing(1e9))
-        nanoseconds = int(ext_timestamp % int(1e9))
-
-        gps_timestamp = {'ext_timestamp': ext_timestamp,
-                         'timestamp': timestamp, 'nanoseconds': nanoseconds}
-        station_observables.update(gps_timestamp)
-
-        return station_observables
+        return 0.
 
 
 class FlatFrontSimulation2D(FlatFrontSimulation):
