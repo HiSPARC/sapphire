@@ -85,18 +85,17 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         for i in pbar(range(self.N)):
             r = sqrt(np.random.uniform(0, R ** 2))
             phi = np.random.uniform(-pi, pi)
-            alpha = np.random.uniform(-pi, pi)
-
             x = r * cos(phi)
             y = r * sin(phi)
 
-            # Add Corsika shower azimuth to generated alpha
-            # and make them fit in (-pi, pi].
-            shower_azimuth = alpha + event_header.azimuth
-            if shower_azimuth > pi:
-                shower_azimuth -= 2 * pi
-            elif shower_azimuth <= -pi:
-                shower_azimuth += 2 * pi
+            # Subtract Corsika shower azimuth from desired shower azimuth
+            # make it fit in (-pi, pi] to get rotation angle of the cluster.
+            shower_azimuth = self.generate_azimuth()
+            alpha = shower_azimuth - event_header.azimuth
+            if alpha > pi:
+                alpha -= 2 * pi
+            elif alpha <= -pi:
+                alpha += 2 * pi
 
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'core_pos': (x, y),
