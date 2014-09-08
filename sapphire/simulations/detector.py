@@ -11,8 +11,8 @@ import numpy as np
 from .base import BaseSimulation
 from ..utils import ceil_in_base
 
-class HiSPARCSimulation(BaseSimulation):
 
+class HiSPARCSimulation(BaseSimulation):
 
     def simulate_detector_offsets(self, n_detectors):
         """Get multiple detector offsets
@@ -138,6 +138,11 @@ class HiSPARCSimulation(BaseSimulation):
         """Generate a random zenith
 
         Pick from the expected zenith distribution.
+
+        TODO: There is a difference between expected shower zeniths
+        detected on the ground and at the top of the atmosphere. So
+        simulations that use CORSIKA generated showers need to take that
+        into account.
 
         """
         p = np.random.random()
