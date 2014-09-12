@@ -2,6 +2,7 @@ import unittest
 import types
 from StringIO import StringIO
 
+from numpy import linspace, pi, random
 import progressbar
 
 from sapphire import utils
@@ -60,6 +61,26 @@ class InBaseTests(unittest.TestCase):
 
     def test_floor(self):
         self.assertEqual(utils.floor_in_base(2.4, 2.5), 0)
+
+
+class AngleBetweenTests(unittest.TestCase):
+
+    def test_zeniths(self):
+        for zenith in random.uniform(0, pi / 2, 10):
+            self.assertAlmostEqual(utils.angle_between(zenith, 0, 0, 0), zenith)
+            self.assertAlmostEqual(utils.angle_between(0, 0, zenith, 0), zenith)
+
+    def test_azimuths(self):
+        # Set both zeniths to pi/2 to give azimuth full effect.
+        z = pi / 2
+        for azimuth in random.uniform(-pi, pi, 20):
+            self.assertAlmostEqual(utils.angle_between(z, azimuth, z, 0), abs(azimuth))
+            self.assertAlmostEqual(utils.angle_between(z, 0, z, azimuth), abs(azimuth))
+
+    def test_no_zenith(self):
+        for azimuth in random.uniform(-pi, pi, 20):
+            self.assertAlmostEqual(utils.angle_between(0, azimuth, 0, 0), 0)
+            self.assertAlmostEqual(utils.angle_between(0, 0, 0, azimuth), 0)
 
 
 if __name__ == '__main__':
