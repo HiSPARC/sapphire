@@ -1,6 +1,6 @@
 """Perform simple simulations for timing
 
-Throw a flat shower front on a cluster from various angles.
+Throw a simulated shower front on a cluster from various angles.
 Simulate just the arrival times.
 
 Example usage::
@@ -17,11 +17,11 @@ Example usage::
     sim.run()
 
 """
-from math import pi, sin, cos, tan, floor
+from math import pi, sin, cos, tan, atan2, floor, sqrt
 
 import numpy as np
 
-from .detector import HiSPARCSimulation
+from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..utils import pbar
 
 
@@ -178,3 +178,113 @@ class FlatFrontSimulation2DWithoutErrors(FlatFrontSimulation2D,
     """Ignore altitude of detectors and do not simulate errors."""
 
     pass
+
+
+class ConeFrontSimulation(FlatFrontSimulation):
+
+    """This simulation uses a cone shaped shower front.
+
+    Ignore altitude of detectors.
+    The opening angle of the cone is given in the init
+
+    Example usage::
+
+        import tables
+
+        from sapphire.simulations.showerfront import ConeFrontSimulation
+        from sapphire.clusters import ScienceParkCluster
+
+        data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
+        cluster = ScienceParkCluster()
+
+        sim = ConeFrontSimulation(100, cluster, data, '/', 200)
+        sim.run()
+
+    """
+
+    def __init__(self, max_core_distance, *args, **kwargs):
+        """Calculate arrival time
+
+        :param cone_angle: half of the opening angle of the cone.
+
+        """
+        super(ConeFrontSimulation, self).__init__(*args, **kwargs)
+        self.max_core_distance = max_core_distance
+
+    def generate_shower_parameters(self):
+        """Generate shower parameters
+
+        For this cone-shaped showerfront, the core position, the azimuth
+        and zenith angle of the shower are generated.
+
+        :returns: dictionary with shower parameters: core_pos
+                  (x, y-tuple), azimuth and zenith.
+
+        """
+        R = self.max_core_distance
+
+        for i in pbar(range(self.N)):
+            r = sqrt(np.random.uniform(0, R ** 2))
+            phi = np.random.uniform(-pi, pi)
+
+            x = r * cos(phi)
+            y = r * sin(phi)
+
+            azimuth = self.generate_azimuth()
+
+            shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
+                                 'azimuth': azimuth,
+                                 'zenith': self.generate_zenith(),
+                                 'core_pos': (x, y),
+                                 'size': None,
+                                 'energy': None}
+
+            self._prepare_cluster_for_shower(x, y, azimuth)
+
+            yield shower_parameters
+
+    def _prepare_cluster_for_shower(self, x, y, alpha):
+        """Prepare the cluster object for the simulation of a shower.
+
+        Rotate and translate the cluster so that (0, 0) coincides with the
+        shower core position and 'East' coincides with the shower azimuth
+        direction.
+
+        """
+        # rotate the core position around the original cluster center
+        xp = x * cos(-alpha) - y * sin(-alpha)
+        yp = x * sin(-alpha) + y * cos(-alpha)
+
+        self.cluster.set_coordinates(-xp, -yp, 0, -alpha)
+
+    def get_arrival_time(self, detector, shower_parameters):
+        """Calculate arrival time"""
+
+        c = 0.3
+        x, y, z = detector.get_coordinates()
+        r1 = sqrt(x ** 2 + y ** 2)
+        phi1 = atan2(y, x)
+
+        phi = shower_parameters['azimuth']
+        theta = shower_parameters['zenith']
+        r = r1 * cos(phi - phi1) - z * tan(theta)
+        cdt = - (r * sin(theta) + z / cos(theta))
+
+        nx = sin(theta) * cos(phi)
+        ny = sin(theta) * sin(phi)
+        nz = cos(theta)
+
+        r_core = sqrt(x * x + y * y + z * z - (x * nx + y * ny + z * nz) ** 2)
+        t_shape = self.front_shape(r_core)
+        dt = t_shape + (cdt / c)
+
+        return dt
+
+    def front_shape(self, r):
+        """Delay of the showerfront relative to flat as function of distance
+
+        :param r: distance to the shower core in shower frame.
+        :returns: delay time of shower front.
+
+        """
+        return r * .2

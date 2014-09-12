@@ -269,8 +269,8 @@ class BaseSimulation(object):
 
         """
         self.coincidence_group = self.datafile.create_group(self.output_path,
-                                                           'coincidences',
-                                                           createparents=True)
+                                                            'coincidences',
+                                                            createparents=True)
         self.coincidence_group._v_attrs.cluster = self.cluster
 
         description = storage.Coincidence
@@ -295,13 +295,13 @@ class BaseSimulation(object):
 
         """
         self.cluster_group = self.datafile.create_group(self.output_path,
-                                                       'cluster_simulations',
-                                                       createparents=True)
+                                                        'cluster_simulations',
+                                                        createparents=True)
         self.station_groups = []
         for station in self.cluster.stations:
             station_group = self.datafile.create_group(self.cluster_group,
-                                                      'station_%d' %
-                                                      station.number)
+                                                       'station_%d' %
+                                                       station.number)
             events_table = \
                     self.datafile.create_table(station_group, 'events',
                         ProcessEvents.processed_events_description,
