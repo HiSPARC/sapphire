@@ -25,7 +25,7 @@ import random
 import numpy as np
 import tables
 
-from .detector import HiSPARCSimulation
+from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..utils import pbar
 
 
@@ -292,3 +292,16 @@ class ParticleCounterSimulation(GroundParticlesSimulation):
         """A mip for a mip, count number of particles in a detector."""
 
         return len(particle_momenta)
+
+
+class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,
+                                             GroundParticlesSimulation):
+
+    """This simulation does not simulate errors/uncertainties
+
+    This results in perfect timing (first particle through detector)
+    and particle counting for the detectors.
+
+    """
+
+    pass
