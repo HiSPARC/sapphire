@@ -77,36 +77,37 @@ class HiSPARCSimulation(BaseSimulation):
                           1.56764 + 4.89536 * numbers)
         return dt
 
-    def simulate_detector_mips(self, particle_momenta):
+    def simulate_detector_mips(self, particles):
         """Simulate the detector signal response for particles
 
-        :param particle_momenta: an array of particle rows.
+        :param particles: an array of particle rows.
 
         """
-        if len(particle_momenta) < 4:
-            mips = sum(self.simulate_detector_mip(p) for p in particle_momenta)
+        if len(particles) < 4:
+            mips = sum(self.simulate_detector_mip(p) for p in particles)
         else:
-            mips = sum(self.simulate_detector_mip(particle_momenta))
+            mips = sum(self.simulate_detector_mip(particles))
 
         return mips
 
-    def simulate_detector_mip(self, p):
+    def simulate_detector_mip(self, particle):
         """Simulate the detector signal for particles
 
         Be careful when editting this function, be sure to check both
         the single and vectorized part.
 
-        :param p: particle row or rows with the p_[x, y, z] components
-                  of the particle momentum.
+        :param particle: particle row or rows with the p_[x, y, z]
+                         components of the particle momentum.
 
         """
 
         # Simulation of convoluted distribution of electron and
         # muon energy losses with the scintillator response
-        if p.ndim == 0:
+        if particle.ndim == 0:
             # determination of lepton angle of incidence
-            costheta = abs(p['p_z']) / sqrt(p['p_x'] ** 2 + p['p_y'] ** 2 +
-                                            p['p_z'] ** 2)
+            costheta = abs(particle['p_z']) / sqrt(particle['p_x'] ** 2 +
+                                                   particle['p_y'] ** 2 +
+                                                   particle['p_z'] ** 2)
 
             y = np.random.random()
 
@@ -120,9 +121,10 @@ class HiSPARCSimulation(BaseSimulation):
                 mip = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
         else:
             # determination of lepton angle of incidence
-            costheta = abs(p['p_z']) / np.sqrt(p['p_x'] ** 2 + p['p_y'] ** 2 +
-                                               p['p_z'] ** 2)
-            y = np.random.random(len(p))
+            costheta = abs(particle['p_z']) / np.sqrt(particle['p_x'] ** 2 +
+                                                      particle['p_y'] ** 2 +
+                                                      particle['p_z'] ** 2)
+            y = np.random.random(len(particle))
 
             mip = np.where(y < 0.3394,
                            (0.48 + 0.8583 * np.sqrt(y)) / costheta,
