@@ -5,9 +5,8 @@ import operator
 import numpy as np
 import tables
 
-import gpstime
-
-from sapphire.storage import KascadeEvent
+from .transformations import gpstime
+from .storage import KascadeEvent
 
 
 class StoreKascadeData(object):

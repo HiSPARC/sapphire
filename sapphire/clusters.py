@@ -11,8 +11,8 @@ from math import sqrt, pi, sin, cos, atan2, degrees, radians
 import warnings
 
 from numpy import mean
-import transformations
 
+from .transformations import geographic
 from . import api
 
 
@@ -548,8 +548,7 @@ class ScienceParkCluster(BaseCluster):
                              506: 267, 507: 0, 508: -135, 509: 135}
 
         reference = gps_coordinates[stations[0]]
-        transformation = \
-            transformations.FromWGS84ToENUTransformation(reference)
+        transformation = geographic.FromWGS84ToENUTransformation(reference)
 
         for station in stations:
             enu = transformation.transform(gps_coordinates[station])
@@ -633,8 +632,7 @@ class HiSPARCStations(RAlphaBetaStations):
                    location['altitude'])
 
             if i == 0:
-                transformation = \
-                    transformations.FromWGS84ToENUTransformation(gps)
+                transformation = geographic.FromWGS84ToENUTransformation(gps)
 
             enu = transformation.transform(gps)
             alpha = 0

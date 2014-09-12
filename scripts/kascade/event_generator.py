@@ -5,7 +5,7 @@ import struct
 from numpy.random import randint, random
 import MySQLdb
 
-from hisparc import gpstime
+from sapphire.transformations import gpstime
 
 
 T0 = 1234567890 # 14 Feb 2009 00:31:30

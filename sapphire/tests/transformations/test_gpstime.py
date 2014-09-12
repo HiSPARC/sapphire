@@ -1,6 +1,6 @@
 import unittest
 
-from sapphire import gpstime
+from sapphire.transformations import gpstime
 
 
 class GPSTimeTests(unittest.TestCase):
