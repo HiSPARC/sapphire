@@ -169,3 +169,38 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         return np.random.uniform(-pi, pi)
+
+
+class ErrorlessSimulation(HiSPARCSimulation):
+
+    def simulate_detector_offsets(self, n_detectors):
+
+        return [0.] * len(n_detectors)
+
+    def simulate_detector_offset(self):
+
+        return 0.
+
+    def simulate_station_offset(self):
+
+        return 0.
+
+    def simulate_gps_uncertainty(self):
+
+        return 0.
+
+    def simulate_adc_sampling(self, t):
+
+        return t
+
+    def simulate_signal_transport_time(self, n=1):
+
+        return np.array([0.] *  n)
+
+    def simulate_detector_mips(self, particles):
+
+        return len(particles)
+
+    def simulate_detector_mip(self, particle):
+
+        return 1.
