@@ -137,7 +137,8 @@ class FlatFrontSimulation(HiSPARCSimulation):
         return station_observables
 
 
-class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
+class FlatFrontSimulationWithoutErrors(ErrorlessSimulation,
+                                       FlatFrontSimulation):
 
     """This simulation does not simulate errors/uncertainties
 
@@ -145,32 +146,7 @@ class FlatFrontSimulationWithoutErrors(FlatFrontSimulation):
 
     """
 
-    def simulate_detector_response(self, detector, shower_parameters):
-        """Simulate detector response to a shower.
-
-        Return the arrival time of shower front passing the center of
-        the detector.
-
-        """
-        arrival_time = self.get_arrival_time(detector, shower_parameters)
-        observables = {'t': arrival_time}
-
-        return observables
-
-    def simulate_detector_offset(self):
-        """Disable detector offsets"""
-
-        return 0.
-
-    def simulate_station_offset(self):
-        """Disable station offsets"""
-
-        return 0.
-
-    def simulate_gps_uncertainty(self):
-        """Disable GPS uncertainty"""
-
-        return 0.
+    pass
 
 
 class FlatFrontSimulation2D(FlatFrontSimulation):
@@ -194,6 +170,7 @@ class FlatFrontSimulation2D(FlatFrontSimulation):
         cdt = -r * sin(theta)
         dt = cdt / c
         return dt
+
 
 class FlatFrontSimulation2DWithoutErrors(FlatFrontSimulation2D,
                                          FlatFrontSimulationWithoutErrors):
