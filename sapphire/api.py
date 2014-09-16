@@ -10,7 +10,8 @@
 
         >>> from sapphire.api import Station
         >>> stations = [5, 301, 3102, 504, 7101, 8008, 13005]
-        >>> clusters = [Station(station).cluster.lower() for station in stations]
+        >>> clusters = [Station(station).cluster.lower()
+        ...             for station in stations]
         >>> station_groups = ['/hisparc/cluster_%s/station_%d' % (c, s)
         ...                   for c, s in zip(clusters, stations)]
         >>> station_groups
@@ -65,8 +66,9 @@ class API(object):
             "event_trace": 'station/{station_number}/trace/{ext_timestamp}/',
             "pulseheight_fit": 'station/{station_number}/plate/{plate_number}/'
                                'pulseheight/fit/{year}/{month}/{day}/',
-            "pulseheight_drift": 'station/{station_number}/plate/{plate_number}/pulseheight/'
-                                 'drift/{year}/{month}/{day}/{number_of_days}/'}
+            "pulseheight_drift": 'station/{station_number}/plate/'
+                                 '{plate_number}/pulseheight/drift/{year}/'
+                                 '{month}/{day}/{number_of_days}/'}
 
     @classmethod
     def _get_json(cls, urlpath):
@@ -187,7 +189,7 @@ class Network(API):
                 path = self.urls['subclusters']
                 self._all_subclusters = self._get_json(path)
             subclusters = self._all_subclusters
-        elif not country is None:
+        elif country is not None:
             subclusters = []
             path = (self.urls['clusters_in_country']
                     .format(country_number=country))
@@ -222,7 +224,7 @@ class Network(API):
                 path = self.urls['stations']
                 self._all_stations = self._get_json(path)
             stations = self._all_stations
-        elif not country is None:
+        elif country is not None:
             stations = []
             path = (self.urls['clusters_in_country']
                     .format(country_number=country))
@@ -235,7 +237,7 @@ class Network(API):
                     path = (self.urls['stations_in_subcluster']
                             .format(subcluster_number=subcluster['number']))
                     stations.extend(self._get_json(path))
-        elif not cluster is None:
+        elif cluster is not None:
             stations = []
             path = (self.urls['subclusters_in_cluster']
                     .format(cluster_number=cluster))
@@ -495,6 +497,6 @@ class Station(API):
         """
         ext_timestamp = '%d%09d' % (timestamp, nanoseconds)
         path = (self.urls['event_trace'].format(station_number=self.station,
-                                                  ext_timestamp=ext_timestamp)
+                                                ext_timestamp=ext_timestamp)
                 .strip("/"))
         return self._get_json(path)

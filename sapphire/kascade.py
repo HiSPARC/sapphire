@@ -24,7 +24,7 @@ class StoreKascadeData(object):
                 data.remove_node(kascade_path, recursive=True)
 
         self.kascade = data.create_table(kascade_path, 'events', KascadeEvent,
-                                        "KASCADE events", createparents=True)
+                                         "KASCADE events", createparents=True)
         self.kascade_filename = kascade_filename
 
     def read_and_store_data(self):

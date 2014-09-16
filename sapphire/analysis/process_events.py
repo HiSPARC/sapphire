@@ -44,7 +44,7 @@ from .find_mpv import FindMostProbableValueInSpectrum
 ADC_THRESHOLD = 20  # This one is relative to the baseline
 ADC_LOW_THRESHOLD = 253
 ADC_HIGH_THRESHOLD = 323
-ADC_TIME_PER_SAMPLE = 2.5 # in ns
+ADC_TIME_PER_SAMPLE = 2.5  # in ns
 
 
 class ProcessEvents(object):

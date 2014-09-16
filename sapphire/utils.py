@@ -76,4 +76,3 @@ def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     lat2 = zenith2 - pi / 2
     return arccos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) *
                   cos(azimuth1 - azimuth2))
-

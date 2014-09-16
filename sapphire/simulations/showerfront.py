@@ -97,7 +97,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
         :returns: Shower front arrival time in ns.
 
         """
-        c = 0.3
+        c = .3
         r1, phi1, z1 = detector.cylindrical_coordinates
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
@@ -162,7 +162,7 @@ class FlatFrontSimulation2D(FlatFrontSimulation):
         (DOI: 10.3990/1.9789036534383)
 
         """
-        c = 0.3
+        c = .3
         r1, phi1, _ = detector.cylindrical_coordinates
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
@@ -260,7 +260,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
     def get_arrival_time(self, detector, shower_parameters):
         """Calculate arrival time"""
 
-        c = 0.3
+        c = .3
         x, y, z = detector.get_coordinates()
         r1 = sqrt(x ** 2 + y ** 2)
         phi1 = atan2(y, x)

@@ -237,7 +237,7 @@ class Station(object):
 
         """
         x, y, z = zip(*[detector.get_coordinates()
-                     for detector in self.detectors])
+                      for detector in self.detectors])
 
         x0 = mean(x)
         y0 = mean(y)
@@ -391,8 +391,8 @@ class BaseCluster(object):
 
         """
         x, y, z = zip(*[detector.get_coordinates()
-                     for station in self.stations
-                     for detector in station.detectors])
+                      for station in self.stations
+                      for detector in station.detectors])
 
         x0 = mean(x)
         y0 = mean(y)
@@ -555,7 +555,7 @@ class ScienceParkCluster(BaseCluster):
             alpha = station_rotations[station] / 180 * pi
 
             if station not in [501, 502, 505, 508]:
-                detectors = [((0., 8.66) ,'UD'), ((0., 2.89), 'UD'),
+                detectors = [((0., 8.66), 'UD'), ((0., 2.89), 'UD'),
                              ((-5., 0.), 'LR'), ((5., 0.), 'LR')]
             elif station == 501:
                 # Precise position measurement of 501

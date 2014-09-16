@@ -262,7 +262,7 @@ class DirectAlgorithmCartesian2D(object):
                  phi as given by Montanus2014 eq 26.
 
         """
-        c = 0.3
+        c = .3
 
         ux = c * (dt2 * dx1 - dt1 * dx2)
         uy = c * (dt2 * dy1 - dt1 * dy2)
@@ -434,8 +434,8 @@ class FitAlgorithm(object):
 
         fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989),
                        args=(dt, dx, dy, dz), method="SLSQP",
-                       bounds=((-1,1), (-1,1), (-1,1)), constraints=cons,
-                       options={'ftol': 1e-9, 'eps': 1e-7,'maxiter': 50})
+                       bounds=((-1, 1), (-1, 1), (-1, 1)), constraints=cons,
+                       options={'ftol': 1e-9, 'eps': 1e-7, 'maxiter': 50})
         if fit.success:
             phi1 = arctan2(fit.x[1], fit.x[0])
             theta1 = arccos(fit.x[2])
@@ -445,8 +445,8 @@ class FitAlgorithm(object):
 
         fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989),
                        args=(dt, dx, dy, dz), method="SLSQP",
-                       bounds=((-1,1), (-1,1), (-1,1)), constraints=cons,
-                       options={'ftol': 1e-9, 'eps': 1e-7,'maxiter': 50})
+                       bounds=((-1, 1), (-1, 1), (-1, 1)), constraints=cons,
+                       options={'ftol': 1e-9, 'eps': 1e-7, 'maxiter': 50})
         if fit.success:
             phi2 = arctan2(fit.x[1], fit.x[0])
             theta2 = arccos(fit.x[2])
@@ -659,14 +659,15 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
             t_off = offsets.get(station_number, no_offset)
             # Get first particle detection in event
             try:
-                t_first = min([event['t%d' % (i + 1)] - t_off[i] for i in range(4)
+                t_first = min([event['t%d' % (i + 1)] - t_off[i]
+                               for i in range(4)
                                if event['t%d' % (i + 1)] not in ERR])
             except ValueError:
                 continue
             if event['t_trigger'] in ERR:
                 continue
-            t.append((long(event['ext_timestamp']) - ts0) - event['t_trigger'] +
-                     t_first)
+            t.append((long(event['ext_timestamp']) - ts0) -
+                     event['t_trigger'] + t_first)
 
         if len(t) < 3:
             return (nan, nan)
@@ -725,7 +726,7 @@ def logic_checks(t, x, y, z):
     txyz = zip(t, x, y, z)
 
     # Check if the time difference it larger than expected by c
-    c = .3  # m/ns
+    c = .3
     for txyz0, txyz1 in itertools.combinations(txyz, 2):
         dt = abs(txyz0[0] - txyz1[0])
         dx = txyz0[1] - txyz1[1]

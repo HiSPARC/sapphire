@@ -92,7 +92,7 @@ class Coincidences(object):
                                        coincidence_group)
             head, tail = os.path.split(coincidence_group)
             self.coincidence_group = data.create_group(head, tail,
-                                                      createparents=True)
+                                                       createparents=True)
         self.station_groups = station_groups
 
         self.trig_threshold = .5
@@ -147,10 +147,10 @@ class Coincidences(object):
             self._search_coincidences(window, shifts, limit)
         timestamps = np.array(timestamps, dtype=np.uint64)
         self.data.create_array(self.coincidence_group, '_src_timestamps',
-                              timestamps)
+                               timestamps)
         src_c_index = self.data.create_vlarray(self.coincidence_group,
-                                              '_src_c_index',
-                                              tables.UInt32Atom())
+                                               '_src_c_index',
+                                               tables.UInt32Atom())
         for coincidence in c_index:
             src_c_index.append(coincidence)
 
@@ -209,11 +209,11 @@ class Coincidences(object):
 
         self.c_index = []
         self.coincidences = self.data.create_table(self.coincidence_group,
-                                                  'coincidences',
-                                                  storage.Coincidence)
+                                                   'coincidences',
+                                                   storage.Coincidence)
         self.observables = self.data.create_table(self.coincidence_group,
-                                                 'observables',
-                                                 storage.EventObservables)
+                                                  'observables',
+                                                  storage.EventObservables)
 
         # ProgressBar does not work for empty iterables.
         if len(self.coincidence_group._src_c_index):
@@ -227,7 +227,7 @@ class Coincidences(object):
                 self._store_coincidence(coincidence)
 
         c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
-                                          tables.UInt32Col())
+                                           tables.UInt32Col())
         for coincidence in self.c_index:
             c_index.append(coincidence)
         c_index.flush()
@@ -335,7 +335,8 @@ class Coincidences(object):
         for station_group in self.station_groups:
             station_group = self.data.get_node(station_group)
             if 'events' in station_group:
-                event_tables.append(self.data.get_node(station_group, 'events'))
+                event_tables.append(self.data.get_node(station_group,
+                                                       'events'))
         stations = event_tables
 
         # calculate the shifts in nanoseconds and cast them to long.
@@ -505,7 +506,7 @@ class CoincidencesESD(Coincidences):
         description = storage.Coincidence
         description.columns.update(s_columns)
         self.coincidences = self.data.create_table(self.coincidence_group,
-                                                  'coincidences', description)
+                                                   'coincidences', description)
 
         # ProgressBar does not work for empty iterables.
         if len(self._src_c_index):
@@ -518,14 +519,14 @@ class CoincidencesESD(Coincidences):
                 self._store_coincidence(coincidence)
 
         c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
-                                          tables.UInt32Col(shape=2))
+                                           tables.UInt32Col(shape=2))
         for coincidence in self.c_index:
             c_index.append(coincidence)
         c_index.flush()
         self.c_index = c_index
 
         s_index = self.data.create_vlarray(self.coincidence_group, 's_index',
-                                          tables.VLStringAtom())
+                                           tables.VLStringAtom())
         for station_group in self.station_groups:
             s_index.append(station_group)
         s_index.flush()
