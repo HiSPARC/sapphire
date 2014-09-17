@@ -6,7 +6,6 @@
     FIXME: This has never been intended as a clean implementation
 
 """
-
 import time
 import calendar
 

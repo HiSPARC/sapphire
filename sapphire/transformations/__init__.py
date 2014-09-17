@@ -2,8 +2,11 @@
 
 Easy transformations between different systems.
 
-:mod:`~sapphire.angels`
-    rotation matrices and conversion betweeen decimal and sexagesimal
+:mod:`~sapphire.axes`
+    rotation matrices and conversion between coordinate systems
+
+:mod:`~sapphire.base`
+    conversion betweeen decimal and sexagesimal
 
 :mod:`~sapphire.gpstime`
     conversion functions for converting GPS time to UTC and vice versa
@@ -13,11 +16,13 @@ Easy transformations between different systems.
 
 
 """
-from . import angles
+from . import axes
+from . import base
 from . import gpstime
 from . import geographic
 
 
-__all__ = ['angles',
+__all__ = ['axes',
+           'base',
            'gpstime',
            'geographic']

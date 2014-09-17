@@ -2,7 +2,7 @@ import unittest
 
 from numpy import pi
 
-from sapphire.transformations import angles
+from sapphire.transformations import base
 
 
 class DecimalSexagesimalTests(unittest.TestCase):
@@ -18,11 +18,11 @@ class DecimalSexagesimalTests(unittest.TestCase):
 
     def test_decimal_to_sexagesimal(self):
         for dec, sexa in self.combinations:
-            self.assertEqual(angles.decimal_to_sexagesimal(dec), sexa)
+            self.assertEqual(base.decimal_to_sexagesimal(dec), sexa)
 
     def test_sexagesimal_to_decimal(self):
         for dec, sexa in self.combinations:
-            self.assertEqual(angles.sexagesimal_to_decimal(*sexa), dec)
+            self.assertEqual(base.sexagesimal_to_decimal(*sexa), dec)
 
 
 if __name__ == '__main__':
