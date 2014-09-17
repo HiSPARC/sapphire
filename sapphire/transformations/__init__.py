@@ -14,15 +14,19 @@ Easy transformations between different systems.
 :mod:`~sapphire.geographic`
     geographic coordinate transformations (e.g. WGS84 to ENU)
 
+:mod:`~sapphire.time`
+    conversion between differen time keeping systems
 
 """
 from . import axes
 from . import base
 from . import gpstime
 from . import geographic
+from . import time
 
 
 __all__ = ['axes',
            'base',
            'gpstime',
-           'geographic']
+           'geographic',
+           'time']
