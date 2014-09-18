@@ -5,7 +5,7 @@ import operator
 import numpy as np
 import tables
 
-from .transformations import gpstime
+from .transformations import clock
 from .storage import KascadeEvent
 
 
@@ -38,8 +38,8 @@ class StoreKascadeData(object):
         # Determine start and end timestamps from HiSPARC data
         try:
             timestamps = self.hisparc.col('timestamp')
-            start = gpstime.gps_to_utc(min(timestamps))
-            stop = gpstime.gps_to_utc(max(timestamps))
+            start = clock.gps_to_utc(min(timestamps))
+            stop = clock.gps_to_utc(max(timestamps))
         except IndexError:
             raise RuntimeError("HiSPARC event table is empty")
 

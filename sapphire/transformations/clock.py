@@ -1,13 +1,30 @@
 """ Time transformations
 
-This module allows easy conversiosn between different time systems.
-Supported systems: GPS, UTC, GMST, LST, JD.
+This handkes all the wibbly wobbly timey wimey stuff.
+Such as easy conversions between different time systems.
+Supported systems: GPS, UTC, GMST, LST, JD and MJD.
+
+Formulae from:
+
+Duffett-Smith1990
+'Astronomy with your personal computer'
+ISBN 0-521-38995-X
+
+USNO
+'Computing Greenwich Apparent Sidereal Time'
+http://aa.usno.navy.mil/faq/docs/GAST.php
+
+Adrian Price-Whelan
+apwlib.convert
+https://github.com/adrn/apwlib
 
 """
+from time import strptime
 import datetime
 import math
+import calendar
 
-from . import base
+from . import base, angles
 
 
 def time_to_decimal(time):
@@ -119,8 +136,6 @@ def datetime_modifiedjd(dt):
 def juliandate_to_gmst(juliandate):
     """Convert a datetime object in UTC time to Greenwich Mean Sidereal Time
 
-    As described on http://aa.usno.navy.mil/faq/docs/GAST.php
-
     :param juliandate: Julian Date
     :return: decimal hours in GMST
 
@@ -164,7 +179,7 @@ def gmst_to_utc(dt):
     d = jd - 2451545.
     t = d / 36525.
     t0 = 6.697374558 + (2400.051336 * t) + (0.000025862 * t * t)
-    t0 = t0 % 24
+    t0 %= 24
 
     GST = (time_to_decimal(dt.time()) - t0) % 24
     UT = GST * 0.9972695663
@@ -232,44 +247,108 @@ def modifiedjd_to_utc(modifiedjd):
     return juliandate_to_utc(juliandate)
 
 
-def gmst_to_lst(longitude, hours):
+def gmst_to_lst(hours, longitude):
     """Convert Greenwich Mean Sidereal Time to Local Sidereal Time
 
-    :param longitude: location for which to calculate the Local Sidereal Time
     :param hours: decimal hours in GMST
+    :param longitude: location in degrees, E positive
     :returns: decimal hours in LST
 
     """
-    longitude_time = longitude / 15.
+    longitude_time = angles.degrees_to_hours(longitude)
     lst = hours + longitude_time
-    lst = lst % 24.
+    lst %= 24
 
     return lst
 
 
-def lst_to_gmst(longitude, hours):
+def lst_to_gmst(hours, longitude):
     """Convert Local Sidereal Time to Greenwich Mean Sidereal Time
 
-    :param longitude: location for the Local Sidereal Time
     :param hours: decimal hours in LST
+    :param longitude: location in degrees, E positive
     :returns: decimal hours in GMST
 
     """
-    longitude_time = longitude / 15.
-    gmst = hours + longitude_time
-    gmst = gmst % 24.
+    longitude_time = angles.degrees_to_hours(longitude)
+    gmst = hours - longitude_time
+    gmst %= 24
 
     return gmst
 
 
-def utc_to_lst(longitude, dt):
-    """Convert Greenwich Mean Sidereal Time to Local Sidereal Time
+def utc_to_lst(dt, longitude):
+    """Convert UTC to Local Sidereal Time
 
-    :param longitude: location for which to calculate the Local Sidereal Time
     :param dt: datetime object in UTC
+    :param longitude: location in degrees, E positive
     :returns: decimal hours in LST
 
     """
     gmst = utc_to_gmst(dt)
 
-    return gmst_to_lst(longitude, gmst)
+    return gmst_to_lst(gmst, longitude)
+
+
+def gps_to_utc(timestamp):
+    """Convert GPS time to UTC
+
+    :param timestamp: GPS timestamp in seconds.
+
+    """
+    if timestamp < gps_from_string('January 1, 1999'):
+        raise Exception("Dates before January 1, 1999 not implemented!")
+    elif timestamp < gps_from_string('January 1, 2006'):
+        return timestamp - 13
+    elif timestamp < gps_from_string('January 1, 2009'):
+        return timestamp - 14
+    elif timestamp < gps_from_string('July 1, 2012'):
+        return timestamp - 15
+    else:
+        return timestamp - 16
+
+
+def utc_to_gps(timestamp):
+    """Convert UTC to GPS time
+
+    :param timestamp: UTC timestamp in seconds.
+
+    """
+    if timestamp < utc_from_string('January 1, 1999'):
+        raise Exception("Dates before January 1, 1999 not implemented!")
+    elif timestamp < utc_from_string('January 1, 2006'):
+        return timestamp + 13
+    elif timestamp < utc_from_string('January 1, 2009'):
+        return timestamp + 14
+    elif timestamp < utc_from_string('July 1, 2012'):
+        return timestamp + 15
+    else:
+        return timestamp + 16
+
+
+def utc_from_string(date):
+    """Convert a date string to UTC"""
+
+    t = strptime(date, '%B %d, %Y')
+    return calendar.timegm(t)
+
+
+def gps_from_string(date):
+    """Convert a date string to GPS time"""
+
+    t = strptime(date, '%B %d, %Y')
+    return utc_to_gps(calendar.timegm(t))
+
+
+def gps_to_lst(timestamp, longitude):
+    """Convert a GPS timestamp to lst
+
+    :param timestamp: GPS timestamp in seconds
+    :param longitude: location in degrees, E positive
+    :returns: decimal hours in LST
+
+    """
+
+    utc_timestamp = gps_to_utc(timestamp)
+    utc = datetime.datetime.utcfromtimestamp(utc_timestamp)
+    return utc_to_lst(utc, longitude)

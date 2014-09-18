@@ -8,25 +8,21 @@ Easy transformations between different systems.
 :mod:`~sapphire.base`
     conversion betweeen decimal and sexagesimal
 
-:mod:`~sapphire.gpstime`
-    conversion functions for converting GPS time to UTC and vice versa
+:mod:`~sapphire.clock`
+    conversion between different time keeping systems
 
 :mod:`~sapphire.geographic`
     geographic coordinate transformations (e.g. WGS84 to ENU)
 
-:mod:`~sapphire.time`
-    conversion between differen time keeping systems
-
 """
 from . import axes
 from . import base
-from . import gpstime
+from . import clock
 from . import geographic
-from . import time
 
 
 __all__ = ['axes',
            'base',
-           'gpstime',
            'geographic',
-           'time']
+           'clock',
+           'geographic']
