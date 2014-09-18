@@ -397,7 +397,7 @@ class FitAlgorithm(object):
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None):
-        """Reconstruct angles from 3 detections
+        """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
         algorithm.
@@ -501,6 +501,159 @@ class FitAlgorithm(object):
                    for ti, xi, yi, zi in zip(dt, dx, dy, dz)])
         return slq
 
+class RegressionAlgorithm(object):
+
+    """Reconstruct angles using an analytical regression formula.
+
+    This implements the equations as for ISVHECRI (Montanus 2014).
+    "Direction reconstruction of cosmic air showers with
+     three or more detectorstations in a horizontal (for the
+     moment) plane"
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, t, x, y, z=None):
+        """Reconstruct angles from 3 or more detections
+
+        This function converts the arguments to be suitable for the
+        algorithm.
+
+        :param t: arrival times of the detectors in ns.
+        :param x,y,z: positions of the detectors in m. The height
+                      is ignored.
+
+        """
+        return cls.reconstruct(t, x, y)
+
+    @classmethod
+    def reconstruct(cls, t, x, y):
+        """Reconstruct angles for many detections
+
+        :param t#: arrival times in the detectors in ns.
+        :param x#, y#: position of the detectors in m.
+        :return: theta as derived by Montanus2014,
+                 phi as derived by Montanus2014.
+
+        """
+        if not logic_checks(t, x, y, [0] * len(t)):
+            return nan, nan
+
+        dt = cls.make_relative(t)
+        dx = cls.make_relative(x)
+        dy = cls.make_relative(y)
+
+        c = .3
+
+        xx = 0.
+        xy = 0.
+        tx = 0.
+        yy = 0.
+        ty = 0.
+
+        for i, j, l in zip(dx, dy, dt):
+            xx += i*i
+            xy += i*j
+            tx += i*l
+            yy += j*j
+            ty += j*l
+
+        denom = xx * yy - xy * xy
+        if denom == 0:
+            denom = nan
+
+        numer = ty * xy - tx * yy
+        nx = c * numer / denom
+
+        numer = tx * xy - ty * xx
+        ny = c * numer / denom
+
+        horiz = nx * nx + ny * ny
+        if horiz > 1.:
+            theta = nan
+            phi = nan
+
+        else:
+            nz = sqrt(1 - nx * nx - ny * ny)
+            phi = arctan2(ny, nx)
+            theta = arccos(nz)
+
+        return theta, phi
+
+    @staticmethod
+    def make_relative(x):
+        """Make first element the origin and make rest relative to it."""
+
+        return [xi - x[0] for xi in x[1:]]
+
+
+class RegressionAlgorithm3D(object):
+
+    """Reconstruct angles by iteratively applying a regression formula.
+
+    This implements the equations as recently derived (Montanus 2014).
+    "Direction reconstruction of cosmic air showers with
+     three or more detectorstations at arbitrary altitudes"
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, t, x, y, z=None):
+        """Reconstruct angles from 3 or more detections
+
+        This function converts the arguments to be suitable for the
+        algorithm.
+
+        :param t: arrival times of the detectors in ns.
+        :param x,y,z: positions of the detectors in m. The height
+                      for all detector will be set to 0 if not given.
+
+        """
+        if z is None:
+            z = [0] * len(x)
+
+        return cls.reconstruct(t, x, y, z)
+
+    @classmethod
+    def reconstruct(cls, t, x, y, z):
+        """Reconstruct angles for many detections
+
+        :param t#: arrival times in the detectors in ns.
+        :param x#, y#, z#: position of the detectors in m.
+        :return: theta as derived by Montanus2014,
+                 phi as derived by Montanus2014.
+
+        """
+        if not logic_checks(t, x, y, z):
+            return nan, nan
+
+        dt = cls.make_relative(t)
+        dx = cls.make_relative(x)
+        dy = cls.make_relative(y)
+        dz = cls.make_relative(z)
+
+        regress2d = RegressionAlgorithm()
+        theta, phi = regress2d.reconstruct_common(dt, dx, dy)
+
+        c = .3
+        dtheta = 1.
+        while (dtheta > .001):
+            tantheta = tan(theta)
+            dxnew = [xi - zi * tantheta * cos(phi) for xi, zi in zip(dx, dz)]
+            dynew = [yi - zi * tantheta * sin(phi) for yi, zi in zip(dy, dz)]
+            dtnew = [ti + zi / (c * cos(theta)) for ti, zi in zip(dt, dz)]
+            thetaold = theta
+            theta, phi = regress2d.reconstruct_common(dtnew, dxnew, dynew)
+            dtheta = abs(theta - thetaold)
+
+        return theta, phi
+
+    @staticmethod
+    def make_relative(x):
+        """Make first element the origin and make rest relative to it."""
+
+        return [xi - x[0] for xi in x]
+
 
 class DirectEventReconstruction(DirectAlgorithmCartesian3D):
 
@@ -560,7 +713,7 @@ class DirectEventReconstruction(DirectAlgorithmCartesian3D):
         return theta, phi
 
 
-class FitEventReconstruction(FitAlgorithm, DirectEventReconstruction):
+class FitEventReconstruction(RegressionAlgorithm3D, DirectEventReconstruction):
 
     """Reconstruct direction for station events
 
@@ -689,7 +842,7 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
         return theta, phi
 
 
-class FitCoincidenceReconstruction(FitAlgorithm,
+class FitCoincidenceReconstruction(RegressionAlgorithm3D,
                                    DirectCoincidenceReconstruction):
 
     """Reconstruct coincidences with more than three events
