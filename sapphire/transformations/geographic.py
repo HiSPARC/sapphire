@@ -1,14 +1,12 @@
 """ Perform various coordinate transformations
 
     This module performs various coordinate transformations, based on some
-    well-known formulas.  The rationale for this module is that gdal is
-    non-intuitive to use for the needed transformations, but more
-    importantly, is very hard to install, especially on the Windows
-    platform.
+    well-known formulas.
 
 """
 from math import sin, cos, sqrt, radians
-import numpy as np
+
+from numpy import matrix
 
 
 class WGS84Datum(object):
@@ -54,6 +52,9 @@ class FromWGS84ToENUTransformation(object):
         Mind that the input is expected to be in degrees, as is standard in
         coordinate notation.
 
+        :param coordinates: tuple of latitude, longitude (both in degrees)
+                            and altitude (in meters).
+
         """
         latitude, longitude, altitude = coordinates
 
@@ -75,6 +76,7 @@ class FromWGS84ToENUTransformation(object):
     def ecef_to_enu(self, coordinates):
         """Convert from ECEF coordinates to ENU coordinates
 
+        ECEF: Earth-Centered, Earth-Fixed
         ENU: East, North, Up
 
         The conversion formulas are taken from
@@ -84,18 +86,18 @@ class FromWGS84ToENUTransformation(object):
                             point to transform
 
         """
-        lat, lon, altitude = self.ref_lla
+        latitude, longitude, altitude = self.ref_lla
         Xr, Yr, Zr = self.ref_XYZ
         X, Y, Z = coordinates
 
-        lat = radians(lat)
-        lon = radians(lon)
+        lat = radians(latitude)
+        lon = radians(longitude)
 
-        transformation = np.matrix([
+        transformation = matrix([
             [-sin(lon),             cos(lon),            0.],
             [-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat)],
             [ cos(lat) * cos(lon),  cos(lat) * sin(lon), sin(lat)]])
 
-        coordinates = np.matrix([[X - Xr], [Y - Yr], [Z - Zr]])
+        coordinates = matrix([[X - Xr], [Y - Yr], [Z - Zr]])
 
         return (transformation * coordinates).A1
