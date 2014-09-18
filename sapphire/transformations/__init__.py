@@ -2,6 +2,9 @@
 
 Easy transformations between different systems.
 
+:mod:`~sapphire.angles`
+    conversion between different angle notations
+
 :mod:`~sapphire.axes`
     rotation matrices and conversion between coordinate systems
 
@@ -15,13 +18,15 @@ Easy transformations between different systems.
     geographic coordinate transformations (e.g. WGS84 to ENU)
 
 """
+from . import angles
 from . import axes
 from . import base
 from . import clock
 from . import geographic
 
 
-__all__ = ['axes',
+__all__ = ['angles',
+           'axes',
            'base',
            'geographic',
            'clock',
