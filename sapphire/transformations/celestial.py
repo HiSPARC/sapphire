@@ -50,3 +50,40 @@ def horizontal_to_equitorial(longitude, latitude, timestamp, azimuth, zenith):
 
     return ra, dec
 
+
+def equitorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
+                             declination):
+    """Convert Equatorial (J2000.0) to Horizontal coordinates
+
+    :param longitude,latitude: Position of the observer on Earth in degrees.
+                               North and east positive.
+    :param timestamp: GPS timestamp of the observation.
+    :param right_ascension: right_ascension of the observation in radians.
+    :param declination: declination of the observation in radians.
+
+    :returns: azimuth and zenith in radians.
+
+    From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
+
+    """
+    lst = clock.gps_to_lst(timestamp, longitude)
+    HA = (angles.hours_to_radians(lst) - right_ascension)
+    HA %= 2 * pi
+
+    slat = sin(radians(latitude))
+    clat = cos(radians(latitude))
+    sha = sin(HA)
+    cha = cos(HA)
+    sdec = sin(declination)
+    cdec = cos(declination)
+
+    altitude = arcsin((sdec * slat) + (cdec * clat * cha))
+    azimuth = arccos((sdec - (slat * sin(altitude))) / (clat * cos(altitude)))
+
+    if sha > 0:
+        azimuth = 2 * pi - azimuth
+
+    # altitude is the angle above the horizon
+    zenith = pi / 2. - altitude
+
+    return azimuth, zenith

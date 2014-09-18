@@ -68,7 +68,7 @@ def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     from: http://www.movable-type.co.uk/scripts/latlong.html#cosine-law
 
     :param zenith#: Zenith parts of the coordinates, in radians (0, pi/2).
-    :param azimuth#: Azimuth part of the coordinate, in radians (-pi, pi).
+    :param azimuth#: Azimuth parts of the coordinates, in radians (-pi, pi).
     :returns: Angle between the two coordinates.
 
     """
