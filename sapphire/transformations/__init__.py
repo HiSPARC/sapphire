@@ -11,6 +11,9 @@ Easy transformations between different systems.
 :mod:`~sapphire.base`
     conversion betweeen decimal and sexagesimal
 
+:mod:`~sapphire.celestial`
+    conversion betweeen celestial coordinate systems
+
 :mod:`~sapphire.clock`
     conversion between different time keeping systems
 
@@ -21,6 +24,7 @@ Easy transformations between different systems.
 from . import angles
 from . import axes
 from . import base
+from . import celestial
 from . import clock
 from . import geographic
 
@@ -28,6 +32,6 @@ from . import geographic
 __all__ = ['angles',
            'axes',
            'base',
-           'geographic',
+           'celestial',
            'clock',
            'geographic']
