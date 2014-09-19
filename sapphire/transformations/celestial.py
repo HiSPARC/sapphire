@@ -14,7 +14,7 @@ from numpy import (arcsin, arccos, arctan2, cos, sin,
 from . import clock, angles
 
 
-def horizontal_to_equitorial(longitude, latitude, timestamp, azimuth, zenith):
+def horizontal_to_equatorial(longitude, latitude, timestamp, azimuth, zenith):
     """Convert Horizontal to Equatorial coordinates (J2000.0)
 
     :param longitude,latitude: Position of the observer on Earth in degrees.
@@ -51,7 +51,7 @@ def horizontal_to_equitorial(longitude, latitude, timestamp, azimuth, zenith):
     return ra, dec
 
 
-def equitorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
+def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
                              declination):
     """Convert Equatorial (J2000.0) to Horizontal coordinates
 
