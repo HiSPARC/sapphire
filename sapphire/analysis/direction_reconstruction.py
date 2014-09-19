@@ -417,7 +417,7 @@ class FitAlgorithm(object):
         """Reconstruct angles for many detections
 
         :param t#: arrival times in the detectors in ns.
-        :param x#, y#, z#: position of the detectors in m.
+        :param x#,y#,z#: position of the detectors in m.
         :return: theta as given by Montanus2014 eq 21,
                  phi as given by Montanus2014 eq 22.
 
@@ -490,7 +490,7 @@ class FitAlgorithm(object):
 
         :param n_xyz: list containing the unit vector.
         :param dt: list of relative arrival times in the detectors in ns.
-        :param dx, dy, dz: list of relative detector positions in m.
+        :param dx,dy,dz: list of relative detector positions in m.
         :return: least sum of squares as in Montanus2014, eq 36
 
         """
@@ -530,8 +530,8 @@ class RegressionAlgorithm(object):
     def reconstruct(cls, t, x, y):
         """Reconstruct angles for many detections
 
-        :param t#: arrival times in the detectors in ns.
-        :param x#, y#: position of the detectors in m.
+        :param t: arrival times in the detectors in ns.
+        :param x,y: positions of the detectors in m.
         :return: theta as derived by Montanus2014,
                  phi as derived by Montanus2014.
 
@@ -618,8 +618,8 @@ class RegressionAlgorithm3D(object):
     def reconstruct(cls, t, x, y, z):
         """Reconstruct angles for many detections
 
-        :param t#: arrival times in the detectors in ns.
-        :param x#, y#, z#: position of the detectors in m.
+        :param t: arrival times in the detectors in ns.
+        :param x,y,z: positions of the detectors in m.
         :return: theta as derived by Montanus2014,
                  phi as derived by Montanus2014.
 
@@ -868,7 +868,7 @@ def logic_checks(t, x, y, z):
       distance becomes relevant.
 
     :param t: arrival times in the detectors in ns.
-    :param x, y, z: positions of the detectors in m.
+    :param x,y,z: positions of the detectors in m.
     :return: True if the checks pass, False otherwise.
 
     """

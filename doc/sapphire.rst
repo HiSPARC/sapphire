@@ -15,7 +15,6 @@ Contents:
    clusters
    corsika
    esd
-   gpstime
    kascade
    publicdb
    simulations
