@@ -10,7 +10,7 @@
 import argparse
 
 import tables
-import progressbar
+from progressbar import ProgressBar, ETA, Bar, Percentage
 
 from sapphire.corsika.reader import CorsikaFile
 
@@ -78,10 +78,8 @@ def store_corsika_data(source, destination, table_name='groundparticles',
             else:
                 raise
         if progress:
-            pbar = progressbar.ProgressBar(maxval=n_particles - 1,
-                                           widgets=[progressbar.Percentage(),
-                                                    progressbar.Bar(),
-                                                    progressbar.ETA()]).start()
+            pbar = ProgressBar(maxval=n_particles - 1,
+                               widgets=[Percentage(), Bar(), ETA()]).start()
 
         particle_row = table.row
         for row, particle in enumerate(event.get_particles()):

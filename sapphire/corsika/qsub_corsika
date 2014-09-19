@@ -21,9 +21,8 @@ import textwrap
 import subprocess
 import argparse
 
-import progressbar as pb
-
 from sapphire.corsika import particles
+from sapphire.utils import pbar
 
 
 TEMPDIR = '/data/hisparc/corsika/running/'
@@ -321,8 +320,7 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
         n = available_slots
         print 'Submitting {n} jobs because queue is almost full.'.format(n=n)
 
-    progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(), pb.ETA()])
-    for _ in progress(xrange(n)):
+    for _ in pbar(xrange(n)):
         batch = CorsikaBatch(energy=energy, particle=particle, zenith=zenith,
                              azimuth=azimuth, queue=queue, corsika=corsika)
         batch.run()

@@ -5,9 +5,8 @@ import operator
 import numpy as np
 import tables
 
-import gpstime
-
-from sapphire.storage import KascadeEvent
+from .transformations import clock
+from .storage import KascadeEvent
 
 
 class StoreKascadeData(object):
@@ -25,7 +24,7 @@ class StoreKascadeData(object):
                 data.remove_node(kascade_path, recursive=True)
 
         self.kascade = data.create_table(kascade_path, 'events', KascadeEvent,
-                                        "KASCADE events", createparents=True)
+                                         "KASCADE events", createparents=True)
         self.kascade_filename = kascade_filename
 
     def read_and_store_data(self):
@@ -39,8 +38,8 @@ class StoreKascadeData(object):
         # Determine start and end timestamps from HiSPARC data
         try:
             timestamps = self.hisparc.col('timestamp')
-            start = gpstime.gps_to_utc(min(timestamps))
-            stop = gpstime.gps_to_utc(max(timestamps))
+            start = clock.gps_to_utc(min(timestamps))
+            stop = clock.gps_to_utc(max(timestamps))
         except IndexError:
             raise RuntimeError("HiSPARC event table is empty")
 
@@ -98,7 +97,7 @@ class StoreKascadeData(object):
         tablerow['event_id'] = Ieve
         tablerow['timestamp'] = Gt
         tablerow['nanoseconds'] = Mmn
-        tablerow['ext_timestamp'] = Gt * long(1e9) + Mmn
+        tablerow['ext_timestamp'] = Gt * int(1e9) + Mmn
         tablerow['energy'] = EnergyArray
         tablerow['core_pos'] = [Xc, Yc]
         tablerow['zenith'] = Ze
@@ -151,7 +150,7 @@ class KascadeCoincidences(object):
 
         # Shift the kascade data instead of the hisparc data. There is less of
         # it, so this is much faster.
-        k['ext_timestamp'] += long(-1e9) * timeshift
+        k['ext_timestamp'] += int(-1e9) * timeshift
 
         if dtlimit:
             # dtlimit in ns

@@ -11,9 +11,9 @@ from math import sqrt, pi, sin, cos, atan2, degrees, radians
 import warnings
 
 from numpy import mean
-import transformations
 
-import sapphire.api
+from .transformations import geographic
+from . import api
 
 
 class Detector(object):
@@ -21,20 +21,21 @@ class Detector(object):
 
     _detector_size = (.5, 1.)
 
-    def __init__(self, station, x, y, orientation):
+    def __init__(self, station, position, orientation='UD'):
         """Initialize detector
 
         :param station: station instance this detector is part of
-        :param x, y, orientation: x and y are x and y positions of the
-            center of the detectors relative to the station center.
-            Orientation is either 'UD' or 'LR' meaning an up-down or
-            left-right orientation of the long side of the detector
-            respectively.
+        :param position: x,y,z position of the center of the detectors
+                         relative to the station center. z is optional.
+        :param orientation: either 'UD' or 'LR' meaning an up-down or
+                            left-right orientation of the long side of
+                            the detector respectively.
 
         """
         self.station = station
-        self.x = x
-        self.y = y
+        self.x = position[0]
+        self.y = position[1]
+        self.z = position[2] if len(position) == 3 else 0.
         self.orientation = orientation
 
     @property
@@ -45,22 +46,42 @@ class Detector(object):
         return self._detector_size[0] * self._detector_size[1]
 
     def get_xy_coordinates(self):
-        X, Y, alpha = self.station.get_xyalpha_coordinates()
+        x, y, _ = self.get_coordinates()
+        return x, y
+
+    def get_coordinates(self):
+        X, Y, Z, alpha = self.station.get_coordinates()
 
         sina = sin(alpha)
         cosa = cos(alpha)
-        x, y = self.x * cosa - self.y * sina, self.x * sina + self.y * cosa
 
-        return X + x, Y + y
+        x = X + (self.x * cosa - self.y * sina)
+        y = Y + (self.x * sina + self.y * cosa)
+        z = Z + self.z
+
+        return x, y, z
+
+    def get_polar_coordinates(self):
+        r, phi, _ = self.get_cylindrical_coordinates()
+        return r, phi
+
+    def get_cylindrical_coordinates(self):
+        x, y, z = self.get_coordinates()
+        r = sqrt(x ** 2 + y ** 2)
+        phi = atan2(y, x)
+        return r, phi, z
 
     def get_corners(self):
         """Get the x, y coordinates of the detector corners
+
+        The z-coordinate is not returned because all detectors are
+        assumed to be laying flat.
 
         :return: x, y coordinates of detector corners
         :rtype: list of (x, y) tuples
 
         """
-        X, Y, alpha = self.station.get_xyalpha_coordinates()
+        X, Y, _, alpha = self.station.get_coordinates()
 
         x = self.x
         y = self.y
@@ -92,13 +113,14 @@ class Station(object):
 
     _detectors = None
 
-    def __init__(self, cluster, station_id, position, angle, detectors=None,
+    def __init__(self, cluster, station_id, position, angle=0, detectors=None,
                  number=None):
         """Initialize station
 
         :param cluster: cluster this station is a part of
         :param station_id: int (unique identifier)
-        :param position: tuple of (x, y) values
+        :param position: x,y,z position of the station center relative
+                         to the cluster center, z is optional.
         :param angle: angle of rotation of the station in radians
         :param detectors: list of tuples.  Each tuple consists of (dx, dy,
             orientation) where dx and dy are x and y positions of the
@@ -114,7 +136,9 @@ class Station(object):
         """
         self.cluster = cluster
         self.station_id = station_id
-        self.position = position
+        self.x = position[0]
+        self.y = position[1]
+        self.z = position[2] if len(position) == 3 else 0.
         self.angle = angle
         self.number = number if number else station_id
 
@@ -123,80 +147,103 @@ class Station(object):
             station_size = 10
             a = station_size / 2
             b = a * sqrt(3)
-            detectors = [(0., b, 'UD'), (0., b / 3, 'UD'),
-                         (-a, 0., 'LR'), (a, 0., 'LR')]
+            detectors = [((0, b, 0), 'UD'), ((0, b / 3, 0), 'UD'),
+                         ((-a, 0, 0), 'LR'), ((a, 0, 0), 'LR')]
 
-        for x, y, orientation in detectors:
-            self._add_detector(x, y, orientation)
+        for position, orientation in detectors:
+            self._add_detector(position, orientation)
 
-    def _add_detector(self, x, y, orientation):
+    def _add_detector(self, position, orientation):
         """Add detector to station
 
-        :param x, y, orientation: x and y are x and y positions of the
-            center of the detectors relative to the station center.
-            Orientation is either 'UD' or 'LR' meaning an up-down or
-            left-right orientation of the long side of the detector
-            respectively.
+        :param position: x,y,z positions of the center of the detectors
+                         relative to the station center.
+        :param orientation: Orientation is either 'UD' or 'LR' meaning
+                            an up-down or left-right orientation of the
+                            long side of the detector respectively.
 
         """
         if self._detectors is None:
             self._detectors = []
-        self._detectors.append(Detector(self, x, y, orientation))
+        self._detectors.append(Detector(self, position, orientation))
 
     @property
     def detectors(self):
         return self._detectors
 
     def get_xyalpha_coordinates(self):
+        """Same as get_coordinates but without the z"""
+        x, y, _, alpha = self.get_coordinates()
+        return x, y, alpha
+
+    def get_coordinates(self):
         """Calculate coordinates of a station
 
-        :return: x, y, alpha; coordinates and rotation of station relative to
-            absolute coordinate system
+        :return: x, y, z, alpha; coordinates and rotation of station
+                 relative to absolute coordinate system
 
         """
-        X, Y, alpha = self.cluster.get_xyalpha_coordinates()
+        X, Y, Z, alpha = self.cluster.get_coordinates()
 
-        sx, sy = self.position
-        xp = sx * cos(alpha) - sy * sin(alpha)
-        yp = sx * sin(alpha) + sy * cos(alpha)
+        sina = sin(alpha)
+        cosa = cos(alpha)
 
-        x = X + xp
-        y = Y + yp
-        angle = alpha + self.angle
+        x = X + (self.x * cosa - self.y * sina)
+        y = Y + (self.x * sina + self.y * cosa)
+        z = Z + self.z
+        alpha = alpha + self.angle
 
-        return x, y, angle
+        return x, y, z, alpha
 
-    def get_rphialpha_coordinates(self):
-        x, y, alpha = self.get_xyalpha_coordinates()
-        r = sqrt(x ** 2 + y ** 2)
-        phi = atan2(y, x)
+    def get_polar_alpha_coordinates(self):
+        r, phi, _, alpha = self.get_cylindrical_alpha_coordinates()
         return r, phi, alpha
 
-    def calc_r_and_phi_for_detectors(self, s1, s2):
-        """Calculate angle between detectors (phi1, phi2)"""
+    def get_cylindrical_alpha_coordinates(self):
+        x, y, z, alpha = self.get_coordinates()
+        r = sqrt(x ** 2 + y ** 2)
+        phi = atan2(y, x)
+        return r, phi, z, alpha
 
-        x1, y1 = self.detectors[s1 - 1].get_xy_coordinates()
-        x2, y2 = self.detectors[s2 - 1].get_xy_coordinates()
-
-        r = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-        phi = atan2((y2 - y1), (x2 - x1))
-
+    def calc_r_and_phi_for_detectors(self, d0, d1):
+        r, phi, _ = self.calc_rphiz_for_detectors(d0, d1)
         return r, phi
 
+    def calc_rphiz_for_detectors(self, d0, d1):
+        """Calculate angle and distance between detectors
+
+        :param d0,d1: detector ids to find the vector between.
+        :return: r,phi,z pointing from d0 to d1.
+
+        """
+        x0, y0, z0 = self.detectors[d0].get_coordinates()
+        x1, y1, z1 = self.detectors[d1].get_coordinates()
+
+        r = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+        phi = atan2((y1 - y0), (x1 - x0))
+        dz = z1 - z0
+
+        return r, phi, dz
+
     def calc_xy_center_of_mass_coordinates(self):
+        x, y, _ = self.calc_center_of_mass_coordinates()
+        return x, y
+
+    def calc_center_of_mass_coordinates(self):
         """Calculate center of mass coordinates of detectors in station
 
-        :return: x, y; coordinates of station center relative to
+        :return: x, y, z; coordinates of station center relative to
             absolute coordinate system
 
         """
-        x, y = zip(*[detector.get_xy_coordinates()
-                     for detector in self.detectors])
+        x, y, z = zip(*[detector.get_coordinates()
+                      for detector in self.detectors])
 
         x0 = mean(x)
         y0 = mean(y)
+        z0 = mean(z)
 
-        return x0, y0
+        return x0, y0, z0
 
 
 class BaseCluster(object):
@@ -204,18 +251,26 @@ class BaseCluster(object):
 
     _stations = None
 
-    def __init__(self, position=(0., 0.), angle=0.):
-        """Override this function to build your cluster"""
-        self._x, self._y = position
-        self._alpha = angle
+    def __init__(self, position=(0, 0, 0), angle=0):
+        """Override this function to build your cluster
+
+        :param position: x,y,z position for the center of the cluster
+        :param angle: rotation of the cluster in the x,y-plane.
+
+        """
+        self.x = position[0]
+        self.y = position[1]
+        self.z = position[2] if len(position) == 3 else 0.
+        self.alpha = angle
 
     def _add_station(self, position, angle, detectors=None, number=None):
         """Add a station to the cluster
 
-        :param position: tuple of (x, y) values
+        :param position: x,y,z position of the station relative to
+                         cluster center. z is optional.
         :param angle: angle of rotation of the station in radians
         :param detectors: list of tuples.  Each tuple consists of (dx, dy,
-            orientation) where dx and dy are x and y positions of the
+            dz, orientation) where dx, dy and dz are the positions of the
             center of the detectors relative to the station center.
             Orientation is either 'UD' or 'LR' meaning an up-down or
             left-right orientation of the long side of the detector
@@ -229,8 +284,8 @@ class BaseCluster(object):
         Example::
 
             >>> cluster = BaseCluster()
-            >>> cluster._add_station((0, 0), pi / 2,
-            ...                      [(-5, 0, 'UD'), (5, 0, 'UD')])
+            >>> cluster._add_station((0, 0, 0), pi / 2,
+            ...                      [(-5, 0, 0, 'UD'), (5, 0, 0, 'UD')])
 
         """
         # Need to make _stations an instance variable to be able to
@@ -254,80 +309,96 @@ class BaseCluster(object):
                 return station
 
     def get_xyalpha_coordinates(self):
-        """Get cluster coordinates (x, y, alpha).
+        """Like get_coordinates, but without z"""
+        return self.x, self.y, self.alpha
+
+    def get_coordinates(self):
+        """Get cluster coordinates (x, y, z, alpha).
 
         The coordinates should be interpreted as follows: first, the
         cluster is rotated over angle alpha, around its original center.
-        Than, the cluster is translated to (x, y).
+        Then, the cluster is translated to (x, y, z).
 
         """
-        return self._x, self._y, self._alpha
+        return self.x, self.y, self.z, self.alpha
 
-    def get_rphialpha_coordinates(self):
-        """Get cluster coordinates (r, phi, alpha).
+    def get_polar_alpha_coordinates(self):
+        """Like get_cylindrical_coordinates but without z."""
+        r, phi, _, alpha = self.get_cylindrical_alpha_coordinates()
+        return r, phi, alpha
+
+    def get_cylindrical_alpha_coordinates(self):
+        """Get cluster coordinates (r, phi, z, alpha).
+
+        The coordinates should be interpreted as follows: first, the
+        cluster is rotated over angle alpha, around its original center.
+        Then, the cluster is translated to (r, phi, z).
+
+        """
+        r = sqrt(self.x ** 2 + self.y ** 2)
+        phi = atan2(self.y, self.x)
+        return r, phi, self.z, self.alpha
+
+    def set_coordinates(self, x, y, z, alpha):
+        """Set cluster coordinates (x, y, z, alpha).
+
+        The coordinates should be interpreted as follows: first, the
+        cluster is rotated over angle alpha, around its original center.
+        Then, the cluster is translated to (x, y, z).
+
+        """
+        self.x, self.y, self.z, self.alpha = x, y, z, alpha
+
+    def set_cylindrical_coordinates(self, r, phi, z, alpha):
+        """Set cluster coordinates (r, phi, z, alpha).
 
         The coordinates should be interpreted as follows: first, the
         cluster is rotated over angle alpha, around its original center.
         Than, the cluster is translated to (r, phi).
 
         """
-        r = sqrt(self._x ** 2 + self._y ** 2)
-        phi = atan2(self._y, self._x)
-        return r, phi, self._alpha
+        self.x = r * cos(phi)
+        self.y = r * sin(phi)
+        self.z = z
+        self.alpha = alpha
 
-    def set_xyalpha_coordinates(self, x, y, alpha):
-        """Set cluster coordinates (x, y, alpha).
-
-        The coordinates should be interpreted as follows: first, the
-        cluster is rotated over angle alpha, around its original center.
-        Than, the cluster is translated to (x, y).
-
-        """
-        self._x, self._y, self._alpha = x, y, alpha
-
-    def set_rphialpha_coordinates(self, r, phi, alpha):
-        """Set cluster coordinates (r, phi, alpha).
-
-        The coordinates should be interpreted as follows: first, the
-        cluster is rotated over angle alpha, around its original center.
-        Than, the cluster is translated to (r, phi).
-
-        """
-        self._x = r * cos(phi)
-        self._y = r * sin(phi)
-        self._alpha = alpha
-
-    def calc_r_and_phi_for_stations(self, s1, s2):
+    def calc_rphiz_for_stations(self, s0, s1):
         """Calculate distance between and direction of two stations
 
-        :param s1, s2: The station ids for the two stations.
-        :return: r, phi; the distance between and direction of the two
+        :param s0, s1: The station ids for the two stations.
+        :return: r, phi, z; the distance between and direction of the two
             given stations.
 
         """
-        x1, y1, alpha1 = self.stations[s1].get_xyalpha_coordinates()
-        x2, y2, alpha2 = self.stations[s2].get_xyalpha_coordinates()
+        x0, y0, z0, alpha0 = self.stations[s0].get_coordinates()
+        x1, y1, z1, alpha1 = self.stations[s1].get_coordinates()
 
-        r = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-        phi = atan2((y2 - y1), (x2 - x1))
+        r = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+        phi = atan2((y1 - y0), (x1 - x0))
+        z = z1 - z0
 
-        return r, phi
+        return r, phi, z
 
     def calc_xy_center_of_mass_coordinates(self):
+        x, y, _ = self.calc_center_of_mass_coordinates()
+        return x, y
+
+    def calc_center_of_mass_coordinates(self):
         """Calculate center of mass coordinates of all detectors in cluster
 
         :return: x, y; coordinates of cluster center relative to
             absolute coordinate system
 
         """
-        x, y = zip(*[detector.get_xy_coordinates()
-                     for station in self.stations
-                     for detector in station.detectors])
+        x, y, z = zip(*[detector.get_coordinates()
+                      for station in self.stations
+                      for detector in station.detectors])
 
         x0 = mean(x)
         y0 = mean(y)
+        z0 = mean(z)
 
-        return x0, y0
+        return x0, y0, z0
 
 
 class RAlphaBetaStations(BaseCluster):
@@ -342,29 +413,32 @@ class RAlphaBetaStations(BaseCluster):
     def _add_station(self, position, detectors, number=None):
         """Add a station to the cluster
 
-        :param position: tuple of (x, y) values
-        :param detectors: list of tuples.  Each tuple consists of (r, alpha,
-            beta) these define the position of the detector relative to
+        :param x,y,z: position of the station relative to cluster center
+        :param detectors: list of tuples. Each tuple consists of (r, alpha,
+            z, beta) these define the position of the detector relative to
             the GPS and the orientation of the detector. r is the
             distance between the center of the scintillator and the GPS
-            in meters. alpha is the clock-wise turning angle between
-            North and the detector relative to the GPS in degrees. beta
-            is, like alpha, the clock-wise turning angle between North
-            and the long side of the detector.
+            in meters in the x,y-plane. alpha is the clock-wise turning
+            angle between North and the detector relative to the GPS in
+            degrees. z is the height of the detector relative to the
+            GPS. beta is, like alpha, the clock-wise turning angle
+            between North and the long side of the detector.
         :param number: optional unique identifier for a station this can
             later be used to find a specific station and makes it easier
             to link to a real station. If not given it will be equal to
             the station_id generated by this function. Either use this
             for all added stations or for none.
 
+        Beta for detectors is currently ignored.
+
         Example::
 
             >>> cluster = RAlphaBetaStations()
-            >>> cluster._add_station((0, 0), [(5, 90, 0), (5, 270, 0)], 104)
+            >>> cluster._add_station((0, 0, 0), [(5, 90, 0, 0), (5, 270, 0, 0)], 104)
 
         """
-        detectors = [(sin(radians(alpha)) * r, cos(radians(alpha)) * r, 'UD')
-                     for r, alpha, _ in detectors]
+        detectors = [((sin(radians(alpha)) * r, cos(radians(alpha)) * r, z),
+                      'UD') for r, alpha, z, beta in detectors]
 
         super(RAlphaBetaStations, self)._add_station(position, 0, detectors,
                                                      number)
@@ -378,14 +452,14 @@ class SimpleCluster(BaseCluster):
 
         super(SimpleCluster, self).__init__()
 
-        # calculate station positions.  the cluster resembles a single
+        # calculate station positions. the cluster resembles a single
         # four-detector HiSPARC station, but scaled up
         A = size / 2
         B = A / sqrt(3)
-        self._add_station((0, 2 * B), 0)
-        self._add_station((0, 0), 0)
-        self._add_station((-A, -B), 2 * pi / 3)
-        self._add_station((A, -B), -2 * pi / 3)
+        self._add_station((0, 2 * B, 0), 0)
+        self._add_station((0, 0, 0), 0)
+        self._add_station((-A, -B, 0), 2 * pi / 3)
+        self._add_station((A, -B, 0), -2 * pi / 3)
 
 
 class SingleStation(BaseCluster):
@@ -396,7 +470,7 @@ class SingleStation(BaseCluster):
 
         super(SingleStation, self).__init__()
 
-        self._add_station((0, 0), 0)
+        self._add_station((0, 0, 0), 0)
 
 
 class SingleTwoDetectorStation(BaseCluster):
@@ -405,9 +479,9 @@ class SingleTwoDetectorStation(BaseCluster):
     def __init__(self):
         super(SingleTwoDetectorStation, self).__init__()
 
-        detectors = [(-5, 0, 'UD'), (5, 0, 'UD')]
+        detectors = [((-5, 0, 0), 'UD'), ((5, 0, 0), 'UD')]
 
-        self._add_station((0, 0), 0, detectors)
+        self._add_station((0, 0, 0), 0, detectors)
 
 
 class SingleDiamondStation(BaseCluster):
@@ -426,10 +500,10 @@ class SingleDiamondStation(BaseCluster):
         station_size = 10
         a = station_size / 2
         b = a * sqrt(3)
-        detectors = [(0., b, 'UD'), (a * 2, b, 'UD'),
-                     (-a, 0., 'LR'), (a, 0., 'LR')]
+        detectors = [((0., b, 0), 'UD'), ((a * 2, b, 0), 'UD'),
+                     ((-a, 0., 0), 'LR'), ((a, 0., 0), 'LR')]
 
-        self._add_station((0, 0), 0, detectors)
+        self._add_station((0, 0, 0), 0, detectors)
 
 
 class ScienceParkCluster(BaseCluster):
@@ -448,12 +522,12 @@ class ScienceParkCluster(BaseCluster):
         try:
             gps_coordinates = {}
             for station in stations:
-                coordinates = sapphire.api.Station(station).location()
+                coordinates = api.Station(station).location()
                 gps_coordinates[station] = (coordinates['latitude'],
                                             coordinates['longitude'],
                                             coordinates['altitude'])
         except:
-            warnings.warn('Could not get values form the server, Using '
+            warnings.warn('Could not get values from the server, Using '
                           'hard-coded values.', UserWarning)
             # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
             # 2 dec, 2011) + 508/509 (from site on 8 jul 2013)
@@ -473,50 +547,48 @@ class ScienceParkCluster(BaseCluster):
         station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
                              506: 267, 507: 0, 508: -135, 509: 135}
 
-        reference = gps_coordinates[501]
-        transformation = \
-            transformations.FromWGS84ToENUTransformation(reference)
+        reference = gps_coordinates[stations[0]]
+        transformation = geographic.FromWGS84ToENUTransformation(reference)
 
         for station in stations:
-            easting, northing, up = \
-                transformation.transform(gps_coordinates[station])
+            enu = transformation.transform(gps_coordinates[station])
             alpha = station_rotations[station] / 180 * pi
 
             if station not in [501, 502, 505, 508]:
-                detectors = [(0, 8.66, 'UD'), (0, 2.89, 'UD'),
-                             (-5, 0, 'LR'), (5, 0, 'LR')]
+                detectors = [((0., 8.66), 'UD'), ((0., 2.89), 'UD'),
+                             ((-5., 0.), 'LR'), ((5., 0.), 'LR')]
             elif station == 501:
                 # Precise position measurement of 501
-                detectors = [(0.37, 8.62, 'UD'), (.07, 2.15, 'UD'),
-                             (-5.23, 0, 'LR'), (5.08, 0, 'LR')]
+                detectors = [((0.37, 8.62), 'UD'), ((.07, 2.15), 'UD'),
+                             ((-5.23, 0.), 'LR'), ((5.08, 0.), 'LR')]
             elif station == 502:
                 # 502 is (since 17 October 2011) diamond-shaped,
                 # with detector 2 moved to the side in LR orientation.
                 # Furthermore, detectors 3 and 4 are reversed (cabling issue)
-                station_size = 10
+                station_size = 10.
                 a = station_size / 2
                 b = a * sqrt(3)
-                detectors = [(0., b, 'UD'), (a * 2, b, 'LR'),
-                             (a, 0., 'LR'), (-a, 0., 'LR')]
+                detectors = [((0., b), 'UD'), ((a * 2, b), 'LR'),
+                             ((a, 0.), 'LR'), ((-a, 0.), 'LR')]
             elif station == 505:
                 # 505 is (since 24 April 2013) square-shaped,
                 # detector 1 is moved to the left and detector 2 next to it.
-                station_size = 10
+                station_size = 10.
                 a = station_size / 2
-                detectors = [(-a, station_size, 'UD'), (a, station_size, 'UD'),
-                             (-a, 0., 'LR'), (a, 0., 'LR')]
+                detectors = [((-a, station_size), 'UD'), ((a, station_size), 'UD'),
+                             ((-a, 0.), 'LR'), ((a, 0.), 'LR')]
             elif station == 508:
                 # 508 is diamond-shaped, with detector 2 moved to the
                 # side of detector 1 in UD orientation.
-                station_size = 10
+                station_size = 10.
                 a = station_size / 2
                 b = a * sqrt(3)
-                detectors = [(0., b, 'UD'), (a * 2, b, 'UD'),
-                             (-a, 0., 'LR'), (a, 0., 'LR')]
+                detectors = [((0., b), 'UD'), ((a * 2, b), 'UD'),
+                             ((-a, 0.), 'LR'), ((a, 0.), 'LR')]
             else:
                 raise RuntimeError("Programming error. Station unknown.")
 
-            self._add_station((easting, northing), alpha, detectors, station)
+            self._add_station(enu, alpha, detectors, station)
 
 
 class HiSPARCStations(RAlphaBetaStations):
@@ -537,45 +609,51 @@ class HiSPARCStations(RAlphaBetaStations):
 
     """
 
-    def __init__(self, stations):
+    def __init__(self, stations, allow_missing=False):
         super(HiSPARCStations, self).__init__()
 
         for i, station in enumerate(stations):
             try:
-                station_info = sapphire.api.Station(station)
+                station_info = api.Station(station)
             except:
-                warnings.warn('Could not get info for station %d, Skipping.' %
-                              station, UserWarning)
+                if allow_missing:
+                    warnings.warn('Could not get info for station %d, '
+                                  'skipping.' % station, UserWarning)
+                    continue
+                else:
+                    raise KeyError('Could not get info for station %d.' %
+                                   station)
+
             location = station_info.location()
-            n_detectors = station_info.n_detectors
+            n_detectors = station_info.n_detectors()
             detectors = station_info.detectors()
             gps = (location['latitude'],
                    location['longitude'],
                    location['altitude'])
 
             if i == 0:
-                transformation = \
-                    transformations.FromWGS84ToENUTransformation(gps)
+                transformation = geographic.FromWGS84ToENUTransformation(gps)
 
-            easting, northing, up = transformation.transform(gps)
+            enu = transformation.transform(gps)
             alpha = 0
 
             # Default positions in (r, alpha, beta)
             if n_detectors == 2:
-                default_detectors = [(5, 90, 0), (5, 270, 0)]
+                default_detectors = [(5, 90, 0, 0), (5, 270, 0, 0)]
             elif n_detectors == 4:
-                default_detectors = [(8.66, 0, 0), (2.89, 0, 0),
-                                     (5, -90, 90), (5, 90, 90)]
+                default_detectors = [(8.66, 0, 0, 0), (2.89, 0, 0, 0),
+                                     (5, -90, 0, 90), (5, 90, 0, 90)]
             else:
                 raise RuntimeError("Detector count unknown for station %d." %
                                    station)
             detectors = [
                 (d['radius'] if d['radius'] else default_detectors[i][0],
                  d['alpha'] if d['alpha'] else default_detectors[i][1],
-                 d['beta'] if d['beta'] else default_detectors[i][2])
+                 d['height'] if d['height'] else default_detectors[i][2],
+                 d['beta'] if d['beta'] else default_detectors[i][3])
                 for i, d in enumerate(detectors)]
 
-            self._add_station((easting, northing), detectors, station)
+            self._add_station(enu, detectors, station)
 
         warnings.warn('Detector positions may be wrong, defaults are used '
                       'when not available from API!', UserWarning)
@@ -586,7 +664,6 @@ class HiSPARCNetwork(HiSPARCStations):
     """A cluster containing all station from the HiSPARC network"""
 
     def __init__(self):
-        network = sapphire.api.Network()
-        stations = [station['number'] for station in network.stations()]
-        super(HiSPARCNetwork, self).__init__(stations)
-
+        network = api.Network()
+        stations = [station for station in network.station_numbers()]
+        super(HiSPARCNetwork, self).__init__(stations, allow_missing=True)

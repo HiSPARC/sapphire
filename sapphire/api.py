@@ -10,7 +10,8 @@
 
         >>> from sapphire.api import Station
         >>> stations = [5, 301, 3102, 504, 7101, 8008, 13005]
-        >>> clusters = [Station(station).cluster.lower() for station in stations]
+        >>> clusters = [Station(station).cluster.lower()
+        ...             for station in stations]
         >>> station_groups = ['/hisparc/cluster_%s/station_%d' % (c, s)
         ...                   for c, s in zip(clusters, stations)]
         >>> station_groups
@@ -24,14 +25,16 @@
 
 """
 import logging
-
 import datetime
-from urllib2 import urlopen, HTTPError, URLError
 import json
+import warnings
+from os import path
+from urllib2 import urlopen, HTTPError, URLError
 
 logger = logging.getLogger('api')
 
 API_BASE = 'http://data.hisparc.nl/api/'
+JSON_FILE = path.join(path.dirname(__file__), 'data/hisparc_stations.json')
 
 
 class API(object):
@@ -63,8 +66,9 @@ class API(object):
             "event_trace": 'station/{station_number}/trace/{ext_timestamp}/',
             "pulseheight_fit": 'station/{station_number}/plate/{plate_number}/'
                                'pulseheight/fit/{year}/{month}/{day}/',
-            "pulseheight_drift": 'station/{station_number}/plate/{plate_number}/pulseheight/'
-                                 'drift/{year}/{month}/{day}/{number_of_days}/'}
+            "pulseheight_drift": 'station/{station_number}/plate/'
+                                 '{plate_number}/pulseheight/drift/{year}/'
+                                 '{month}/{day}/{number_of_days}/'}
 
     @classmethod
     def _get_json(cls, urlpath):
@@ -118,14 +122,16 @@ class API(object):
 class Network(API):
     """Get info about the network (countries/clusters/subclusters/stations)"""
 
+    _all_countries = None
+    _all_clusters = None
+    _all_subclusters = None
+    _all_stations = None
+
     def __init__(self):
         """Initialize network
 
         """
-        self.all_countries = self._get_json(self.urls['countries'])
-        self.all_clusters = self._get_json(self.urls['clusters'])
-        self.all_subclusters = self._get_json(self.urls['subclusters'])
-        self.all_stations = self._get_json(self.urls['stations'])
+        pass
 
     def countries(self):
         """Get a list of countries
@@ -133,12 +139,15 @@ class Network(API):
         :return: all countries in the region
 
         """
-        return self.all_countries
+        if not self._all_countries:
+            path = self.urls['countries']
+            self._all_countries = self._get_json(path)
+        return self._all_countries
 
     def country_numbers(self):
         """Same as countries but only retuns a list of country numbers"""
 
-        countries = self.all_countries
+        countries = self.countries()
         return [country['number'] for country in countries]
 
     def clusters(self, country=None):
@@ -150,7 +159,10 @@ class Network(API):
 
         """
         if country is None:
-            clusters = self.all_clusters
+            if not self._all_clusters:
+                path = self.urls['clusters']
+                self._all_clusters = self._get_json(path)
+            clusters = self._all_clusters
         else:
             path = (self.urls['clusters_in_country']
                     .format(country_number=country))
@@ -173,8 +185,11 @@ class Network(API):
 
         """
         if country is None and cluster is None:
-            subclusters = self.all_subclusters
-        elif not country is None:
+            if not self._all_subclusters:
+                path = self.urls['subclusters']
+                self._all_subclusters = self._get_json(path)
+            subclusters = self._all_subclusters
+        elif country is not None:
             subclusters = []
             path = (self.urls['clusters_in_country']
                     .format(country_number=country))
@@ -205,8 +220,11 @@ class Network(API):
 
         """
         if country is None and cluster is None and subcluster is None:
-            stations = self.all_stations
-        elif not country is None:
+            if not self._all_stations:
+                path = self.urls['stations']
+                self._all_stations = self._get_json(path)
+            stations = self._all_stations
+        elif country is not None:
             stations = []
             path = (self.urls['clusters_in_country']
                     .format(country_number=country))
@@ -219,7 +237,7 @@ class Network(API):
                     path = (self.urls['stations_in_subcluster']
                             .format(subcluster_number=subcluster['number']))
                     stations.extend(self._get_json(path))
-        elif not cluster is None:
+        elif cluster is not None:
             stations = []
             path = (self.urls['subclusters_in_cluster']
                     .format(cluster_number=cluster))
@@ -234,16 +252,33 @@ class Network(API):
             stations = self._get_json(path)
         return stations
 
-    def stations_numbers(self, country=None, cluster=None, subcluster=None):
+    def station_numbers(self, country=None, cluster=None, subcluster=None,
+                        allow_stale=True):
         """Same as stations but only retuns a list of station numbers"""
 
-        stations = self.stations(country=country, cluster=cluster,
-                                 subcluster=subcluster)
-        return [station['number'] for station in stations]
+        try:
+            stations = self.stations(country=country, cluster=cluster,
+                                     subcluster=subcluster)
+            return [station['number'] for station in stations]
+        except Exception, e:
+            if allow_stale:
+                # Try getting the station info from the JSON.
+                try:
+                    with open(JSON_FILE) as data:
+                        stations = [int(s) for s in json.load(data).keys()
+                                    if s != '_info']
+                    warnings.warn('Couldnt get values from the server, using '
+                                  'hard-coded values. Possibly outdated.',
+                                  UserWarning)
+                    return sorted(stations)
+                except:
+                    raise e
+            else:
+                raise
 
     def nested_network(self):
         """Get a nested list of the full network"""
-        countries = self.all_countries
+        countries = self.countries()
         for country in countries:
             clusters = self.clusters(country=country['number'])
             for cluster in clusters:
@@ -295,11 +330,13 @@ class Network(API):
 class Station(API):
     """Access data about a single station"""
 
-    def __init__(self, station, date=None):
+    def __init__(self, station, date=None, allow_stale=True):
         """Initialize station
 
-        :param station: station number
-        :param date: date object for which to get the station information
+        :param station: station number.
+        :param date: date object for which to get the station information.
+        :param allow_stale: set to False to require data to be fresh
+                            from the server.
 
         """
         self.station = station
@@ -308,21 +345,31 @@ class Station(API):
         path = (self.urls['station_info']
                 .format(station_number=self.station, year=date.year,
                         month=date.month, day=date.day))
-        self.info = self._get_json(path)
+        try:
+            self.info = self._get_json(path)
+        except Exception, e:
+            if allow_stale:
+                # Try getting the station info from the JSON.
+                try:
+                    with open(JSON_FILE) as data:
+                        self.info = json.load(data)[str(station)]
+                    warnings.warn('Couldnt get values from the server, using '
+                                  'hard-coded values. Not all info available.',
+                                  UserWarning)
+                except:
+                    raise e
+            else:
+                raise
 
-    @property
     def country(self):
         return self.info['country']
 
-    @property
     def cluster(self):
         return self.info['cluster']
 
-    @property
     def subcluster(self):
         return self.info['subcluster']
 
-    @property
     def n_detectors(self):
         """Get the number of detectors in this station"""
         return len(self.info['scintillators'])
@@ -450,6 +497,6 @@ class Station(API):
         """
         ext_timestamp = '%d%09d' % (timestamp, nanoseconds)
         path = (self.urls['event_trace'].format(station_number=self.station,
-                                                  ext_timestamp=ext_timestamp)
+                                                ext_timestamp=ext_timestamp)
                 .strip("/"))
         return self._get_json(path)

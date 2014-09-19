@@ -9,7 +9,8 @@ from mock import patch
 TEST_DATA_FILE = 'DAT000000'
 STORE_SCRIPT = 'store_corsika_data {source} {destination}'
 
-@unittest.skipIf(not os.path.exists(os.path.join(os.path.dirname(__file__), TEST_DATA_FILE)),
+@unittest.skipIf(not os.path.exists(os.path.join(os.path.dirname(__file__),
+                                                 TEST_DATA_FILE)),
                  'Missing test datafile.')
 class StoreCorsikaDataTests(unittest.TestCase):
     def setUp(self):
@@ -29,7 +30,8 @@ class StoreCorsikaDataTests(unittest.TestCase):
                           subprocess.check_output, self.command,
                           stderr=subprocess.STDOUT, shell=True)
 
-        result = subprocess.check_output(self.command + ' --overwrite', shell=True)
+        result = subprocess.check_output(self.command + ' --overwrite',
+                                         shell=True)
         self.assertEqual(result, '')
 
     def create_tempfile_path(self):

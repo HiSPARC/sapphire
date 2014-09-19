@@ -19,9 +19,6 @@ The following packages and modules are included:
 :mod:`~sapphire.corsika`
     package containing CORSIKA simulation related modules
 
-:mod:`~sapphire.gpstime`
-    conversion functions for converting GPS time to UTC and vice versa
-
 :mod:`~sapphire.kascade`
     work on KASCADE data
 
@@ -38,7 +35,10 @@ The following packages and modules are included:
     GPS date/time utility functions
 
 :mod:`~sapphire.transformations`
-    geographic coordinate transformations
+    transformations between different systems
+
+:mod:`~sapphire.utils`
+    commonly used functions such as a progressbar
 
 """
 from . import analysis
@@ -46,13 +46,13 @@ from . import api
 from . import clusters
 from . import corsika
 from . import esd
-from . import gpstime
 from . import kascade
 from . import publicdb
 from . import simulations
 from . import storage
 from . import time_util
 from . import transformations
+from . import utils
 
 
 __all__ = ['analysis',
@@ -60,10 +60,10 @@ __all__ = ['analysis',
            'clusters',
            'corsika',
            'esd',
-           'gpstime',
            'kascade',
            'publicdb',
            'simulations',
            'storage',
            'time_util',
-           'transformations']
+           'transformations',
+           'utils']

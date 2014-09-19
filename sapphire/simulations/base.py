@@ -21,12 +21,14 @@ Example usage::
 
 """
 import warnings
+import random
 
+import numpy as np
 import tables
-import progressbar
 
-from sapphire import storage
-from sapphire.analysis.process_events import ProcessEvents
+from .. import storage
+from ..analysis.process_events import ProcessEvents
+from ..utils import pbar
 
 
 class BaseSimulation(object):
@@ -41,13 +43,17 @@ class BaseSimulation(object):
 
     """
 
-    def __init__(self, cluster, datafile, output_path='/', N=1):
+    def __init__(self, cluster, datafile, output_path='/', N=1, seed=None):
         self.cluster = cluster
         self.datafile = datafile
         self.output_path = output_path
         self.N = N
 
         self._prepare_output_tables()
+
+        if seed is not None:
+            random.seed(seed)
+            np.random.seed(seed)
 
     def _prepare_output_tables(self):
         """Prepare output tables in datafile.
@@ -77,9 +83,6 @@ class BaseSimulation(object):
     def generate_shower_parameters(self):
         """Generate shower parameters like core position, energy, etc."""
 
-        pbar = progressbar.ProgressBar(widgets=[progressbar.Percentage(),
-                                                progressbar.Bar(),
-                                                progressbar.ETA()])
         shower_parameters = {'core_pos': (None, None),
                              'zenith': None,
                              'azimuth': None,
@@ -172,6 +175,7 @@ class BaseSimulation(object):
                                      making up a station.
         :returns: dictionary containing the familiar station observables
                   like n1, n2, n3, etc.
+
         """
         station_observables = {'pulseheights': 4 * [-1.],
                                'integrals': 4 * [-1.]}
@@ -265,8 +269,8 @@ class BaseSimulation(object):
 
         """
         self.coincidence_group = self.datafile.create_group(self.output_path,
-                                                           'coincidences',
-                                                           createparents=True)
+                                                            'coincidences',
+                                                            createparents=True)
         self.coincidence_group._v_attrs.cluster = self.cluster
 
         description = storage.Coincidence
@@ -291,13 +295,13 @@ class BaseSimulation(object):
 
         """
         self.cluster_group = self.datafile.create_group(self.output_path,
-                                                       'cluster_simulations',
-                                                       createparents=True)
+                                                        'cluster_simulations',
+                                                        createparents=True)
         self.station_groups = []
         for station in self.cluster.stations:
             station_group = self.datafile.create_group(self.cluster_group,
-                                                      'station_%d' %
-                                                      station.number)
+                                                       'station_%d' %
+                                                       station.number)
             events_table = \
                     self.datafile.create_table(station_group, 'events',
                         ProcessEvents.processed_events_description,

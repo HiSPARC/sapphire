@@ -1,5 +1,4 @@
 import tables
-import progressbar
 from itertools import izip
 
 
@@ -51,10 +50,6 @@ def plot_ldf_ldf(data, group):
 
     # plot ldf from observables
     R, density = [], []
-    #progress = progressbar.ProgressBar(maxval=100000 - 1,
-    #                                   widgets=[progressbar.Bar(),
-    #                                            progressbar.Percentage(),
-    #                                            progressbar.ETA()])
     for c in group.coincidences[:10000]:
         shower_x = c['x']
         shower_y = c['y']

@@ -262,7 +262,7 @@ class CoincidenceQuery(object):
 
         """
         network = api.Network()
-        stations = network.stations_numbers(subcluster=subcluster)
+        stations = network.station_numbers(subcluster=subcluster)
         filtered_events = self.events_from_stations(coincidences, stations, n)
 
         return filtered_events
@@ -276,7 +276,7 @@ class CoincidenceQuery(object):
 
         """
         network = api.Network()
-        stations = network.stations_numbers(cluster=cluster)
+        stations = network.station_numbers(cluster=cluster)
         filtered_events = self.events_from_stations(coincidences, stations, n)
 
         return filtered_events

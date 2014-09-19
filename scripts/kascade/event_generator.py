@@ -5,7 +5,7 @@ import struct
 from numpy.random import randint, random
 import MySQLdb
 
-from hisparc import gpstime
+from sapphire.transformations import clock
 
 
 T0 = 1234567890 # 14 Feb 2009 00:31:30
@@ -40,7 +40,7 @@ def generate_events(timespan, rate, reconstructed_fraction):
 
 
 def store_hisparc_event(cursor, ts, ns):
-    t = datetime.datetime.utcfromtimestamp(gpstime.utc_to_gps(ts))
+    t = datetime.datetime.utcfromtimestamp(clock.utc_to_gps(ts))
     trace = 'xxx'
     l = len(trace)
 

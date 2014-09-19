@@ -15,10 +15,10 @@ class NetworkTests(unittest.TestCase):
 
     def test_keys(self):
         keys = ['name', 'number']
-        self.assertEqual(self.network.all_countries[0].keys(), keys)
-        self.assertEqual(self.network.all_clusters[0].keys(), keys)
-        self.assertEqual(self.network.all_subclusters[0].keys(), keys)
-        self.assertEqual(self.network.all_stations[0].keys(), keys)
+        self.assertEqual(self.network.countries()[0].keys(), keys)
+        self.assertEqual(self.network.clusters()[0].keys(), keys)
+        self.assertEqual(self.network.subclusters()[0].keys(), keys)
+        self.assertEqual(self.network.stations()[0].keys(), keys)
         self.assertEqual(self.network.stations_with_data(2004, 1, 9)[0].keys(), keys)
         self.assertEqual(self.network.stations_with_weather(2004, 10, 9)[0].keys(), keys)
         nested_network = self.network.nested_network()
@@ -29,16 +29,19 @@ class NetworkTests(unittest.TestCase):
                          ['stations', 'name', 'number'])
 
     def test_countries(self):
-        self.assertEqual(self.network.all_countries, self.network.countries())
+        self.network.countries()
+        self.assertEqual(self.network._all_countries, self.network.countries())
 
     def test_clusters(self):
-        self.assertEqual(self.network.all_clusters, self.network.clusters())
+        self.network.clusters()
+        self.assertEqual(self.network._all_clusters, self.network.clusters())
         self.assertEqual(self.network.clusters(country=70000)[0]['number'], 70000)
         bad_number = 1
         self.assertRaises(Exception, self.network.clusters, country=bad_number)
 
     def test_subcluster(self):
-        self.assertEqual(self.network.all_subclusters, self.network.subclusters())
+        self.network.subclusters()
+        self.assertEqual(self.network._all_subclusters, self.network.subclusters())
         self.assertEqual(self.network.subclusters(country=70000)[0]['number'], 70000)
         self.assertEqual(self.network.subclusters(cluster=70000)[0]['number'], 70000)
         bad_number = 1
@@ -46,8 +49,8 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.subclusters, cluster=bad_number)
 
     def test_country_numbers(self):
-        self.network.all_countries = [{'number': sentinel.number1},
-                                      {'number': sentinel.number2}]
+        self.network._all_countries = [{'number': sentinel.number1},
+                                       {'number': sentinel.number2}]
         self.assertEqual(self.network.country_numbers(),
                          [sentinel.number1, sentinel.number2])
 
@@ -70,19 +73,20 @@ class NetworkTests(unittest.TestCase):
                                                  cluster=sentinel.cluster)
 
     @patch.object(api.Network, 'stations')
-    def test_stations_numbers(self, mock_stations):
+    def test_station_numbers(self, mock_stations):
         mock_stations.return_value = [{'number': sentinel.number1},
                                       {'number': sentinel.number2}]
-        self.assertEqual(self.network.stations_numbers(sentinel.country,
-                                                       sentinel.cluster,
-                                                       sentinel.subcluster),
+        self.assertEqual(self.network.station_numbers(sentinel.country,
+                                                      sentinel.cluster,
+                                                      sentinel.subcluster),
                          [sentinel.number1, sentinel.number2])
         mock_stations.assert_called_once_with(country=sentinel.country,
                                               cluster=sentinel.cluster,
                                               subcluster=sentinel.subcluster)
 
     def test_bad_stations(self):
-        self.assertEqual(self.network.all_stations, self.network.stations())
+        self.network.stations()
+        self.assertEqual(self.network._all_stations, self.network.stations())
         self.assertEqual(self.network.stations(country=70000)[0]['number'], 70001)
         self.assertEqual(self.network.stations(cluster=70000)[0]['number'], 70001)
         self.assertEqual(self.network.stations(subcluster=70000)[0]['number'], 70001)
@@ -116,14 +120,14 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.station, STATION)
 
     def test_properties(self):
-        self.assertEqual(self.station.country, 'Netherlands')
-        self.assertEqual(self.station.cluster, 'Amsterdam')
-        self.assertEqual(self.station.subcluster, 'Science Park')
-        self.assertEqual(self.station.n_detectors, 4)
+        self.assertEqual(self.station.country(), 'Netherlands')
+        self.assertEqual(self.station.cluster(), 'Amsterdam')
+        self.assertEqual(self.station.subcluster(), 'Science Park')
+        self.assertEqual(self.station.n_detectors(), 4)
 
     def test_detectors(self):
         keys = ['mpv', 'alpha', 'beta', 'radius', 'height']
-        self.assertEqual(len(self.station.detectors()), self.station.n_detectors)
+        self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
         self.assertEqual(self.station.detectors()[0].keys(), keys)
         self.assertEqual(self.station.detectors(date(2011, 1, 1))[0].keys(), keys)
         self.assertEqual(self.station.detectors()[0]['alpha'], 225)
