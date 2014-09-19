@@ -8,6 +8,7 @@ from sapphire.transformations import base
 class DecimalSexagesimalTests(unittest.TestCase):
 
     def setUp(self):
+        # (decimal, sexagesimal)
         self.combinations = ((0, (0, 0, 0)),
                              (1, (1, 0, 0)),
                              (30, (30, 0, 0)),
