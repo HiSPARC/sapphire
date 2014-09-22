@@ -25,7 +25,7 @@ This package contains modules for performing various analysis tasks:
     Process HiSPARC events
 
 :mod:`~sapphire.analysis.reconstructions`
-    Show reconstructions
+    Perform shower reconstructions
 
 """
 from . import coincidence_queries
