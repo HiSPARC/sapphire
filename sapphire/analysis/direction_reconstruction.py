@@ -501,6 +501,7 @@ class FitAlgorithm(object):
                    for ti, xi, yi, zi in zip(dt, dx, dy, dz)])
         return slq
 
+
 class RegressionAlgorithm(object):
 
     """Reconstruct angles using an analytical regression formula.

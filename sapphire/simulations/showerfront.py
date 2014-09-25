@@ -74,9 +74,9 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         arrival_time = self.simulate_adc_sampling(
-                           self.get_arrival_time(detector, shower_parameters) +
-                           self.simulate_signal_transport_time(1)[0] +
-                           detector.offset)
+            self.get_arrival_time(detector, shower_parameters) +
+            self.simulate_signal_transport_time(1)[0] +
+            detector.offset)
         observables = {'t': arrival_time}
 
         return observables

@@ -222,14 +222,14 @@ def juliandate_to_utc(juliandate):
     if month > 2.5:
         year = D - 4716
     else:
-        year = D - 4715 # year
+        year = D - 4715
     year = int(year)
 
     day_frac, day = math.modf(day)
 
     day = int(day)
     date = datetime.date(year, month, day)
-    hours = day_frac * 24 # fractional part of day * 24 hours
+    hours = day_frac * 24  # fractional part of day * 24 hours
 
     time = decimal_to_time(hours)
 

@@ -168,7 +168,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
             ext_timestamp = shower_parameters['ext_timestamp']
             ext_timestamp += int(trigger_time + station.gps_offset +
-                                self.simulate_gps_uncertainty())
+                                 self.simulate_gps_uncertainty())
             timestamp = int(ext_timestamp / int(1e9))
             nanoseconds = int(ext_timestamp % int(1e9))
 

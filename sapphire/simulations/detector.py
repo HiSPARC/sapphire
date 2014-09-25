@@ -195,7 +195,7 @@ class ErrorlessSimulation(HiSPARCSimulation):
 
     def simulate_signal_transport_time(self, n=1):
 
-        return np.array([0.] *  n)
+        return np.array([0.] * n)
 
     def simulate_detector_mips(self, particles):
 
