@@ -205,6 +205,7 @@ def download_coincidences(file, cluster=None, stations=None,
     url = COINCIDENCES_URL.format(query=query)
     station_groups = _get_station_groups()
     table = _get_or_create_coincidences_tables(file, station_groups)
+    station_numbers = _get_or_create_station_numbers(table)
 
     data = urllib2.urlopen(url, timeout=1800)
 
@@ -221,7 +222,6 @@ def download_coincidences(file, cluster=None, stations=None,
     reader = csv.reader(data, delimiter='\t')
     current_coincidence = 0
     coincidence = []
-    station_numbers = set()
     for line in reader:
         if line[0][0] == '#':
             continue
@@ -249,8 +249,22 @@ def download_coincidences(file, cluster=None, stations=None,
     pbar.finish()
 
     cluster = clusters.HiSPARCStations(station_numbers)
-    file.get_node('/coincidences')._v_attrs.cluster = cluster
+    table._v_attrs.cluster = cluster
     file.flush()
+
+
+def _get_or_create_station_numbers(table):
+    """Get station numbers from existing cluster attribute or a new set
+
+    :param table: coincidence table in PyTables file.
+    :returns: set including existing stations in a cluster.
+
+    """
+    try:
+        cluster = table._v_attrs.cluster
+        return {s.number for s in cluster.stations}
+    except AttributeError:
+        return set()
 
 
 def _get_station_groups():
