@@ -169,7 +169,7 @@ def download_coincidences(file, cluster=None, stations=None,
         interval.
     :param n: the minimum number of events in the coincidence.
 
-    The start and stop parameters may both be None.  In that case,
+    The start and end parameters may both be None.  In that case,
     yesterday's data is downloaded.  If only end is None, a single day's
     worth of data is downloaded, starting at the datetime specified with
     start.
