@@ -19,6 +19,9 @@ The following packages and modules are included:
 :mod:`~sapphire.corsika`
     package containing CORSIKA simulation related modules
 
+:mod:`~sapphire.esd`
+    event summary data access
+
 :mod:`~sapphire.kascade`
     work on KASCADE data
 
