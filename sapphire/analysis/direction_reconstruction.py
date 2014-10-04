@@ -432,9 +432,9 @@ class FitAlgorithm(object):
 
         cons = ({'type': 'eq', 'fun': cls.constraint_normal_vector})
 
-        fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989),
+        fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
-                       bounds=((-1, 1), (-1, 1), (-1, 1)), constraints=cons,
+                       bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)), constraints=cons,
                        options={'ftol': 1e-9, 'eps': 1e-7, 'maxiter': 50})
         if fit.success:
             phi1 = arctan2(fit.x[1], fit.x[0])
@@ -443,9 +443,9 @@ class FitAlgorithm(object):
             phi1 = nan
             theta1 = nan
 
-        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989),
+        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
-                       bounds=((-1, 1), (-1, 1), (-1, 1)), constraints=cons,
+                       bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)), constraints=cons,
                        options={'ftol': 1e-9, 'eps': 1e-7, 'maxiter': 50})
         if fit.success:
             phi2 = arctan2(fit.x[1], fit.x[0])
@@ -495,11 +495,11 @@ class FitAlgorithm(object):
 
         """
         c = .3
-        nx, ny, nz = n_xyz
+        nx, ny, nz, m = n_xyz
 
-        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti)**2
+        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti + m)**2
                    for ti, xi, yi, zi in zip(dt, dx, dy, dz)])
-        return slq
+        return slq + m * m
 
 
 class RegressionAlgorithm(object):
@@ -551,6 +551,10 @@ class RegressionAlgorithm(object):
         tx = 0.
         yy = 0.
         ty = 0.
+        x = 0.
+        y = 0.
+        t = 0.
+        k = 1
 
         for i, j, l in zip(dx, dy, dt):
             xx += i*i
@@ -558,15 +562,19 @@ class RegressionAlgorithm(object):
             tx += i*l
             yy += j*j
             ty += j*l
+            x += i
+            y += j
+            t += l
+            k += 1
 
-        denom = xx * yy - xy * xy
+        denom = k * xy * xy + x * x * yy + y * y * xx - k * xx * yy - 2 * x * y * xy
         if denom == 0:
             denom = nan
 
-        numer = ty * xy - tx * yy
+        numer = tx * (k * yy - y * y ) + xy * ( t * y - k * ty) + x * y * ty - t * x * yy
         nx = c * numer / denom
 
-        numer = tx * xy - ty * xx
+        numer = ty * (k * xx - x * x ) + xy * ( t * x - k * tx) + x * y * tx - t * y * xx
         ny = c * numer / denom
 
         horiz = nx * nx + ny * ny

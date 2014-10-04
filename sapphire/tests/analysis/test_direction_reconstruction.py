@@ -66,7 +66,7 @@ class BaseAlgorithm(object):
         y = (0., 0., 10.)
         z = (0., 0., 0.)  # same z
         theta, phi = self.call_reconstruct(t, x, y, z)
-        self.assertEqual(theta, 0)
+        self.assertAlmostEqual(theta, 0., 4)
         # azimuth can be any value between -pi and pi
         self.assertTrue(-pi <= phi <= pi)
 
@@ -225,8 +225,8 @@ class MultiAltitudeAlgorithm(MultiAlgorithm, AltitudeAlgorithm):
         y = (-5. * sqrt(3), -5. * sqrt(3), 0., 5. * sqrt(3), 5. * sqrt(3), 0.)
         z = (0., -3., -5., -3., 0., 4,)
 
-        zenith = 0.362742
-        azimuth = -0.13148
+        zenith = 0.38333
+        azimuth = 0.00000
 
         t = [0., 0., 0., 0., 0., 0.]
         theta, phi = self.call_reconstruct(t, x, y, z)
