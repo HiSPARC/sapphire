@@ -130,13 +130,11 @@ class StationTests(unittest.TestCase):
         self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
         self.assertEqual(self.station.detectors()[0].keys(), keys)
         self.assertEqual(self.station.detectors(date(2011, 1, 1))[0].keys(), keys)
-        self.assertEqual(self.station.detectors()[0]['alpha'], 225)
         self.assertEqual(self.station.detectors(date(2011, 1, 1))[0]['alpha'], 225)
 
     def test_location(self):
         keys = ['latitude',  'altitude', 'longitude']
         self.assertEqual(self.station.location().keys(), keys)
-        self.assertEqual(self.station.location()['latitude'], 52.355928561847)
         self.assertEqual(self.station.location(date(2002, 1, 1))['latitude'],
                          52.3559179545407)
 
