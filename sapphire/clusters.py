@@ -285,7 +285,7 @@ class BaseCluster(object):
 
             >>> cluster = BaseCluster()
             >>> cluster._add_station((0, 0, 0), pi / 2,
-            ...                      [(-5, 0, 0, 'UD'), (5, 0, 0, 'UD')])
+            ...                      [((-5, 0, 0), 'UD'), ((5, 0, 0), 'UD')])
 
         """
         # Need to make _stations an instance variable to be able to
