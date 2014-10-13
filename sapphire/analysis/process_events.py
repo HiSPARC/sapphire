@@ -35,17 +35,16 @@ import operator
 
 import tables
 import numpy as np
-from scipy.stats import norm
 from scipy.optimize import curve_fit
-import progressbar as pb
 
-from sapphire.analysis.find_mpv import FindMostProbableValueInSpectrum
+from ..utils import pbar, gauss, ERR
+from .find_mpv import FindMostProbableValueInSpectrum
 
 
 ADC_THRESHOLD = 20  # This one is relative to the baseline
 ADC_LOW_THRESHOLD = 253
 ADC_HIGH_THRESHOLD = 323
-ADC_TIME_PER_SAMPLE = 2.5 # in ns
+ADC_TIME_PER_SAMPLE = 2.5  # in ns
 
 
 class ProcessEvents(object):
@@ -82,7 +81,7 @@ class ProcessEvents(object):
         'n4': tables.Float32Col(pos=20, dflt=-1),
         't_trigger': tables.Float32Col(pos=21, dflt=-1)}
 
-    def __init__(self, data, group, source=None):
+    def __init__(self, data, group, source=None, progress=True):
         """Initialize the class.
 
         :param data: the PyTables datafile
@@ -90,11 +89,13 @@ class ProcessEvents(object):
             cases, this is simply the group containing the events table.
         :param source: the name of the events table.  Default: None,
             meaning the default name 'events'.
+        :param progress: show progressbar.
 
         """
         self.data = data
         self.group = data.get_node(group)
         self.source = self._get_source(source)
+        self.progress = progress
 
     def process_and_store_results(self, destination=None, overwrite=False,
                                   limit=None):
@@ -270,9 +271,7 @@ class ProcessEvents(object):
         table = self._tmp_events
         source = self.source
 
-        progressbar = self._create_progressbar_from_iterable(source.colnames)
-
-        for col in progressbar(source.colnames):
+        for col in pbar(source.colnames, show=self.progress):
             getattr(table.cols, col)[:self.limit] = getattr(source.cols,
                                                             col)[:self.limit]
         table.flush()
@@ -313,31 +312,13 @@ class ProcessEvents(object):
             progress bar.  Optional.
 
         """
-        progressbar = self._create_progressbar_from_iterable(events, length)
-
         result = []
-        for event in progressbar(events):
+        for event in pbar(events, length=length, show=self.progress):
             timings = self._reconstruct_time_from_traces(event)
             result.append(timings)
         timings = np.array(result)
 
         return timings
-
-    def _create_progressbar_from_iterable(self, iterable, length=None):
-        """Create a progressbar object from any iterable."""
-
-        if length is None:
-            try:
-                length = len(iterable)
-            except TypeError:
-                pass
-
-        if length:
-            return pb.ProgressBar(maxval=length, widgets=[pb.Percentage(),
-                                                          pb.Bar(), pb.ETA()])
-        else:
-            # Cannot create progressbar, return no-op
-            return lambda x: x
 
     def _reconstruct_time_from_traces(self, event):
         """Reconstruct arrival times for a single event.
@@ -363,7 +344,7 @@ class ProcessEvents(object):
                 timings.append(self._reconstruct_time_from_trace(trace,
                                                                  baseline))
         timings = [time * ADC_TIME_PER_SAMPLE
-                   if time not in [-1, -999] else time
+                   if time not in ERR else time
                    for time in timings]
         return timings
 
@@ -476,7 +457,6 @@ class ProcessEvents(object):
         table = self.data.get_node(self.group, timings_table)
         t2 = table.col('t2')
 
-        gauss = lambda x, N, m, s: N * norm.pdf(x, m, s)
         bins = np.arange(-100 + 1.25, 100, 2.5)
 
         print "Determining offsets based on # events:",
@@ -504,7 +484,7 @@ class ProcessIndexedEvents(ProcessEvents):
 
     """
 
-    def __init__(self, data, group, indexes, source=None):
+    def __init__(self, data, group, indexes, source=None, progress=True):
         """Initialize the class.
 
         :param data: the PyTables datafile
@@ -517,6 +497,7 @@ class ProcessIndexedEvents(ProcessEvents):
         """
         super(ProcessIndexedEvents, self).__init__(data, group, source)
         self.indexes = indexes
+        self.progress = progress
 
     def _store_results_from_traces(self):
         table = self._tmp_events
@@ -708,8 +689,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         t_trigger = self._reconstruct_trigger(low_idx, high_idx, n_detectors)
         timings.append(t_trigger)
 
-        timings = [time * ADC_TIME_PER_SAMPLE
-                   if time not in [-1, -999] else time
+        timings = [time * ADC_TIME_PER_SAMPLE if time not in ERR else time
                    for time in timings]
         return timings
 
@@ -819,6 +799,8 @@ class ProcessEventsFromSource(ProcessEvents):
 
         self.source = self._get_source()
 
+        self.progress = False
+
     def _get_source(self):
         """Return the table containing the events.
 
@@ -876,11 +858,6 @@ class ProcessEventsFromSource(ProcessEvents):
         """Return blobs node"""
 
         return self.source_group.blobs
-
-    def _create_progressbar_from_iterable(self, iterable, length=None):
-        """Override method, do not show a progressbar"""
-
-        return lambda x: x
 
 
 class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,

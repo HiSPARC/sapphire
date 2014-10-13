@@ -1,6 +1,6 @@
-GPS / UTC time functions
+Common utility functions
 ========================
 
-.. automodule:: sapphire.gpstime
+.. automodule:: sapphire.utils
    :members:
    :undoc-members:

@@ -185,12 +185,18 @@ class EventHeader(object):
         self.p_z = - subblock[9] * units.GeV
         self.zenith = subblock[10] * units.rad
 
-        # Corsika defines azimuth as the direction the shower points to
+        # Corsika defines azimuth as the direction the shower points to,
         # HiSPARC defines azimuth as the direction the shower comes from.
-        # Corsika allows azimuths in [-2pi, 2pi], HiSPARC uses (-pi, pi]
-        azimuth = subblock[11] * units.rad + math.pi
-        if azimuth > math.pi:
+        # Corsika allows azimuths in [-2pi, 2pi], HiSPARC uses [-pi, pi).
+        # Corsika defines North as 0 rad, HiSPARC defines East as 0 rad.
+        # So finally we need to subtract pi/2 rad from the azimuth and
+        # normalize its range.
+        azimuth_corsika = subblock[11] * units.rad
+        azimuth = azimuth_corsika - (math.pi / 2.)
+        if azimuth >= math.pi:
             self.azimuth = azimuth - (2 * math.pi)
+        elif azimuth < -math.pi:
+            self.azimuth = azimuth + (2 * math.pi)
         else:
             self.azimuth = azimuth
 
@@ -414,15 +420,20 @@ def particle_data(subblock):
     easy-to-use attribute access.
 
     :returns: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
-        observation_level, phi data.
+              observation_level, phi data.
 
     """
+    # These three are subject to coordinate transformations
+    x_corsika = subblock[4] * units.cm
+    y_corsika = subblock[5] * units.cm
+    p_z_corsika = subblock[3] * units.GeV
+
     description = int(subblock[0])
     p_x = subblock[1] * units.GeV
     p_y = subblock[2] * units.GeV
-    p_z = - subblock[3] * units.GeV
-    x = subblock[4] * units.cm
-    y = subblock[5] * units.cm
+    p_z = -p_z_corsika
+    x = -y_corsika
+    y = x_corsika
     t = subblock[6] * units.ns  # or z for additional muon info
 
     id = description / 1000
@@ -445,32 +456,26 @@ class ParticleData(object):
     """
 
     def __init__(self, subblock):
-        self.description = int(subblock[0])
-        self.p_x = subblock[1] * units.GeV
-        self.p_y = subblock[2] * units.GeV
-        self.p_z = - subblock[3] * units.GeV
-        self.x = subblock[4] * units.cm
-        self.y = subblock[5] * units.cm
-        self.t = subblock[6] * units.ns  # or z for additional muon info
-
-        self.id = self.description / 1000
-        self.r = math.sqrt(self.x ** 2 + self.y ** 2)
-        self.is_particle = 0 < self.id < 200
-        self.particle = particles.name(self.id) if self.is_particle else None
-        self.is_detectable = self.particle in ['positron', 'electron',
-                                               'muon_p', 'muon_m']  # + 'gamma'
+        self.p_x, self.p_y, self.p_z, self.x, self.y, self.t, self.id, \
+            self.r, self.hadron_generation, self.observation_level, \
+            self.phi = particle_data(subblock)
 
     @property
-    def hadron_generation(self):
-        return self.description / 10 % 100
+    def is_detectable(self):
+        """Get True or False if the particle is detectable
+
+        Note: gamma particles are currently not included.
+
+        """
+        return self.particle in ['positron', 'electron', 'muon_p', 'muon_m']
 
     @property
-    def observation_level(self):
-        return self.description % 10
+    def particle(self):
+        return particles.name(self.id) if self.is_particle else None
 
     @property
-    def phi(self):
-        return math.atan2(self.y, self.x)
+    def is_particle(self):
+        return 0 < self.id < 200
 
     @property
     def is_nucleus(self):

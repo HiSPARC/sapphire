@@ -4,8 +4,6 @@ import tables
 from itertools import izip
 import os.path
 
-import progressbar as pb
-
 from pylab import *
 
 from scipy import integrate

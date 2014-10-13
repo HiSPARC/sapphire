@@ -1,19 +1,14 @@
 import tables
 import time
 
-import progressbar as pb
-
 from sapphire.analysis.core_reconstruction import CoreReconstruction, \
                                                   PlotCoreReconstruction
+from sapphire.utils import pbar
 
 import artist
 
 
 X, Y = 65., 20.82
-
-
-progressbar = lambda x: pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                                pb.ETA()])(x)
 
 
 def get_tcc_values(data, force_new=False):
@@ -24,7 +19,7 @@ def get_tcc_values(data, force_new=False):
         c_index = data.root.kascade.c_index
 
         tcc = []
-        for idx in progressbar(c_index):
+        for idx in pbar(c_index):
             event = h_events[idx['h_idx']]
             value = calculate_tcc(event)
             tcc.append(value)
@@ -180,11 +175,7 @@ class KascadeCoreReconstruction(CoreReconstruction):
         self.cluster = hisparc_group._v_attrs.cluster
         self._store_cluster_with_results()
 
-        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                              pb.ETA()],
-                                     fd=sys.stderr)
-
-        for idx, tcc_value in progressbar(zip(c_index[:self.N], tcc)):
+        for idx, tcc_value in pbar(zip(c_index[:self.N], tcc)):
             hisparc_event = hisparc_table[idx['h_idx']]
             kascade_event = kascade_table[idx['k_idx']]
 

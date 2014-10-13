@@ -1,5 +1,6 @@
 import os
 import unittest
+import warnings
 
 from mock import patch
 import tables
@@ -10,7 +11,13 @@ from perform_simulation import (create_tempfile_path, perform_simulation,
 
 class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
 
-    @patch('progressbar.ProgressBar')
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+
+    def tearDown(self):
+        warnings.resetwarnings()
+
+    @patch('sapphire.utils.ProgressBar')
     def test_simulation_output(self, mock_progressbar):
         """Perform a simulation and verify the output"""
 
@@ -26,7 +33,7 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
 
         expected_file = tables.open_file(expected_path)
         actual_file = tables.open_file(actual_path)
-        
+
         for station_id in range(4):
             events_path = '/cluster_simulations/station_%d/events' % \
                           station_id

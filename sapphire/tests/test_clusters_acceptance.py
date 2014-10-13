@@ -12,9 +12,9 @@ class SimpleClusterTest(unittest.TestCase):
 
     def test_station_positions_and_angles(self):
         a = sqrt(100 ** 2 - 50 ** 2)
-        expected = [(0, 2 * a / 3, 0), (0, 0, 0), (-50, -a / 3, 2 * pi / 3),
-                    (50, -a / 3, -2 * pi / 3)]
-        actual = [(station.position[0], station.position[1], station.angle)
+        expected = [(0, 2 * a / 3, 0, 0), (0, 0, 0, 0),
+                    (-50, -a / 3, 0, 2 * pi / 3), (50, -a / 3, 0, -2 * pi / 3)]
+        actual = [(station.x, station.y, station.z, station.angle)
                   for station in self.cluster.stations]
 
         for actual_value, expected_value in zip(actual, expected):

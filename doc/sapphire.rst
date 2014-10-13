@@ -15,10 +15,10 @@ Contents:
    clusters
    corsika
    esd
-   gpstime
    kascade
    publicdb
    simulations
    storage
    time_util
    transformations
+   utils

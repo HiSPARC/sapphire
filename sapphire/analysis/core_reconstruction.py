@@ -8,11 +8,11 @@ import numpy as np
 from numpy import sqrt, arctan2, cos, sin
 import pylab as plt
 from scipy import optimize
-import progressbar as pb
 import tables
 
-from sapphire.simulations import ldf
-from sapphire import storage
+from ..simulations import ldf
+from .. import storage
+from ..utils import pbar
 
 
 class CoreReconstruction(object):
@@ -94,14 +94,10 @@ class CoreReconstruction(object):
         self.cluster = source._v_attrs.cluster
         self._store_cluster_with_results()
 
-        progressbar = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                              pb.ETA()],
-                                     fd=sys.stderr)
-
         observables = source.observables
         coincidence_table = source.coincidences
 
-        for coincidence in progressbar(coincidence_table[:self.N]):
+        for coincidence in pbar(coincidence_table[:self.N]):
             if coincidence['N'] >= 3:
                 x, y, N, chisq = \
                     self.reconstruct_core_position(coincidence)

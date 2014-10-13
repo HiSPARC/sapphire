@@ -1,11 +1,12 @@
 import unittest
 import os.path
+from math import pi
 
 from sapphire import corsika
 
 
 data_file_dir = os.path.dirname(__file__)
-DATA_FILE = os.path.join(data_file_dir, 'DAT000000')
+DATA_FILE = os.path.join(data_file_dir, 'test_data/DAT000000')
 
 
 class CorsikaFileTests(unittest.TestCase):
@@ -54,6 +55,8 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertEqual(header.id, 'EVTH')
         self.assertEqual(corsika.particles.name(header.particle_id), 'proton')
         self.assertEqual(header.energy, 1e14)
+        self.assertEqual(header.azimuth, -pi / 2.)
+        self.assertEqual(header.zenith, 0.0)
         self.assertEqual(header.hadron_model_high, 'QGSJET')
 
     def test_event_end(self):
@@ -76,8 +79,8 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertIsInstance(particle, tuple)
         self.assertEqual(len(particle), 11)
         self.assertEqual(corsika.particles.name(particle[6]), 'muon_p')
-        self.assertAlmostEqual(particle[3], -172.535859375)
-        self.assertAlmostEqual(particle[4], 56.2846679688)
+        self.assertAlmostEqual(particle[3], -56.2846679688)
+        self.assertAlmostEqual(particle[4], -172.535859375)
         self.assertAlmostEqual(particle[7], 181.484397728)
         particle = particles.next()
         self.assertEqual(corsika.particles.name(particle[6]), 'muon_m')

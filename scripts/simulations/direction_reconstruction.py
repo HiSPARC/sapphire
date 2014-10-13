@@ -4,8 +4,6 @@ import tables
 from itertools import izip
 import os.path
 
-import progressbar as pb
-
 from pylab import *
 
 from scipy import integrate
@@ -17,6 +15,7 @@ import utils
 
 from sapphire.analysis.direction_reconstruction import (DirectionReconstruction,
                                                         BinnedDirectionReconstruction)
+from sapphire.utils import pbar
 from myshowerfront import *
 
 from artist import GraphArtist
@@ -906,11 +905,11 @@ def make_datasets_failed_reconstructions_scatter(data):
     observables = group.observables
     coincidences = group.coincidences
 
-    progressbar = pb.ProgressBar(maxval=len(observables))
     dt1, dt2, phis_sim, phis_rec = [], [], [], []
     gdt1, gdt2, gphis_sim, gphis_rec = [], [], [], []
 
-    for event, coincidence in progressbar(izip(observables, coincidences)):
+    for event, coincidence in pbar(izip(observables, coincidences),
+                                   len(observables)):
         assert event['id'] == coincidence['id']
         if min(event['n1'], event['n3'], event['n4']) >= 1.:
             theta, phi = reconstruct_angle(event, 10.)

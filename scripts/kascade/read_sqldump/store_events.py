@@ -45,7 +45,7 @@ def store_event(datafile, cluster, station_id, event):
     nanoseconds = eventheader['nanoseconds']
     # make an extended timestamp, which is the number of nanoseconds since
     # epoch
-    ext_timestamp = timestamp * long(1e9) + nanoseconds
+    ext_timestamp = timestamp * int(1e9) + nanoseconds
     row['timestamp'] = timestamp
 
     if upload_codes['_has_ext_time']:

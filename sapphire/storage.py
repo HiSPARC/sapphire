@@ -55,151 +55,6 @@ class ShowerParticle(tables.IsDescription):
     energy = tables.Float32Col()
 
 
-class SimulationEventHeader(tables.IsDescription):
-    """Header storing single station information of a simulated event
-
-    Some simulations do not only write :class:`SimulationEventObservables`, but
-    also raw simulation data.  This may be individual particles hitting
-    detectors, for example.  To keep track of the simulation, headers may be
-    written in this table.
-
-    In the case of the groundparticles simulation, one header is written for
-    each simulated event with an :attr:`station_id` set to 0, containing event
-    information.  Additionally, for each station a header is written (with the
-    :attr:`station_id` set to the station identifier) with station information.
-
-    .. attribute:: id
-
-        an event identifier (unique in this table)
-
-    .. attribute:: station_id
-
-        station identifier, such that you can do::
-
-            >>> station = cluster.stations[station_id]
-
-    .. attribute:: r, phi
-
-        dataset-specific.  This might be the coordinates of the shower core in
-        a simulation, or the location of the cluster center.  Consult the
-        documentation provided by the simulation code.
-
-    .. attribute:: alpha
-
-        dataset-specific.  This might be the rotation of the cluster around
-        its center.  Consult the documentation provided by the simulation code.
-
-    """
-    id = tables.UInt32Col()
-    station_id = tables.UInt8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    alpha = tables.Float32Col()
-
-
-class SimulationParticle(tables.IsDescription):
-    """Store information about the particles hitting a detector
-
-    Simulations which track individual particles write particle information in
-    this table.  Position, arrival time and energy, as well as the detector
-    which detected this particle are stored.
-
-    .. attribute:: id
-
-        a unique identifier for the simulated event (only unique in this table)
-
-    .. attribute:: station_id
-
-        station identifier, such that you can do::
-
-            >>> station = cluster.stations[station_id]
-
-    .. attribute:: detector_id
-
-        detector identifier, such that you can do::
-
-            >>> station = cluster.stations[station_id]
-            >>> detector = station.detectors[detector_id]
-
-    .. attribute:: pid
-
-        a particle identifier. Possible values are determined by the
-        simulation package.
-
-    .. attribute:: r, phi
-
-        particle position in polar coordinates
-
-    .. attribute:: time
-
-        arrival time of the particle [ns]
-
-    .. attribute:: energy
-
-        particle energy [GeV]
-
-    """
-    id = tables.UInt32Col()
-    station_id = tables.UInt8Col()
-    detector_id = tables.UInt8Col()
-    pid = tables.Int8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    time = tables.Float32Col()
-    energy = tables.Float32Col()
-
-
-class SimulationEventObservables(tables.IsDescription):
-
-    """Store information about the observables of an event.
-
-    The observables are described for each station independently.  So, for each
-    event (with a unique :attr:`id`), there is a table row for each station
-    (with a unique :attr:`station_id`), such that only the (id, station_id)
-    combinations are unique in the table.
-
-    .. attribute:: id
-
-        a unique identifier for the simulated event (only unique in this table)
-
-    .. attribute:: station_id
-
-        station identifier, such that you can do::
-
-            >>> station = cluster.stations[station_id]
-
-    .. attribute:: r, phi, x, y
-
-        coordinates of the station.  Depending on the simulation, this might be
-        constant throughout the simulation, or it might change event by event.
-
-    .. attribute:: alpha
-
-        rotation of the station around its center
-
-    .. attribute:: N
-
-        number of detectors with at least one particle
-
-    """
-    id = tables.UInt32Col()
-    station_id = tables.UInt8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    x = tables.Float32Col()
-    y = tables.Float32Col()
-    alpha = tables.Float32Col()
-    N = tables.UInt8Col()
-    t1 = tables.Float32Col()
-    t2 = tables.Float32Col()
-    t3 = tables.Float32Col()
-    t4 = tables.Float32Col()
-    n1 = tables.Float32Col()
-    n2 = tables.Float32Col()
-    n3 = tables.Float32Col()
-    n4 = tables.Float32Col()
-
-
 class EventObservables(tables.IsDescription):
 
     """Store information about the observables of an event.
@@ -291,11 +146,11 @@ class Coincidence(tables.IsDescription):
 
         the number of triggered stations
 
-    .. attribute:: r, phi, x, y
+    .. attribute:: x, y
 
         The coordinates of the shower core in a simulation.
 
-    .. attribute:: shower_theta, shower_phi
+    .. attribute:: zenith, azimuth
 
         The direction of the (simulated) shower.
 
@@ -314,34 +169,54 @@ class Coincidence(tables.IsDescription):
     energy = tables.Float32Col(pos=10)
 
 
-class ReconstructedEvent(tables.IsDescription):
+class ReconstructedCoincidence(tables.IsDescription):
 
-    """Store information about reconstructed events"""
+    """Store information about reconstructed coincidences"""
 
-    # r, phi is core position
+    id = tables.UInt32Col(pos=1)
+    ext_timestamp = tables.UInt64Col(pos=2)
+    min_n = tables.Float32Col(pos=3)
 
-    id = tables.UInt32Col()
-    station_id = tables.UInt8Col()
-    r = tables.Float32Col()
-    phi = tables.Float32Col()
-    alpha = tables.Float32Col()
-    t1 = tables.Float32Col()
-    t2 = tables.Float32Col()
-    t3 = tables.Float32Col()
-    t4 = tables.Float32Col()
-    n1 = tables.Float32Col()
-    n2 = tables.Float32Col()
-    n3 = tables.Float32Col()
-    n4 = tables.Float32Col()
-    reference_theta = tables.Float32Col()
-    reference_phi = tables.Float32Col()
-    reconstructed_theta = tables.Float32Col()
-    reconstructed_phi = tables.Float32Col()
-    reference_core_pos = tables.Float32Col(shape=2)
-    reconstructed_core_pos = tables.Float32Col(shape=2)
-    reference_shower_size = tables.Float32Col()
-    reconstructed_shower_size = tables.Float32Col()
-    min_n134 = tables.Float32Col()
+    x = tables.Float32Col(pos=4)
+    y = tables.Float32Col(pos=5)
+    zenith = tables.Float32Col(pos=6)
+    azimuth = tables.Float32Col(pos=7)
+    size = tables.Float32Col(pos=8)
+    energy = tables.Float32Col(pos=9)
+    error_x = tables.Float32Col(pos=10)
+    error_y = tables.Float32Col(pos=11)
+    error_zenith = tables.Float32Col(pos=12)
+    error_azimuth = tables.Float32Col(pos=13)
+    error_size = tables.Float32Col(pos=14)
+    error_energy = tables.Float32Col(pos=15)
+
+    reference_x = tables.Float32Col(pos=16)
+    reference_y = tables.Float32Col(pos=17)
+    reference_zenith = tables.Float32Col(pos=18)
+    reference_azimuth = tables.Float32Col(pos=19)
+    reference_size = tables.Float32Col(pos=20)
+    reference_energy = tables.Float32Col(pos=21)
+
+
+class ReconstructedEvent(ReconstructedCoincidence):
+
+    """Store information about reconstructed events
+
+    .. attribute:: id
+
+        Index referring to the id of the event that was reconstructed.
+
+    .. attribute:: d1,d2,d3,d4
+
+        Booleans indicating which detectors participated in the
+        reconstruction.
+
+    """
+
+    d1 = tables.BoolCol(pos=22)
+    d2 = tables.BoolCol(pos=23)
+    d3 = tables.BoolCol(pos=24)
+    d4 = tables.BoolCol(pos=25)
 
 
 class KascadeEvent(tables.IsDescription):
@@ -353,6 +228,7 @@ class KascadeEvent(tables.IsDescription):
     timestamp = tables.Time32Col()
     nanoseconds = tables.UInt32Col()
     ext_timestamp = tables.UInt64Col()
+
     energy = tables.FloatCol()
     core_pos = tables.FloatCol(shape=2)
     zenith = tables.FloatCol()

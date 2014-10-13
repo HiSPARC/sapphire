@@ -7,7 +7,6 @@ import itertools
 import tables
 import numpy as np
 from numpy import arctan2, cos, sin, arcsin, isnan, pi, linspace
-import progressbar as pb
 from scipy.optimize import curve_fit
 from scipy.stats import norm
 
@@ -18,7 +17,7 @@ from sapphire.analysis.direction_reconstruction import \
     DirectionReconstruction
 from sapphire.analysis.core_reconstruction import CoreReconstruction
 from sapphire import storage, clusters
-
+from sapphire.utils import pbar
 
 class Master:
     stations = range(501, 507)
@@ -225,10 +224,8 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
         self.cluster = coincidences_group._v_attrs.cluster
         self.results_group._v_attrs.cluster = self.cluster
 
-        progress = pb.ProgressBar(widgets=[pb.Percentage(), pb.Bar(),
-                                           pb.ETA()])
         sel_coincidences = coincidences.read_where('N >= 3')
-        for coincidence in progress(sel_coincidences):
+        for coincidence in pbar(sel_coincidences):
             self.reconstruct_individual_stations(coincidence)
             self.reconstruct_cluster_stations(coincidence)
 

@@ -18,7 +18,7 @@ import logging
 
 logger = logging.getLogger('hisparc.publicdb')
 
-#PUBLICDB_XMLRPC_URL = 'http://localhost:8000/raw_data/rpc'
+# PUBLICDB_XMLRPC_URL = 'http://localhost:8000/raw_data/rpc'
 PUBLICDB_XMLRPC_URL = 'http://data.hisparc.nl/raw_data/rpc'
 
 
@@ -208,7 +208,7 @@ def _get_or_create_group(file, group):
     except tables.NoSuchNodeError:
         parent, newgroup = os.path.split(group)
         file.create_group(parent, newgroup, 'Data group',
-                         createparents=True)
+                          createparents=True)
     return group
 
 
@@ -220,10 +220,10 @@ def _get_or_create_node(file, group, src_node):
     except tables.NoSuchNodeError:
         if type(src_node) == tables.Table:
             node = file.create_table(group, src_node.name,
-                                    src_node.description, src_node.title)
+                                     src_node.description, src_node.title)
         elif type(src_node) == tables.VLArray:
             node = file.create_vlarray(group, src_node.name, src_node.atom,
-                                      src_node.title)
+                                       src_node.title)
         else:
             raise Exception("Unknown node class: %s" % type(src_node))
 

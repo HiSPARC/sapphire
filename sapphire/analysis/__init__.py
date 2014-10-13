@@ -24,6 +24,9 @@ This package contains modules for performing various analysis tasks:
 :mod:`~sapphire.analysis.process_events`
     Process HiSPARC events
 
+:mod:`~sapphire.analysis.reconstructions`
+    Perform shower reconstructions
+
 """
 from . import coincidence_queries
 from . import coincidences
@@ -32,6 +35,7 @@ from . import direction_reconstruction
 from . import find_mpv
 from . import landau
 from . import process_events
+from . import reconstructions
 
 
 __all__ = ['coincidence_queries',
@@ -40,4 +44,5 @@ __all__ = ['coincidence_queries',
            'direction_reconstruction',
            'find_mpv',
            'landau',
-           'process_events']
+           'process_events',
+           'reconstructions']
