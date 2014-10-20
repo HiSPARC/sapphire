@@ -2,7 +2,8 @@ import warnings
 import itertools
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, floor, where, deg2rad, pi, inf, around)
+                   sqrt, floor, where, deg2rad, pi, inf, around, radians,
+                   array)
 from scipy.optimize import minimize
 
 from ..utils import pbar, ERR
@@ -391,6 +392,108 @@ class DirectAlgorithmCartesian3D(object):
                 phi = phimin
 
         return theta, phi
+
+
+class SphereAlgorithm(object):
+
+    @classmethod
+    def reconstruct_source_ECS(cls, t, x, y, z, timestamp):
+        """Reconstructs the source in the Equatorial Coordinate System.
+
+        :param timestamp: The UTC timestamp of the coincidence in s.
+        :param t: An array with three arrival times in ns.
+        :param x,y,z: arrays with the ECEF locations of the
+                      three detectors / stations in meters.
+        :returns: a tuple with the declination and rig ht ascension of the
+                  source. The apparent location of the cosmic ray source in
+                  the Equatorial Coordinate System.
+
+        """
+        tInt = array([-1000, -10000]) + t[0]
+        xInt, yInt, zInt = cls.interaction_curve(x, y, z, t, tInt)
+        dec_source = arctan2((zInt[1] - zInt[0]),
+                             sqrt((xInt[1] - xInt[0]) ** 2. + (yInt[1] -
+                                                               yInt[0]) ** 2.))
+        RA_source = arctan2((xInt[1] - xInt[0]), (yInt[1] - yInt[0]))
+        return dec_source, RA_source
+
+    @staticmethod
+    def interaction_curve(x, y, z, t, tInt):
+        """Calculates the curve of possible primary interactions using the
+        arrival times in three detectors arrival. The algorithm is based on
+        location calculations used for LORAN, DECCA, RACAL, GPS as described
+        by N.G. Schultheiss 2012
+
+        :param #x, #y, #z: Arrays with the orthogonal coordinates of the three
+                   detectors / stations in m.
+        :param #t: The arrival time of the shower in the detectors / stations
+                   in ns.
+        :param #tInt: The interaction time in ns.
+        :returns: parameters xInt, yInt, zInt
+
+        """
+        c = .299792458
+
+        x01 = x[0] - x[1]
+        x02 = x[0] - x[2]
+        x12 = x[1] - x[2]
+        y01 = y[0] - y[1]
+        y02 = y[0] - y[2]
+        y12 = y[1] - y[2]
+        z01 = z[0] - z[1]
+        z02 = z[0] - z[2]
+        z12 = z[1] - z[2]
+        nano01 = t[0] - t[1]
+        nano02 = t[0] - t[2]
+        nano12 = t[1] - t[2]
+
+        A = 2. * (x01 * y02 - x02 * y01)
+        B = 2. * (x02 * z01 - x01 * z02)
+        C = 2. * (x02 * nano01 - x01 * nano02) * c ** 2
+        D = x02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (nano01 * c) ** 2)
+        D -= x01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (nano02 * c) ** 2)
+        E = 2. * (y01 * z02 - y02 * z01)
+        F = 2. * (y01 * nano02 - y02 * nano01) * c ** 2
+        G = y01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (nano02 * c) ** 2)
+        G -= y02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (nano01 * c) ** 2)
+
+        T = A ** 2 + B ** 2 + E ** 2
+        V = (B * C + E * F) / T
+        W = (B * D + E * G) / T
+        P = (D ** 2 + G ** 2) / T
+        Q = 2 * (C * D + F * G) / T
+        R = (C ** 2 + F ** 2 - (A * c) ** 2) / T
+
+        tInt0 = tInt - t[0]
+
+        sign = 1
+
+        z = - V * tInt0 - W + sign * ((V ** 2 - R) * tInt0 ** 2 +
+            (2 * V * W - Q) * tInt0 + W ** 2 - P) ** 0.5
+        y = (B * z + C * tInt0 + D) / A
+        x = (E * z + F * tInt0 + G) / A
+
+        xInt = x[0] + x
+        yInt = y[0] + y
+        zInt = z[0] + z
+
+        intLength2 = xInt[0] ** 2 + yInt[0] ** 2 +zInt[0] ** 2
+        detLength2 = x[0] ** 2 + y[0] ** 2 + z[0] ** 2
+
+        if detLength2 > intLength2:
+            # Select interaction above the earths surface.
+
+            sign = -1
+            z = - V * tInt0 - W + sign * sqrt((V ** 2 - R) * tInt0 ** 2 +
+                (2 * V * W - Q) * tInt0 + W ** 2 - P)
+            y = (B * z + C * tInt0 + D) / A
+            x = (E * z + F * tInt0 + G) / A
+
+            xInt = x[0] + x
+            yInt = y[0] + y
+            zInt = z[0] + z
+
+        return xInt, yInt, zInt, tInt
 
 
 class FitAlgorithm(object):
