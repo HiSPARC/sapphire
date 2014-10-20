@@ -318,6 +318,8 @@ def _create_coincidences_tables(file, station_groups):
     for station_group in station_groups.itervalues():
         s_index.append(station_group['group'])
 
+    return coincidences
+
 
 def _get_or_create_events_table(file, group):
     """Get or create event table in PyTables file"""
