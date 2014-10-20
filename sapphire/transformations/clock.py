@@ -1,6 +1,6 @@
 """ Time transformations
 
-This handkes all the wibbly wobbly timey wimey stuff.
+This handles all the wibbly wobbly timey wimey stuff.
 Such as easy conversions between different time systems.
 Supported systems: GPS, UTC, GMST, LST, JD and MJD.
 

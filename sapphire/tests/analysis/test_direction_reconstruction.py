@@ -18,7 +18,7 @@ class BaseAlgorithm(object):
         return self.algorithm.reconstruct_common(t, x, y, z)
 
     def test_stations_in_line(self):
-        """Three detection points on a line does not provide a solution."""
+        """Three detection points on a line do not provide a solution."""
 
         # On a line in x
         t = (0., 2., 3.)
