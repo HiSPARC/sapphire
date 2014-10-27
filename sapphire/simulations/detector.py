@@ -95,6 +95,21 @@ class HiSPARCSimulation(BaseSimulation):
     def simulate_detector_mip(self, particle):
         """Simulate the detector signal for particles
 
+        The detector response (energy loss and detector efficiency) is derived
+        in Montanus2014.
+
+        The energy loss is taken from the Bethe-Bloch equation. The detector
+        response is statistically modelled. The effect of particle angle of
+        incidence is accounted for. The resulting probability
+        distribution is used below.
+
+        The statistics can be simulated by taking a random number y between
+        0 and 1, and convert it to a signal s in MIP using the probablity
+        distribution.
+
+        Montanus2014: J.C.M. Montanus, The Landau distribution, \
+                          Internal note (Nikhef), 22 may 2014
+
         Be careful when editting this function, be sure to check both
         the single and vectorized part.
 
