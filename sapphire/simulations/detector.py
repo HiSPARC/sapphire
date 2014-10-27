@@ -60,6 +60,8 @@ class HiSPARCSimulation(BaseSimulation):
         Generates random transit times within a given distribution and
         adds it to the times the particles passed the detector.
 
+        Distribution based on Fokkema2012 sec 4.2, figure 4.3
+
         Be careful when editting this function, be sure to check both
         the single and vectorized part.
 
