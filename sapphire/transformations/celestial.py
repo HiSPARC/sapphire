@@ -16,27 +16,65 @@ from numpy import (arcsin, arccos, arctan2, cos, sin,
 from . import clock, angles, axes
 
 
-def horizontal_to_equatorial(longitude, latitude, timestamp, azimuth, zenith):
+def zenithazimuth_to_equatorial(longitude, latitude, timestamp, zenith, azimuth):
     """Convert Horizontal to Equatorial coordinates (J2000.0)
 
     :param longitude,latitude: Position of the observer on Earth in degrees.
                                North and east positive.
     :param timestamp: GPS timestamp of the observation.
-    :param azimuth: zenith angle of the observation in radians.
-    :param zenith: azimuth angle of the observation in radians.
+    :param zenith: zenith is the angle relative to the Zenith in radians.
+    :param azimuth: azimuth angle of the observation in radians.
 
     :returns: Right ascension (ra) and Declination (dec) in radians.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
     """
-    # altitude is the angle above the horizon
-    altitude = pi / 2. - zenith
+    altitude, Azimuth = zenithazimuth_to_horizontal(zenith, azimuth)
+    lst = clock.gps_to_lst(timestamp, longitude)
+    ra, dec = horizontal_to_equatorial(longitude, latitude, lst,
+                                       altitude, Azimuth)
 
+    return ra, dec
+
+
+def zenithazimuth_to_horizontal(zenith, azimuth):
+    """Convert from Zenith Azimuth to Horizontal coordinates
+
+    Zenith Azimuth is the coordinate system used by HiSPARC. Zenith is
+    the angle between the zenith and the direction. Azimuth is the angle
+    in the horizontal plane, from East to North (ENWS).
+
+    Horizontal is the coordinate system as described in
+    Duffett-Smith1990 p38. Altitude is the angle above the horizon and
+    Azimuth the angle in the horizontal plane, from North to East (NESW).
+
+    """
+    altitude = pi / 2. - zenith
+    Azimuth = - (azimuth + pi / 2.)
+
+    return altitude, Azimuth
+
+
+def horizontal_to_equatorial(longitude, latitude, lst, altitude, Azimuth):
+    """Convert Horizontal to Equatorial coordinates (J2000.0)
+
+    :param longitude,latitude: Position of the observer on Earth in degrees.
+                               North and east positive.
+    :param lst: Local Siderial Time observer at the time of observation
+                in decimal hours.
+    :param altitude: altitude is the angle above the horizon in radians.
+    :param Azimuth: Azimuth angle in horizontal plane in radians.
+
+    :returns: Right ascension (ra) and Declination (dec) in radians.
+
+    From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
+
+    """
     slat = sin(radians(latitude))
     clat = cos(radians(latitude))
-    sazi = sin(azimuth)
-    cazi = cos(azimuth)
+    sazi = sin(Azimuth)
+    cazi = cos(Azimuth)
     salt = sin(altitude)
     calt = cos(altitude)
 

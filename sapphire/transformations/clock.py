@@ -59,9 +59,9 @@ def date_to_juliandate(year, month, day):
     Julian Date is the number of days since noon on January 1, 4713 B.C.
     So the returned date will end in .5 because the date refers to midnight.
 
-    :param year: A Gregorian year
-    :param month: A Gregorian month
-    :param day: A Gregorian day
+    :param year: A Gregorian year (B.C. years are negative)
+    :param month: A Gregorian month (1-12)
+    :param day: A Gregorian day (1-31)
     :returns: The Julian Date for the given year, month, and day
 
     """
