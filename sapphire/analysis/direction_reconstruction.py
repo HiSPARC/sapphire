@@ -537,7 +537,8 @@ class FitAlgorithm(object):
 
         fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
-                       bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)), constraints=cons,
+                       bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)),
+                       constraints=cons,
                        options={'ftol': 1e-9, 'eps': 1e-7, 'maxiter': 50})
         if fit.success:
             phi1 = arctan2(fit.x[1], fit.x[0])
@@ -548,7 +549,8 @@ class FitAlgorithm(object):
 
         fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
-                       bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)), constraints=cons,
+                       bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)),
+                       constraints=cons,
                        options={'ftol': 1e-9, 'eps': 1e-7, 'maxiter': 50})
         if fit.success:
             phi2 = arctan2(fit.x[1], fit.x[0])
@@ -660,24 +662,27 @@ class RegressionAlgorithm(object):
         k = 1
 
         for i, j, l in zip(dx, dy, dt):
-            xx += i*i
-            xy += i*j
-            tx += i*l
-            yy += j*j
-            ty += j*l
+            xx += i * i
+            xy += i * j
+            tx += i * l
+            yy += j * j
+            ty += j * l
             x += i
             y += j
             t += l
             k += 1
 
-        denom = k * xy * xy + x * x * yy + y * y * xx - k * xx * yy - 2 * x * y * xy
+        denom = (k * xy * xy + x * x * yy + y * y * xx - k * xx * yy -
+                 2 * x * y * xy)
         if denom == 0:
             denom = nan
 
-        numer = tx * (k * yy - y * y ) + xy * ( t * y - k * ty) + x * y * ty - t * x * yy
+        numer = (tx * (k * yy - y * y) + xy * (t * y - k * ty) + x * y * ty -
+                 t * x * yy)
         nx = c * numer / denom
 
-        numer = ty * (k * xx - x * x ) + xy * ( t * x - k * tx) + x * y * tx - t * y * xx
+        numer = (ty * (k * xx - x * x) + xy * (t * x - k * tx) + x * y * tx -
+                 t * y * xx)
         ny = c * numer / denom
 
         horiz = nx * nx + ny * ny
