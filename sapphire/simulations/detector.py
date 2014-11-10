@@ -175,7 +175,7 @@ class ErrorlessSimulation(HiSPARCSimulation):
 
     def simulate_detector_offsets(self, n_detectors):
 
-        return [0.] * len(n_detectors)
+        return [0.] * n_detectors
 
     def simulate_detector_offset(self):
 
