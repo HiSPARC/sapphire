@@ -68,8 +68,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """
         R = self.max_core_distance
 
-        event_header = self.groundparticles._v_attrs['event_header']
-        event_end = self.groundparticles._v_attrs['event_end']
+        event_header = self.corsikafile.get_node_attr('/', 'event_header')
+        event_end = self.corsikafile.get_node_attr('/', 'event_end')
         corsika_parameters = {'zenith': event_header.zenith,
                               'size': event_end.n_electrons_levels,
                               'energy': event_header.energy,
@@ -199,7 +199,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
-                  y - detector_boundary, x + detector_boundary))
+                  y - detector_boundary, y + detector_boundary))
         return self.groundparticles.read_where(query)
 
 
@@ -233,7 +233,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
                  "(b11 < %s) & (%s < b12) & (b21 < %s) & (%s < b22) & "
                  "(particle_id >= 2) & (particle_id <= 6)" %
                  (x - detector_boundary, x + detector_boundary,
-                  y - detector_boundary, x + detector_boundary,
+                  y - detector_boundary, y + detector_boundary,
                   line1, line1, line2, line2))
 
         return self.groundparticles.read_where(query)
