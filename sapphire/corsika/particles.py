@@ -1,7 +1,7 @@
 """
 Use this for particle identification for particles in CORSIKA
 
-Particle codes as specified in Corsika user manual, Table 4.
+Particle codes as specified in CORSIKA user manual, Table 4.
 
 This relates to the Description in Particles as::
 

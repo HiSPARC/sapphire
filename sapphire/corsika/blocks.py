@@ -23,7 +23,7 @@ class Format(object):
 
     """The binary format information of the file.
 
-    As specified in the Corsika user manual, Section 10.2.1.
+    As specified in the CORSIKA user manual, Section 10.2.1.
 
     """
 
@@ -58,7 +58,7 @@ class RunHeader(object):
 
     """The run header sub-block
 
-    As specified in the Corsika user manual, Table 7.
+    As specified in the CORSIKA user manual, Table 7.
 
     """
 
@@ -167,7 +167,7 @@ class EventHeader(object):
 
     """The event header sub-block
 
-    As specified in the Corsika user manual, Table 8.
+    As specified in the CORSIKA user manual, Table 8.
 
     """
 
@@ -185,10 +185,11 @@ class EventHeader(object):
         self.p_z = - subblock[9] * units.GeV
         self.zenith = subblock[10] * units.rad
 
-        # Corsika defines azimuth as the direction the shower points to,
+        # CORSIKA coordinate conventions are shown in Figure 1 of the manual.
+        # CORSIKA defines azimuth as the direction the shower points to,
         # HiSPARC defines azimuth as the direction the shower comes from.
-        # Corsika allows azimuths in [-2pi, 2pi], HiSPARC uses [-pi, pi).
-        # Corsika defines North as 0 rad, HiSPARC defines East as 0 rad.
+        # CORSIKA allows azimuths in [-2pi, 2pi], HiSPARC uses [-pi, pi).
+        # CORSIKA defines North as 0 rad, HiSPARC defines East as 0 rad.
         # So finally we need to subtract pi/2 rad from the azimuth and
         # normalize its range.
         azimuth_corsika = subblock[11] * units.rad
@@ -336,7 +337,7 @@ class RunEnd(object):
 
     """The run end sub-block
 
-    As specified in the Corsika user manual, Table 14.
+    As specified in the CORSIKA user manual, Table 14.
 
     """
 
@@ -358,7 +359,7 @@ class EventEnd(object):
 
     """The event end sub-block
 
-    As specified in the Corsika user manual, Table 13.
+    As specified in the CORSIKA user manual, Table 13.
 
     """
 
@@ -416,8 +417,12 @@ class EventEnd(object):
 def particle_data(subblock):
     """Get particle data.
 
-    High-performing version of the ParticleData class, but without all the
-    easy-to-use attribute access.
+    As specified in the CORSIKA user manual, Table 10. High-performing
+    version of the ParticleData class, but without all the easy-to-use
+    attribute access.
+
+    Transformations are needed for the x, y and p_z values from CORSIKA.
+    CORSIKA coordinate conventions are mentioned in Figure 1 and Table 10.
 
     :returns: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
               observation_level, phi data.
@@ -451,7 +456,7 @@ class ParticleData(object):
 
     """The particle data sub-block
 
-    As specified in the Corsika user manual, Table 10.
+    As specified in the CORSIKA user manual, Table 10.
 
     """
 
@@ -521,7 +526,7 @@ class CherenkovData(object):
 
     """The cherenkov photon sub-block
 
-    As specified in Corsika user manual, Table 11.
+    As specified in CORSIKA user manual, Table 11.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
@@ -558,7 +563,7 @@ class FormatThin(Format):
 
     """The format information of the thinned file
 
-    As specified in Corsika user manual, Section 10.2.2.
+    As specified in CORSIKA user manual, Section 10.2.2.
 
     """
 
@@ -587,7 +592,7 @@ class ParticleDataThin(ParticleData):
 
     """The thinned particle data sub-block
 
-    As specified in the Corsika user manual, Table 10.
+    As specified in the CORSIKA user manual, Table 10.
 
     """
 
@@ -616,7 +621,7 @@ class CherenkovDataThin(CherenkovData):
 
     """The thinned cherenkov photon sub-block
 
-    As specified in Corsika user manual, Table 11.
+    As specified in CORSIKA user manual, Table 11.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
