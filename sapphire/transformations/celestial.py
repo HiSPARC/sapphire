@@ -52,7 +52,7 @@ def zenithazimuth_to_horizontal(zenith, azimuth):
 
     """
     altitude = pi / 2. - zenith
-    Azimuth = - (azimuth + pi / 2.)
+    Azimuth = pi / 2. - azimuth
 
     return altitude, Azimuth
 
