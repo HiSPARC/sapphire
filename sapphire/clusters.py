@@ -12,7 +12,7 @@ import warnings
 
 from numpy import mean
 
-from .transformations import geographic
+from .transformations import axes, geographic
 from . import api
 
 
@@ -67,8 +67,7 @@ class Detector(object):
 
     def get_cylindrical_coordinates(self):
         x, y, z = self.get_coordinates()
-        r = sqrt(x ** 2 + y ** 2)
-        phi = atan2(y, x)
+        r, phi, z = axes.cartesian_to_cylindrical(x, y, z)
         return r, phi, z
 
     def get_corners(self):
@@ -201,8 +200,7 @@ class Station(object):
 
     def get_cylindrical_alpha_coordinates(self):
         x, y, z, alpha = self.get_coordinates()
-        r = sqrt(x ** 2 + y ** 2)
-        phi = atan2(y, x)
+        r, phi, z = axes.cartesian_to_cylindrical(x, y, z)
         return r, phi, z, alpha
 
     def calc_r_and_phi_for_detectors(self, d0, d1):
@@ -335,9 +333,8 @@ class BaseCluster(object):
         Then, the cluster is translated to (r, phi, z).
 
         """
-        r = sqrt(self.x ** 2 + self.y ** 2)
-        phi = atan2(self.y, self.x)
-        return r, phi, self.z, self.alpha
+        r, phi, z = axes.cartesian_to_cylindrical(self.x, self.y, self.z)
+        return r, phi, z, self.alpha
 
     def set_coordinates(self, x, y, z, alpha):
         """Set cluster coordinates (x, y, z, alpha).
@@ -357,9 +354,7 @@ class BaseCluster(object):
         Than, the cluster is translated to (r, phi).
 
         """
-        self.x = r * cos(phi)
-        self.y = r * sin(phi)
-        self.z = z
+        self.x, self.y, self.z = axes.cylindrical_to_cartesian(r, phi, z)
         self.alpha = alpha
 
     def calc_rphiz_for_stations(self, s0, s1):

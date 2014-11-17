@@ -81,20 +81,12 @@ class CorsikaEvent(object):
 
                 yield particle
 
-    def __str__(self):
-        """String representation (a summary of the event)"""
-
-        out = self.get_header().__str__()
-        out += "\n"
-        out += self.get_end().__str__()
-        return out
-
 
 class CorsikaFile(object):
 
-    """Corsika output file handler
+    """CORSIKA output file handler
 
-    This class will probide an interface for Corsika output files.
+    This class will probide an interface for CORSIKA output files.
     Allowing you go get at the events and particles in the file.
     This class is meant for unthinned simulations.
 
@@ -308,7 +300,7 @@ class CorsikaFile(object):
 
 class CorsikaFileThin(CorsikaFile):
 
-    """Corsika thinned output file handler
+    """CORSIKA thinned output file handler
 
     Same as the unthinned output handler, but with support for
     the different format, particles also have the weight property.

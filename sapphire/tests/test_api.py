@@ -84,6 +84,10 @@ class NetworkTests(unittest.TestCase):
                                               cluster=sentinel.cluster,
                                               subcluster=sentinel.subcluster)
 
+    def test_bad_station_numbers(self):
+        bad_number = 1
+        self.assertRaises(Exception, self.network.station_numbers, country=bad_number, allow_stale=False)
+
     def test_bad_stations(self):
         self.network.stations()
         self.assertEqual(self.network._all_stations, self.network.stations())

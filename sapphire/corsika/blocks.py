@@ -23,7 +23,7 @@ class Format(object):
 
     """The binary format information of the file.
 
-    As specified in the Corsika user manual, Section 10.2.1.
+    As specified in the CORSIKA user manual, Section 10.2.1.
 
     """
 
@@ -58,7 +58,7 @@ class RunHeader(object):
 
     """The run header sub-block
 
-    As specified in the Corsika user manual, Table 7.
+    As specified in the CORSIKA user manual, Table 7.
 
     """
 
@@ -152,22 +152,12 @@ class RunHeader(object):
 
         return thickness
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Run header:
-                id: {run_n}
-                date: {date}
-                version: {version}
-            """.format(run_n=self.run_number,
-                       date=self.date_start,
-                       version=self.version))
-
 
 class EventHeader(object):
 
     """The event header sub-block
 
-    As specified in the Corsika user manual, Table 8.
+    As specified in the CORSIKA user manual, Table 8.
 
     """
 
@@ -182,13 +172,14 @@ class EventHeader(object):
         self.first_interaction_altitude = subblock[6] * units.cm
         self.p_x = subblock[7] * units.GeV
         self.p_y = subblock[8] * units.GeV
-        self.p_z = - subblock[9] * units.GeV
+        self.p_z = - subblock[9] * units.GeV  # Same direction as axis
         self.zenith = subblock[10] * units.rad
 
-        # Corsika defines azimuth as the direction the shower points to,
+        # CORSIKA coordinate conventions are shown in Figure 1 of the manual.
+        # CORSIKA defines azimuth as the direction the shower points to,
         # HiSPARC defines azimuth as the direction the shower comes from.
-        # Corsika allows azimuths in [-2pi, 2pi], HiSPARC uses [-pi, pi).
-        # Corsika defines North as 0 rad, HiSPARC defines East as 0 rad.
+        # CORSIKA allows azimuths in [-2pi, 2pi], HiSPARC uses [-pi, pi).
+        # CORSIKA defines North as 0 rad, HiSPARC defines East as 0 rad.
         # So finally we need to subtract pi/2 rad from the azimuth and
         # normalize its range.
         azimuth_corsika = subblock[11] * units.rad
@@ -318,25 +309,12 @@ class EventHeader(object):
         computers = {3: 'UNIX', 4: 'Macintosh'}
         return computers.get(self.flag_computer, 'unknown')
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Event header:
-                id: {event_n}
-                primary: {primary}
-                energy: {energy} EeV
-                direction: ({zenith}, {azimuth})
-            """.format(event_n=self.event_number,
-                       primary=self.particle_id,
-                       energy=self.energy / units.EeV,
-                       zenith=self.zenith / units.degree,
-                       azimuth=self.azimuth / units.degree))
-
 
 class RunEnd(object):
 
     """The run end sub-block
 
-    As specified in the Corsika user manual, Table 14.
+    As specified in the CORSIKA user manual, Table 14.
 
     """
 
@@ -345,20 +323,12 @@ class RunEnd(object):
         self.run_number = subblock[1]
         self.n_events_processed = subblock[2]
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Run end:
-                id: {run_number}
-                events: {n_events}
-            """.format(run_number=self.run_number,
-                       n_events=self.n_events_processed))
-
 
 class EventEnd(object):
 
     """The event end sub-block
 
-    As specified in the Corsika user manual, Table 13.
+    As specified in the CORSIKA user manual, Table 13.
 
     """
 
@@ -404,20 +374,16 @@ class EventEnd(object):
         self.n_muons_output = subblock[265]
         self.n_preshower_EM_particles = subblock[266]
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Event end:
-                id: {event_n}
-                particles: {particles}
-            """.format(event_n=self.event_number,
-                       particles=self.n_particles_levels))
-
 
 def particle_data(subblock):
     """Get particle data.
 
-    High-performing version of the ParticleData class, but without all the
-    easy-to-use attribute access.
+    As specified in the CORSIKA user manual, Table 10. High-performing
+    version of the ParticleData class, but without all the easy-to-use
+    attribute access.
+
+    Transformations are needed for the x, y and p_z values from CORSIKA.
+    CORSIKA coordinate conventions are mentioned in Figure 1 and Table 10.
 
     :returns: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
               observation_level, phi data.
@@ -451,7 +417,7 @@ class ParticleData(object):
 
     """The particle data sub-block
 
-    As specified in the Corsika user manual, Table 10.
+    As specified in the CORSIKA user manual, Table 10.
 
     """
 
@@ -502,26 +468,12 @@ class ParticleData(object):
         else:
             return None
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Particle:
-                description: {description}
-                momentum: {momentum} GeV
-                position: {position} m
-                time: {time} ns
-            """.format(description=self.description,
-                       momentum=(self.p_x / units.GeV,
-                                 self.p_y / units.GeV,
-                                 self.p_z / units.GeV),
-                       position=(self.x / units.m, self.y / units.m),
-                       time=self.t / units.ns))
-
 
 class CherenkovData(object):
 
     """The cherenkov photon sub-block
 
-    As specified in Corsika user manual, Table 11.
+    As specified in CORSIKA user manual, Table 11.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
@@ -537,20 +489,6 @@ class CherenkovData(object):
         self.t = subblock[5] * units.ns
         self.production_height = subblock[6] * units.cm
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Cherenkov:
-                n: {n}
-                position: {position} m
-                (u,v): {direction}
-                time: {time} ns
-                prod. height: {height} m
-            """.format(n=self.photons_in_bunch,
-                       direction=(self.u, self.v),
-                       position=(self.x / units.m, self.y / units.m),
-                       time=self.t / units.ns,
-                       height=self.production_height / units.m))
-
 
 # THIN versions
 
@@ -558,7 +496,7 @@ class FormatThin(Format):
 
     """The format information of the thinned file
 
-    As specified in Corsika user manual, Section 10.2.2.
+    As specified in CORSIKA user manual, Section 10.2.2.
 
     """
 
@@ -587,7 +525,7 @@ class ParticleDataThin(ParticleData):
 
     """The thinned particle data sub-block
 
-    As specified in the Corsika user manual, Table 10.
+    As specified in the CORSIKA user manual, Table 10.
 
     """
 
@@ -595,28 +533,12 @@ class ParticleDataThin(ParticleData):
         self.weight = subblock[7]
         super(ParticleDataThin, self).__init__(subblock)
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Particle:
-                id: {description}
-                momentum: {momentum} GeV
-                position: {position} m
-                time: {time} ns
-                weight: {weight}
-            """.format(description=self.description,
-                       momentum=(self.p_x / units.GeV,
-                                 self.p_y / units.GeV,
-                                 self.p_z / units.GeV),
-                       position=(self.x / units.m, self.y / units.m),
-                       time=self.t / units.ns,
-                       weight=self.weight))
-
 
 class CherenkovDataThin(CherenkovData):
 
     """The thinned cherenkov photon sub-block
 
-    As specified in Corsika user manual, Table 11.
+    As specified in CORSIKA user manual, Table 11.
 
     The number of CherenkovData records in a sub-block depends on
     compilation options.
@@ -626,19 +548,3 @@ class CherenkovDataThin(CherenkovData):
     def __init__(self, subblock):
         self.weight = subblock[7]
         super(CherenkovDataThin, self).__init__(subblock)
-
-    def __str__(self):
-        return textwrap.dedent("""\
-            Cherenkov:
-                n: {n}
-                position: {position} m
-                (u,v): {direction}
-                time: {time} ns
-                prod. height: {height} m
-                weight: {weight}
-            """.format(n=self.photons_in_bunch,
-                       direction=(self.u, self.v),
-                       position=(self.x / units.m, self.y / units.m),
-                       time=self.t / units.ns,
-                       height=self.production_height / units.m,
-                       weight=self.weight))

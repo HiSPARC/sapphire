@@ -18,10 +18,10 @@ def perform_simulation(filename):
     """Perform a small simulation and store results in filename"""
 
     corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
-    cluster = sapphire.clusters.SimpleCluster(size=50)
+    cluster = sapphire.clusters.SimpleCluster(size=40)
     filters = tables.Filters(complevel=1)
     with tables.open_file(filename, 'w', filters=filters) as datafile:
-        sim = GroundParticlesSimulation(corsika_data_path, 100, cluster,
+        sim = GroundParticlesSimulation(corsika_data_path, 70, cluster,
                                         datafile, N=10, seed=1)
         sim.run()
 

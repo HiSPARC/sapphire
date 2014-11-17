@@ -178,7 +178,8 @@ class BaseSimulationTest(unittest.TestCase):
         detector_observables = [{'n': 1., 't': 2., 'pulseheights': 3.,
                                  'integrals': 4.},
                                 {'n': 5., 't': 6., 'pulseheights': 7.,
-                                 'integrals': 8.}]
+                                 'integrals': 8.},
+                                {'foo': -999.}]
 
         expected = {'n1': 1., 'n2': 5., 't1': 2., 't2': 6.,
                     'pulseheights': [3., 7., -1., -1.],

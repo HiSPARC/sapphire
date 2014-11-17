@@ -79,6 +79,11 @@ class DetectorTests(unittest.TestCase):
         corners = self.detector_2.get_corners()
         self.assertEqual(corners, [(-1, 4.5), (-.5, 4.5), (-.5, 5.5), (-1, 5.5)])
 
+    def test_unknown_rotation_get_corners(self):
+        self.mock_station.get_coordinates.return_value = (0, 0, 0, 0)
+        self.detector_2.orientation = 'Foo'
+        self.assertRaises(Exception, self.detector_2.get_corners)
+
 
 class StationTests(unittest.TestCase):
     def setUp(self):
@@ -218,7 +223,7 @@ class StationTests(unittest.TestCase):
                                    detectors=[((0, 0, 0), 'LR'), ((10, 9, 1), 'LR')])
         center = station.calc_xy_center_of_mass_coordinates()
         self.assertTupleAlmostEqual(center, (5, 4.5))
-        center  = station.calc_center_of_mass_coordinates()
+        center = station.calc_center_of_mass_coordinates()
         self.assertTupleAlmostEqual(center, (5, 4.5, 0.5))
 
     def assertTupleAlmostEqual(self, actual, expected):

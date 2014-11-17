@@ -75,8 +75,7 @@ class BaseSimulation(object):
         for (shower_id, shower_parameters) in enumerate(
                 self.generate_shower_parameters()):
 
-            station_events = self.simulate_events_for_shower(
-                shower_parameters)
+            station_events = self.simulate_events_for_shower(shower_parameters)
             self.store_coincidence(shower_id, shower_parameters,
                                    station_events)
 
