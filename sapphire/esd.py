@@ -126,11 +126,11 @@ def download_data(file, group, station_number, start=None, end=None,
     query = urllib.urlencode({'start': start, 'end': end})
     if type == 'events':
         url = EVENTS_URL.format(station_number=station_number, query=query)
-        table = _create_events_table(file, group)
+        table = _get_or_create_events_table(file, group)
         read_and_store = _read_line_and_store_event
     elif type == 'weather':
         url = WEATHER_URL.format(station_number=station_number, query=query)
-        table = _create_weather_table(file, group)
+        table = _get_or_create_weather_table(file, group)
         read_and_store = _read_line_and_store_weather
     else:
         raise ValueError("Data type not recognized.")
@@ -342,6 +342,15 @@ def _create_events_table(file, group):
                    't_trigger': tables.Float32Col(pos=14)}
 
     return file.create_table(group, 'events', description, createparents=True)
+
+
+def _get_or_create_weather_table(file, group):
+    """Get or create event table in PyTables file"""
+
+    try:
+        return file.get_node(group, 'weather')
+    except tables.NoSuchNodeError:
+        return _create_weather_table(file, group)
 
 
 def _create_weather_table(file, group):
