@@ -68,9 +68,9 @@ def store_corsika_data(source, destination, table_name='groundparticles',
         n_particles = event.get_end().n_particles_levels
         progress = progress and n_particles > 1
         try:
-            table = destination.createTable('/', table_name, GroundParticles,
-                                            'All groundparticles',
-                                            expectedrows=n_particles)
+            table = destination.create_table('/', table_name, GroundParticles,
+                                             'All groundparticles',
+                                             expectedrows=n_particles)
         except tables.NodeError:
             if progress:
                 print '%s already exists, doing nothing' % table_name
@@ -100,10 +100,10 @@ def store_corsika_data(source, destination, table_name='groundparticles',
         event_header = event.get_header()
         event_end = event.get_end()
 
-    destination.root._v_attrs.run_header = run_header
-    destination.root._v_attrs.run_end = run_end
-    destination.root._v_attrs.event_header = event_header
-    destination.root._v_attrs.event_end = event_end
+    destination.set_node_attr('/', 'run_header', run_header)
+    destination.set_node_attr('/', 'run_end', run_end)
+    destination.set_node_attr('/', 'event_header', event_header)
+    destination.set_node_attr('/', 'event_end', event_end)
 
 
 def create_index(hdf_data, table_name='groundparticles', progress=False):
@@ -112,13 +112,13 @@ def create_index(hdf_data, table_name='groundparticles', progress=False):
     This can speed up queries to select data based on the x column.
 
     """
-    table = hdf_data.getNode('/', table_name)
+    table = hdf_data.get_node('/', table_name)
     if progress:
         print 'Ensuring the x column for table %s is indexed.' % table_name
     try:
-        table.cols.x.createCSIndex()
+        table.cols.x.create_csindex()
     except ValueError:
-        table.reIndexDirty()
+        table.reindex_dirty()
 
 
 if __name__ == '__main__':
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         mode = 'w'
     else:
         mode = 'a'
-    with tables.openFile(args.destination, mode) as hdf_data:
+    with tables.open_file(args.destination, mode) as hdf_data:
         store_corsika_data(corsika_data, hdf_data, progress=args.progress)
-    with tables.openFile(args.destination, 'a') as hdf_data:
+    with tables.open_file(args.destination, 'a') as hdf_data:
         create_index(hdf_data, progress=args.progress)

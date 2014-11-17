@@ -73,8 +73,8 @@ def read_seeds(simulations_table, seeds):
         with tables.openFile(os.path.join(DATA_PATH, seeds, 'corsika.h5'),
                              'r') as corsika_data:
             try:
-                header = corsika_data.root._v_attrs.event_header
-                end = corsika_data.root._v_attrs.event_end
+                header = corsika_data.get_node_attr('/', 'event_header')
+                end = corsika_data.get_node_attr('/', 'event_end')
                 write_row(simulations_table, seeds, header, end)
             except AttributeError:
                 logger.info('%19s: Missing attribute (header or end).' % seeds)
@@ -85,7 +85,7 @@ def read_seeds(simulations_table, seeds):
 def get_simulations(simulations, overview, progress=False):
     """Get the information of the simulations and create a table."""
 
-    simulations_table = overview.getNode('/simulations')
+    simulations_table = overview.get_node('/simulations')
     simulations = pbar(simulations, show=progress)
     for seeds in simulations:
         read_seeds(simulations_table, seeds)
@@ -100,9 +100,9 @@ def prepare_output(n):
     """
     os.umask(002)
     tmp_output = os.path.join(OUTPUT_PATH, 'temp_simulation_overview.h5')
-    overview = tables.openFile(tmp_output, 'w')
-    overview.createTable('/', 'simulations', Simulations,
-                         'Simulations overview', expectedrows=n)
+    overview = tables.open_file(tmp_output, 'w')
+    overview.create_table('/', 'simulations', Simulations,
+                          'Simulations overview', expectedrows=n)
     return overview
 
 
