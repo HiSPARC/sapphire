@@ -152,16 +152,6 @@ class RunHeader(object):
 
         return thickness
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Run header:
-                id: {run_n}
-                date: {date}
-                version: {version}
-            """.format(run_n=self.run_number,
-                       date=self.date_start,
-                       version=self.version))
-
 
 class EventHeader(object):
 
@@ -319,19 +309,6 @@ class EventHeader(object):
         computers = {3: 'UNIX', 4: 'Macintosh'}
         return computers.get(self.flag_computer, 'unknown')
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Event header:
-                id: {event_n}
-                primary: {primary}
-                energy: {energy} EeV
-                direction: ({zenith}, {azimuth})
-            """.format(event_n=self.event_number,
-                       primary=self.particle_id,
-                       energy=self.energy / units.EeV,
-                       zenith=self.zenith / units.degree,
-                       azimuth=self.azimuth / units.degree))
-
 
 class RunEnd(object):
 
@@ -345,14 +322,6 @@ class RunEnd(object):
         self.id = subblock[0]
         self.run_number = subblock[1]
         self.n_events_processed = subblock[2]
-
-    def __str__(self):
-        return textwrap.dedent("""\
-            Run end:
-                id: {run_number}
-                events: {n_events}
-            """.format(run_number=self.run_number,
-                       n_events=self.n_events_processed))
 
 
 class EventEnd(object):
@@ -404,14 +373,6 @@ class EventEnd(object):
         self.n_hadrons_output = subblock[264]
         self.n_muons_output = subblock[265]
         self.n_preshower_EM_particles = subblock[266]
-
-    def __str__(self):
-        return textwrap.dedent("""\
-            Event end:
-                id: {event_n}
-                particles: {particles}
-            """.format(event_n=self.event_number,
-                       particles=self.n_particles_levels))
 
 
 def particle_data(subblock):
@@ -507,20 +468,6 @@ class ParticleData(object):
         else:
             return None
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Particle:
-                description: {description}
-                momentum: {momentum} GeV
-                position: {position} m
-                time: {time} ns
-            """.format(description=self.description,
-                       momentum=(self.p_x / units.GeV,
-                                 self.p_y / units.GeV,
-                                 self.p_z / units.GeV),
-                       position=(self.x / units.m, self.y / units.m),
-                       time=self.t / units.ns))
-
 
 class CherenkovData(object):
 
@@ -541,20 +488,6 @@ class CherenkovData(object):
         self.v = subblock[4]
         self.t = subblock[5] * units.ns
         self.production_height = subblock[6] * units.cm
-
-    def __str__(self):
-        return textwrap.dedent("""\
-            Cherenkov:
-                n: {n}
-                position: {position} m
-                (u,v): {direction}
-                time: {time} ns
-                prod. height: {height} m
-            """.format(n=self.photons_in_bunch,
-                       direction=(self.u, self.v),
-                       position=(self.x / units.m, self.y / units.m),
-                       time=self.t / units.ns,
-                       height=self.production_height / units.m))
 
 
 # THIN versions
@@ -600,22 +533,6 @@ class ParticleDataThin(ParticleData):
         self.weight = subblock[7]
         super(ParticleDataThin, self).__init__(subblock)
 
-    def __str__(self):
-        return textwrap.dedent("""\
-            Particle:
-                id: {description}
-                momentum: {momentum} GeV
-                position: {position} m
-                time: {time} ns
-                weight: {weight}
-            """.format(description=self.description,
-                       momentum=(self.p_x / units.GeV,
-                                 self.p_y / units.GeV,
-                                 self.p_z / units.GeV),
-                       position=(self.x / units.m, self.y / units.m),
-                       time=self.t / units.ns,
-                       weight=self.weight))
-
 
 class CherenkovDataThin(CherenkovData):
 
@@ -631,19 +548,3 @@ class CherenkovDataThin(CherenkovData):
     def __init__(self, subblock):
         self.weight = subblock[7]
         super(CherenkovDataThin, self).__init__(subblock)
-
-    def __str__(self):
-        return textwrap.dedent("""\
-            Cherenkov:
-                n: {n}
-                position: {position} m
-                (u,v): {direction}
-                time: {time} ns
-                prod. height: {height} m
-                weight: {weight}
-            """.format(n=self.photons_in_bunch,
-                       direction=(self.u, self.v),
-                       position=(self.x / units.m, self.y / units.m),
-                       time=self.t / units.ns,
-                       height=self.production_height / units.m,
-                       weight=self.weight))

@@ -81,14 +81,6 @@ class CorsikaEvent(object):
 
                 yield particle
 
-    def __str__(self):
-        """String representation (a summary of the event)"""
-
-        out = self.get_header().__str__()
-        out += "\n"
-        out += self.get_end().__str__()
-        return out
-
 
 class CorsikaFile(object):
 
