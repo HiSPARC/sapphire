@@ -16,7 +16,8 @@ from numpy import (arcsin, arccos, arctan2, cos, sin,
 from . import clock, angles, axes
 
 
-def zenithazimuth_to_equatorial(longitude, latitude, timestamp, zenith, azimuth):
+def zenithazimuth_to_equatorial(longitude, latitude, timestamp, zenith,
+                                azimuth):
     """Convert Horizontal to Equatorial coordinates (J2000.0)
 
     :param longitude,latitude: Position of the observer on Earth in degrees.
@@ -56,6 +57,12 @@ def zenithazimuth_to_horizontal(zenith, azimuth):
     return altitude, Azimuth
 
 
+def horizontal_to_zenithazimuth(altitude, Azimuth):
+    """Inverse of zenithazimuth_to_horizontal is the same transformation"""
+
+    return zenithazimuth_to_horizontal(altitude, Azimuth)
+
+
 def horizontal_to_equatorial(longitude, latitude, lst, altitude, Azimuth):
     """Convert Horizontal to Equatorial coordinates (J2000.0)
 
@@ -84,7 +91,6 @@ def horizontal_to_equatorial(longitude, latitude, lst, altitude, Azimuth):
     if sazi > 0:
         HA = 2 * pi - HA
 
-    lst = clock.gps_to_lst(timestamp, longitude)
     ra = (angles.hours_to_radians(lst) - HA)
     ra %= 2 * pi
 
@@ -101,7 +107,7 @@ def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
     :param right_ascension: right_ascension of the observation in radians.
     :param declination: declination of the observation in radians.
 
-    :returns: azimuth and zenith in radians.
+    :returns: zenith and azimuth in radians.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
@@ -118,15 +124,14 @@ def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
     cdec = cos(declination)
 
     altitude = arcsin((sdec * slat) + (cdec * clat * cha))
-    azimuth = arccos((sdec - (slat * sin(altitude))) / (clat * cos(altitude)))
+    Azimuth = arccos((sdec - (slat * sin(altitude))) / (clat * cos(altitude)))
 
     if sha > 0:
-        azimuth = 2 * pi - azimuth
+        Azimuth = 2 * pi - Azimuth
 
-    # altitude is the angle above the horizon
-    zenith = pi / 2. - altitude
+    zenith, azimuth = horizontal_to_zenithazimuth(altitude, Azimuth)
 
-    return azimuth, zenith
+    return zenith, azimuth
 
 
 def equatorial_to_galactic(right_ascension, declintation, epoch='J2000'):
