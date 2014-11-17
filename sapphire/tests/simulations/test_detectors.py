@@ -1,7 +1,5 @@
-from mock import sentinel, Mock, patch, MagicMock, call
-import types
+from mock import sentinel, patch
 import unittest
-import warnings
 import os
 
 from numpy import array, std, mean
@@ -12,6 +10,7 @@ from sapphire.simulations.detector import (HiSPARCSimulation,
 
 
 self_path = os.path.dirname(__file__)
+
 
 class HiSPARCSimulationTest(unittest.TestCase):
 

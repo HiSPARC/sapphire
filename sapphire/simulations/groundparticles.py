@@ -195,7 +195,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         x, y = detector.get_xy_coordinates()
-        detector_boundary = 0.3535534
+        detector_boundary = sqrt(.5) / 2.
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
