@@ -182,7 +182,7 @@ class EventHeader(object):
         self.first_interaction_altitude = subblock[6] * units.cm
         self.p_x = subblock[7] * units.GeV
         self.p_y = subblock[8] * units.GeV
-        self.p_z = - subblock[9] * units.GeV
+        self.p_z = - subblock[9] * units.GeV  # Same direction as axis
         self.zenith = subblock[10] * units.rad
 
         # CORSIKA coordinate conventions are shown in Figure 1 of the manual.
