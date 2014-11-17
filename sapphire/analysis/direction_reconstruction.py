@@ -797,7 +797,7 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
         no_offset = [0., 0., 0., 0.]
 
         # Subtract base timestamp to prevent loss of precision
-        ts0 = long(coincidence[0][1]['timestamp'] * int(1e9))
+        ts0 = int(coincidence[0][1]['timestamp']) * int(1e9)
         t, x, y, z = ([], [], [], [])
 
         for station_number, event in coincidence:

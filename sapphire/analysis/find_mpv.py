@@ -169,7 +169,7 @@ def main():
     yesterday = today - datetime.timedelta(days=1)
     station_ids = get_station_ids_with_data(yesterday)
 
-    for station in [501]:
+    for station in station_ids:
         if station == 10:
             continue
         print station
