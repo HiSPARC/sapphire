@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """ Store CORSIKA simulation data in HDF5 file
 
     This module reads the CORSIKA binary ground particles file and stores
@@ -121,7 +119,7 @@ def create_index(hdf_data, table_name='groundparticles', progress=False):
         table.reindex_dirty()
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('source', help="path of the CORSIKA source file")
     parser.add_argument('destination',
@@ -141,3 +139,7 @@ if __name__ == '__main__':
         store_corsika_data(corsika_data, hdf_data, progress=args.progress)
     with tables.open_file(args.destination, 'a') as hdf_data:
         create_index(hdf_data, progress=args.progress)
+
+
+if __name__ == '__main__':
+    main()

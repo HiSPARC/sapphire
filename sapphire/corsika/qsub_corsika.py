@@ -1,11 +1,8 @@
-#!/usr/bin/env python
-
 """ Run CORSIKA simulations on Stoomboot
 
-    This module submits CORSIKA simulation jobs to Stoomboot, the
-    Nikhef computer cluster. It ensures that a unique combination
-    of seeds for the random number sequences are used for each
-    simulation.
+    This module submits CORSIKA simulation jobs to Stoomboot, the Nikhef
+    computer cluster. It ensures that a unique combination of seeds for
+    the random number sequences are used for each simulation.
 
     To run this file correctly do it in the correct env::
 
@@ -327,7 +324,7 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
     print 'Done.'
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('n', type=int, help="Number of jobs to submit")
     parser.add_argument('energy', metavar='energy', type=int,
@@ -359,3 +356,7 @@ if __name__ == '__main__':
 
     multiple_jobs(args.n, args.energy, args.particle, args.zenith,
                   args.azimuth, args.queue, args.corsika)
+
+
+if __name__ == '__main__':
+    main()

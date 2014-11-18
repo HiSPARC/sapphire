@@ -1,25 +1,36 @@
+""" Generate and overview table of the CORSIKA simulations
+
+    This script will look for all completed and converted CORSIKA
+    simulations in the given data path. Information about each
+    simulation is collected and then summarized in a new h5 file as an
+    overview.
+
+    The given source path should contain subdirectories named after the
+    seeds used for the simulation in the format `{seed1}_{seed2}`, e.g.
+    `821280921_182096636`. These in turn should contain converted
+    CORSIKA simulation results called `corsika.h5`.
+
+"""
 import os
 import tables
 import glob
 import logging
 import shutil
 import argparse
+import tempfile
 
 from ..utils import pbar
 
 
 LOGFILE = '/data/hisparc/corsika/logs/generate_overview.log'
 DATA_PATH = '/data/hisparc/corsika/data'
-OUTPUT_PATH = '/data/hisparc/corsika'
+OUTPUT_PATH = '/data/hisparc/corsika/simulation_overview.h5'
 
-logging.basicConfig(filename=LOGFILE, filemode='a',
-                    format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-                    datefmt='%y%m%d_%H%M%S', level=logging.INFO)
-logger = logging.getLogger('generate_overview')
+logger = logging.getLogger('generate_corsika_overview')
 
 
 class Simulations(tables.IsDescription):
-    """Store information about shower particles reaching ground level"""
+    """Store summary information about CORSIKA simulations"""
 
     seed1 = tables.UInt32Col(pos=0)
     seed2 = tables.UInt32Col(pos=1)
@@ -43,7 +54,7 @@ def write_row(table, seeds, header, end):
 
     :param table: the table where the new data should be appended.
     :param seeds: the unique id consisting of the two seeds.
-    :param header, end: the event header and end for the simulation.
+    :param header,end: the event header and end for the simulation.
 
     """
     seed1, seed2 = seeds.split('_')
@@ -66,12 +77,18 @@ def write_row(table, seeds, header, end):
     row.append()
 
 
-def read_seeds(simulations_table, seeds):
-    """Read the header of a simulation and write this to the output."""
+def read_seeds(simulations_table, source, seeds):
+    """Read the header and end of a simulation and write to overview.
 
+    :param simulations_table: PyTables table in which the simulation
+                              overview is stored.
+    :param source: directory containing the CORSIKA simulations.
+    :param seeds: directory name of a simulation, format: '{seed1}_{seed2}'.
+
+    """
     try:
-        with tables.openFile(os.path.join(DATA_PATH, seeds, 'corsika.h5'),
-                             'r') as corsika_data:
+        with tables.open_file(os.path.join(source, seeds, 'corsika.h5'),
+                              'r') as corsika_data:
             try:
                 header = corsika_data.get_node_attr('/', 'event_header')
                 end = corsika_data.get_node_attr('/', 'event_end')
@@ -82,13 +99,13 @@ def read_seeds(simulations_table, seeds):
         logger.info('%19s: Unable to open file.' % seeds)
 
 
-def get_simulations(simulations, overview, progress=False):
+def get_simulations(source, simulations, overview, progress=False):
     """Get the information of the simulations and create a table."""
 
     simulations_table = overview.get_node('/simulations')
     simulations = pbar(simulations, show=progress)
     for seeds in simulations:
-        read_seeds(simulations_table, seeds)
+        read_seeds(simulations_table, source, seeds)
     simulations_table.flush()
 
 
@@ -96,35 +113,58 @@ def prepare_output(n):
     """Create a temporary file in which to store the overview
 
     :param n: the number of simulations, i.e. expected number of rows.
+    :returns: path to the temporary file and a PyTables handler for the file.
 
     """
     os.umask(002)
-    tmp_output = os.path.join(OUTPUT_PATH, 'temp_simulation_overview.h5')
-    overview = tables.open_file(tmp_output, 'w')
+    tmp_path = create_tempfile_path()
+    overview = tables.open_file(tmp_path, 'w')
     overview.create_table('/', 'simulations', Simulations,
                           'Simulations overview', expectedrows=n)
-    return overview
+    return tmp_path, overview
 
 
-def move_tempfile_to_destination():
-    tmp_path = os.path.join(OUTPUT_PATH, 'temp_simulation_overview.h5')
-    data_path = os.path.join(OUTPUT_PATH, 'simulation_overview.h5')
-    shutil.move(tmp_path, data_path)
+def create_tempfile_path():
+    fd, path = tempfile.mkstemp('.h5')
+    os.close(fd)
+    return path
 
 
-def generate_simulation_overview(progress=False):
+def move_tempfile_to_destination(tmp_path, destination):
+    shutil.move(tmp_path, destination)
+
+
+def generate_simulation_overview(source, destination, progress=False):
     logger.info('Getting simulation list.')
-    simulations = os.walk(DATA_PATH).next()[1]
-    overview = prepare_output(len(simulations))
-    get_simulations(simulations, overview, progress=progress)
+    # Get names of all subdirectories
+    simulations = os.walk(source).next()[1]
+    tmp_path, overview = prepare_output(len(simulations))
+    get_simulations(source, simulations, overview, progress=progress)
     overview.close()
-    move_tempfile_to_destination()
+    move_tempfile_to_destination(tmp_path, destination)
     logger.info('Finished generating overview.')
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('source', default=DATA_PATH,
+                        help="directory path containing CORSIKA simulations")
+    parser.add_argument('destination', default=OUTPUT_PATH,
+                        help="path of the HDF5 output file")
     parser.add_argument('--progress', action='store_true',
                         help='show progressbar during generation')
+    parser.add_argument('--log', action='store_true',
+                        help='write logs to file, only for use on server.')
     args = parser.parse_args()
-    generate_simulation_overview(progress=args.progress)
+    if args.log:
+        logging.basicConfig(filename=LOGFILE, filemode='a',
+                            format='%(asctime)s %(name)s %(levelname)s: '
+                                   '%(message)s',
+                            datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+    generate_simulation_overview(source=args.source,
+                                 destination=args.destination,
+                                 progress=args.progress)
+
+
+if __name__ == '__main__':
+    main()

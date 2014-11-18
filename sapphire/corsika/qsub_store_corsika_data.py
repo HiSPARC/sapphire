@@ -1,15 +1,13 @@
-#!/usr/bin/env python
+""" Convert CORSIKA stored showers to HDF5 on Stoomboot
 
-"""Convert Corsika stored showers to HDF5 on Stoomboot
+    Automatically submits Stoomboot jobs to convert corsika data. The
+    script `store_corsika_data` can be used to convert a DAT000000
+    CORSIKA file to a HDF5 file. This script checks our data folder for
+    new or unconverted simulations and creates Stoomboot jobs to perform
+    the conversion.
 
-Automatically start Stoomboot jobs to convert corsika data.
-The script `store_corsika_data` can be used to convert a
-DAT000000 Corsika file to a HDF5 file. This script checks our
-data folder for new or unconverted simulations and creates
-Stoomboot jobs to perform the conversion.
-
-This job is run as a cron job to ensure the simulations remain up to
-date.
+    This job is run as a cron job to ensure the simulations remain up to
+    date.
 
 """
 import os
@@ -177,7 +175,11 @@ def run():
         print 'Out of seeds!'
 
 
-if __name__ == '__main__':
+def main():
     logger.info('Starting to submit new jobs.')
     run()
     logger.info('Finished submitting jobs.')
+
+
+if __name__ == '__main__':
+    main()
