@@ -13,6 +13,7 @@
 from numpy import (arcsin, arccos, arctan2, cos, sin,
                    array, radians, degrees, pi)
 
+from ..utils import norm_angle
 from . import clock, angles, axes
 
 
@@ -51,8 +52,8 @@ def zenithazimuth_to_horizontal(zenith, azimuth):
     Azimuth the angle in the horizontal plane, from North to East (NESW).
 
     """
-    altitude = pi / 2. - zenith
-    Azimuth = pi / 2. - azimuth
+    altitude = norm_angle(pi / 2. - zenith)
+    Azimuth = norm_angle(pi / 2. - azimuth)
 
     return altitude, Azimuth
 

@@ -12,7 +12,7 @@ class ZenithAzimuthHorizontalTests(unittest.TestCase):
         self.altitude = (pi / 2., pi / 4., 0.)
 
         self.azimuth = (-pi / 2., 0., pi / 2.)  # -pi
-        self.Azimuth = (pi, pi / 2., 0.)  # -pi / 2.
+        self.Azimuth = (-pi, pi / 2., 0.)  # -pi / 2.
 
     def test_zenithazimuth_to_horizontal(self):
         for zenith, altitude in zip(self.zenith, self.altitude):

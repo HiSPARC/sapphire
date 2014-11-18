@@ -61,6 +61,16 @@ def gauss(x, N, mu, sigma):
     return N * norm.pdf(x, mu, sigma)
 
 
+def norm_angle(angle):
+    """Normalize an angle to the range [-pi, pi)
+
+    We use the range from -pi upto but not including pi to represent
+    angles.
+
+    """
+    return (angle + pi) % (2 * pi) - pi
+
+
 def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     """Calculate the angle between two (zenith, azimuth) coordinates
 

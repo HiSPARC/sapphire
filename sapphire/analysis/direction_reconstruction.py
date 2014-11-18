@@ -5,7 +5,7 @@ from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, floor, where, deg2rad, pi, inf, around)
 from scipy.optimize import minimize
 
-from ..utils import pbar, ERR
+from ..utils import pbar, norm_angle, ERR
 
 
 class DirectAlgorithm(object):
@@ -91,7 +91,7 @@ class DirectAlgorithm(object):
         elif theta < 0:
             theta *= -1
             phi += pi
-            phi = (phi + pi) % (2 * pi) - pi
+            phi = norm_angle(phi)
 
         return theta, phi
 

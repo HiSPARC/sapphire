@@ -1,7 +1,7 @@
 """ Perform various angle related transformations
 
-Transform between different notations for angles:
-Degrees, radians and hours.
+    Transform between different notations for angles:
+    Degrees, radians and hours.
 
 """
 from numpy import radians, degrees
