@@ -6,7 +6,7 @@ from sapphire import corsika
 
 
 data_file_dir = os.path.dirname(__file__)
-DATA_FILE = os.path.join(data_file_dir, 'test_data/DAT000000')
+DATA_FILE = os.path.join(data_file_dir, 'test_data/1_2/DAT000000')
 
 
 class CorsikaFileTests(unittest.TestCase):

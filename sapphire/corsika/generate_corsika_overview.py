@@ -24,7 +24,7 @@ from ..utils import pbar
 
 LOGFILE = '/data/hisparc/corsika/logs/generate_overview.log'
 DATA_PATH = '/data/hisparc/corsika/data'
-OUTPUT_PATH = '/data/hisparc/corsika/simulation_overview.h5'
+OUTPUT_PATH = '/data/hisparc/corsika/corsika_overview.h5'
 
 logger = logging.getLogger('generate_corsika_overview')
 
@@ -134,7 +134,7 @@ def move_tempfile_to_destination(tmp_path, destination):
     shutil.move(tmp_path, destination)
 
 
-def generate_simulation_overview(source, destination, progress=False):
+def generate_corsika_overview(source, destination, progress=False):
     logger.info('Getting simulation list.')
     # Get names of all subdirectories
     simulations = os.walk(source).next()[1]
@@ -161,9 +161,9 @@ def main():
                             format='%(asctime)s %(name)s %(levelname)s: '
                                    '%(message)s',
                             datefmt='%y%m%d_%H%M%S', level=logging.INFO)
-    generate_simulation_overview(source=args.source,
-                                 destination=args.destination,
-                                 progress=args.progress)
+    generate_corsika_overview(source=args.source,
+                              destination=args.destination,
+                              progress=args.progress)
 
 
 if __name__ == '__main__':

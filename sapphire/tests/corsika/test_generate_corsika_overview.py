@@ -7,12 +7,12 @@ import tables
 from mock import patch
 
 
-TEST_DATA_FILE = 'test_data/1_2/DAT000000'
-TEST_EXPECTED_FILE = 'test_data/1_2/corsika.h5'
-STORE_SCRIPT = 'store_corsika_data {source} {destination}'
+TEST_DATA_PATH = 'test_data/'
+TEST_EXPECTED_FILE = 'test_data/corsika_overview.h5'
+STORE_SCRIPT = 'generate_corsika_overview {source} {destination}'
 
 
-class StoreCorsikaDataTests(unittest.TestCase):
+class GenerateCorsikaOverviewTests(unittest.TestCase):
     def setUp(self):
         self.source_path = self.get_testdata_path()
         self.expected_path = self.get_expected_path()
@@ -26,23 +26,14 @@ class StoreCorsikaDataTests(unittest.TestCase):
     def test_store_data(self):
         result = subprocess.check_output(self.command, shell=True)
         self.assertEqual(result, '')
+        self.validate_results()
 
-        self.assertRaises(subprocess.CalledProcessError,
-                          subprocess.check_output, self.command,
-                          stderr=subprocess.STDOUT, shell=True)
-
-        result = subprocess.check_output(self.command + ' --overwrite',
-                                         shell=True)
-        self.assertEqual(result, '')
-
-        self.validate_results(self.expected_path, self.destination_path)
-
-    def validate_results(self, expected_path, actual_path):
+    def validate_results(self):
         """Validate simulation results"""
 
-        table_path = '/groundparticles'
-        with tables.open_file(expected_path) as expected_file:
-            with tables.open_file(actual_path) as actual_file:
+        table_path = '/simulations'
+        with tables.open_file(self.expected_path) as expected_file:
+            with tables.open_file(self.destination_path) as actual_file:
                 self.validate_table(table_path, expected_file, actual_file)
 
     def validate_table(self, table, expected_file, actual_file):
@@ -66,7 +57,7 @@ class StoreCorsikaDataTests(unittest.TestCase):
 
     def get_testdata_path(self):
         dir_path = os.path.dirname(__file__)
-        return os.path.join(dir_path, TEST_DATA_FILE)
+        return os.path.join(dir_path, TEST_DATA_PATH)
 
     def get_expected_path(self):
         dir_path = os.path.dirname(__file__)

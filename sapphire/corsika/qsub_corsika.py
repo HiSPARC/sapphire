@@ -277,7 +277,7 @@ def check_queue(queue):
     elif queue == 'short':
         return 1000 - user_jobs
     elif queue == 'generic':
-        return min(500 - user_jobs, 1000 - all_jobs)
+        return min(2000 - user_jobs, 4000 - all_jobs)
     elif queue == 'long':
         return min(500 - user_jobs, 1000 - all_jobs)
     else:
