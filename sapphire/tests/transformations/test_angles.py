@@ -18,10 +18,10 @@ class DegreeRadianHourTests(unittest.TestCase):
 
     def test_hours_to_degrees(self):
         for degree, _, hour in self.combinations:
-            self.assertEqual(angles.hours_to_degrees(hour), degree)
-            self.assertEqual(angles.degrees_to_hours(degree), hour)
-            self.assertEqual(angles.hours_to_degrees(angles.degrees_to_hours(degree)), degree)
-            self.assertEqual(angles.degrees_to_hours(angles.hours_to_degrees(hour)), hour)
+            self.assertAlmostEqual(angles.hours_to_degrees(hour), degree, 10)
+            self.assertAlmostEqual(angles.degrees_to_hours(degree), hour, 10)
+            self.assertAlmostEqual(angles.hours_to_degrees(angles.degrees_to_hours(degree)), degree, 10)
+            self.assertAlmostEqual(angles.degrees_to_hours(angles.hours_to_degrees(hour)), hour, 10)
 
     def test_hours_to_radians(self):
         for _, radian, hour in self.combinations:
