@@ -1,0 +1,4 @@
+#!/usr/bin/env python
+
+from sapphire.corsika.qsub_store_corsika_data import main
+main()
