@@ -43,7 +43,7 @@ def all_seeds():
 
 
 def seeds_processed():
-    """Get the seeds for the simualtions for with an h5 is already created"""
+    """Get the seeds of simulations for which the h5 is already created"""
 
     files = glob.glob(os.path.join(DATADIR, '*_*/corsika.h5'))
     seeds = [os.path.basename(os.path.dirname(file)) for file in files]
@@ -161,7 +161,7 @@ def run():
     """Get list of seeds to process, then submit jobs to process them"""
 
     os.umask(002)
-    logger.info('Getting todo list of seeds still to be converted.')
+    logger.info('Getting todo list of seeds to convert.')
     seeds = get_seeds_todo()
     n_jobs_to_submit = min(len(seeds), check_queue())
     logger.info('Submitting jobs for %d simulations.' % n_jobs_to_submit)
@@ -172,11 +172,11 @@ def run():
             submit_job(seed)
             append_queued_seeds([seed])
     except KeyError:
-        print 'Out of seeds!'
+        logger.error('Out of seeds!')
 
 
 def main():
-    logger.info('Starting to submit new jobs.')
+    logger.debug('Starting to submit new jobs.')
     run()
     logger.info('Finished submitting jobs.')
 

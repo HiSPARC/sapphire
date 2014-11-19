@@ -120,7 +120,7 @@ class CorsikaBatch(object):
         self.energy = energy - 9  # Stored as log10(E[GeV])
         self.particle = particles.particle_id(particle)  # Stored as particle id
         self.theta = zenith
-        self.phi = azimuth - 180  # Stored as phi defined by CORSIKA
+        self.phi = (azimuth + 90) % 360  # Stored as Phi defined by CORSIKA
         self.queue = queue
         self.corsika = corsika
         self.seed1 = None
@@ -342,7 +342,7 @@ def main():
                         help="Azimuth angle of primary particle in range "
                              "0..315 steps of 45 [degrees]",
                         type=int,
-                        default=180,
+                        default=0,
                         choices=[0, 45, 90, 135, 180, 225, 270, 315])
     parser.add_argument('-q', '--queue', metavar='name',
                         help="Name of the Stoomboot queue to use, choose from "
