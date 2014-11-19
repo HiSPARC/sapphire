@@ -147,9 +147,9 @@ def generate_corsika_overview(source, destination, progress=False):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('source', default=DATA_PATH,
+    parser.add_argument('source', nargs='?', default=DATA_PATH,
                         help="directory path containing CORSIKA simulations")
-    parser.add_argument('destination', default=OUTPUT_PATH,
+    parser.add_argument('destination', nargs='?', default=OUTPUT_PATH,
                         help="path of the HDF5 output file")
     parser.add_argument('--progress', action='store_true',
                         help='show progressbar during generation')
