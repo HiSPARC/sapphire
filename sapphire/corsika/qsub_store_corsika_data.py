@@ -26,7 +26,9 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
     umask 002
     source activate /data/hisparc/corsika_env
-    {command}""")
+    {command}
+    # To alleviate Stoomboot, make sure the job is not to short.
+    sleep $[ ( $RANDOM % 60 ) + 60 ]""")
 
 logging.basicConfig(filename=LOGFILE, filemode='a',
                     format='%(asctime)s %(name)s %(levelname)s: %(message)s',
