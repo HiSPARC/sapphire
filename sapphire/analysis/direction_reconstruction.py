@@ -2,7 +2,8 @@ import warnings
 import itertools
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, floor, where, deg2rad, pi, inf, around)
+                   sqrt, floor, where, deg2rad, pi, inf, around, radians,
+                   array)
 from scipy.optimize import minimize
 
 from ..utils import pbar, norm_angle, ERR
@@ -393,6 +394,111 @@ class DirectAlgorithmCartesian3D(object):
         return theta, phi
 
 
+class SphereAlgorithm(object):
+
+    @classmethod
+    def reconstruct_source_ECS(cls, t, x, y, z, timestamp):
+        """Reconstructs the source in the Equatorial Coordinate System.
+
+        :param timestamp: The UTC timestamp of the coincidence in s.
+        :param t: An array with three arrival times in ns.
+        :param x,y,z: arrays with the ECEF locations of the
+                      three detectors / stations in meters.
+        :returns: the declination and right ascension of the source. The
+                  apparent location of the cosmic ray source in the
+                  Equatorial Coordinate System.
+
+        """
+        t_int = array([-1000, -10000]) + t[0]
+        x_int, y_int, z_int = cls.interaction_curve(x, y, z, t, t_int)
+        dec_source = arctan2(z_int[1] - z_int[0],
+                             sqrt((x_int[1] - x_int[0]) ** 2. +
+                                  (y_int[1] - y_int[0]) ** 2.))
+        RA_source = arctan2(x_int[1] - x_int[0], y_int[1] - y_int[0])
+        return dec_source, RA_source
+
+    @staticmethod
+    def interaction_curve(x, y, z, t, t_int):
+        """Calculates the curve of possible primary interactions
+
+        This uses the arrival times in three detectors. The algorithm is
+        based on location calculations used for LORAN, DECCA, RACAL, GPS
+        as described by N.G. Schultheiss 2012
+
+        :param #x, #y, #z: Arrays with the orthogonal coordinates of the three
+                   detectors / stations in m.
+        :param #t: The arrival time of the shower in the detectors / stations
+                   in ns.
+        :param #t_int: The interaction time in ns.
+        :returns: parameters x_int, y_int, z_int
+
+        """
+        c = .299792458
+
+        x01 = x[0] - x[1]
+        x02 = x[0] - x[2]
+        x12 = x[1] - x[2]
+        y01 = y[0] - y[1]
+        y02 = y[0] - y[2]
+        y12 = y[1] - y[2]
+        z01 = z[0] - z[1]
+        z02 = z[0] - z[2]
+        z12 = z[1] - z[2]
+        t01 = t[0] - t[1]
+        t02 = t[0] - t[2]
+        t12 = t[1] - t[2]
+
+        A = 2. * (x01 * y02 - x02 * y01)
+        B = 2. * (x02 * z01 - x01 * z02)
+        C = 2. * (x02 * t01 - x01 * t02) * c ** 2
+        D = (x02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2) -
+             x01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2))
+        E = 2. * (y01 * z02 - y02 * z01)
+        F = 2. * (y01 * t02 - y02 * t01) * c ** 2
+        G = (y01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2) -
+             y02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2))
+
+        T = A ** 2 + B ** 2 + E ** 2
+        V = (B * C + E * F) / T
+        W = (B * D + E * G) / T
+        P = (D ** 2 + G ** 2) / T
+        Q = 2 * (C * D + F * G) / T
+        R = (C ** 2 + F ** 2 - (A * c) ** 2) / T
+
+        t_int0 = t_int - t[0]
+
+        sign = 1
+
+        z = -V * t_int0 - W + sign * sqrt((V ** 2 - R) * t_int0 ** 2 +
+                                          (2 * V * W - Q) * t_int0 +
+                                          W ** 2 - P)
+        y = (B * z + C * t_int0 + D) / A
+        x = (E * z + F * t_int0 + G) / A
+
+        x_int = x[0] + x
+        y_int = y[0] + y
+        z_int = z[0] + z
+
+        int_length = x_int[0] ** 2 + y_int[0] ** 2 + z_int[0] ** 2
+        det_length = x[0] ** 2 + y[0] ** 2 + z[0] ** 2
+
+        if det_length > int_length:
+            # Select interaction above the earths surface.
+
+            sign = -1
+            z = -V * t_int0 - W + sign * sqrt((V ** 2 - R) * t_int0 ** 2 +
+                                              (2 * V * W - Q) * t_int0 +
+                                              W ** 2 - P)
+            y = (B * z + C * t_int0 + D) / A
+            x = (E * z + F * t_int0 + G) / A
+
+            x_int = x[0] + x
+            y_int = y[0] + y
+            z_int = z[0] + z
+
+        return x_int, y_int, z_int, t_int
+
+
 class FitAlgorithm(object):
 
     @classmethod
@@ -432,9 +538,10 @@ class FitAlgorithm(object):
 
         cons = ({'type': 'eq', 'fun': cls.constraint_normal_vector})
 
-        fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989),
+        fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
-                       bounds=((-1, 1), (-1, 1), (-1, 1)), constraints=cons,
+                       bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)),
+                       constraints=cons,
                        options={'ftol': 1e-9, 'eps': 1e-7, 'maxiter': 50})
         if fit.success:
             phi1 = arctan2(fit.x[1], fit.x[0])
@@ -443,9 +550,10 @@ class FitAlgorithm(object):
             phi1 = nan
             theta1 = nan
 
-        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989),
+        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
-                       bounds=((-1, 1), (-1, 1), (-1, 1)), constraints=cons,
+                       bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)),
+                       constraints=cons,
                        options={'ftol': 1e-9, 'eps': 1e-7, 'maxiter': 50})
         if fit.success:
             phi2 = arctan2(fit.x[1], fit.x[0])
@@ -495,11 +603,12 @@ class FitAlgorithm(object):
 
         """
         c = .3
-        nx, ny, nz = n_xyz
+        nx, ny, nz, m = n_xyz
 
-        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti)**2
+        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti + m)**2
                    for ti, xi, yi, zi in zip(dt, dx, dy, dz)])
-        return slq
+        return slq + m * m
+
 
 class RegressionAlgorithm(object):
 
@@ -550,22 +659,33 @@ class RegressionAlgorithm(object):
         tx = 0.
         yy = 0.
         ty = 0.
+        x = 0.
+        y = 0.
+        t = 0.
+        k = 1
 
         for i, j, l in zip(dx, dy, dt):
-            xx += i*i
-            xy += i*j
-            tx += i*l
-            yy += j*j
-            ty += j*l
+            xx += i * i
+            xy += i * j
+            tx += i * l
+            yy += j * j
+            ty += j * l
+            x += i
+            y += j
+            t += l
+            k += 1
 
-        denom = xx * yy - xy * xy
+        denom = (k * xy * xy + x * x * yy + y * y * xx - k * xx * yy -
+                 2 * x * y * xy)
         if denom == 0:
             denom = nan
 
-        numer = ty * xy - tx * yy
+        numer = (tx * (k * yy - y * y) + xy * (t * y - k * ty) + x * y * ty -
+                 t * x * yy)
         nx = c * numer / denom
 
-        numer = tx * xy - ty * xx
+        numer = (ty * (k * xx - x * x) + xy * (t * x - k * tx) + x * y * tx -
+                 t * y * xx)
         ny = c * numer / denom
 
         horiz = nx * nx + ny * ny

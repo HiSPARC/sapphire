@@ -59,7 +59,7 @@ def particle_id(name):
         if name == atom_name:
             return z * 100 + z
     atom = re.match("^([a-z]+)(\d+)$", name)
-    if not atom is None:
+    if atom is not None:
         return int(atom.group(2)) * 100 + (particle_id(atom.group(1)) % 100)
 
 

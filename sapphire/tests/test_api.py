@@ -115,6 +115,7 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.stations_with_weather, month=1)
         self.assertRaises(Exception, self.network.stations_with_weather, day=1)
 
+
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class StationTests(unittest.TestCase):
     def setUp(self):

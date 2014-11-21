@@ -214,8 +214,8 @@ class CorsikaFile(object):
         for b in xrange(0, n_blocks * block_size, block_size):
             for s in xrange(0, self.format.subblocks_per_block):
                 pos = b + s * subblock_size + self.format.block_padding_size
-                if ((not min_sub_block is None and pos <= min_sub_block) or
-                        (not max_sub_block is None and pos >= max_sub_block)):
+                if ((min_sub_block is not None and pos <= min_sub_block) or
+                        (max_sub_block is not None and pos >= max_sub_block)):
                     continue
                 yield pos
 
