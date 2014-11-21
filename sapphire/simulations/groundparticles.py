@@ -173,7 +173,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             nanoseconds = int(ext_timestamp % int(1e9))
 
             gps_timestamp = {'ext_timestamp': ext_timestamp,
-                             'timestamp': timestamp, 'nanoseconds': nanoseconds}
+                             'timestamp': timestamp,
+                             'nanoseconds': nanoseconds,
+                             't_trigger': trigger_time}
             station_observables.update(gps_timestamp)
 
         return station_observables
