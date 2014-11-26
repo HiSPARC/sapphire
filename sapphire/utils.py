@@ -82,7 +82,7 @@ def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     :returns: Angle between the two coordinates.
 
     """
-    lat1 = zenith1 - pi / 2
-    lat2 = zenith2 - pi / 2
+    lat1 = pi / 2 - zenith1
+    lat2 = pi / 2 - zenith2
     return arccos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) *
                   cos(azimuth1 - azimuth2))
