@@ -352,7 +352,7 @@ class ReconstructESDCoincidences(object):
 
         # Currently disabled station offsets because they do not work well.
 
-        # Now determine the station offsets and those to detector offsets
+        # Now determine station offsets and add those to detector offsets
         ref_station = self.cluster.get_station(ref_station_number)
         ref_id = ref_station.station_id
         ref_z = ref_station.calc_center_of_mass_coordinates()[2]
