@@ -77,8 +77,9 @@ class HiSPARCSimulationTest(unittest.TestCase):
                          4.2991522837813028)
 
     def test_generate_core_position(self):
-        self.assertAlmostEqual(self.simulation.generate_core_position(500),
-                               (59.85605947801825, 317.2896993591305))
+        x, y = self.simulation.generate_core_position(500)
+        self.assertAlmostEqual(x, 59.85605947801825)
+        self.assertAlmostEqual(y, 317.2896993591305)
 
     def test_generate_azimuth(self):
         self.assertEqual(self.simulation.generate_azimuth(),
