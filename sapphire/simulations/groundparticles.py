@@ -75,18 +75,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'energy': event_header.energy,
                               'particle': event_header.particle}
 
-        # DF: This is the fastest implementation I could come up with.  I
-        # timed several permutations of numpy / math, and tried a Monte
-        # Carlo method in which I pick x and y in a square (fast) and then
-        # determine if they fall inside a circle or not (surprisingly
-        # slow, because of an if-statement, and despite some optimizations
-        # suggested by HM).
-
         for i in pbar(range(self.N)):
-            r = sqrt(np.random.uniform(0, R ** 2))
-            phi = np.random.uniform(-pi, pi)
-            x = r * cos(phi)
-            y = r * sin(phi)
+            x, y = self.generate_core_position(R)
 
             # Subtract Corsika shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.

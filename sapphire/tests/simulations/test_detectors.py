@@ -76,6 +76,14 @@ class HiSPARCSimulationTest(unittest.TestCase):
         self.assertEqual(self.simulation.simulate_detector_mips(particles),
                          4.2991522837813028)
 
+    def test_generate_core_position(self):
+        self.assertEqual(self.simulation.generate_core_position(500),
+                         (59.85605947801825, 317.2896993591305))
+
+    def test_generate_azimuth(self):
+        self.assertEqual(self.simulation.generate_azimuth(),
+                         -0.521366120872004)
+
 
 class ErrorlessSimulationTest(HiSPARCSimulationTest):
 

@@ -3,7 +3,7 @@
 These are some common simulations for HiSPARC detectors.
 
 """
-from math import sqrt, acos, pi
+from math import sqrt, acos, pi, cos, sin
 import random
 
 import numpy as np
@@ -135,6 +135,26 @@ class HiSPARCSimulation(BaseSimulation):
                            (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
 
         return mip
+
+    def generate_core_position(self, R):
+        """Generate a random core position within a circle
+
+        DF: This is the fastest implementation I could come up with.  I
+        timed several permutations of numpy / math, and tried a Monte
+        Carlo method in which I pick x and y in a square (fast) and then
+        determine if they fall inside a circle or not (surprisingly
+        slow, because of an if-statement, and despite some optimizations
+        suggested by HM).
+
+        :param R: Maximum core distance, in meters.
+        :returns: Random x, y position in the disc with radius R.
+
+        """
+        r = sqrt(np.random.uniform(0, R ** 2))
+        phi = np.random.uniform(-pi, pi)
+        x = r * cos(phi)
+        y = r * sin(phi)
+        return x, y
 
     def generate_zenith(self):
         """Generate a random zenith

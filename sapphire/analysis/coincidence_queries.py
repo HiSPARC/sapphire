@@ -203,7 +203,7 @@ class CoincidenceQuery(object):
             events.append((station_number, s_group.events[e_idx]))
         return events
 
-    def all_events(self, coincidences, n=2):
+    def all_events(self, coincidences, n=0):
         """Get all events for the given coincidences.
 
         :param coincidences: list of coincidence rows.

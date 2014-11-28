@@ -110,8 +110,8 @@ def create_script(seed):
     command = store_command(seed)
     input = SCRIPT_TEMPLATE.format(command=command)
 
-    with open(script_path, 'w') as scipt:
-        scipt.write(input)
+    with open(script_path, 'w') as script:
+        script.write(input)
     os.chmod(script_path, 0774)
 
     return script_path, script_name
