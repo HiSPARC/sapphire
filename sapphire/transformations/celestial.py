@@ -34,8 +34,7 @@ def zenithazimuth_to_equatorial(longitude, latitude, timestamp, zenith,
     """
     altitude, Azimuth = zenithazimuth_to_horizontal(zenith, azimuth)
     lst = clock.gps_to_lst(timestamp, longitude)
-    ra, dec = horizontal_to_equatorial(longitude, latitude, lst,
-                                       altitude, Azimuth)
+    ra, dec = horizontal_to_equatorial(latitude, lst, altitude, Azimuth)
 
     return ra, dec
 
@@ -64,11 +63,11 @@ def horizontal_to_zenithazimuth(altitude, Azimuth):
     return zenithazimuth_to_horizontal(altitude, Azimuth)
 
 
-def horizontal_to_equatorial(longitude, latitude, lst, altitude, Azimuth):
+def horizontal_to_equatorial(latitude, lst, altitude, Azimuth):
     """Convert Horizontal to Equatorial coordinates (J2000.0)
 
-    :param longitude,latitude: Position of the observer on Earth in degrees.
-                               North and east positive.
+    :param latitude: Position of the observer on Earth in degrees.
+                     North positive.
     :param lst: Local Siderial Time observer at the time of observation
                 in decimal hours.
     :param altitude: altitude is the angle above the horizon in radians.
@@ -79,6 +78,26 @@ def horizontal_to_equatorial(longitude, latitude, lst, altitude, Azimuth):
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
     """
+    ha, dec = horizontal_to_hadec(latitude, altitude, Azimuth)
+    ra = ha_to_ra(ha, lst)
+
+    return ra, dec
+
+
+def horizontal_to_hadec(latitude, altitude, Azimuth):
+    """Convert Horizontal to Hour Angle and Declination
+
+    :param latitude: Position of the observer on Earth in degrees.
+                     North positive.
+    :param altitude: altitude is the angle above the horizon in radians.
+    :param Azimuth: Azimuth angle in horizontal plane in radians.
+
+    :returns: Hour angle (ha) and Declination (dec) in radians.
+
+    From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
+
+    """
+
     slat = sin(radians(latitude))
     clat = cos(radians(latitude))
     sazi = sin(Azimuth)
@@ -87,15 +106,28 @@ def horizontal_to_equatorial(longitude, latitude, lst, altitude, Azimuth):
     calt = cos(altitude)
 
     dec = arcsin((salt * slat) + (calt * clat * cazi))
-    HA = arccos((salt - (slat * sin(dec))) / (clat * cos(dec)))
+    ha = arccos((salt - (slat * sin(dec))) / (clat * cos(dec)))
 
     if sazi > 0:
-        HA = 2 * pi - HA
+        ha = 2 * pi - ha
 
-    ra = (angles.hours_to_radians(lst) - HA)
+    return ha, dec
+
+
+def ha_to_ra(ha, lst):
+    """Convert Hour angle to right ascension
+
+    :param ha: Hour angle in radians.
+    :param lst: Local Siderial Time observer at the time of observation
+                in decimal hours.
+
+    :returns: Right ascension (ra) in radians.
+
+    """
+    ra = (angles.hours_to_radians(lst) - ha)
     ra %= 2 * pi
 
-    return ra, dec
+    return ra
 
 
 def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
@@ -114,13 +146,13 @@ def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
 
     """
     lst = clock.gps_to_lst(timestamp, longitude)
-    HA = (angles.hours_to_radians(lst) - right_ascension)
-    HA %= 2 * pi
+    ha = (angles.hours_to_radians(lst) - right_ascension)
+    ha %= 2 * pi
 
     slat = sin(radians(latitude))
     clat = cos(radians(latitude))
-    sha = sin(HA)
-    cha = cos(HA)
+    sha = sin(ha)
+    cha = cos(ha)
     sdec = sin(declination)
     cdec = cos(declination)
 
