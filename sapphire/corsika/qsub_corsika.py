@@ -17,6 +17,7 @@ import random
 import textwrap
 import subprocess
 import argparse
+from math import modf
 
 from sapphire.corsika import particles
 from sapphire.utils import pbar
@@ -36,7 +37,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     SEED      6   0   0                seed for 6. random number sequence (PARALLEL)
     NSHOW     1                        number of showers to generate (MAX 1 for PARALLEL)
     PRMPAR    {particle}               particle type of prim. particle (14=proton, 1=photon, 3=electron)
-    ERANGE    1.E{energy}  1.E{energy} energy range of primary particle (GeV)
+    ERANGE    {energy_pre}E{energy_pow}  {energy_pre}E{energy_pow} energy range of primary particle (GeV)
     ESLOPE    -2.7                     slope of primary energy spectrum (E^y)
     THETAP    {theta}   {theta}        range of zenith angle (degree)
     PHIP      {phi}   {phi}            range of azimuth angle, phi is direction the shower points to (degree)
@@ -96,7 +97,8 @@ class CorsikaBatch(object):
     Stoomboot is the Nikhef computer cluster.
 
     :param energy: the energy of the primary particle in log10(E[eV]),
-                   so an energy of 16 (10**16 eV) corresponds to 10**7 GeV.
+                   so an energy of 16 (10**16 eV) corresponds to 10**7 GeV,
+                   integer values and values ending in .5 are allowed.
     :param particle: name of primary particle, e.g. proton, gamma or iron
     :param zenith: zenith angle of the primary particle (in degrees),
                    common choices: 0, 7.5, 15, 22.5, 30, 37.5, 45 and 52.5.
@@ -117,7 +119,14 @@ class CorsikaBatch(object):
 
     def __init__(self, energy=16, particle='proton', zenith=22.5, azimuth=180,
                  queue='generic', corsika='corsika74000Linux_QGSII_gheisha'):
-        self.energy = energy - 9  # Stored as log10(E[GeV])
+        if modf(energy)[0] == 0.:
+            self.energy_pre = 1.
+            self.energy_pow = energy - 9  # Stored as log10(E[GeV])
+        elif modf(energy)[0] == 0.5:
+            self.energy_pre = 3.16228
+            self.energy = modf(energy)[1] - 9  # Stored as log10(E[GeV])
+        else:
+            raise ValueError('Energy must either be an integer or end in .5.')
         self.particle = particles.particle_id(particle)  # Stored as particle id
         self.theta = zenith
         self.phi = (azimuth + 90) % 360  # Stored as Phi defined by CORSIKA
@@ -197,8 +206,9 @@ class CorsikaBatch(object):
         inputpath = os.path.join(TEMPDIR, self.rundir, 'input-hisparc')
         input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                       particle=self.particle, phi=self.phi,
-                                      energy=self.energy, theta=self.theta,
-                                      tablesdir=CORSIKADIR)
+                                      energy_pre=self.energy_pre,
+                                      energy_pow=self.energy_pow,
+                                      theta=self.theta, tablesdir=CORSIKADIR)
         file = open(inputpath, 'w')
         file.write(input)
         file.close()
@@ -329,8 +339,9 @@ def main():
     parser.add_argument('n', type=int, help="Number of jobs to submit")
     parser.add_argument('energy', metavar='energy', type=int,
                         help="Energy of the primary particle in range 12..17 "
-                             "(log10(E[eV]))",
-                        choices=range(12, 18))
+                             "(log10(E[eV])), in steps of .5 .",
+                        choices=range[12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5,
+                                      16, 16.5, 17, 17.5, 18, 18.5))
     parser.add_argument('particle', help="Primary particle kind (e.g. proton "
                                          "or iron)")
     parser.add_argument('zenith', metavar='zenith',
