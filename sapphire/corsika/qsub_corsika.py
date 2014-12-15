@@ -79,8 +79,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     /usr/bin/time -o time.log {corsika} < input-hisparc > corsika-output.log
 
     # Clean up after run
-    cd ../..
-    mv {rundir} data/
+    mv {rundir} {datadir}
 
     EOF
     # End of Stoomboot script
@@ -227,7 +226,8 @@ class CorsikaBatch(object):
 
         script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                         queue=self.queue, walltime=walltime,
-                                        corsika=exec_path, rundir=run_path)
+                                        corsika=exec_path, rundir=run_path,
+                                        datadir=DATADIR)
         file = open(script_path, 'w')
         file.write(script)
         file.close()
