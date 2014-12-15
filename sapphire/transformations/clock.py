@@ -134,7 +134,7 @@ def datetime_modifiedjd(dt):
 
 
 def juliandate_to_gmst(juliandate):
-    """Convert a datetime object in UTC time to Greenwich Mean Sidereal Time
+    """Convert a Julian Date to Greenwich Mean Sidereal Time
 
     :param juliandate: Julian Date
     :return: decimal hours in GMST
