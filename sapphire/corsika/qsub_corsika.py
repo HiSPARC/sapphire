@@ -118,12 +118,13 @@ class CorsikaBatch(object):
 
     def __init__(self, energy=16, particle='proton', zenith=22.5, azimuth=180,
                  queue='generic', corsika='corsika74000Linux_QGSII_gheisha'):
+        # Energy is stored as log10(E[GeV]) for CORSIKA
         if modf(energy)[0] == 0.:
             self.energy_pre = 1.
-            self.energy_pow = energy - 9  # Stored as log10(E[GeV])
+            self.energy_pow = int(energy - 9)
         elif modf(energy)[0] == 0.5:
             self.energy_pre = 3.16228
-            self.energy_pow = modf(energy)[1] - 9  # Stored as log10(E[GeV])
+            self.energy_pow = int(modf(energy)[1] - 9)
         else:
             raise ValueError('Energy must either be an integer or end in .5.')
         self.particle = particles.particle_id(particle)  # Stored as particle id
