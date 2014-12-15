@@ -340,8 +340,8 @@ def main():
     parser.add_argument('energy', metavar='energy', type=int,
                         help="Energy of the primary particle in range 12..17 "
                              "(log10(E[eV])), in steps of .5 .",
-                        choices=range[12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5,
-                                      16, 16.5, 17, 17.5, 18, 18.5])
+                        choices=[12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5,
+                                 16, 16.5, 17, 17.5, 18, 18.5])
     parser.add_argument('particle', help="Primary particle kind (e.g. proton "
                                          "or iron)")
     parser.add_argument('zenith', metavar='zenith',
