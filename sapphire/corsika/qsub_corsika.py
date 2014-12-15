@@ -337,7 +337,7 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('n', type=int, help="Number of jobs to submit")
-    parser.add_argument('energy', metavar='energy', type=int,
+    parser.add_argument('energy', metavar='energy', type=float,
                         help="Energy of the primary particle in range 12..17 "
                              "(log10(E[eV])), in steps of .5 .",
                         choices=[12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5,
