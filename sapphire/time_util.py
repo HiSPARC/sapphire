@@ -77,3 +77,8 @@ class GPSTime(object):
 
         """
         return datetime.datetime.utcfromtimestamp(self._gpstimestamp)
+
+    def __str__(self):
+        """Return sensible description of object."""
+
+        return self.description()
