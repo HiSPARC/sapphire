@@ -123,7 +123,7 @@ class CorsikaBatch(object):
             self.energy_pow = energy - 9  # Stored as log10(E[GeV])
         elif modf(energy)[0] == 0.5:
             self.energy_pre = 3.16228
-            self.energy = modf(energy)[1] - 9  # Stored as log10(E[GeV])
+            self.energy_pow = modf(energy)[1] - 9  # Stored as log10(E[GeV])
         else:
             raise ValueError('Energy must either be an integer or end in .5.')
         self.particle = particles.particle_id(particle)  # Stored as particle id
