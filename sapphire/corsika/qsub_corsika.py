@@ -25,6 +25,7 @@ from sapphire.utils import pbar
 
 TEMPDIR = '/data/hisparc/corsika/running/'
 DATADIR = '/data/hisparc/corsika/data/'
+FAILDIR = '/data/hisparc/corsika/failed/'
 CORSIKADIR = '/data/hisparc/corsika/corsika-74000/run/'
 INPUT_TEMPLATE = textwrap.dedent("""\
     RUNNR     0                        run number
@@ -79,7 +80,14 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     /usr/bin/time -o time.log {corsika} < input-hisparc > corsika-output.log
 
     # Clean up after run
-    mv {rundir} {datadir}
+    if [ $? -eq 0 ]
+    then
+        mv {rundir} {datadir}
+        exit 0
+    else
+        mv {rundir} {faildir}
+        exit 1
+    fi
 
     EOF
     # End of Stoomboot script
@@ -228,7 +236,7 @@ class CorsikaBatch(object):
         script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                         queue=self.queue, walltime=walltime,
                                         corsika=exec_path, rundir=run_path,
-                                        datadir=DATADIR)
+                                        datadir=DATADIR, faildir=FAILDIR)
         file = open(script_path, 'w')
         file.write(script)
         file.close()
