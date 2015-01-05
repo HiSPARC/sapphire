@@ -1,5 +1,6 @@
 from struct import unpack
 import warnings
+import os
 
 from blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
                     ParticleData, Format, ParticleDataThin, FormatThin,
@@ -99,8 +100,8 @@ class CorsikaFile(object):
 
         """
         self._filename = filename
-        with open(filename, 'rb') as corsika_data:
-            self._contents = corsika_data.read()
+        self._size = os.path.getsize(self._filename)
+        self._file = open(self._filename, 'rb')
         self._header_index = None
         self._end_index = None
         self._header = None
@@ -123,17 +124,17 @@ class CorsikaFile(object):
         field size.
 
         """
-        if len(self._contents) % self.format.block_size != 0:
+        if self._size % self.format.block_size != 0:
             raise Exception('File "{name}" does not have an integer number '
                             'of blocks!'.format(name=self._filename))
         block_size = self.format.block_size
         padding = self.format.block_padding_size
-        n_blocks = len(self._contents) / block_size
+        n_blocks = self._size / block_size
         for block in range(n_blocks):
-            a = unpack('i', self._contents[block * block_size:
-                                           block * block_size + padding])[0]
-            b = unpack('i', self._contents[(block + 1) * block_size - padding:
-                                           (block + 1) * block_size])[0]
+            self._file.seek(block * block_size)
+            a = unpack('i', self._file.read(padding))[0]
+            self._file.seek((block + 1) * block_size - padding)
+            b = unpack('i', self._file.read(padding))[0]
             if a != b:
                 raise Exception('Block #{block} is not right: ({head}, {tail})'
                                 .format(block=block, head=a, tail=b))
@@ -148,12 +149,13 @@ class CorsikaFile(object):
         """
         block_size = self.format.block_size
         subblock_size = self.format.subblock_size
-        n_blocks = len(self._contents) / block_size
+        n_blocks = self._size / block_size
         for b in xrange(0, n_blocks * block_size, block_size):
             for s in xrange(0, self.format.subblocks_per_block):
                 pos = b + s * subblock_size + self.format.block_padding_size
+                self._file.seek(pos)
                 yield unpack(self.format.subblock_format,
-                             self._contents[pos:pos + subblock_size])
+                             self._file.read(subblock_size))
 
     def get_header(self):
         """Get the Run header
@@ -193,8 +195,8 @@ class CorsikaFile(object):
         """
         event_head = None
         for block in self._subblocks_indices():
-            endblocktag = block + self.format.field_size
-            tag = unpack('4s', self._contents[block:endblocktag])[0]
+            self._file.seek(block)
+            tag = unpack('4s', self._file.read(self.format.field_size))[0]
             if tag == 'EVTH':
                 event_head = block
             elif tag == 'EVTE':
@@ -210,7 +212,7 @@ class CorsikaFile(object):
         """
         block_size = self.format.block_size
         subblock_size = self.format.subblock_size
-        n_blocks = len(self._contents) / block_size
+        n_blocks = self._size / block_size
         for b in xrange(0, n_blocks * block_size, block_size):
             for s in xrange(0, self.format.subblocks_per_block):
                 pos = b + s * subblock_size + self.format.block_padding_size
@@ -225,8 +227,8 @@ class CorsikaFile(object):
         heads = []
         tails = []
         for block in self._subblocks_indices():
-            endblock = block + self.format.field_size
-            type = unpack('4s', self._contents[block:endblock])[0]
+            self._file.seek(block)
+            type = unpack('4s', self._file.read(self.format.field_size))[0]
             if type == 'EVTH':
                 heads.append(block)
             elif type == 'EVTE':
@@ -246,8 +248,8 @@ class CorsikaFile(object):
     def _get_run_indices(self):
         """Get the indices for the start of the run header and end"""
         for block in self._subblocks_indices():
-            endblock = block + self.format.field_size
-            type = unpack('4s', self._contents[block:endblock])[0]
+            self._file.seek(block)
+            type = unpack('4s', self._file.read(self.format.field_size))[0]
             if type == 'RUNH':
                 head = block
             elif type == 'RUNE':
@@ -280,9 +282,9 @@ class CorsikaFile(object):
         :param word: the index where the subblock starts
 
         """
-        endword = word + self.format.subblock_size
+        self._file.seek(word)
         return unpack(self.format.subblock_format,
-                      self._contents[word:endword])
+                      self._file.read(self.format.subblock_size))
 
     def _unpack_particle(self, word):
         """Unpack a particle block
@@ -290,9 +292,9 @@ class CorsikaFile(object):
         :param word: the index where the particle subblock starts
 
         """
-        endword = word + self.format.particle_size
+        self._file.seek(word)
         return unpack(self.format.particle_format,
-                      self._contents[word:endword])
+                      self._file.read(self.format.particle_size))
 
     def Blocks():
         pass
