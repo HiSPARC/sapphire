@@ -3,13 +3,12 @@
 Corsika Reader Documentation
 ============================
 
-`CORSIKA <http://www-ik.fzk.de/~corsika/>`_ is an Air Shower
+`CORSIKA <https://web.ikp.kit.edu/corsika/>`_ is an Air Shower
 Simulation Program. To be used for detailed simulation of
 extensive air showers initiated by high-energy cosmic-ray particles.
 
 This module makes it easy to work with |corsika| output, it was
-original written by `Javier Gonzalez
-<http://www-ik.fzk.de/~jgonzalez/corsika/>`_ and adapted for `HiSPARC
+original written by Javier Gonzalez and adapted for `HiSPARC
 <www.hisparc.nl>`_ by Arne de Laat.
 
 The :ref:`CorsikaModule` provides functionality to read |corsika| output
@@ -23,7 +22,7 @@ classes:
 
 This documentation sometimes refers to the |corsika| users manual, this
 users manual can be found here `CORSIKA User's Guide
-<http://www-ik.fzk.de/~corsika/usersguide/corsika_tech.html>`_
+<https://web.ikp.kit.edu/corsika/usersguide/corsika_tech.html>`_
 
 In addition to reading |corsika| output, functionally is provided to
 easily submit many |corsika| jobs to the Nikhef batch facility
