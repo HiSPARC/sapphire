@@ -153,6 +153,7 @@ def download_data(file, group, station_number, start=None, end=None,
         if time.time() - prev_update > .5 and not timestamp == 0.:
             pbar.update((1. * timestamp - t_start) / t_delta)
             prev_update = time.time()
+    table.flush()
     pbar.finish()
 
 
