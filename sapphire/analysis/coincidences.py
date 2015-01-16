@@ -1,7 +1,9 @@
 """ Search for coincidences between HiSPARC stations
 
     This module can be used to search for coincidences between several
-    HiSPARC stations.
+    HiSPARC stations. To skip this and directly download coincidences
+    use :func:`sapphire.esd.download_coincidences`, this is slightly
+    less flexible because you can not choose the coincidence window.
 
     Example usage::
 
@@ -25,8 +27,8 @@
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END)
 
-            coin = coincidences.Coincidences(data, '/coincidences',
-                                             station_groups)
+            coin = coincidences.CoincidencesESD(data, '/coincidences',
+                                                station_groups)
             coin.search_and_store_coincidences()
 
 """
@@ -51,17 +53,22 @@ class Coincidences(object):
     the '/s501' and '/s503' groups in the 'data' file.  Then::
 
         >>> station_groups = ['/s501', '/s503']
-        >>> coincidences = Coincidences(data, '/coincidences', station_groups)
-        >>> coincidences.search_and_store_coincidences()
+        >>> coin = Coincidences(data, '/coincidences', station_groups)
+        >>> coin.search_and_store_coincidences()
 
     If you want a more manual method, replace the last line with::
 
-        >>> coincidences.search_coincidences()
-        >>> coincidences.process_events()
-        >>> coincidences.store_coincidences()
+        >>> coin.search_coincidences(window=50000)
+        >>> coin.process_events()
+        >>> coin.store_coincidences()
 
     You can then provide different parameters to the individual methods.
     See the corresponding docstrings.
+
+    .. note::
+        For better compatibility with other modules, such as
+        :mod:`sapphire.analysis.reconstructions`, it is recommended
+        to use the subclass :class:`CoincidencesESD` instead.
 
     """
     ProcessWithTraces = process_events.ProcessIndexedEventsWithLINT

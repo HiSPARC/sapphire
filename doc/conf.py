@@ -289,3 +289,4 @@ epub_copyright = u'2012, David Fokkema'
 
 # -- User-defined options ------------------------------------------------------
 autoclass_content = 'both'
+autodoc_member_order = 'bysource'
