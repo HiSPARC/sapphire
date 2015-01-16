@@ -218,7 +218,7 @@ class DirectAlgorithmCartesian2D(object):
 
     This implements the equations derived in Montanus2014.
     "Direction reconstruction of cosmic air showers with
-     detectorstations at different altitudes"
+    detectorstations at different altitudes"
 
     Here the 2D version is used, assuming each detector is at the same
     altitude.
@@ -290,7 +290,7 @@ class DirectAlgorithmCartesian3D(object):
 
     This implements the equations derived in Montanus2014.
     "Direction reconstruction of cosmic air showers with
-     detectorstations at different altitudes"
+    detectorstations at different altitudes"
 
     Here the 3D version is used, assuming each detector is at the same
     altitude.
@@ -616,8 +616,8 @@ class RegressionAlgorithm(object):
 
     This implements the equations as for ISVHECRI (Montanus 2014).
     "Direction reconstruction of cosmic air showers with
-     three or more detectorstations in a horizontal (for the
-     moment) plane"
+    three or more detectorstations in a horizontal (for the
+    moment) plane"
 
     """
 
@@ -713,7 +713,7 @@ class RegressionAlgorithm3D(object):
 
     This implements the equations as recently derived (Montanus 2014).
     "Direction reconstruction of cosmic air showers with
-     three or more detectorstations at arbitrary altitudes"
+    three or more detectorstations at arbitrary altitudes"
 
     """
 
@@ -979,11 +979,13 @@ def logic_checks(t, x, y, z):
     """Check for impossible reconstructions
 
     Criteria:
+
     - No two detectors are at the same position.
     - Time difference between two detections should be less than distance / c.
     - All detectors on a line is bad.
 
     To fix:
+
     - Time difference can still be to large in cases where a different
       distance becomes relevant.
 
