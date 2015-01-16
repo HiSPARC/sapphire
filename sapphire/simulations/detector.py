@@ -14,15 +14,17 @@ from ..utils import ceil_in_base
 
 class HiSPARCSimulation(BaseSimulation):
 
-    def simulate_detector_offsets(self, n_detectors):
+    @classmethod
+    def simulate_detector_offsets(cls, n_detectors):
         """Get multiple detector offsets
 
         :param n_detectors: number of offsets to return.
 
         """
-        return [self.simulate_detector_offset() for _ in range(n_detectors)]
+        return [cls.simulate_detector_offset() for _ in range(n_detectors)]
 
-    def simulate_detector_offset(self):
+    @classmethod
+    def simulate_detector_offset(cls):
         """Simulate time offsets between detectors in one station
 
         This offset should be fixed for each detector for a simulation run.
@@ -30,7 +32,8 @@ class HiSPARCSimulation(BaseSimulation):
         """
         return np.random.normal(0, 2.77)
 
-    def simulate_station_offset(self):
+    @classmethod
+    def simulate_station_offset(cls):
         """Simulate time offsets between different stations
 
         This offset should be fixed for each station for a simulation run.
@@ -40,12 +43,14 @@ class HiSPARCSimulation(BaseSimulation):
         """
         return np.random.normal(0, 16)
 
-    def simulate_gps_uncertainty(self):
+    @classmethod
+    def simulate_gps_uncertainty(cls):
         """Simulate uncertainty from GPS receiver"""
 
         return np.random.normal(0, 4.5)
 
-    def simulate_adc_sampling(self, t):
+    @classmethod
+    def simulate_adc_sampling(cls, t):
         """Simulate ADC time binning due to the sampling frequency
 
         :param t: time to be binned.
@@ -54,7 +59,8 @@ class HiSPARCSimulation(BaseSimulation):
         """
         return ceil_in_base(t, 2.5)
 
-    def simulate_signal_transport_time(self, n=1):
+    @classmethod
+    def simulate_signal_transport_time(cls, n=1):
         """ Simulate transport times of scintillation light to the PMT
 
         Generates random transit times within a given distribution and
@@ -77,20 +83,22 @@ class HiSPARCSimulation(BaseSimulation):
                           1.56764 + 4.89536 * numbers)
         return dt
 
-    def simulate_detector_mips(self, particles):
+    @classmethod
+    def simulate_detector_mips(cls, particles):
         """Simulate the detector signal response for particles
 
         :param particles: an array of particle rows.
 
         """
         if len(particles) < 4:
-            mips = sum(self.simulate_detector_mip(p) for p in particles)
+            mips = sum(cls.simulate_detector_mip(p) for p in particles)
         else:
-            mips = sum(self.simulate_detector_mip(particles))
+            mips = sum(cls.simulate_detector_mip(particles))
 
         return mips
 
-    def simulate_detector_mip(self, particle):
+    @classmethod
+    def simulate_detector_mip(cls, particle):
         """Simulate the detector signal for particles
 
         Be careful when editting this function, be sure to check both
@@ -136,7 +144,8 @@ class HiSPARCSimulation(BaseSimulation):
 
         return mip
 
-    def generate_core_position(self, R):
+    @classmethod
+    def generate_core_position(cls, R):
         """Generate a random core position within a circle
 
         DF: This is the fastest implementation I could come up with.  I
@@ -156,7 +165,8 @@ class HiSPARCSimulation(BaseSimulation):
         y = r * sin(phi)
         return x, y
 
-    def generate_zenith(self):
+    @classmethod
+    def generate_zenith(cls):
         """Generate a random zenith
 
         Pick from the expected zenith distribution.
@@ -168,9 +178,10 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         p = np.random.random()
-        return self.inverse_zenith_probability(p)
+        return cls.inverse_zenith_probability(p)
 
-    def inverse_zenith_probability(self, p):
+    @classmethod
+    def inverse_zenith_probability(cls, p):
         """Inverse cumulative probability distribution for zenith
 
         Derrived from Schultheiss "The acceptancy of the HiSPARC Network",
@@ -182,7 +193,8 @@ class HiSPARCSimulation(BaseSimulation):
         """
         return acos((1 - p) ** (1 / 8.))
 
-    def generate_azimuth(self):
+    @classmethod
+    def generate_azimuth(cls):
         """Generate a random azimuth
 
         Showers from each azimuth have equal probability
@@ -193,34 +205,42 @@ class HiSPARCSimulation(BaseSimulation):
 
 class ErrorlessSimulation(HiSPARCSimulation):
 
-    def simulate_detector_offsets(self, n_detectors):
+    @classmethod
+    def simulate_detector_offsets(cls, n_detectors):
 
         return [0.] * n_detectors
 
-    def simulate_detector_offset(self):
+    @classmethod
+    def simulate_detector_offset(cls):
 
         return 0.
 
-    def simulate_station_offset(self):
+    @classmethod
+    def simulate_station_offset(cls):
 
         return 0.
 
-    def simulate_gps_uncertainty(self):
+    @classmethod
+    def simulate_gps_uncertainty(cls):
 
         return 0.
 
-    def simulate_adc_sampling(self, t):
+    @classmethod
+    def simulate_adc_sampling(cls, t):
 
         return t
 
-    def simulate_signal_transport_time(self, n=1):
+    @classmethod
+    def simulate_signal_transport_time(cls, n=1):
 
         return np.array([0.] * n)
 
-    def simulate_detector_mips(self, particles):
+    @classmethod
+    def simulate_detector_mips(cls, particles):
 
         return len(particles)
 
-    def simulate_detector_mip(self, particle):
+    @classmethod
+    def simulate_detector_mip(cls, particle):
 
         return 1.
