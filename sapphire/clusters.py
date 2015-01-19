@@ -613,18 +613,22 @@ class HiSPARCStations(RAlphaBetaStations):
             except:
                 if allow_missing:
                     warnings.warn('Could not get info for station %d, '
-                                  'skipping.' % station, UserWarning)
-                    continue
+                                  'using GPS location (0, 0, 0).' % station,
+                                  UserWarning)
+                    n_detectors = 2
+                    detectors = n_detectors * [{'radius': 0, 'alpha': 0,
+                                                'height': 0, 'beta': 0}]
+                    gps = (0., 0., 0.)
                 else:
                     raise KeyError('Could not get info for station %d.' %
                                    station)
-
-            location = station_info.location()
-            n_detectors = station_info.n_detectors()
-            detectors = station_info.detectors()
-            gps = (location['latitude'],
-                   location['longitude'],
-                   location['altitude'])
+            else:
+                location = station_info.location()
+                n_detectors = station_info.n_detectors()
+                detectors = station_info.detectors()
+                gps = (location['latitude'],
+                       location['longitude'],
+                       location['altitude'])
 
             if i == 0:
                 transformation = geographic.FromWGS84ToENUTransformation(gps)

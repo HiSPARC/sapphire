@@ -54,7 +54,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 194.809968752485, 
                 "radius": null
             }, 
             {
@@ -162,7 +162,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 191.844654153481, 
+                "mpv": 199.872352500724, 
                 "radius": null
             }, 
             {
@@ -244,14 +244,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 224.529399325628, 
+                "mpv": 225.672913347868, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 263.399476079923, 
+                "mpv": 269.321417053197, 
                 "radius": null
             }
         ], 
@@ -271,14 +271,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 197.439427309805, 
+                "mpv": 210.489542573387, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 211.439957876617, 
+                "mpv": 220.6488307251, 
                 "radius": null
             }
         ], 
@@ -298,14 +298,55 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 195.865528893313, 
+                "mpv": 196.329474824753, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 199.134909351147, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Amsterdam"
+    }, 
+    "23": {
+        "active": true, 
+        "altitude": 53.8767213458195, 
+        "cluster": "Amsterdam", 
+        "country": "Netherlands", 
+        "latitude": 52.3523109823471, 
+        "longitude": 4.87841656511973, 
+        "name": "Fons Vitae Lyceum", 
+        "number": 23, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 199.703471476895, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -366,14 +407,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 228.7179836379, 
+                "mpv": 352.278042769026, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 257.525527357466, 
+                "mpv": 277.135660531249, 
                 "radius": null
             }
         ], 
@@ -393,7 +434,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 222.947137372631, 
+                "mpv": 224.740405369343, 
                 "radius": null
             }, 
             {
@@ -420,14 +461,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 191.08512928674, 
+                "mpv": 204.929114745802, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 202.14927072256, 
+                "mpv": 216.628821643079, 
                 "radius": null
             }
         ], 
@@ -474,13 +515,6 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 212.97062697665, 
-                "radius": null
-            }, 
-            {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
                 "mpv": null, 
                 "radius": null
             }, 
@@ -495,7 +529,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 228.00721864581, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -503,11 +544,11 @@
     }, 
     "202": {
         "active": true, 
-        "altitude": 46.744105332531, 
+        "altitude": 51.1635816898197, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3101994757862, 
-        "longitude": 4.68163207690785, 
+        "latitude": 52.3102170182877, 
+        "longitude": 4.68162148144783, 
         "name": "Kaj Munk College", 
         "number": 202, 
         "scintillators": [
@@ -515,14 +556,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 242.976815991539, 
+                "mpv": 219.679253249092, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 217.697173698909, 
+                "mpv": 248.67643813448, 
                 "radius": null
             }
         ], 
@@ -542,14 +583,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 197.299481847586, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 198.849851903977, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -569,14 +610,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 276.844828022851, 
+                "mpv": 263.864762717405, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 245.53748630823, 
+                "mpv": 264.093336093922, 
                 "radius": null
             }
         ], 
@@ -596,14 +637,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 241.397469838333, 
+                "mpv": 245.808070811509, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 263.95859059679, 
+                "mpv": 268.254156853224, 
                 "radius": null
             }
         ], 
@@ -623,14 +664,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 231.38567999888, 
+                "mpv": 241.002059755505, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 229.886437292384, 
+                "mpv": 240.332557450974, 
                 "radius": null
             }
         ], 
@@ -677,14 +718,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 224.542980755669, 
+                "mpv": 229.323857374096, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 224.287037723702, 
+                "mpv": 241.805671522393, 
                 "radius": null
             }, 
             {
@@ -706,41 +747,41 @@
     }, 
     "501": {
         "active": true, 
-        "altitude": 54.9677912024781, 
+        "altitude": 57.6463436549529, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.355928561847, 
-        "longitude": 4.95114426883556, 
+        "latitude": 52.3558990959991, 
+        "longitude": 4.95098802630528, 
         "name": "Nikhef", 
         "number": 501, 
         "scintillators": [
             {
-                "alpha": 225.0, 
+                "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 242.543223265443, 
-                "radius": 8.62
+                "mpv": 240.734723700435, 
+                "radius": null
             }, 
             {
-                "alpha": 225.0, 
+                "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 244.112181086903, 
-                "radius": 2.15
+                "mpv": 266.560925327594, 
+                "radius": null
             }, 
             {
-                "alpha": 135.0, 
+                "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 251.477639493137, 
-                "radius": 5.23
+                "mpv": 266.097344792405, 
+                "radius": null
             }, 
             {
-                "alpha": 315.0, 
+                "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 263.140611489778, 
-                "radius": 5.08
+                "mpv": 272.807407009901, 
+                "radius": null
             }
         ], 
         "subcluster": "Science Park"
@@ -759,28 +800,28 @@
                 "alpha": 15.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 224.823643188608, 
+                "mpv": 236.687075953608, 
                 "radius": 8.66
             }, 
             {
                 "alpha": 60.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 217.917079906031, 
+                "mpv": 221.141182869514, 
                 "radius": 13.23
             }, 
             {
                 "alpha": 105.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 224.728024521696, 
+                "mpv": 258.046557294574, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 285.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 239.978809699466, 
+                "mpv": 256.883754585404, 
                 "radius": 5.0
             }
         ], 
@@ -800,7 +841,7 @@
                 "alpha": 315.0, 
                 "beta": 135.0, 
                 "height": null, 
-                "mpv": 217.167662444709, 
+                "mpv": 225.979730303245, 
                 "radius": 8.97
             }, 
             {
@@ -814,7 +855,7 @@
                 "alpha": 225.0, 
                 "beta": 225.0, 
                 "height": null, 
-                "mpv": 210.113970331311, 
+                "mpv": 225.796599135573, 
                 "radius": 5.09
             }, 
             {
@@ -841,28 +882,28 @@
                 "alpha": 190.0, 
                 "beta": 10.0, 
                 "height": null, 
-                "mpv": 249.118867825357, 
+                "mpv": 250.740200242854, 
                 "radius": 9.0
             }, 
             {
                 "alpha": 190.0, 
                 "beta": 190.0, 
                 "height": null, 
-                "mpv": 293.246900298997, 
+                "mpv": 260.681102289752, 
                 "radius": 2.9
             }, 
             {
                 "alpha": 100.0, 
                 "beta": 280.0, 
                 "height": null, 
-                "mpv": 270.41464217947, 
+                "mpv": 269.102466399325, 
                 "radius": 5.02
             }, 
             {
                 "alpha": 280.0, 
                 "beta": 100.0, 
                 "height": null, 
-                "mpv": 148.247876885203, 
+                "mpv": null, 
                 "radius": 5.0
             }
         ], 
@@ -882,28 +923,28 @@
                 "alpha": 250.0, 
                 "beta": 30.0, 
                 "height": null, 
-                "mpv": 228.156958201957, 
+                "mpv": 236.352958429568, 
                 "radius": 11.21
             }, 
             {
                 "alpha": 300.0, 
                 "beta": 210.0, 
                 "height": null, 
-                "mpv": 200.197741744889, 
+                "mpv": 198.175116700326, 
                 "radius": 11.12
             }, 
             {
                 "alpha": 170.0, 
                 "beta": 25.0, 
                 "height": null, 
-                "mpv": 210.50621161765, 
+                "mpv": null, 
                 "radius": 4.95
             }, 
             {
-                "alpha": 35.0, 
+                "alpha": 25.0, 
                 "beta": 205.0, 
                 "height": null, 
-                "mpv": 199.827633095808, 
+                "mpv": 195.268351811447, 
                 "radius": 4.95
             }
         ], 
@@ -923,14 +964,14 @@
                 "alpha": 93.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 218.999886756217, 
+                "mpv": 222.820692137276, 
                 "radius": 8.66
             }, 
             {
                 "alpha": 93.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 215.064387061712, 
+                "mpv": 218.118983621406, 
                 "radius": 2.89
             }, 
             {
@@ -944,7 +985,7 @@
                 "alpha": 183.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 236.477297725182, 
+                "mpv": 216.590540811843, 
                 "radius": 5.0
             }
         ], 
@@ -978,14 +1019,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 243.527816769852, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 261.766038098391, 
+                "mpv": 214.518435337722, 
                 "radius": null
             }
         ], 
@@ -998,14 +1039,14 @@
         "country": "Netherlands", 
         "latitude": 52.3563513341382, 
         "longitude": 4.95070840123504, 
-        "name": "Nikhef", 
+        "name": "Nikhef (MT)", 
         "number": 508, 
         "scintillators": [
             {
                 "alpha": 135.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 200.359764696041, 
                 "radius": 8.66
             }, 
             {
@@ -1019,7 +1060,7 @@
                 "alpha": 225.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 208.740390433337, 
+                "mpv": 221.184689072559, 
                 "radius": 5.0
             }, 
             {
@@ -1053,33 +1094,74 @@
                 "alpha": 225.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 234.608247385437, 
+                "mpv": 239.786270586646, 
                 "radius": 2.89
             }, 
             {
                 "alpha": 135.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 204.466005721484, 
+                "mpv": null, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 315.0, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 202.99381450383, 
+                "mpv": null, 
                 "radius": 5.0
+            }
+        ], 
+        "subcluster": "Science Park"
+    }, 
+    "510": {
+        "active": true, 
+        "altitude": 57.3941961703822, 
+        "cluster": "Amsterdam", 
+        "country": "Netherlands", 
+        "latitude": 52.3558859188682, 
+        "longitude": 4.95100828295814, 
+        "name": "Nikhef 2", 
+        "number": 510, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 191.604162181589, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 207.025582531078, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
             }
         ], 
         "subcluster": "Science Park"
     }, 
     "601": {
         "active": true, 
-        "altitude": 46.6774513768032, 
+        "altitude": 43.7650674395263, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.6474121976678, 
-        "longitude": 5.06911881749684, 
+        "latitude": 52.6474194536538, 
+        "longitude": 5.06911918182369, 
         "name": "Werenfridus", 
         "number": 601, 
         "scintillators": [
@@ -1087,14 +1169,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 217.911611047068, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 202.635873854421, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -1102,11 +1184,11 @@
     }, 
     "1001": {
         "active": true, 
-        "altitude": 0.0, 
+        "altitude": 85.1580091593787, 
         "cluster": "Utrecht", 
         "country": "Netherlands", 
-        "latitude": 0.0, 
-        "longitude": 0.0, 
+        "latitude": 52.0872182566183, 
+        "longitude": 5.16593169517659, 
         "name": "Universiteit Utrecht", 
         "number": 1001, 
         "scintillators": [
@@ -1121,7 +1203,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 198.261812870723, 
+                "mpv": 198.035935180194, 
                 "radius": null
             }
         ], 
@@ -1168,7 +1250,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 199.076797040533, 
                 "radius": null
             }, 
             {
@@ -1195,14 +1277,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 254.433683382281, 
+                "mpv": 269.437339832414, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 251.632627787276, 
+                "mpv": 263.945282506566, 
                 "radius": null
             }
         ], 
@@ -1222,14 +1304,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 267.042571613673, 
+                "mpv": 297.8090032552, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 228.344378922076, 
+                "mpv": 248.097554854678, 
                 "radius": null
             }
         ], 
@@ -1237,11 +1319,11 @@
     }, 
     "1008": {
         "active": true, 
-        "altitude": 52.4732213113457, 
+        "altitude": 52.8849295303226, 
         "cluster": "Utrecht", 
         "country": "Netherlands", 
-        "latitude": 52.0820924937373, 
-        "longitude": 5.13294691378224, 
+        "latitude": 52.0820995772004, 
+        "longitude": 5.13294004788278, 
         "name": "Stedelijk Gymnasium Utrecht", 
         "number": 1008, 
         "scintillators": [
@@ -1249,14 +1331,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 199.844604766142, 
+                "mpv": 266.712027767936, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 292.088858215594, 
+                "mpv": 305.178973034577, 
                 "radius": null
             }
         ], 
@@ -1283,7 +1365,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 239.683500802385, 
+                "mpv": 240.958354592582, 
                 "radius": null
             }, 
             {
@@ -1297,7 +1379,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 200.473364648062, 
+                "mpv": 208.850651259379, 
                 "radius": null
             }
         ], 
@@ -1324,7 +1406,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 294.65968949859, 
                 "radius": null
             }
         ], 
@@ -1413,11 +1495,11 @@
     }, 
     "2005": {
         "active": true, 
-        "altitude": 63.1597957676277, 
+        "altitude": 61.4857049221173, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.8066215474462, 
-        "longitude": 5.8391834826574, 
+        "latitude": 51.8066141534249, 
+        "longitude": 5.83919031179365, 
         "name": "Kandinsky College", 
         "number": 2005, 
         "scintillators": [
@@ -1425,14 +1507,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 266.99159505434, 
+                "mpv": 251.024115968607, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 270.330837559029, 
+                "mpv": 284.998403727082, 
                 "radius": null
             }
         ], 
@@ -1540,7 +1622,61 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 254.428979820222, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Venray"
+    }, 
+    "2102": {
+        "active": true, 
+        "altitude": 85.0361724821851, 
+        "cluster": "Nijmegen", 
+        "country": "Netherlands", 
+        "latitude": 51.5187616660915, 
+        "longitude": 5.97490580978707, 
+        "name": "Raaijland College (Gilde)", 
+        "number": 2102, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Venray"
+    }, 
+    "2103": {
+        "active": true, 
+        "altitude": 72.3189525250345, 
+        "cluster": "Nijmegen", 
+        "country": "Netherlands", 
+        "latitude": 51.5144260741425, 
+        "longitude": 5.98021193208395, 
+        "name": "Raaijland College (Melkfabriek)", 
+        "number": 2103, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -1587,14 +1723,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 269.999670685598, 
+                "mpv": 268.316809251949, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 266.784869502017, 
+                "mpv": 263.0455183475, 
                 "radius": null
             }
         ], 
@@ -1614,14 +1750,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 213.763024563602, 
+                "mpv": 226.432106795045, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 215.536840085301, 
+                "mpv": 220.620072425983, 
                 "radius": null
             }
         ], 
@@ -1641,14 +1777,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 189.758071782935, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 184.216809605961, 
+                "mpv": 250.544631358953, 
                 "radius": null
             }, 
             {
@@ -1682,14 +1818,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 216.321887371046, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 233.222830074005, 
                 "radius": null
             }
         ], 
@@ -1763,14 +1899,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 223.673692737038, 
+                "mpv": 230.090882112853, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 241.21423645205, 
+                "mpv": 248.724860808283, 
                 "radius": null
             }
         ], 
@@ -1790,7 +1926,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 198.891016652716, 
                 "radius": null
             }, 
             {
@@ -1804,14 +1940,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 197.020790577542, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 205.827826010538, 
                 "radius": null
             }
         ], 
@@ -1872,14 +2008,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 294.22100904237, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 201.005215255697, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -1899,7 +2035,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 203.284871763917, 
+                "mpv": 234.601616677285, 
                 "radius": null
             }, 
             {
@@ -1926,14 +2062,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 211.599051784046, 
+                "mpv": 235.086428829964, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 219.208842810412, 
+                "mpv": 227.540055300397, 
                 "radius": null
             }
         ], 
@@ -1953,14 +2089,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 243.992491557542, 
+                "mpv": 267.672342088153, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 222.716012260739, 
+                "mpv": 228.874892087591, 
                 "radius": null
             }
         ], 
@@ -1980,7 +2116,48 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 217.09591869434, 
+                "mpv": 213.116727723849, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 203.200612832885, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Terneuzen"
+    }, 
+    "3501": {
+        "active": true, 
+        "altitude": 59.5671734604985, 
+        "cluster": "Leiden", 
+        "country": "Netherlands", 
+        "latitude": 52.0017816125448, 
+        "longitude": 4.36824630621087, 
+        "name": "De Haagse Hogeschool (Delft)", 
+        "number": 3501, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 216.364009915651, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 222.016800315285, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -1991,7 +2168,7 @@
                 "radius": null
             }
         ], 
-        "subcluster": "Terneuzen"
+        "subcluster": "Delft"
     }, 
     "4001": {
         "active": true, 
@@ -2102,14 +2279,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 243.479104180947, 
+                "mpv": 279.821458345275, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 216.013626731786, 
+                "mpv": 223.828096134955, 
                 "radius": null
             }
         ], 
@@ -2129,7 +2306,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 252.117610650454, 
+                "mpv": 247.445519329698, 
                 "radius": null
             }, 
             {
@@ -2163,7 +2340,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 220.549327602053, 
+                "mpv": 212.816643043622, 
                 "radius": null
             }
         ], 
@@ -2183,14 +2360,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 223.043143764174, 
+                "mpv": 222.040937403763, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 189.044359135668, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -2210,14 +2387,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 200.180869345744, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 206.647178498644, 
                 "radius": null
             }
         ], 
@@ -2237,14 +2414,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 369.237121688071, 
+                "mpv": 386.418598539033, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 322.631098659019, 
+                "mpv": 329.197658638696, 
                 "radius": null
             }
         ], 
@@ -2278,7 +2455,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 206.028267157027, 
+                "mpv": 232.915912382854, 
                 "radius": null
             }, 
             {
@@ -2305,14 +2482,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 250.002640822855, 
+                "mpv": 264.313649639769, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 213.255343729513, 
+                "mpv": 254.886368787879, 
                 "radius": null
             }
         ], 
@@ -2332,7 +2509,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 201.721212598395, 
                 "radius": null
             }, 
             {
@@ -2359,14 +2536,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 278.105599493203, 
+                "mpv": 304.811063477519, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 263.845441277211, 
+                "mpv": 283.571482666445, 
                 "radius": null
             }
         ], 
@@ -2393,7 +2570,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 205.173061640926, 
+                "mpv": 213.751011956102, 
                 "radius": null
             }, 
             {
@@ -2469,11 +2646,11 @@
     }, 
     "8006": {
         "active": true, 
-        "altitude": 65.6044189278036, 
+        "altitude": 64.8284308817238, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.4825856247234, 
-        "longitude": 5.48766213881231, 
+        "latitude": 51.4825880497091, 
+        "longitude": 5.48766277020957, 
         "name": "Stedelijk College Eindhoven", 
         "number": 8006, 
         "scintillators": [
@@ -2481,14 +2658,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 239.948476597573, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 226.043575095615, 
+                "mpv": 240.675347067499, 
                 "radius": null
             }
         ], 
@@ -2535,14 +2712,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 577.315384064301, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 262.58123855668, 
+                "mpv": 250.919698873586, 
                 "radius": null
             }
         ], 
@@ -2577,11 +2754,11 @@
     }, 
     "8101": {
         "active": true, 
-        "altitude": 72.3639667173848, 
+        "altitude": 0.0, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.5417304781402, 
-        "longitude": 5.08402658736434, 
+        "latitude": 0.0, 
+        "longitude": 0.0, 
         "name": "Koning Willem II College", 
         "number": 8101, 
         "scintillators": [
@@ -2596,7 +2773,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 503.080798328199, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -2657,14 +2834,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 235.508685657722, 
+                "mpv": 250.78178659541, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 197.161382257771, 
+                "mpv": 211.103427559032, 
                 "radius": null
             }
         ], 
@@ -2699,11 +2876,11 @@
     }, 
     "8105": {
         "active": true, 
-        "altitude": 65.0367289464921, 
+        "altitude": 67.4581831824034, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.531832793682, 
-        "longitude": 5.05945278476945, 
+        "latitude": 51.5318367628815, 
+        "longitude": 5.05945681920712, 
         "name": "Mill Hill College", 
         "number": 8105, 
         "scintillators": [
@@ -2711,14 +2888,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 242.264724035842, 
+                "mpv": 293.271635566125, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 240.26989057379, 
+                "mpv": 276.620483226625, 
                 "radius": null
             }
         ], 
@@ -2738,14 +2915,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 207.822488662916, 
+                "mpv": 220.762151293527, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 207.763370558085, 
+                "mpv": 213.370402249502, 
                 "radius": null
             }
         ], 
@@ -2928,7 +3105,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 212.710387323538, 
+                "mpv": 214.193762402954, 
                 "radius": null
             }, 
             {
@@ -3038,11 +3215,11 @@
     }, 
     "13005": {
         "active": true, 
-        "altitude": 0.0, 
+        "altitude": 124.759863643907, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 0.0, 
-        "longitude": 0.0, 
+        "latitude": 51.5139752074251, 
+        "longitude": -2.57266474121776, 
         "name": "Filton College", 
         "number": 13005, 
         "scintillators": [
@@ -3070,7 +3247,7 @@
         "country": "United Kingdom", 
         "latitude": 51.442831473536, 
         "longitude": -2.51832214384826, 
-        "name": "Hanham High", 
+        "name": "Hanham Woods Academy", 
         "number": 13006, 
         "scintillators": [
             {
@@ -3104,7 +3281,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 200.673750518417, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -3119,11 +3296,11 @@
     }, 
     "13102": {
         "active": true, 
-        "altitude": 177.039015769958, 
+        "altitude": 222.717092872597, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.39668150269, 
-        "longitude": -2.36441790460926, 
+        "latitude": 51.3968867896332, 
+        "longitude": -2.36460992538407, 
         "name": "Royal High School", 
         "number": 13102, 
         "scintillators": [
@@ -3192,7 +3369,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 497.904372223314, 
                 "radius": null
             }
         ], 
@@ -3200,11 +3377,11 @@
     }, 
     "14001": {
         "active": true, 
-        "altitude": 205.01567409467, 
+        "altitude": 204.137509074993, 
         "cluster": "Birmingham", 
         "country": "United Kingdom", 
-        "latitude": 52.4498762148565, 
-        "longitude": -1.92904868799856, 
+        "latitude": 52.4498801200987, 
+        "longitude": -1.92904547056437, 
         "name": "Birmingham University", 
         "number": 14001, 
         "scintillators": [
@@ -3260,7 +3437,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 237.577229753631, 
+                "mpv": 234.687325363458, 
                 "radius": null
             }
         ], 
@@ -3287,7 +3464,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 274.485136384319, 
+                "mpv": 192.619577068049, 
                 "radius": null
             }
         ], 
@@ -3327,7 +3504,7 @@
         "country": "Germany", 
         "latitude": 49.0994916838749, 
         "longitude": 8.43842644598621, 
-        "name": "Karlsruher Institut f\u00fcr Technologie", 
+        "name": "Karlsruher Institut fur Technologie", 
         "number": 70001, 
         "scintillators": [
             {
@@ -3361,5 +3538,5 @@
         ], 
         "subcluster": "Karlsruhe"
     }, 
-    "_info": "HiSPARC station info on 2014-08-11"
+    "_info": "HiSPARC station info on 2015-01-19"
 }
