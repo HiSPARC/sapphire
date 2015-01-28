@@ -30,7 +30,7 @@ This package contains modules for performing various analysis tasks:
 """
 from . import coincidence_queries
 from . import coincidences
-from . import core_reconstruction
+#from . import core_reconstruction
 from . import direction_reconstruction
 from . import find_mpv
 from . import landau
@@ -40,7 +40,7 @@ from . import reconstructions
 
 __all__ = ['coincidence_queries',
            'coincidences',
-           'core_reconstruction',
+           # 'core_reconstruction',
            'direction_reconstruction',
            'find_mpv',
            'landau',
