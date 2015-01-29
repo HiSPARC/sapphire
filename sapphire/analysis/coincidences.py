@@ -2,7 +2,7 @@
 
     This module can be used to search for coincidences between several
     HiSPARC stations. To skip this and directly download coincidences
-    use :func:`sapphire.esd.download_coincidences`, this is slightly
+    use :func:`~sapphire.esd.download_coincidences`, this is slightly
     less flexible because you can not choose the coincidence window.
 
     Example usage::
@@ -67,7 +67,7 @@ class Coincidences(object):
 
     .. note::
         For better compatibility with other modules, such as
-        :mod:`sapphire.analysis.reconstructions`, it is recommended
+        :mod:`~sapphire.analysis.reconstructions`, it is recommended
         to use the subclass :class:`CoincidencesESD` instead.
 
     """
@@ -162,7 +162,7 @@ class Coincidences(object):
             src_c_index.append(coincidence)
 
     def process_events(self, overwrite=None):
-        """Process events using :mod:`sapphire.analysis.process_events`
+        """Process events using :mod:`~sapphire.analysis.process_events`
 
         Events making up the coincidences are processed to obtain
         observables like number of particles and particle arrival times.
@@ -207,7 +207,7 @@ class Coincidences(object):
         method.
 
         :param cluster: optionally store a
-            :class:`sapphire.clusters.BaseCluster` instance in the
+            :class:`~sapphire.clusters.BaseCluster` instance in the
             coincidences group for future reference.
 
         """

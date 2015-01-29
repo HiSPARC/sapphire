@@ -47,7 +47,8 @@ class ReconstructESDEvents(object):
 
         :param data: the PyTables datafile.
         :param station_group: the destination group.
-        :param station: either a station number or a Station instance.
+        :param station: either a station number or
+                        :class:`~sapphire.clusters.Station` object.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
 

@@ -783,7 +783,7 @@ class DirectEventReconstruction(DirectAlgorithmCartesian3D):
     with a 'station' and you can reconstruct events using
     :meth:`reconstruct_event`.
 
-    :param station: :class:`sapphire.clusters.Station` object.
+    :param station: :class:`~sapphire.clusters.Station` object.
 
     """
 
@@ -841,7 +841,7 @@ class FitEventReconstruction(RegressionAlgorithm3D, DirectEventReconstruction):
     with a 'station' and you can reconstruct events using
     :meth:`reconstruct_event`.
 
-    :param station: :class:`sapphire.clusters.Station` object.
+    :param station: :class:`~sapphire.clusters.Station` object.
 
     """
 
@@ -894,7 +894,7 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
     this class with a 'cluster' and you can reconstruct a coincidence
     using :meth:`reconstruct_coincidence`.
 
-    :param cluster: :class:`sapphire.clusters.BaseCluster` object.
+    :param cluster: :class:`~sapphire.clusters.BaseCluster` object.
 
     """
 

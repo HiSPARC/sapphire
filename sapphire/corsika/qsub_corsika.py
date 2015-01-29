@@ -308,7 +308,8 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
 
     :param n: Number of jobs to submit
     :param energy: log10(E[eV]) energy of primary particle
-    :param particle: Particle kind (as string, see particles.py for possibilities)
+    :param particle: Particle kind (as string, see
+                     :mod:`~sapphire.corsika.particles` for possibilities)
     :param zenith: Zenith angle in degrees of the primary particle
     :param azimuth: Azimuth angle in degrees of the primary particle
     :param queue: Stoomboot queue to submit to

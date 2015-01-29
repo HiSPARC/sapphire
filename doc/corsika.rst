@@ -15,9 +15,9 @@ The :ref:`CorsikaModule` provides functionality to read |corsika| output
 files with `Python <www.python.org>`_. It provides the following main
 classes:
 
-* :class:`sapphire.corsika.reader.CorsikaFile`: The file class provides a
+* :class:`~sapphire.corsika.reader.CorsikaFile`: The file class provides a
   generator over all events in the file.
-* :class:`sapphire.corsika.reader.CorsikaEvent`: The event class that
+* :class:`~sapphire.corsika.reader.CorsikaEvent`: The event class that
   provides a generator over all particles at ground.
 
 This documentation sometimes refers to the |corsika| users manual, this
