@@ -301,10 +301,9 @@ class BaseSimulation(object):
             station_group = self.datafile.create_group(self.cluster_group,
                                                        'station_%d' %
                                                        station.number)
-            events_table = \
-                    self.datafile.create_table(station_group, 'events',
-                        ProcessEvents.processed_events_description,
-                        expectedrows=self.N)
+            description = ProcessEvents.processed_events_description
+            self.datafile.create_table(station_group, 'events',
+                                       description, expectedrows=self.N)
             self.station_groups.append(station_group)
 
     def _store_station_index(self):

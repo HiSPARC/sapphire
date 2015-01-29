@@ -4,7 +4,6 @@ These are some common simulations for HiSPARC detectors.
 
 """
 from math import sqrt, acos, pi, cos, sin
-import random
 
 import numpy as np
 

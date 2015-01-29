@@ -62,5 +62,5 @@ class KascadeLdf(BaseLdf):
         beta = self._beta
         alpha = self._alpha
         return (gamma(beta - s) /
-                (2 * pi * r0**2 * gamma(s - alpha + 2) *
+                (2 * pi * r0 ** 2 * gamma(s - alpha + 2) *
                  gamma(alpha + beta - 2 * s - 2)))

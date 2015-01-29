@@ -1,7 +1,6 @@
 """Create test data for future acceptance testing"""
 
 import os
-import subprocess
 import tempfile
 
 import tables

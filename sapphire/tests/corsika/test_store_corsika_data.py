@@ -4,7 +4,6 @@ import os
 import subprocess
 
 import tables
-from mock import patch
 
 
 TEST_DATA_FILE = 'test_data/1_2/DAT000000'

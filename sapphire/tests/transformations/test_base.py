@@ -1,7 +1,5 @@
 import unittest
 
-from numpy import pi
-
 from sapphire.transformations import base
 
 

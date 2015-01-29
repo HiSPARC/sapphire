@@ -2,8 +2,7 @@ import warnings
 import itertools
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, floor, where, deg2rad, pi, inf, around, radians,
-                   array)
+                   sqrt, where, pi, inf, array)
 from scipy.optimize import minimize
 
 from ..utils import pbar, norm_angle, ERR
@@ -437,16 +436,12 @@ class SphereAlgorithm(object):
 
         x01 = x[0] - x[1]
         x02 = x[0] - x[2]
-        x12 = x[1] - x[2]
         y01 = y[0] - y[1]
         y02 = y[0] - y[2]
-        y12 = y[1] - y[2]
         z01 = z[0] - z[1]
         z02 = z[0] - z[2]
-        z12 = z[1] - z[2]
         t01 = t[0] - t[1]
         t02 = t[0] - t[2]
-        t12 = t[1] - t[2]
 
         A = 2. * (x01 * y02 - x02 * y01)
         B = 2. * (x02 * z01 - x01 * z02)
@@ -590,7 +585,7 @@ class FitAlgorithm(object):
     def constraint_normal_vector(n):
         """This should be equal to zero"""
 
-        return n[0]**2 + n[1]**2 + n[2]**2 - 1
+        return n[0] ** 2 + n[1] ** 2 + n[2] ** 2 - 1
 
     @staticmethod
     def best_fit(n_xyz, dt, dx, dy, dz):
@@ -605,7 +600,7 @@ class FitAlgorithm(object):
         c = .3
         nx, ny, nz, m = n_xyz
 
-        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti + m)**2
+        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti + m) ** 2
                    for ti, xi, yi, zi in zip(dt, dx, dy, dz)])
         return slq + m * m
 
@@ -957,7 +952,7 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
 
         """
         angles = [self.reconstruct_coincidence(coincidence, offsets)
-                  for event in pbar(coincidence)]
+                  for coincidence in pbar(coincidences)]
         theta, phi = zip(*angles)
         return theta, phi
 
@@ -1007,7 +1002,7 @@ def logic_checks(t, x, y, z):
         dx = txyz0[1] - txyz1[1]
         dy = txyz0[2] - txyz1[2]
         dz = txyz0[3] - txyz1[3]
-        dt_max = sqrt(dx**2 + dy**2 + dz**2) / c
+        dt_max = sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
         if dt_max < dt:
             return False
 

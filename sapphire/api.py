@@ -113,7 +113,7 @@ class API(object):
 
         """
         try:
-            result = urlopen(API_BASE).read()
+            urlopen(API_BASE).read()
         except URLError:
             return False
         return True

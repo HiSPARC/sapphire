@@ -2,7 +2,7 @@ from mock import sentinel, patch
 import unittest
 import os
 
-from numpy import array, std, mean
+from numpy import std, mean
 import tables
 
 from sapphire.simulations.detector import (HiSPARCSimulation,

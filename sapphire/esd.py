@@ -312,7 +312,7 @@ def _create_coincidences_tables(file, station_groups):
                                      createparents=True)
 
     # Create c_index
-    c_index = file.create_vlarray(group, 'c_index', tables.UInt32Col(shape=2))
+    file.create_vlarray(group, 'c_index', tables.UInt32Col(shape=2))
 
     # Create and fill s_index
     s_index = file.create_vlarray(group, 's_index', tables.VLStringAtom())
@@ -429,7 +429,7 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
         s_idx = station_groups[station_number]['s_index']
         e_idx = len(group)
         c_idx.append((s_idx, e_idx))
-        timestamp = _read_line_and_store_event(event[2:], group)
+        _read_line_and_store_event(event[2:], group)
 
     row.append()
     c_index = file.get_node('/coincidences', 'c_index')

@@ -11,8 +11,6 @@
 
 """
 import os
-import sys
-import shutil
 import random
 import textwrap
 import subprocess
@@ -191,10 +189,10 @@ class CorsikaBatch(object):
         seed1 = random.randint(1, 900000000)
         seed2 = random.randint(1, 900000000)
         seed = "{seed1}_{seed2}".format(seed1=seed1, seed2=seed2)
-        if not seed in taken:
+        if seed not in taken:
             self.seed1 = seed1
             self.seed2 = seed2
-            self.rundir = seed +'/'
+            self.rundir = seed + '/'
         else:
             self.get_random_seeds(taken)
 

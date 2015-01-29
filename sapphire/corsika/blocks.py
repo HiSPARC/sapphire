@@ -7,7 +7,6 @@ The classes in this module correspond one-to-one with the sub-blocks
 Author: Javier Gonzalez <jgonzalez@ik.fzk.de>
 """
 
-import textwrap
 import struct
 import math
 

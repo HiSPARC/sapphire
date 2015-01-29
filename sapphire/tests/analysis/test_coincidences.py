@@ -1,4 +1,4 @@
-from mock import sentinel, Mock, patch, call
+from mock import sentinel
 import unittest
 
 from sapphire.analysis import coincidences

@@ -32,7 +32,6 @@
             coin.search_and_store_coincidences()
 
 """
-import time
 import os.path
 
 import tables
@@ -588,7 +587,7 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
         :func:`search_coincidences`.
     :param timestamps: the list of timestamps, as returned by
         :func:`search_coincidences`.
-    :param get_raw_traces: boolean.  If true, return the compressed adc
+    :param get_raw_traces: boolean.  If true, return the compressed ADC
         values instead of the uncompressed traces.
 
     :return: a list of tuples.  Each tuple consists of (station, event,
@@ -608,7 +607,7 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
             traces = (process.get_traces_for_event(event) - baseline).T
             traces = traces * -0.57
         else:
-            traces = [blob_table[x] for x in event['traces']]
+            traces = [process.group.blobs[x] for x in event['traces']]
         events.append((stations[station], event, traces))
 
     return events

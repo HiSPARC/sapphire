@@ -186,7 +186,6 @@ class ProcessEvents(object):
 
         """
         events = self.source
-        events_tablename = self.source.name
 
         enumerated_timestamps = list(enumerate(events.col('ext_timestamp')))
         enumerated_timestamps.sort(key=operator.itemgetter(1))
@@ -704,9 +703,9 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         :param trace: generator over the trace.
         :param thresholds: list of thresholds.
         :param max_signal: expected max value in trace, based on
-                           baseline and pulseheight
+                           baseline and pulseheight.
         :returns: list with three indexes into the trace for the three
-                  thresholds
+                  thresholds.
 
         """
         results = [-999, -999, -999]

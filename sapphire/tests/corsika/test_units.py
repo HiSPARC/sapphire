@@ -36,10 +36,10 @@ class CorsikaUnitsTests(unittest.TestCase):
         self.assertEqual(units.degree, (math.pi / 180.) * units.rad)
         self.assertEqual(units.joule, units.eV / units.eSI)
         self.assertEqual(units.joule, units.eV / units.eSI)
-        self.assertEqual(units.gram, units.peta * units.joule * units.ns**2 / units.m**2)
+        self.assertEqual(units.gram, units.peta * units.joule * units.ns ** 2 / units.m ** 2)
         self.assertEqual(units.g, units.gram)
 
-        self.assertEqual(units.tesla, units.giga * units.volt * units.ns / units.m**2)
+        self.assertEqual(units.tesla, units.giga * units.volt * units.ns / units.m ** 2)
 
     def test_prefixes(self):
         """Verify the values of the prefixes"""

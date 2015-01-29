@@ -164,8 +164,7 @@ class BaseSimulationTest(unittest.TestCase):
 
     def test_simulate_gps(self):
         mock_observables = Mock()
-        observables = self.simulation.simulate_gps(mock_observables,
-                                                   Mock(), Mock())
+        self.simulation.simulate_gps(mock_observables, Mock(), Mock())
         self.assertEqual(mock_observables.update.call_count, 1)
         args, kwargs = mock_observables.update.call_args
         gps_dict = args[0]

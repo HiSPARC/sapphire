@@ -1,4 +1,4 @@
-from mock import sentinel, Mock, patch, call
+from mock import sentinel, patch, call
 import unittest
 
 from sapphire.analysis import coincidence_queries
@@ -125,7 +125,7 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         mock_get_events.return_value = sentinel.events
         mock_events_from.return_value = sentinel.coincidence_events
         coincidences = [sentinel.coincidence]
-        result = self.cq.events_from_stations(coincidences, sentinel.stations)
+        self.cq.events_from_stations(coincidences, sentinel.stations)
         # mock_get_events.assert_called_once_with(sentinel.coincidence)
         # mock_events_from.assert_called_once_with(sentinel.events, sentinel.stations)
         # mock_minimum.assert_called_once_with([sentinel.coincidence_events])
