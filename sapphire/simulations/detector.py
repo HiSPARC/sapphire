@@ -14,6 +14,17 @@ from ..utils import ceil_in_base
 
 class HiSPARCSimulation(BaseSimulation):
 
+    def __init__(self, *args, **kwargs):
+        super(HiSPARCSimulation, self).__init__(*args, **kwargs)
+
+        for station in self.cluster.stations:
+            station.gps_offset = self.simulate_station_offset()
+            for detector in station.detectors:
+                detector.offset = self.simulate_detector_offset()
+
+        # Store updated version of the cluster
+        self.coincidence_group._v_attrs.cluster = self.cluster
+
     @classmethod
     def simulate_detector_offsets(cls, n_detectors):
         """Get multiple detector offsets

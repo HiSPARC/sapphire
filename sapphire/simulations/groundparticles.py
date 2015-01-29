@@ -38,14 +38,6 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         self.groundparticles = self.corsikafile.get_node('/groundparticles')
         self.max_core_distance = max_core_distance
 
-        for station in self.cluster.stations:
-            station.gps_offset = self.simulate_station_offset()
-            for detector in station.detectors:
-                detector.offset = self.simulate_detector_offset()
-
-        # Store updated version of the cluster
-        self.coincidence_group._v_attrs.cluster = self.cluster
-
     def __del__(self):
         self.finish()
 
