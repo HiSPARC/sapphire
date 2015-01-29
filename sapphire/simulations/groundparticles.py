@@ -58,7 +58,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                   (x, y-tuple) and azimuth.
 
         """
-        R = self.max_core_distance
+        r = self.max_core_distance
+        giga = int(1e9)
 
         event_header = self.corsikafile.get_node_attr('/', 'event_header')
         event_end = self.corsikafile.get_node_attr('/', 'event_end')
@@ -68,7 +69,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'particle': event_header.particle}
 
         for i in pbar(range(self.N)):
-            x, y = self.generate_core_position(R)
+            x, y = self.generate_core_position(r)
 
             # Subtract Corsika shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
@@ -79,7 +80,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             elif alpha <= -pi:
                 alpha += 2 * pi
 
-            shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
+            shower_parameters = {'ext_timestamp': (giga + i) * giga,
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
@@ -113,7 +114,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         n_detected = len(particles)
 
         if n_detected:
-            mips = self.simulate_detector_mips(particles)
+            mips = self.simulate_detector_mips_for_particles(particles)
             particles['t'] += self.simulate_signal_transport_time(n_detected)
             first_signal = particles['t'].min() + detector.offset
             observables = {'n': mips,
@@ -122,6 +123,22 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             observables = {'n': 0., 't': -999}
 
         return observables
+
+    def simulate_detector_mips_for_particles(self, particles):
+        """Simulate the detector signal for particles
+
+        :param particles: particle rows with the p_[x, y, z]
+                          components of the particle momenta.
+
+        """
+        # determination of lepton angle of incidence
+        theta = np.arccos(abs(particle['p_z']) / np.sqrt(particle['p_x'] ** 2 +
+                                                         particle['p_y'] ** 2 +
+                                                         particle['p_z'] ** 2))
+        n = len(particles)
+        mips = self.simulate_detector_mips(n, theta)
+
+        return mips
 
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
@@ -272,10 +289,10 @@ class ParticleCounterSimulation(GroundParticlesSimulation):
 
     """Do not simulate mips, just count the number of particles."""
 
-    def simulate_detector_mips(self, particle_momenta):
+    def simulate_detector_mips(self, n, theta):
         """A mip for a mip, count number of particles in a detector."""
 
-        return len(particle_momenta)
+        return n
 
 
 class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,

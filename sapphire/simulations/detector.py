@@ -95,65 +95,41 @@ class HiSPARCSimulation(BaseSimulation):
         return dt
 
     @classmethod
-    def simulate_detector_mips(cls, particles):
-        """Simulate the detector signal response for particles
-
-        :param particles: an array of particle rows.
-
-        """
-        if len(particles) < 4:
-            mips = sum(cls.simulate_detector_mip(p) for p in particles)
-        else:
-            mips = sum(cls.simulate_detector_mip(particles))
-
-        return mips
-
-    @classmethod
-    def simulate_detector_mip(cls, particle):
+    def simulate_detector_mips(cls, n, theta):
         """Simulate the detector signal for particles
+
+        Simulation of convoluted distribution of electron and
+        muon energy losses with the scintillator response
 
         Be careful when editting this function, be sure to check both
         the single and vectorized part.
 
-        :param particle: particle row or rows with the p_[x, y, z]
-                         components of the particle momentum.
+        :param n: number of particles.
+        :param theta: angle of incidence of the particles, as float or array.
 
         """
+        costheta = np.cos(theta)
+        y = np.random.random(n)
 
-        # Simulation of convoluted distribution of electron and
-        # muon energy losses with the scintillator response
-        if particle.ndim == 0:
-            # determination of lepton angle of incidence
-            costheta = abs(particle['p_z']) / sqrt(particle['p_x'] ** 2 +
-                                                   particle['p_y'] ** 2 +
-                                                   particle['p_z'] ** 2)
-
-            y = np.random.random()
-
+        if n == 1:
             if y < 0.3394:
-                mip = (0.48 + 0.8583 * sqrt(y)) / costheta
+                mips = (0.48 + 0.8583 * sqrt(y)) / costheta
             elif y < 0.4344:
-                mip = (0.73 + 0.7366 * y) / costheta
+                mips = (0.73 + 0.7366 * y) / costheta
             elif y < 0.9041:
-                mip = (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta
+                mips = (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta
             else:
-                mip = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
+                mips = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
         else:
-            # determination of lepton angle of incidence
-            costheta = abs(particle['p_z']) / np.sqrt(particle['p_x'] ** 2 +
-                                                      particle['p_y'] ** 2 +
-                                                      particle['p_z'] ** 2)
-            y = np.random.random(len(particle))
-
-            mip = np.where(y < 0.3394,
+            mips = np.where(y < 0.3394,
                            (0.48 + 0.8583 * np.sqrt(y)) / costheta,
                            (0.73 + 0.7366 * y) / costheta)
-            mip = np.where(y < 0.4344, mip,
+            mips = np.where(y < 0.4344, mips,
                            (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta)
-            mip = np.where(y < 0.9041, mip,
+            mips = np.where(y < 0.9041, mips,
                            (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
-
-        return mip
+            mips = sum(mips)
+        return mips
 
     @classmethod
     def generate_core_position(cls, R):
@@ -247,11 +223,6 @@ class ErrorlessSimulation(HiSPARCSimulation):
         return np.array([0.] * n)
 
     @classmethod
-    def simulate_detector_mips(cls, particles):
+    def simulate_detector_mips(cls, n, theta):
 
-        return len(particles)
-
-    @classmethod
-    def simulate_detector_mip(cls, particle):
-
-        return 1.
+        return n
