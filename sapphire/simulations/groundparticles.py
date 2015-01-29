@@ -40,8 +40,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         for station in self.cluster.stations:
             station.gps_offset = self.simulate_station_offset()
-            station.detector_offsets = self.simulate_detector_offsets(
-                len(station.detectors))
+            for detector in station.detectors:
+                detector.offset = self.simulate_detector_offset()
 
         # Store updated version of the cluster
         self.coincidence_group._v_attrs.cluster = self.cluster
@@ -123,7 +123,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         if n_detected:
             mips = self.simulate_detector_mips(particles)
             particles['t'] += self.simulate_signal_transport_time(n_detected)
-            first_signal = particles['t'].min()
+            first_signal = particles['t'].min() + detector.offset
             observables = {'n': mips,
                            't': self.simulate_adc_sampling(first_signal)}
         else:
