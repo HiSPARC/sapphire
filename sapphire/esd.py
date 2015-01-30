@@ -77,12 +77,45 @@ def _first_available_numbered_path():
                 if not os.path.exists(path % idx))
 
 
+def load_data(file, group, csv_file, type='events'):
+    """Download event summary data
+
+    :param file: the PyTables datafile handler
+    :param group: the PyTables destination group, which need not exist
+    :param csv_file: path to the csv file downloaded from the HiSPARC
+                     Public Database
+    :param type: the datatype to download, either 'events' or 'weather'
+
+    Example::
+
+        >>> import tables
+        >>> import sapphire.esd
+        >>> data = tables.open_file('data.h5', 'w')
+        >>> sapphire.esd.load_data(data, '/s501', 'events-s501-20130910.csv')
+
+    """
+    if type == 'events':
+        table = _get_or_create_events_table(file, group)
+        read_and_store = _read_line_and_store_event
+    elif type == 'weather':
+        table = _get_or_create_weather_table(file, group)
+        read_and_store = _read_line_and_store_weather
+    else:
+        raise ValueError("Data type not recognized.")
+
+    with open(csv_file, 'rb') as data:
+        reader = csv.reader(data, delimiter='\t')
+        for line in reader:
+            read_and_store(line, table)
+        table.flush()
+
+
 def download_data(file, group, station_number, start=None, end=None,
                   type='events'):
     """Download event summary data
 
-    :param file: The PyTables datafile handler
-    :param group: The PyTables destination group, which need not exist
+    :param file: the PyTables datafile handler
+    :param group: the PyTables destination group, which need not exist
     :param station_number: The HiSPARC station number for which to get data
     :param start: a datetime instance defining the start of the search
         interval
