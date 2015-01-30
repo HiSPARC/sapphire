@@ -350,7 +350,7 @@ class Coincidences(object):
         if shifts:
             for i in range(len(shifts)):
                 if shifts[i]:
-                    shifts[i] = long(shifts[i] * 1e9)
+                    shifts[i] = int(shifts[i] * 1e9)
 
         timestamps = self._retrieve_timestamps(stations, shifts, limit)
         coincidences = self._do_search_coincidences(timestamps, window)
@@ -385,7 +385,7 @@ class Coincidences(object):
                 # longs, which is a long, and casting that back to uint64. if
                 # we're not careful, an intermediate value will be a float64,
                 # which doesn't hold the precision to store nanoseconds.
-                ts = [(np.uint64(long(x[0]) + shifts[i]), x[1], x[2]) for x in
+                ts = [(np.uint64(int(x[0]) + shifts[i]), x[1], x[2]) for x in
                       ts]
             except (TypeError, IndexError):
                 # shift is None or doesn't exist

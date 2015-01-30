@@ -392,8 +392,8 @@ class ReconstructESDCoincidences(object):
                 if (ref_event['t_trigger'] in ERR or
                         event['t_trigger'] in ERR):
                     continue
-                dt.append((long(event['ext_timestamp']) -
-                           long(ref_event['ext_timestamp'])) -
+                dt.append((int(event['ext_timestamp']) -
+                           int(ref_event['ext_timestamp'])) -
                           (event['t_trigger'] - ref_event['t_trigger']) +
                           (t - ref_t))
 

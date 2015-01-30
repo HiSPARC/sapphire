@@ -328,7 +328,7 @@ class ClusterDirectionReconstruction(DirectionReconstruction):
 
         c = 3.00e+8
 
-        t = [long(events[u]['ext_timestamp']) for u in index_group]
+        t = [int(events[u]['ext_timestamp']) for u in index_group]
         stations = [events[u]['station_id'] for u in index_group]
 
         dt1 = t[0] - t[1]

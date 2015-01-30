@@ -934,7 +934,7 @@ class DirectCoincidenceReconstruction(DirectAlgorithmCartesian3D):
                 continue
             if event['t_trigger'] in ERR:
                 continue
-            t.append((long(event['ext_timestamp']) - ts0) -
+            t.append((int(event['ext_timestamp']) - ts0) -
                      event['t_trigger'] + t_first)
 
         if len(t) < 3:
