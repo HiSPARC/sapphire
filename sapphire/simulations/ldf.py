@@ -12,8 +12,8 @@ Example usage::
     data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
     cluster = ScienceParkCluster()
 
-    sim = BaseLdfSimulation(max_core_distance=400, cluster=cluster,
-                            datafile=data, N=200)
+    sim = NkgLdfSimulation(max_core_distance=400, cluster=cluster,
+                           datafile=data, N=200)
     sim.run()
 
 """
@@ -27,9 +27,15 @@ from ..utils import pbar
 class BaseLdfSimulation(HiSPARCSimulation):
 
     def __init__(self, max_core_distance, *args, **kwargs):
+        """Simulation initialization
+
+        :param max_core_distance: maximum distance of shower core to
+                                  center of cluster.
+
+        """
         super(BaseLdfSimulation, self).__init__(*args, **kwargs)
 
-        self.ldf = NkgLdf()
+        self.ldf = BaseLdf()
         self.max_core_distance = max_core_distance
 
         # The cluster is not moved, so detector positions can be stored.
@@ -38,7 +44,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
                 detector.xy_coordinates = detector.get_xy_coordinates()
 
     def generate_shower_parameters(self):
-        """Generate shower parameters, i.e. core position.
+        """Generate shower parameters, i.e. core position
 
         For the simple LDF only the core position is relevant. It
         assumes the shower to come from the Zenith.
@@ -61,9 +67,13 @@ class BaseLdfSimulation(HiSPARCSimulation):
             yield shower_parameters
 
     def simulate_detector_response(self, detector, shower_parameters):
-        """Simulate detector response to a shower.
+        """Simulate detector response to a shower
 
         Get the mips in a detector from the LDF.
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         the observables will be determined.
+        :param shower_parameters: dictionary with the shower parameters.
 
         """
         n_detected = self.get_num_particles_in_detector(detector,
@@ -78,6 +88,13 @@ class BaseLdfSimulation(HiSPARCSimulation):
         return observables
 
     def get_num_particles_in_detector(self, detector, shower_parameters):
+        """Get the number of particles in a detector
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         the number of particles will be determined.
+        :param shower_parameters: dictionary with the shower parameters.
+
+        """
         x, y = detector.xy_coordinates
         core_x, core_y = shower_parameters['core_pos']
         zenith = shower_parameters['zenith']
@@ -92,7 +109,19 @@ class BaseLdfSimulation(HiSPARCSimulation):
         return num_particles
 
 
+class NkgLdfSimulation(BaseLdfSimulation):
+
+    """Same as the BaseLdfSimulation but uses the NkgLdf as LDF"""
+
+    def __init__(self, *args, **kwargs):
+        super(NkgLdfSimulation, self).__init__(*args, **kwargs)
+
+        self.ldf = NkgLdf()
+
+
 class KascadeLdfSimulation(BaseLdfSimulation):
+
+    """Same as the BaseLdfSimulation but uses the KascadeLdf as LDF"""
 
     def __init__(self, *args, **kwargs):
         super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
@@ -101,6 +130,9 @@ class KascadeLdfSimulation(BaseLdfSimulation):
 
 
 class BaseLdf(object):
+
+    def calculate_ldf_value(self, r):
+        return 0.
 
     def calculate_core_distance_from_coordinates_and_direction(self,
                                                                x, y, x0, y0,
@@ -126,8 +158,10 @@ class BaseLdf(object):
 
 class NkgLdf(BaseLdf):
 
+    """The Nishimura-Kamata-Greisen function"""
+
     # shower parameters
-    # Age parameter (shape) and Moliere radius from Thoudam2012 sec 5.6.
+    # Age parameter and Moliere radius from Thoudam2012 sec 5.6.
     _Ne = 10 ** 4.8
     _s = 1.7
     _r0 = 30.
@@ -141,21 +175,61 @@ class NkgLdf(BaseLdf):
         self._cache_c_s_value()
 
     def _cache_c_s_value(self):
+        """Store the c_s value
+
+        The c_s value does not change if s and r0 are fixed.
+
+        """
         self._c_s = self._c(self._s)
 
     def calculate_ldf_value(self, r):
+        """Calculate the LDF value for a given core distance
+
+        :param r: core distance in m.
+        :returns: particle density in m ** -2.
+
+        """
         return self.get_ldf_value_for_size_and_shape(r, self._Ne, self._s)
 
     def get_ldf_value_for_size(self, r, Ne):
+        """Calculate the LDF value for a given core distance and shower size
+
+        :param r: core distance in m.
+        :param Ne: number of electrons in the shower.
+        :returns: particle density in m ** -2.
+
+        """
         return self.get_ldf_value_for_size_and_shape(r, Ne, self._s)
 
     def get_ldf_value_for_size_and_shape(self, r, Ne, s):
-        c_s = self._c_s
+        """Calculate the LDF value
+
+        Given a core distance, shower size, and shower age.
+        As given in Fokkema2012 eq 7.2.
+
+        :param r: core distance in m.
+        :param Ne: number of electrons in the shower.
+        :param s: shower age parameter.
+        :returns: particle density in m ** -2.
+
+        """
+        if s == self._s:
+            c_s = self._c_s
+        else:
+            c_s = self._c(s)
         r0 = self._r0
 
         return Ne * c_s * (r / r0) ** (s - 2) * (1 + r / r0) ** (s - 4.5)
 
     def _c(self, s):
+        """Part of the LDF
+
+        As given in Fokkema2012 eq 7.3.
+
+        :param s: shower age parameter.
+        :returns: c(s)
+
+        """
         r0 = self._r0
         return (gamma(4.5 - s) /
                 (2 * pi * r0 ** 2 * gamma(s) * gamma(4.5 - 2 * s)))
@@ -163,16 +237,32 @@ class NkgLdf(BaseLdf):
 
 class KascadeLdf(NkgLdf):
 
+    """The KASCADE modified NKG function"""
+
     # shower parameters
     # Values from Fokkema2012 sec 7.1.
     _Ne = 10 ** 4.8
-    _s = .94
+    _s = .94  # Shape parameter
     _r0 = 40.
     _alpha = 1.5
     _beta = 3.6
 
     def get_ldf_value_for_size_and_shape(self, r, Ne, s):
-        c_s = self._c_s
+        """Calculate the LDF value
+
+        Given a core distance, shower size, and shower age.
+        As given in Fokkema2012 eq 7.4.
+
+        :param r: core distance in m.
+        :param Ne: number of electrons in the shower.
+        :param s: shower shape parameter.
+        :returns: particle density in m ** -2.
+
+        """
+        if s == self._s:
+            c_s = self._c_s
+        else:
+            c_s = self._c(s)
         r0 = self._r0
         alpha = self._alpha
         beta = self._beta
@@ -180,9 +270,17 @@ class KascadeLdf(NkgLdf):
         return Ne * c_s * (r / r0) ** (s - alpha) * (1 + r / r0) ** (s - beta)
 
     def _c(self, s):
+        """Part of the LDF
+
+        As given in Fokkema2012 eq 7.5.
+
+        :param s: shower shape parameter.
+        :returns: c(s)
+
+        """
         r0 = self._r0
         beta = self._beta
         alpha = self._alpha
         return (gamma(beta - s) /
-                (2 * pi * r0**2 * gamma(s - alpha + 2) *
+                (2 * pi * r0 ** 2 * gamma(s - alpha + 2) *
                  gamma(alpha + beta - 2 * s - 2)))

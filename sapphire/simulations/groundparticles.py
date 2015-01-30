@@ -32,6 +32,14 @@ from ..utils import pbar
 class GroundParticlesSimulation(HiSPARCSimulation):
 
     def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
+        """Simulation initialization
+
+        :param corsikafile_path: path to the corsika.h5 file containing
+                                 the groundparticles.
+        :param max_core_distance: maximum distance of shower core to
+                                  center of cluster.
+
+        """
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
 
         self.corsikafile = tables.open_file(corsikafile_path, 'r')
@@ -95,6 +103,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         shower core position and 'East' coincides with the shower azimuth
         direction.
 
+        :param x,y: position of shower core relative to cluster origin in m.
+        :param alpha: angle the cluster needs to be rotated in radians.
+
         """
         # rotate the core position around the original cluster center
         xp = x * cos(-alpha) - y * sin(-alpha)
@@ -108,6 +119,10 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         Checks if leptons have passed a detector. If so, it returns the number
         of leptons in the detector and the arrival time of the first lepton
         passing the detector.
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         the observables will be determined.
+        :param shower_parameters: dictionary with the shower parameters.
 
         """
         particles = self.get_particles_in_detector(detector)
@@ -143,6 +158,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
 
+        :param detector_observables: dictionary containing the
+                                     observables of one detector.
         :returns: True if at least 2 detectors detect at least one particle,
                   False otherwise.
 
@@ -156,8 +173,17 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             return False
 
     def simulate_gps(self, station_observables, shower_parameters, station):
-        """Simulate gps timestamp."""
+        """Simulate gps timestamp.
 
+        :param station_observables: dictionary containing the observables
+                                    of the station.
+        :param shower_parameters: dictionary with the shower parameters.
+        :param station: :class:`~sapphire.clusters.Station` for which
+                         to simulate the gps timestamp.
+        :returns: station_observables updated with gps timestamp and
+                  trigger time.
+
+        """
         arrival_times = [station_observables['t%d' % id]
                          for id in range(1, 5)
                          if station_observables.get('n%d' % id, -1) > 0]
@@ -192,7 +218,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         *Detector height is ignored!*
 
-        :param detector: detector for which to get particles.
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
 
         """
         x, y = detector.get_xy_coordinates()
@@ -208,7 +235,9 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
     """ More accuratly simulate the detection area of the detectors.
 
-    This requires a slightly more complex query which is a bit slower.
+    Take the orientation of the detectors into account and use the
+    exact detector boundaries. This requires a slightly more complex
+    query which is a bit slower.
 
     """
 
@@ -221,6 +250,9 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         which actually hit the detector. The advantage of using the
         square is that column indexes can be used, which may speed up
         queries.
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
 
         """
         detector_boundary = 0.6
