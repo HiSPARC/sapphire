@@ -32,7 +32,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
         self.ldf = NkgLdf()
         self.max_core_distance = max_core_distance
 
-        # Since the cluster is not rotated detector positions can be stored.
+        # The cluster is not moved, so detector positions can be stored.
         for station in self.cluster.stations:
             for detector in station.detectors:
                 detector.xy_coordinates = detector.get_xy_coordinates()
@@ -52,7 +52,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
 
         for i in pbar(range(self.N)):
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
-                                 'azimuth': 0.,
+                                 'azimuth': self.generate_azimuth(),
                                  'zenith': 0.,
                                  'core_pos': self.generate_core_position(r),
                                  'size': None,
@@ -85,8 +85,9 @@ class BaseLdfSimulation(HiSPARCSimulation):
 
         r = self.ldf.calculate_core_distance_from_coordinates_and_direction(
                 x, y, core_x, core_y, zenith, azimuth)
-        p = self.ldf.calculate_ldf_value(r)
-        num_particles = random.poisson(p *  detector.get_area())
+        p_shower = self.ldf.calculate_ldf_value(r)
+        p_ground = p_shower * cos(zenith)
+        num_particles = random.poisson(p_ground * detector.get_area())
 
         return num_particles
 
