@@ -121,12 +121,12 @@ class HiSPARCSimulation(BaseSimulation):
                 mips = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
         else:
             mips = np.where(y < 0.3394,
-                           (0.48 + 0.8583 * np.sqrt(y)) / costheta,
-                           (0.73 + 0.7366 * y) / costheta)
+                            (0.48 + 0.8583 * np.sqrt(y)) / costheta,
+                            (0.73 + 0.7366 * y) / costheta)
             mips = np.where(y < 0.4344, mips,
-                           (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta)
+                            (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta)
             mips = np.where(y < 0.9041, mips,
-                           (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
+                            (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
             mips = sum(mips)
         return mips
 

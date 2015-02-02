@@ -98,12 +98,12 @@ class BaseSimulation(object):
         station_events = []
         for station_id, station in enumerate(self.cluster.stations):
             has_triggered, station_observables = \
-                    self.simulate_station_response(station,
-                                                   shower_parameters)
+                self.simulate_station_response(station,
+                                               shower_parameters)
             if has_triggered:
                 event_index = \
-                        self.store_station_observables(station_id,
-                                                       station_observables)
+                    self.store_station_observables(station_id,
+                                                   station_observables)
                 station_events.append((station_id, event_index))
         return station_events
 
@@ -278,13 +278,13 @@ class BaseSimulation(object):
         description.columns.update(s_columns)
 
         self.coincidences = self.datafile.create_table(
-                self.coincidence_group, 'coincidences', description)
+            self.coincidence_group, 'coincidences', description)
 
         self.c_index = self.datafile.create_vlarray(
-                self.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
+            self.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
 
         self.s_index = self.datafile.create_vlarray(
-                self.coincidence_group, 's_index', tables.VLStringAtom())
+            self.coincidence_group, 's_index', tables.VLStringAtom())
 
     def _prepare_station_tables(self):
         """Create the groups and events table to store the observables

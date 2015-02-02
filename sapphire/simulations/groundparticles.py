@@ -20,6 +20,7 @@ Example usage::
 """
 from math import pi, sin, cos, sqrt
 
+import numpy as np
 import tables
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
@@ -144,9 +145,10 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         # determination of lepton angle of incidence
-        theta = np.arccos(abs(particle['p_z']) / np.sqrt(particle['p_x'] ** 2 +
-                                                         particle['p_y'] ** 2 +
-                                                         particle['p_z'] ** 2))
+        theta = np.arccos(abs(particles['p_z']) /
+                          np.sqrt(particles['p_x'] ** 2 +
+                                  particles['p_y'] ** 2 +
+                                  particles['p_z'] ** 2))
         n = len(particles)
         mips = self.simulate_detector_mips(n, theta)
 

@@ -101,11 +101,11 @@ class BaseLdfSimulation(HiSPARCSimulation):
         azimuth = shower_parameters['azimuth']
 
         r = self.ldf.calculate_core_distance_from_coordinates_and_direction(
-                x, y, core_x, core_y, zenith, azimuth)
+            x, y, core_x, core_y, zenith, azimuth)
         p_shower = self.ldf.calculate_ldf_value(r)
         p_ground = p_shower * cos(zenith)
         num_particles = self.simulate_particles_for_density(
-                p_ground * detector.get_area())
+            p_ground * detector.get_area())
 
         return num_particles
 
