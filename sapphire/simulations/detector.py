@@ -16,6 +16,11 @@ class HiSPARCSimulation(BaseSimulation):
     def __init__(self, *args, **kwargs):
         super(HiSPARCSimulation, self).__init__(*args, **kwargs)
 
+        self.simulate_and_store_offsets()
+
+    def simulate_and_store_offsets(self):
+        """Simulate and store station and detector offsets"""
+
         for station in self.cluster.stations:
             station.gps_offset = self.simulate_station_offset()
             for detector in station.detectors:
