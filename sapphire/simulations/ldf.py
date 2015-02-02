@@ -104,9 +104,33 @@ class BaseLdfSimulation(HiSPARCSimulation):
                 x, y, core_x, core_y, zenith, azimuth)
         p_shower = self.ldf.calculate_ldf_value(r)
         p_ground = p_shower * cos(zenith)
-        num_particles = random.poisson(p_ground * detector.get_area())
+        num_particles = self.simulate_particles_for_density(
+                p_ground * detector.get_area())
 
         return num_particles
+
+    def simulate_particles_for_density(self, p):
+        """Get number of particles in detector given a particle density
+
+        :param p: particle density in number per detector area.
+        :returns: random number from Poisson distribution.
+
+        """
+        return random.poisson(p)
+
+
+class BaseLdfSimulationWithoutErrors(ErrorlessSimulation, BaseLdfSimulation):
+
+    """This simulation does not simulate errors/uncertainties
+
+    This should result in perfect particle counting for the detectors.
+
+    """
+
+    def simulate_particles_for_density(self, p):
+        """Exact number"""
+
+        return p
 
 
 class NkgLdfSimulation(BaseLdfSimulation):
@@ -119,6 +143,14 @@ class NkgLdfSimulation(BaseLdfSimulation):
         self.ldf = NkgLdf()
 
 
+class NkgLdfSimulationWithoutErrors(NkgLdfSimulation,
+                                    BaseLdfSimulationWithoutErrors):
+
+    """Same as the NkgLdfSimulation but without error simulation"""
+
+    pass
+
+
 class KascadeLdfSimulation(BaseLdfSimulation):
 
     """Same as the BaseLdfSimulation but uses the KascadeLdf as LDF"""
@@ -127,6 +159,14 @@ class KascadeLdfSimulation(BaseLdfSimulation):
         super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
 
         self.ldf = KascadeLdf()
+
+
+class KascadeLdfSimulationWithoutErrors(KascadeLdfSimulation,
+                                        BaseLdfSimulationWithoutErrors):
+
+    """Same as the KascadeLdfSimulation but without error simulation"""
+
+    pass
 
 
 class BaseLdf(object):
