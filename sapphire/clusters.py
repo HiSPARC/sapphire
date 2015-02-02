@@ -170,6 +170,18 @@ class Station(object):
     def detectors(self):
         return self._detectors
 
+    def get_area(self, detector_ids=None):
+        """Get the total area covered by the detectors
+
+        :param detector_ids: list of detectors for which to get the total area.
+        :returns: total area of the detectors in m^2.
+
+        """
+        if detector_ids is not None:
+            return sum(self._detectors[id].get_area() for id in detector_ids)
+        else:
+            return sum(d.get_area() for d in self._detectors)
+
     def get_xyalpha_coordinates(self):
         """Same as get_coordinates but without the z"""
         x, y, _, alpha = self.get_coordinates()

@@ -1,5 +1,9 @@
 from __future__ import division
 
+from numpy import nan
+
+from ..utils import pbar, ERR
+
 
 class CenterMassAlgorithm(object):
 
@@ -50,19 +54,21 @@ class EventReconstruction(CenterMassAlgorithm):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :returns: x, y core position in m.
+        :returns: (x, y) core position in m.
 
         """
-        p = [event['n%d' % (id + 1)] / self.area[id] for id in detector_ids]
-        x = [self.x[id] for id in detector_ids]
-        y = [self.y[id] for id in detector_ids]
-        z = [self.z[id] for id in detector_ids]
-        if len([i for i in n if i not in ERR]) >= 3:
-            x, y = self.reconstruct_common(p, x, y, z)
+        p, x, y, z = ([], [], [], [])
+        for id in detector_ids:
+            if event['n%d' % (id + 1)] not in ERR:
+                p.append(event['n%d' % (id + 1)] / self.area[id])
+                x.append(self.x[id])
+                y.append(self.y[id])
+                z.append(self.z[id])
+        if len(p) >= 3:
+            core_x, core_y = self.reconstruct_common(p, x, y, z)
         else:
-            x = nan
-            y = nan
-        return x, y
+            core_x, core_y = (nan, nan)
+        return core_x, core_y
 
     def reconstruct_events(self, events, detector_ids=[0, 1, 2, 3]):
         """Reconstruct events
@@ -70,11 +76,82 @@ class EventReconstruction(CenterMassAlgorithm):
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
-        :returns: x, y core positions in m.
+        :returns: (x, y) core positions in m.
 
         """
         cores = [self.reconstruct_event(event, detector_ids)
                  for event in pbar(events)]
-        x, y = zip(*cores)
-        return x, y
+        core_x, core_y = zip(*cores)
+        return core_x, core_y
 
+
+class CoincidenceReconstruction(CenterMassAlgorithm):
+
+    """Reconstruct core for coincidences
+
+    This class is aware of 'coincidences' and 'clusters'.  Initialize
+    this class with a 'cluster' and you can reconstruct a coincidence
+    using :meth:`reconstruct_coincidence`.
+
+    :param cluster: :class:`sapphire.clusters.BaseCluster` object.
+
+    """
+
+    def __init__(self, cluster):
+        self.cluster = cluster
+
+        # Store locations that do not change
+        for station in cluster:
+            station.center_of_mass_coordinates = \
+                station.calc_center_of_mass_coordinates()
+            station.area = station.get_area()
+
+    def reconstruct_coincidence(self, coincidence, station_numbers=None):
+        """Reconstruct a single coincidence
+
+        :param coincidence: a coincidence list consisting of
+                            multiple (station_number, event) tuples
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :returns: (x, y) core position in m.
+
+        """
+        p, x, y, z = ([], [], [], [])
+
+        for station_number, event in coincidence:
+            if station_numbers is not None:
+                if station_number not in station_numbers:
+                    continue
+            try:
+                sum_n = sum(event['n%d' % (i + 1)] for i in range(4)
+                            if event['n%d' % (i + 1)] not in ERR)
+            except ValueError:
+                # All values -1 or -999
+                continue
+            station = self.cluster.get_station(station_number)
+            p.append(sum_n / station.area)
+            sx, sy, sz = station.center_of_mass_coordinates
+            x.append(sx)
+            y.append(sy)
+            z.append(sz)
+
+        if len(p) < 3:
+            core_x, core_y = self.reconstruct_common(p, x, y, z)
+        else:
+            core_x, core_y = (nan, nan)
+        return core_x, core_y
+
+    def reconstruct_coincidences(self, coincidences, station_numbers=None):
+        """Reconstruct all coincidences
+
+        :param coincidences: a list of coincidences, each consisting of
+                             multiple (station_number, event) tuples.
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :returns: (x, y) core positions in m.
+
+        """
+        cores = [self.reconstruct_coincidence(coincidence, station_numbers)
+                 for coincidence in pbar(coincidences)]
+        core_x, core_y = zip(cores)
+        return core_x, core_y
