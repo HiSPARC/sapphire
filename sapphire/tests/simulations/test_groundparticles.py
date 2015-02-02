@@ -1,11 +1,10 @@
-from mock import sentinel, patch, Mock
+from mock import Mock
 import unittest
 import os
 
 import tables
 from numpy import pi, sqrt
 
-from perform_simulation import create_tempfile_path
 from sapphire.clusters import SingleDiamondStation
 from sapphire.simulations.groundparticles import (GroundParticlesSimulation,
                                                   DetectorBoundarySimulation)

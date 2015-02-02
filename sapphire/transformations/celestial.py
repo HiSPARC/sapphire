@@ -11,7 +11,7 @@
 
 """
 from numpy import (arcsin, arccos, arctan2, cos, sin,
-                   array, radians, degrees, pi)
+                   array, radians, degrees, pi, dot)
 
 from ..utils import norm_angle
 from . import clock, angles, axes

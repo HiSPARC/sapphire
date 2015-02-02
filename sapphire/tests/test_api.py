@@ -8,6 +8,7 @@ from sapphire import api
 
 STATION = 501
 
+
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class NetworkTests(unittest.TestCase):
     def setUp(self):
@@ -138,7 +139,7 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.detectors(date(2011, 1, 1))[0]['alpha'], 225)
 
     def test_location(self):
-        keys = ['latitude',  'altitude', 'longitude']
+        keys = ['latitude', 'altitude', 'longitude']
         self.assertEqual(self.station.location().keys(), keys)
         self.assertEqual(self.station.location(date(2002, 1, 1))['latitude'],
                          52.3559179545407)

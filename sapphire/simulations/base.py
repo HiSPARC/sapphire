@@ -35,7 +35,7 @@ class BaseSimulation(object):
 
     """Base class for simulations.
 
-    :param cluster: :class:`sapphire.clusters.BaseCluster` instance.
+    :param cluster: :class:`~sapphire.clusters.BaseCluster` instance.
     :param datafile: writeable PyTables file handle.
     :param output_path: path (as string) to the PyTables group (need not
                         exist) in which the result tables will be created.
@@ -138,7 +138,7 @@ class BaseSimulation(object):
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
 
-        :param detector: :class:`sapphire.clusters.Detector` instance
+        :param detector: :class:`~sapphire.clusters.Detector` instance
         :param shower_parameters: shower parameters
 
         :returns: dictionary with keys 'n' (number of particles in
@@ -263,7 +263,7 @@ class BaseSimulation(object):
         """Create coincidence tables
 
         These are the same as the tables created by
-        :class:`sapphire.analysis.coincidences.CoincidencesESD`.
+        :class:`~sapphire.analysis.coincidences.CoincidencesESD`.
         This makes it easy to link events detected by multiple stations.
 
         """
@@ -290,7 +290,7 @@ class BaseSimulation(object):
         """Create the groups and events table to store the observables
 
         :param id: the station number, used for the group name
-        :param station: a :class:`sapphire.clusters.Station` object
+        :param station: a :class:`~sapphire.clusters.Station` object
 
         """
         self.cluster_group = self.datafile.create_group(self.output_path,
@@ -301,10 +301,9 @@ class BaseSimulation(object):
             station_group = self.datafile.create_group(self.cluster_group,
                                                        'station_%d' %
                                                        station.number)
-            events_table = \
-                    self.datafile.create_table(station_group, 'events',
-                        ProcessEvents.processed_events_description,
-                        expectedrows=self.N)
+            description = ProcessEvents.processed_events_description
+            self.datafile.create_table(station_group, 'events',
+                                       description, expectedrows=self.N)
             self.station_groups.append(station_group)
 
     def _store_station_index(self):

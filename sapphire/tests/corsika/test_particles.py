@@ -1,4 +1,3 @@
-import math
 import unittest
 
 from sapphire.corsika import particles
@@ -36,7 +35,6 @@ class CorsikaParticlesTests(unittest.TestCase):
 
         for id, name in self.pid_name:
             self.assertEqual(particles.ID[id], name)
-
 
     def test_conversion_functions(self):
         """Verify that the functions correctly convert back and forth"""

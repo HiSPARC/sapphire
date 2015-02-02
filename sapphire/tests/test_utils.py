@@ -2,7 +2,7 @@ import unittest
 import types
 from StringIO import StringIO
 
-from numpy import linspace, pi, random
+from numpy import pi, random
 import progressbar
 
 from sapphire import utils

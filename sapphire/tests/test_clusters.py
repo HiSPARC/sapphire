@@ -15,7 +15,8 @@ class DetectorTests(unittest.TestCase):
         self.detector_1 = clusters.Detector(self.mock_station, (1, 0, 0), 'LR')
         self.detector_2 = clusters.Detector(self.mock_station, (-1, 2, 1), 'UD')
         self.detector_s = clusters.Detector(self.mock_station,
-            (sentinel.x, sentinel.y, sentinel.z), sentinel.orientation)
+                                            (sentinel.x, sentinel.y, sentinel.z),
+                                            sentinel.orientation)
 
     def test_detector_size(self):
         self.assertEqual(self.detector_1.detector_size, (.5, 1.))
@@ -92,7 +93,8 @@ class StationTests(unittest.TestCase):
             self.station_1 = clusters.Station(self.cluster, 1, (0, 1, 2), pi / 4,
                                               [((3, 4), 'LR')])
             self.station_s = clusters.Station(self.cluster, sentinel.id,
-                (sentinel.x, sentinel.y, sentinel.z), sentinel.angle, [], sentinel.number)
+                                              (sentinel.x, sentinel.y, sentinel.z),
+                                              sentinel.angle, [], sentinel.number)
             self.mock_detector_instance = mock_detector.return_value
 
     def test_detector_called(self):

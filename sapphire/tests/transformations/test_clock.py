@@ -42,13 +42,15 @@ class ModifiedJulianDateTests(unittest.TestCase):
 
         for _ in range(5):
             modifiedjd = random.uniform(0, 5000000)
-            self.assertAlmostEqual(clock.juliandate_to_modifiedjd(
-                                       clock.modifiedjd_to_juliandate(modifiedjd)),
-                                   modifiedjd)
+            self.assertAlmostEqual(
+                clock.juliandate_to_modifiedjd(
+                    clock.modifiedjd_to_juliandate(modifiedjd)),
+                modifiedjd)
             juliandate = random.uniform(0, 5000000)
-            self.assertAlmostEqual(clock.modifiedjd_to_juliandate(
-                                       clock.juliandate_to_modifiedjd(juliandate)),
-                                   juliandate)
+            self.assertAlmostEqual(
+                clock.modifiedjd_to_juliandate(
+                    clock.juliandate_to_modifiedjd(juliandate)),
+                juliandate)
 
 
 class JulianDateToDateTimeTests(unittest.TestCase):

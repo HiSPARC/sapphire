@@ -19,10 +19,7 @@ Example usage::
 
 """
 from math import pi, sin, cos, sqrt
-import warnings
-import random
 
-import numpy as np
 import tables
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation

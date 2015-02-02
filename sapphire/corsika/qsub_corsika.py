@@ -11,8 +11,6 @@
 
 """
 import os
-import sys
-import shutil
 import random
 import textwrap
 import subprocess
@@ -191,10 +189,10 @@ class CorsikaBatch(object):
         seed1 = random.randint(1, 900000000)
         seed2 = random.randint(1, 900000000)
         seed = "{seed1}_{seed2}".format(seed1=seed1, seed2=seed2)
-        if not seed in taken:
+        if seed not in taken:
             self.seed1 = seed1
             self.seed2 = seed2
-            self.rundir = seed +'/'
+            self.rundir = seed + '/'
         else:
             self.get_random_seeds(taken)
 
@@ -308,7 +306,8 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
 
     :param n: Number of jobs to submit
     :param energy: log10(E[eV]) energy of primary particle
-    :param particle: Particle kind (as string, see particles.py for possibilities)
+    :param particle: Particle kind (as string, see
+                     :mod:`~sapphire.corsika.particles` for possibilities)
     :param zenith: Zenith angle in degrees of the primary particle
     :param azimuth: Azimuth angle in degrees of the primary particle
     :param queue: Stoomboot queue to submit to

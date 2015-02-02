@@ -184,7 +184,7 @@ def gmst_to_utc(dt):
     GST = (time_to_decimal(dt.time()) - t0) % 24
     UT = GST * 0.9972695663
 
-    time = decimal_to_time(hours)
+    time = decimal_to_time(UT)
 
     return dt.replace(hour=time.hour, minute=time.minute, second=time.seconds,
                       microsecond=time.microsecond)

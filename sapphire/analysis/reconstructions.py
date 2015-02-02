@@ -47,7 +47,8 @@ class ReconstructESDEvents(object):
 
         :param data: the PyTables datafile.
         :param station_group: the destination group.
-        :param station: either a station number or a Station instance.
+        :param station: either a station number or
+                        :class:`~sapphire.clusters.Station` object.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
 
@@ -391,8 +392,8 @@ class ReconstructESDCoincidences(object):
                 if (ref_event['t_trigger'] in ERR or
                         event['t_trigger'] in ERR):
                     continue
-                dt.append((long(event['ext_timestamp']) -
-                           long(ref_event['ext_timestamp'])) -
+                dt.append((int(event['ext_timestamp']) -
+                           int(ref_event['ext_timestamp'])) -
                           (event['t_trigger'] - ref_event['t_trigger']) +
                           (t - ref_t))
 

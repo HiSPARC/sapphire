@@ -6,7 +6,7 @@ Submit CORSIKA jobs to Stoomboot
 In order to quickly get a good sample of simulated showers we use the
 Nikhef computer cluster Stoomboot to run multiple jobs simultaneously.
 For this purpose a script has been written that will make this easy.
-The :mod:`sapphire.corsika.qsub_corsika` script can submit as many
+The :mod:`~sapphire.corsika.qsub_corsika` script can submit as many
 jobs as you want with the parameters that you desire.
 
 The syntax for calling the script can be seen by calling its help::

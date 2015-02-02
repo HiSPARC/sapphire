@@ -13,7 +13,6 @@
 """
 import os
 import tables
-import glob
 import logging
 import shutil
 import argparse

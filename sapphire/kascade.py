@@ -1,9 +1,7 @@
 import gzip
 import time
-import operator
 
 import numpy as np
-import tables
 
 from .transformations import clock
 from .storage import KascadeEvent

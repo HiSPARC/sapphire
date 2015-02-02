@@ -7,7 +7,7 @@
 """
 from __future__ import division
 
-from math import sqrt, pi, sin, cos, atan2, degrees, radians
+from math import sqrt, pi, sin, cos, atan2, radians
 import warnings
 
 from numpy import mean
@@ -646,9 +646,8 @@ class HiSPARCStations(RAlphaBetaStations):
                 transformation = geographic.FromWGS84ToENUTransformation(gps)
 
             enu = transformation.transform(gps)
-            alpha = 0
 
-            # Default positions in (r, alpha, beta)
+            # Default positions in (r, alpha, z, beta)
             if n_detectors == 2:
                 default_detectors = [(5, 90, 0, 0), (5, 270, 0, 0)]
             elif n_detectors == 4:

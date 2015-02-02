@@ -2,7 +2,7 @@
 
     This module can be used to search for coincidences between several
     HiSPARC stations. To skip this and directly download coincidences
-    use :func:`sapphire.esd.download_coincidences`, this is slightly
+    use :func:`~sapphire.esd.download_coincidences`, this is slightly
     less flexible because you can not choose the coincidence window.
 
     Example usage::
@@ -32,7 +32,6 @@
             coin.search_and_store_coincidences()
 
 """
-import time
 import os.path
 
 import tables
@@ -67,7 +66,7 @@ class Coincidences(object):
 
     .. note::
         For better compatibility with other modules, such as
-        :mod:`sapphire.analysis.reconstructions`, it is recommended
+        :mod:`~sapphire.analysis.reconstructions`, it is recommended
         to use the subclass :class:`CoincidencesESD` instead.
 
     """
@@ -162,7 +161,7 @@ class Coincidences(object):
             src_c_index.append(coincidence)
 
     def process_events(self, overwrite=None):
-        """Process events using :mod:`sapphire.analysis.process_events`
+        """Process events using :mod:`~sapphire.analysis.process_events`
 
         Events making up the coincidences are processed to obtain
         observables like number of particles and particle arrival times.
@@ -207,7 +206,7 @@ class Coincidences(object):
         method.
 
         :param cluster: optionally store a
-            :class:`sapphire.clusters.BaseCluster` instance in the
+            :class:`~sapphire.clusters.BaseCluster` instance in the
             coincidences group for future reference.
 
         """
@@ -351,7 +350,7 @@ class Coincidences(object):
         if shifts:
             for i in range(len(shifts)):
                 if shifts[i]:
-                    shifts[i] = long(shifts[i] * 1e9)
+                    shifts[i] = int(shifts[i] * 1e9)
 
         timestamps = self._retrieve_timestamps(stations, shifts, limit)
         coincidences = self._do_search_coincidences(timestamps, window)
@@ -386,7 +385,7 @@ class Coincidences(object):
                 # longs, which is a long, and casting that back to uint64. if
                 # we're not careful, an intermediate value will be a float64,
                 # which doesn't hold the precision to store nanoseconds.
-                ts = [(np.uint64(long(x[0]) + shifts[i]), x[1], x[2]) for x in
+                ts = [(np.uint64(int(x[0]) + shifts[i]), x[1], x[2]) for x in
                       ts]
             except (TypeError, IndexError):
                 # shift is None or doesn't exist
@@ -588,7 +587,7 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
         :func:`search_coincidences`.
     :param timestamps: the list of timestamps, as returned by
         :func:`search_coincidences`.
-    :param get_raw_traces: boolean.  If true, return the compressed adc
+    :param get_raw_traces: boolean.  If true, return the compressed ADC
         values instead of the uncompressed traces.
 
     :return: a list of tuples.  Each tuple consists of (station, event,
@@ -608,7 +607,7 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
             traces = (process.get_traces_for_event(event) - baseline).T
             traces = traces * -0.57
         else:
-            traces = [blob_table[x] for x in event['traces']]
+            traces = [process.group.blobs[x] for x in event['traces']]
         events.append((stations[station], event, traces))
 
     return events

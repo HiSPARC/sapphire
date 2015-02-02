@@ -2,11 +2,9 @@ import unittest
 import tempfile
 import os
 import shutil
-import tables
-import sys
 import warnings
 
-from mock import patch
+import tables
 
 from sapphire.analysis import process_events
 

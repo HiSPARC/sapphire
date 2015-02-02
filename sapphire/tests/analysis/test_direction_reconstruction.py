@@ -1,7 +1,6 @@
-from mock import sentinel, Mock, patch, call
 import unittest
 
-from numpy import nan, isnan, pi, degrees, sqrt, arcsin, arctan
+from numpy import isnan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
 
@@ -130,8 +129,6 @@ class AltitudeAlgorithm(object):
     def test_stations_altitude(self):
         """Simple shower on a non horizontal square."""
 
-        c = .3
-
         x = (0., 10., 10.)
         y = (0, 0., 10.)
         z = (2., 0., -2.)
@@ -139,7 +136,7 @@ class AltitudeAlgorithm(object):
         zenith = arctan(4. / 10. / sqrt(2))
 
         t = [0., 0., 0.]
-        azimuth =  pi / 4.
+        azimuth = pi / 4.
         theta, phi = self.call_reconstruct(t, x, y, z)
 
         self.assertAlmostEqual(phi, azimuth, 5)
@@ -218,8 +215,6 @@ class MultiAltitudeAlgorithm(MultiAlgorithm, AltitudeAlgorithm):
 
     def test_hexagon_altitude(self):
         """Simple shower on a non horizontal square."""
-
-        c = .3
 
         x = (-5., 5., 10., 5., -5., -10.)
         y = (-5. * sqrt(3), -5. * sqrt(3), 0., 5. * sqrt(3), 5. * sqrt(3), 0.)

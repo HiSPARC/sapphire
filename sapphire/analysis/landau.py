@@ -13,7 +13,7 @@
 import warnings
 
 from numpy import (pi, Inf, sin, cos, exp, log, arctan, vectorize,
-                   convolve, linspace, interp, arange)
+                   convolve, linspace, interp)
 from scipy import integrate, stats
 
 

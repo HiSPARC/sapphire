@@ -1,5 +1,4 @@
 import unittest
-import random
 from math import pi
 
 from sapphire.transformations import celestial

@@ -186,7 +186,6 @@ class ProcessEvents(object):
 
         """
         events = self.source
-        events_tablename = self.source.name
 
         enumerated_timestamps = list(enumerate(events.col('ext_timestamp')))
         enumerated_timestamps.sort(key=operator.itemgetter(1))
@@ -704,9 +703,9 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         :param trace: generator over the trace.
         :param thresholds: list of thresholds.
         :param max_signal: expected max value in trace, based on
-                           baseline and pulseheight
+                           baseline and pulseheight.
         :returns: list with three indexes into the trace for the three
-                  thresholds
+                  thresholds.
 
         """
         results = [-999, -999, -999]
@@ -873,3 +872,154 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
     """
 
     pass
+
+
+class ProcessWeather(ProcessEvents):
+
+    """Process HiSPARC weather to clean the data.
+
+    This class can be used to process a set of HiSPARC weather, to
+    remove duplicates and sort the data by timestamp to store it in to a
+    copy of the weather table.
+
+    """
+
+    def process_and_store_results(self, destination=None, overwrite=False,
+                                  limit=None):
+        """Process weather and store the results.
+
+        :param destination: name of the table where the results will be
+            written.  The default, None, corresponds to 'weather'.
+        :param overwrite: if True, overwrite previously obtained results.
+        :param limit: the maximum number of weather that will be stored.
+            The default, None, corresponds to no limit.
+
+        """
+        self.limit = limit
+
+        self._check_destination(destination, overwrite)
+
+        self._clean_weather_table()
+
+    def _get_source(self, source):
+        """Return the table containing the events.
+
+        :param source: the *name* of the table.  If None, this method will
+            try to find the original weather table.
+        :returns: table object
+
+        """
+        if source is None:
+            source = self.group.weather
+        else:
+            source = self.data.get_node(self.group, source)
+        return source
+
+    def _check_destination(self, destination, overwrite):
+        """Check if the destination is valid"""
+
+        if destination == '_t_weather':
+            raise RuntimeError("The _t_weather table is reserved for internal "
+                               "use.  Choose another destination.")
+        elif destination is None:
+            destination = 'weather'
+
+        # If destination == source, source will be overwritten.
+        if self.source.name != destination:
+            if destination in self.group and not overwrite:
+                raise RuntimeError("I will not overwrite previous results "
+                                   "(unless you specify overwrite=True)")
+
+        self.destination = destination
+
+    def _clean_weather_table(self):
+        """Clean the weather table.
+
+        Remove duplicate events and sort the table by timestamp.
+
+        """
+        weather = self.source
+
+        enumerated_timestamps = list(enumerate(weather.col('timestamp')))
+        enumerated_timestamps.sort(key=operator.itemgetter(1))
+
+        unique_sorted_ids = self._find_unique_row_ids(enumerated_timestamps)
+
+        new_weather = self._replace_table_with_selected_rows(weather,
+                                                             unique_sorted_ids)
+        self.source = new_weather
+        self._normalize_event_ids(new_weather)
+
+    def _replace_table_with_selected_rows(self, table, row_ids):
+        """Replace weather table with selected rows.
+
+        :param table: original table to be replaced.
+        :param row_ids: row ids of the selected rows which should go in
+            the destination table.
+
+        """
+        tmptable = self.data.create_table(self.group, '_t_weather',
+                                          description=table.description)
+        selected_rows = table.read_coordinates(row_ids)
+        tmptable.append(selected_rows)
+        tmptable.flush()
+        self.data.rename_node(tmptable, self.destination, overwrite=True)
+        return tmptable
+
+
+class ProcessWeatherFromSource(ProcessWeather):
+
+    """Process HiSPARC weather from a different source.
+
+    This class is a subclass of ProcessWeather.  The difference is that in
+    this class, the source and destination are assumed to be different
+    files.  This also means that the source is untouched (no renaming of
+    original event tables) and the destination is assumed to be empty.
+
+    """
+
+    def __init__(self, source_file, dest_file, source_group, dest_group):
+        """Initialize the class.
+
+        :param source_file,dest_file: the PyTables source and destination file
+        :param source_group,dest_group: the pathname of the source and
+                                        destination group
+
+        """
+        self.source_file = source_file
+        self.dest_file = dest_file
+
+        self.source_group = self.source_file.get_node(source_group)
+        self.dest_group = self.dest_file.get_node(dest_group)
+
+        self.source = self._get_source()
+
+        self.progress = False
+
+    def _get_source(self):
+        """Return the table containing the events.
+
+        :return: table object
+
+        """
+        source = self.source_group.weather
+        return source
+
+    def _check_destination(self, destination, overwrite):
+        """Override method, the destination is empty"""
+        pass
+
+    def _replace_table_with_selected_rows(self, table, row_ids):
+        """Replace weather table with selected rows.
+
+        :param table: original table to be replaced.
+        :param row_ids: row ids of the selected rows which should go in
+            the destination table.
+
+        """
+        new_table = self.dest_file.create_table(self.dest_group, 'weather',
+                                                description=table.description)
+        selected_rows = table.read_coordinates(row_ids)
+        new_table.append(selected_rows)
+        new_table.flush()
+        return new_table
