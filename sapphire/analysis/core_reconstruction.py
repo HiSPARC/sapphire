@@ -137,7 +137,7 @@ class CoincidenceCoreReconstruction(CenterMassAlgorithm):
             y.append(sy)
             z.append(sz)
 
-        if len(p) < 3:
+        if len(p) >= 3:
             core_x, core_y = self.reconstruct_common(p, x, y, z)
         else:
             core_x, core_y = (nan, nan)
