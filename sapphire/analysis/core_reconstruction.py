@@ -27,7 +27,7 @@ class CenterMassAlgorithm(object):
         return core_x, core_y
 
 
-class EventReconstruction(CenterMassAlgorithm):
+class EventCoreReconstruction(CenterMassAlgorithm):
 
     """Reconstruct core for station events
 
@@ -45,7 +45,7 @@ class EventReconstruction(CenterMassAlgorithm):
         self.area = [d.get_area() for d in self.station.detectors]
         self.x, self.y, self.z = zip(*detectors)
 
-    def reconstruct_event(self, event, detector_ids=[0, 1, 2, 3]):
+    def reconstruct_event(self, event, detector_ids=None):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -58,6 +58,8 @@ class EventReconstruction(CenterMassAlgorithm):
 
         """
         p, x, y, z = ([], [], [], [])
+        if detector_ids is None:
+            detector_ids = range(4)
         for id in detector_ids:
             if event['n%d' % (id + 1)] not in ERR:
                 p.append(event['n%d' % (id + 1)] / self.area[id])
@@ -70,7 +72,7 @@ class EventReconstruction(CenterMassAlgorithm):
             core_x, core_y = (nan, nan)
         return core_x, core_y
 
-    def reconstruct_events(self, events, detector_ids=[0, 1, 2, 3]):
+    def reconstruct_events(self, events, detector_ids=None, progress=True):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
@@ -80,12 +82,12 @@ class EventReconstruction(CenterMassAlgorithm):
 
         """
         cores = [self.reconstruct_event(event, detector_ids)
-                 for event in pbar(events)]
+                 for event in pbar(events, show=progress)]
         core_x, core_y = zip(*cores)
         return core_x, core_y
 
 
-class CoincidenceReconstruction(CenterMassAlgorithm):
+class CoincidenceCoreReconstruction(CenterMassAlgorithm):
 
     """Reconstruct core for coincidences
 
@@ -101,7 +103,7 @@ class CoincidenceReconstruction(CenterMassAlgorithm):
         self.cluster = cluster
 
         # Store locations that do not change
-        for station in cluster:
+        for station in cluster.stations:
             station.center_of_mass_coordinates = \
                 station.calc_center_of_mass_coordinates()
             station.area = station.get_area()
@@ -141,7 +143,8 @@ class CoincidenceReconstruction(CenterMassAlgorithm):
             core_x, core_y = (nan, nan)
         return core_x, core_y
 
-    def reconstruct_coincidences(self, coincidences, station_numbers=None):
+    def reconstruct_coincidences(self, coincidences, station_numbers=None,
+                                 progress=True):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidences, each consisting of
@@ -152,6 +155,6 @@ class CoincidenceReconstruction(CenterMassAlgorithm):
 
         """
         cores = [self.reconstruct_coincidence(coincidence, station_numbers)
-                 for coincidence in pbar(coincidences)]
-        core_x, core_y = zip(cores)
+                 for coincidence in pbar(coincidences, show=progress)]
+        core_x, core_y = zip(*cores)
         return core_x, core_y
