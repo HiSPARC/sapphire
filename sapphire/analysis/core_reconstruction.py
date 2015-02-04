@@ -1,3 +1,19 @@
+""" Core reconstruction
+
+    This module contains two classes that can be used to reconstruct
+    HiSPARC events and coincidences. The classes know how to extract the
+    relevant information from the station and event or cluster and
+    coincidence. Various algorithms which do the reconstruction are also
+    defined here. The algorithms require positions and particle densties to
+    do the reconstruction.
+
+    Each algorithm has a :meth:`~CenterMassAlgorithm.reconstruct_common`
+    method which always requires the same arguments: particle denisties,
+    x, and y positions, optionally z positions can be given. The data is
+    then prepared for the algorithm and passed to the `reconstruct`
+    method which returns the reconstructed x and y coordinates.
+
+"""
 from __future__ import division
 
 from numpy import nan
@@ -5,29 +21,7 @@ from numpy import nan
 from ..utils import pbar, ERR
 
 
-class CenterMassAlgorithm(object):
-
-    """ Simple core estimator
-
-    Estimates the core by center of mass of the measurements.
-
-    """
-
-    @classmethod
-    def reconstruct_common(cls, p, x, y, z=None):
-        """Reconstruct core
-
-        :param p: detector particle density in m^-2.
-        :param x,y: positions of detectors in m.
-        :param z: height of detectors is ignored.
-
-        """
-        core_x = sum(density * xi for density, xi in zip(p, x)) / sum(p)
-        core_y = sum(density * yi for density, yi in zip(p, y)) / sum(p)
-        return core_x, core_y
-
-
-class EventCoreReconstruction(CenterMassAlgorithm):
+class EventCoreReconstruction(object):
 
     """Reconstruct core for station events
 
@@ -40,6 +34,7 @@ class EventCoreReconstruction(CenterMassAlgorithm):
     """
 
     def __init__(self, station):
+        self.estimator = CenterMassAlgorithm
         self.station = station
         detectors = [d.get_coordinates() for d in self.station.detectors]
         self.area = [d.get_area() for d in self.station.detectors]
@@ -67,7 +62,7 @@ class EventCoreReconstruction(CenterMassAlgorithm):
                 y.append(self.y[id])
                 z.append(self.z[id])
         if len(p) >= 3:
-            core_x, core_y = self.reconstruct_common(p, x, y, z)
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
         else:
             core_x, core_y = (nan, nan)
         return core_x, core_y
@@ -87,7 +82,7 @@ class EventCoreReconstruction(CenterMassAlgorithm):
         return core_x, core_y
 
 
-class CoincidenceCoreReconstruction(CenterMassAlgorithm):
+class CoincidenceCoreReconstruction(object):
 
     """Reconstruct core for coincidences
 
@@ -100,6 +95,7 @@ class CoincidenceCoreReconstruction(CenterMassAlgorithm):
     """
 
     def __init__(self, cluster):
+        self.estimator = CenterMassAlgorithm
         self.cluster = cluster
 
         # Store locations that do not change
@@ -138,7 +134,7 @@ class CoincidenceCoreReconstruction(CenterMassAlgorithm):
             z.append(sz)
 
         if len(p) >= 3:
-            core_x, core_y = self.reconstruct_common(p, x, y, z)
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
         else:
             core_x, core_y = (nan, nan)
         return core_x, core_y
@@ -157,4 +153,36 @@ class CoincidenceCoreReconstruction(CenterMassAlgorithm):
         cores = [self.reconstruct_coincidence(coincidence, station_numbers)
                  for coincidence in pbar(coincidences, show=progress)]
         core_x, core_y = zip(*cores)
+        return core_x, core_y
+
+
+class CenterMassAlgorithm(object):
+
+    """ Simple core estimator
+
+    Estimates the core by center of mass of the measurements.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None):
+        """Reconstruct core position
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors is ignored.
+
+        """
+        return cls.reconstruct(p, x, y)
+
+    @staticmethod
+    def reconstruct(p, x, y):
+        """Calculate center of mass
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+
+        """
+        core_x = sum(density * xi for density, xi in zip(p, x)) / sum(p)
+        core_y = sum(density * yi for density, yi in zip(p, y)) / sum(p)
         return core_x, core_y
