@@ -11,7 +11,7 @@
 
 """
 from numpy import (arcsin, arccos, arctan2, cos, sin,
-                   array, radians, degrees, pi, dot)
+                   array, radians, degrees, pi, dot, around)
 
 from ..utils import norm_angle
 from . import clock, angles, axes
@@ -106,7 +106,10 @@ def horizontal_to_hadec(latitude, altitude, Azimuth):
     calt = cos(altitude)
 
     dec = arcsin((salt * slat) + (calt * clat * cazi))
-    ha = arccos((salt - (slat * sin(dec))) / (clat * cos(dec)))
+
+    # Round to prevent value beyond allowed range for arccos.
+    cha = around((salt - (slat * sin(dec))) / (clat * cos(dec)), 15)
+    ha = arccos(cha)
 
     if sazi > 0:
         ha = 2 * pi - ha
