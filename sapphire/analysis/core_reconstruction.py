@@ -8,15 +8,16 @@
     do the reconstruction.
 
     Each algorithm has a :meth:`~CenterMassAlgorithm.reconstruct_common`
-    method which always requires the same arguments: particle denisties,
-    x, and y positions, optionally z positions can be given. The data is
-    then prepared for the algorithm and passed to the `reconstruct`
-    method which returns the reconstructed x and y coordinates.
+    method which always requires particle denisties, x, and y positions
+    and optionally z positions and previous reconstruction results. The
+    data is then prepared for the algorithm and passed to the
+    `reconstruct` method which returns the reconstructed x and y
+    coordinates.
 
 """
 from __future__ import division
 
-from numpy import nan
+from numpy import isnan, nan, cos
 
 from ..utils import pbar, ERR
 
@@ -165,14 +166,20 @@ class CenterMassAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, p, x, y, z=None):
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
         """Reconstruct core position
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
         :param z: height of detectors is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
 
         """
+        theta = initial.get('theta', nan)
+        if not isnan(theta):
+            p = [density / cos(theta) for density in p]
+
         return cls.reconstruct(p, x, y)
 
     @staticmethod

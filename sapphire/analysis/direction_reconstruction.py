@@ -8,10 +8,11 @@
     do the reconstruction.
 
     Each algorithm has a :meth:`~DirectAlgorithm.reconstruct_common`
-    method which always requires the same arguments: arrival times, x,
-    and y positions, optionally z positions can be given. The data is
-    then prepared for the algorithm and passed to the `reconstruct`
-    method which returns the reconstructed theta and phi coordinates.
+    method which always requires arrival times, x, and y positions and
+    optionally z positions and previous reconstruction results. The
+    data is then prepared for the algorithm and passed to the
+    `reconstruct` method which returns the reconstructed theta and phi
+    coordinates.
 
 """
 import warnings
@@ -204,7 +205,7 @@ class DirectAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None):
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -213,6 +214,8 @@ class DirectAlgorithm(object):
         :param t: arrival times in detector 0, 1 and 2 in ns.
         :param x,y: positions of detector 0, 1 and 2 in m.
         :param z: height of detectors 0, 1 and 2 is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions is ignored.
 
         """
         if len(t) > 3 or len(x) > 3 or len(y) > 3:
@@ -405,7 +408,7 @@ class DirectAlgorithmCartesian2D(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None):
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -414,6 +417,8 @@ class DirectAlgorithmCartesian2D(object):
         :param t: arrival times in detector 0, 1 and 2 in ns.
         :param x,y: positions of detector 0, 1 and 2 in m.
         :param z: height of detectors 0, 1 and 2 is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions is ignored.
 
         """
         if len(t) > 3 or len(x) > 3 or len(y) > 3:
@@ -477,7 +482,7 @@ class DirectAlgorithmCartesian3D(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None):
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -485,6 +490,8 @@ class DirectAlgorithmCartesian3D(object):
 
         :param t: arrival times in detector 0, 1 and 2 in ns.
         :param x,y,z: positions of detector 0, 1 and 2 in m.
+        :param initial: dictionary containing values from previous
+                        reconstructions is ignored.
 
         """
         if z is None:
@@ -680,7 +687,7 @@ class SphereAlgorithm(object):
 class FitAlgorithm(object):
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None):
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -689,6 +696,8 @@ class FitAlgorithm(object):
         :param t: arrival times of the detectors in ns.
         :param x,y,z: positions of the detectors in m. The height
                       for all detectors will be set to 0 if not given.
+        :param initial: dictionary containing values from previous
+                        reconstructions is ignored.
 
         """
         if z is None:
@@ -800,7 +809,7 @@ class RegressionAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None):
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -809,6 +818,8 @@ class RegressionAlgorithm(object):
         :param t: arrival times of the detectors in ns.
         :param x,y,z: positions of the detectors in m. The height
                       is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions is ignored.
 
         """
         return cls.reconstruct(t, x, y)
@@ -896,7 +907,7 @@ class RegressionAlgorithm3D(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None):
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -905,6 +916,8 @@ class RegressionAlgorithm3D(object):
         :param t: arrival times of the detectors in ns.
         :param x,y,z: positions of the detectors in m. The height
                       for all detectors will be set to 0 if not given.
+        :param initial: dictionary containing values from previous
+                        reconstructions is ignored.
 
         """
         if z is None:
