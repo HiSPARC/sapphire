@@ -296,16 +296,22 @@ def gps_to_utc(timestamp):
     :param timestamp: GPS timestamp in seconds.
 
     """
-    if timestamp < gps_from_string('January 1, 1999'):
-        raise Exception("Dates before January 1, 1999 not implemented!")
+    if timestamp < gps_from_string('January 1, 1996'):
+        raise Exception("Dates before January 1, 1996 not implemented!")
+    elif timestamp < gps_from_string('July 1, 1997'):
+        return timestamp - 11
+    elif timestamp < gps_from_string('January 1, 1999'):
+        return timestamp - 12
     elif timestamp < gps_from_string('January 1, 2006'):
         return timestamp - 13
     elif timestamp < gps_from_string('January 1, 2009'):
         return timestamp - 14
     elif timestamp < gps_from_string('July 1, 2012'):
         return timestamp - 15
-    else:
+    elif timestamp < gps_from_string('July 1, 2015'):
         return timestamp - 16
+    else:
+        return timestamp - 17
 
 
 def utc_to_gps(timestamp):
@@ -314,16 +320,22 @@ def utc_to_gps(timestamp):
     :param timestamp: UTC timestamp in seconds.
 
     """
-    if timestamp < utc_from_string('January 1, 1999'):
-        raise Exception("Dates before January 1, 1999 not implemented!")
+    if timestamp < utc_from_string('January 1, 1996'):
+        raise Exception("Dates before January 1, 1996 not implemented!")
+    elif timestamp < utc_from_string('July 1, 1997'):
+        return timestamp + 11
+    elif timestamp < utc_from_string('January 1, 1999'):
+        return timestamp + 12
     elif timestamp < utc_from_string('January 1, 2006'):
         return timestamp + 13
     elif timestamp < utc_from_string('January 1, 2009'):
         return timestamp + 14
     elif timestamp < utc_from_string('July 1, 2012'):
         return timestamp + 15
-    else:
+    elif timestamp < utc_from_string('July 1, 2015'):
         return timestamp + 16
+    else:
+        return timestamp + 17
 
 
 def utc_from_string(date):
