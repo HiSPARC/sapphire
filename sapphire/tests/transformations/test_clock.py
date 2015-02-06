@@ -117,24 +117,28 @@ class GPSTimeTests(unittest.TestCase):
             t = calendar.timegm(time.strptime(date, '%B %d, %Y'))
 
         """
-        self.combinations = (('January 1, 1996', 820454400, 11),
-                             ('July 1, 1997', 867715200, 12),
-                             ('January 1, 1999', 915148800, 13),
-                             ('January 1, 2004', 1072915200, 13),
-                             ('December 31, 2005', 1135987200, 13),
-                             ('January 1, 2006', 1136073600, 14),
-                             ('December 31, 2008', 1230681600, 14),
-                             ('January 1, 2009', 1230768000, 15),
-                             ('June 30, 2012', 1341014400, 15),
-                             ('July 1, 2012', 1341100800, 16),
+        self.combinations = (('July 1, 2015', 1435708800, 17),
                              ('January 1, 2014', 1388534400, 16),
-                             ('July 1, 2015', 1435708800, 17))
-
-    def test_out_of_range(self):
-        self.assertRaises(Exception, clock.gps_to_utc,
-                          clock.gps_from_string('January 1, 1996') - 1)
-        self.assertRaises(Exception, clock.utc_to_gps,
-                          clock.utc_from_string('January 1, 1996') - 1)
+                             ('July 1, 2012', 1341100800, 16),
+                             ('June 30, 2012', 1341014400, 15),
+                             ('January 1, 2009', 1230768000, 15),
+                             ('December 31, 2008', 1230681600, 14),
+                             ('January 1, 2006', 1136073600, 14),
+                             ('December 31, 2005', 1135987200, 13),
+                             ('January 1, 2004', 1072915200, 13),
+                             ('January 1, 1999', 915148800, 13),
+                             ('July 1, 1997', 867715200, 12),
+                             ('January 1, 1996', 820454400, 11),
+                             ('July 1, 1994', 773020800, 10),
+                             ('July 1, 1993', 741484800, 9),
+                             ('July 1, 1992', 709948800, 8),
+                             ('January 1, 1991', 662688000, 7),
+                             ('January 1, 1990', 631152000, 6),
+                             ('January 1, 1988', 567993600, 5),
+                             ('July 1, 1985', 489024000, 4),
+                             ('July 1, 1983', 425865600, 3),
+                             ('July 1, 1982', 394329600, 2),
+                             ('July 1, 1981', 362793600, 1))
 
     def test_gps_to_utc(self):
         for date, _, _ in self.combinations:
