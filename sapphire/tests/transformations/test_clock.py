@@ -117,7 +117,9 @@ class GPSTimeTests(unittest.TestCase):
             t = calendar.timegm(time.strptime(date, '%B %d, %Y'))
 
         """
-        self.combinations = (('January 1, 1999', 915148800, 13),
+        self.combinations = (('January 1, 1996', 820454400, 11),
+                             ('July 1, 1997', 867715200, 12),
+                             ('January 1, 1999', 915148800, 13),
                              ('January 1, 2004', 1072915200, 13),
                              ('December 31, 2005', 1135987200, 13),
                              ('January 1, 2006', 1136073600, 14),
@@ -125,13 +127,14 @@ class GPSTimeTests(unittest.TestCase):
                              ('January 1, 2009', 1230768000, 15),
                              ('June 30, 2012', 1341014400, 15),
                              ('July 1, 2012', 1341100800, 16),
-                             ('January 1, 2014', 1388534400, 16))
+                             ('January 1, 2014', 1388534400, 16),
+                             ('July 1, 2015', 1435708800, 17))
 
     def test_out_of_range(self):
         self.assertRaises(Exception, clock.gps_to_utc,
-                          clock.gps_from_string('January 1, 1999') - 1)
+                          clock.gps_from_string('January 1, 1996') - 1)
         self.assertRaises(Exception, clock.utc_to_gps,
-                          clock.utc_from_string('January 1, 1999') - 1)
+                          clock.utc_from_string('January 1, 1996') - 1)
 
     def test_gps_to_utc(self):
         for date, _, _ in self.combinations:
