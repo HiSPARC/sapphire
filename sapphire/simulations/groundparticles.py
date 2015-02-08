@@ -326,6 +326,27 @@ class ParticleCounterSimulation(GroundParticlesSimulation):
         return n
 
 
+class FixedCoreDistanceSimulation(GroundParticlesSimulation):
+
+    """Shower core at a fixed core distance (from cluster origin).
+
+    :param core_distance: distance of shower core to center of cluster.
+
+    """
+
+    def generate_core_position(cls, R):
+        """Generate a random core position on a circle
+
+        :param R: Core distance, in meters.
+        :returns: Random x, y position on the circle with radius R.
+
+        """
+        phi = np.random.uniform(-pi, pi)
+        x = R * cos(phi)
+        y = R * sin(phi)
+        return x, y
+
+
 class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,
                                              GroundParticlesSimulation):
 
