@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
 
+from sapphire.version import __version__
+
 
 setup(name='hisparc-sapphire',
-      version='0.9.30',
+      version=__version__,
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',

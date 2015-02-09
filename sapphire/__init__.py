@@ -44,6 +44,11 @@ The following packages and modules are included:
     commonly used functions such as a progressbar
 
 """
+
+# version number in version.py
+from .version import __version__
+
+
 from . import analysis
 from . import api
 from . import clusters
