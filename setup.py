@@ -1,8 +1,15 @@
 from setuptools import setup, find_packages
 
+import versioneer
+versioneer.VCS = 'git'
+versioneer.versionfile_source = 'sapphire/_version.py'
+versioneer.versionfile_build = None
+versioneer.tag_prefix = '' # tags are like 1.2.0
+versioneer.parentdir_prefix = '' # dirname like 'myproject-1.2.0'
 
 setup(name='hisparc-sapphire',
-      version='0.9.30',
+      version=versioneer.get_version(),
+      cmdclass=versioneer.get_cmdclass(),
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',

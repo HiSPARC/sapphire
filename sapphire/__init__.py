@@ -44,6 +44,8 @@ The following packages and modules are included:
     commonly used functions such as a progressbar
 
 """
+
+
 from . import analysis
 from . import api
 from . import clusters
@@ -70,3 +72,7 @@ __all__ = ['analysis',
            'time_util',
            'transformations',
            'utils']
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
