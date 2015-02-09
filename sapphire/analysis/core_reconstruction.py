@@ -16,8 +16,9 @@
 
 """
 from __future__ import division
+import itertools
 
-from numpy import isnan, nan, cos
+from numpy import isnan, nan, cos, sqrt, arange, mean
 
 from ..utils import pbar, ERR
 
@@ -193,3 +194,156 @@ class CenterMassAlgorithm(object):
         core_x = sum(density * xi for density, xi in zip(p, x)) / sum(p)
         core_y = sum(density * yi for density, yi in zip(p, y)) / sum(p)
         return core_x, core_y
+
+
+class AverageIntersectionAlgorithm(object):
+
+    """ Core estimator
+
+    To the densities in 3 stations correspond 2 possible cores. The line
+    through these points is quit stable for the lateral distribution function.
+    To each combination of 3 stations out of a set of at least 4
+    stations hit corresponds a line. To each combinations of 2 lines out of
+    the set of lines corresponds a point of intersection (if the 2 lines are
+    not colinear). Taking the cloud of intersection points close to the core
+    estimated by the center of mass, and averaging the positions in this cloud
+    results in an estimation for the core.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
+
+        """
+
+        numstats = len(p)
+        statindex = range(numstats)
+        indexlist = []
+        for subset in itertools.combinations(statindex, 3):
+            indexlist.append(subset)
+
+        m = 2.      # average value in powerlaw  r ^(-m)  for density
+        linelist0 = []
+        linelist1 = []
+        for triple in indexlist:
+            zero, one, two = triple
+            p0 = max(p[zero], .01)
+            p1 = max(p[one], .01)
+            p2 = max(p[two], .01)
+            pp = (p0 / p1) ** (2. / m)
+            qq = (p0 / p2) ** (2. / m)
+            if pp == 1:
+                pp = 1.000001
+            if qq == 1:
+                qq = 1.000001
+
+            x0 = x[zero]
+            x1 = x[one]
+            x2 = x[two]
+            y0 = y[zero]
+            y1 = y[one]
+            y2 = y[two]
+            a = (x1 - pp * x0) / (1 - pp)
+            b = (y1 - pp * y0) / (1 - pp)
+            c = (x2 - qq * x0) / (1 - qq)
+            d = (y2 - qq * y0) / (1 - qq)
+            rsquare = pp * ((x1 - x0) ** 2 + (y1 - y0) ** 2 ) / ((1 - pp) ** 2)
+            ssquare = qq * ((x2 - x0) ** 2 + (y2 - y0) ** 2 ) / ((1 - qq) ** 2)
+            e = c - a
+            f = d - b
+            g = sqrt(e * e + f * f)
+            k = 0.5 * (g * g + rsquare - ssquare) / g
+            if abs(f) > 0:
+                linelist0.append(-e / f)
+                linelist1.append((a * e + b * f + g * k) / f)
+
+        numlines = len(linelist0)
+        lineindex = range(numlines)
+        indexlist = []
+
+        for subset in itertools.combinations(statindex, 2):
+            indexlist.append(subset)
+
+        size = 400
+        basis = arange(-size, size, 0.01 * size)
+        newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
+                                                            initial)
+
+        xpointlist = []
+        ypointlist = []
+        for triple in indexlist:
+            zero, one = triple
+            a = linelist0[zero]
+            b = linelist1[zero]
+            c = linelist0[one]
+            d = linelist1[one]
+            aminc = max(a - c, 0.00001)
+            xint = (d - b) / aminc
+            yint = (a * d - b * c) / aminc
+
+            if abs(xint - newx) < 5000. and abs(yint - newy) < 5000.:
+                xpointlist.append(xint)
+                ypointlist.append(yint)
+
+        if len(xpointlist) > 0:
+            newx = mean(xpointlist)
+            newy = mean(ypointlist)
+            newxlist = []
+            newylist = []
+            for i in range(len(xpointlist)):
+                xint = xpointlist[i]
+                yint = ypointlist[i]
+                if abs(xint - newx) < 1000. and abs(yint - newy) < 1000.:
+                    newxlist.append(xint)
+                    newylist.append(yint)
+            xpointlist = newxlist
+            ypointlist = newylist
+            if len(xpointlist) > 0:
+                newx = mean(xpointlist)
+                newy = mean(ypointlist)
+                newxlist = []
+                newylist = []
+                for i in range(len(xpointlist)):
+                    xint = xpointlist[i]
+                    yint = ypointlist[i]
+                    if abs(xint - newx) < 200. and abs(yint - newy) < 200.:
+                        newxlist.append(xint)
+                        newylist.append(yint)
+                xpointlist = newxlist
+                ypointlist = newylist
+                if len(xpointlist) > 0:
+                    newx = mean(xpointlist)
+                    newy = mean(ypointlist)
+                    newxlist = []
+                    newylist = []
+                    for i in range(len(xpointlist)):
+                        xint = xpointlist[i]
+                        yint = ypointlist[i]
+                        if abs(xint - newx) < 100. and abs(yint - newy) < 100.:
+                            newxlist.append(xint)
+                            newylist.append(yint)
+                    xpointlist = newxlist
+                    ypointlist = newylist
+                    if len(xpointlist) > 0:
+                        newx = mean(xpointlist)
+                        newy = mean(ypointlist)
+                        newxlist = []
+                        newylist = []
+                        for i in range(len(xpointlist)):
+                            xint = xpointlist[i]
+                            yint = ypointlist[i]
+                            if abs(xint - newx) < 50. and abs(yint - newy) < 50.:
+                                newxlist.append(xint)
+                                newylist.append(yint)
+                        if len(xpointlist) > 0:
+                            newx = mean(newxlist)
+                            newy = mean(newylist)
+
+        return newx, newy
