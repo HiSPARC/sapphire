@@ -178,7 +178,7 @@ class CenterMassAlgorithm(object):
         """
         theta = initial.get('theta', nan)
         if not isnan(theta):
-            p = [density / cos(theta) for density in p]
+            p = [density * cos(theta) for density in p]
 
         return cls.reconstruct(p, x, y)
 
