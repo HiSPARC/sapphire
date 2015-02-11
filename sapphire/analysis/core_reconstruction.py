@@ -229,7 +229,7 @@ class AverageIntersectionAlgorithm(object):
         for subset in itertools.combinations(statindex, 3):
             indexlist.append(subset)
 
-        m = 2.      # average value in powerlaw  r ^(-m)  for density
+        m = 2.7      # average value in powerlaw  r ^(-m)  for density
         linelist0 = []
         linelist1 = []
         for triple in indexlist:
@@ -288,62 +288,40 @@ class AverageIntersectionAlgorithm(object):
             xint = (d - b) / aminc
             yint = (a * d - b * c) / aminc
 
-            if abs(xint - newx) < 5000. and abs(yint - newy) < 5000.:
+            if abs(xint - 2.5 * newx) < 200. and abs(yint - 2.5 * newy) < 200.:
                 xpointlist.append(xint)
                 ypointlist.append(yint)
-
-        if len(xpointlist) > 0:
-            newx = mean(xpointlist)
-            newy = mean(ypointlist)
-            newxlist = []
-            newylist = []
-            for i in range(len(xpointlist)):
-                xint = xpointlist[i]
-                yint = ypointlist[i]
-                if abs(xint - newx) < 1000. and abs(yint - newy) < 1000.:
-                    newxlist.append(xint)
-                    newylist.append(yint)
-            xpointlist = newxlist
-            ypointlist = newylist
-            if len(xpointlist) > 0:
-                newx = mean(xpointlist)
-                newy = mean(ypointlist)
-                newxlist = []
-                newylist = []
-                for i in range(len(xpointlist)):
-                    xint = xpointlist[i]
-                    yint = ypointlist[i]
-                    if abs(xint - newx) < 200. and abs(yint - newy) < 200.:
-                        newxlist.append(xint)
-                        newylist.append(yint)
-                xpointlist = newxlist
-                ypointlist = newylist
-                if len(xpointlist) > 0:
-                    newx = mean(xpointlist)
-                    newy = mean(ypointlist)
-                    newxlist = []
-                    newylist = []
-                    for i in range(len(xpointlist)):
-                        xint = xpointlist[i]
-                        yint = ypointlist[i]
-                        if abs(xint - newx) < 100. and abs(yint - newy) < 100.:
-                            newxlist.append(xint)
-                            newylist.append(yint)
-                    xpointlist = newxlist
-                    ypointlist = newylist
-                    if len(xpointlist) > 0:
+        listmin = 1
+        if len(xpointlist) > listmin:
+            newx, newy, xpointlist, ypointlist = cls.select_newlist(
+                xpointlist, ypointlist, 100.)
+            if len(xpointlist) > listmin:
+                newx, newy, xpointlist, ypointlist = cls.select_newlist(
+                    xpointlist, ypointlist, 50.)
+                if len(xpointlist) > listmin:
+                    newx, newy, xpointlist, ypointlist = cls.select_newlist(
+                        xpointlist, ypointlist, 25.)
+                    if len(xpointlist) > listmin:
                         newx = mean(xpointlist)
                         newy = mean(ypointlist)
-                        newxlist = []
-                        newylist = []
-                        for i in range(len(xpointlist)):
-                            xint = xpointlist[i]
-                            yint = ypointlist[i]
-                            if abs(xint - newx) < 50. and abs(yint - newy) < 50.:
-                                newxlist.append(xint)
-                                newylist.append(yint)
-                        if len(xpointlist) > 0:
-                            newx = mean(newxlist)
-                            newy = mean(newylist)
 
         return newx, newy
+
+
+    @staticmethod
+    def select_newlist(xpointlist,ypointlist,distance):
+        """Select intersection points in square around the mean of old list."""
+        newx = mean(xpointlist)
+        newy = mean(ypointlist)
+        newxlist = []
+        newylist = []
+        for i in range(len(xpointlist)):
+            xint = xpointlist[i]
+            yint = ypointlist[i]
+            if abs(xint - newx) < distance and abs(yint - newy) < distance:
+                newxlist.append(xint)
+                newylist.append(yint)
+
+        return(newx, newy, newxlist, newylist)
+
+
