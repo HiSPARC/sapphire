@@ -108,7 +108,7 @@ class EquatorialTests(unittest.TestCase):
         dec_astropy = np.radians(-4.5606942763)
 
         # Data
-        longitude = base.sexagesimal_to_decimal(-109, 24, 53.1)
+        longitude = base.sexagesimal_to_decimal(-109, -24, -53.1)
         latitude = base.sexagesimal_to_decimal(33, 41, 46.0)
         utc = datetime.datetime(2011, 9, 18, 8, 50)
         altitude = np.radians(-60.7665)
@@ -120,8 +120,8 @@ class EquatorialTests(unittest.TestCase):
         ra, dec = celestial.zenithazimuth_to_equatorial(longitude, latitude,
                                                         gps, zenith, azimuth)
 
-        self.assertAlmostEqual(ra, ra_expected, 1)
-        self.assertAlmostEqual(ra, ra_astropy, 1)
+        self.assertAlmostEqual(ra, ra_expected, 2)
+        self.assertAlmostEqual(ra, ra_astropy, 2)
         self.assertAlmostEqual(dec, dec_expected, 2)
         self.assertAlmostEqual(dec, dec_astropy, 2)
 

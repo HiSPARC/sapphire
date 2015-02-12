@@ -24,6 +24,9 @@ def decimal_to_sexagesimal(decimal):
 def sexagesimal_to_decimal(hd, minutes, seconds):
     """Convert sexagesimal hours or degrees to decimal.
 
+    Warning! Ensure each part has the correct sign.
+    e.g. -111d36m12s should be entered as (-111, -36, -12).
+
     :param hd: hours or degrees.
     :param minutes: minutes or arcminutes.
     :param seconds: seconds or arcseconds.
