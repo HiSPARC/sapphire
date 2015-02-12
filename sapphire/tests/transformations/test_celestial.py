@@ -139,8 +139,8 @@ class EquatorialTests(unittest.TestCase):
         dec_expected = np.radians(-40.9413611111)
 
         # Astropy 1.0rc1
-        ra_astropy = np.radians(291.367045545)
-        dec_astropy = np.radians(-41.0559933484)
+        ra_astropy = np.radians(291.229161499)
+        dec_astropy = np.radians(-40.9413052259)
 
         # Data
         # Kitt Peak
@@ -157,7 +157,7 @@ class EquatorialTests(unittest.TestCase):
                                                         gps, zenith, azimuth)
 
         self.assertAlmostEqual(ra, ra_expected, 3)
-        self.assertAlmostEqual(ra, ra_astropy, 2)
+        self.assertAlmostEqual(ra, ra_astropy, 3)
         self.assertAlmostEqual(dec, dec_expected, 2)
         self.assertAlmostEqual(dec, dec_astropy, 2)
 
