@@ -18,7 +18,7 @@
 from __future__ import division
 import itertools
 
-from numpy import isnan, nan, cos, sqrt, arange, mean
+from numpy import isnan, nan, cos, sqrt, mean
 
 from ..utils import pbar, ERR
 
@@ -222,7 +222,6 @@ class AverageIntersectionAlgorithm(object):
                         reconstructions.
 
         """
-
         numstats = len(p)
         statindex = range(numstats)
         indexlist = []
@@ -254,8 +253,8 @@ class AverageIntersectionAlgorithm(object):
             b = (y1 - pp * y0) / (1 - pp)
             c = (x2 - qq * x0) / (1 - qq)
             d = (y2 - qq * y0) / (1 - qq)
-            rsquare = pp * ((x1 - x0) ** 2 + (y1 - y0) ** 2 ) / ((1 - pp) ** 2)
-            ssquare = qq * ((x2 - x0) ** 2 + (y2 - y0) ** 2 ) / ((1 - qq) ** 2)
+            rsquare = pp * ((x1 - x0) ** 2 + (y1 - y0) ** 2) / ((1 - pp) ** 2)
+            ssquare = qq * ((x2 - x0) ** 2 + (y2 - y0) ** 2) / ((1 - qq) ** 2)
             e = c - a
             f = d - b
             g = sqrt(e * e + f * f)
@@ -264,15 +263,11 @@ class AverageIntersectionAlgorithm(object):
                 linelist0.append(-e / f)
                 linelist1.append((a * e + b * f + g * k) / f)
 
-        numlines = len(linelist0)
-        lineindex = range(numlines)
         indexlist = []
 
         for subset in itertools.combinations(statindex, 2):
             indexlist.append(subset)
 
-        size = 400
-        basis = arange(-size, size, 0.01 * size)
         newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
                                                             initial)
 
@@ -307,9 +302,8 @@ class AverageIntersectionAlgorithm(object):
 
         return newx, newy
 
-
     @staticmethod
-    def select_newlist(xpointlist,ypointlist,distance):
+    def select_newlist(xpointlist, ypointlist, distance):
         """Select intersection points in square around the mean of old list."""
         newx = mean(xpointlist)
         newy = mean(ypointlist)
@@ -323,5 +317,3 @@ class AverageIntersectionAlgorithm(object):
                 newylist.append(yint)
 
         return(newx, newy, newxlist, newylist)
-
-
