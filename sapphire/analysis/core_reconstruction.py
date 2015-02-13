@@ -222,17 +222,13 @@ class AverageIntersectionAlgorithm(object):
                         reconstructions.
 
         """
-        numstats = len(p)
-        statindex = range(numstats)
-        indexlist = []
-        for subset in itertools.combinations(statindex, 3):
-            indexlist.append(subset)
+        statindex = range(len(p))
+        subsets = itertools.combinations(statindex, 3)
 
-        m = 2.7      # average value in powerlaw  r ^(-m)  for density
+        m = 2.7  # average value in powerlaw  r ^(-m)  for density
         linelist0 = []
         linelist1 = []
-        for triple in indexlist:
-            zero, one, two = triple
+        for zero, one, two in subsets:
             p0 = max(p[zero], .01)
             p1 = max(p[one], .01)
             p2 = max(p[two], .01)
@@ -263,18 +259,15 @@ class AverageIntersectionAlgorithm(object):
                 linelist0.append(-e / f)
                 linelist1.append((a * e + b * f + g * k) / f)
 
-        indexlist = []
-
-        for subset in itertools.combinations(statindex, 2):
-            indexlist.append(subset)
 
         newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
                                                             initial)
 
+        subsets = itertools.combinations(statindex, 2)
+
         xpointlist = []
         ypointlist = []
-        for triple in indexlist:
-            zero, one = triple
+        for zero, one in subsets:
             a = linelist0[zero]
             b = linelist1[zero]
             c = linelist0[one]
@@ -287,33 +280,27 @@ class AverageIntersectionAlgorithm(object):
                 xpointlist.append(xint)
                 ypointlist.append(yint)
         listmin = 1
-        if len(xpointlist) > listmin:
-            newx, newy, xpointlist, ypointlist = cls.select_newlist(
-                xpointlist, ypointlist, 100.)
+        for distance in (100., 50., 25.):
             if len(xpointlist) > listmin:
                 newx, newy, xpointlist, ypointlist = cls.select_newlist(
-                    xpointlist, ypointlist, 50.)
-                if len(xpointlist) > listmin:
-                    newx, newy, xpointlist, ypointlist = cls.select_newlist(
-                        xpointlist, ypointlist, 25.)
-                    if len(xpointlist) > listmin:
-                        newx = mean(xpointlist)
-                        newy = mean(ypointlist)
+                    xpointlist, ypointlist, distance)
+        if len(xpointlist) > listmin:
+            newx = mean(xpointlist)
+            newy = mean(ypointlist)
 
         return newx, newy
 
     @staticmethod
     def select_newlist(xpointlist, ypointlist, distance):
         """Select intersection points in square around the mean of old list."""
+
         newx = mean(xpointlist)
         newy = mean(ypointlist)
         newxlist = []
         newylist = []
-        for i in range(len(xpointlist)):
-            xint = xpointlist[i]
-            yint = ypointlist[i]
-            if abs(xint - newx) < distance and abs(yint - newy) < distance:
-                newxlist.append(xint)
-                newylist.append(yint)
+        for xpoint, ypoint in zip(xpointlist, ypointlist):
+            if abs(xpoint - newx) < distance and abs(ypoint - newy) < distance:
+                newxlist.append(xpoint)
+                newylist.append(ypoint)
 
-        return(newx, newy, newxlist, newylist)
+        return newx, newy, newxlist, newylist
