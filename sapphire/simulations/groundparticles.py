@@ -128,27 +128,24 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         n_leptons = len(leptons)
         n_gammas = len(gammas)
 
-        mips_lepton = 0.
-        mips_gamma = 0.
-        first_signal = -1
+        if not n_leptons+n_gammas:
+            return {'n': 0, 't': -999}
 
         if n_leptons:
-
             mips_lepton = self.simulate_detector_mips_for_leptons(leptons)
             leptons['t'] += self.simulate_signal_transport_time(n_leptons)
             first_signal = leptons['t'].min() + detector.offset
+        else:
+            mips_lepton = 0
 
         if n_gammas:
             mips_gamma = self.simulate_detector_mips_for_gammas(gammas)
             gammas['t'] += self.simulate_signal_transport_time(n_gammas)
             first_signal = gammas['t'].min() + detector.offset
-
-        if first_signal == -1:
-            t = -999
         else:
-            t = self.simulate_adc_sampling(first_signal)
+            mips_gamma = 0
 
-        return  {'n': mips_lepton+mips_gamma, 't': t }
+        return {'n': mips_lepton+mips_gamma, 't': self.simulate_adc_sampling(first_signal) }
 
 
     def simulate_detector_mips_for_leptons(self, particles):
