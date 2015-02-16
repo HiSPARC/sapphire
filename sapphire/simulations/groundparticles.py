@@ -1,4 +1,4 @@
-"""Perform simulations of CORSIKA air showers on a cluster of stations
+qua"""Perform simulations of CORSIKA air showers on a cluster of stations
 
 This simulation uses a HDF5 file created from a CORSIKA simulation with
 the `store_corsika_data` script. The shower is 'thrown' on the cluster
@@ -64,6 +64,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                   (x, y-tuple) and azimuth.
 
         """
+
         r = self.max_core_distance
         giga = int(1e9)
 
@@ -123,15 +124,22 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        particles = self.get_particles_in_detector(detector)
-        n_detected = len(particles)
+        leptons, gammas = self.get_particles_in_detector(detector)
+        n_leptons = len(leptons)
+        n_gammas = len(gammas)
 
-        if n_detected:
-            mips = self.simulate_detector_mips_for_particles(particles)
-            particles['t'] += self.simulate_signal_transport_time(n_detected)
-            first_signal = particles['t'].min() + detector.offset
+        if n_gammas + n_leptons:
+            if n_leptons:
+
+                mips = self.simulate_detector_mips_for_particles(leptons)
+                particles['t'] += self.simulate_signal_transport_time(n_leptons)
+                first_signal = particles['t'].min() + detector.offset
+
+            if n_gammas:
+                pass
+
             observables = {'n': mips,
-                           't': self.simulate_adc_sampling(first_signal)}
+               't': self.simulate_adc_sampling(first_signal)}
         else:
             observables = {'n': 0., 't': -999}
 
@@ -223,11 +231,18 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """
         x, y = detector.get_xy_coordinates()
         detector_boundary = sqrt(.5) / 2.
+
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
                   y - detector_boundary, y + detector_boundary))
-        return self.groundparticles.read_where(query)
+        query_gammas = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+                         ' & (particle_id == 1)' %
+                         (x - detector_boundary, x + detector_boundary,
+                          y - detector_boundary, y + detector_boundary))
+
+        return self.groundparticles.read_where(query),
+                    self.groundparticles.read_where(query_gammas)
 
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
