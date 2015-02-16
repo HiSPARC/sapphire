@@ -15,11 +15,12 @@ before_install:
 
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables matplotlib
-  - pip install coverage coveralls
+  - pip install coverage coveralls flake8
   - python setup.py develop
 
 script:
   - coverage run --source=sapphire setup.py test
+  - flake8 --exit-zero --ignore=E501 sapphire
 
 after_success:
   coveralls
