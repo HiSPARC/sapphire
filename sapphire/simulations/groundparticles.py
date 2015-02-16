@@ -1,4 +1,4 @@
-qua"""Perform simulations of CORSIKA air showers on a cluster of stations
+"""Perform simulations of CORSIKA air showers on a cluster of stations
 
 This simulation uses a HDF5 file created from a CORSIKA simulation with
 the `store_corsika_data` script. The shower is 'thrown' on the cluster
@@ -128,25 +128,31 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         n_leptons = len(leptons)
         n_gammas = len(gammas)
 
-        if n_gammas + n_leptons:
-            if n_leptons:
+        mips_lepton = 0.
+        mips_gamma = 0.
+        first_signal = -1
 
-                mips = self.simulate_detector_mips_for_particles(leptons)
-                particles['t'] += self.simulate_signal_transport_time(n_leptons)
-                first_signal = particles['t'].min() + detector.offset
+        if n_leptons:
 
-            if n_gammas:
-                pass
+            mips_lepton = self.simulate_detector_mips_for_leptons(leptons)
+            leptons['t'] += self.simulate_signal_transport_time(n_leptons)
+            first_signal = leptons['t'].min() + detector.offset
 
-            observables = {'n': mips,
-               't': self.simulate_adc_sampling(first_signal)}
+        if n_gammas:
+            mips_gamma = self.simulate_detector_mips_for_gammas(gammas)
+            gammas['t'] += self.simulate_signal_transport_time(n_gammas)
+            first_signal = gammas['t'].min() + detector.offset
+
+        if first_signal == -1:
+            t = -999
         else:
-            observables = {'n': 0., 't': -999}
+            t = self.simulate_adc_sampling(first_signal)
 
-        return observables
+        return  {'n': mips_lepton+mips_gamma, 't': t }
 
-    def simulate_detector_mips_for_particles(self, particles):
-        """Simulate the detector signal for particles
+
+    def simulate_detector_mips_for_leptons(self, particles):
+        """Simulate the detector signal for leptons
 
         :param particles: particle rows with the p_[x, y, z]
                           components of the particle momenta.
@@ -158,9 +164,32 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                                   particles['p_y'] ** 2 +
                                   particles['p_z'] ** 2))
         n = len(particles)
-        mips = self.simulate_detector_mips(n, theta)
+        mips = self.simulate_detector_mips_leptons(n, theta)
 
         return mips
+
+    def simulate_detector_mips_for_gammas(self, particles):
+        """Simulate the detector signal for gammas
+
+        :param particles: particle rows with the p_[x, y, z]
+                          components of the particle momenta.
+
+        """
+
+        p_gamma = np.sqrt(particles['p_x'] ** 2 + particles['p_y'] ** 2 +
+                particles['p_z'] ** 2)
+
+        # determination of lepton angle of incidence
+        theta = np.arccos(abs(particles['p_z']) /
+                          p_gamma)
+
+        n = len(particles)
+        mips = self.simulate_detector_mips_gammas(n, theta)
+
+        return mips
+
+
+
 
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
@@ -241,8 +270,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                          (x - detector_boundary, x + detector_boundary,
                           y - detector_boundary, y + detector_boundary))
 
-        return self.groundparticles.read_where(query),
-                    self.groundparticles.read_where(query_gammas)
+        return self.groundparticles.read_where(query), self.groundparticles.read_where(query_gammas)
 
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
