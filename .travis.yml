@@ -20,7 +20,7 @@ install:
 
 script:
   - coverage run --source=sapphire setup.py test
-  - flake8 --ignore=E501 sapphire
+  - flake8 --exit-zero --ignore=E501 sapphire
 
 after_success:
   coveralls
