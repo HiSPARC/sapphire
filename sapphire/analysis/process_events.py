@@ -1006,7 +1006,7 @@ class ProcessWeatherFromSource(ProcessWeather):
         return source
 
     def _check_destination(self, destination, overwrite):
-        """Override method, the destination is empty"""
+        """Override method, the destination should be empty"""
         pass
 
     def _replace_table_with_selected_rows(self, table, row_ids):

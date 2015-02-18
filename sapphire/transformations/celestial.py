@@ -23,7 +23,7 @@ def zenithazimuth_to_equatorial(longitude, latitude, timestamp, zenith,
 
     :param longitude,latitude: Position of the observer on Earth in degrees.
                                North and east positive.
-    :param timestamp: GPS timestamp of the observation.
+    :param timestamp: GPS timestamp of the observation in seconds.
     :param zenith: zenith is the angle relative to the Zenith in radians.
     :param azimuth: azimuth angle of the observation in radians.
 
@@ -139,7 +139,7 @@ def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
 
     :param longitude,latitude: Position of the observer on Earth in degrees.
                                North and east positive.
-    :param timestamp: GPS timestamp of the observation.
+    :param timestamp: GPS timestamp of the observation in seconds.
     :param right_ascension: right_ascension of the observation in radians.
     :param declination: declination of the observation in radians.
 
