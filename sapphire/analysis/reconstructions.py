@@ -157,12 +157,8 @@ class ReconstructESDEvents(object):
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
 
-        Only writes rows if reconstruction was possible and successful.
-
-        ADL: Perhaps we should always store reconstructions, and use
-        error values in case it failed. However, the usual -999 might be
-        a real value (though unlikely to be exactly -999) in case of
-        core position reconstruction.
+        Unsuccessful reconstructions are also stored but with the NumPy
+        NaN as reconstructed value.
 
         """
         for event, core_x, core_y, theta, phi, detector_ids in itertools.izip(
@@ -449,12 +445,8 @@ class ReconstructESDCoincidences(object):
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
 
-        Only writes rows if reconstruction was possible and successful.
-
-        ADL: Perhaps we should always store reconstructions, and use
-        error values in case it failed. However, the usual -999 might be
-        a real value (though unlikely to be exactly -999) in case of
-        core position reconstruction.
+        Unsuccessful reconstructions are also stored but with the NumPy
+        NaN as reconstructed value.
 
         """
         for coincidence, x, y, theta, phi, station_numbers in itertools.izip(
