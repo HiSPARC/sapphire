@@ -242,7 +242,7 @@ class ReconstructESDCoincidences(object):
 
         """
         coincidences = self.cq.all_coincidences()
-        # Progress does not work because thepbar does not know the
+        # Progress does not work because the pbar does not know the
         # number of coincidences
         angles = self.direction.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,

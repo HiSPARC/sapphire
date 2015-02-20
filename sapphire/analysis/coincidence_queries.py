@@ -48,8 +48,11 @@ class CoincidenceQuery(object):
             self.data = data
         self.coincidences = self.data.get_node(coincidence_group,
                                                'coincidences')
-        self.s_index = self.data.get_node(coincidence_group, 's_index')
         self.c_index = self.data.get_node(coincidence_group, 'c_index')
+        self.s_index = self.data.get_node(coincidence_group, 's_index')
+        self.s_nodes = [self.data.get_node(s_path) for s_path in self.s_index]
+        self.s_numbers = [int(s_path.split('station_')[-1])
+                          for s_path in self.s_index]
 
     def finish(self):
         """Clean-up after using
@@ -196,11 +199,25 @@ class CoincidenceQuery(object):
         events = []
         c_idx = self.c_index[coincidence['id']]
         for s_idx, e_idx in c_idx:
-            s_path = self.s_index[s_idx]
-            station_number = int(s_path.split('station_')[-1])
-            s_group = self.data.get_node(s_path)
-            events.append((station_number, s_group.events[e_idx]))
+            station_number = self.s_numbers[s_idx]
+            events.append((station_number, self.s_nodes[s_idx].events[e_idx]))
         return events
+
+    def _get_reconstructions(self, coincidence):
+        """Get event reconstructions belonging to a coincidence
+
+        :param coincidence: A coincidence row.
+        :return: list of tuples containing station numbers and
+                 reconstructed events.
+
+        """
+        reconstructions = []
+        c_idx = self.c_index[coincidence['id']]
+        for s_idx, e_idx in c_idx:
+            station_number = self.s_numbers[s_idx]
+            rec_table = self.s_nodes[s_idx].reconstructions
+            reconstructions.append((station_number, rec_table[e_idx]))
+        return reconstructions
 
     def all_events(self, coincidences, n=0):
         """Get all events for the given coincidences.
