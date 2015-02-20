@@ -132,6 +132,9 @@ class CoincidenceDirectionReconstruction(object):
         """
         no_offset = [0., 0., 0., 0.]
 
+        if len(coincidence) < 3:
+            return nan, nan, []
+
         # Subtract base timestamp to prevent loss of precision
         ts0 = int(coincidence[0][1]['timestamp']) * int(1e9)
         t, x, y, z, nums = ([], [], [], [], [])
