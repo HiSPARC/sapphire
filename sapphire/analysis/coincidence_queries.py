@@ -56,6 +56,13 @@ class CoincidenceQuery(object):
         self.s_numbers = [int(re_number.search(s_path).group())
                           for s_path in self.s_index]
 
+        try:
+            self.reconstructions = self.data.get_node(coincidence_group,
+                                                      'reconstructions')
+            self.reconstructed = True
+        except tables.NoSuchNodeError as err:
+            self.reconstructed = False
+
     def finish(self):
         """Clean-up after using
 
@@ -220,6 +227,20 @@ class CoincidenceQuery(object):
             rec_table = self.s_nodes[s_idx].reconstructions
             reconstructions.append((station_number, rec_table[e_idx]))
         return reconstructions
+
+    def _get_reconstruction(self, coincidence):
+        """Get coincidence reconstruction belonging to a coincidence
+
+        :param coincidence: A coincidence row.
+        :return: reconstructed coincidence.
+
+        """
+        if self.reconstructed:
+            reconstruction = self.reconstructions[coincidence['id']]
+            return reconstruction
+        else:
+            raise Exception('Coincidences are not (properly) reconstructed.'
+                'Perform reconstructions and reinitialize this class.')
 
     def all_events(self, coincidences, n=0):
         """Get all events for the given coincidences.
