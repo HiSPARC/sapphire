@@ -1,3 +1,4 @@
+import re
 import itertools
 
 import tables
@@ -51,7 +52,8 @@ class CoincidenceQuery(object):
         self.c_index = self.data.get_node(coincidence_group, 'c_index')
         self.s_index = self.data.get_node(coincidence_group, 's_index')
         self.s_nodes = [self.data.get_node(s_path) for s_path in self.s_index]
-        self.s_numbers = [int(s_path.split('station_')[-1])
+        re_number = re.compile('[0-9]+$')
+        self.s_numbers = [int(re_number.search(s_path).group())
                           for s_path in self.s_index]
 
     def finish(self):
