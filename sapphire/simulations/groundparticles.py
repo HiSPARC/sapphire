@@ -115,8 +115,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
 
-        Checks if leptons have passed a detector. If so, it returns the number
-        of leptons in the detector and the arrival time of the first lepton
+        Checks if particles have passed a detector. If so, it returns the number
+        of particles in the detector and the arrival time of the first particle
         passing the detector.
 
         :param detector: :class:`~sapphire.clusters.Detector` for which
@@ -181,7 +181,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                           p_gamma)
 
         n = len(particles)
-        mips = self.simulate_detector_mips_gammas(n, theta)
+        mips = self.simulate_detector_mips_gammas(n, p_gamma, theta)
 
         return mips
 
