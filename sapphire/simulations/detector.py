@@ -159,15 +159,42 @@ class HiSPARCSimulation(BaseSimulation):
         :param p: the momentum of the gammas as float or array
         :param theta: angle of incidence of the gammas, as float or array.
         """
+
+        MIP = 3.38 # MeV
+
+        # W.R. Leo (1987) p 54
+        # E photon energy [MeV]
+        # return compton edge [MeV]
+        def _compton_edge(E):
+
+            electron_rest_mass_MeV = .5109989 # MeV
+
+            gamma = E / electron_rest_mass_MeV
+
+            return (E * 2 * gamma / (1 + 2*gamma) )
+
+        def _energy_transfer(E):
+            edge = _compton_edge(E)
+            energy = np.random.random()*edge 
+            print
+            print "*** debugging _energy_transfer: E =", E
+            print "compton edge = ",edge
+            print "E = ", energy
+
+            return energy
+
         # p [eV]
         # E [MeV]
         E = p / 1.e6
         k = np.random.random(n)
 
         interaction_probability = 0.134198 * np.exp(-0.392398*E) + 0.034156
-        # WIP: if interaction --> create l33t number of mips for easy recognition in simulation output
-        mips = np.where(k < interaction_probability, 0.13311331, 0.)
-        mips = sum(mips)
+
+        E_with_interaction = E.compress(k < interaction_probability)
+
+        mips = 0
+        for E_ in E_with_interaction:
+            mips += _energy_transfer(E_) / MIP
 
         return mips
 
