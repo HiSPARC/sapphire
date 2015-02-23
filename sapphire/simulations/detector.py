@@ -154,14 +154,22 @@ class HiSPARCSimulation(BaseSimulation):
         return mips
     @classmethod
     def simulate_detector_mips_gammas(cls, n, p, theta):
-    """
-    :param n: number of gammas.
-    :param p: the momentum of the gammas as float or array
-    :param theta: angle of incidence of the gammas, as float or array.
-    """"
+        """
+        :param n: number of gammas.
+        :param p: the momentum of the gammas as float or array
+        :param theta: angle of incidence of the gammas, as float or array.
+        """
+        # p [eV]
+        # E [MeV]
+        E = p / 1.e6
+        k = np.random.random(n)
 
-    
-        return np.random()*0.5 # test value
+        interaction_probability = 0.134198 * np.exp(-0.392398*E) + 0.034156
+        # WIP: if interaction --> create l33t number of mips for easy recognition in simulation output
+        mips = np.where(k < interaction_probability, 0.13311331, 0.)
+        mips = sum(mips)
+
+        return mips
 
     @classmethod
     def generate_core_position(cls, R):
