@@ -174,12 +174,20 @@ class HiSPARCSimulation(BaseSimulation):
             return (E * 2 * gamma / (1 + 2*gamma) )
 
         def _energy_transfer(E):
+
             edge = _compton_edge(E)
-            energy = np.random.random()*edge 
+
+            # from lio-project/photons/electron_energy_distribution
+
+            # cumulative energy distribution implemented as table (this should be a matrix based on E)
+            lookup_table = [0.09673309,  0.17138467,  0.25043101,  0.33387211, 0.42170797,  0.51393859,  0.61056396,  0.7115841 ,  0.81699899, 1.0]
+
+            energy = lookup_table[np.random.randint(10)]*edge
+
             print
             print "*** debugging _energy_transfer: E =", E
             print "compton edge = ",edge
-            print "E = ", energy
+            print "E =  %3.1f MeV (%2.0f percent) " % (energy, energy/E*100.)
 
             return energy
 
@@ -188,7 +196,9 @@ class HiSPARCSimulation(BaseSimulation):
         E = p / 1.e6
         k = np.random.random(n)
 
-        interaction_probability = 0.134198 * np.exp(-0.392398*E) + 0.034156
+#        interaction_probability = 0.134198 * np.exp(-0.392398*E) + 0.034156
+
+        interaction_probability = 0.05
 
         E_with_interaction = E.compress(k < interaction_probability)
 
