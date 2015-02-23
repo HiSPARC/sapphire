@@ -155,7 +155,7 @@ class HiSPARCSimulation(BaseSimulation):
     @classmethod
     def simulate_detector_mips_gammas(cls, n, theta):
 
-        return 0
+        return 0.1 # test value
 
     @classmethod
     def generate_core_position(cls, R):
