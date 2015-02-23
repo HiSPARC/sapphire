@@ -205,7 +205,7 @@ class AverageIntersectionAlgorithm(object):
     To each combination of 3 stations out of a set of at least 4
     stations hit corresponds a line. To each combinations of 2 lines out of
     the set of lines corresponds a point of intersection (if the 2 lines are
-    not colinear). Taking the cloud of intersection points close to the core
+    not collinear). Taking the cloud of intersection points close to the core
     estimated by the center of mass, and averaging the positions in this cloud
     results in an estimation for the core.
 
@@ -275,27 +275,29 @@ class AverageIntersectionAlgorithm(object):
             aminc = max(a - c, 0.00001)
             xint = (d - b) / aminc
             yint = (a * d - b * c) / aminc
+            xpointlist.append(xint)
+            ypointlist.append(yint)
 
-            if abs(xint - 2.5 * newx) < 200. and abs(yint - 2.5 * newy) < 200.:
-                xpointlist.append(xint)
-                ypointlist.append(yint)
-        listmin = 1
-        for distance in (100., 50., 25.):
-            if len(xpointlist) > listmin:
-                newx, newy, xpointlist, ypointlist = cls.select_newlist(
+        subxplist, subyplist = cls.select_newlist(newx, newy,
+                    xpointlist, ypointlist, 170.)
+
+        listmin = 3
+        for distance in (130., 50.):
+            if len(subxplist) > listmin:
+                newx = mean(subxplist)
+                newy = mean(subyplist)
+                subxplist, subyplist = cls.select_newlist(newx, newy,
                     xpointlist, ypointlist, distance)
-        if len(xpointlist) > listmin:
-            newx = mean(xpointlist)
-            newy = mean(ypointlist)
+
+        if len(subxplist) > listmin:
+            newx = mean(subxplist)
+            newy = mean(subyplist)
 
         return newx, newy
 
     @staticmethod
-    def select_newlist(xpointlist, ypointlist, distance):
+    def select_newlist(newx, newy, xpointlist, ypointlist, distance):
         """Select intersection points in square around the mean of old list."""
-
-        newx = mean(xpointlist)
-        newy = mean(ypointlist)
         newxlist = []
         newylist = []
         for xpoint, ypoint in zip(xpointlist, ypointlist):
@@ -303,4 +305,4 @@ class AverageIntersectionAlgorithm(object):
                 newxlist.append(xpoint)
                 newylist.append(ypoint)
 
-        return newx, newy, newxlist, newylist
+        return newxlist, newylist
