@@ -18,7 +18,7 @@
 from __future__ import division
 import itertools
 
-from numpy import isnan, nan, cos, sqrt, mean
+from numpy import isnan, nan, cos, sqrt, mean, pi, arctan2
 
 from ..utils import pbar, ERR
 
@@ -222,29 +222,37 @@ class AverageIntersectionAlgorithm(object):
                         reconstructions.
 
         """
-        statindex = range(len(p))
-        subsets = itertools.combinations(statindex, 3)
+        phit = []
+        xhit = []
+        yhit = []
+        for i in range(len(p)):
+            if p[i] > .01:
+                phit.append(p[i])
+                xhit.append(x[i])
+                yhit.append(y[i])
 
-        m = 2.7  # average value in powerlaw  r ^(-m)  for density
+        meanx = mean(xhit)
+        meany = mean(yhit)
+        statindex = range(len(phit))
+        subsets = itertools.combinations(statindex, 3)
+        m = 3.0  # average value in powerlaw  r ^(-m)  for density
+
         linelist0 = []
         linelist1 = []
         for zero, one, two in subsets:
-            p0 = max(p[zero], .01)
-            p1 = max(p[one], .01)
-            p2 = max(p[two], .01)
-            pp = (p0 / p1) ** (2. / m)
-            qq = (p0 / p2) ** (2. / m)
+            pp = (phit[zero] / phit[one]) ** (2. / m)
+            qq = (phit[zero] / phit[two]) ** (2. / m)
             if pp == 1:
                 pp = 1.000001
             if qq == 1:
                 qq = 1.000001
 
-            x0 = x[zero]
-            x1 = x[one]
-            x2 = x[two]
-            y0 = y[zero]
-            y1 = y[one]
-            y2 = y[two]
+            x0 = xhit[zero]
+            x1 = xhit[one]
+            x2 = xhit[two]
+            y0 = yhit[zero]
+            y1 = yhit[one]
+            y2 = yhit[two]
             a = (x1 - pp * x0) / (1 - pp)
             b = (y1 - pp * y0) / (1 - pp)
             c = (x2 - qq * x0) / (1 - qq)
@@ -253,16 +261,15 @@ class AverageIntersectionAlgorithm(object):
             ssquare = qq * ((x2 - x0) ** 2 + (y2 - y0) ** 2) / ((1 - qq) ** 2)
             e = c - a
             f = d - b
+            if d == b:
+                f = 0.000000001
             g = sqrt(e * e + f * f)
             k = 0.5 * (g * g + rsquare - ssquare) / g
-            if abs(f) > 0:
-                linelist0.append(-e / f)
-                linelist1.append((a * e + b * f + g * k) / f)
-
+            linelist0.append(-e / f)
+            linelist1.append((a * e + b * f + g * k) / f)
 
         newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
                                                             initial)
-
         subsets = itertools.combinations(statindex, 2)
 
         xpointlist = []
@@ -272,21 +279,23 @@ class AverageIntersectionAlgorithm(object):
             b = linelist1[zero]
             c = linelist0[one]
             d = linelist1[one]
-            aminc = max(a - c, 0.00001)
+            aminc = a - c
+            if a == c:
+                aminc = 0.000000001
             xint = (d - b) / aminc
             yint = (a * d - b * c) / aminc
-            xpointlist.append(xint)
-            ypointlist.append(yint)
+            if a != c:
+                xpointlist.append(xint)
+                ypointlist.append(yint)
 
-        subxplist, subyplist = cls.select_newlist(newx, newy,
-                    xpointlist, ypointlist, 170.)
-
-        listmin = 3
-        for distance in (130., 50.):
+        subxplist, subyplist = cls.select_newlist(meanx, meany, newx, newy,
+                    xpointlist, ypointlist, 400.)
+        listmin = 0
+        for distance in (200, 100.):
             if len(subxplist) > listmin:
                 newx = mean(subxplist)
                 newy = mean(subyplist)
-                subxplist, subyplist = cls.select_newlist(newx, newy,
+                subxplist, subyplist = cls.select_newlist(meanx, meany, newx, newy,
                     xpointlist, ypointlist, distance)
 
         if len(subxplist) > listmin:
@@ -296,13 +305,23 @@ class AverageIntersectionAlgorithm(object):
         return newx, newy
 
     @staticmethod
-    def select_newlist(newx, newy, xpointlist, ypointlist, distance):
+    def select_newlist(meanx, meany, newx, newy, xpointlist, ypointlist, distance):
         """Select intersection points in square around the mean of old list."""
         newxlist = []
         newylist = []
+        dxm = newx - meanx
+        dym = newy - meany
+        alpham = arctan2(dym,dxm)
         for xpoint, ypoint in zip(xpointlist, ypointlist):
-            if abs(xpoint - newx) < distance and abs(ypoint - newy) < distance:
-                newxlist.append(xpoint)
-                newylist.append(ypoint)
+            dxp = xpoint - meanx
+            dyp = ypoint - meany
+            alphap = arctan2(dyp,dxp)
+            dalpha = abs(alpham - alphap)
+            dr = sqrt((dxm - dxp) ** 2 + (dym - dyp) ** 2)
+            frac = 5.
+            if dalpha < (pi / frac) or dalpha > ((2 * frac - 1) * pi / frac):
+                if dr < distance:
+                    newxlist.append(xpoint)
+                    newylist.append(ypoint)
 
         return newxlist, newylist
