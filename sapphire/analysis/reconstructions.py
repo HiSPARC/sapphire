@@ -1,4 +1,4 @@
-import itertools
+from itertools import izip_longest
 
 from numpy import nan, arange, histogram, linspace
 from scipy.optimize import curve_fit
@@ -67,6 +67,12 @@ class ReconstructESDEvents(object):
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
+
+        self.theta = []
+        self.phi = []
+        self.detector_ids = []
+        self.core_x = []
+        self.core_y = []
 
     def reconstruct_and_store(self):
         """Shorthand function to reconstruct event and store the results"""
@@ -161,7 +167,7 @@ class ReconstructESDEvents(object):
         NaN as reconstructed value.
 
         """
-        for event, core_x, core_y, theta, phi, detector_ids in itertools.izip(
+        for event, core_x, core_y, theta, phi, detector_ids in izip_longest(
                 self.events, self.core_x, self.core_y,
                 self.theta, self.phi, self.detector_ids):
             self._store_reconstruction(event, core_x, core_y, theta, phi,
@@ -225,6 +231,12 @@ class ReconstructESDCoincidences(object):
 
         self.direction = CoincidenceDirectionReconstruction(self.cluster)
         self.core = CoincidenceCoreReconstruction(self.cluster)
+
+        self.theta = []
+        self.phi = []
+        self.station_numbers = []
+        self.core_x = []
+        self.core_y = []
 
     def reconstruct_and_store(self):
         """Shorthand function to reconstruct coincidences and store results"""
@@ -449,7 +461,7 @@ class ReconstructESDCoincidences(object):
         NaN as reconstructed value.
 
         """
-        for coincidence, x, y, theta, phi, station_numbers in itertools.izip(
+        for coincidence, x, y, theta, phi, station_numbers in izip_longest(
                 self.coincidences, self.core_x, self.core_y,
                 self.theta, self.phi, self.station_numbers):
             self._store_reconstruction(coincidence, x, y, theta, phi,
