@@ -116,12 +116,12 @@ class CoincidenceDirectionReconstruction(object):
             station.center_of_mass_coordinates = \
                 station.calc_center_of_mass_coordinates()
 
-    def reconstruct_coincidence(self, coincidence, station_numbers=None,
+    def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
                                 offsets={}):
         """Reconstruct a single coincidence
 
-        :param coincidence: a coincidence list consisting of
-                            three (station_number, event) tuples
+        :param coincidence_events: a coincidence list consisting of three
+                                   or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
         :param offsets: dictionary with detector offsets for each station.
@@ -132,14 +132,14 @@ class CoincidenceDirectionReconstruction(object):
         """
         no_offset = [0., 0., 0., 0.]
 
-        if len(coincidence) < 3:
+        if len(coincidence_events) < 3:
             return nan, nan, []
 
         # Subtract base timestamp to prevent loss of precision
-        ts0 = int(coincidence[0][1]['timestamp']) * int(1e9)
+        ts0 = int(coincidence_events[0][1]['timestamp']) * int(1e9)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        for station_number, event in coincidence:
+        for station_number, event in coincidence_events:
             if station_numbers is not None:
                 if station_number not in station_numbers:
                     continue
@@ -175,8 +175,8 @@ class CoincidenceDirectionReconstruction(object):
                                  offsets={}, progress=True):
         """Reconstruct all coincidences
 
-        :param coincidences: a list of coincidences, each consisting of
-                             three (station_number, event) tuples.
+        :param coincidences: a list of coincidence events, each consisting
+                             of three or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
         :param offsets: dictionary with detector offsets for each station.
