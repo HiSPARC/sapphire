@@ -231,8 +231,6 @@ class AverageIntersectionAlgorithm(object):
                 xhit.append(x[i])
                 yhit.append(y[i])
 
-        meanx = mean(xhit)
-        meany = mean(yhit)
         statindex = range(len(phit))
         subsets = itertools.combinations(statindex, 3)
         m = 3.0  # average value in powerlaw  r ^(-m)  for density
@@ -288,40 +286,28 @@ class AverageIntersectionAlgorithm(object):
                 xpointlist.append(xint)
                 ypointlist.append(yint)
 
-        subxplist, subyplist = cls.select_newlist(meanx, meany, newx, newy,
-                    xpointlist, ypointlist, 400.)
-        listmin = 0
-        for distance in (200, 100.):
-            if len(subxplist) > listmin:
-                newx = mean(subxplist)
-                newy = mean(subyplist)
-                subxplist, subyplist = cls.select_newlist(meanx, meany, newx, newy,
-                    xpointlist, ypointlist, distance)
-
-        if len(subxplist) > listmin:
+        subxplist, subyplist = cls.select_newlist(newx, newy,
+                    xpointlist, ypointlist, 120.)
+        if len(subxplist) > 3:
+            newx = mean(subxplist)
+            newy = mean(subyplist)
+            subxplist, subyplist = cls.select_newlist(newx, newy,
+                xpointlist, ypointlist, 100.)
+        if len(subxplist) > 2:
             newx = mean(subxplist)
             newy = mean(subyplist)
 
         return newx, newy
 
     @staticmethod
-    def select_newlist(meanx, meany, newx, newy, xpointlist, ypointlist, distance):
+    def select_newlist(newx, newy, xpointlist, ypointlist, distance):
         """Select intersection points in square around the mean of old list."""
         newxlist = []
         newylist = []
-        dxm = newx - meanx
-        dym = newy - meany
-        alpham = arctan2(dym,dxm)
         for xpoint, ypoint in zip(xpointlist, ypointlist):
-            dxp = xpoint - meanx
-            dyp = ypoint - meany
-            alphap = arctan2(dyp,dxp)
-            dalpha = abs(alpham - alphap)
-            dr = sqrt((dxm - dxp) ** 2 + (dym - dyp) ** 2)
-            frac = 5.
-            if dalpha < (pi / frac) or dalpha > ((2 * frac - 1) * pi / frac):
-                if dr < distance:
-                    newxlist.append(xpoint)
-                    newylist.append(ypoint)
+            dr = sqrt((xpoint - newx) ** 2 + (ypoint - newy) ** 2)
+            if dr < distance:
+                newxlist.append(xpoint)
+                newylist.append(ypoint)
 
         return newxlist, newylist
