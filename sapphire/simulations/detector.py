@@ -211,6 +211,7 @@ class HiSPARCSimulation(BaseSimulation):
                 energy_deposit_in_MIPS = _energy_transfer(photon[0])/max_E
 
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
+                # stdout output: Energy, k, interaction_probability, transfered_energy [mips]
                 print '*', photon[0], photon[1], photon[2], extra_mips
                 mips += extra_mips
 
