@@ -207,7 +207,7 @@ class HiSPARCSimulation(BaseSimulation):
 
             if photon[1] < photon[2]: #   (k < interaction_probability)
                 print 'DEBUG photon detected! =  ', photon
-                maximum_energy_deposit_in_MIPS = photon[1]/photon[2]*max_E/MIP
+                maximum_energy_deposit_in_MIPS = (1-photon[1]/photon[2])*max_E/MIP
                 energy_deposit_in_MIPS = _energy_transfer(photon[0])/max_E
 
                 mips += np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
