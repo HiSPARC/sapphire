@@ -152,6 +152,7 @@ class HiSPARCSimulation(BaseSimulation):
                             (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
             mips = sum(mips)
         return mips
+
     @classmethod
     def simulate_detector_mips_gammas(cls, n, p, theta):
         """
@@ -196,15 +197,13 @@ class HiSPARCSimulation(BaseSimulation):
         E = p / 1.e6
         k = np.random.random(n)
 
-#        interaction_probability = 0.134198 * np.exp(-0.392398*E) + 0.034156
-
-        interaction_probability = 0.05
+        interaction_probability = 0.134198 * np.exp(-0.392398*E) + 0.034156
 
         E_with_interaction = E.compress(k < interaction_probability)
 
         mips = 0
         for E_ in E_with_interaction:
-            mips += _energy_transfer(E_) / MIP
+            mips += np.minimum(1,_energy_transfer(E_) / MIP)  # maximise energy transfer per photon to 1 MIP
 
         return mips
 
