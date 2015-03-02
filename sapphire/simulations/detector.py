@@ -161,6 +161,7 @@ class HiSPARCSimulation(BaseSimulation):
         :param theta: angle of incidence of the gammas, as float or array.
         """
 
+        max_E = 4.0 # 2 MeV per cm * 2cm scintilator depth
         MIP = 3.38 # MeV
 
         # W.R. Leo (1987) p 54
@@ -197,15 +198,21 @@ class HiSPARCSimulation(BaseSimulation):
         # E [MeV]
         E = p / 1.e6
         k = np.random.random(n)
-
         interaction_probability = 0.134198 * np.exp(-0.392398*E) + 0.034156
 
-        E_with_interaction = E.compress(k < interaction_probability)
+        photons = zip(E, k, interaction_probability)
 
         mips = 0
-        for E_ in E_with_interaction:
-            mips += np.minimum(1,_energy_transfer(E_) / MIP)  # maximise energy transfer per photon to 1 MIP
+        for photon in photons:
 
+            if photon[1] < photon[2]: #   (k < interaction_probability)
+                print 'DEBUG photon detected! =  ', photon
+                maximum_energy_deposit_in_MIPS = photon[1]/photon[2]*max_E/MIP
+                energy_deposit_in_MIPS = _energy_transfer(photon[0])/max_E
+
+                mips += np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
+
+                print 'DEBUG MIPS = ', mips
         return mips
 
     @classmethod
