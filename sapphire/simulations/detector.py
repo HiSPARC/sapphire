@@ -184,11 +184,12 @@ class HiSPARCSimulation(BaseSimulation):
             lookup_table = [0.09673309,  0.17138467,  0.25043101,  0.33387211, 0.42170797,  0.51393859,  0.61056396,  0.7115841 ,  0.81699899, 1.0]
 
             energy = lookup_table[np.random.randint(10)]*edge
-
+            """
             print
             print "*** debugging _energy_transfer: E =", E
             print "compton edge = ",edge
             print "E =  %3.1f MeV (%2.0f percent) " % (energy, energy/E*100.)
+            """
 
             return energy
 
