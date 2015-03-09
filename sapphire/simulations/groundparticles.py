@@ -22,6 +22,7 @@ from math import pi, sin, cos, sqrt
 
 import numpy as np
 import tables
+import scipy.stats
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..utils import pbar
@@ -124,12 +125,17 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        leptons, gammas = self.get_particles_in_detector(detector)
+
+        """
+        remove lepton response, GENERATE initial photons
+        #leptons, gammas = self.get_particles_in_detector(detector)
         n_leptons = len(leptons)
         n_gammas = len(gammas)
 
         if not n_leptons+n_gammas:
             return {'n': 0, 't': -999}
+
+
 
         if n_leptons:
             mips_lepton = self.simulate_detector_mips_for_leptons(leptons)
@@ -137,6 +143,12 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             first_signal = leptons['t'].min() + detector.offset
         else:
             mips_lepton = 0
+
+        """
+        mips_lepton = 0
+        first_signal = 0
+        n_gammas = np.random.randint(7)
+        gammas = self.create_random_gammas(n_gammas)
 
         if n_gammas:
             mips_gamma = self.simulate_detector_mips_for_gammas(gammas)
@@ -268,6 +280,18 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                           y - detector_boundary, y + detector_boundary))
 
         return self.groundparticles.read_where(query), self.groundparticles.read_where(query_gammas)
+
+    def create_random_gammas(self, n):
+
+
+        # exponentieel verdeelde energy met minimum 0.1
+        E = scipy.stats.expon.rvs(loc = 0.1, scale = 1, size=n) + 0.1
+
+        gammas = [ (0,0,energy,0) for energy in E]
+
+        # np.record array gammas['p_x'][1] is valid
+        return np.array(gammas, dtype=np.dtype([ ('p_x', float), ('p_y', float), ('p_z', float), ('t', float) ]))
+
 
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
