@@ -261,20 +261,27 @@ class Network(API):
                                      subcluster=subcluster)
             return [station['number'] for station in stations]
         except Exception, e:
-            if allow_stale:
-                # Try getting the station info from the JSON.
-                try:
-                    with open(JSON_FILE) as data:
-                        stations = [int(s) for s in json.load(data).keys()
-                                    if s != '_info']
-                    warnings.warn('Couldnt get values from the server, using '
-                                  'hard-coded values. Possibly outdated.',
-                                  UserWarning)
-                    return sorted(stations)
-                except:
-                    raise e
-            else:
+            if not allow_stale:
                 raise
+            # Try getting the station info from the JSON.
+            try:
+                if country is None and cluster is None and subcluster is None:
+                    start, end = (0, 1e9)
+                elif country is not None:
+                    start, end = (country, country + 10000)
+                elif cluster is not None:
+                    start, end = (cluster, cluster + 1000)
+                else:
+                    start, end = (subcluster, subcluster + 100)
+                with open(JSON_FILE) as data:
+                    stations = [int(s) for s in json.load(data).keys()
+                                if s != '_info' and start <= int(s) < end]
+                warnings.warn('Couldnt get values from the server, using '
+                              'hard-coded values. Possibly outdated.',
+                              UserWarning)
+                return sorted(stations)
+            except:
+                raise e
 
     def nested_network(self):
         """Get a nested list of the full network"""
