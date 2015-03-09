@@ -276,8 +276,11 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         return self.groundparticles.read_where(query), self.create_random_gammas(10)
 
     def create_random_gammas(self, n):
-
-        # exponentieel verdeelde energy met minimum 0.1
+        """
+        generator random (expon distributed by energy) gammas
+        """
+        # Emin = 0.1 MeV, most are below 3 MeV to fill-up the range not covered
+        #  in CORSIKA
         E = scipy.stats.expon.rvs(loc = 0.1, scale = 1, size=n) + 0.1
 
         gammas = [ (0,0,energy*1e6,0) for energy in E]
