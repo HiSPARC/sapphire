@@ -200,7 +200,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         detectors_hit = [True for observables in detector_observables
-                         if observables['n'] > 0]
+                         if observables['n'] > 0.28] # 70mV/200mV = 0.28 mips
 
         if sum(detectors_hit) >= 2:
             return True
@@ -272,7 +272,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         return self.groundparticles.read_where(query), self.groundparticles.read_where(query_gammas)
         """
-        # skip the gamma's from the data file, just generate 10 random gamma's
+        # skip the gamma's from the data file, just generate random gamma's
         return self.groundparticles.read_where(query), self.create_random_gammas(10)
 
     def create_random_gammas(self, n):
