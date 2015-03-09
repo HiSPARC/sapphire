@@ -177,22 +177,13 @@ class HiSPARCSimulation(BaseSimulation):
 
         def _energy_transfer(E):
 
-            edge = _compton_edge(E)
-
-            # from lio-project/photons/electron_energy_distribution
+            # from lio-project/photons/electron_energy_distribution.py
 
             # cumulative energy distribution implemented as table (this should be a matrix based on E)
             lookup_table = [0.09673309,  0.17138467,  0.25043101,  0.33387211, 0.42170797,  0.51393859,  0.61056396,  0.7115841 ,  0.81699899, 1.0]
 
-            energy = lookup_table[np.random.randint(10)]*edge
-            """
-            print
-            print "*** debugging _energy_transfer: E =", E
-            print "compton edge = ",edge
-            print "E =  %3.1f MeV (%2.0f percent) " % (energy, energy/E*100.)
-            """
+            return lookup_table[np.random.randint(10)]*_compton_edge(E)
 
-            return energy
 
         # p [eV]
         # E [MeV]
@@ -206,16 +197,14 @@ class HiSPARCSimulation(BaseSimulation):
         for photon in photons:
 
             if photon[1] < photon[2]: #   (k < interaction_probability)
-                print 'DEBUG photon detected! =  ', photon
                 maximum_energy_deposit_in_MIPS = (1-photon[1]/photon[2])*max_E/MIP
                 energy_deposit_in_MIPS = _energy_transfer(photon[0])/max_E
 
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
                 # stdout output: Energy, k, interaction_probability, transfered_energy [mips]
-                print '*', photon[0], photon[1], photon[2], extra_mips
+                # print '*', photon[0], photon[1], photon[2], extra_mips
                 mips += extra_mips
 
-                print 'DEBUG total MIPS = ', mips
         return mips
 
     @classmethod
