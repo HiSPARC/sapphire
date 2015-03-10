@@ -15,6 +15,9 @@ This package contains modules for performing various analysis tasks:
 :mod:`~sapphire.analysis.direction_reconstruction`
     EAS direction reconstruction
 
+:mod:`~sapphire.analysis.event_utils`
+    Module for getting data from processed events
+
 :mod:`~sapphire.analysis.find_mpv`
     Module for finding the MIP peak MPV in pulseintegral data
 
@@ -32,6 +35,7 @@ from . import coincidence_queries
 from . import coincidences
 from . import core_reconstruction
 from . import direction_reconstruction
+from . import event_utils
 from . import find_mpv
 from . import landau
 from . import process_events
@@ -42,6 +46,7 @@ __all__ = ['coincidence_queries',
            'coincidences',
            'core_reconstruction',
            'direction_reconstruction',
+           'event_utils',
            'find_mpv',
            'landau',
            'process_events',
