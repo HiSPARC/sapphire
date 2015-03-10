@@ -4,7 +4,7 @@
     well-known formulas.
 
 """
-from math import sin, cos, sqrt, radians
+from math import sin, cos, atan2, sqrt, radians, degrees
 
 from numpy import matrix
 
@@ -37,12 +37,22 @@ class FromWGS84ToENUTransformation(object):
     def transform(self, coordinates):
         """Transfrom WGS84 coordinates to ENU coordinates"""
 
+        return self.lla_to_enu(coordinates)
+
+    def lla_to_enu(self, coordinates):
+        """Transfrom WGS84 coordinates to ENU coordinates"""
+
         return self.ecef_to_enu(self.lla_to_ecef(coordinates))
+
+    def enu_to_lla(self, coordinates):
+        """Transfrom WGS84 coordinates to ENU coordinates"""
+
+        return self.ecef_to_lla(self.enu_to_ecef(coordinates))
 
     def lla_to_ecef(self, coordinates):
         """Convert from LLA coordinates to ECEF coordinates
 
-        LLA:  Latitude, Longitude, Altitude
+        LLA: Latitude, Longitude, Altitude
         ECEF: Earth-Centered, Earth-Fixed
 
         The conversion formulas are taken from
@@ -54,6 +64,7 @@ class FromWGS84ToENUTransformation(object):
 
         :param coordinates: tuple of latitude, longitude (both in degrees)
                             and altitude (in meters).
+        :returns: ECEF coordinates (in meters).
 
         """
         latitude, longitude, altitude = coordinates
@@ -73,6 +84,37 @@ class FromWGS84ToENUTransformation(object):
 
         return X, Y, Z
 
+    def ecef_to_lla(self, coordinates):
+        """Convert from ECEF coordinates to LLA coordinates
+
+        ECEF: Earth-Centered, Earth-Fixed
+        LLA: Latitude, Longitude, Altitude
+
+        The conversion formulas are taken from
+        https://gist.github.com/klucar/1536054
+
+        :param coordinates: tuple of X, Y, and Z (in meters).
+        :returns: latitude, longitude (in degrees) and altitude (in meters).
+
+        """
+        X, Y, Z = coordinates
+
+        a = self.geode.a
+        b = self.geode.b
+        e = self.geode.e
+        eprime = self.geode.eprime
+
+        p = sqrt(X ** 2 + Y ** 2)
+        th = atan2(a * Z, b * p)
+
+        longitude = atan2(Y, X)
+        latitude = atan2((Z + eprime ** 2 * b * sin(th) ** 3),
+                         (p - e ** 2 * a * cos(th) ** 3))
+        N = a / sqrt(1 - e ** 2 * sin(latitude) ** 2)
+        altitude = p / cos(latitude) - N
+
+        return degrees(latitude), degrees(longitude), altitude
+
     def ecef_to_enu(self, coordinates):
         """Convert from ECEF coordinates to ENU coordinates
 
@@ -84,6 +126,7 @@ class FromWGS84ToENUTransformation(object):
 
         :param coordinates: a tuple containing the ECEF coordinates (in meters)
                             of the point to transform
+        :returns: east, north, and up (in meters).
 
         """
         latitude, longitude, altitude = self.ref_lla
@@ -101,3 +144,28 @@ class FromWGS84ToENUTransformation(object):
         coordinates = matrix([[X - Xr], [Y - Yr], [Z - Zr]])
 
         return (transformation * coordinates).A1
+
+    def enu_to_ecef(self, coordinates):
+        """Convert from ENU coordinates to ECEF coordinates
+
+        ENU: East, North, Up
+        ECEF: Earth-Centered, Earth-Fixed
+
+        :param coordinates: a tuple containing the ENU coordinates (in meters).
+        :returns: ECEF coordinates (in meters).
+
+        """
+        latitude, longitude, altitude = self.ref_lla
+        Xr, Yr, Zr = self.ref_XYZ
+
+        lat = radians(latitude)
+        lon = radians(longitude)
+
+        transformation = matrix([
+            [-sin(lon), -sin(lat) * cos(lon), cos(lat) * cos(lon)],
+            [ cos(lon), -sin(lat) * sin(lon), cos(lat) * sin(lon)],
+            [       0.,             cos(lat),            sin(lat)]])
+
+        x, y, z = (transformation * matrix(coordinates).T).A1
+
+        return x + Xr, y + Yr, z + Zr
