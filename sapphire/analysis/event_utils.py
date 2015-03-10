@@ -24,6 +24,7 @@ def station_density(event, detector_ids=None, station=None):
     :param detector_ids: list of detectors ids to consider. If None, the
         detectors in the station object will be used.
     :param station: Station object.
+    :returns: average density over the chosen detectors.
 
     """
     if detector_ids is None:
@@ -40,6 +41,7 @@ def detector_densities(event, detector_ids=None, station=None):
     :param detector_ids: list of detectors ids for which to get particle
         densities.
     :param station: Station object.
+    :returns: density in each chosen detector.
 
     """
     if detector_ids is None:
@@ -54,6 +56,7 @@ def detector_density(event, detector_id, station=None):
     :param event: Processed event row.
     :param detector_id: detector id for which to get particle density.
     :param station: Station object, used to determine the detector size.
+    :returns: density in the chosen detector.
 
     """
     number_of_particles = event['n%d' % (detector_id + 1)]
@@ -162,8 +165,13 @@ def detector_arrival_time(event, detector_id, offsets=NO_OFFSET):
 
 
 def get_detector_ids(station=None, event=None):
-    """Determine the detector ids based on the station object or event data"""
+    """Determine the detector ids based on the station object or event data
 
+    :param event: Event row.
+    :param station: Station object.
+    :returns: list of detector_ids.
+
+    """
     if station is not None:
         detector_ids = range(len(station.detectors))
     elif event is not None:
