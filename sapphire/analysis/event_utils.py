@@ -1,14 +1,71 @@
 """ Get data from HiSPARC events
 
 This module contains functions to derive data from HiSPARC events.
+Common tasks for data reconstruction are getting the particle density
+and shower arrival time in detectors or a station. These functions are
+aware of processed events (i.e. reconstructed number of MIPs, arrival
+times and trigger time) and stations.
 
 """
 from ..utils import ERR
 
-from numpy import nan, nanmin
+from numpy import nan, nanmin, nanmean
 
 
 NO_OFFSET = [0., 0., 0., 0.]
+
+
+def station_density(event, detector_ids=None, station=None):
+    """Get particle density in a station
+
+    Detectors with error values will be ignored.
+
+    :param event: Processed event row.
+    :param detector_ids: list of detectors ids to consider. If None, the
+        detectors in the station object will be used.
+    :param station: Station object.
+
+    """
+    if detector_ids is None:
+        detector_ids = get_detector_ids(station, event)
+    p = nanmean(detector_densities(event, detector_ids=detector_ids,
+                                   station=station))
+    return p
+
+
+def detector_densities(event, detector_ids=None, station=None):
+    """Get particle density in station detectors
+
+    :param event: Processed event row.
+    :param detector_ids: list of detectors ids for which to get particle
+        densities.
+    :param station: Station object.
+
+    """
+    if detector_ids is None:
+        detector_ids = get_detector_ids(station, event)
+    p = [detector_density(event, id, station) for id in detector_ids]
+    return p
+
+
+def detector_density(event, detector_id, station=None):
+    """Get particle density in station detector
+
+    :param event: Processed event row.
+    :param detector_id: detector id for which to get particle density.
+    :param station: Station object, used to determine the detector size.
+
+    """
+    number_of_particles = event['n%d' % (detector_id + 1)]
+    if station is None:
+        area = .5
+    else:
+        area = station.detectors[detector_id].get_area()
+    if number_of_particles not in ERR:
+        p = number_of_particles / area
+    else:
+        p = nan
+    return p
 
 
 def station_arrival_time(event, reference_ext_timestamp,
