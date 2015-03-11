@@ -25,19 +25,19 @@ class ReconstructESDEvents(object):
 
         data = tables.open_file('2014_1_1.h5', 'a')
         station_path = '/hisparc/cluster_amsterdam/station_506'
-        dirrec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
-        dirrec.reconstruct_and_store()
+        rec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
+        rec.reconstruct_and_store()
 
     To visualize the results::
 
         import matplotlib.pyplot as plt
-        plt.polar([p for p in dirrec.phi if not isnan(p)],
-                  [t for t in dirrec.theta if not isnan(t)], 'ko', alpha=0.2)
+        plt.polar([p for p in rec.phi if not isnan(p)],
+                  [t for t in rec.theta if not isnan(t)], 'ko', alpha=0.2)
 
     or::
 
-        plt.polar(dirrec.reconstructions.col('azimuth'),
-                  dirrec.reconstructions.col('zenith'), 'ko', alpha=0.2)
+        plt.polar(rec.reconstructions.col('azimuth'),
+                  rec.reconstructions.col('zenith'), 'ko', alpha=0.2)
 
     """
 
@@ -201,8 +201,8 @@ class ReconstructESDCoincidences(object):
         from sapphire.analysis.reconstructions import ReconstructESDCoincidences
 
         data = tables.open_file('2014_1_1.h5', 'a')
-        dirrec = ReconstructESDCoincidences(data, overwrite=True)
-        dirrec.reconstruct_and_store()
+        rec = ReconstructESDCoincidences(data, overwrite=True)
+        rec.reconstruct_and_store()
 
     """
 
