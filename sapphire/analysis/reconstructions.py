@@ -74,14 +74,14 @@ class ReconstructESDEvents(object):
         self.core_x = []
         self.core_y = []
 
-    def reconstruct_and_store(self):
+    def reconstruct_and_store(self, detector_ids=None):
         """Shorthand function to reconstruct event and store the results"""
 
         self.prepare_output()
         self.determine_detector_timing_offsets()
         self.store_offsets()
-        self.reconstruct_directions()
-        self.reconstruct_cores()
+        self.reconstruct_directions(detector_ids=detector_ids)
+        self.reconstruct_cores(detector_ids=detector_ids)
         self.store_reconstructions()
 
     def reconstruct_directions(self, detector_ids=None):
@@ -238,13 +238,13 @@ class ReconstructESDCoincidences(object):
         self.core_x = []
         self.core_y = []
 
-    def reconstruct_and_store(self):
+    def reconstruct_and_store(self, station_numbers=None):
         """Shorthand function to reconstruct coincidences and store results"""
 
         self.prepare_output()
         self.get_station_timing_offsets()
-        self.reconstruct_directions()
-        self.reconstruct_cores()
+        self.reconstruct_directions(station_numbers=station_numbers)
+        self.reconstruct_cores(station_numbers=station_numbers)
         self.store_reconstructions()
 
     def reconstruct_directions(self, station_numbers=None):
