@@ -70,6 +70,15 @@ class Detector(object):
         r, phi, z = axes.cartesian_to_cylindrical(x, y, z)
         return r, phi, z
 
+    def get_lla_coordinates(self):
+        lla = self.station.cluster.lla
+        enu = self.get_coordinates()
+
+        transform = geographic.FromWGS84ToENUTransformation(lla)
+        latitude, longitude, altitude = transform.enu_to_lla(enu)
+
+        return latitude, longitude, altitude
+
     def get_corners(self):
         """Get the x, y coordinates of the detector corners
 
@@ -215,6 +224,16 @@ class Station(object):
         r, phi, z = axes.cartesian_to_cylindrical(x, y, z)
         return r, phi, z, alpha
 
+    def get_lla_coordinates(self):
+        lla = self.cluster.lla
+        x, y, z, alpha = self.get_coordinates()
+        enu = (x, y, z)
+
+        transform = geographic.FromWGS84ToENUTransformation(lla)
+        latitude, longitude, altitude = transform.enu_to_lla(enu)
+
+        return latitude, longitude, altitude
+
     def calc_r_and_phi_for_detectors(self, d0, d1):
         r, phi, _ = self.calc_rphiz_for_detectors(d0, d1)
         return r, phi
@@ -261,17 +280,21 @@ class BaseCluster(object):
 
     _stations = None
 
-    def __init__(self, position=(0, 0, 0), angle=0):
+    def __init__(self, position=(0, 0, 0), angle=0,
+                 lla=(52.35592417, 4.95114402, 56.10234594)):
         """Override this function to build your cluster
 
-        :param position: x,y,z position for the center of the cluster
+        :param position: x,y,z position for the center of the cluster.
         :param angle: rotation of the cluster in the x,y-plane.
+        :param lla: Reference WGS84 location of the cluster origin.
+                    Defaults to the (old) GPS location of 501.
 
         """
         self.x = position[0]
         self.y = position[1]
         self.z = position[2] if len(position) == 3 else 0.
         self.alpha = angle
+        self.lla = lla
 
     def _add_station(self, position, angle, detectors=None, number=None):
         """Add a station to the cluster
@@ -347,6 +370,16 @@ class BaseCluster(object):
         """
         r, phi, z = axes.cartesian_to_cylindrical(self.x, self.y, self.z)
         return r, phi, z, self.alpha
+
+    def get_lla_coordinates(self):
+        lla = self.lla
+        x, y, z, alpha = self.get_coordinates()
+        enu = (x, y, z)
+
+        transform = geographic.FromWGS84ToENUTransformation(lla)
+        latitude, longitude, altitude = transform.enu_to_lla(enu)
+
+        return latitude, longitude, altitude
 
     def set_coordinates(self, x, y, z, alpha):
         """Set cluster coordinates (x, y, z, alpha).
@@ -555,6 +588,7 @@ class ScienceParkCluster(BaseCluster):
                              506: 267, 507: 0, 508: -135, 509: 135}
 
         reference = gps_coordinates[stations[0]]
+        self.lla = reference
         transformation = geographic.FromWGS84ToENUTransformation(reference)
 
         for station in stations:
@@ -643,6 +677,7 @@ class HiSPARCStations(RAlphaBetaStations):
                        location['altitude'])
 
             if i == 0:
+                self.lla = gps
                 transformation = geographic.FromWGS84ToENUTransformation(gps)
 
             enu = transformation.transform(gps)
