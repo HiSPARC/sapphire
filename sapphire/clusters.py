@@ -650,12 +650,12 @@ class HiSPARCStations(RAlphaBetaStations):
 
     """
 
-    def __init__(self, stations, allow_missing=False):
+    def __init__(self, stations, date=None, allow_missing=False):
         super(HiSPARCStations, self).__init__()
 
         for i, station in enumerate(stations):
             try:
-                station_info = api.Station(station)
+                station_info = api.Station(station, date)
             except:
                 if allow_missing:
                     warnings.warn('Could not get info for station %d, '
