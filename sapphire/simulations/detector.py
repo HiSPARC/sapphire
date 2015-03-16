@@ -237,7 +237,7 @@ class HiSPARCSimulation(BaseSimulation):
         #p [eV]
         #E [MeV]
         E = p / 1.e6
-        
+
         mips = 0
         for energy in E:
 
@@ -249,24 +249,28 @@ class HiSPARCSimulation(BaseSimulation):
                 continue
 
             #  interaction in scintilator
-            if ((energy < 1.022) | (depth_compton < depth_pair)):
+            if (depth_compton < depth_pair):
                 # compton scattering
                 maximum_energy_deposit_in_MIPS = (1-depth_compton)*max_E/MIP
                 energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
                 # stdout output: Energy, k, interaction_probability, transfered_energy [mips]
                 # print '*', photon[0], photon[1], photon[2], extra_mips
+                if extra_mips < 0:
+                    print "lp0 on fire! E = ", energy, depth_compton
+                    print "energy_deposit = ", energy_deposit_in_MIPS
+                    print "max = ", maximum_energy_deposit_in_MIPS
+
                 mips += extra_mips
                 print "compton: ", extra_mips
-            else:
+            elif (energy > 1.022):
                 # pair production: Two "electrons"
                 maximum_energy_deposit_in_MIPS = (1-depth_pair)*max_E/MIP
                 energy_deposit_in_MIPS = (energy - 1.022) / MIP # 1.022 MeV used for creation of two particles
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)
                 mips += extra_mips
-                print "pair! ",extra_mips
+                #print "pair! ",extra_mips
 
-        print "mips = ", mips
         return mips
 
     @classmethod
