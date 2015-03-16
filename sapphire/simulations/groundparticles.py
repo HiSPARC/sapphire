@@ -274,7 +274,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """
         # skip the gamma's from the data file, just generate random gamma's
         #return self.groundparticles.read_where(query), self.create_random_gammas(10)
-        return [],self.create_random_gammas(3)
+        return [],self.create_random_gammas(10)
 
     def create_random_gammas(self, n):
         """
