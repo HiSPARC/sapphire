@@ -236,13 +236,8 @@ class HiSPARCSimulation(BaseSimulation):
 
         #p [eV]
         #E [MeV]
-        #E = p / 1.e6
-        #k = np.random.random(n)
-        #interaction_probability = 0.134198 * np.exp(-0.392398*E) + 0.034156
-
-        n = 3
-        E = np.random.rand(100)*10.    # DIT ZIJN ALTIJD LIJSTEN!
-
+        E = p / 1.e6
+        
         mips = 0
         for energy in E:
 
