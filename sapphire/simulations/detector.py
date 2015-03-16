@@ -256,13 +256,7 @@ class HiSPARCSimulation(BaseSimulation):
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
                 # stdout output: Energy, k, interaction_probability, transfered_energy [mips]
                 # print '*', photon[0], photon[1], photon[2], extra_mips
-                if extra_mips < 0:
-                    print "lp0 on fire! E = ", energy, depth_compton
-                    print "energy_deposit = ", energy_deposit_in_MIPS
-                    print "max = ", maximum_energy_deposit_in_MIPS
-
                 mips += extra_mips
-                print "compton: ", extra_mips
             elif (energy > 1.022):
                 # pair production: Two "electrons"
                 maximum_energy_deposit_in_MIPS = (1-depth_pair)*max_E/MIP
