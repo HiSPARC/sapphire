@@ -163,7 +163,7 @@ class HiSPARCSimulation(BaseSimulation):
 
         max_E = 4.0 # 2 MeV per cm * 2cm scintilator depth
         MIP = 3.38 # MeV
-        P_pair_production = 0.015
+        P_pair_production = 0.015 # interaction probability for pair production
 
         # W.R. Leo (1987) p 54
         # E photon energy [MeV]
@@ -241,29 +241,36 @@ class HiSPARCSimulation(BaseSimulation):
         mips = 0
         for energy in E:
 
+            # proces each foton
+
             depth_compton = np.random.random()/_compton_interaction_probability(energy) # unit: scintilator depth
             depth_pair = np.random.random()/P_pair_production # 0.015 = P(pair production)
             #print "E, depth compton, pair = ", energy, depth_compton, depth_pair
 
             if ((depth_pair > 1.0) & (depth_compton > 1.0)):
+                # no interaction
                 continue
 
             #  interaction in scintilator
             if (depth_compton < depth_pair):
-                # compton scattering
+                """
+                compton scattering
+                """"
                 maximum_energy_deposit_in_MIPS = (1-depth_compton)*max_E/MIP
                 energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
                 # stdout output: Energy, k, interaction_probability, transfered_energy [mips]
                 # print '*', photon[0], photon[1], photon[2], extra_mips
                 mips += extra_mips
+
             elif (energy > 1.022):
-                # pair production: Two "electrons"
+                """
+                pair production: Two "electrons"
+                """
                 maximum_energy_deposit_in_MIPS = (1-depth_pair)*max_E/MIP
                 energy_deposit_in_MIPS = (energy - 1.022) / MIP # 1.022 MeV used for creation of two particles
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)
                 mips += extra_mips
-                #print "pair! ",extra_mips
 
         return mips
 
