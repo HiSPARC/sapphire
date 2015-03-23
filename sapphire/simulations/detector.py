@@ -255,7 +255,7 @@ class HiSPARCSimulation(BaseSimulation):
             if (depth_compton < depth_pair):
                 """
                 compton scattering
-                """"
+                """
                 maximum_energy_deposit_in_MIPS = (1-depth_compton)*max_E/MIP
                 energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
