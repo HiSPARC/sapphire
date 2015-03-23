@@ -200,7 +200,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         detectors_hit = [True for observables in detector_observables
-                         if observables['n'] > 0.28] # 70mV/200mV = 0.28 mips
+                         if observables['n'] > 0.] # 70mV/200mV = 0.28 mips
 
         if sum(detectors_hit) >= 2:
             return True
@@ -264,17 +264,19 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
                   y - detector_boundary, y + detector_boundary))
-        """
+        
         query_gammas = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                          ' & (particle_id == 1)' %
                          (x - detector_boundary, x + detector_boundary,
                           y - detector_boundary, y + detector_boundary))
 
         return self.groundparticles.read_where(query), self.groundparticles.read_where(query_gammas)
+
         """
         # skip the gamma's from the data file, just generate random gamma's
-        #return self.groundparticles.read_where(query), self.create_random_gammas(10)
-        return [],self.create_random_gammas(10)
+        return self.groundparticles.read_where(query), self.create_random_gammas(10)
+        return [],self.create_random_gammas(3)
+        """
 
     def create_random_gammas(self, n):
         """
@@ -282,10 +284,10 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """
         # Emin = 0.1 MeV, most are below 3 MeV to fill-up the range not covered
         #  in CORSIKA
-        E = scipy.stats.expon.rvs(loc = 0.1, scale = 1, size=n) + 0.1
+        E = scipy.stats.expon.rvs(loc = 0.1, scale = 1, size=n) + 3.0
 
         gammas = [ (0,0,energy*1e6,0) for energy in E]
-
+        #print "DEBUG: generated random gammas",gammas
         # np.record array gammas['p_x'][1] is valid
         return np.array(gammas, dtype=np.dtype([ ('p_x', float), ('p_y', float), ('p_z', float), ('t', float) ]))
 

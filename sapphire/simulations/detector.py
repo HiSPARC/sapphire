@@ -242,7 +242,9 @@ class HiSPARCSimulation(BaseSimulation):
         for energy in E:
 
             # proces each foton
-
+            """
+            Dit moet beter: trek interactieplel uit een Emacht.
+            """
             depth_compton = np.random.random()/_compton_interaction_probability(energy) # unit: scintilator depth
             depth_pair = np.random.random()/P_pair_production # 0.015 = P(pair production)
             #print "E, depth compton, pair = ", energy, depth_compton, depth_pair
@@ -259,8 +261,10 @@ class HiSPARCSimulation(BaseSimulation):
                 maximum_energy_deposit_in_MIPS = (1-depth_compton)*max_E/MIP
                 energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
+
                 # stdout output: Energy, k, interaction_probability, transfered_energy [mips]
                 # print '*', photon[0], photon[1], photon[2], extra_mips
+
                 mips += extra_mips
 
             elif (energy > 1.022):
