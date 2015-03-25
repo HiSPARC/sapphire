@@ -85,7 +85,7 @@ def station_arrival_time(event, reference_ext_timestamp,
         Often best to use the timestamp of the first event in a coincidence.
     :param detector_ids: list of detectors ids for which to consider.
     :param offsets: list of detector time offsets.
-    :param station: Station object, used to determine the numnber of detectors.
+    :param station: Station object, used to determine the number of detectors.
     :returns: shower arrival time of the station relative to the
               reference timestamp.
 
@@ -113,7 +113,7 @@ def relative_detector_arrival_times(event, reference_ext_timestamp,
         Often best to use the timestamp of the first event in a coincidence.
     :param detector_ids: list of detectors ids for which to get arrival times.
     :param offsets: list of detector time offsets.
-    :param station: Station object, used to determine the numnber of detectors.
+    :param station: Station object, used to determine the number of detectors.
     :returns: list of shower arrival times relative to the given reference.
 
     """
@@ -137,7 +137,7 @@ def detector_arrival_times(event, detector_ids=None, offsets=NO_OFFSET,
     :param event: Processed event row.
     :param detector_ids: list of detectors ids for which to get arrival times.
     :param offsets: list of detector time offsets.
-    :param station: Station object, used to determine the numnber of detectors.
+    :param station: Station object, used to determine the number of detectors.
     :returns: list of shower arrival times relative to the start of the trace.
 
     """
@@ -166,6 +166,11 @@ def detector_arrival_time(event, detector_id, offsets=NO_OFFSET):
 
 def get_detector_ids(station=None, event=None):
     """Determine the detector ids based on the station object or event data
+
+    Returns a list of detectors that should be present.
+
+    Note: Event based determination might not work for simulated data,
+    since it currently does not simulate pulseheights.
 
     :param event: Event row.
     :param station: Station object.
