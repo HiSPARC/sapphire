@@ -19,7 +19,8 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         self.mock_open_file.assert_called_once_with(self.data_path, 'r')
         expected = [call(self.coincidences_group, 'coincidences'),
                     call(self.coincidences_group, 's_index'),
-                    call(self.coincidences_group, 'c_index')]
+                    call(self.coincidences_group, 'c_index'),
+                    call(self.coincidences_group, 'reconstructions')]
         call_list = self.mock_open_file.return_value.get_node.call_args_list
         self.assertEqual(call_list, expected)
 
