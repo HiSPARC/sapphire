@@ -19,7 +19,7 @@ before_install:
   - conda update --yes conda
 
 install:
-  - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables matplotlib
+  - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables
   - pip install coverage coveralls
   - python setup.py develop
 
