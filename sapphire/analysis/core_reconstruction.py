@@ -20,6 +20,7 @@ import itertools
 
 from numpy import isnan, nan, cos, sqrt, mean, pi, arctan2
 
+from .event_utils import station_density, detector_density
 from ..utils import pbar, ERR
 
 
@@ -58,8 +59,9 @@ class EventCoreReconstruction(object):
         if detector_ids is None:
             detector_ids = range(4)
         for id in detector_ids:
-            if event['n%d' % (id + 1)] not in ERR:
-                p.append(event['n%d' % (id + 1)] / self.area[id])
+            p_detector = detector_density(event, id, self.station)
+            if not isnan(p_detector):
+                p.append(p_detector)
                 x.append(self.x[id])
                 y.append(self.y[id])
                 z.append(self.z[id])
@@ -122,18 +124,14 @@ class CoincidenceCoreReconstruction(object):
             if station_numbers is not None:
                 if station_number not in station_numbers:
                     continue
-            try:
-                sum_n = sum(event['n%d' % (i + 1)] for i in range(4)
-                            if event['n%d' % (i + 1)] not in ERR)
-            except ValueError:
-                # All values -1 or -999
-                continue
             station = self.cluster.get_station(station_number)
-            p.append(sum_n / station.area)
-            sx, sy, sz = station.center_of_mass_coordinates
-            x.append(sx)
-            y.append(sy)
-            z.append(sz)
+            p_station = station_density(event, range(4), station)
+            if not isnan(p_station):
+                sx, sy, sz = station.center_of_mass_coordinates
+                p.append(p_station)
+                x.append(sx)
+                y.append(sy)
+                z.append(sz)
 
         if len(p) >= 3:
             core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)

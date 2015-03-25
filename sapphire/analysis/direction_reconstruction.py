@@ -151,10 +151,10 @@ class CoincidenceDirectionReconstruction(object):
                                            station=station)
             if not isnan(t_first):
                 sx, sy, sz = station.center_of_mass_coordinates
+                t.append(t_first)
                 x.append(sx)
                 y.append(sy)
                 z.append(sz)
-                t.append(t_first)
                 nums.append(station_number)
 
         if len(t) == 3:
