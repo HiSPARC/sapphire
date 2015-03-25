@@ -22,6 +22,7 @@ from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, where, pi, inf, array)
 from scipy.optimize import minimize
 
+from .event_utils import station_arrival_time, detector_arrival_time
 from ..utils import pbar, norm_angle, ERR
 
 
@@ -63,8 +64,9 @@ class EventDirectionReconstruction(object):
         if detector_ids is None:
             detector_ids = range(4)
         for id in detector_ids:
-            if event['t%d' % (id + 1)] not in ERR:
-                t.append(event['t%d' % (id + 1)] - offsets[id])
+            t_detector = detector_arrival_time(event, id, offsets)
+            if not isnan(t_detector):
+                t.append(t_detector)
                 x.append(self.x[id])
                 y.append(self.y[id])
                 z.append(self.z[id])
@@ -144,23 +146,16 @@ class CoincidenceDirectionReconstruction(object):
                 if station_number not in station_numbers:
                     continue
             t_off = offsets.get(station_number, no_offset)
-            # Get first particle detection in event
-            if event['t_trigger'] in ERR:
-                continue
-            try:
-                t_first = min(event['t%d' % (i + 1)] - t_off[i]
-                              for i in range(4)
-                              if event['t%d' % (i + 1)] not in ERR)
-            except ValueError:
-                continue
             station = self.cluster.get_station(station_number)
-            sx, sy, sz = station.center_of_mass_coordinates
-            x.append(sx)
-            y.append(sy)
-            z.append(sz)
-            t.append((int(event['ext_timestamp']) - ts0) -
-                     event['t_trigger'] + t_first)
-            nums.append(station_number)
+            t_first = station_arrival_time(event, ts0, offsets=t_off,
+                                           station=station)
+            if not isnan(t_first):
+                sx, sy, sz = station.center_of_mass_coordinates
+                x.append(sx)
+                y.append(sy)
+                z.append(sz)
+                t.append(t_first)
+                nums.append(station_number)
 
         if len(t) == 3:
             theta, phi = self.direct.reconstruct_common(t, x, y, z)
