@@ -1,4 +1,5 @@
 from itertools import izip_longest
+from datetime import date
 
 from numpy import nan, arange, histogram, linspace
 from scipy.optimize import curve_fit
@@ -63,7 +64,9 @@ class ReconstructESDEvents(object):
         if isinstance(station, Station):
             self.station = station
         else:
-            self.station = HiSPARCStations([station]).get_station(station)
+            last_date = date.fromtimestamp(max(self.events.col('timestamp')))
+            cluster = HiSPARCStations([station], date=last_date)
+            self.station = cluster.get_station(station)
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
@@ -227,7 +230,8 @@ class ReconstructESDCoincidences(object):
         # Get latest position data
         s_numbers = [station.number for station in
                      self.coincidences_group._f_getattr('cluster').stations]
-        self.cluster = HiSPARCStations(s_numbers)
+        last_date = date.fromtimestamp(max(self.coincidences.col('timestamp')))
+        self.cluster = HiSPARCStations(s_numbers, date=last_date)
 
         self.direction = CoincidenceDirectionReconstruction(self.cluster)
         self.core = CoincidenceCoreReconstruction(self.cluster)
