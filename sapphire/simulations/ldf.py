@@ -18,7 +18,7 @@ Example usage::
 
 """
 from scipy.special import gamma
-from numpy import pi, sin, cos, sqrt, random
+from numpy import pi, sin, cos, sqrt, random, arctan2
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..utils import pbar
@@ -117,6 +117,62 @@ class BaseLdfSimulation(HiSPARCSimulation):
 
         """
         return random.poisson(p)
+
+
+class EllipsLdfSimulation(BaseLdfSimulation):
+
+    """Same as BaseLdfSimulation but uses the EllipsLdF as LDF"""
+
+    def __init__(self, max_core_distance, *args, **kwargs):
+        super(EllipsLdfSimulation, self).__init__(*args, **kwargs)   #???
+
+        self.ldf = EllipsLdf()
+
+    def generate_shower_parameters(self):
+        """Generate shower parameters, i.e. core position
+
+        For the elliptic LDF  both the core position and the zenith angle
+        are relevant.
+
+        :returns: dictionary with shower parameters: core_pos
+                  (x, y-tuple).
+
+        """
+        r = self.max_core_distance
+        giga = int(1e9)
+
+        for i in pbar(range(self.N)):
+            shower_parameters = {'ext_timestamp': (giga + i) * giga,
+                                 'azimuth': self.generate_azimuth(),
+                                 'zenith': self.generate_zenith(),
+                                 'core_pos': self.generate_core_position(r),
+                                 'size': None,
+                                 'energy': None}
+
+            yield shower_parameters
+
+    def get_num_particles_in_detector(self, detector, shower_parameters):
+        """Get the number of particles in a detector
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         the number of particles will be determined.
+        :param shower_parameters: dictionary with the shower parameters.
+
+        """
+        x, y = detector.xy_coordinates
+        core_x, core_y = shower_parameters['core_pos']
+        zenith = shower_parameters['zenith']
+        azimuth = shower_parameters['azimuth']
+
+        r, phi = self.ldf.calculate_core_distance_and_angle_from_coordinates(
+            x, y, core_x, core_y)
+
+        p_ground = self.ldf.calculate_ldf_value(r, phi, zenith, azimuth)
+        num_particles = self.simulate_particles_for_density(
+            p_ground * detector.get_area())
+
+        return num_particles
+
 
 
 class BaseLdfSimulationWithoutErrors(ErrorlessSimulation, BaseLdfSimulation):
@@ -324,3 +380,120 @@ class KascadeLdf(NkgLdf):
         return (gamma(beta - s) /
                 (2 * pi * r0 ** 2 * gamma(s - alpha + 2) *
                  gamma(alpha + beta - 2 * s - 2)))
+
+
+class EllipsLdf(KascadeLdf):
+
+    """The NKG function modified for leptons and azimuthal asymmetry"""
+
+    # shower parameters
+    # Values from Montanus, paper to follow.
+    _Ne = 10 ** 4.8
+    _s1 = -.5   # Shape parameter
+    _s2 = -2.6  # Shape parameter
+    _r0 = 30.
+
+    def __init__(self, zenith, azimuth, Ne=None, s1=None, s2=None):
+        self._zenith = zenith
+        self._azimuth = azimuth
+        if Ne is not None:
+            self._Ne = Ne
+        if s1 is not None:
+            self._s1 = s1
+        if s2 is not None:
+            self._s2 = s2
+
+        self._cache_c_s_value()
+
+    def _cache_c_s_value(self):
+        """Store the c_s value
+
+        The c_s value does not change if s1, s2 and r0 are fixed.
+
+        """
+        self._c_s = self._c(self._s1, self._s2)
+
+    def calculate_ldf_value(self, r, phi):
+        """Calculate the LDF value for a given core distance and polar angle
+
+        :param r: core distance in m.
+        :param phi: polar angle in m.
+        :returns: particle density in m ** -2.
+
+        """
+        return self.get_ldf_value_for_size_and_shape(r, phi, self._zenith,
+                                                     self._azimuth, self._Ne,
+                                                     self._s1, self._s2)
+
+    def get_ldf_value_for_size_and_shape(self, r, phi, zenith, azimuth, Ne,
+                                         s1, s2):
+        """Calculate the LDF value
+
+        Given a core distance, core polar angle, zenith angle, azimuth angle,
+        shower size and three shape parameters (r0, s1, s2) .
+        As given by Montanus, paper to follow.
+
+        *** Watch!!! The value 11.24 in the expression: muoncorr
+        is only valid for: s1 = -.5, s2 = - 2.6 and  r0 = 30.   ***
+
+        :param r: core distance in m.
+        :param phi: polar angle in rad.
+        :param Ne: number of electrons in the shower.
+        :param s1: shower shape parameter.
+        :param s2: shower shape parameter.
+        :param zenith: zenith angle in rad.
+        :param azimuth: azimuth angle in rad.
+
+        :returns: particle density in m ** -2.
+
+        """
+        if s1 == self._s1 and s2 == self._s2:
+            c_s = self._c_s
+        else:
+            c_s = self._c(s1, s2)
+        r0 = self._r0
+        zenith = self._zenith
+        azimuth = self._azimuth
+        relcos = cos(phi - azimuth)
+        ell = sqrt(1 - sin(zenith) * sin(zenith) * relcos * relcos)
+        shift = - 0.0575 * sin(2 * zenith) * r * relcos
+        k = shift + r * ell
+        term1 = k / r0
+        term2 = 1 + k / r0
+        muoncorr = 1 + k / (11.24 * r0)
+
+        return Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
+
+    def _c(self, s1, s2):
+        """Normalization of the LDF
+
+        As given in Montanus, paper to follow.
+
+        :param s1: shower shape parameter.
+        :param s2: shower shape parameter.
+        :returns: c(s1,s2)
+
+        """
+        r0 = self._r0
+        return (gamma( - s2) /
+                (2 * pi * r0 ** 2 * gamma(s1 + 2) *
+                 gamma(- s1 - s2 - 2)))
+
+    def calculate_core_distance_and_angle_from_coordinates(self,
+                                                               x, y, x0, y0,):
+
+        """Calculate core distance
+
+        The core distance is the distance of the detector to the shower core,
+        measured *in the `horizontal' observation plane*.
+
+        :param x,y: detector position in m.
+        :param x0,y0: shower core position in m.
+        :returns: distance and polar angle from station to the shower core in
+                  horizontal observation plane in m resp. rad.
+
+        """
+        x = x - x0
+        y = y - y0
+
+        return sqrt(x ** 2 + y ** 2), arctan2(y,x)
