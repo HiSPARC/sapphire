@@ -1,7 +1,7 @@
 from itertools import izip_longest
 from datetime import date
 
-from numpy import nan, arange, histogram, linspace
+from numpy import nan, arange, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
 import tables
 
@@ -12,6 +12,7 @@ from .direction_reconstruction import (EventDirectionReconstruction,
 from .core_reconstruction import (EventCoreReconstruction,
                                   CoincidenceCoreReconstruction)
 from .coincidence_queries import CoincidenceQuery
+from .event_utils import station_arrival_time
 from ..utils import pbar, gauss, ERR
 
 
@@ -272,7 +273,7 @@ class ReconstructESDCoincidences(object):
 
         """
         coincidences = self.cq.all_coincidences()
-        # Progress does not work because thepbar does not know the
+        # Progress does not work because the pbar does not know the
         # number of coincidences
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
@@ -373,7 +374,7 @@ class ReconstructESDCoincidences(object):
 
         # Now determine station offsets and add those to detector offsets
         ref_station = self.cluster.get_station(ref_station_number)
-        ref_id = ref_station.station_id
+        ref_d_ids = range(len(ref_station.detectors))
         ref_z = ref_station.calc_center_of_mass_coordinates()[2]
         ref_d_off = self.offsets[ref_station_number]
 
@@ -381,12 +382,15 @@ class ReconstructESDCoincidences(object):
             # Skip reference station
             if station.number == ref_station_number:
                 continue
+            d_ids = range(len(station.detectors))
             z = station.calc_center_of_mass_coordinates()[2]
-            dt = []
             d_off = self.offsets[station.number]
+
             stations = [ref_station_number, station.number]
             coincidences = self.cq.all(stations)
             c_events = self.cq.events_from_stations(coincidences, stations)
+
+            dt = []
             for events in c_events:
                 # Filter for possibility of same station twice in coincidence
                 if len(events) is not 2:
@@ -398,30 +402,21 @@ class ReconstructESDCoincidences(object):
                     ref_event = events[1][1]
                     event = events[0][1]
 
-                try:
-                    ref_t = min([ref_event['t%d' % (i + 1)] - ref_d_off[i]
-                                 for i in range(4)
-                                 if ref_event['t%d' % (i + 1)] not in ERR])
-                    t = min([event['t%d' % (i + 1)] - d_off[i]
-                             for i in range(4)
-                             if event['t%d' % (i + 1)] not in ERR])
-                except ValueError:
+                ref_ts = ref_event['ext_timestamp']
+                ref_t = station_arrival_time(ref_event, ref_ts, ref_d_ids,
+                                             ref_d_off)
+                if isnan(ref_t):
                     continue
-                if (ref_event['t_trigger'] in ERR or
-                        event['t_trigger'] in ERR):
+                t = station_arrival_time(event, ref_ts, d_ids, d_off)
+                if isnan(t):
                     continue
-                dt.append((int(event['ext_timestamp']) -
-                           int(ref_event['ext_timestamp'])) -
-                          (event['t_trigger'] - ref_event['t_trigger']) +
-                          (t - ref_t))
+                dt.append(t - ref_t)
 
-            r = self.cluster.calc_rphiz_for_stations(station.station_id,
-                                                     ref_id)[0]
-            bins = linspace(-3 * r, 3 * r, 200)
+            bins = linspace(percentile(dt, 2), percentile(dt, 98), 200)
             y, bins = histogram(dt, bins=bins)
             x = (bins[:-1] + bins[1:]) / 2
             try:
-                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., r))
+                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)))
                 station_offset = popt[1] + (z - ref_z) / c
             except RuntimeError:
                 station_offset = 0.
