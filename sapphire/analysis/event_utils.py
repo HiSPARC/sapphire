@@ -60,10 +60,10 @@ def detector_density(event, detector_id, station=None):
 
     """
     number_of_particles = event['n%d' % (detector_id + 1)]
-    if station is None:
-        area = .5
-    else:
+    try:
         area = station.detectors[detector_id].get_area()
+    except (AttributeError, IndexError):
+        area = .5
     if number_of_particles not in ERR:
         p = number_of_particles / area
     else:
