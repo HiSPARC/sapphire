@@ -275,12 +275,26 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
 
+        # use pytables.read_where() in-kernel query to select rows bases on x-coordinates
+        # sort CORISKA hdf5 files based on x-coordinates to improve performance
         X_query = ('(x >= %f) & (x <= %f)' %
                  (x - detector_boundary, x + detector_boundary))
 
         X_selection = self.groundparticles.read_where(X_query)
-        XY = X_selection.compress( (X_selection['y'] >= (y-detector_boundary)) & (X_selection['y'] <= (y+detector_boundary)))
-        return XY.compress((XY['particle_id'] >= 2) & (XY['particle_id'] <= 6)), XY.compress(XY['particle_id']  == 1)
+
+        # use numpy.compress() to filter on y-coordinates
+        #  this should be fast as the result of the read_where() should fit in CPU L1/L2 cache
+        #  benchmarking against pytables.read_where() based on x and y is necessary
+        Y_query = (X_selection['y'] >= (y-detector_boundary)) & (X_selection['y'] <= (y+detector_boundary))
+
+        XY = X_selection.compress(Y_query)
+
+        # use numpy.compress() to split leptons and gamma's
+        # this should be always faster than including this in the read_where() query
+        leptons = (XY['particle_id'] >= 2) & (XY['particle_id'] <= 6)
+        gammas = (XY['particle_id']  == 1)
+
+        return XY.compress(leptons), XY.compress(gammas)
 
         """
         # skip the gamma's from the data file, just generate random gamma's
