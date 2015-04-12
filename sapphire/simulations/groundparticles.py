@@ -259,18 +259,28 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """
         x, y = detector.get_xy_coordinates()
         detector_boundary = sqrt(.5) / 2.
-
+        """
+        old:
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
                   y - detector_boundary, y + detector_boundary))
-        
+
         query_gammas = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                          ' & (particle_id == 1)' %
                          (x - detector_boundary, x + detector_boundary,
                           y - detector_boundary, y + detector_boundary))
 
         return self.groundparticles.read_where(query), self.groundparticles.read_where(query_gammas)
+
+        """
+
+        X_query = ('(x >= %f) & (x <= %f)' %
+                 (x - detector_boundary, x + detector_boundary))
+
+        X_selection = self.groundparticles.read_where(X_query)
+        XY = X_selection.compress( (X_selection['y'] >= (y-detector_boundary)) & (X_selection['y'] <= (y+detector_boundary)))
+        return XY.compress((XY['particle_id'] >= 2) & (XY['particle_id'] <= 6)), XY.compress(XY['particle_id']  == 1)
 
         """
         # skip the gamma's from the data file, just generate random gamma's
