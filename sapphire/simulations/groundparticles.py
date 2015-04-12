@@ -20,7 +20,9 @@ Example usage::
 """
 from math import pi, sin, cos, sqrt
 
+import numpy as np
 import tables
+import scipy.stats
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..utils import pbar
@@ -29,19 +31,19 @@ from ..utils import pbar
 class GroundParticlesSimulation(HiSPARCSimulation):
 
     def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
+        """Simulation initialization
+
+        :param corsikafile_path: path to the corsika.h5 file containing
+                                 the groundparticles.
+        :param max_core_distance: maximum distance of shower core to
+                                  center of cluster.
+
+        """
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
 
         self.corsikafile = tables.open_file(corsikafile_path, 'r')
         self.groundparticles = self.corsikafile.get_node('/groundparticles')
         self.max_core_distance = max_core_distance
-
-        for station in self.cluster.stations:
-            station.gps_offset = self.simulate_station_offset()
-            station.detector_offsets = self.simulate_detector_offsets(
-                len(station.detectors))
-
-        # Store updated version of the cluster
-        self.coincidence_group._v_attrs.cluster = self.cluster
 
     def __del__(self):
         self.finish()
@@ -63,7 +65,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                   (x, y-tuple) and azimuth.
 
         """
-        R = self.max_core_distance
+
+        r = self.max_core_distance
+        giga = int(1e9)
 
         event_header = self.corsikafile.get_node_attr('/', 'event_header')
         event_end = self.corsikafile.get_node_attr('/', 'event_end')
@@ -73,7 +77,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'particle': event_header.particle}
 
         for i in pbar(range(self.N)):
-            x, y = self.generate_core_position(R)
+            x, y = self.generate_core_position(r)
 
             # Subtract Corsika shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
@@ -84,7 +88,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             elif alpha <= -pi:
                 alpha += 2 * pi
 
-            shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
+            shower_parameters = {'ext_timestamp': (giga + i) * giga,
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
@@ -99,6 +103,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         shower core position and 'East' coincides with the shower azimuth
         direction.
 
+        :param x,y: position of shower core relative to cluster origin in m.
+        :param alpha: angle the cluster needs to be rotated in radians.
+
         """
         # rotate the core position around the original cluster center
         xp = x * cos(-alpha) - y * sin(-alpha)
@@ -109,34 +116,91 @@ class GroundParticlesSimulation(HiSPARCSimulation):
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
 
-        Checks if leptons have passed a detector. If so, it returns the number
-        of leptons in the detector and the arrival time of the first lepton
+        Checks if particles have passed a detector. If so, it returns the number
+        of particles in the detector and the arrival time of the first particle
         passing the detector.
 
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         the observables will be determined.
+        :param shower_parameters: dictionary with the shower parameters.
+
         """
-        particles = self.get_particles_in_detector(detector)
-        n_detected = len(particles)
 
-        if n_detected:
-            mips = self.simulate_detector_mips(particles)
-            particles['t'] += self.simulate_signal_transport_time(n_detected)
-            first_signal = particles['t'].min()
-            observables = {'n': mips,
-                           't': self.simulate_adc_sampling(first_signal)}
+        leptons, gammas = self.get_particles_in_detector(detector)
+        n_leptons = len(leptons)
+        n_gammas = len(gammas)
+
+        if not n_leptons+n_gammas:
+            return {'n': 0, 't': -999}
+
+        if n_leptons:
+            mips_lepton = self.simulate_detector_mips_for_leptons(leptons)
+            leptons['t'] += self.simulate_signal_transport_time(n_leptons)
+            first_signal = leptons['t'].min() + detector.offset
         else:
-            observables = {'n': 0., 't': -999}
+            mips_lepton = 0
 
-        return observables
+        if n_gammas:
+            mips_gamma = self.simulate_detector_mips_for_gammas(gammas)
+            gammas['t'] += self.simulate_signal_transport_time(n_gammas)
+            first_signal = gammas['t'].min() + detector.offset
+        else:
+            mips_gamma = 0
+
+        return {'n': mips_lepton+mips_gamma, 't': self.simulate_adc_sampling(first_signal) }
+
+
+    def simulate_detector_mips_for_leptons(self, particles):
+        """Simulate the detector signal for leptons
+
+        :param particles: particle rows with the p_[x, y, z]
+                          components of the particle momenta.
+
+        """
+        # determination of lepton angle of incidence
+        theta = np.arccos(abs(particles['p_z']) /
+                          np.sqrt(particles['p_x'] ** 2 +
+                                  particles['p_y'] ** 2 +
+                                  particles['p_z'] ** 2))
+        n = len(particles)
+        mips = self.simulate_detector_mips_leptons(n, theta)
+
+        return mips
+
+    def simulate_detector_mips_for_gammas(self, particles):
+        """Simulate the detector signal for gammas
+
+        :param particles: particle rows with the p_[x, y, z]
+                          components of the particle momenta.
+
+        """
+
+        p_gamma = np.sqrt(particles['p_x'] ** 2 + particles['p_y'] ** 2 +
+                particles['p_z'] ** 2)
+
+        # determination of lepton angle of incidence
+        theta = np.arccos(abs(particles['p_z']) /
+                          p_gamma)
+
+        n = len(particles)
+        mips = self.simulate_detector_mips_gammas(n, p_gamma, theta)
+
+        return mips
+
+
+
 
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
 
+        :param detector_observables: dictionary containing the
+                                     observables of one detector.
         :returns: True if at least 2 detectors detect at least one particle,
                   False otherwise.
 
         """
         detectors_hit = [True for observables in detector_observables
-                         if observables['n'] > 0]
+                         if observables['n'] > 0.] # 70mV/200mV = 0.28 mips
 
         if sum(detectors_hit) >= 2:
             return True
@@ -144,8 +208,17 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             return False
 
     def simulate_gps(self, station_observables, shower_parameters, station):
-        """Simulate gps timestamp."""
+        """Simulate gps timestamp.
 
+        :param station_observables: dictionary containing the observables
+                                    of the station.
+        :param shower_parameters: dictionary with the shower parameters.
+        :param station: :class:`~sapphire.clusters.Station` for which
+                         to simulate the gps timestamp.
+        :returns: station_observables updated with gps timestamp and
+                  trigger time.
+
+        """
         arrival_times = [station_observables['t%d' % id]
                          for id in range(1, 5)
                          if station_observables.get('n%d' % id, -1) > 0]
@@ -180,23 +253,77 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         *Detector height is ignored!*
 
-        :param detector: detector for which to get particles.
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
 
         """
         x, y = detector.get_xy_coordinates()
         detector_boundary = sqrt(.5) / 2.
+        """
+        old:
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
                  (x - detector_boundary, x + detector_boundary,
                   y - detector_boundary, y + detector_boundary))
-        return self.groundparticles.read_where(query)
+
+        query_gammas = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+                         ' & (particle_id == 1)' %
+                         (x - detector_boundary, x + detector_boundary,
+                          y - detector_boundary, y + detector_boundary))
+
+        return self.groundparticles.read_where(query), self.groundparticles.read_where(query_gammas)
+
+        """
+
+        # use pytables.read_where() in-kernel query to select rows bases on x-coordinates
+        # sort CORISKA hdf5 files based on x-coordinates to improve performance
+        X_query = ('(x >= %f) & (x <= %f)' %
+                 (x - detector_boundary, x + detector_boundary))
+
+        X_selection = self.groundparticles.read_where(X_query)
+
+        # use numpy.compress() to filter on y-coordinates
+        #  this should be fast as the result of the read_where() should fit in CPU L1/L2 cache
+        #  benchmarking against pytables.read_where() based on x and y is necessary
+        Y_query = (X_selection['y'] >= (y-detector_boundary)) & (X_selection['y'] <= (y+detector_boundary))
+
+        XY = X_selection.compress(Y_query)
+
+        # use numpy.compress() to split leptons and gamma's
+        # this should be always faster than including this in the read_where() query
+        leptons = (XY['particle_id'] >= 2) & (XY['particle_id'] <= 6)
+        gammas = (XY['particle_id']  == 1)
+
+        return XY.compress(leptons), XY.compress(gammas)
+
+        """
+        # skip the gamma's from the data file, just generate random gamma's
+        return self.groundparticles.read_where(query), self.create_random_gammas(10)
+        return [],self.create_random_gammas(3)
+        """
+
+    def create_random_gammas(self, n):
+        """
+        generator random (expon distributed by energy) gammas
+        """
+        # Emin = 0.1 MeV, most are below 3 MeV to fill-up the range not covered
+        #  in CORSIKA
+        E = scipy.stats.expon.rvs(loc = 0.1, scale = 1, size=n) + 3.0
+
+        gammas = [ (0,0,energy*1e6,0) for energy in E]
+        #print "DEBUG: generated random gammas",gammas
+        # np.record array gammas['p_x'][1] is valid
+        return np.array(gammas, dtype=np.dtype([ ('p_x', float), ('p_y', float), ('p_z', float), ('t', float) ]))
+
 
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
 
     """ More accuratly simulate the detection area of the detectors.
 
-    This requires a slightly more complex query which is a bit slower.
+    Take the orientation of the detectors into account and use the
+    exact detector boundaries. This requires a slightly more complex
+    query which is a bit slower.
 
     """
 
@@ -209,6 +336,9 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         which actually hit the detector. The advantage of using the
         square is that column indexes can be used, which may speed up
         queries.
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
 
         """
         detector_boundary = 0.6
@@ -277,10 +407,31 @@ class ParticleCounterSimulation(GroundParticlesSimulation):
 
     """Do not simulate mips, just count the number of particles."""
 
-    def simulate_detector_mips(self, particle_momenta):
+    def simulate_detector_mips(self, n, theta):
         """A mip for a mip, count number of particles in a detector."""
 
-        return len(particle_momenta)
+        return n
+
+
+class FixedCoreDistanceSimulation(GroundParticlesSimulation):
+
+    """Shower core at a fixed core distance (from cluster origin).
+
+    :param core_distance: distance of shower core to center of cluster.
+
+    """
+
+    def generate_core_position(cls, R):
+        """Generate a random core position on a circle
+
+        :param R: Core distance, in meters.
+        :returns: Random x, y position on the circle with radius R.
+
+        """
+        phi = np.random.uniform(-pi, pi)
+        x = R * cos(phi)
+        y = R * sin(phi)
+        return x, y
 
 
 class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,
