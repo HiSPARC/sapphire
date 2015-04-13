@@ -267,13 +267,51 @@ class OptimizeQueryGroundParticlesSimulation(GroundParticlesSimulation):
 
         X_result = np.array(self.groundparticles.read_where(pytables_X_query))
 
-        # IS THIS REALLY NUMPY?!?!
         numpy_Y_query = ((X_result['y'] >= y - detector_boundary) & (X_result['y'] <= y + detector_boundary))
-        XY = X_result.compress(numpy_Y_query)
+        lepton_query =  ((X_result['particle_id'] >= 2) & (X_result['particle_id'] <= 6))
+
+        return X_result.compress(numpy_Y_query & lepton_query)
+
+class OptimizeQuery_ParticlesOnly_GroundParticlesSimulation(GroundParticlesSimulation):
+    """
+    Test pytables.read_where() in-kernel query performance versus
+    combination of pytables.read_where()+numpy.compress()
+    """
+    def get_particles_in_detector(self, detector):
+        """Get particles that hit a detector.
+
+        Particle ids 2, 3, 5, 6 are electrons and muons,
+        id 4 is no longer used (were neutrino's).
+
+        The detector is approximated by a square with a surface of 0.5
+        square meter which is *not* correctly rotated.  In fact, during
+        the simulation, the rotation of the detector is undefined.  This
+        is faster than a more thorough implementation.
+
+        *Detector height is ignored!*
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
+
+        """
+        x, y = detector.get_xy_coordinates()
+        detector_boundary = sqrt(.5) / 2.
+
+        """
+        old:
+        query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+                 ' & (particle_id >= 2) & (particle_id <= 6)' %
+                 (x - detector_boundary, x + detector_boundary,
+                  y - detector_boundary, y + detector_boundary))
+        """
+        pytables_XY_query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)' %
+                 (x - detector_boundary, x + detector_boundary,
+                  y - detector_boundary, y + detector_boundary))
+
+        XY = np.array(self.groundparticles.read_where(pytables_XY_query))
 
         lepton_query =  ((XY['particle_id'] >= 2) & (XY['particle_id'] <= 6))
         return XY.compress(lepton_query)
-
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
 
