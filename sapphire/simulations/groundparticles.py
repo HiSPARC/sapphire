@@ -262,15 +262,16 @@ class OptimizeQueryGroundParticlesSimulation(GroundParticlesSimulation):
                  (x - detector_boundary, x + detector_boundary,
                   y - detector_boundary, y + detector_boundary))
         """
-        pytables_X_query = ('(x >= %f) & (x <= %f)' %
+        X_query = ('(x >= %f) & (x <= %f)' %
                  (x - detector_boundary, x + detector_boundary))
+        X_result = self.groundparticles.read_where(X_query)
 
-        X_result = self.groundparticles.read_where(pytables_X_query)
+        Y_query = ((X_result['y'] >= y - detector_boundary) & (X_result['y'] <= y + detector_boundary))
+        XY = X_result.compress(Y_query)
 
-        numpy_Y_query = ((X_result['y'] >= y - detector_boundary) & (X_result['y'] <= y + detector_boundary))
-        lepton_query =  ((X_result['particle_id'] >= 2) & (X_result['particle_id'] <= 6))
+        lepton_query =  ((XY['particle_id'] >= 2) & (XY['particle_id'] <= 6))
 
-        return X_result.compress(numpy_Y_query & lepton_query)
+        return XY.compress(lepton_query)
 
 
 class NumpyGPS(GroundParticlesSimulation):
@@ -318,10 +319,15 @@ class NumpyGPS(GroundParticlesSimulation):
             """
 
             X_query = ((self.groundparticles['x'] >= (x - detector_boundary)) & (self.groundparticles['x'] <= (x + detector_boundary)))
-            Y_query = ((self.groundparticles['y'] >= (y - detector_boundary)) & (self.groundparticles['y'] <= (y + detector_boundary)))
-            lepton_query =  ((self.groundparticles['particle_id'] >= 2) & (self.groundparticles['particle_id'] <= 6))
 
-            return self.groundparticles.compress(X_query & Y_query & lepton_query)
+            X_result = self.groundparticles.compress(X_query)
+
+            Y_query = ((X_result['y'] >= (y - detector_boundary)) & (X_result['y'] <= (y + detector_boundary)))
+            XY = X_result.compress(Y_query)
+
+            lepton_query =  ((XY['particle_id'] >= 2) & (XY['particle_id'] <= 6))
+
+            return XY.compress(lepton_query)
 
 
 class OptimizeQuery_ParticlesOnly_GroundParticlesSimulation(GroundParticlesSimulation):
