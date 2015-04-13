@@ -265,12 +265,64 @@ class OptimizeQueryGroundParticlesSimulation(GroundParticlesSimulation):
         pytables_X_query = ('(x >= %f) & (x <= %f)' %
                  (x - detector_boundary, x + detector_boundary))
 
-        X_result = np.array(self.groundparticles.read_where(pytables_X_query))
+        X_result = self.groundparticles.read_where(pytables_X_query)
 
         numpy_Y_query = ((X_result['y'] >= y - detector_boundary) & (X_result['y'] <= y + detector_boundary))
         lepton_query =  ((X_result['particle_id'] >= 2) & (X_result['particle_id'] <= 6))
 
         return X_result.compress(numpy_Y_query & lepton_query)
+
+
+class NumpyGPS(GroundParticlesSimulation):
+        """
+        pytables versus numpy
+        self.groundparticles converted to numpy.array
+        pytables.read_where() removed
+
+        """
+
+        def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
+            super(NumpyGPS, self).__init__(corsikafile_path, max_core_distance, *args, **kwargs)
+
+            # convert groundparticles form pytables to numpy.array
+            print "DEBUG: converting pytables %s to numpy.array()." % corsikafile_path
+            print "This may take a while."
+            self.groundparticles = np.array(self.groundparticles)
+
+        def get_particles_in_detector(self, detector):
+            """Get particles that hit a detector.
+
+            Particle ids 2, 3, 5, 6 are electrons and muons,
+            id 4 is no longer used (were neutrino's).
+
+            The detector is approximated by a square with a surface of 0.5
+            square meter which is *not* correctly rotated.  In fact, during
+            the simulation, the rotation of the detector is undefined.  This
+            is faster than a more thorough implementation.
+
+            *Detector height is ignored!*
+
+            :param detector: :class:`~sapphire.clusters.Detector` for which
+                             to get particles.
+
+            """
+            x, y = detector.get_xy_coordinates()
+            detector_boundary = sqrt(.5) / 2.
+
+            """
+            old:
+            query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+                     ' & (particle_id >= 2) & (particle_id <= 6)' %
+                     (x - detector_boundary, x + detector_boundary,
+                      y - detector_boundary, y + detector_boundary))
+            """
+
+            X_query = ((self.groundparticles['x'] >= (x - detector_boundary)) & (self.groundparticles['x'] <= (x + detector_boundary)))
+            Y_query = ((self.groundparticles['y'] >= (y - detector_boundary)) & (self.groundparticles['y'] <= (y + detector_boundary)))
+            lepton_query =  ((self.groundparticles['particle_id'] >= 2) & (self.groundparticles['particle_id'] <= 6))
+
+            return self.groundparticles.compress(X_query & Y_query & lepton_query)
+
 
 class OptimizeQuery_ParticlesOnly_GroundParticlesSimulation(GroundParticlesSimulation):
     """
