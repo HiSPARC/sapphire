@@ -135,10 +135,10 @@ def copy_and_sort_node(hdf_temp, hdf_data, table_name='groundparticles',
     hdf_temp.copy_node_attrs('/', target_root)
 
 
-def create_tempfile_path():
+def create_tempfile_path(temp_dir=None):
     """Create a temporary file, close it, and return the path"""
 
-    f, path = tempfile.mkstemp(suffix='.h5')
+    f, path = tempfile.mkstemp(suffix='.h5', dir=temp_dir)
     os.close(f)
     return path
 
@@ -160,7 +160,8 @@ def main():
     else:
         mode = 'a'
 
-    temp_path = create_tempfile_path()
+    temp_dir = os.path.dirname(args.destination)
+    temp_path = create_tempfile_path(temp_dir)
 
     with tables.open_file(temp_path, 'a') as hdf_temp:
         store_corsika_data(corsika_data, hdf_temp, progress=args.progress)
