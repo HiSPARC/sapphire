@@ -72,9 +72,9 @@ class HiSPARCSimulationTest(unittest.TestCase):
             particle = corsika_data.root.groundparticles[0:1]
             particles = corsika_data.root.groundparticles[:5]
         self.assertEqual(self.simulation.simulate_detector_mips(particle),
-                         1.0371946215001238)
+                         1.285957050294795)
         self.assertEqual(self.simulation.simulate_detector_mips(particles),
-                         4.2991522837813028)
+                         6.3524066579814358)
 
     def test_generate_core_position(self):
         x, y = self.simulation.generate_core_position(500)
