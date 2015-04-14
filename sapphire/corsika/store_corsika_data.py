@@ -6,6 +6,8 @@
 
 """
 import argparse
+import tempfile
+import os
 
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
@@ -58,8 +60,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
 
     """
     if progress:
-        print "Storing CORSIKA data (%s) in %s" % (source._filename,
-                                                   destination.filename)
+        print "Converting CORSIKA data (%s) to HDF5 format" % source._filename
     source.check()
 
     for event in source.get_events():
@@ -119,6 +120,29 @@ def create_index(hdf_data, table_name='groundparticles', progress=False):
         table.reindex_dirty()
 
 
+def copy_and_sort_node(hdf_temp, hdf_data, table_name='groundparticles',
+                       progress=False):
+    """Sort the data in the tables by the x column
+
+    This speeds up queries to select data based on the x column.
+
+    """
+    target_root = hdf_data.get_node('/')
+    source_table = hdf_temp.get_node('/', table_name)
+    if progress:
+        print 'Creating the sorted HDF5 file.'
+    source_table.copy(newparent=target_root, sortby='x', propindexes=True)
+    hdf_temp.copy_node_attrs('/', target_root)
+
+
+def create_tempfile_path():
+    """Create a temporary file, close it, and return the path"""
+
+    f, path = tempfile.mkstemp(suffix='.h5')
+    os.close(f)
+    return path
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('source', help="path of the CORSIKA source file")
@@ -135,10 +159,17 @@ def main():
         mode = 'w'
     else:
         mode = 'a'
-    with tables.open_file(args.destination, mode) as hdf_data:
-        store_corsika_data(corsika_data, hdf_data, progress=args.progress)
-    with tables.open_file(args.destination, 'a') as hdf_data:
-        create_index(hdf_data, progress=args.progress)
+
+    temp_path = create_tempfile_path()
+
+    with tables.open_file(temp_path, 'a') as hdf_temp:
+        store_corsika_data(corsika_data, hdf_temp, progress=args.progress)
+    with tables.open_file(temp_path, 'a') as hdf_temp:
+        create_index(hdf_temp, progress=args.progress)
+    with tables.open_file(temp_path, 'r') as hdf_temp, \
+         tables.open_file(args.destination, mode) as hdf_data:
+        copy_and_sort_node(hdf_temp, hdf_data, progress=args.progress)
+    os.remove(temp_path)
 
 
 if __name__ == '__main__':
