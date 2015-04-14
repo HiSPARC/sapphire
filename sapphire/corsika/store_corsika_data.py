@@ -167,7 +167,7 @@ def main():
     with tables.open_file(temp_path, 'a') as hdf_temp:
         create_index(hdf_temp, progress=args.progress)
     with tables.open_file(temp_path, 'r') as hdf_temp, \
-         tables.open_file(args.destination, mode) as hdf_data:
+            tables.open_file(args.destination, mode) as hdf_data:
         copy_and_sort_node(hdf_temp, hdf_data, progress=args.progress)
     os.remove(temp_path)
 
