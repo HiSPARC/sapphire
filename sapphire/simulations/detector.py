@@ -81,6 +81,8 @@ class HiSPARCSimulation(BaseSimulation):
         Generates random transit times within a given distribution and
         adds it to the times the particles passed the detector.
 
+        Distribution based on Fokkema2012 sec 4.2, figure 4.3
+
         Be careful when editting this function, be sure to check both
         the single and vectorized part.
 
@@ -104,6 +106,21 @@ class HiSPARCSimulation(BaseSimulation):
 
         Simulation of convoluted distribution of electron and
         muon energy losses with the scintillator response
+
+        The detector response (energy loss and detector efficiency) is derived
+        in Montanus2014.
+
+        The energy loss is taken from the Bethe-Bloch equation. The detector
+        response is statistically modelled. The effect of particle angle of
+        incidence is accounted for. The resulting probability
+        distribution is used below.
+
+        The statistics can be simulated by taking a random number y between
+        0 and 1, and convert it to a signal s in MIP using the probablity
+        distribution.
+
+        Montanus2014: J.C.M. Montanus, The Landau distribution,
+                      Internal note (Nikhef), 22 may 2014
 
         Be careful when editting this function, be sure to check both
         the single and vectorized part.

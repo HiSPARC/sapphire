@@ -283,7 +283,7 @@ def download_coincidences(file, cluster=None, stations=None,
     pbar.finish()
 
     cluster = clusters.HiSPARCStations(station_numbers)
-    table._v_attrs.cluster = cluster
+    table._v_parent._v_attrs.cluster = cluster
     file.flush()
 
 
@@ -295,7 +295,7 @@ def _get_or_create_station_numbers(table):
 
     """
     try:
-        cluster = table._v_attrs.cluster
+        cluster = table._v_parent._v_attrs.cluster
         return {s.number for s in cluster.stations}
     except AttributeError:
         return set()
@@ -491,29 +491,29 @@ def _read_line_and_store_event(line, table):
     (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
      int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger) = line
 
+    row = table.row
+
     # convert string values to correct data types or calculate values
-    event_id = len(table)
-    timestamp = int(timestamp)
-    nanoseconds = int(nanoseconds)
-    ext_timestamp = timestamp * int(1e9) + nanoseconds
-    pulseheights = [int(ph1), int(ph2), int(ph3), int(ph4)]
-    integrals = [int(int1), int(int2), int(int3), int(int4)]
-    n1 = float(n1)
-    n2 = float(n2)
-    n3 = float(n3)
-    n4 = float(n4)
-    t1 = float(t1)
-    t2 = float(t2)
-    t3 = float(t3)
-    t4 = float(t4)
-    t_trigger = float(t_trigger)
+    row['event_id'] = len(table)
+    row['timestamp'] = int(timestamp)
+    row['nanoseconds'] = int(nanoseconds)
+    row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
+    row['pulseheights'] = [int(ph1), int(ph2), int(ph3), int(ph4)]
+    row['integrals'] = [int(int1), int(int2), int(int3), int(int4)]
+    row['n1'] = float(n1)
+    row['n2'] = float(n2)
+    row['n3'] = float(n3)
+    row['n4'] = float(n4)
+    row['t1'] = float(t1)
+    row['t2'] = float(t2)
+    row['t3'] = float(t3)
+    row['t4'] = float(t4)
+    row['t_trigger'] = float(t_trigger)
 
     # store event
-    table.append([[event_id, timestamp, nanoseconds, ext_timestamp,
-                   pulseheights, integrals, n1, n2, n3, n4, t1, t2,
-                   t3, t4, t_trigger]])
+    row.append()
 
-    return timestamp
+    return int(timestamp)
 
 
 def _read_line_and_store_weather(line, table):
@@ -532,34 +532,32 @@ def _read_line_and_store_weather(line, table):
         return 0.
 
     # break up CSV line
-
     (date, time, timestamp, temperature_inside, temperature_outside,
      humidity_inside, humidity_outside, atmospheric_pressure,
      wind_direction, wind_speed, solar_radiation, uv_index,
      evapotranspiration, rain_rate, heat_index, dew_point, wind_chill) = line
 
+    row = table.row
+
     # convert string values to correct data types
-    event_id = len(table)
-    timestamp = int(timestamp)
-    temp_inside = float(temperature_inside)
-    temp_outside = float(temperature_outside)
-    humidity_inside = int(humidity_inside)
-    humidity_outside = int(humidity_outside)
-    barometer = float(atmospheric_pressure)
-    wind_dir = int(wind_direction)
-    wind_speed = int(wind_speed)
-    solar_rad = int(solar_radiation)
-    uv = int(uv_index)
-    evapotranspiration = float(evapotranspiration)
-    rain_rate = float(rain_rate)
-    heat_index = int(heat_index)
-    dew_point = float(dew_point)
-    wind_chill = float(wind_chill)
+    row['event_id'] = len(table)
+    row['timestamp'] = int(timestamp)
+    row['temp_inside'] = float(temperature_inside)
+    row['temp_outside'] = float(temperature_outside)
+    row['humidity_inside'] = int(humidity_inside)
+    row['humidity_outside'] = int(humidity_outside)
+    row['barometer'] = float(atmospheric_pressure)
+    row['wind_dir'] = int(wind_direction)
+    row['wind_speed'] = int(wind_speed)
+    row['solar_rad'] = int(solar_radiation)
+    row['uv'] = int(uv_index)
+    row['evapotranspiration'] = float(evapotranspiration)
+    row['rain_rate'] = float(rain_rate)
+    row['heat_index'] = int(heat_index)
+    row['dew_point'] = float(dew_point)
+    row['wind_chill'] = float(wind_chill)
 
     # store event
-    table.append([[event_id, timestamp, temp_inside, temp_outside,
-                   humidity_inside, humidity_outside, barometer, wind_dir,
-                   wind_speed, solar_rad, uv, evapotranspiration, rain_rate,
-                   heat_index, dew_point, wind_chill]])
+    row.append()
 
-    return timestamp
+    return int(timestamp)

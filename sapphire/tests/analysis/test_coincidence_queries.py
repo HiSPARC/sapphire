@@ -40,7 +40,7 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         mock_columns.return_value = ['s501', 's502']
         self.cq.any(sentinel.stations)
         mock_columns.assert_called_once_with(sentinel.stations)
-        mock_query.assert_called_once_with('(s501 | s502)')
+        mock_query.assert_called_once_with('(s501 | s502)', False)
 
     @patch.object(coincidence_queries.CoincidenceQuery, '_add_timestamp_filter')
     @patch.object(coincidence_queries.CoincidenceQuery, 'perform_query')
@@ -51,7 +51,7 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         self.cq.all([sentinel.station1, sentinel.station2])
         mock_columns.assert_called_once_with([sentinel.station1, sentinel.station2])
         mock_ts_filter.assert_called_once_with('(s501 & s502)', None, None)
-        mock_query.assert_called_once_with(sentinel.query)
+        mock_query.assert_called_once_with(sentinel.query, False)
         self.assertEqual(self.cq.all([sentinel.station1, sentinel.station2, sentinel.station3]), [])
 
     @patch.object(coincidence_queries.CoincidenceQuery, 'perform_query')
@@ -62,13 +62,13 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         self.cq.at_least(sentinel.stations, n)
         mock_columns.assert_called_once_with(sentinel.stations)
         mock_query.assert_called_once_with('((s501 & s502) | (s501 & s503) | '
-                                           '(s502 & s503))')
+                                           '(s502 & s503))', False)
 
     @patch.object(coincidence_queries.CoincidenceQuery, 'perform_query')
     def test_timerange(self, mock_query):
         mock_query.return_value = sentinel.coincidences
         result = self.cq.timerange(1, 2)
-        mock_query.assert_called_once_with('(1 <= timestamp) & (timestamp < 2)')
+        mock_query.assert_called_once_with('(1 <= timestamp) & (timestamp < 2)', False)
         self.assertEqual(result, sentinel.coincidences)
 
     def test__add_timestamp_filter(self):

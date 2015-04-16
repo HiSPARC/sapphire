@@ -1,9 +1,13 @@
+import os
 import unittest
 
 from mock import sentinel, MagicMock
 import tables
 
 from sapphire import esd
+
+from esd_load_data import (create_tempfile_path, perform_load_data,
+                           test_data_path)
 
 
 class ESDTest(unittest.TestCase):
@@ -55,39 +59,35 @@ class ESDTest(unittest.TestCase):
                                                   createparents=True)
         self.assertEqual(result, file.create_table.return_value)
 
-    def test_read_line_and_store_event(self):
-        comment_input = ('#',)
-        input = ('2014-01-27', '00:00:01', '1390780801', '637714403',
-                 '2', '139', '397', '2', '0', '1085', '5212', '0', '0.0',
-                 '0.3085', '1.5414', '0.0', '-999', '15.0', '12.5', '-999',
-                 '17.5')
-        output = [[0, 1390780801, 637714403, 1390780801637714403,
-                  [2, 139, 397, 2], [0, 1085, 5212, 0],
-                  0.0, 0.3085, 1.5414, 0.0, -999.0, 15.0, 12.5, -999.0, 17.5]]
-        table = []
-        timestamp = esd._read_line_and_store_event(comment_input, table)
-        self.assertEqual(timestamp, 0.)
-        self.assertEqual(len(table), 0)
-        timestamp = esd._read_line_and_store_event(input, table)
-        self.assertEqual(timestamp, int(input[2]))
-        self.assertEqual(len(table), 1)
-        self.assertEqual(table[0], output)
+    def test_esd_output(self):
+        """Perform a simulation and verify the output"""
 
-    def test_read_line_and_store_weather(self):
-        comment_input = ('#',)
-        input = ('2014-01-27', '00:00:01', '1390780801', '19.4', '6.8', '35',
-                 '83', '986.65', '275', '4', '0', '0', '0.66', '0.0', '6',
-                 '4.1', '3.7')
-        output = [[0, 1390780801, 19.4, 6.8, 35, 83, 986.65, 275, 4, 0, 0,
-                   0.66, 0.0, 6, 4.1, 3.7]]
-        table = []
-        timestamp = esd._read_line_and_store_weather(comment_input, table)
-        self.assertEqual(timestamp, 0.)
-        self.assertEqual(len(table), 0)
-        timestamp = esd._read_line_and_store_weather(input, table)
-        self.assertEqual(timestamp, int(input[2]))
-        self.assertEqual(len(table), 1)
-        self.assertEqual(table[0], output)
+        output_path = create_tempfile_path()
+        perform_load_data(output_path)
+        self.validate_results(test_data_path, output_path)
+        os.remove(output_path)
+
+    def validate_results(self, expected_path, actual_path):
+        """Validate simulation results"""
+
+        with tables.open_file(expected_path) as expected_file:
+            with tables.open_file(actual_path) as actual_file:
+                for table in ('/events', '/weather'):
+                    self.validate_table(table, expected_file, actual_file)
+
+    def validate_table(self, table, expected_file, actual_file):
+        """Verify that two tables are identical"""
+
+        expected_node = expected_file.get_node(table)
+        actual_node = actual_file.get_node(table)
+
+        for colname in expected_node.colnames:
+            expected_col = expected_node.col(colname)
+            actual_col = actual_node.col(colname)
+            if expected_col.shape == actual_col.shape:
+                self.assertTrue((expected_col == actual_col).all())
+            else:
+                self.fail("Columns do not have the same length.")
 
 
 if __name__ == '__main__':

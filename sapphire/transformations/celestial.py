@@ -11,7 +11,7 @@
 
 """
 from numpy import (arcsin, arccos, arctan2, cos, sin,
-                   array, radians, degrees, pi, dot)
+                   array, radians, degrees, pi, dot, around)
 
 from ..utils import norm_angle
 from . import clock, angles, axes
@@ -23,7 +23,7 @@ def zenithazimuth_to_equatorial(longitude, latitude, timestamp, zenith,
 
     :param longitude,latitude: Position of the observer on Earth in degrees.
                                North and east positive.
-    :param timestamp: GPS timestamp of the observation.
+    :param timestamp: GPS timestamp of the observation in seconds.
     :param zenith: zenith is the angle relative to the Zenith in radians.
     :param azimuth: azimuth angle of the observation in radians.
 
@@ -106,7 +106,10 @@ def horizontal_to_hadec(latitude, altitude, Azimuth):
     calt = cos(altitude)
 
     dec = arcsin((salt * slat) + (calt * clat * cazi))
-    ha = arccos((salt - (slat * sin(dec))) / (clat * cos(dec)))
+
+    # Round to prevent value beyond allowed range for arccos.
+    cha = around((salt - (slat * sin(dec))) / (clat * cos(dec)), 15)
+    ha = arccos(cha)
 
     if sazi > 0:
         ha = 2 * pi - ha
@@ -136,7 +139,7 @@ def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
 
     :param longitude,latitude: Position of the observer on Earth in degrees.
                                North and east positive.
-    :param timestamp: GPS timestamp of the observation.
+    :param timestamp: GPS timestamp of the observation in seconds.
     :param right_ascension: right_ascension of the observation in radians.
     :param declination: declination of the observation in radians.
 

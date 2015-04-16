@@ -27,6 +27,25 @@ import calendar
 from . import base, angles
 
 
+LEAP_SECONDS = (('July 1, 2015', 17),
+                ('July 1, 2012', 16),
+                ('January 1, 2009', 15),
+                ('January 1, 2006', 14),
+                ('January 1, 1999', 13),
+                ('July 1, 1997', 12),
+                ('January 1, 1996', 11),
+                ('July 1, 1994', 10),
+                ('July 1, 1993', 9),
+                ('July 1, 1992', 8),
+                ('January 1, 1991', 7),
+                ('January 1, 1990', 6),
+                ('January 1, 1988', 5),
+                ('July 1, 1985', 4),
+                ('July 1, 1983', 3),
+                ('July 1, 1982', 2),
+                ('July 1, 1981', 1))
+
+
 def time_to_decimal(time):
     """Converts a time or datetime object into decimal time
 
@@ -296,16 +315,9 @@ def gps_to_utc(timestamp):
     :param timestamp: GPS timestamp in seconds.
 
     """
-    if timestamp < gps_from_string('January 1, 1999'):
-        raise Exception("Dates before January 1, 1999 not implemented!")
-    elif timestamp < gps_from_string('January 1, 2006'):
-        return timestamp - 13
-    elif timestamp < gps_from_string('January 1, 2009'):
-        return timestamp - 14
-    elif timestamp < gps_from_string('July 1, 2012'):
-        return timestamp - 15
-    else:
-        return timestamp - 16
+    offset = next((seconds for date, seconds in LEAP_SECONDS
+                   if timestamp >= utc_from_string(date)), 0)
+    return timestamp - offset
 
 
 def utc_to_gps(timestamp):
@@ -314,16 +326,9 @@ def utc_to_gps(timestamp):
     :param timestamp: UTC timestamp in seconds.
 
     """
-    if timestamp < utc_from_string('January 1, 1999'):
-        raise Exception("Dates before January 1, 1999 not implemented!")
-    elif timestamp < utc_from_string('January 1, 2006'):
-        return timestamp + 13
-    elif timestamp < utc_from_string('January 1, 2009'):
-        return timestamp + 14
-    elif timestamp < utc_from_string('July 1, 2012'):
-        return timestamp + 15
-    else:
-        return timestamp + 16
+    offset = next((seconds for date, seconds in LEAP_SECONDS
+                   if timestamp >= utc_from_string(date)), 0)
+    return timestamp + offset
 
 
 def utc_from_string(date):
@@ -352,3 +357,14 @@ def gps_to_lst(timestamp, longitude):
     utc_timestamp = gps_to_utc(timestamp)
     utc = datetime.datetime.utcfromtimestamp(utc_timestamp)
     return utc_to_lst(utc, longitude)
+
+
+def gps_to_datetime(timestamp):
+    """Convert a GPS timestamp to datetime object
+
+    :param timestamp: GPS timestamp in seconds
+    :returns: datetime object
+
+    """
+    gps_dt = datetime.datetime.utcfromtimestamp(timestamp)
+    return gps_dt
