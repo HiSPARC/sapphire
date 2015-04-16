@@ -255,7 +255,7 @@ class ReconstructESDCoincidences(object):
 
         """
         length = self.coincidences.nrows
-        coincidences = self.cq.all_coincidences()
+        coincidences = self.cq.all_coincidences(iterator=True)
         coincidence_events = pbar(self.cq.all_events(coincidences, n=0),
                                   length=length, show=self.progress)
         angles = [self._reconstruct_direction(c) for c in coincidence_events]
