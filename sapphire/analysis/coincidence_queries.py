@@ -60,16 +60,19 @@ class CoincidenceQuery(object):
         """
         self.data.close()
 
-    def all_coincidences(self):
+    def all_coincidences(self, iterator=False):
         """Get all coincidences
 
         :return: all coincidences.
 
         """
-        coincidences = self.coincidences.read()
+        if iterator:
+            coincidences = self.coincidences.iterrows()
+        else:
+            coincidences = self.coincidences.read()
         return coincidences
 
-    def any(self, stations, start=None, stop=None):
+    def any(self, stations, start=None, stop=None, iterator=False):
         """Filter for coincidences that contain any of the given stations
 
         :param stations: list of stations from which any need to be in
@@ -83,10 +86,10 @@ class CoincidenceQuery(object):
             return []
         query = '(%s)' % ' | '.join(s_columns)
         query = self._add_timestamp_filter(query, start, stop)
-        filtered_coincidences = self.perform_query(query)
+        filtered_coincidences = self.perform_query(query, iterator)
         return filtered_coincidences
 
-    def all(self, stations, start=None, stop=None):
+    def all(self, stations, start=None, stop=None, iterator=False):
         """Filter for coincidences that contain all of the given stations
 
         :param stations: list of stations which all need to be in a
@@ -101,10 +104,10 @@ class CoincidenceQuery(object):
             return []
         query = '(%s)' % ' & '.join(s_columns)
         query = self._add_timestamp_filter(query, start, stop)
-        filtered_coincidences = self.perform_query(query)
+        filtered_coincidences = self.perform_query(query, iterator)
         return filtered_coincidences
 
-    def at_least(self, stations, n, start=None, stop=None):
+    def at_least(self, stations, n, start=None, stop=None, iterator=False):
         """Filter coincidences to contain at least n of the given stations
 
         :param stations: list of stations from which any at least n of
@@ -121,10 +124,10 @@ class CoincidenceQuery(object):
                           for combo in itertools.combinations(s_columns, n)]
         query = '(%s)' % ' | '.join(s_combinations)
         query = self._add_timestamp_filter(query, start, stop)
-        filtered_coincidences = self.perform_query(query)
+        filtered_coincidences = self.perform_query(query, iterator)
         return filtered_coincidences
 
-    def timerange(self, start, stop):
+    def timerange(self, start, stop, iterator=False):
         """Query based on timestamps
 
         :param start: timestamp from which to look for coincidences.
@@ -133,7 +136,7 @@ class CoincidenceQuery(object):
 
         """
         query = '(%d <= timestamp) & (timestamp < %d)' % (start, stop)
-        filtered_coincidences = self.perform_query(query)
+        filtered_coincidences = self.perform_query(query, iterator)
         return filtered_coincidences
 
     def _add_timestamp_filter(self, query, start=None, stop=None):
@@ -151,7 +154,7 @@ class CoincidenceQuery(object):
 
         return query
 
-    def perform_query(self, query):
+    def perform_query(self, query, iterator=False):
         """Perform a query on the coincidences table
 
         :param query: a valid PyTables query string for the coincidences
@@ -159,7 +162,10 @@ class CoincidenceQuery(object):
         :return: coincidences matching the query.
 
         """
-        filtered_coincidences = self.coincidences.read_where(query)
+        if iterator:
+            filtered_coincidences = self.coincidences.where(query)
+        else:
+            filtered_coincidences = self.coincidences.read_where(query)
         return filtered_coincidences
 
     def _get_allowed_s_columns(self, stations):
