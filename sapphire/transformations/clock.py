@@ -357,3 +357,14 @@ def gps_to_lst(timestamp, longitude):
     utc_timestamp = gps_to_utc(timestamp)
     utc = datetime.datetime.utcfromtimestamp(utc_timestamp)
     return utc_to_lst(utc, longitude)
+
+
+def gps_to_datetime(timestamp):
+    """Convert a GPS timestamp to datetime object
+
+    :param timestamp: GPS timestamp in seconds
+    :returns: datetime object
+
+    """
+    gps_dt = datetime.datetime.utcfromtimestamp(timestamp)
+    return gps_dt
