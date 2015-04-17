@@ -12,6 +12,7 @@ from .direction_reconstruction import (EventDirectionReconstruction,
 from .core_reconstruction import (EventCoreReconstruction,
                                   CoincidenceCoreReconstruction)
 from .coincidence_queries import CoincidenceQuery
+from .calibration import determine_detector_timing_offset
 from .event_utils import station_arrival_time
 from ..utils import pbar, gauss, ERR
 
@@ -132,22 +133,14 @@ class ReconstructESDEvents(object):
         accurate.
 
         """
-        bins = arange(-100 + 1.25, 100, 2.5)
-        c = .3
-
         t2 = self.events.col('t2')
         z = [d.z for d in self.station.detectors]
 
         for detector in [0, 2, 3]:
             timings = self.events.col('t%d' % (detector + 1))
             dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
-            y, bins = histogram(dt, bins=bins)
-            x = (bins[:-1] + bins[1:]) / 2
-            try:
-                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-                self.offsets[detector] = popt[1] + (z[detector] - z[1]) / c
-            except (IndexError, RuntimeError):
-                self.offsets[detector] = 0.
+            dz = z[detector] - z[1]
+            self.offsets[detector] = determine_detector_timing_offset(dt, dz)
 
     def store_offsets(self):
         """Store the determined offset in a table."""
@@ -425,7 +418,8 @@ class ReconstructESDCoincidences(object):
                                             for detector_offset in
                                             self.offsets[station.number]]
 
-    def determine_detector_timing_offsets(self, station, station_group):
+    @staticmethod
+    def determine_detector_timing_offsets(station, station_group):
         """Determine the offsets between the station detectors.
 
         ADL: Currently assumes detector 1 is a good reference.
@@ -434,9 +428,6 @@ class ReconstructESDCoincidences(object):
         accurate.
 
         """
-        bins = arange(-100 + 1.25, 100, 2.5)
-        c = .3
-
         t2 = station_group.events.col('t2')
         z = [d.z for d in station.detectors]
 
@@ -444,13 +435,8 @@ class ReconstructESDCoincidences(object):
         for detector in [0, 2, 3]:
             timings = station_group.events.col('t%d' % (detector + 1))
             dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
-            y, bins = histogram(dt, bins=bins)
-            x = (bins[:-1] + bins[1:]) / 2
-            try:
-                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-                offsets[detector] = (popt[1] + (z[detector] - z[1]) / c)
-            except (IndexError, RuntimeError):
-                pass
+            dz = z[detector] - z[1]
+            offsets[detector] = determine_detector_timing_offset(dt, dz)
 
         return offsets
 
