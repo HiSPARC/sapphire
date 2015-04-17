@@ -587,6 +587,11 @@ class ScienceParkCluster(BaseCluster):
         station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
                              506: 267, 507: 0, 508: -135, 509: 135}
 
+        for station in stations:
+            if station not in station_rotations.keys():
+                raise KeyError('Station $d is not supported in this class, '
+                               'use HiSPARCStations instead.' % station)
+
         reference = gps_coordinates[stations[0]]
         self.lla = reference
         transformation = geographic.FromWGS84ToENUTransformation(reference)
