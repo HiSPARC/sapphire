@@ -12,8 +12,34 @@ from numpy import arange, histogram
 from scipy.optimize import curve_fit
 
 
+def determine_detector_timing_offsets(events, station):
+    """Determine the timing offsets between station detectors.
+
+    :param events: events table of processed events.
+    :param station: Station object.
+    :returns: list of detector offsets.
+
+    """
+    ref_detector = 1
+    t_ref = events.col('t%d' % (ref_detector + 1))
+    n_ref = events.col('n%d' % (ref_detector + 1))
+    filter = (n_ref > .05) & (t_ref >= 0)
+    z = [d.z for d in station.detectors]
+
+    offsets = [0., 0., 0., 0.]
+    for detector in range(len(station.detectors)):
+        if detector == ref_detector:
+            continue
+        t = events.col('t%d' % (detector + 1))
+        n = events.col('n%d' % (detector + 1))
+        dt = (t - t_ref).compress(filter & (n > .05) & (t >= 0))
+        dz = z[detector] - z[1]
+        offsets[detector] = determine_detector_timing_offset(dt, dz)
+
+    return offsets
+
 def determine_detector_timing_offset(dt, dz=0):
-    """Determine the offset between station detectors.
+    """Determine the timing offset between station detectors.
 
     :param dt: a list of time differences between detectors (t - t_ref).
     :param dz: height difference between the detector (z - z_ref).

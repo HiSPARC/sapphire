@@ -12,7 +12,7 @@ from .direction_reconstruction import (EventDirectionReconstruction,
 from .core_reconstruction import (EventCoreReconstruction,
                                   CoincidenceCoreReconstruction)
 from .coincidence_queries import CoincidenceQuery
-from .calibration import determine_detector_timing_offset
+from .calibration import determine_detector_timing_offsets
 from .event_utils import station_arrival_time
 from ..utils import pbar, gauss, ERR
 
@@ -83,7 +83,8 @@ class ReconstructESDEvents(object):
         """Shorthand function to reconstruct event and store the results"""
 
         self.prepare_output()
-        self.determine_detector_timing_offsets()
+        self.offsets = determine_detector_timing_offsets(self.events,
+                                                         self.station)
         self.store_offsets()
         self.reconstruct_directions(detector_ids=detector_ids)
         self.reconstruct_cores(detector_ids=detector_ids)
@@ -123,25 +124,6 @@ class ReconstructESDEvents(object):
         self.reconstructions = self.data.create_table(
             self.station_group, 'reconstructions', ReconstructedEvent)
         self.reconstructions._v_attrs.station = self.station
-
-    def determine_detector_timing_offsets(self):
-        """Determine the offsets between the station detectors.
-
-        ADL: Currently assumes detector 1 is a good reference.
-        But this is not always the best choice.
-
-        """
-        t2 = self.events.col('t2')
-        n2 = self.events.col('n2')
-        filter = (n2 > .05) & (t2 >= 0)
-        z = [d.z for d in self.station.detectors]
-
-        for detector in [0, 2, 3]:
-            t = self.events.col('t%d' % (detector + 1))
-            n = self.events.col('n%d' % (detector + 1))
-            dt = (t - t2).compress(filter & (n > .05) & (t >= 0))
-            dz = z[detector] - z[1]
-            self.offsets[detector] = determine_detector_timing_offset(dt, dz)
 
     def store_offsets(self):
         """Store the determined offset in a table."""
@@ -361,8 +343,8 @@ class ReconstructESDCoincidences(object):
                 continue
             station_number = int(s_path.split('station_')[-1])
             station = self.cluster.get_station(station_number)
-            offsets = self.determine_detector_timing_offsets(station,
-                                                             station_group)
+            offsets = determine_detector_timing_offsets(station_group.events,
+                                                        station)
             self.offsets[station_number] = offsets
 
         # Currently disabled station offsets because they do not work well.
@@ -418,29 +400,6 @@ class ReconstructESDCoincidences(object):
             self.offsets[station.number] = [detector_offset + station_offset
                                             for detector_offset in
                                             self.offsets[station.number]]
-
-    @staticmethod
-    def determine_detector_timing_offsets(station, station_group):
-        """Determine the offsets between the station detectors.
-
-        ADL: Currently assumes detector 1 is a good reference.
-        But this is not always the best choice.
-
-        """
-        t2 = station_group.events.col('t2')
-        n2 = station_group.events.col('n2')
-        filter = (n2 > .05) & (t2 >= 0)
-        z = [d.z for d in station.detectors]
-
-        offsets = [0., 0., 0., 0.]
-        for detector in [0, 2, 3]:
-            t = station_group.events.col('t%d' % (detector + 1))
-            n = station_group.events.col('n%d' % (detector + 1))
-            dt = (t - t2).compress(filter & (n > .05) & (t >= 0))
-            dz = z[detector] - z[1]
-            offsets[detector] = determine_detector_timing_offset(dt, dz)
-
-        return offsets
 
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
