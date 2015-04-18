@@ -128,9 +128,7 @@ class ReconstructESDEvents(object):
         """Determine the offsets between the station detectors.
 
         ADL: Currently assumes detector 1 is a good reference.
-        But this is not always the best choice. Perhaps it should be
-        determined using more data (more than one day) to be more
-        accurate.
+        But this is not always the best choice.
 
         """
         t2 = self.events.col('t2')
@@ -426,9 +424,7 @@ class ReconstructESDCoincidences(object):
         """Determine the offsets between the station detectors.
 
         ADL: Currently assumes detector 1 is a good reference.
-        But this is not always the best choice. Perhaps it should be
-        determined using more data (more than one day) to be more
-        accurate.
+        But this is not always the best choice.
 
         """
         t2 = station_group.events.col('t2')
