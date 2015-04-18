@@ -130,7 +130,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             mips = self.simulate_detector_mips_for_particles(particles)
             particles['t'] += self.simulate_signal_transport_time(n_detected)
             first_signal = particles['t'].min() + detector.offset
-            observables = {'n': mips,
+            observables = {'n': round(mips, 3),
                            't': self.simulate_adc_sampling(first_signal)}
         else:
             observables = {'n': 0., 't': -999}
