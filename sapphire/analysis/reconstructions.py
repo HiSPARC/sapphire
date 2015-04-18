@@ -134,11 +134,14 @@ class ReconstructESDEvents(object):
 
         """
         t2 = self.events.col('t2')
+        n2 = self.events.col('n2')
+        filter = (n2 > .05) & (t2 >= 0)
         z = [d.z for d in self.station.detectors]
 
         for detector in [0, 2, 3]:
-            timings = self.events.col('t%d' % (detector + 1))
-            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
+            t = self.events.col('t%d' % (detector + 1))
+            n = self.events.col('n%d' % (detector + 1))
+            dt = (t - t2).compress(filter & (n > .05) & (t >= 0))
             dz = z[detector] - z[1]
             self.offsets[detector] = determine_detector_timing_offset(dt, dz)
 
@@ -429,12 +432,15 @@ class ReconstructESDCoincidences(object):
 
         """
         t2 = station_group.events.col('t2')
+        n2 = station_group.events.col('n2')
+        filter = (n2 > .05) & (t2 >= 0)
         z = [d.z for d in station.detectors]
 
         offsets = [0., 0., 0., 0.]
         for detector in [0, 2, 3]:
-            timings = station_group.events.col('t%d' % (detector + 1))
-            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
+            t = station_group.events.col('t%d' % (detector + 1))
+            n = station_group.events.col('n%d' % (detector + 1))
+            dt = (t - t2).compress(filter & (n > .05) & (t >= 0))
             dz = z[detector] - z[1]
             offsets[detector] = determine_detector_timing_offset(dt, dz)
 
