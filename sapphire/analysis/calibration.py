@@ -48,7 +48,7 @@ def determine_detector_timing_offset(dt, dz=0):
     """
     c = .3
     bins = arange(-100 + 1.25, 100, 2.5)
-    detector_offset = fit_timing_offset(bins, dt) + dz / c
+    detector_offset = fit_timing_offset(dt, bins) + dz / c
     return detector_offset
 
 def determine_station_timing_offset(dt, dz=0):
@@ -60,8 +60,9 @@ def determine_station_timing_offset(dt, dz=0):
 
     """
     c = .3
-    bins = linspace(percentile(dt, 2), percentile(dt, 98), 200)
-    station_offset = fit_timing_offset(bins, dt) + dz / c
+    p = percentile(dt, [2, 98])
+    bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
+    station_offset = fit_timing_offset(dt, bins) + dz / c
     return station_offset
 
 def fit_timing_offset(dt, bins):
