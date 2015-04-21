@@ -128,6 +128,56 @@ class BaseLdfSimulation(HiSPARCSimulation):
         return random.poisson(p)
 
 
+class BaseLdfSimulationWithoutErrors(ErrorlessSimulation, BaseLdfSimulation):
+
+    """This simulation does not simulate errors/uncertainties
+
+    This should result in perfect particle counting for the detectors.
+
+    """
+
+    def simulate_particles_for_density(self, p):
+        """Exact number"""
+
+        return p
+
+
+class NkgLdfSimulation(BaseLdfSimulation):
+
+    """Same as the BaseLdfSimulation but uses the NkgLdf as LDF"""
+
+    def __init__(self, *args, **kwargs):
+        super(NkgLdfSimulation, self).__init__(*args, **kwargs)
+
+        self.ldf = NkgLdf()
+
+
+class NkgLdfSimulationWithoutErrors(NkgLdfSimulation,
+                                    BaseLdfSimulationWithoutErrors):
+
+    """Same as the NkgLdfSimulation but without error simulation"""
+
+    pass
+
+
+class KascadeLdfSimulation(BaseLdfSimulation):
+
+    """Same as the BaseLdfSimulation but uses the KascadeLdf as LDF"""
+
+    def __init__(self, *args, **kwargs):
+        super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
+
+        self.ldf = KascadeLdf()
+
+
+class KascadeLdfSimulationWithoutErrors(KascadeLdfSimulation,
+                                        BaseLdfSimulationWithoutErrors):
+
+    """Same as the KascadeLdfSimulation but without error simulation"""
+
+    pass
+
+
 class EllipsLdfSimulation(BaseLdfSimulation):
 
     """Same as BaseLdfSimulation but uses the EllipsLdF as LDF"""
@@ -181,56 +231,6 @@ class EllipsLdfSimulation(BaseLdfSimulation):
             p_ground * detector.get_area())
 
         return num_particles
-
-
-class BaseLdfSimulationWithoutErrors(ErrorlessSimulation, BaseLdfSimulation):
-
-    """This simulation does not simulate errors/uncertainties
-
-    This should result in perfect particle counting for the detectors.
-
-    """
-
-    def simulate_particles_for_density(self, p):
-        """Exact number"""
-
-        return p
-
-
-class NkgLdfSimulation(BaseLdfSimulation):
-
-    """Same as the BaseLdfSimulation but uses the NkgLdf as LDF"""
-
-    def __init__(self, *args, **kwargs):
-        super(NkgLdfSimulation, self).__init__(*args, **kwargs)
-
-        self.ldf = NkgLdf()
-
-
-class NkgLdfSimulationWithoutErrors(NkgLdfSimulation,
-                                    BaseLdfSimulationWithoutErrors):
-
-    """Same as the NkgLdfSimulation but without error simulation"""
-
-    pass
-
-
-class KascadeLdfSimulation(BaseLdfSimulation):
-
-    """Same as the BaseLdfSimulation but uses the KascadeLdf as LDF"""
-
-    def __init__(self, *args, **kwargs):
-        super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
-
-        self.ldf = KascadeLdf()
-
-
-class KascadeLdfSimulationWithoutErrors(KascadeLdfSimulation,
-                                        BaseLdfSimulationWithoutErrors):
-
-    """Same as the KascadeLdfSimulation but without error simulation"""
-
-    pass
 
 
 class BaseLdf(object):
