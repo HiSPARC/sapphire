@@ -109,8 +109,8 @@ class BaseLdfSimulation(HiSPARCSimulation):
         azimuth = shower_parameters['azimuth']
         size = shower_parameters['size']
 
-        r = self.ldf.calculate_core_distance_from_coordinates_and_direction(
-            x, y, core_x, core_y, zenith, azimuth)
+        r = self.ldf.calculate_core_distance(x, y, core_x, core_y, zenith,
+                                             azimuth)
         p_shower = self.ldf.calculate_ldf_value(r, Ne=size)
         p_ground = p_shower * cos(zenith)
         num_particles = self.simulate_particles_for_density(
@@ -173,8 +173,8 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         zenith = shower_parameters['zenith']
         azimuth = shower_parameters['azimuth']
 
-        r, phi = self.ldf.calculate_core_distance_and_angle_from_coordinates(
-            x, y, core_x, core_y)
+        r, phi = self.ldf.calculate_core_distance_and_angle(x, y, core_x,
+                                                            core_y)
 
         p_ground = self.ldf.calculate_ldf_value(r, phi, zenith, azimuth)
         num_particles = self.simulate_particles_for_density(
@@ -238,9 +238,7 @@ class BaseLdf(object):
     def calculate_ldf_value(self, r, Ne=None, s=None):
         return 0.
 
-    def calculate_core_distance_from_coordinates_and_direction(self,
-                                                               x, y, x0, y0,
-                                                               theta, phi):
+    def calculate_core_distance(self, x, y, x0, y0, theta, phi):
         """Calculate core distance
 
         The core distance is the distance of the detector to the shower core,
@@ -249,7 +247,7 @@ class BaseLdf(object):
         :param x,y: detector position in m.
         :param x0,y0: shower core position in m.
         :param theta,phi: shower axis direction in radians.
-        :returns: distance from station to the shower core in shower
+        :returns: distance from detector to the shower core in shower
                   front plane in m.
 
         """
@@ -495,16 +493,15 @@ class EllipsLdf(KascadeLdf):
         return (gamma(-s2) /
                 (2 * pi * r0 ** 2 * gamma(s1 + 2) * gamma(-s1 - s2 - 2)))
 
-    def calculate_core_distance_and_angle_from_coordinates(self, x, y, x0, y0):
-
+    def calculate_core_distance_and_angle(self, x, y, x0, y0):
         """Calculate core distance
 
         The core distance is the distance of the detector to the shower core,
-        measured *in the `horizontal' observation plane*.
+        measured *in the horizontal observation plane*.
 
         :param x,y: detector position in m.
         :param x0,y0: shower core position in m.
-        :returns: distance and polar angle from station to the shower core in
+        :returns: distance and polar angle from detector to the shower core in
                   horizontal observation plane in m resp. rad.
 
         """
