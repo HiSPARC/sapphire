@@ -127,7 +127,6 @@ class BaseLdfSimulation(HiSPARCSimulation):
         return random.poisson(p)
 
 
-
 class EllipsLdfSimulation(BaseLdfSimulation):
 
     """Same as BaseLdfSimulation but uses the EllipsLdF as LDF"""
@@ -272,6 +271,12 @@ class NkgLdf(BaseLdf):
     _r0 = 30.
 
     def __init__(self, Ne=None, s=None):
+        """NKG LDF setup
+
+        :param Ne: Shower size (number of electrons).
+        :param s: Shower age parameter.
+
+        """
         if Ne is not None:
             self._Ne = Ne
         if s is not None:
@@ -398,7 +403,7 @@ class EllipsLdf(KascadeLdf):
     # shower parameters
     # Values from Montanus, paper to follow.
     _Ne = 10 ** 4.8
-    _s1 = -.5   # Shape parameter
+    _s1 = -.5  # Shape parameter
     _s2 = -2.6  # Shape parameter
     _r0 = 30.
 
@@ -442,8 +447,9 @@ class EllipsLdf(KascadeLdf):
         shower size and three shape parameters (r0, s1, s2) .
         As given by Montanus, paper to follow.
 
-        *** Watch!!! The value 11.24 in the expression: muoncorr
-        is only valid for: s1 = -.5, s2 = - 2.6 and  r0 = 30.   ***
+        .. warning::
+           The value 11.24 in the expression: muoncorr is only valid
+           for: s1 = -.5, s2 = - 2.6 and r0 = 30.
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
@@ -452,7 +458,6 @@ class EllipsLdf(KascadeLdf):
         :param s2: shower shape parameter.
         :param zenith: zenith angle in rad.
         :param azimuth: azimuth angle in rad.
-
         :returns: particle density in m ** -2.
 
         """
@@ -484,12 +489,10 @@ class EllipsLdf(KascadeLdf):
 
         """
         r0 = self._r0
-        return (gamma( - s2) /
-                (2 * pi * r0 ** 2 * gamma(s1 + 2) *
-                 gamma(- s1 - s2 - 2)))
+        return (gamma(-s2) /
+                (2 * pi * r0 ** 2 * gamma(s1 + 2) * gamma(-s1 - s2 - 2)))
 
-    def calculate_core_distance_and_angle_from_coordinates(self,
-                                                               x, y, x0, y0,):
+    def calculate_core_distance_and_angle_from_coordinates(self, x, y, x0, y0):
 
         """Calculate core distance
 
@@ -505,4 +508,4 @@ class EllipsLdf(KascadeLdf):
         x = x - x0
         y = y - y0
 
-        return sqrt(x ** 2 + y ** 2), arctan2(y,x)
+        return sqrt(x ** 2 + y ** 2), arctan2(y, x)
