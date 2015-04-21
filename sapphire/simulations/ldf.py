@@ -18,7 +18,7 @@ Example usage::
 
 """
 from scipy.special import gamma
-from numpy import pi, sin, cos, sqrt, random, arctan2
+from numpy import pi, sin, cos, sqrt, random, arctan2, log10
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..utils import pbar
@@ -26,17 +26,22 @@ from ..utils import pbar
 
 class BaseLdfSimulation(HiSPARCSimulation):
 
-    def __init__(self, max_core_distance, *args, **kwargs):
+    def __init__(self, max_core_distance, min_energy, max_energy, *args,
+                 **kwargs):
         """Simulation initialization
 
         :param max_core_distance: maximum distance of shower core to
-                                  center of cluster.
+                                  center of cluster (in meters).
+        :param min_energy,max_energy: Minimum and maximum energy of the
+                                      shower (in eV).
 
         """
         super(BaseLdfSimulation, self).__init__(*args, **kwargs)
 
         self.ldf = BaseLdf()
         self.max_core_distance = max_core_distance
+        self.min_energy = min_energy
+        self.max_energy = max_energy
 
         # The cluster is not moved, so detector positions can be stored.
         for station in self.cluster.stations:
@@ -57,12 +62,14 @@ class BaseLdfSimulation(HiSPARCSimulation):
         giga = int(1e9)
 
         for i in pbar(range(self.N)):
+            energy = self.generate_energy(self.min_energy, self.max_energy)
+            size = 10 ** (log10(energy) - 15 + 4.8)
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
                                  'azimuth': self.generate_azimuth(),
                                  'zenith': 0.,
                                  'core_pos': self.generate_core_position(r),
-                                 'size': None,
-                                 'energy': None}
+                                 'size': size,
+                                 'energy': energy}
 
             yield shower_parameters
 
@@ -99,10 +106,11 @@ class BaseLdfSimulation(HiSPARCSimulation):
         core_x, core_y = shower_parameters['core_pos']
         zenith = shower_parameters['zenith']
         azimuth = shower_parameters['azimuth']
+        size = shower_parameters['size']
 
         r = self.ldf.calculate_core_distance_from_coordinates_and_direction(
             x, y, core_x, core_y, zenith, azimuth)
-        p_shower = self.ldf.calculate_ldf_value(r)
+        p_shower = self.ldf.get_ldf_value_for_size(r, size)
         p_ground = p_shower * cos(zenith)
         num_particles = self.simulate_particles_for_density(
             p_ground * detector.get_area())
@@ -119,12 +127,13 @@ class BaseLdfSimulation(HiSPARCSimulation):
         return random.poisson(p)
 
 
+
 class EllipsLdfSimulation(BaseLdfSimulation):
 
     """Same as BaseLdfSimulation but uses the EllipsLdF as LDF"""
 
-    def __init__(self, max_core_distance, *args, **kwargs):
-        super(EllipsLdfSimulation, self).__init__(*args, **kwargs)   #???
+    def __init__(self, *args, **kwargs):
+        super(EllipsLdfSimulation, self).__init__(*args, **kwargs)
 
         self.ldf = EllipsLdf()
 
