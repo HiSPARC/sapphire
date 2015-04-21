@@ -110,7 +110,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
 
         r = self.ldf.calculate_core_distance_from_coordinates_and_direction(
             x, y, core_x, core_y, zenith, azimuth)
-        p_shower = self.ldf.get_ldf_value_for_size(r, size)
+        p_shower = self.ldf.calculate_ldf_value(r, Ne=size)
         p_ground = p_shower * cos(zenith)
         num_particles = self.simulate_particles_for_density(
             p_ground * detector.get_area())
@@ -182,7 +182,6 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         return num_particles
 
 
-
 class BaseLdfSimulationWithoutErrors(ErrorlessSimulation, BaseLdfSimulation):
 
     """This simulation does not simulate errors/uncertainties
@@ -235,7 +234,7 @@ class KascadeLdfSimulationWithoutErrors(KascadeLdfSimulation,
 
 class BaseLdf(object):
 
-    def calculate_ldf_value(self, r):
+    def calculate_ldf_value(self, r, Ne=None, s=None):
         return 0.
 
     def calculate_core_distance_from_coordinates_and_direction(self,
@@ -292,24 +291,20 @@ class NkgLdf(BaseLdf):
         """
         self._c_s = self._c(self._s)
 
-    def calculate_ldf_value(self, r):
-        """Calculate the LDF value for a given core distance
-
-        :param r: core distance in m.
-        :returns: particle density in m ** -2.
-
-        """
-        return self.get_ldf_value_for_size_and_shape(r, self._Ne, self._s)
-
-    def get_ldf_value_for_size(self, r, Ne):
-        """Calculate the LDF value for a given core distance and shower size
+    def calculate_ldf_value(self, r, Ne=None, s=None):
+        """Calculate the LDF value
 
         :param r: core distance in m.
         :param Ne: number of electrons in the shower.
+        :param s: shower age parameter.
         :returns: particle density in m ** -2.
 
         """
-        return self.get_ldf_value_for_size_and_shape(r, Ne, self._s)
+        if Ne is None:
+            Ne = self._Ne
+        if s is None:
+            s = self._s
+        return self.get_ldf_value_for_size_and_shape(r, Ne, s)
 
     def get_ldf_value_for_size_and_shape(self, r, Ne, s):
         """Calculate the LDF value
@@ -406,16 +401,20 @@ class EllipsLdf(KascadeLdf):
     _s1 = -.5  # Shape parameter
     _s2 = -2.6  # Shape parameter
     _r0 = 30.
+    _zenith = 0.
+    _azimuth = 0.
 
-    def __init__(self, zenith, azimuth, Ne=None, s1=None, s2=None):
-        self._zenith = zenith
-        self._azimuth = azimuth
+    def __init__(self, Ne=None, s1=None, s2=None, zenith=None, azimuth=None):
         if Ne is not None:
             self._Ne = Ne
         if s1 is not None:
             self._s1 = s1
         if s2 is not None:
             self._s2 = s2
+        if zenith is not None:
+            self._zenith = zenith
+        if azimuth is not None:
+            self._azimuth = azimuth
 
         self._cache_c_s_value()
 
@@ -427,16 +426,19 @@ class EllipsLdf(KascadeLdf):
         """
         self._c_s = self._c(self._s1, self._s2)
 
-    def calculate_ldf_value(self, r, phi):
+    def calculate_ldf_value(self, r, phi, Ne=None):
         """Calculate the LDF value for a given core distance and polar angle
 
         :param r: core distance in m.
-        :param phi: polar angle in m.
+        :param phi: polar angle in rad.
+        :param Ne: number of electrons in the shower.
         :returns: particle density in m ** -2.
 
         """
+        if Ne is None:
+            Ne = self._Ne
         return self.get_ldf_value_for_size_and_shape(r, phi, self._zenith,
-                                                     self._azimuth, self._Ne,
+                                                     self._azimuth, Ne,
                                                      self._s1, self._s2)
 
     def get_ldf_value_for_size_and_shape(self, r, phi, zenith, azimuth, Ne,
@@ -470,11 +472,11 @@ class EllipsLdf(KascadeLdf):
         azimuth = self._azimuth
         relcos = cos(phi - azimuth)
         ell = sqrt(1 - sin(zenith) * sin(zenith) * relcos * relcos)
-        shift = - 0.0575 * sin(2 * zenith) * r * relcos
+        shift = -0.0575 * sin(2 * zenith) * r * relcos
         k = shift + r * ell
         term1 = k / r0
         term2 = 1 + k / r0
-        muoncorr = 1 + k / (11.24 * r0)
+        muoncorr = 1 + k / (11.24 * r0)  # See warning in docstring.
 
         return Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
 
