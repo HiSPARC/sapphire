@@ -225,7 +225,7 @@ class HiSPARCSimulation(BaseSimulation):
         """
         x = np.random.random()
         a1 = alpha + 1.
-        E = (minE ** a1 + x * (maxE ** a1 - minE ** a1)) ** (1 / a1)
+        E = (min_E ** a1 + x * (max_E ** a1 - min_E ** a1)) ** (1 / a1)
         return E
 
 
