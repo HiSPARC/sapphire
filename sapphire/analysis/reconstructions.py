@@ -1,7 +1,7 @@
 from itertools import izip_longest
 from datetime import date
 
-from numpy import nan, arange, histogram, linspace, percentile, std
+from numpy import isnan, nan, arange, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
 import tables
 
