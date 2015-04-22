@@ -111,6 +111,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
 
         r = self.ldf.calculate_core_distance(x, y, core_x, core_y, zenith,
                                              azimuth)
+
         p_shower = self.ldf.calculate_ldf_value(r, Ne=size)
         p_ground = p_shower * cos(zenith)
         num_particles = self.simulate_particles_for_density(
@@ -201,12 +202,14 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         giga = int(1e9)
 
         for i in pbar(range(self.N)):
+            energy = self.generate_energy(self.min_energy, self.max_energy)
+            size = 10 ** (log10(energy) - 15 + 4.8)
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
                                  'azimuth': self.generate_azimuth(),
                                  'zenith': self.generate_zenith(),
                                  'core_pos': self.generate_core_position(r),
-                                 'size': None,
-                                 'energy': None}
+                                 'size': size,
+                                 'energy': energy}
 
             yield shower_parameters
 
@@ -222,11 +225,12 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         core_x, core_y = shower_parameters['core_pos']
         zenith = shower_parameters['zenith']
         azimuth = shower_parameters['azimuth']
+        size = shower_parameters['size']
 
         r, phi = self.ldf.calculate_core_distance_and_angle(x, y, core_x,
                                                             core_y)
 
-        p_ground = self.ldf.calculate_ldf_value(r, phi, zenith, azimuth)
+        p_ground = self.ldf.calculate_ldf_value(r, phi, size, zenith, azimuth)
         num_particles = self.simulate_particles_for_density(
             p_ground * detector.get_area())
 
@@ -403,17 +407,17 @@ class EllipsLdf(KascadeLdf):
     _zenith = 0.
     _azimuth = 0.
 
-    def __init__(self, Ne=None, s1=None, s2=None, zenith=None, azimuth=None):
+    def __init__(self, Ne=None, zenith=None, azimuth=None, s1=None, s2=None):
         if Ne is not None:
             self._Ne = Ne
-        if s1 is not None:
-            self._s1 = s1
-        if s2 is not None:
-            self._s2 = s2
         if zenith is not None:
             self._zenith = zenith
         if azimuth is not None:
             self._azimuth = azimuth
+        if s1 is not None:
+            self._s1 = s1
+        if s2 is not None:
+            self._s2 = s2
 
         self._cache_c_s_value()
 
@@ -425,7 +429,7 @@ class EllipsLdf(KascadeLdf):
         """
         self._c_s = self._c(self._s1, self._s2)
 
-    def calculate_ldf_value(self, r, phi, Ne=None):
+    def calculate_ldf_value(self, r, phi, Ne=None, zenith=None, azimuth=None):
         """Calculate the LDF value for a given core distance and polar angle
 
         :param r: core distance in m.
@@ -436,10 +440,13 @@ class EllipsLdf(KascadeLdf):
         """
         if Ne is None:
             Ne = self._Ne
-        return self.ldf_value(r, phi, self._zenith, self._azimuth, Ne,
-                              self._s1, self._s2)
+        if zenith is None:
+            zenith = self._zenith
+        if azimuth is None:
+            azimuth = self._azimuth
+        return self.ldf_value(r, phi, Ne, zenith, azimuth, self._s1, self._s2)
 
-    def ldf_value(self, r, phi, zenith, azimuth, Ne, s1, s2):
+    def ldf_value(self, r, phi, Ne, zenith, azimuth, s1, s2):
         """Calculate the LDF value
 
         Given a core distance, core polar angle, zenith angle, azimuth angle,
@@ -453,10 +460,10 @@ class EllipsLdf(KascadeLdf):
         :param r: core distance in m.
         :param phi: polar angle in rad.
         :param Ne: number of electrons in the shower.
-        :param s1: shower shape parameter.
-        :param s2: shower shape parameter.
         :param zenith: zenith angle in rad.
         :param azimuth: azimuth angle in rad.
+        :param s1: shower shape parameter.
+        :param s2: shower shape parameter.
         :returns: particle density in m ** -2.
 
         """

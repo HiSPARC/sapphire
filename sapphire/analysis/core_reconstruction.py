@@ -344,22 +344,23 @@ class EllipsLdfAlgorithm(object):
         :param theta, phi: zenith and azimuth angle in rad.
 
         """
-        xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p,x,y)
+        xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         xbest = xcmass
         ybest = ycmass
         factorbest = 1.
         gridsize = 5.
-        xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(p,x,y,
-                        xbest,ybest,factorbest,chi2best,gridsize, theta, phi)
+        xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(
+            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p,x,y)
+        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x,
+                                                                         y)
         chi2best = 10 ** 99
         xbest = xcmass
         ybest = ycmass
         factorbest = 1.
-        xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(p,x,y,
-                        xbest,ybest,factorbest,chi2best,gridsize, theta, phi)
+        xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(
+            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
         if chi2best1 < chi2best2:
             chi2best = chi2best1
@@ -373,14 +374,14 @@ class EllipsLdfAlgorithm(object):
             factorbest = factorbest2
 
         gridsize = 2.
-        core_x, core_y, chi2best, factorbest = cls.selectbest(p,x,y,
-                        xbest,ybest,factorbest,chi2best,gridsize, theta, phi)
+        core_x, core_y, chi2best, factorbest = cls.selectbest(
+            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        return core_x, core_y,chi2best, factorbest * (10 ** 4.8)
+        return core_x, core_y,chi2best, factorbest * ldf.EllipsLdf._Ne
 
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
-                                                             theta, phi):
+                   theta, phi):
         """selects the best core position in grid around (xstart, ystart).
 
         :param p: detector particle density in m^-2.
@@ -391,15 +392,15 @@ class EllipsLdfAlgorithm(object):
         xbest = xstart
         ybest = ystart
 
-        a = ldf.EllipsLdf(theta, phi)
+        a = ldf.EllipsLdf(zenith=theta, azimuth=phi)
         for i in range(41):
             xtry = xstart + (i - 20) * gridsize
             for j in range(11):
                 ytry = ystart + (i - 20) * gridsize
                 xstations = array(x)
                 ystations = array(y)
-                r, angle = a.calculate_core_distance_and_angle_from_coordinates(
-                                            xstations, ystations, xtry, ytry)
+                r, angle = a.calculate_core_distance_and_angle(
+                    xstations, ystations, xtry, ytry)
                 rho = a.calculate_ldf_value(r, angle)
 
                 mmdivl = 0.
