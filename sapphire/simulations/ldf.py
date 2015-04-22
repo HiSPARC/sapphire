@@ -303,9 +303,9 @@ class NkgLdf(BaseLdf):
             Ne = self._Ne
         if s is None:
             s = self._s
-        return self.get_ldf_value_for_size_and_shape(r, Ne, s)
+        return self.ldf_value(r, Ne, s)
 
-    def get_ldf_value_for_size_and_shape(self, r, Ne, s):
+    def ldf_value(self, r, Ne, s):
         """Calculate the LDF value
 
         Given a core distance, shower size, and shower age.
@@ -351,7 +351,7 @@ class KascadeLdf(NkgLdf):
     _alpha = 1.5
     _beta = 3.6
 
-    def get_ldf_value_for_size_and_shape(self, r, Ne, s):
+    def ldf_value(self, r, Ne, s):
         """Calculate the LDF value
 
         Given a core distance, shower size, and shower age.
@@ -436,12 +436,10 @@ class EllipsLdf(KascadeLdf):
         """
         if Ne is None:
             Ne = self._Ne
-        return self.get_ldf_value_for_size_and_shape(r, phi, self._zenith,
-                                                     self._azimuth, Ne,
-                                                     self._s1, self._s2)
+        return self.ldf_value(r, phi, self._zenith, self._azimuth, Ne,
+                              self._s1, self._s2)
 
-    def get_ldf_value_for_size_and_shape(self, r, phi, zenith, azimuth, Ne,
-                                         s1, s2):
+    def ldf_value(self, r, phi, zenith, azimuth, Ne, s1, s2):
         """Calculate the LDF value
 
         Given a core distance, core polar angle, zenith angle, azimuth angle,
