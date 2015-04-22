@@ -18,10 +18,11 @@
 from __future__ import division
 import itertools
 
-from numpy import isnan, nan, cos, sqrt, mean, pi, arctan2
+from numpy import isnan, nan, cos, sqrt, mean, pi, arctan2, array
 
 from .event_utils import station_density, detector_density
 from ..utils import pbar, ERR
+from ..simulations import ldf
 
 
 class EventCoreReconstruction(object):
@@ -309,3 +310,113 @@ class AverageIntersectionAlgorithm(object):
                 newylist.append(ypoint)
 
         return newxlist, newylist
+
+
+class EllipsLdfAlgorithm(object):
+
+    """ Simple core estimator
+
+    Estimates the core by center of mass of the measurements.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core position
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions: zenith and azimuth.
+
+        """
+        theta = initial.get('theta', 0.)
+        phi = initial.get('phi', 0.)
+        return cls.reconstruct(p, x, y, theta, phi)
+
+    @classmethod
+    def reconstruct(cls, p, x, y, theta, phi):
+        """Reconstruct the number of electrons that fits best.
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param theta, phi: zenith and azimuth angle in rad.
+
+        """
+        xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p,x,y)
+        chi2best = 10 ** 99
+        xbest = xcmass
+        ybest = ycmass
+        factorbest = 1.
+        gridsize = 5.
+        xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(p,x,y,
+                        xbest,ybest,factorbest,chi2best,gridsize, theta, phi)
+
+        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p,x,y)
+        chi2best = 10 ** 99
+        xbest = xcmass
+        ybest = ycmass
+        factorbest = 1.
+        xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(p,x,y,
+                        xbest,ybest,factorbest,chi2best,gridsize, theta, phi)
+
+        if chi2best1 < chi2best2:
+            chi2best = chi2best1
+            xbest = xbest1
+            ybest = ybest1
+            factorbest = factorbest1
+        else:
+            chi2best = chi2best2
+            xbest = xbest2
+            ybest = ybest2
+            factorbest = factorbest2
+
+        gridsize = 2.
+        core_x, core_y, chi2best, factorbest = cls.selectbest(p,x,y,
+                        xbest,ybest,factorbest,chi2best,gridsize, theta, phi)
+
+        return core_x, core_y,chi2best, factorbest * (10 ** 4.8)
+
+    @staticmethod
+    def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
+                                                             theta, phi):
+        """selects the best core position in grid around (xstart, ystart).
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param xcmass,ycmass: start position of core in m.
+
+        """
+        xbest = xstart
+        ybest = ystart
+
+        a = ldf.EllipsLdf(theta, phi)
+        for i in range(41):
+            xtry = xstart + (i - 20) * gridsize
+            for j in range(11):
+                ytry = ystart + (i - 20) * gridsize
+                xstations = array(x)
+                ystations = array(y)
+                r, angle = a.calculate_core_distance_and_angle_from_coordinates(
+                                            xstations, ystations, xtry, ytry)
+                rho = a.calculate_ldf_value(r, angle)
+
+                mmdivl = 0.
+                m = 0.
+                l = 0.
+
+                for i, j in zip(p, rho):
+                    mmdivl += 1. * i * i / j
+                    m += i
+                    l += j
+
+                sizefactor = sqrt(mmdivl / l)
+                chi2 = 2. * (sizefactor * l - m)
+                if chi2 < chi2best:
+                    factorbest = sizefactor
+                    xbest = xtry
+                    ybest = ytry
+                    chi2best = chi2
+
+        return(xbest, ybest, chi2best, factorbest)
