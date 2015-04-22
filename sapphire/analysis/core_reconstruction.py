@@ -18,10 +18,10 @@
 from __future__ import division
 import itertools
 
-from numpy import isnan, nan, cos, sqrt, mean, pi, arctan2, array
+from numpy import isnan, nan, cos, sqrt, mean, array
 
 from .event_utils import station_density, detector_density
-from ..utils import pbar, ERR
+from ..utils import pbar
 from ..simulations import ldf
 
 
@@ -285,13 +285,13 @@ class AverageIntersectionAlgorithm(object):
                 xpointlist.append(xint)
                 ypointlist.append(yint)
 
-        subxplist, subyplist = cls.select_newlist(newx, newy,
-                    xpointlist, ypointlist, 120.)
+        subxplist, subyplist = cls.select_newlist(
+            newx, newy, xpointlist, ypointlist, 120.)
         if len(subxplist) > 3:
             newx = mean(subxplist)
             newy = mean(subyplist)
-            subxplist, subyplist = cls.select_newlist(newx, newy,
-                xpointlist, ypointlist, 100.)
+            subxplist, subyplist = cls.select_newlist(
+                newx, newy, xpointlist, ypointlist, 100.)
         if len(subxplist) > 2:
             newx = mean(subxplist)
             newy = mean(subyplist)
@@ -377,7 +377,7 @@ class EllipsLdfAlgorithm(object):
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        return core_x, core_y,chi2best, factorbest * ldf.EllipsLdf._Ne
+        return core_x, core_y, chi2best, factorbest * ldf.EllipsLdf._Ne
 
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,

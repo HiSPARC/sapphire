@@ -23,7 +23,7 @@ from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
 from scipy.optimize import minimize
 
 from .event_utils import station_arrival_time, detector_arrival_time
-from ..utils import pbar, norm_angle, ERR
+from ..utils import pbar, norm_angle
 
 
 class EventDirectionReconstruction(object):

@@ -67,7 +67,7 @@ class CoincidenceQuery(object):
             self.reconstructions = self.data.get_node(coincidence_group,
                                                       'reconstructions')
             self.reconstructed = True
-        except tables.NoSuchNodeError as err:
+        except tables.NoSuchNodeError:
             self.reconstructed = False
 
     def finish(self):

@@ -1,12 +1,12 @@
 from itertools import izip_longest
 from datetime import date
 
-from numpy import isnan, nan, arange, histogram, linspace, percentile, std
+from numpy import isnan, nan, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
 import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
-from ..clusters import HiSPARCStations, ScienceParkCluster, Station
+from ..clusters import HiSPARCStations, Station
 from .direction_reconstruction import (EventDirectionReconstruction,
                                        CoincidenceDirectionReconstruction)
 from .core_reconstruction import (EventCoreReconstruction,
@@ -14,7 +14,7 @@ from .core_reconstruction import (EventCoreReconstruction,
 from .coincidence_queries import CoincidenceQuery
 from .calibration import determine_detector_timing_offsets
 from .event_utils import station_arrival_time
-from ..utils import pbar, gauss, ERR
+from ..utils import pbar, gauss
 
 
 class ReconstructESDEvents(object):
@@ -251,7 +251,6 @@ class ReconstructESDCoincidences(object):
         coincidences = self.cq.all_coincidences(iterator=True)
         # Progress does not work because the pbar does not know the
         # number of coincidences
-        length = self.coincidences.nrows
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
             self.progress)

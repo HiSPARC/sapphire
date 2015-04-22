@@ -59,7 +59,6 @@ class EquatorialTests(unittest.TestCase):
         ra_astropy = np.radians(3.3094193224314625)
         dec_astropy = np.radians(15.183757021354532)
 
-
         # KPNO observatory
         longitude = -111.6
         latitude = 31.9633
@@ -87,7 +86,6 @@ class EquatorialTests(unittest.TestCase):
         self.assertAlmostEqual(ra, ra_astropy, 1)
         self.assertAlmostEqual(dec, dec_expected, 2)
         self.assertAlmostEqual(dec, dec_astropy, 2)
-
 
     def test_against_pyephem(self):
         """Check for consistent results with one PyEphem example.
@@ -124,7 +122,6 @@ class EquatorialTests(unittest.TestCase):
         self.assertAlmostEqual(ra, ra_astropy, 2)
         self.assertAlmostEqual(dec, dec_expected, 2)
         self.assertAlmostEqual(dec, dec_astropy, 2)
-
 
     def test_against_jpl_horizons(self):
         """Check for consistent results with the JPL Horizons example.

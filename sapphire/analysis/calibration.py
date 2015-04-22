@@ -38,6 +38,7 @@ def determine_detector_timing_offsets(events, station):
 
     return offsets
 
+
 def determine_detector_timing_offset(dt, dz=0):
     """Determine the timing offset between station detectors.
 
@@ -50,6 +51,7 @@ def determine_detector_timing_offset(dt, dz=0):
     bins = arange(-100 + 1.25, 100, 2.5)
     detector_offset = fit_timing_offset(dt, bins) + dz / c
     return detector_offset
+
 
 def determine_station_timing_offset(dt, dz=0):
     """Determine the timing offset between station.
@@ -64,6 +66,7 @@ def determine_station_timing_offset(dt, dz=0):
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
     station_offset = fit_timing_offset(dt, bins) + dz / c
     return station_offset
+
 
 def fit_timing_offset(dt, bins):
     """Fit the time difference distribution.
