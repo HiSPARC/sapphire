@@ -313,6 +313,7 @@ def gps_to_utc(timestamp):
     """Convert GPS time to UTC
 
     :param timestamp: GPS timestamp in seconds.
+    :returns: UTC timestamp in seconds.
 
     """
     offset = next((seconds for date, seconds in LEAP_SECONDS
@@ -324,6 +325,7 @@ def utc_to_gps(timestamp):
     """Convert UTC to GPS time
 
     :param timestamp: UTC timestamp in seconds.
+    :returns: GPS timestamp in seconds.
 
     """
     offset = next((seconds for date, seconds in LEAP_SECONDS
@@ -332,15 +334,23 @@ def utc_to_gps(timestamp):
 
 
 def utc_from_string(date):
-    """Convert a date string to UTC"""
+    """Convert a date string to UTC
 
+    :param date: date string.
+    :returns: UTC timestamp in seconds.
+
+    """
     t = strptime(date, '%B %d, %Y')
     return calendar.timegm(t)
 
 
 def gps_from_string(date):
-    """Convert a date string to GPS time"""
+    """Convert a date string to GPS time
 
+    :param date: date string.
+    :returns: GPS timestamp in seconds.
+
+    """
     t = strptime(date, '%B %d, %Y')
     return utc_to_gps(calendar.timegm(t))
 
@@ -348,12 +358,11 @@ def gps_from_string(date):
 def gps_to_lst(timestamp, longitude):
     """Convert a GPS timestamp to lst
 
-    :param timestamp: GPS timestamp in seconds
-    :param longitude: location in degrees, E positive
-    :returns: decimal hours in LST
+    :param timestamp: GPS timestamp in seconds.
+    :param longitude: location in degrees, E positive.
+    :returns: decimal hours in LST.
 
     """
-
     utc_timestamp = gps_to_utc(timestamp)
     utc = datetime.datetime.utcfromtimestamp(utc_timestamp)
     return utc_to_lst(utc, longitude)
@@ -362,9 +371,20 @@ def gps_to_lst(timestamp, longitude):
 def gps_to_datetime(timestamp):
     """Convert a GPS timestamp to datetime object
 
-    :param timestamp: GPS timestamp in seconds
-    :returns: datetime object
+    :param timestamp: GPS timestamp in seconds.
+    :returns: datetime object.
 
     """
     gps_dt = datetime.datetime.utcfromtimestamp(timestamp)
     return gps_dt
+
+
+def datetime_to_gps(dt):
+    """Convert a GPS datetime object to a timestamp
+
+    :param dt: GPS datetime object.
+    :returns: GPS timestamp in seconds.
+
+    """
+    timestamp = calendar.timegm(dt.timetuple())
+    return timestamp
