@@ -30,10 +30,14 @@ import json
 import warnings
 from os import path
 from urllib2 import urlopen, HTTPError, URLError
+from StringIO import StringIO
+
+from numpy import genfromtxt
 
 logger = logging.getLogger('api')
 
 API_BASE = 'http://data.hisparc.nl/api/'
+SRC_BASE = 'http://data.hisparc.nl/show/source/'
 JSON_FILE = path.join(path.dirname(__file__), 'data/hisparc_stations.json')
 
 
@@ -41,8 +45,10 @@ class API(object):
 
     """Base API class
 
-    This provided the methods to retrieve data from the API.
-    Also converts JSON data to Python objects (dict/list/etc..).
+    This provided the methods to retrieve data from the API. The results
+    are converted from JSON data to Python objects (dict/list/etc).
+    Support is also provided for the retrieval of Source CSV data, which
+    is returned as NumPy arrays.
 
     """
 
@@ -70,13 +76,25 @@ class API(object):
                                  '{plate_number}/pulseheight/drift/{year}/'
                                  '{month}/{day}/{number_of_days}/'}
 
+    src_urls = {
+        'coincidencetime': 'coincidencetime/{year}/{month}/{day}/',
+        'coincidencenumber': 'coincidencenumber/{year}/{month}/{day}/',
+        'eventtime': 'eventtime/{station_number}/{year}/{month}/{day}/',
+        'pulseheight': 'pulseheight/{station_number}/{year}/{month}/{day}/',
+        'integral': 'pulseintegral/{station_number}/{year}/{month}/{day}/',
+        'barometer': 'barometer/{station_number}/{year}/{month}/{day}/',
+        'temperature': 'temperature/{station_number}/{year}/{month}/{day}/',
+        'voltage': 'voltage/{station_number}/',
+        'current': 'current/{station_number}/',
+        'gps': 'gps/{station_number}/'}
+
     @classmethod
     def _get_json(cls, urlpath):
         """Retrieve a JSON from the HiSPARC API
 
         :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
-            to retrieve
-        :return: the data returned by the api as dictionary or integer
+            to retrieve.
+        :return: the data returned by the api as dictionary or integer.
 
         """
         json_data = cls._retrieve_url(urlpath)
@@ -84,8 +102,23 @@ class API(object):
 
         return data
 
+    @classmethod
+    def _get_csv(cls, urlpath, names=None):
+        """Retrieve a Source CSV from the HiSPARC Public Database
+
+        :param urlpath: the csv urlpath to retrieve
+            (after http://data.hisparc.nl/show/source/).
+        :return: the data returned as array.
+
+        """
+        csv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
+        data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
+                          names=names)
+
+        return data
+
     @staticmethod
-    def _retrieve_url(urlpath):
+    def _retrieve_url(urlpath, base=API_BASE):
         """Open a HiSPARC API URL and read the data
 
         :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
@@ -93,7 +126,7 @@ class API(object):
         :return: the data returned by the api as a string
 
         """
-        url = API_BASE + urlpath
+        url = base + urlpath
         logging.debug('Getting: ' + url)
         try:
             result = urlopen(url).read()
@@ -333,6 +366,32 @@ class Network(API):
                 .format(year=year, month=month, day=day).strip("/"))
         return cls._get_json(path)
 
+    @classmethod
+    def coincidence_time(cls, year, month, day):
+        """Get the coincidences per hour histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('hour', 'counts')
+        path = cls.src_urls['coincidencetime'].format(year=year, month=month,
+                                                      day=day)
+        return cls._get_csv(path, names=columns)
+
+    @classmethod
+    def coincidence_number(cls, year, month, day):
+        """Get the number of stations in coincidence histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('n', 'counts')
+        path = cls.src_urls['coincidencenumber'].format(year=year, month=month,
+                                                      day=day)
+        return cls._get_csv(path, names=columns)
+
 
 class Station(API):
     """Access data about a single station"""
@@ -507,3 +566,98 @@ class Station(API):
                                                 ext_timestamp=ext_timestamp)
                 .strip("/"))
         return self._get_json(path)
+
+    def event_time(self, year, month, day):
+        """Get the number of events per hour histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('hour', 'counts')
+        path = self.src_urls['eventtime'].format(station_number=self.station,
+                                                 year=year, month=month,
+                                                 day=day)
+        return self._get_csv(path, names=columns)
+
+    def pulse_height(self, year, month, day):
+        """Get the pulseheight histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('pulseheight', 'ph1', 'ph2', 'ph3', 'ph4')
+        path = self.src_urls['pulseheight'].format(station_number=self.station,
+                                                   year=year, month=month,
+                                                   day=day)
+        return self._get_csv(path, names=columns)
+
+    def pulse_integral(self, year, month, day):
+        """Get the pulseintegral histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('pulseintegral', 'pi1', 'pi2', 'pi3', 'pi4')
+        path = self.src_urls['integral'].format(station_number=self.station,
+                                                year=year, month=month,
+                                                day=day)
+        return self._get_csv(path, names=columns)
+
+    def barometer(self, year, month, day):
+        """Get the barometer dataset
+
+        :param year,month,day: the date for which to get the dataset.
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'air_pressure')
+        path = self.src_urls['barometer'].format(station_number=self.station,
+                                                 year=year, month=month,
+                                                 day=day)
+        return self._get_csv(path, names=columns)
+
+    def temperature(self, year, month, day):
+        """Get the temperature dataset
+
+        :param year,month,day: the date for which to get the dataset.
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'temperature')
+        path = self.src_urls['temperature'].format(station_number=self.station,
+                                                   year=year, month=month,
+                                                   day=day)
+        return self._get_csv(path, names=columns)
+
+    def voltage(self):
+        """Get the PMT voltage data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'voltage1', 'voltage2', 'voltage3', 'voltage4')
+        path = self.src_urls['voltage'].format(station_number=self.station)
+        return self._get_csv(path, names=columns)
+
+    def current(self):
+        """Get the PMT current data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'current1', 'current2', 'current3', 'current4')
+        path = self.src_urls['current'].format(station_number=self.station)
+        return self._get_csv(path, names=columns)
+
+    def gps(self):
+        """Get the GPS location data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'latitude', 'longitude', 'altitude')
+        path = self.src_urls['gps'].format(station_number=self.station)
+        return self._get_csv(path, names=columns)
