@@ -31,7 +31,9 @@ import warnings
 from os import path
 from urllib2 import urlopen, HTTPError, URLError
 from StringIO import StringIO
+from bisect import bisect_right
 
+from lazy import lazy
 from numpy import genfromtxt
 
 logger = logging.getLogger('api')
@@ -150,6 +152,20 @@ class API(object):
         except URLError:
             return False
         return True
+
+    @staticmethod
+    def get_active_index(timestamps, timestamp):
+        """Get the index where the timestamp fits.
+
+        :param timestamps: list of timestamps.
+        :param timestamp: timestamp for which to find the position.
+        :return: index into the timestamps list.
+
+        """
+        idx = bisect_right(timestamps, timestamp, lo=0)
+        if idx == 0:
+            idx = 1
+        return idx - 1
 
 
 class Network(API):
@@ -632,7 +648,8 @@ class Station(API):
                                                    day=day)
         return self._get_csv(path, names=columns)
 
-    def voltage(self):
+    @lazy
+    def voltages(self):
         """Get the PMT voltage data
 
         :return: array of timestamps and values.
@@ -642,7 +659,21 @@ class Station(API):
         path = self.src_urls['voltage'].format(station_number=self.station)
         return self._get_csv(path, names=columns)
 
-    def current(self):
+    def voltage(self, timestamp):
+        """Get PMT coltage data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        voltages = self.voltages
+        idx = self.get_active_index(voltages['timestamp'], timestamp)
+        voltage = (voltages[idx]['voltage1'], voltages[idx]['voltage2'],
+                   voltages[idx]['voltage3'], voltages[idx]['voltage4'])
+        return voltage
+
+    @lazy
+    def currents(self):
         """Get the PMT current data
 
         :return: array of timestamps and values.
@@ -652,7 +683,21 @@ class Station(API):
         path = self.src_urls['current'].format(station_number=self.station)
         return self._get_csv(path, names=columns)
 
-    def gps(self):
+    def current(self, timestamp):
+        """Get PMT current data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        currents = self.currents
+        idx = self.get_active_index(currents['timestamp'], timestamp)
+        current = (currents[idx]['current1'], currents[idx]['current2'],
+                   currents[idx]['current3'], currents[idx]['current4'])
+        return current
+
+    @lazy
+    def gps_locations(self):
         """Get the GPS location data
 
         :return: array of timestamps and values.
@@ -661,3 +706,16 @@ class Station(API):
         columns = ('timestamp', 'latitude', 'longitude', 'altitude')
         path = self.src_urls['gps'].format(station_number=self.station)
         return self._get_csv(path, names=columns)
+
+    def gps_location(self, timestamp):
+        """Get GPS location for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        locations = self.gps_locations
+        idx = self.get_active_index(locations['timestamp'], timestamp)
+        location = (locations[idx]['latitude'], locations[idx]['longitude'],
+                    locations[idx]['altitude'])
+        return location

@@ -35,5 +35,5 @@ setup(name='hisparc-sapphire',
                                  'tests/simulations/test_data/corsika.h5',
                                  'tests/simulations/test_data/groundparticles_sim.h5']},
       install_requires=['numpy', 'scipy', 'tables>=3.0.0', 'progressbar2',
-                        'mock'],
+                        'lazy', 'mock'],
       test_suite="sapphire.tests",)
