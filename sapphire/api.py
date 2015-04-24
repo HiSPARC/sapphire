@@ -34,7 +34,7 @@ from StringIO import StringIO
 from bisect import bisect_right
 
 from lazy import lazy
-from numpy import genfromtxt
+from numpy import genfromtxt, atleast_1d
 
 logger = logging.getLogger('api')
 
@@ -117,7 +117,7 @@ class API(object):
         data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
                           names=names)
 
-        return data
+        return atleast_1d(data)
 
     @staticmethod
     def _retrieve_url(urlpath, base=API_BASE):
@@ -716,6 +716,7 @@ class Station(API):
         """
         locations = self.gps_locations
         idx = self.get_active_index(locations['timestamp'], timestamp)
-        location = (locations[idx]['latitude'], locations[idx]['longitude'],
-                    locations[idx]['altitude'])
+        location = {'latitude': locations[idx]['latitude'],
+                    'longitude': locations[idx]['longitude'],
+                    'altitude': locations[idx]['altitude']}
         return location
