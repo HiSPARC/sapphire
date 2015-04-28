@@ -221,6 +221,9 @@ class AverageIntersectionAlgorithm(object):
                         reconstructions.
 
         """
+        if len(p) < 4 or len(x) < 4 or len(y) < 4:
+            raise Exception('This algorithm requires at least 4 detections.')
+
         phit = []
         xhit = []
         yhit = []
@@ -420,4 +423,4 @@ class EllipsLdfAlgorithm(object):
                     ybest = ytry
                     chi2best = chi2
 
-        return(xbest, ybest, chi2best, factorbest)
+        return xbest, ybest, chi2best, factorbest
