@@ -443,18 +443,19 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         mips = 0
         for energy, angle in zip(E,theta):
 
-            # proces each foton
+            #costheta = cos(angle)
+            costheta = cos(0)
+
             """
             Calculate interaction point in units of scinitlator depth.
             depth > 1.0: no interaction
-
-            Dit moet beter: trek interactieplek uit een Emacht.
             """
+
             depth_compton = random.expovariate(1/_compton_mean_free_path(energy))
             depth_pair = random.expovariate(1/l_pair)
 
-            if ((depth_pair > scintilator_depth/cos(angle)) & \
-                        (depth_compton > scintilator_depth/cos(angle))):
+            if ((depth_pair > scintilator_depth/costheta) & \
+                        (depth_compton > scintilator_depth/costheta)):
                 # no interaction
                 continue
 
@@ -463,7 +464,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 """
                 compton scattering
                 """
-                maximum_energy_deposit_in_MIPS = (1-depth_compton)*max_E/MIP/cos(angle)
+                maximum_energy_deposit_in_MIPS = ((scintilator_depth-depth_compton)/scintilator_depth)*max_E/MIP/costheta
                 energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
 
@@ -473,7 +474,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 """
                 pair production: Two "electrons"
                 """
-                maximum_energy_deposit_in_MIPS = (1-depth_pair)*max_E/MIP/cos(angle)
+                maximum_energy_deposit_in_MIPS = ((scintilator_depth-depth_pair)/scintilator_depth)*max_E/MIP/costheta
                 energy_deposit_in_MIPS = (energy - 1.022) / MIP # 1.022 MeV used for creation of two particles
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)
 
