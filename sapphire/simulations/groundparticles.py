@@ -428,14 +428,17 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             Interaction probability based on Klein Nisihina cross section
             W.R. Leo (1987) p 54
 
-            Exponential fit from lio-project/photons/mean_free_path.py
-            -0.101103 * x^2 + 5.907832 x +  8.776151
+            fit from lio-project/photons/mean_free_path.py
 
             :param E: photon energy [MeV]
             :returns: mean free path [cm]
             """
-
-            return -0101103 * (E**2) + 5.907832 * E + 8.776151
+            if (E < 1.):
+                return -0.806 * (E**2) + 8.46 * E + 6.36
+            elif (E < 30.):
+                return -0.109 * (E**2) + 6.00 * E + 8.53
+            else:
+                return 3.* E + 47. # [cm]
 
         #p [eV] and E [MeV]
         E = p / 1.e6
@@ -443,8 +446,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         mips = 0
         for energy, angle in zip(E,theta):
 
-            #costheta = cos(angle)
-            costheta = cos(0)
+            costheta = cos(angle)
 
             """
             Calculate interaction point in units of scinitlator depth.
