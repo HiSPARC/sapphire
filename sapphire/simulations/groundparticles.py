@@ -438,9 +438,9 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             :returns: mean free path [cm]
             """
             if (E < 1.):
-                return -0.806 * (E**2) + 8.46 * E + 6.36
+                return -0.806 * (E ** 2) + 8.46 * E + 6.36
             elif (E < 30.):
-                return -0.109 * (E**2) + 6.00 * E + 8.53
+                return -0.109 * (E ** 2) + 6.00 * E + 8.53
             else:
                 return 3. * E + 47.  # [cm]
 
