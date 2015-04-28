@@ -230,15 +230,16 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                   y - detector_boundary, y + detector_boundary))
         return self.groundparticles.read_where(query)
 
+
 class GroundParticlesGammaSimulation(GroundParticlesSimulation):
     """ Implement digitisation of gamma photons """
 
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
 
-        Checks if particles have passed a detector. If so, it returns the number
-        of particles in the detector and the arrival time of the first particle
-        passing the detector.
+        Checks if particles have passed a detector. If so, it returns the
+        number of particles in the detector and the arrival time of the first
+        particle passing the detector.
 
         :param detector: :class:`~sapphire.clusters.Detector` for which
                          the observables will be determined.
@@ -267,7 +268,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         else:
             mips_gamma = 0
 
-        return {'n': mips_lepton+mips_gamma, 't': self.simulate_adc_sampling(first_signal) }
+        return {'n': mips_lepton+mips_gamma,
+                't': self.simulate_adc_sampling(first_signal)}
 
     def get_particles_in_detector(self, detector):
         """Get particles that hit a detector.
@@ -290,7 +292,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         detector_boundary = sqrt(.5) / 2.
 
         X_query = ('(x >= %f) & (x <= %f)' %
-                 (x - detector_boundary, x + detector_boundary))
+                   (x - detector_boundary, x + detector_boundary))
 
         X_selection = self.groundparticles.read_where(X_query)
 
@@ -299,13 +301,14 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         this is faster than including the y-query in the pytables.read_where()
            for small (up to >100Mb) corsika hdf5 datafiles
         """
-        Y_query = (X_selection['y'] >= (y-detector_boundary)) & (X_selection['y'] <= (y+detector_boundary))
+        Y_query = (X_selection['y'] >= (y-detector_boundary)) & \
+                  (X_selection['y'] <= (y+detector_boundary))
 
         XY = X_selection.compress(Y_query)
 
         # use numpy.compress() to split leptons and gamma's
         leptons = (XY['particle_id'] >= 2) & (XY['particle_id'] <= 6)
-        gammas = (XY['particle_id']  == 1)
+        gammas = (XY['particle_id'] == 1)
 
         return XY.compress(leptons), XY.compress(gammas)
 
@@ -318,7 +321,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         """
 
         p_gamma = np.sqrt(particles['p_x'] ** 2 + particles['p_y'] ** 2 +
-                particles['p_z'] ** 2)
+                          particles['p_z'] ** 2)
 
         # determination of lepton angle of incidence
         theta = np.arccos(abs(particles['p_z']) /
@@ -337,36 +340,37 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         :param theta: angle of incidence of the gammas, as float or array.
         """
 
-        scintilator_depth = 2.0 # cm
+        scintilator_depth = 2.0  # cm
 
-        max_E = 4.0 # 2 MeV per cm * 2cm scintilator depth
-        MIP = 3.38 # MeV
+        max_E = 4.0  # 2 MeV per cm * 2cm scintilator depth
+        MIP = 3.38  # MeV
 
-        L_rad = 42.52 # cm (radiation length in scinitlator)
-        l_pair = 9./7. * 42.52 # mean free path for pair production W.R. Leo (1987) p.56
+        L_rad = 42.52  # cm (radiation length in scinitlator)
+        l_pair = 9./7. * 42.52  # mean free path W.R. Leo (1987) p.56
 
         # W.R. Leo (1987) p 54
         # E photon energy [MeV]
         # return compton edge [MeV]
         def _compton_edge(E):
 
-            electron_rest_mass_MeV = .5109989 # MeV
+            electron_rest_mass_MeV = .5109989  # MeV
 
             gamma = E / electron_rest_mass_MeV
 
-            return (E * 2 * gamma / (1 + 2*gamma) )
+            return (E * 2 * gamma / (1 + 2*gamma))
 
         def _compton_energy_transfer(E):
 
             """
             from lio-project/photons/electron_energy_distribution.py
 
-            The energy transfered from photon to electron = T(E) * compton_edge()
+            The energy transfered from photon to electron = T(E)*compton_edge()
                 the transfer function T(E) is calculated from dsigma/dT and
                 represented as a lookup table.
 
-            numpy.searchsorted() is a binarysearch to find the correct row in the lookup table
-              => the polynomial coefficients corresponding to the given Energy (E)
+            numpy.searchsorted() is a binarysearch to find the correct row in
+                  the lookup table
+              => the polynomial coefficients corresponding to the energy (E)
 
             this is ugly code, but fast: 77.4 microsec per loop
 
@@ -374,52 +378,52 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             :returns: energy transfered to electron [MeV]
             """
 
-            Energy_table = np.array([\
-                     0.100000 ,\
-                     0.127427 ,\
-                     0.162378 ,\
-                     0.206914 ,\
-                     0.263665 ,\
-                     0.335982 ,\
-                     0.428133 ,\
-                     0.545559 ,\
-                     0.695193 ,\
-                     0.885867 ,\
-                     1.128838 ,\
-                     1.438450 ,\
-                     1.832981 ,\
-                     2.335721 ,\
-                     2.976351 ,\
-                     3.792690 ,\
-                     4.832930 ,\
-                     6.158482 ,\
-                     7.847600 ,\
-                     10.000000])
+            Energy_table = np.array([
+                0.100000,
+                0.127427,
+                0.162378,
+                0.206914,
+                0.263665,
+                0.335982,
+                0.428133,
+                0.545559,
+                0.695193,
+                0.885867,
+                1.128838,
+                1.438450,
+                1.832981,
+                2.335721,
+                2.976351,
+                3.792690,
+                4.832930,
+                6.158482,
+                7.847600,
+                10.000000])
 
-            transfer_function_table = [\
-                    [-0.095663 , 0.998190 , 0.042602],\
-                    [-0.104635 , 1.008633 , 0.040506],\
-                    [-0.109294 , 1.015132 , 0.038090],\
-                    [-0.107136 , 1.015115 , 0.035430],\
-                    [-0.095551 , 1.005781 , 0.032673],\
-                    [-0.072295 , 0.984547 , 0.030032],\
-                    [-0.036015 , 0.949579 , 0.027764],\
-                    [0.013328 , 0.900254 , 0.026124],\
-                    [0.074324 , 0.837384 , 0.025313],\
-                    [0.144294 , 0.763123 , 0.025434],\
-                    [0.219738 , 0.680594 , 0.026476],\
-                    [0.296884 , 0.593392 , 0.028324],\
-                    [0.372186 , 0.505081 , 0.030787],\
-                    [0.442678 , 0.418822 , 0.033635],\
-                    [0.506156 , 0.337141 , 0.036638],\
-                    [0.561214 , 0.261844 , 0.039593],\
-                    [0.607175 , 0.194044 , 0.042338],\
-                    [0.643960 , 0.134252 , 0.044755],\
-                    [0.671940 , 0.082499 , 0.046776],\
-                    [0.691794 , 0.038463 , 0.048368],
-                    [0.691794 , 0.038463 , 0.048368]]  # extra item E > 10
+            transfer_function_table = [
+                [-0.095663, 0.998190, 0.042602],
+                [-0.104635, 1.008633, 0.040506],
+                [-0.109294, 1.015132, 0.038090],
+                [-0.107136, 1.015115, 0.035430],
+                [-0.095551, 1.005781, 0.032673],
+                [-0.072295, 0.984547, 0.030032],
+                [-0.036015, 0.949579, 0.027764],
+                [0.013328, 0.900254, 0.026124],
+                [0.074324, 0.837384, 0.025313],
+                [0.144294, 0.763123, 0.025434],
+                [0.219738, 0.680594, 0.026476],
+                [0.296884, 0.593392, 0.028324],
+                [0.372186, 0.505081, 0.030787],
+                [0.442678, 0.418822, 0.033635],
+                [0.506156, 0.337141, 0.036638],
+                [0.561214, 0.261844, 0.039593],
+                [0.607175, 0.194044, 0.042338],
+                [0.643960, 0.134252, 0.044755],
+                [0.671940, 0.082499, 0.046776],
+                [0.691794, 0.038463, 0.048368],
+                [0.691794, 0.038463, 0.048368]]  # extra item E > 10
 
-            idx = Energy_table.searchsorted(E, side = 'left')
+            idx = Energy_table.searchsorted(E, side='left')
             p = np.poly1d(transfer_function_table[idx])
             return p(np.random.random())*_compton_edge(E)
 
@@ -438,13 +442,13 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             elif (E < 30.):
                 return -0.109 * (E**2) + 6.00 * E + 8.53
             else:
-                return 3.* E + 47. # [cm]
+                return 3. * E + 47.  # [cm]
 
-        #p [eV] and E [MeV]
+        # p [eV] and E [MeV]
         E = p / 1.e6
 
         mips = 0
-        for energy, angle in zip(E,theta):
+        for energy, angle in zip(E, theta):
 
             costheta = cos(angle)
 
@@ -453,11 +457,12 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             depth > 1.0: no interaction
             """
 
-            depth_compton = random.expovariate(1/_compton_mean_free_path(energy))
+            depth_compton = \
+                random.expovariate(1/_compton_mean_free_path(energy))
             depth_pair = random.expovariate(1/l_pair)
 
-            if ((depth_pair > scintilator_depth/costheta) & \
-                        (depth_compton > scintilator_depth/costheta)):
+            if ((depth_pair > scintilator_depth/costheta) &
+               (depth_compton > scintilator_depth/costheta)):
                 # no interaction
                 continue
 
@@ -466,21 +471,35 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 """
                 compton scattering
                 """
-                maximum_energy_deposit_in_MIPS = ((scintilator_depth-depth_compton)/scintilator_depth)*max_E/MIP/costheta
-                energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
-                extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
 
-                mips += extra_mips
+                # maximum energy transfer of electron to scinitlator
+                # based on remaining scinitilator depth
+                maximum_energy_deposit_in_MIPS = \
+                    ((scintilator_depth-depth_compton) / scintilator_depth) * \
+                    max_E / MIP / costheta
+
+                # kinetic energy transfered to electron by compton scattering
+                energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
+
+                mips += np.minimum(maximum_energy_deposit_in_MIPS,
+                                   energy_deposit_in_MIPS)
 
             elif (energy > 1.022):
                 """
                 pair production: Two "electrons"
                 """
-                maximum_energy_deposit_in_MIPS = ((scintilator_depth-depth_pair)/scintilator_depth)*max_E/MIP/costheta
-                energy_deposit_in_MIPS = (energy - 1.022) / MIP # 1.022 MeV used for creation of two particles
-                extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)
+                # maximum energy transfer of electron to scinitlator
+                # based on remaining scinitilator depth
+                maximum_energy_deposit_in_MIPS = \
+                    ((scintilator_depth-depth_pair) / scintilator_depth) * \
+                    max_E / MIP / costheta
 
-                mips += extra_mips
+                # 1.022 MeV used for creation of two particles
+                # all the rest is electron kinetic energy
+                energy_deposit_in_MIPS = (energy - 1.022) / MIP
+
+                mips += np.minimum(maximum_energy_deposit_in_MIPS,
+                                   energy_deposit_in_MIPS)
 
         return mips
 
