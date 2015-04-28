@@ -9,6 +9,27 @@ from sapphire import api
 STATION = 501
 
 
+class APITests(unittest.TestCase):
+    def setUp(self):
+        self.api = api.API()
+
+    def test_get_active_index(self):
+        """Test if the bisection returns the correct index
+
+        - If timestamp is before the first timestamp return index for
+          first item
+        - If timestamp is after last timestamp return index for last item
+        - If timestamp is in the range return index of rightmost value
+          equal or less than the timestamp
+
+        """
+        timestamps = [1., 2., 3., 4.]
+
+        for idx, ts in [(0, 0.), (0, 1.), (0, 1.5), (1, 2.), (1, 2.1), (3, 4.),
+                        (3, 5.)]:
+            self.assertEqual(self.api.get_active_index(timestamps, ts), idx)
+
+
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class NetworkTests(unittest.TestCase):
     def setUp(self):
@@ -87,7 +108,8 @@ class NetworkTests(unittest.TestCase):
 
     def test_bad_station_numbers(self):
         bad_number = 1
-        self.assertRaises(Exception, self.network.station_numbers, country=bad_number, allow_stale=False)
+        self.assertRaises(Exception, self.network.station_numbers,
+                          country=bad_number, allow_stale=False)
 
     def test_bad_stations(self):
         self.network.stations()
@@ -115,6 +137,20 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.stations_with_weather, month=1, day=1)
         self.assertRaises(Exception, self.network.stations_with_weather, month=1)
         self.assertRaises(Exception, self.network.stations_with_weather, day=1)
+
+    def test_coincidence_time(self):
+        names = ('hour', 'counts')
+        data = self.network.coincidence_time(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['hour'] == range(24)).all())
+        self.assertEqual(data['counts'][0], 424)
+
+    def test_coincidence_number(self):
+        names = ('n', 'counts')
+        data = self.network.coincidence_number(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['n'] == range(2, 100)).all())
+        self.assertEqual(data['counts'][0], 8763)
 
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
