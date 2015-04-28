@@ -363,9 +363,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             numpy.searchsorted() is a binarysearch to find the correct row in the lookup table
               => the polynomial coefficients corresponding to the given Energy (E)
 
-            this is ugly code, but fast:
-               %timeit _compton_energy_transfer(5.)
-               10000 loops, best of 3: 77.4 µs per loop
+            this is ugly code, but fast: 77.4 microsec per loop
             """
 
             Energy_table = np.array([\
@@ -418,10 +416,16 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             return p(np.random.random())*_compton_edge(E)
 
         def _compton_interaction_probability(E):
+            """
+            Interaction probability based on Klein Nisihina cross section
+            W.R. Leo (1987) p 54
+
+            Exponential fit from lio-project/photons/compton.py
+            """
+
             return 0.134198 * np.exp(-0.392398*E) + 0.034156
 
-        #p [eV]
-        #E [MeV]
+        #p [eV] and E [MeV]
         E = p / 1.e6
 
         mips = 0
@@ -429,10 +433,13 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
             # proces each foton
             """
+            Calculate interaction point in units of scinitlator depth.
+            depth > 1.0: no interaction
+
             Dit moet beter: trek interactieplek uit een Emacht.
             """
-            depth_compton = np.random.random()/_compton_interaction_probability(energy) # unit: scintilator depth
-            depth_pair = np.random.random()/P_pair_production # 0.015 = P(pair production)
+            depth_compton = np.random.random()/_compton_interaction_probability(energy)
+            depth_pair = np.random.random()/P_pair_production
 
             if ((depth_pair > 1.0) & (depth_compton > 1.0)):
                 # no interaction
@@ -456,6 +463,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 maximum_energy_deposit_in_MIPS = (1-depth_pair)*max_E/MIP
                 energy_deposit_in_MIPS = (energy - 1.022) / MIP # 1.022 MeV used for creation of two particles
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)
+
                 mips += extra_mips
 
         return mips
