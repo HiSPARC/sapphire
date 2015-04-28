@@ -252,7 +252,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         n_gammas = len(gammas)
 
         if not n_leptons+n_gammas:
-            return {'n': 0, 't': -999}
+            return {'n' : 0, 't' : -999}
 
         if n_leptons:
             mips_lepton = self.simulate_detector_mips_for_particles(leptons)
@@ -268,8 +268,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         else:
             mips_gamma = 0
 
-        return {'n': mips_lepton+mips_gamma,
-                't': self.simulate_adc_sampling(first_signal)}
+        return {'n' : mips_lepton+mips_gamma,
+                't' : self.simulate_adc_sampling(first_signal)}
 
     def get_particles_in_detector(self, detector):
         """Get particles that hit a detector.
@@ -301,8 +301,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         this is faster than including the y-query in the pytables.read_where()
            for small (up to >100Mb) corsika hdf5 datafiles
         """
-        Y_query = (X_selection['y'] >= (y-detector_boundary)) & \
-                  (X_selection['y'] <= (y+detector_boundary))
+        Y_query = (X_selection['y'] >= (y - detector_boundary)) & \
+                  (X_selection['y'] <= (y + detector_boundary))
 
         XY = X_selection.compress(Y_query)
 
@@ -346,7 +346,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         MIP = 3.38  # MeV
 
         L_rad = 42.52  # cm (radiation length in scinitlator)
-        l_pair = 9./7. * 42.52  # mean free path W.R. Leo (1987) p.56
+        l_pair = 9. / 7. * L_rad  # mean free path W.R. Leo (1987) p.56
 
         # W.R. Leo (1987) p 54
         # E photon energy [MeV]
@@ -357,7 +357,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
             gamma = E / electron_rest_mass_MeV
 
-            return (E * 2 * gamma / (1 + 2*gamma))
+            return (E * 2 * gamma / (1 + 2 * gamma))
 
         def _compton_energy_transfer(E):
 
@@ -425,7 +425,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
             idx = Energy_table.searchsorted(E, side='left')
             p = np.poly1d(transfer_function_table[idx])
-            return p(np.random.random())*_compton_edge(E)
+            return p(np.random.random()) * _compton_edge(E)
 
         def _compton_mean_free_path(E):
             """
@@ -458,11 +458,11 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             """
 
             depth_compton = \
-                random.expovariate(1/_compton_mean_free_path(energy))
-            depth_pair = random.expovariate(1/l_pair)
+                random.expovariate(1 / _compton_mean_free_path(energy))
+            depth_pair = random.expovariate(1 / l_pair)
 
-            if ((depth_pair > scintilator_depth/costheta) &
-               (depth_compton > scintilator_depth/costheta)):
+            if ((depth_pair > scintilator_depth / costheta) &
+               (depth_compton > scintilator_depth / costheta)):
                 # no interaction
                 continue
 
@@ -475,11 +475,11 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 # maximum energy transfer of electron to scinitlator
                 # based on remaining scinitilator depth
                 maximum_energy_deposit_in_MIPS = \
-                    ((scintilator_depth-depth_compton) / scintilator_depth) * \
-                    max_E / MIP / costheta
+                    ((scintilator_depth - depth_compton) / scintilator_depth) \
+                    * max_E / MIP / costheta
 
                 # kinetic energy transfered to electron by compton scattering
-                energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
+                energy_deposit_in_MIPS = _compton_energy_transfer(energy) / MIP
 
                 mips += np.minimum(maximum_energy_deposit_in_MIPS,
                                    energy_deposit_in_MIPS)
@@ -491,7 +491,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 # maximum energy transfer of electron to scinitlator
                 # based on remaining scinitilator depth
                 maximum_energy_deposit_in_MIPS = \
-                    ((scintilator_depth-depth_pair) / scintilator_depth) * \
+                    ((scintilator_depth - depth_pair) / scintilator_depth) * \
                     max_E / MIP / costheta
 
                 # 1.022 MeV used for creation of two particles
