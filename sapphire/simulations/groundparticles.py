@@ -352,11 +352,22 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             return (E * 2 * gamma / (1 + 2*gamma) )
 
         def _compton_energy_transfer(E):
-            # from lio-project/photons/electron_energy_distribution.py
 
-            # cumulative energy distribution implemented as table
-            #   Energy, np.poly1d() fit
-            #    from lio_project/photons/electron_energy_distribution.py
+            """
+            from lio-project/photons/electron_energy_distribution.py
+
+            The energy transfered from photon to electron = T(E) * compton_edge()
+                the transfer function T(E) is calculated from dsigma/dT and
+                represented as a lookup table.
+
+            numpy.searchsorted() is a binarysearch to find the correct row in the lookup table
+              => the polynomial coefficients corresponding to the given Energy (E)
+
+            this is ugly code, but fast:
+               %timeit _compton_energy_transfer(5.)
+               10000 loops, best of 3: 77.4 µs per loop
+            """
+
             Energy_table = np.array([\
                      0.100000 ,\
                      0.127427 ,\
@@ -402,7 +413,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                     [0.691794 , 0.038463 , 0.048368],
                     [0.691794 , 0.038463 , 0.048368]]  # extra item E > 10
 
-            idx = Energy_table.searchsorted(E, side='left')
+            idx = Energy_table.searchsorted(E, side = 'left')
             p = np.poly1d(transfer_function_table[idx])
             return p(np.random.random())*_compton_edge(E)
 
@@ -422,7 +433,6 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             """
             depth_compton = np.random.random()/_compton_interaction_probability(energy) # unit: scintilator depth
             depth_pair = np.random.random()/P_pair_production # 0.015 = P(pair production)
-            #print "E, depth compton, pair = ", energy, depth_compton, depth_pair
 
             if ((depth_pair > 1.0) & (depth_compton > 1.0)):
                 # no interaction
@@ -436,9 +446,6 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 maximum_energy_deposit_in_MIPS = (1-depth_compton)*max_E/MIP
                 energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
-
-                # stdout output: Energy, k, interaction_probability, transfered_energy [mips]
-                # print '*', photon[0], photon[1], photon[2], extra_mips
 
                 mips += extra_mips
 
