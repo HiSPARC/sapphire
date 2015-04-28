@@ -337,6 +337,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         :param theta: angle of incidence of the gammas, as float or array.
         """
 
+        scintilator_depth = 2.0 # cm
+
         max_E = 4.0 # 2 MeV per cm * 2cm scintilator depth
         MIP = 3.38 # MeV
 
@@ -367,6 +369,9 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
               => the polynomial coefficients corresponding to the given Energy (E)
 
             this is ugly code, but fast: 77.4 microsec per loop
+
+            :param E: photon energy [MeV]
+            :returns: energy transfered to electron [MeV]
             """
 
             Energy_table = np.array([\
@@ -426,7 +431,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             Exponential fit from lio-project/photons/mean_free_path.py
             -0.101103 * x^2 + 5.907832 x +  8.776151
 
-            E = photon energy [MeV]
+            :param E: photon energy [MeV]
+            :returns: mean free path [cm]
             """
 
             return -0101103 * (E**2) + 5.907832 * E + 8.776151
@@ -435,7 +441,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         E = p / 1.e6
 
         mips = 0
-        for energy in E:
+        for energy, angle in zip(E,theta):
 
             # proces each foton
             """
@@ -447,7 +453,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             depth_compton = random.expovariate(1/_compton_mean_free_path(energy))
             depth_pair = random.expovariate(1/l_pair)
 
-            if ((depth_pair > 1.0) & (depth_compton > 1.0)):
+            if ((depth_pair > scintilator_depth/cos(angle)) & \
+                        (depth_compton > scintilator_depth/cos(angle))):
                 # no interaction
                 continue
 
@@ -456,7 +463,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 """
                 compton scattering
                 """
-                maximum_energy_deposit_in_MIPS = (1-depth_compton)*max_E/MIP
+                maximum_energy_deposit_in_MIPS = (1-depth_compton)*max_E/MIP/cos(angle)
                 energy_deposit_in_MIPS = _compton_energy_transfer(energy)/MIP
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)  # maximise energy transfer per photon to 1 MIP/cm * depth
 
@@ -466,7 +473,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 """
                 pair production: Two "electrons"
                 """
-                maximum_energy_deposit_in_MIPS = (1-depth_pair)*max_E/MIP
+                maximum_energy_deposit_in_MIPS = (1-depth_pair)*max_E/MIP/cos(angle)
                 energy_deposit_in_MIPS = (energy - 1.022) / MIP # 1.022 MeV used for creation of two particles
                 extra_mips = np.minimum(maximum_energy_deposit_in_MIPS, energy_deposit_in_MIPS)
 
