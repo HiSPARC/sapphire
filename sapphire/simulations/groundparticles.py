@@ -253,7 +253,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             return {'n': 0, 't': -999}
 
         if n_leptons:
-            mips_lepton = self.simulate_detector_mips_for_leptons(leptons)
+            mips_lepton = self.simulate_detector_mips_for_particles(leptons)
             leptons['t'] += self.simulate_signal_transport_time(n_leptons)
             first_signal = leptons['t'].min() + detector.offset
         else:
@@ -268,23 +268,52 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
         return {'n': mips_lepton+mips_gamma, 't': self.simulate_adc_sampling(first_signal) }
 
+    def get_particles_in_detector(self, detector):
+        """Get particles that hit a detector.
 
-    def simulate_detector_mips_for_leptons(self, particles):
-        """Simulate the detector signal for leptons
+        Particle ids 2, 3, 5, 6 are electrons and muons,
+        id 4 is no longer used (were neutrino's).
 
-        :param particles: particle rows with the p_[x, y, z]
-                          components of the particle momenta.
+        The detector is approximated by a square with a surface of 0.5
+        square meter which is *not* correctly rotated.  In fact, during
+        the simulation, the rotation of the detector is undefined.  This
+        is faster than a more thorough implementation.
+
+        *Detector height is ignored!*
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
 
         """
-        # determination of lepton angle of incidence
-        theta = np.arccos(abs(particles['p_z']) /
-                          np.sqrt(particles['p_x'] ** 2 +
-                                  particles['p_y'] ** 2 +
-                                  particles['p_z'] ** 2))
-        n = len(particles)
-        mips = self.simulate_detector_mips_leptons(n, theta)
+        x, y = detector.get_xy_coordinates()
+        detector_boundary = sqrt(.5) / 2.
 
-        return mips
+        # use pytables.read_where() in-kernel query to select rows bases on x-coordinates
+        # sort CORISKA hdf5 files based on x-coordinates to improve performance
+        X_query = ('(x >= %f) & (x <= %f)' %
+                 (x - detector_boundary, x + detector_boundary))
+
+        X_selection = self.groundparticles.read_where(X_query)
+
+        # use numpy.compress() to filter on y-coordinates
+        #  this should be fast as the result of the read_where() should fit in CPU L1/L2 cache
+        #  benchmarking against pytables.read_where() based on x and y is necessary
+        Y_query = (X_selection['y'] >= (y-detector_boundary)) & (X_selection['y'] <= (y+detector_boundary))
+
+        XY = X_selection.compress(Y_query)
+
+        # use numpy.compress() to split leptons and gamma's
+        # this should be always faster than including this in the read_where() query
+        leptons = (XY['particle_id'] >= 2) & (XY['particle_id'] <= 6)
+        gammas = (XY['particle_id']  == 1)
+
+        return XY.compress(leptons), XY.compress(gammas)
+
+        """
+        # skip the gamma's from the data file, just generate random gamma's
+        return self.groundparticles.read_where(query), self.create_random_gammas(10)
+        return [],self.create_random_gammas(3)
+        """
 
     def simulate_detector_mips_for_gammas(self, particles):
         """Simulate the detector signal for gammas
@@ -305,11 +334,6 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         mips = self.simulate_detector_mips_gammas(n, p_gamma, theta)
 
         return mips
-
-    @classmethod
-    def simulate_detector_mips_leptons(cls, n, theta):
-        """ just call the code from detector.py (class HiSparcSimulation) """
-        return simulate_detector_mips(cls, n, theta)
 
     @classmethod
     def simulate_detector_mips_gammas(cls, n, p, theta):
