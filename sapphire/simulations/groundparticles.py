@@ -22,6 +22,7 @@ from math import pi, sin, cos, sqrt
 
 import numpy as np
 import tables
+import random
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..utils import pbar
@@ -338,7 +339,9 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
         max_E = 4.0 # 2 MeV per cm * 2cm scintilator depth
         MIP = 3.38 # MeV
-        P_pair_production = 0.015 # interaction probability for pair production
+
+        L_rad = 42.52 # cm (radiation length in scinitlator)
+        l_pair = 9./7. * 42.52 # mean free path for pair production W.R. Leo (1987) p.56
 
         # W.R. Leo (1987) p 54
         # E photon energy [MeV]
@@ -415,15 +418,18 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             p = np.poly1d(transfer_function_table[idx])
             return p(np.random.random())*_compton_edge(E)
 
-        def _compton_interaction_probability(E):
+        def _compton_mean_free_path(E):
             """
             Interaction probability based on Klein Nisihina cross section
             W.R. Leo (1987) p 54
 
-            Exponential fit from lio-project/photons/compton.py
+            Exponential fit from lio-project/photons/mean_free_path.py
+            -0.101103 * x^2 + 5.907832 x +  8.776151
+
+            E = photon energy [MeV]
             """
 
-            return 0.134198 * np.exp(-0.392398*E) + 0.034156
+            return -0101103 * (E**2) + 5.907832 * E + 8.776151
 
         #p [eV] and E [MeV]
         E = p / 1.e6
@@ -438,8 +444,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
             Dit moet beter: trek interactieplek uit een Emacht.
             """
-            depth_compton = np.random.random()/_compton_interaction_probability(energy)
-            depth_pair = np.random.random()/P_pair_production
+            depth_compton = random.expovariate(1/_compton_mean_free_path(energy))
+            depth_pair = random.expovariate(1/l_pair)
 
             if ((depth_pair > 1.0) & (depth_compton > 1.0)):
                 # no interaction
