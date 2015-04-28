@@ -251,8 +251,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         n_leptons = len(leptons)
         n_gammas = len(gammas)
 
-        if not n_leptons+n_gammas:
-            return {'n' : 0, 't' : -999}
+        if not n_leptons + n_gammas:
+            return {'n': 0, 't': -999}
 
         if n_leptons:
             mips_lepton = self.simulate_detector_mips_for_particles(leptons)
@@ -268,8 +268,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         else:
             mips_gamma = 0
 
-        return {'n' : mips_lepton+mips_gamma,
-                't' : self.simulate_adc_sampling(first_signal)}
+        return {'n': mips_lepton+mips_gamma,
+                't': self.simulate_adc_sampling(first_signal)}
 
     def get_particles_in_detector(self, detector):
         """Get particles that hit a detector.
