@@ -268,7 +268,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         else:
             mips_gamma = 0
 
-        return {'n': mips_lepton+mips_gamma,
+        return {'n': mips_lepton + mips_gamma,
                 't': self.simulate_adc_sampling(first_signal)}
 
     def get_particles_in_detector(self, detector):
