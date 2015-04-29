@@ -227,6 +227,66 @@ class StationTests(unittest.TestCase):
     def test_event_trace(self):
         self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 268)
 
+    def test_pulse_height(self):
+        names = ('pulseheight', 'ph1', 'ph2', 'ph3', 'ph4')
+        data = self.station.pulse_height(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['pulseheight'] == range(0, 2500, 10)).all())
+
+    def test_pulse_integral(self):
+        names = ('pulseintegral', 'pi1', 'pi2', 'pi3', 'pi4')
+        data = self.station.pulse_integral(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['pulseintegral'] == range(0, 62500, 250)).all())
+
+    def test_barometer(self):
+        names = ('timestamp', 'air_pressure')
+        data = self.station.barometer(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+
+    def test_temperature(self):
+        names = ('timestamp', 'temperature')
+        data = self.station.temperature(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+
+    def test_voltages(self):
+        names = ('timestamp', 'voltage1', 'voltage2', 'voltage3', 'voltage4')
+        data = self.station.voltages
+        self.assertEqual(data.dtype.names, names)
+
+    def test_voltage(self):
+        data = self.station.voltage(1378771200)  # 2013-9-10
+        self.assertEqual(data, (954, 860, 714, 752))
+
+        data = self.station.voltage(0)  # 1970-1-1
+        data2 = self.station.voltages[0]
+        self.assertEqual(data, (data2['voltage1'], data2['voltage2'],
+                                data2['voltage3'], data2['voltage4']))
+        data = self.station.voltage(2208988800)  # 2040-1-1
+        data2 = self.station.voltages[-1]
+        self.assertEqual(data, (data2['voltage1'], data2['voltage2'],
+                                data2['voltage3'], data2['voltage4']))
+
+    def test_currents(self):
+        names = ('timestamp', 'current1', 'current2', 'current3', 'current4')
+        data = self.station.currents
+        self.assertEqual(data.dtype.names, names)
+
+    def test_current(self):
+        data = self.station.current(1378771200)  # 2013-9-10
+        self.assertEqual(data, (7.84, 7.94, 10.49, 10.88))
+
+    def test_gps_locations(self):
+        names = ('timestamp', 'latitude', 'longitude', 'altitude')
+        data = self.station.gps_locations
+        self.assertEqual(data.dtype.names, names)
+
+    def test_gps_location(self):
+        keys = ['latitude', 'longitude',  'altitude']
+        data = self.station.gps_location(1378771200)  # 2013-9-10
+        self.assertItemsEqual(data.keys(), keys)
+        self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
+
 
 if __name__ == '__main__':
     unittest.main()
