@@ -254,6 +254,16 @@ class StationTests(unittest.TestCase):
         data = self.station.voltages
         self.assertEqual(data.dtype.names, names)
 
+    @patch.object(api.API, '_get_csv')
+    def test_laziness_voltages(self, mock_get_csv):
+        self.assertFalse(mock_get_csv.called)
+        data = self.station.voltages
+        self.assertTrue(mock_get_csv.called)
+        self.assertEqual(mock_get_csv.call_count, 1)
+        data2 = self.station.voltages
+        self.assertEqual(mock_get_csv.call_count, 1)
+        self.assertEqual(data, data2)
+
     def test_voltage(self):
         data = self.station.voltage(1378771200)  # 2013-9-10
         self.assertEqual(data, (954, 860, 714, 752))
@@ -266,6 +276,16 @@ class StationTests(unittest.TestCase):
         data2 = self.station.voltages[-1]
         self.assertEqual(data, (data2['voltage1'], data2['voltage2'],
                                 data2['voltage3'], data2['voltage4']))
+
+    @patch.object(api.API, '_get_csv')
+    def test_laziness_currents(self, mock_get_csv):
+        self.assertFalse(mock_get_csv.called)
+        data = self.station.currents
+        self.assertTrue(mock_get_csv.called)
+        self.assertEqual(mock_get_csv.call_count, 1)
+        data2 = self.station.currents
+        self.assertEqual(mock_get_csv.call_count, 1)
+        self.assertEqual(data, data2)
 
     def test_currents(self):
         names = ('timestamp', 'current1', 'current2', 'current3', 'current4')
@@ -280,6 +300,16 @@ class StationTests(unittest.TestCase):
         names = ('timestamp', 'latitude', 'longitude', 'altitude')
         data = self.station.gps_locations
         self.assertEqual(data.dtype.names, names)
+
+    @patch.object(api.API, '_get_csv')
+    def test_laziness_gps_locations(self, mock_get_csv):
+        self.assertFalse(mock_get_csv.called)
+        data = self.station.gps_locations
+        self.assertTrue(mock_get_csv.called)
+        self.assertEqual(mock_get_csv.call_count, 1)
+        data2 = self.station.gps_locations
+        self.assertEqual(mock_get_csv.call_count, 1)
+        self.assertEqual(data, data2)
 
     def test_gps_location(self):
         keys = ['latitude', 'longitude',  'altitude']
