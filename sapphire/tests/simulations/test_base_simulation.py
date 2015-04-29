@@ -141,8 +141,8 @@ class BaseSimulationTest(unittest.TestCase):
         mock_response.side_effect = [sentinel.observables1,
                                      sentinel.observables2]
 
-        observables = self.simulation.simulate_all_detectors(detectors,
-            sentinel.parameters)
+        observables = self.simulation.simulate_all_detectors(
+            detectors, sentinel.parameters)
 
         expected = [call(sentinel.detector1, sentinel.parameters),
                     call(sentinel.detector2, sentinel.parameters)]
@@ -239,17 +239,22 @@ class BaseSimulationTest(unittest.TestCase):
 
     @unittest.skip("Does not test this unit")
     def test_init_creates_coincidences_output_group(self):
-        self.datafile.create_group.assert_any_call(self.output_path, 'coincidences', createparents=True)
-        self.datafile.create_table.assert_called_with(self.simulation.coincidence_group, 'coincidences', storage.Coincidence)
+        self.datafile.create_group.assert_any_call(
+            self.output_path, 'coincidences', createparents=True)
+        self.datafile.create_table.assert_called_with(
+            self.simulation.coincidence_group, 'coincidences', storage.Coincidence)
         self.assertEqual(self.datafile.create_vlarray.call_count, 2)
-        self.datafile.create_vlarray.assert_any_call(self.simulation.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
+        self.datafile.create_vlarray.assert_any_call(
+            self.simulation.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
 
     @unittest.skip("Does not test this unit")
     def test_init_creates_cluster_output_group(self):
-        self.datafile.create_group.assert_any_call(self.output_path, 'cluster_simulations', createparents=True)
+        self.datafile.create_group.assert_any_call(
+            self.output_path, 'cluster_simulations', createparents=True)
         # The following tests need a better mock of cluster in order to work.
         # self.datafile.create_group.assert_any_call(self.simulation.cluster_group, 'station_0')
-        # self.datafile.create_table.assert_any_call(station_group, 'events', storage.ProcessedHisparcEvent, expectedrows=self.N)
+        # self.datafile.create_table.assert_any_call(
+        #     station_group, 'events', storage.ProcessedHisparcEvent, expectedrows=self.N)
 
     @unittest.skip("Does not test this unit")
     def test_init_stores_cluster_in_attrs(self):

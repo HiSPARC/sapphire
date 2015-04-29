@@ -253,7 +253,8 @@ class CoincidenceQuery(object):
             return reconstruction
         else:
             raise Exception('Coincidences are not (properly) reconstructed.'
-                'Perform reconstructions and reinitialize this class.')
+                            'Perform reconstructions and reinitialize this '
+                            'class.')
 
     def all_events(self, coincidences, n=0):
         """Get all events for the given coincidences.

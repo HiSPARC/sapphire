@@ -252,7 +252,7 @@ class BaseSimulation(object):
             first_timestamp = (0, 0, 0)
 
         row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
-                first_timestamp
+            first_timestamp
         row.append()
         self.coincidences.flush()
 

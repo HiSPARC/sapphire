@@ -405,7 +405,7 @@ class Network(API):
         """
         columns = ('n', 'counts')
         path = cls.src_urls['coincidencenumber'].format(year=year, month=month,
-                                                      day=day)
+                                                        day=day)
         return cls._get_csv(path, names=columns)
 
 

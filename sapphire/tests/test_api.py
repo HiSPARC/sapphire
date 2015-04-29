@@ -312,7 +312,7 @@ class StationTests(unittest.TestCase):
         self.assertEqual(data, data2)
 
     def test_gps_location(self):
-        keys = ['latitude', 'longitude',  'altitude']
+        keys = ['latitude', 'longitude', 'altitude']
         data = self.station.gps_location(1378771200)  # 2013-9-10
         self.assertItemsEqual(data.keys(), keys)
         self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
