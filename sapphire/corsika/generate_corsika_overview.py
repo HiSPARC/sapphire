@@ -6,9 +6,9 @@
     overview.
 
     The given source path should contain subdirectories named after the
-    seeds used for the simulation in the format `{seed1}_{seed2}`, e.g.
-    `821280921_182096636`. These in turn should contain converted
-    CORSIKA simulation results called `corsika.h5`.
+    seeds used for the simulation in the format ``{seed1}_{seed2}``,
+    e.g. ``821280921_182096636``. These in turn should contain converted
+    CORSIKA simulation results called ``corsika.h5``.
 
 """
 import os

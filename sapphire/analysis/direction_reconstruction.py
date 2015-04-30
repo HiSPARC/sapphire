@@ -33,7 +33,7 @@ class EventDirectionReconstruction(object):
     This class is aware of 'events' and 'stations'.  Initialize this class
     with a 'station' and you can reconstruct events using
     :meth:`reconstruct_event`. To use other algorithms overwrite the
-    `direct` and `fit` attributes.
+    ``direct`` and ``fit`` attributes.
 
     :param station: :class:`~sapphire.clusters.Station` object.
 
@@ -103,7 +103,7 @@ class CoincidenceDirectionReconstruction(object):
     This class is aware of 'coincidences' and 'clusters'.  Initialize
     this class with a 'cluster' and you can reconstruct a coincidence
     using :meth:`reconstruct_coincidence`. To use other algorithms
-    overwrite the `direct` and `fit` attributes.
+    overwrite the ``direct`` and ``fit`` attributes.
 
     :param cluster: :class:`~sapphire.clusters.BaseCluster` object.
 

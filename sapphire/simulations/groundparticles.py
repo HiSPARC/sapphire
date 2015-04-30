@@ -1,7 +1,7 @@
 """Perform simulations of CORSIKA air showers on a cluster of stations
 
 This simulation uses a HDF5 file created from a CORSIKA simulation with
-the `store_corsika_data` script. The shower is 'thrown' on the cluster
+the ``store_corsika_data`` script. The shower is 'thrown' on the cluster
 with random core positions and azimuth angles.
 
 Example usage::

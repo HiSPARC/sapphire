@@ -478,8 +478,8 @@ class CoincidencesESD(Coincidences):
     def search_coincidences(self, window=2000, shifts=None, limit=None):
         """Search for coincidences.
 
-        Instead of storing the results in the tables `_src_c_index` and
-        `_src_timestamps`, they are stored in attributes by the same
+        Instead of storing the results in the tables ``_src_c_index`` and
+        ``_src_timestamps``, they are stored in attributes by the same
         name in the class.
 
         """
@@ -491,9 +491,9 @@ class CoincidencesESD(Coincidences):
         """Store the previously found coincidences.
 
         After having searched for coincidences, you can store the more
-        user-friendly results in the `coincidences` group using this
-        method. It also created a `c_index` and `s_index` table to find
-        the source events.
+        user-friendly results in the ``coincidences`` group using this
+        method. It also created a ``c_index`` and ``s_index`` table to
+        find the source events.
 
         """
         if cluster:
@@ -540,7 +540,7 @@ class CoincidencesESD(Coincidences):
         """Store a single coincidence in the coincidence group.
 
         Stores coincidence in the coincidences table and references
-        to the observables making up each coincidence in `c_index`.
+        to the observables making up each coincidence in ``c_index``.
 
         """
         row = self.coincidences.row

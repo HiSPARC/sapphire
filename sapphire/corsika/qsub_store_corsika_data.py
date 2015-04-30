@@ -1,7 +1,7 @@
 """ Convert CORSIKA stored showers to HDF5 on Stoomboot
 
     Automatically submits Stoomboot jobs to convert corsika data. The
-    script `store_corsika_data` can be used to convert a DAT000000
+    script ``store_corsika_data`` can be used to convert a DAT000000
     CORSIKA file to a HDF5 file. This script checks our data folder for
     new or unconverted simulations and creates Stoomboot jobs to perform
     the conversion.
@@ -146,7 +146,7 @@ def submit_job(seed):
 def check_queue():
     """Check for available job slots on the short queue
 
-    Maximum numbers from `qstat -Q -f`
+    Maximum numbers from ``qstat -Q -f``
 
     :return: Number of available slots in the queue.
 

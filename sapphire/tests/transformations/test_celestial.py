@@ -47,7 +47,7 @@ class EquatorialTests(unittest.TestCase):
         See EXAMPLE input and output here:
         http://idlastro.gsfc.nasa.gov/ftp/pro/astro/hor2eq.pro
 
-        Observatory position for `kpno` from here:
+        Observatory position for ``kpno`` from here:
         http://idlastro.gsfc.nasa.gov/ftp/pro/astro/observatory.pro
 
         """
