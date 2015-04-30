@@ -53,7 +53,7 @@ class EventCoreReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :returns: (x, y) core position in m.
+        :return: (x, y) core position in m.
 
         """
         p, x, y, z = ([], [], [], [])
@@ -78,7 +78,7 @@ class EventCoreReconstruction(object):
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
-        :returns: (x, y) core positions in m.
+        :return: (x, y) core positions in m.
 
         """
         cores = [self.reconstruct_event(event, detector_ids)
@@ -116,7 +116,7 @@ class CoincidenceCoreReconstruction(object):
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :returns: (x, y) core position in m.
+        :return: (x, y) core position in m.
 
         """
         p, x, y, z = ([], [], [], [])
@@ -148,7 +148,7 @@ class CoincidenceCoreReconstruction(object):
                              multiple (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :returns: (x, y) core positions in m.
+        :return: (x, y) core positions in m.
 
         """
         cores = [self.reconstruct_coincidence(coincidence, station_numbers)

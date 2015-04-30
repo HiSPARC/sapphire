@@ -384,8 +384,8 @@ def particle_data(subblock):
     Transformations are needed for the x, y and p_z values from CORSIKA.
     CORSIKA coordinate conventions are mentioned in Figure 1 and Table 10.
 
-    :returns: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
-              observation_level, phi data.
+    :return: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+             observation_level, phi data.
 
     """
     # These three are subject to coordinate transformations

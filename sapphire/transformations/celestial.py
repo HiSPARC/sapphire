@@ -27,7 +27,7 @@ def zenithazimuth_to_equatorial(longitude, latitude, timestamp, zenith,
     :param zenith: zenith is the angle relative to the Zenith in radians.
     :param azimuth: azimuth angle of the observation in radians.
 
-    :returns: Right ascension (ra) and Declination (dec) in radians.
+    :return: Right ascension (ra) and Declination (dec) in radians.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
@@ -73,7 +73,7 @@ def horizontal_to_equatorial(latitude, lst, altitude, Azimuth):
     :param altitude: altitude is the angle above the horizon in radians.
     :param Azimuth: Azimuth angle in horizontal plane in radians.
 
-    :returns: Right ascension (ra) and Declination (dec) in radians.
+    :return: Right ascension (ra) and Declination (dec) in radians.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
@@ -92,7 +92,7 @@ def horizontal_to_hadec(latitude, altitude, Azimuth):
     :param altitude: altitude is the angle above the horizon in radians.
     :param Azimuth: Azimuth angle in horizontal plane in radians.
 
-    :returns: Hour angle (ha) and Declination (dec) in radians.
+    :return: Hour angle (ha) and Declination (dec) in radians.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
@@ -124,7 +124,7 @@ def ha_to_ra(ha, lst):
     :param lst: Local Siderial Time observer at the time of observation
                 in decimal hours.
 
-    :returns: Right ascension (ra) in radians.
+    :return: Right ascension (ra) in radians.
 
     """
     ra = (angles.hours_to_radians(lst) - ha)
@@ -143,7 +143,7 @@ def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
     :param right_ascension: right_ascension of the observation in radians.
     :param declination: declination of the observation in radians.
 
-    :returns: zenith and azimuth in radians.
+    :return: zenith and azimuth in radians.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
@@ -177,7 +177,7 @@ def equatorial_to_galactic(right_ascension, declintation, epoch='J2000'):
     :param declintation: Declination (dec) in degrees.
     :param epoch: Epoch for Equatorial coordinates, either 'J2000' or 'B1950'.
 
-    :returns: Galactic longitude (l) and latitude (b) in degrees.
+    :return: Galactic longitude (l) and latitude (b) in degrees.
 
     From Duffett-Smith1990, 2100 EQGAL
 
@@ -205,7 +205,7 @@ def galactic_to_equatorial(longitude, latitude, epoch='J2000'):
     :param latitude: Galactic latitude (b) in degrees.
     :param epoch: Epoch for Equatorial coordinates, either 'J2000' or 'B1950'.
 
-    :returns: Right ascension (ra) and Declination (dec) in radians.
+    :return: Right ascension (ra) and Declination (dec) in radians.
 
     From Duffett-Smith1990, 2100 EQGAL
 

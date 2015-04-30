@@ -57,7 +57,7 @@ class EventDirectionReconstruction(object):
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
         :param offsets: time offsets for each detector.
-        :returns: theta, phi, and detector ids.
+        :return: theta, phi, and detector ids.
 
         """
         t, x, y, z, ids = ([], [], [], [], [])
@@ -87,7 +87,7 @@ class EventDirectionReconstruction(object):
                        file.
         :param detector_ids: detectors to use for the reconstructions.
         :param offsets: time offsets for each detector.
-        :returns: list of theta, phi, and detector ids.
+        :return: list of theta, phi, and detector ids.
 
         """
         angles = [self.reconstruct_event(event, detector_ids, offsets)
@@ -129,7 +129,7 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
-        :returns: list of theta, phi, and station numbers.
+        :return: list of theta, phi, and station numbers.
 
         """
         no_offset = [0., 0., 0., 0.]
@@ -177,7 +177,7 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
-        :returns: list of theta, phi, and station numbers.
+        :return: list of theta, phi, and station numbers.
 
         """
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
@@ -591,9 +591,9 @@ class SphereAlgorithm(object):
         :param t: An array with three arrival times in ns.
         :param x,y,z: arrays with the ECEF locations of the
                       three detectors / stations in meters.
-        :returns: the declination and right ascension of the source. The
-                  apparent location of the cosmic ray source in the
-                  Equatorial Coordinate System.
+        :return: the declination and right ascension of the source. The
+                 apparent location of the cosmic ray source in the
+                 Equatorial Coordinate System.
 
         """
         t_int = array([-1000, -10000]) + t[0]
@@ -617,7 +617,7 @@ class SphereAlgorithm(object):
         :param t: The arrival time of the shower in the detectors / stations
                   in ns.
         :param t_int: The interaction time in ns.
-        :returns: parameters x_int, y_int, z_int
+        :return: parameters x_int, y_int, z_int
 
         """
         c = .299792458

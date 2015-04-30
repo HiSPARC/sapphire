@@ -112,7 +112,7 @@ def prepare_output(n):
     """Create a temporary file in which to store the overview
 
     :param n: the number of simulations, i.e. expected number of rows.
-    :returns: path to the temporary file and a PyTables handler for the file.
+    :return: path to the temporary file and a PyTables handler for the file.
 
     """
     os.umask(002)

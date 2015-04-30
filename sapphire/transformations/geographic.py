@@ -64,7 +64,7 @@ class FromWGS84ToENUTransformation(object):
 
         :param coordinates: tuple of latitude, longitude (both in degrees)
                             and altitude (in meters).
-        :returns: ECEF coordinates (in meters).
+        :return: ECEF coordinates (in meters).
 
         """
         latitude, longitude, altitude = coordinates
@@ -94,7 +94,7 @@ class FromWGS84ToENUTransformation(object):
         https://gist.github.com/klucar/1536054
 
         :param coordinates: tuple of X, Y, and Z (in meters).
-        :returns: latitude, longitude (in degrees) and altitude (in meters).
+        :return: latitude, longitude (in degrees) and altitude (in meters).
 
         """
         X, Y, Z = coordinates
@@ -126,7 +126,7 @@ class FromWGS84ToENUTransformation(object):
 
         :param coordinates: a tuple containing the ECEF coordinates (in meters)
                             of the point to transform
-        :returns: east, north, and up (in meters).
+        :return: east, north, and up (in meters).
 
         """
         latitude, longitude, altitude = self.ref_lla
@@ -152,7 +152,7 @@ class FromWGS84ToENUTransformation(object):
         ECEF: Earth-Centered, Earth-Fixed
 
         :param coordinates: a tuple containing the ENU coordinates (in meters).
-        :returns: ECEF coordinates (in meters).
+        :return: ECEF coordinates (in meters).
 
         """
         latitude, longitude, altitude = self.ref_lla

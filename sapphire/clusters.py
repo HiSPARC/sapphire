@@ -183,7 +183,7 @@ class Station(object):
         """Get the total area covered by the detectors
 
         :param detector_ids: list of detectors for which to get the total area.
-        :returns: total area of the detectors in m^2.
+        :return: total area of the detectors in m^2.
 
         """
         if detector_ids is not None:

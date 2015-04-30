@@ -60,8 +60,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         interpret these parameters as the position of the cluster, or the
         rotation of the cluster!  Interpret them as *shower* parameters.
 
-        :returns: dictionary with shower parameters: core_pos
-                  (x, y-tuple) and azimuth.
+        :return: dictionary with shower parameters: core_pos
+                 (x, y-tuple) and azimuth.
 
         """
         r = self.max_core_distance
@@ -159,8 +159,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         :param detector_observables: dictionary containing the
                                      observables of one detector.
-        :returns: True if at least 2 detectors detect at least one particle,
-                  False otherwise.
+        :return: True if at least 2 detectors detect at least one particle,
+                 False otherwise.
 
         """
         detectors_hit = [True for observables in detector_observables
@@ -179,8 +179,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
         :param station: :class:`~sapphire.clusters.Station` for which
                          to simulate the gps timestamp.
-        :returns: station_observables updated with gps timestamp and
-                  trigger time.
+        :return: station_observables updated with gps timestamp and
+                 trigger time.
 
         """
         arrival_times = [station_observables['t%d' % id]
@@ -338,7 +338,7 @@ class FixedCoreDistanceSimulation(GroundParticlesSimulation):
         """Generate a random core position on a circle
 
         :param R: Core distance, in meters.
-        :returns: Random x, y position on the circle with radius R.
+        :return: Random x, y position on the circle with radius R.
 
         """
         phi = np.random.uniform(-pi, pi)

@@ -55,7 +55,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
         For the simple LDF only the core position is relevant. It
         assumes the shower to come from the Zenith.
 
-        :returns: dictionary with shower parameters: core_pos
+        :return: dictionary with shower parameters: core_pos
                   (x, y-tuple).
 
         """
@@ -124,7 +124,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
         """Get number of particles in detector given a particle density
 
         :param p: particle density in number per detector area.
-        :returns: random number from Poisson distribution.
+        :return: random number from Poisson distribution.
 
         """
         return random.poisson(p)
@@ -196,8 +196,8 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         For the elliptic LDF  both the core position and the zenith angle
         are relevant.
 
-        :returns: dictionary with shower parameters: core_pos
-                  (x, y-tuple).
+        :return: dictionary with shower parameters: core_pos
+                 (x, y-tuple).
 
         """
         r = self.max_core_distance
@@ -253,8 +253,8 @@ class BaseLdf(object):
         :param x,y: detector position in m.
         :param x0,y0: shower core position in m.
         :param theta,phi: shower axis direction in radians.
-        :returns: distance from detector to the shower core in shower
-                  front plane in m.
+        :return: distance from detector to the shower core in shower
+                 front plane in m.
 
         """
         x = x - x0
@@ -302,7 +302,7 @@ class NkgLdf(BaseLdf):
         :param r: core distance in m.
         :param Ne: number of electrons in the shower.
         :param s: shower age parameter.
-        :returns: particle density in m ** -2.
+        :return: particle density in m ** -2.
 
         """
         if Ne is None:
@@ -320,7 +320,7 @@ class NkgLdf(BaseLdf):
         :param r: core distance in m.
         :param Ne: number of electrons in the shower.
         :param s: shower age parameter.
-        :returns: particle density in m ** -2.
+        :return: particle density in m ** -2.
 
         """
         if s == self._s:
@@ -337,7 +337,7 @@ class NkgLdf(BaseLdf):
         As given in Fokkema2012 eq 7.3.
 
         :param s: shower age parameter.
-        :returns: c(s)
+        :return: c(s)
 
         """
         r0 = self._r0
@@ -366,7 +366,7 @@ class KascadeLdf(NkgLdf):
         :param r: core distance in m.
         :param Ne: number of electrons in the shower.
         :param s: shower shape parameter.
-        :returns: particle density in m ** -2.
+        :return: particle density in m ** -2.
 
         """
         if s == self._s:
@@ -385,7 +385,7 @@ class KascadeLdf(NkgLdf):
         As given in Fokkema2012 eq 7.5.
 
         :param s: shower shape parameter.
-        :returns: c(s)
+        :return: c(s)
 
         """
         r0 = self._r0
@@ -437,7 +437,7 @@ class EllipsLdf(KascadeLdf):
         :param r: core distance in m.
         :param phi: polar angle in rad.
         :param Ne: number of electrons in the shower.
-        :returns: particle density in m ** -2.
+        :return: particle density in m ** -2.
 
         """
         if Ne is None:
@@ -466,7 +466,7 @@ class EllipsLdf(KascadeLdf):
         :param azimuth: azimuth angle in rad.
         :param s1: shower shape parameter.
         :param s2: shower shape parameter.
-        :returns: particle density in m ** -2.
+        :return: particle density in m ** -2.
 
         """
         if s1 == self._s1 and s2 == self._s2:
@@ -493,7 +493,7 @@ class EllipsLdf(KascadeLdf):
 
         :param s1: shower shape parameter.
         :param s2: shower shape parameter.
-        :returns: c(s1,s2)
+        :return: c(s1,s2)
 
         """
         r0 = self._r0
@@ -508,8 +508,8 @@ class EllipsLdf(KascadeLdf):
 
         :param x,y: detector position in m.
         :param x0,y0: shower core position in m.
-        :returns: distance and polar angle from detector to the shower core in
-                  horizontal observation plane in m resp. rad.
+        :return: distance and polar angle from detector to the shower core in
+                 horizontal observation plane in m resp. rad.
 
         """
         x = x - x0

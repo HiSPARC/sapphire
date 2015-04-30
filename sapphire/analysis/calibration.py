@@ -18,7 +18,7 @@ def determine_detector_timing_offsets(events, station=None):
     :param events: events table of processed events.
     :param station: Station object, to determine number of detectors and
                     relative altitudes.
-    :returns: list of detector offsets.
+    :return: list of detector offsets.
 
     """
     offsets = [nan, nan, nan, nan]
@@ -68,7 +68,7 @@ def determine_detector_timing_offset(dt, dz=0):
 
     :param dt: a list of time differences between detectors (t - t_ref).
     :param dz: height difference between the detector (z - z_ref).
-    :returns: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data corrected for height.
 
     """
     if not len(dt):
@@ -84,7 +84,7 @@ def determine_station_timing_offset(dt, dz=0):
 
     :param dt: a list of time differences between stations (t - t_ref).
     :param dz: height difference between the stations (z - z_ref).
-    :returns: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data corrected for height.
 
     """
     c = .3
@@ -99,7 +99,7 @@ def fit_timing_offset(dt, bins):
 
     :param dt: a list of time differences between stations (t - t_ref).
     :param bins: bins edges to use for the histogram.
-    :returns: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data corrected for height.
 
     """
     y, bins = histogram(dt, bins=bins)
@@ -117,8 +117,8 @@ def determine_best_reference(filters):
 
     :param filters: list of filters for each detector, selecting rows
                     where that detector has data.
-    :returns: index for the detector that has most rows in common with
-              the other detectors.
+    :return: index for the detector that has most rows in common with
+             the other detectors.
 
     """
     lengths = []
