@@ -12,7 +12,7 @@ from numpy import arange, histogram, percentile, linspace, std, nan
 from scipy.optimize import curve_fit
 
 
-def determine_detector_timing_offsets(events, station):
+def determine_detector_timing_offsets(events, station=None):
     """Determine the timing offsets between station detectors.
 
     :param events: events table of processed events.
@@ -23,7 +23,13 @@ def determine_detector_timing_offsets(events, station):
     """
     t = []
     filters = []
-    n_detectors = len(station.detectors)
+    if station is not None:
+        n_detectors = len(station.detectors)
+        z = [d.z for d in station.detectors]
+    else:
+        n_detectors = 4
+        z = [0., 0., 0., 0.]
+
     for id in range(n_detectors):
         t.append(events.col('t%d' % (id + 1)))
         filters.append((events.col('n%d' % (id + 1)) > .05) & (t[id] >= 0.))
@@ -33,7 +39,6 @@ def determine_detector_timing_offsets(events, station):
     else:
         ref_id = determine_best_reference(filters)
 
-    z = [d.z for d in station.detectors]
 
     offsets = [nan, nan, nan, nan]
     for id in range(n_detectors):
