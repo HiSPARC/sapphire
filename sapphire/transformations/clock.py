@@ -141,7 +141,7 @@ def modifiedjd_to_juliandate(modifiedjd):
     return modifiedjd + 2400000.5
 
 
-def datetime_modifiedjd(dt):
+def datetime_to_modifiedjd(dt):
     """Convert a datetime object in UTC to a Modified Julian Date
 
     :param dt: datetime object
