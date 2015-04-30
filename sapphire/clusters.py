@@ -110,10 +110,10 @@ class Detector(object):
 
         sina = sin(alpha)
         cosa = cos(alpha)
-        corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
+        corners = [[xc * cosa - yc * sina, xc * sina + yc * cosa] for xc, yc in
                    corners]
 
-        return [(X + x, Y + y) for x, y in corners]
+        return [(X + xc, Y + yc) for xc, yc in corners]
 
 
 class Station(object):
@@ -474,7 +474,8 @@ class RAlphaBetaStations(BaseCluster):
         Example::
 
             >>> cluster = RAlphaBetaStations()
-            >>> cluster._add_station((0, 0, 0), [(5, 90, 0, 0), (5, 270, 0, 0)], 104)
+            >>> cluster._add_station((0, 0, 0),
+            ...                      [(5, 90, 0, 0), (5, 270, 0, 0)], 104)
 
         """
         detectors = [((sin(radians(alpha)) * r, cos(radians(alpha)) * r, z),
@@ -621,7 +622,7 @@ class ScienceParkCluster(BaseCluster):
                 # detector 1 is moved to the left and detector 2 next to it.
                 station_size = 10.
                 a = station_size / 2
-                detectors = [((-a, station_size), 'UD'), ((a, station_size), 'UD'),
+                detectors = [((-a, a * 2), 'UD'), ((a, a * 2), 'UD'),
                              ((-a, 0.), 'LR'), ((a, 0.), 'LR')]
             elif station == 508:
                 # 508 is diamond-shaped, with detector 2 moved to the
