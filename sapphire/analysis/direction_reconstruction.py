@@ -33,7 +33,7 @@ class EventDirectionReconstruction(object):
     This class is aware of 'events' and 'stations'.  Initialize this class
     with a 'station' and you can reconstruct events using
     :meth:`reconstruct_event`. To use other algorithms overwrite the
-    :attr:`direct` and :attr:`fit` attributes.
+    `direct` and `fit` attributes.
 
     :param station: :class:`~sapphire.clusters.Station` object.
 
@@ -103,7 +103,7 @@ class CoincidenceDirectionReconstruction(object):
     This class is aware of 'coincidences' and 'clusters'.  Initialize
     this class with a 'cluster' and you can reconstruct a coincidence
     using :meth:`reconstruct_coincidence`. To use other algorithms
-    overwrite the :attr:`direct` and :attr:`fit` attributes.
+    overwrite the `direct` and `fit` attributes.
 
     :param cluster: :class:`~sapphire.clusters.BaseCluster` object.
 
@@ -612,11 +612,11 @@ class SphereAlgorithm(object):
         based on location calculations used for LORAN, DECCA, RACAL, GPS
         as described by N.G. Schultheiss 2012
 
-        :param #x, #y, #z: Arrays with the orthogonal coordinates of the three
-                   detectors / stations in m.
-        :param #t: The arrival time of the shower in the detectors / stations
-                   in ns.
-        :param #t_int: The interaction time in ns.
+        :param x,y,z: Arrays with the orthogonal coordinates of the three
+                      detectors / stations in m.
+        :param t: The arrival time of the shower in the detectors / stations
+                  in ns.
+        :param t_int: The interaction time in ns.
         :returns: parameters x_int, y_int, z_int
 
         """
