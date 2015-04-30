@@ -8,7 +8,7 @@ Determine the PMT response curve to correct the detected number of MIPs.
 """
 from ..utils import gauss
 
-from numpy import arange, histogram, percentile, linspace, std
+from numpy import arange, histogram, percentile, linspace, std, nan
 from scipy.optimize import curve_fit
 
 
@@ -16,25 +16,32 @@ def determine_detector_timing_offsets(events, station):
     """Determine the timing offsets between station detectors.
 
     :param events: events table of processed events.
-    :param station: Station object.
+    :param station: Station object, to determine number of detectors and
+                    relative altitudes.
     :returns: list of detector offsets.
 
     """
-    ref_detector = 1
-    t_ref = events.col('t%d' % (ref_detector + 1))
-    n_ref = events.col('n%d' % (ref_detector + 1))
-    filter = (n_ref > .05) & (t_ref >= 0)
+    t = []
+    filters = []
+    n_detectors = len(station.detectors)
+    for id in range(n_detectors):
+        t.append(events.col('t%d' % (id + 1)))
+        filters.append((events.col('n%d' % (id + 1)) > .05) & (t[id] >= 0.))
+
+    if n_detectors == 2:
+        ref_id = 1
+    else:
+        ref_id = determine_best_reference(filters)
+
     z = [d.z for d in station.detectors]
 
-    offsets = [0., 0., 0., 0.]
-    for detector in range(len(station.detectors)):
-        if detector == ref_detector:
-            continue
-        t = events.col('t%d' % (detector + 1))
-        n = events.col('n%d' % (detector + 1))
-        dt = (t - t_ref).compress(filter & (n > .05) & (t >= 0))
-        dz = z[detector] - z[1]
-        offsets[detector] = determine_detector_timing_offset(dt, dz)
+    offsets = [nan, nan, nan, nan]
+    for id in range(n_detectors):
+        if id == ref_id:
+            offsets[id] = 0.
+        dt = (t[id] - t[ref_id]).compress(filters[id] & filters[ref_id])
+        dz = z[id] - z[ref_id]
+        offsets[id] = determine_detector_timing_offset(dt, dz)
 
     return offsets
 
@@ -84,3 +91,22 @@ def fit_timing_offset(dt, bins):
     except RuntimeError:
         offset = 0.
     return offset
+
+
+def determine_best_reference(filters):
+    """Find which detector has most events in common with the others
+
+    :param filters: list of filters for each detector, selecting rows
+                    where that detector has data.
+    :returns: index for the detector that has most rows in common with
+              the other detectors.
+
+    """
+    lengths = []
+    ids = range(len(filters))
+
+    for id in ids:
+        idx = [j for j in ids if j != id]
+        lengths.append(sum(filters[id] & (filters[idx[0]] |
+                                          filters[idx[1]] | filters[idx[2]])))
+    return lengths.index(max(lengths))
