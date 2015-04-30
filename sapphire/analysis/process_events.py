@@ -701,7 +701,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         not go back.
 
         :param trace: generator over the trace.
-        :param thresholds: list of thresholds.
+        :param thresholds: list of three thresholds.
         :param max_signal: expected max value in trace, based on
                            baseline and pulseheight.
         :returns: list with three indexes into the trace for the three
@@ -711,6 +711,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         results = [-999, -999, -999]
         ordered_thresholds = sorted([(x, i) for i, x in enumerate(thresholds)])
         last_value = None
+        t = 0
 
         for threshold, i in ordered_thresholds:
             if max_signal < threshold:
@@ -720,8 +721,6 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             else:
                 if last_value is not None:
                     t += 1
-                else:
-                    t = 0
                 t, last_value = cls._first_value_above_threshold(trace,
                                                                  threshold, t)
                 results[i] = t
