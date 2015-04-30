@@ -39,11 +39,11 @@ def determine_detector_timing_offsets(events, station=None):
     else:
         ref_id = determine_best_reference(filters)
 
-
     offsets = [nan, nan, nan, nan]
     for id in range(n_detectors):
         if id == ref_id:
             offsets[id] = 0.
+            continue
         dt = (t[id] - t[ref_id]).compress(filters[id] & filters[ref_id])
         dz = z[id] - z[ref_id]
         offsets[id] = determine_detector_timing_offset(dt, dz)
@@ -59,6 +59,8 @@ def determine_detector_timing_offset(dt, dz=0):
     :returns: mean of a gaussian fit to the data corrected for height.
 
     """
+    if not len(dt):
+        return nan
     c = .3
     bins = arange(-100 + 1.25, 100, 2.5)
     detector_offset = fit_timing_offset(dt, bins) + dz / c
