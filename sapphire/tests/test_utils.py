@@ -78,7 +78,7 @@ class GaussTests(unittest.TestCase):
         sigma = 2.
         self.assertEqual(utils.gauss(x, N, mu, sigma), self.gaussian(x, N, mu, sigma))
         x = 1e5
-        self.assertEqual(utils.gauss(x, N, mu, sigma),  0.)
+        self.assertEqual(utils.gauss(x, N, mu, sigma), 0.)
 
 
 class AngleBetweenTests(unittest.TestCase):
