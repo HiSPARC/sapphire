@@ -10,9 +10,9 @@
     Each algorithm has a :meth:`~CenterMassAlgorithm.reconstruct_common`
     method which always requires particle denisties, x, and y positions
     and optionally z positions and previous reconstruction results. The
-    data is then prepared for the algorithm and passed to the
-    `reconstruct` method which returns the reconstructed x and y
-    coordinates.
+    data is then prepared for the algorithm and passed to
+    the :meth:`~CenterMassAlgorithm.reconstruct` method which returns the
+    reconstructed x and y coordinates.
 
 """
 from __future__ import division

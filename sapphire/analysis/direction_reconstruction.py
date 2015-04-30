@@ -9,10 +9,10 @@
 
     Each algorithm has a :meth:`~DirectAlgorithm.reconstruct_common`
     method which always requires arrival times, x, and y positions and
-    optionally z positions and previous reconstruction results. The
-    data is then prepared for the algorithm and passed to the
-    `reconstruct` method which returns the reconstructed theta and phi
-    coordinates.
+    optionally z positions and previous reconstruction results. The data
+    is then prepared for the algorithm and passed to
+    the :meth:`~DirectAlgorithm.reconstruct` method which returns the
+    reconstructed theta and phi coordinates.
 
 """
 import warnings
