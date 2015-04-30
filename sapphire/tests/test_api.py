@@ -77,7 +77,8 @@ class NetworkTests(unittest.TestCase):
                          [sentinel.number1, sentinel.number2])
 
     @patch.object(api.Network, 'clusters')
-    def test_cluster_numbers(self, mock_clusters):
+    @patch.object(api.Network, 'validate_numbers')
+    def test_cluster_numbers(self, mock_validate, mock_clusters):
         mock_clusters.return_value = [{'number': sentinel.number1},
                                       {'number': sentinel.number2}]
         self.assertEqual(self.network.cluster_numbers(sentinel.country),
@@ -85,7 +86,8 @@ class NetworkTests(unittest.TestCase):
         mock_clusters.assert_called_once_with(country=sentinel.country)
 
     @patch.object(api.Network, 'subclusters')
-    def test_subcluster_numbers(self, mock_subclusters):
+    @patch.object(api.Network, 'validate_numbers')
+    def test_subcluster_numbers(self, mock_validate, mock_subclusters):
         mock_subclusters.return_value = [{'number': sentinel.number1},
                                          {'number': sentinel.number2}]
         self.assertEqual(self.network.subcluster_numbers(sentinel.country,
@@ -95,7 +97,8 @@ class NetworkTests(unittest.TestCase):
                                                  cluster=sentinel.cluster)
 
     @patch.object(api.Network, 'stations')
-    def test_station_numbers(self, mock_stations):
+    @patch.object(api.Network, 'validate_numbers')
+    def test_station_numbers(self, mock_validate, mock_stations):
         mock_stations.return_value = [{'number': sentinel.number1},
                                       {'number': sentinel.number2}]
         self.assertEqual(self.network.station_numbers(sentinel.country,
@@ -106,10 +109,15 @@ class NetworkTests(unittest.TestCase):
                                               cluster=sentinel.cluster,
                                               subcluster=sentinel.subcluster)
 
-    def test_bad_station_numbers(self):
+    def test_invalid_query_for_station_numbers(self):
         bad_number = 1
-        self.assertRaises(Exception, self.network.station_numbers,
-                          country=bad_number, allow_stale=False)
+        for allow in (True, False):
+            self.assertRaises(Exception, self.network.station_numbers,
+                              country=bad_number, allow_stale=allow)
+            self.assertRaises(Exception, self.network.station_numbers,
+                              cluster=bad_number, allow_stale=allow)
+            self.assertRaises(Exception, self.network.station_numbers,
+                              subcluster=bad_number, allow_stale=allow)
 
     def test_bad_stations(self):
         self.network.stations()

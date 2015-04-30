@@ -207,6 +207,7 @@ class Network(API):
         :return: all clusters in the region
 
         """
+        self.validate_numbers(country)
         if country is None:
             if not self._all_clusters:
                 path = self.urls['clusters']
@@ -221,6 +222,7 @@ class Network(API):
     def cluster_numbers(self, country=None):
         """Same as clusters but only retuns a list of cluster numbers"""
 
+        self.validate_numbers(country)
         clusters = self.clusters(country=country)
         return [cluster['number'] for cluster in clusters]
 
@@ -233,6 +235,7 @@ class Network(API):
         :return: all subclusters in the region
 
         """
+        self.validate_numbers(country, cluster)
         if country is None and cluster is None:
             if not self._all_subclusters:
                 path = self.urls['subclusters']
@@ -256,6 +259,7 @@ class Network(API):
     def subcluster_numbers(self, country=None, cluster=None):
         """Same as subclusters but only retuns a list of subcluster numbers"""
 
+        self.validate_numbers(country, cluster)
         subclusters = self.subclusters(country=country, cluster=cluster)
         return [subcluster['number'] for subcluster in subclusters]
 
@@ -268,6 +272,7 @@ class Network(API):
         :return: all stations in the region
 
         """
+        self.validate_numbers(country, cluster, subcluster)
         if country is None and cluster is None and subcluster is None:
             if not self._all_stations:
                 path = self.urls['stations']
@@ -305,6 +310,7 @@ class Network(API):
                         allow_stale=True):
         """Same as stations but only retuns a list of station numbers"""
 
+        self.validate_numbers(country, cluster, subcluster)
         try:
             stations = self.stations(country=country, cluster=cluster,
                                      subcluster=subcluster)
@@ -407,6 +413,18 @@ class Network(API):
         path = cls.src_urls['coincidencenumber'].format(year=year, month=month,
                                                         day=day)
         return cls._get_csv(path, names=columns)
+
+    @staticmethod
+    def validate_numbers(country=None, cluster=None, subcluster=None):
+        if country is not None and country % 10000:
+            raise Exception('Invalid country number, '
+                            'must be multiple of 10000.')
+        if cluster is not None and cluster % 1000:
+            raise Exception('Invalid cluster number, '
+                            'must be multiple of 1000.')
+        if subcluster is not None and subcluster % 100:
+            raise Exception('Invalid subcluster number, '
+                            'must be multiple of 100.')
 
 
 class Station(API):
