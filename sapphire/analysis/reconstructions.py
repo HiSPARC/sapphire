@@ -178,10 +178,10 @@ class ReconstructESDCoincidences(object):
     Example usage::
 
         import tables
-        from sapphire.analysis.reconstructions import ReconstructESDCoincidences
+        from sapphire.analysis import reconstructions
 
         data = tables.open_file('2014_1_1.h5', 'a')
-        rec = ReconstructESDCoincidences(data, overwrite=True)
+        rec = reconstructions.ReconstructESDCoincidences(data, overwrite=True)
         rec.reconstruct_and_store()
 
     """
