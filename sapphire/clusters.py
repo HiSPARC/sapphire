@@ -85,8 +85,7 @@ class Detector(object):
         The z-coordinate is not returned because all detectors are
         assumed to be laying flat.
 
-        :return: x, y coordinates of detector corners
-        :rtype: list of (x, y) tuples
+        :return: coordinates of detector corners, list of (x, y) tuples.
 
         """
         X, Y, _, alpha = self.station.get_coordinates()
