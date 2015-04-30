@@ -94,7 +94,7 @@ def fit_timing_offset(dt, bins):
         popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)))
         offset = popt[1]
     except RuntimeError:
-        offset = 0.
+        offset = nan
     return offset
 
 
