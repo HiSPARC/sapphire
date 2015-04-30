@@ -571,7 +571,7 @@ class ProcessIndexedEventsWithLINT(ProcessIndexedEvents,
     """Process a subset of events using LInear INTerpolation.
 
     This is a subclass of :class:`ProcessIndexedEvents` and
-    :class:`ProcessEventsWithLint`.
+    :class:`ProcessEventsWithLINT`.
 
     """
 

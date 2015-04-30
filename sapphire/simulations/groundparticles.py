@@ -280,7 +280,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         is an equation and two boundaries which can be used to test if a
         point is between the two lines.
 
-        :param p0, p1: (x, y) tuples on the same line
+        :param p0,p1: (x, y) tuples on the same line
         :param p2: (x, y) tuple on the parallel line
 
         :return: value1, equation, value2, such that points satisfying

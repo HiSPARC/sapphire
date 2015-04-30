@@ -405,7 +405,7 @@ class BaseCluster(object):
     def calc_rphiz_for_stations(self, s0, s1):
         """Calculate distance between and direction of two stations
 
-        :param s0, s1: The station ids for the two stations.
+        :param s0,s1: The station ids for the two stations.
         :return: r, phi, z; the distance between and direction of the two
             given stations.
 

@@ -344,7 +344,7 @@ class EllipsLdfAlgorithm(object):
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
-        :param theta, phi: zenith and azimuth angle in rad.
+        :param theta,phi: zenith and azimuth angle in rad.
 
         """
         xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)

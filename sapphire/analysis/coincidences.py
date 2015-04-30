@@ -70,8 +70,6 @@ class Coincidences(object):
         to use the subclass :class:`CoincidencesESD` instead.
 
     """
-    ProcessWithTraces = process_events.ProcessIndexedEventsWithLINT
-    ProcessWithoutTraces = process_events.ProcessIndexedEventsWithoutTraces
 
     def __init__(self, data, coincidence_group, station_groups,
                  overwrite=False, progress=True):
@@ -189,10 +187,10 @@ class Coincidences(object):
 
             if 'blobs' in station_group:
                 print "Processing coincidence events with traces"
-                Process = self.ProcessWithTraces
+                Process = process_events.ProcessIndexedEventsWithLINT
             else:
                 print "Processing coincidence events without traces"
-                Process = self.ProcessWithoutTraces
+                Process = process_events.ProcessIndexedEventsWithoutTraces
 
             process = Process(self.data, station_group, index)
             process.process_and_store_results(overwrite=overwrite)
@@ -583,9 +581,9 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
     :param stations: a list of HiSPARC event tables (normally from
         different stations, hence the name)
     :param coincidence: a coincidence, as returned by
-        :func:`search_coincidences`.
+        :meth:`~Coincidences.search_coincidences`.
     :param timestamps: the list of timestamps, as returned by
-        :func:`search_coincidences`.
+        :meth:`~Coincidences.search_coincidences`.
     :param get_raw_traces: boolean.  If true, return the compressed ADC
         values instead of the uncompressed traces.
 
