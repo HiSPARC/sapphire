@@ -20,7 +20,7 @@ before_install:
 
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables
-  - pip install coverage coveralls flake8
+  - pip install coverage coveralls flake8 sphinx
   - python setup.py develop
 
 script:
