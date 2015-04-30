@@ -18,3 +18,11 @@ coming in at 22.5 degrees on the standard Stoomboot queue with the
 default |corsika| configuration::
 
     qsub_corsika 100 16 proton 22.5
+
+
+Corsika on Stoomboot
+====================
+
+.. automodule:: sapphire.corsika.qsub_corsika
+   :members:
+   :undoc-members:
