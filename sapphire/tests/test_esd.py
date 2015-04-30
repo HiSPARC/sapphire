@@ -59,6 +59,17 @@ class ESDTest(unittest.TestCase):
                                                   createparents=True)
         self.assertEqual(result, file.create_table.return_value)
 
+    def test__first_available_numbered_path(self):
+        """Check if correct path is given if there is no existing h5."""
+
+        # TODO: make data1.h5 and check if it returns data2.h5 then clean up..
+        self.assertEqual(esd._first_available_numbered_path(), 'data1.h5')
+
+    def test_unsupported_type(self):
+        """Check for Exception for unsupported data types"""
+
+        self.assertRaises(ValueError, esd.load_data, None, None, None, 'bad')
+
     def test_esd_output(self):
         """Perform a simulation and verify the output"""
 

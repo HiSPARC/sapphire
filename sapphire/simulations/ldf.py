@@ -119,7 +119,8 @@ class BaseLdfSimulation(HiSPARCSimulation):
 
         return num_particles
 
-    def simulate_particles_for_density(self, p):
+    @staticmethod
+    def simulate_particles_for_density(p):
         """Get number of particles in detector given a particle density
 
         :param p: particle density in number per detector area.
@@ -137,7 +138,8 @@ class BaseLdfSimulationWithoutErrors(ErrorlessSimulation, BaseLdfSimulation):
 
     """
 
-    def simulate_particles_for_density(self, p):
+    @staticmethod
+    def simulate_particles_for_density(p):
         """Exact number"""
 
         return p
