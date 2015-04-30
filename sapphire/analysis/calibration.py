@@ -8,7 +8,7 @@ Determine the PMT response curve to correct the detected number of MIPs.
 """
 from ..utils import gauss
 
-from numpy import arange, histogram, percentile, linspace, std, nan
+from numpy import arange, histogram, percentile, linspace, std, nan, isnan
 from scipy.optimize import curve_fit
 
 
@@ -21,6 +21,10 @@ def determine_detector_timing_offsets(events, station=None):
     :returns: list of detector offsets.
 
     """
+    offsets = [nan, nan, nan, nan]
+    if not events.nrows:
+        return offsets
+
     t = []
     filters = []
     if station is not None:
@@ -39,7 +43,6 @@ def determine_detector_timing_offsets(events, station=None):
     else:
         ref_id = determine_best_reference(filters)
 
-    offsets = [nan, nan, nan, nan]
     for id in range(n_detectors):
         if id == ref_id:
             offsets[id] = 0.
@@ -47,6 +50,15 @@ def determine_detector_timing_offsets(events, station=None):
         dt = (t[id] - t[ref_id]).compress(filters[id] & filters[ref_id])
         dz = z[id] - z[ref_id]
         offsets[id] = determine_detector_timing_offset(dt, dz)
+
+    # If all except reference are nan, make reference nan.
+    if sum(isnan(offsets)) == 3:
+        offsets = [nan, nan, nan, nan]
+
+    # Try to make detector 2 the reference point, if it is not nan.
+    if not isnan(offsets[1]):
+        ref = offsets[1]
+        offsets = [o - ref for o in offsets]
 
     return offsets
 
