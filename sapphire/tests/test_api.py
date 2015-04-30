@@ -235,6 +235,12 @@ class StationTests(unittest.TestCase):
     def test_event_trace(self):
         self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 268)
 
+    def test_event_time(self):
+        names = ('hour', 'counts')
+        data = self.station.event_time(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['hour'] == range(24)).all())
+
     def test_pulse_height(self):
         names = ('pulseheight', 'ph1', 'ph2', 'ph3', 'ph4')
         data = self.station.pulse_height(2013, 1, 1)
