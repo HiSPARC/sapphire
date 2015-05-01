@@ -583,14 +583,25 @@ class DirectAlgorithmCartesian3D(object):
 
 class SphereAlgorithm(object):
 
+    """Reconstruct the direction in equatorial coordinates
+
+    Note: currently incompatible with the other algorithms!
+
+    This class uses a different coordinate systems than the other
+    algorithms. The location input is in ECEF coordinates and a
+    timestamp is required to connect the direction to the equatorial
+    coordinates.
+
+    """
+
     @classmethod
     def reconstruct_source_ECS(cls, t, x, y, z, timestamp):
         """Reconstructs the source in the Equatorial Coordinate System.
 
-        :param timestamp: The UTC timestamp of the coincidence in s.
         :param t: An array with three arrival times in ns.
         :param x,y,z: arrays with the ECEF locations of the
                       three detectors / stations in meters.
+        :param timestamp: The UTC timestamp of the coincidence in s.
         :return: the declination and right ascension of the source. The
                  apparent location of the cosmic ray source in the
                  Equatorial Coordinate System.
