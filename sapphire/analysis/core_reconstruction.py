@@ -1,463 +1,426 @@
+""" Core reconstruction
+
+    This module contains two classes that can be used to reconstruct
+    HiSPARC events and coincidences. The classes know how to extract the
+    relevant information from the station and event or cluster and
+    coincidence. Various algorithms which do the reconstruction are also
+    defined here. The algorithms require positions and particle densties to
+    do the reconstruction.
+
+    Each algorithm has a :meth:`~CenterMassAlgorithm.reconstruct_common`
+    method which always requires particle denisties, x, and y positions
+    and optionally z positions and previous reconstruction results. The
+    data is then prepared for the algorithm and passed to
+    the :meth:`~CenterMassAlgorithm.reconstruct` method which returns the
+    reconstructed x and y coordinates.
+
+"""
 from __future__ import division
+import itertools
 
-from itertools import combinations
-import os
-import sys
+from numpy import isnan, nan, cos, sqrt, mean, array
 
-import numpy as np
-from numpy import sqrt, arctan2, cos, sin
-import pylab as plt
-from scipy import optimize
-import tables
-
-from ..simulations import ldf
-from .. import storage
+from .event_utils import station_density, detector_density
 from ..utils import pbar
+from ..simulations import ldf
 
 
-class CoreReconstruction(object):
-    reconstruction_description = {
-        'coinc_id': tables.UInt32Col(),
-        'N': tables.UInt8Col(),
-        'reconstructed_core_pos': tables.Float32Col(shape=2),
-        'reconstructed_shower_size': tables.Float32Col(),
-        'core_chisq': tables.Float32Col(),
-        'min_n134': tables.Float32Col()}
+class EventCoreReconstruction(object):
 
-    def __init__(self, data, stations, results_group=None, solver=None,
-                 N=None, overwrite=False):
-        self.data = data
-        self.stations = stations
+    """Reconstruct core for station events
 
-        if results_group:
-            self.result_group = \
-                self.create_empty_output_table(results_group, overwrite)
+    This class is aware of 'events' and 'stations'.  Initialize this class
+    with a 'station' and you can reconstruct events using
+    :meth:`reconstruct_event`.
+
+    :param station: :class:`sapphire.clusters.Station` object.
+
+    """
+
+    def __init__(self, station):
+        self.estimator = CenterMassAlgorithm
+        self.station = station
+        detectors = [d.get_coordinates() for d in self.station.detectors]
+        self.area = [d.get_area() for d in self.station.detectors]
+        self.x, self.y, self.z = zip(*detectors)
+
+    def reconstruct_event(self, event, detector_ids=None):
+        """Reconstruct a single event
+
+        :param event: an event (e.g. from an events table), or any
+            dictionary-like object containing the keys necessary for
+            reconstructing the direction of a shower (e.g. number of mips).
+        :param detector_ids: list of the detectors to use for
+            reconstruction. The detector ids are 0-based, unlike the
+            column names in the esd data.
+        :return: (x, y) core position in m.
+
+        """
+        p, x, y, z = ([], [], [], [])
+        if detector_ids is None:
+            detector_ids = range(4)
+        for id in detector_ids:
+            p_detector = detector_density(event, id, self.station)
+            if not isnan(p_detector):
+                p.append(p_detector)
+                x.append(self.x[id])
+                y.append(self.y[id])
+                z.append(self.z[id])
+        if len(p) >= 3:
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
         else:
-            self.result_group = None
+            core_x, core_y = (nan, nan)
+        return core_x, core_y
 
-        if solver is None:
-            self.solver = CorePositionSolver(ldf.KascadeLdf())
+    def reconstruct_events(self, events, detector_ids=None, progress=True):
+        """Reconstruct events
+
+        :param events: the events table for the station from an ESD data
+                       file.
+        :param detector_ids: detectors which use for the reconstructions.
+        :return: (x, y) core positions in m.
+
+        """
+        cores = [self.reconstruct_event(event, detector_ids)
+                 for event in pbar(events, show=progress)]
+        core_x, core_y = zip(*cores)
+        return core_x, core_y
+
+
+class CoincidenceCoreReconstruction(object):
+
+    """Reconstruct core for coincidences
+
+    This class is aware of 'coincidences' and 'clusters'.  Initialize
+    this class with a 'cluster' and you can reconstruct a coincidence
+    using :meth:`reconstruct_coincidence`.
+
+    :param cluster: :class:`sapphire.clusters.BaseCluster` object.
+
+    """
+
+    def __init__(self, cluster):
+        self.estimator = CenterMassAlgorithm
+        self.cluster = cluster
+
+        # Store locations that do not change
+        for station in cluster.stations:
+            station.center_of_mass_coordinates = \
+                station.calc_center_of_mass_coordinates()
+            station.area = station.get_area()
+
+    def reconstruct_coincidence(self, coincidence, station_numbers=None):
+        """Reconstruct a single coincidence
+
+        :param coincidence: a coincidence list consisting of
+                            multiple (station_number, event) tuples
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :return: (x, y) core position in m.
+
+        """
+        p, x, y, z = ([], [], [], [])
+
+        for station_number, event in coincidence:
+            if station_numbers is not None:
+                if station_number not in station_numbers:
+                    continue
+            station = self.cluster.get_station(station_number)
+            p_station = station_density(event, range(4), station)
+            if not isnan(p_station):
+                sx, sy, sz = station.center_of_mass_coordinates
+                p.append(p_station)
+                x.append(sx)
+                y.append(sy)
+                z.append(sz)
+
+        if len(p) >= 3:
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
         else:
-            self.solver = solver
+            core_x, core_y = (nan, nan)
+        return core_x, core_y
 
-        self.N = N
+    def reconstruct_coincidences(self, coincidences, station_numbers=None,
+                                 progress=True):
+        """Reconstruct all coincidences
 
-    def create_empty_output_table(self, group_path, overwrite=False):
-        if group_path in self.data:
-            if not overwrite:
-                raise RuntimeError(
-                    "Reconstruction group %s already exists" % group_path)
-            else:
-                self.data.remove_node(group_path, recursive=True)
+        :param coincidences: a list of coincidences, each consisting of
+                             multiple (station_number, event) tuples.
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :return: (x, y) core positions in m.
 
-        head, tail = os.path.split(group_path)
-        group = self.data.create_group(head, tail)
-        stations_description = {'s%d' % u: tables.BoolCol() for u in
-                                self.stations}
-        description = self.reconstruction_description
-        description.update(stations_description)
-        self.reconstructions = self.data.create_table(group,
-            'reconstructions', description)
+        """
+        cores = [self.reconstruct_coincidence(coincidence, station_numbers)
+                 for coincidence in pbar(coincidences, show=progress)]
+        core_x, core_y = zip(*cores)
+        return core_x, core_y
 
-        return group
 
-    def _create_output_table(self, group, tablename):
-        table = self.data.create_table(group, tablename,
-                                      storage.ReconstructedEvent,
-                                      createparents=True)
-        return table
+class CenterMassAlgorithm(object):
 
-    def store_reconstructed_coincidence(self, coincidence,
-                                        reconstructed_core_x,
-                                        reconstructed_core_y,
-                                        reconstructed_shower_size, chisq):
-        dst_row = self.reconstructions.row
-        events = self.get_events_from_coincidence(coincidence)
+    """ Simple core estimator
 
-        dst_row['coinc_id'] = coincidence['id']
-        dst_row['N'] = len(events)
-        dst_row['reconstructed_core_pos'] = (reconstructed_core_x,
-                                             reconstructed_core_y)
-        dst_row['reconstructed_shower_size'] = reconstructed_shower_size
-        dst_row['core_chisq'] = chisq
+    Estimates the core by center of mass of the measurements.
 
-        for event in events:
-            station_id = event['station_id']
-            station = self.stations[station_id]
-            dst_row['s%d' % station] = True
-        dst_row.append()
+    """
 
-    def reconstruct_core_positions(self, source):
-        source = self.data.get_node(source)
-        self.source = source
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core position
 
-        self.cluster = source._v_attrs.cluster
-        self._store_cluster_with_results()
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
 
-        observables = source.observables
-        coincidence_table = source.coincidences
+        """
+        theta = initial.get('theta', nan)
+        if not isnan(theta):
+            p = [density * cos(theta) for density in p]
 
-        for coincidence in pbar(coincidence_table[:self.N]):
-            if coincidence['N'] >= 3:
-                x, y, N, chisq = \
-                    self.reconstruct_core_position(coincidence)
-                self.store_reconstructed_coincidence(coincidence, x, y, N,
-                                                     chisq)
+        return cls.reconstruct(p, x, y)
 
-        self.reconstructions.flush()
+    @staticmethod
+    def reconstruct(p, x, y):
+        """Calculate center of mass
 
-    def reconstruct_core_position(self, coincidence, startpos=None):
-        solver = self.solver
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
 
-        solver.reset_measurements()
-        #self._add_individual_detector_measurements_to_solver(solver, coincidence)
-        self._add_station_averaged_measurements_to_solver(solver, coincidence)
+        """
+        core_x = sum(density * xi for density, xi in zip(p, x)) / sum(p)
+        core_y = sum(density * yi for density, yi in zip(p, y)) / sum(p)
+        return core_x, core_y
 
-        if startpos is not None:
-            x0, y0 = startpos
+
+class AverageIntersectionAlgorithm(object):
+
+    """ Core estimator
+
+    To the densities in 3 stations correspond 2 possible cores. The line
+    through these points is quit stable for the lateral distribution function.
+    To each combination of 3 stations out of a set of at least 4
+    stations hit corresponds a line. To each combinations of 2 lines out of
+    the set of lines corresponds a point of intersection (if the 2 lines are
+    not collinear). Taking the cloud of intersection points close to the core
+    estimated by the center of mass, and averaging the positions in this cloud
+    results in an estimation for the core.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
+
+        """
+        if len(p) < 4 or len(x) < 4 or len(y) < 4:
+            raise Exception('This algorithm requires at least 4 detections.')
+
+        phit = []
+        xhit = []
+        yhit = []
+        for i in range(len(p)):
+            if p[i] > .01:
+                phit.append(p[i])
+                xhit.append(x[i])
+                yhit.append(y[i])
+
+        statindex = range(len(phit))
+        subsets = itertools.combinations(statindex, 3)
+        m = 3.0  # average value in powerlaw  r ^(-m)  for density
+
+        linelist0 = []
+        linelist1 = []
+        for zero, one, two in subsets:
+            pp = (phit[zero] / phit[one]) ** (2. / m)
+            qq = (phit[zero] / phit[two]) ** (2. / m)
+            if pp == 1:
+                pp = 1.000001
+            if qq == 1:
+                qq = 1.000001
+
+            x0 = xhit[zero]
+            x1 = xhit[one]
+            x2 = xhit[two]
+            y0 = yhit[zero]
+            y1 = yhit[one]
+            y2 = yhit[two]
+            a = (x1 - pp * x0) / (1 - pp)
+            b = (y1 - pp * y0) / (1 - pp)
+            c = (x2 - qq * x0) / (1 - qq)
+            d = (y2 - qq * y0) / (1 - qq)
+            rsquare = pp * ((x1 - x0) ** 2 + (y1 - y0) ** 2) / ((1 - pp) ** 2)
+            ssquare = qq * ((x2 - x0) ** 2 + (y2 - y0) ** 2) / ((1 - qq) ** 2)
+            e = c - a
+            f = d - b
+            if d == b:
+                f = 0.000000001
+            g = sqrt(e * e + f * f)
+            k = 0.5 * (g * g + rsquare - ssquare) / g
+            linelist0.append(-e / f)
+            linelist1.append((a * e + b * f + g * k) / f)
+
+        newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
+                                                            initial)
+        subsets = itertools.combinations(statindex, 2)
+
+        xpointlist = []
+        ypointlist = []
+        for zero, one in subsets:
+            a = linelist0[zero]
+            b = linelist1[zero]
+            c = linelist0[one]
+            d = linelist1[one]
+            aminc = a - c
+            if a == c:
+                aminc = 0.000000001
+            xint = (d - b) / aminc
+            yint = (a * d - b * c) / aminc
+            if a != c:
+                xpointlist.append(xint)
+                ypointlist.append(yint)
+
+        subxplist, subyplist = cls.select_newlist(
+            newx, newy, xpointlist, ypointlist, 120.)
+        if len(subxplist) > 3:
+            newx = mean(subxplist)
+            newy = mean(subyplist)
+            subxplist, subyplist = cls.select_newlist(
+                newx, newy, xpointlist, ypointlist, 100.)
+        if len(subxplist) > 2:
+            newx = mean(subxplist)
+            newy = mean(subyplist)
+
+        return newx, newy
+
+    @staticmethod
+    def select_newlist(newx, newy, xpointlist, ypointlist, distance):
+        """Select intersection points in square around the mean of old list."""
+        newxlist = []
+        newylist = []
+        for xpoint, ypoint in zip(xpointlist, ypointlist):
+            dr = sqrt((xpoint - newx) ** 2 + (ypoint - newy) ** 2)
+            if dr < distance:
+                newxlist.append(xpoint)
+                newylist.append(ypoint)
+
+        return newxlist, newylist
+
+
+class EllipsLdfAlgorithm(object):
+
+    """ Simple core estimator
+
+    Estimates the core by center of mass of the measurements.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core position
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions: zenith and azimuth.
+
+        """
+        theta = initial.get('theta', 0.)
+        phi = initial.get('phi', 0.)
+        return cls.reconstruct(p, x, y, theta, phi)
+
+    @classmethod
+    def reconstruct(cls, p, x, y, theta, phi):
+        """Reconstruct the number of electrons that fits best.
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param theta,phi: zenith and azimuth angle in rad.
+
+        """
+        xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)
+        chi2best = 10 ** 99
+        xbest = xcmass
+        ybest = ycmass
+        factorbest = 1.
+        gridsize = 5.
+        xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(
+            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
+
+        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x,
+                                                                         y)
+        chi2best = 10 ** 99
+        xbest = xcmass
+        ybest = ycmass
+        factorbest = 1.
+        xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(
+            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
+
+        if chi2best1 < chi2best2:
+            chi2best = chi2best1
+            xbest = xbest1
+            ybest = ybest1
+            factorbest = factorbest1
         else:
-            x0, y0 = solver.get_center_of_mass_of_measurements()
-        xopt, yopt = solver.optimize_core_position(x0, y0)
-
-        r, dens = solver.get_ldf_measurements_for_core_position((xopt, yopt))
-        sigma = np.where(dens > 1, sqrt(dens), 1.)
-        popt, pcov = optimize.curve_fit(solver.ldf_given_size, r, dens,
-                                        p0=(1e5,), sigma=sigma)
-        shower_size, = popt
-
-        chisq = self._calculate_chi_squared(solver, xopt, yopt,
-                                            shower_size)
-
-        return xopt, yopt, shower_size, chisq
-
-    def get_events_from_coincidence(self, coincidence):
-        events = []
-        id = coincidence['id']
-
-        for index in self.source.c_index[id]:
-            events.append(self.source.observables[index])
-
-        return events
-
-    def _add_station_averaged_measurements_to_solver(self, solver, coincidence):
-        for event in self.get_events_from_coincidence(coincidence):
-            station = self._get_station_from_event(event)
-            x, y, alpha = station.get_xyalpha_coordinates()
-            value = sum([event[u] for u in ['n1', 'n2', 'n3', 'n4']]) / 2.
-            solver.add_measurement_at_xy(x, y, value)
-
-    def _add_individual_detector_measurements_to_solver(self, solver, coincidence):
-        for event in self.get_events_from_coincidence(coincidence):
-            station = self._get_station_from_event(event)
-            for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
-                x, y = detector.get_xy_coordinates()
-                value = event[idx] / .5
-                solver.add_measurement_at_xy(x, y, value)
-
-    def _calculate_chi_squared(self, solver, xopt, yopt, shower_size):
-        observed_measurements = \
-            solver.get_ldf_measurements_for_core_position((xopt, yopt))
-
-        chi_squared = 0
-        for r, observed in zip(*observed_measurements):
-            expected = solver.ldf_given_size(r, shower_size)
-            chi_squared += (expected - observed) ** 2 / expected
-
-        return chi_squared
-
-    def _station_has_triggered(self, event):
-        if event['N'] >= 2:
-            return True
-        else:
-            return False
-
-    def _get_station_from_event(self, event):
-        station_id = event['station_id']
-        return self.cluster.stations[station_id]
-
-    def _store_cluster_with_results(self):
-        if not 'cluster' in self.result_group._v_attrs:
-            self.result_group._v_attrs.cluster = self.cluster
-
-
-class PlotCoreReconstruction(CoreReconstruction):
-    def plot_reconstruct_core_position(self, source, coincidence_idx):
-        source = self.data.get_node(source)
-        self.source = source
-        self.cluster = source._v_attrs.cluster
-        coincidence = source.coincidences[coincidence_idx]
-
-        plt.figure()
-        plt.subplot(121)
-        xopt, yopt, shower_size, chisq = self.reconstruct_core_position(coincidence)
-
-        self._do_do_plot_coincidence(coincidence, use_detectors=False)
-        x0, y0 = self.solver.get_center_of_mass_of_measurements()
-        plt.scatter(x0, y0, color='green')
-        plt.scatter(xopt, yopt, color='yellow')
-
-        xs, ys = np.array(self.solver._make_guess_position_list(x0, y0)).T
-        plt.scatter(xs, ys, color='cyan', s=5)
-
-        plt.xlim(-500, 500)
-        plt.ylim(-500, 500)
-
-        plt.subplot(122)
-        self._do_plot_ldf(coincidence, xopt, yopt, shower_size)
-
-    def get_coincidence_with_multiplicity(self, index, multiplicity, num_detectors):
-        coincidences = self.source.coincidences.read()
-        sel = coincidences.compress(coincidences[:]['N'] >= multiplicity)
-        coords = sel['id']
-
-        events = self.source.observables.read_coordinates(coords)
-        events_sel = events.compress(events[:]['N'] == num_detectors)
-
-        idx = events_sel[index]['id']
-        return coincidences[idx]
-
-    def draw_cluster(self):
-        for station in self.cluster.stations:
-            for detector in station.detectors:
-                x, y = detector.get_xy_coordinates()
-                plt.scatter(x, y, c='r', s=5, edgecolor='none')
-            x, y, alpha = station.get_xyalpha_coordinates()
-            plt.scatter(x, y, c='orange', s=10, edgecolor='none')
-
-    def plot_coincidence_twice(self, index=0, multiplicity=3):
-        plt.clf()
-        plt.subplot(121)
-        self._do_plot_coincidence(index, multiplicity, use_detectors=False)
-        plt.subplot(122)
-        self._do_plot_coincidence(index, multiplicity, use_detectors=True)
-
-    def plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
-        self._do_plot_coincidence(index, multiplicity, use_detectors)
-
-    def _do_plot_coincidence(self, index=0, multiplicity=3, use_detectors=False):
-        coincidence = self.get_coincidence_with_multiplicity(index,
-                                                             multiplicity)
-
-        self._do_do_plot_coincidence(coincidence, use_detectors)
-
-    def _do_do_plot_coincidence(self, coincidence, use_detectors, index=0):
-        self._plot_chi_squared_on_map(coincidence, use_detectors)
-        self._plot_coincidence_on_map(coincidence)
-
-        for event in self.get_events_from_coincidence(coincidence):
-            self._plot_event_on_map(event)
-
-        if use_detectors:
-            method = "individual detector signal"
-        else:
-            method = "station-averaged signal"
-        plt.title("Coincidence (%d-fold) #%d\n%s\n%s" %
-                  (coincidence['N'], index, method, type(self.solver).__name__))
-
-    def _do_plot_ldf(self, coincidence, x0, y0, shower_size):
-        x = plt.logspace(-1, 3, 100)
-        y = self.solver.ldf_given_size(x, shower_size)
-        plt.loglog(x, y, label='LDF')
-
-        r, dens = self.solver.get_ldf_measurements_for_core_position((x0, y0))
-        plt.loglog(r, dens, 'o', label="signals")
-
-        plt.legend()
-        plt.xlabel("Core distance [m]")
-        plt.ylabel("Particle density [$m^{-2}$]")
-
-    def _plot_chi_squared_on_map(self, coincidence, use_detectors=False):
-        solver = self.solver
-        solver.reset_measurements()
-
-        if use_detectors:
-            self._add_individual_detector_measurements_to_solver(solver, coincidence)
-        else:
-            self._add_station_averaged_measurements_to_solver(solver, coincidence)
-
-        self._plot_chi_squared_contours(solver)
-
-    def _plot_chi_squared_contours(self, solver):
-        mylog = np.vectorize(lambda x: np.log10(x) if x > 0 else -999.)
-        x = np.linspace(-600, 600, 100)
-        y = np.linspace(-600, 600, 100)
-        chi_squared = np.zeros((len(x), len(y)))
-        for i in range(len(x)):
-            for j in range(len(y)):
-                chi_squared[j][i] = solver.calculate_chi_squared_for_xy((x[i], y[j]))
-        plt.contourf(x, y, mylog(chi_squared), 100, cmap=plt.cm.rainbow)
-        plt.colorbar()
-
-    def _plot_coincidence_on_map(self, coincidence):
-        plt.scatter(coincidence['x'], coincidence['y'], c='b', s=10)
-
-    def _plot_event_on_map(self, event):
-        station_id = event['station_id']
-        station = self.cluster.stations[station_id]
-
-        detectors = station.detectors
-        num_particles = [event[u] for u in ['n1', 'n2', 'n3', 'n4']]
-
-        for detector, num in zip(detectors, num_particles):
-            self._plot_detector_on_map(detector, num)
-
-    def _plot_detector_on_map(self, detector, num_particles):
-        x, y = detector.get_xy_coordinates()
-        size = num_particles * 10
-        plt.scatter(x, y, c='r', s=size)
-
-
-class CorePositionSolver(object):
-    _normalizing_idx = None
-
-    def __init__(self, ldf):
-        self._measurements = []
-        self._ldf = ldf
-
-    def add_measurement_at_xy(self, x, y, value):
-        self._measurements.append((x, y, value))
-
-    def reset_measurements(self):
-        self._measurements = []
-        self._normalizing_idx = None
-
-    def optimize_core_position(self, x0, y0):
-        best_value = self.calculate_chi_squared_for_xy((x0, y0))
-
-        # FIXME
-        #pos_list = self._make_guess_position_list(x0, y0)
-        pos_list = [(x0, y0)]
-
-        for x0, y0 in pos_list:
-            xopt, yopt = optimize.fmin(self.calculate_chi_squared_for_xy,
-                                       (x0, y0), disp=0)
-            value = self.calculate_chi_squared_for_xy((xopt, yopt))
-            if value < best_value:
-                best_value = value
-                best_xy = xopt, yopt
-
-        return best_xy
-
-    def _make_guess_position_list(self, x0, y0):
-        """Create list of starting positions using inflection"""
-
-        pos_list = [(x0, y0)]
-
-        measurements = np.array(self._measurements)
-        xs = measurements[:, 0]
-        ys = measurements[:, 1]
-
-        x = np.mean(xs)
-        y = np.mean(ys)
-        rs = sqrt((xs - x) ** 2 + (ys - y) ** 2)
-        mean_r = np.mean(rs)
-
-        phi = arctan2(y0 - y, x0 - x)
-
-        x1 = x + 2 * mean_r * cos(phi)
-        y1 = y + 2 * mean_r * sin(phi)
-
-        pos_list.append((x1, y1))
-
-        return pos_list
-
-    def calculate_chi_squared_for_xy(self, (guess_x, guess_y)):
-        chi_squared = 0
-        for expected, observed in self._get_expected_observed(guess_x, guess_y):
-            if expected == np.Inf:
-                return np.Inf
-            else:
-                chi_squared += (expected - observed) ** 2 / expected
-        return chi_squared
-
-    def get_ldf_measurements_for_core_position(self, (x0, y0)):
-        r, ldf = [], []
-        for x, y, value in self._measurements:
-            core_distance = np.sqrt((x0 - x) ** 2 + (y0 - y) ** 2)
-            if core_distance == 0.:
-                core_distance = 1e-2
-            r.append(core_distance)
-            ldf.append(value)
-        return np.array(r), np.array(ldf)
-
-    def ldf_given_size(self, r, shower_size):
-        return self._ldf.get_ldf_value_for_size(r, shower_size)
-
-    def _get_expected_observed(self, guess_x, guess_y):
-        normalizing_measurement, other_measurements = self._get_normalizing_and_other_measurements()
-
-        x0, y0, value0 = normalizing_measurement
-        ldf_value0 = self._calculate_ldf_value_for_xy_xy(x0, y0, guess_x, guess_y)
-
-        for x, y, value in other_measurements:
-            ldf_value = self._calculate_ldf_value_for_xy_xy(x, y, guess_x, guess_y)
-            expected = ldf_value / ldf_value0
-            observed = value / value0
-            yield expected, observed
-
-    def _get_normalizing_and_other_measurements(self):
-        if self._normalizing_idx is not None:
-            return self._split_out_measurement_at_idx(self._normalizing_idx)
-        else:
-            for idx, (x, y, value) in enumerate(self._measurements):
-                if value > 0:
-                    break
-
-            self._normalizing_idx = idx
-
-            if value <= 0:
-                raise RuntimeError("BUG: serious problem with detector measurements!")
-            else:
-                return self._split_out_measurement_at_idx(idx)
-
-    def _split_out_measurement_at_idx(self, idx):
-        measurement = self._measurements[idx]
-        other_measurements = self._measurements[:idx] + self._measurements[idx + 1:]
-        return measurement, other_measurements
-
-    def _calculate_ldf_value_for_xy_xy(self, x0, y0, x1, y1):
-        r = np.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2)
-        return self._ldf.calculate_ldf_value(r)
-
-    def get_center_of_mass_of_measurements(self):
-        measurements = np.array(self._measurements)
-        x, y, value = measurements.T
-
-        x0 = (value * x).sum() / value.sum()
-        y0 = (value * y).sum() / value.sum()
-
-        return x0, y0
-
-
-class CorePositionSolverWithoutNullMeasurements(CorePositionSolver):
-    def add_measurement_at_xy(self, x, y, value):
-        if value > 0:
-            self._measurements.append((x, y, value))
-
-
-class OverdeterminedCorePositionSolver(CorePositionSolver):
-    def _get_expected_observed(self, guess_x, guess_y):
-        for (x1, y1, value1), (x2, y2, value2) in combinations(self._measurements, 2):
-            ldf_value1 = self._calculate_ldf_value_for_xy_xy(x1, y1, guess_x, guess_y)
-            ldf_value2 = self._calculate_ldf_value_for_xy_xy(x2, y2, guess_x, guess_y)
-            expected = ldf_value1 / ldf_value2
-            observed = value1 / value2
-            yield expected, observed
-
-
-class CorePositionCirclesSolver(CorePositionSolver):
-    def calculate_chi_squared_for_xy(self, (guess_x, guess_y)):
-        chi_squared = 1
-        for expected, observed in self._get_expected_observed(guess_x, guess_y):
-            chi_squared *= (expected - observed) ** 2 / expected
-        return chi_squared
-
-
-class CorePositionCirclesSolverWithoutNullMeasurements(
-        CorePositionSolverWithoutNullMeasurements, CorePositionCirclesSolver):
-    pass
-
-
-class OverdeterminedCorePositionCirclesSolver(
-        CorePositionCirclesSolver, OverdeterminedCorePositionSolver):
-    pass
+            chi2best = chi2best2
+            xbest = xbest2
+            ybest = ybest2
+            factorbest = factorbest2
+
+        gridsize = 2.
+        core_x, core_y, chi2best, factorbest = cls.selectbest(
+            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
+
+        return core_x, core_y, chi2best, factorbest * ldf.EllipsLdf._Ne
+
+    @staticmethod
+    def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
+                   theta, phi):
+        """selects the best core position in grid around (xstart, ystart).
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param xcmass,ycmass: start position of core in m.
+
+        """
+        xbest = xstart
+        ybest = ystart
+
+        a = ldf.EllipsLdf(zenith=theta, azimuth=phi)
+        for i in range(41):
+            xtry = xstart + (i - 20) * gridsize
+            for j in range(11):
+                ytry = ystart + (i - 20) * gridsize
+                xstations = array(x)
+                ystations = array(y)
+                r, angle = a.calculate_core_distance_and_angle(
+                    xstations, ystations, xtry, ytry)
+                rho = a.calculate_ldf_value(r, angle)
+
+                mmdivl = 0.
+                m = 0.
+                l = 0.
+
+                for i, j in zip(p, rho):
+                    mmdivl += 1. * i * i / j
+                    m += i
+                    l += j
+
+                sizefactor = sqrt(mmdivl / l)
+                chi2 = 2. * (sizefactor * l - m)
+                if chi2 < chi2best:
+                    factorbest = sizefactor
+                    xbest = xtry
+                    ybest = ytry
+                    chi2best = chi2
+
+        return xbest, ybest, chi2best, factorbest

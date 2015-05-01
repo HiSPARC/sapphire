@@ -130,6 +130,7 @@ class StationTests(unittest.TestCase):
 
     def test_get_coordinates(self):
         with patch('sapphire.clusters.Detector') as mock_detector:
+            self.assertFalse(mock_detector.called)
             cluster = Mock()
 
             # Trivial
@@ -164,6 +165,8 @@ class StationTests(unittest.TestCase):
             self.assertTupleAlmostEqual(coordinates, (-5, 10, 0, 3 * pi / 4))
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (-5, 10, 3 * pi / 4))
+
+            self.assertTrue(mock_detector.called)
 
     def test_unit_get_polar_alpha_coordinates(self):
         station_coordinates = (sqrt(2), sqrt(2), 0, pi / 4)

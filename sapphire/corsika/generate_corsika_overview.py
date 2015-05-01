@@ -6,9 +6,9 @@
     overview.
 
     The given source path should contain subdirectories named after the
-    seeds used for the simulation in the format `{seed1}_{seed2}`, e.g.
-    `821280921_182096636`. These in turn should contain converted
-    CORSIKA simulation results called `corsika.h5`.
+    seeds used for the simulation in the format ``{seed1}_{seed2}``,
+    e.g. ``821280921_182096636``. These in turn should contain converted
+    CORSIKA simulation results called ``corsika.h5``.
 
 """
 import os
@@ -112,7 +112,7 @@ def prepare_output(n):
     """Create a temporary file in which to store the overview
 
     :param n: the number of simulations, i.e. expected number of rows.
-    :returns: path to the temporary file and a PyTables handler for the file.
+    :return: path to the temporary file and a PyTables handler for the file.
 
     """
     os.umask(002)

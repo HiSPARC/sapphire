@@ -42,7 +42,7 @@ def quick_download(station_number, date=None):
     :param date: the date for which to get data (datetime.datetime
         instance), passed unchanged to the :func:`download_data` as
         :param start:.
-    :returns: handle to an open PyTables file
+    :return: handle to an open PyTables file
 
     Everything is handled by this function, including file creation.
     Expect no frills: you just get yesterday's data.
@@ -291,7 +291,7 @@ def _get_or_create_station_numbers(table):
     """Get station numbers from existing cluster attribute or a new set
 
     :param table: coincidence table in PyTables file.
-    :returns: set including existing stations in a cluster.
+    :return: set including existing stations in a cluster.
 
     """
     try:

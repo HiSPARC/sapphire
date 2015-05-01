@@ -1,17 +1,20 @@
-import itertools
+from itertools import izip_longest
+from datetime import date
 
-from numpy import nan, isnan, arange, histogram, linspace
+from numpy import isnan, nan, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
 import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
-from ..clusters import HiSPARCStations, ScienceParkCluster, Station
-from .direction_reconstruction import (DirectEventReconstruction,
-                                       FitEventReconstruction,
-                                       DirectCoincidenceReconstruction,
-                                       FitCoincidenceReconstruction)
+from ..clusters import HiSPARCStations, Station
+from .direction_reconstruction import (EventDirectionReconstruction,
+                                       CoincidenceDirectionReconstruction)
+from .core_reconstruction import (EventCoreReconstruction,
+                                  CoincidenceCoreReconstruction)
 from .coincidence_queries import CoincidenceQuery
-from ..utils import pbar, gauss, ERR
+from .calibration import determine_detector_timing_offsets
+from .event_utils import station_arrival_time
+from ..utils import pbar, gauss
 
 
 class ReconstructESDEvents(object):
@@ -25,19 +28,19 @@ class ReconstructESDEvents(object):
 
         data = tables.open_file('2014_1_1.h5', 'a')
         station_path = '/hisparc/cluster_amsterdam/station_506'
-        dirrec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
-        dirrec.reconstruct_and_store()
+        rec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
+        rec.reconstruct_and_store()
 
     To visualize the results::
 
         import matplotlib.pyplot as plt
-        plt.polar([p for p in dirrec.phi if not isnan(p)],
-                  [t for t in dirrec.theta if not isnan(t)], 'ko', alpha=0.2)
+        plt.polar([p for p in rec.phi if not isnan(p)],
+                  [t for t in rec.theta if not isnan(t)], 'ko', alpha=0.2)
 
     or::
 
-        plt.polar(dirrec.reconstructions.col('azimuth'),
-                  dirrec.reconstructions.col('zenith'), 'ko', alpha=0.2)
+        plt.polar(rec.reconstructions.col('azimuth'),
+                  rec.reconstructions.col('zenith'), 'ko', alpha=0.2)
 
     """
 
@@ -63,54 +66,49 @@ class ReconstructESDEvents(object):
         if isinstance(station, Station):
             self.station = station
         else:
-            self.station = HiSPARCStations([station]).get_station(station)
+            last_date = date.fromtimestamp(max(self.events.col('timestamp')))
+            cluster = HiSPARCStations([station], date=last_date)
+            self.station = cluster.get_station(station)
 
-        self.direct = DirectEventReconstruction(self.station)
-        self.fit = FitEventReconstruction(self.station)
+        self.direction = EventDirectionReconstruction(self.station)
+        self.core = EventCoreReconstruction(self.station)
 
-    def reconstruct_and_store(self):
+        self.theta = []
+        self.phi = []
+        self.detector_ids = []
+        self.core_x = []
+        self.core_y = []
+
+    def reconstruct_and_store(self, detector_ids=None):
         """Shorthand function to reconstruct event and store the results"""
 
         self.prepare_output()
-        self.determine_detector_timing_offsets()
+        self.offsets = determine_detector_timing_offsets(self.events,
+                                                         self.station)
         self.store_offsets()
-        self.reconstruct_directions()
+        self.reconstruct_directions(detector_ids=detector_ids)
+        self.reconstruct_cores(detector_ids=detector_ids)
         self.store_reconstructions()
 
     def reconstruct_directions(self, detector_ids=None):
-        """Reconstruct all events
+        """Reconstruct direction for all events
 
-        Reconstruct each event in the events tables.
-
-        :param detector_ids: use only these detectors for reconstructions.
+        :param detector_ids: list of detector ids to use for reconstructions.
 
         """
-        events = pbar(self.events, show=self.progress)
-        angles = [self._reconstruct_direction(e, detector_ids) for e in events]
-        self.theta, self.phi, self.detector_ids = zip(*angles)
+        angles = self.direction.reconstruct_events(self.events, detector_ids,
+                                                   self.offsets, self.progress)
+        self.theta, self.phi, self.detector_ids = angles
 
-    def _reconstruct_direction(self, event, detector_ids=None):
-        """Reconstruct an event
+    def reconstruct_cores(self, detector_ids=None):
+        """Reconstruct core for all events
 
-        Use direct algorithm if three detectors have an arrival time,
-        use fit algorithm in case of four and return (nan, nan) otherwise.
+        :param detector_ids: list of detector ids to use for reconstructions.
 
         """
-        valid_ids = [id for id in range(4)
-                     if event['t%d' % (id + 1)] not in ERR]
-        if detector_ids is not None:
-            detector_ids = [d for d in detector_ids if d in valid_ids]
-        else:
-            detector_ids = valid_ids
-
-        if len(detector_ids) == 3:
-            theta, phi = self.direct.reconstruct_event(event, detector_ids,
-                                                       self.offsets)
-        elif len(detector_ids) == 4:
-            theta, phi = self.fit.reconstruct_event(event, self.offsets)
-        else:
-            theta, phi = (nan, nan)
-        return theta, phi, detector_ids
+        cores = self.core.reconstruct_events(self.events, detector_ids,
+                                             self.progress)
+        self.core_x, self.core_y = cores
 
     def prepare_output(self):
         """Prepare output table"""
@@ -126,32 +124,6 @@ class ReconstructESDEvents(object):
         self.reconstructions = self.data.create_table(
             self.station_group, 'reconstructions', ReconstructedEvent)
         self.reconstructions._v_attrs.station = self.station
-
-    def determine_detector_timing_offsets(self):
-        """Determine the offsets between the station detectors.
-
-        ADL: Currently assumes detector 1 is a good reference.
-        But this is not always the best choice. Perhaps it should be
-        determined using more data (more than one day) to be more
-        accurate.
-
-        """
-        bins = arange(-100 + 1.25, 100, 2.5)
-        c = .3
-
-        t2 = self.events.col('t2')
-        z = [d.z for d in self.station.detectors]
-
-        for detector in [0, 2, 3]:
-            timings = self.events.col('t%d' % (detector + 1))
-            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
-            y, bins = histogram(dt, bins=bins)
-            x = (bins[:-1] + bins[1:]) / 2
-            try:
-                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-                self.offsets[detector] = popt[1] + (z[detector] - z[1]) / c
-            except (IndexError, RuntimeError):
-                self.offsets[detector] = 0.
 
     def store_offsets(self):
         """Store the determined offset in a table."""
@@ -171,27 +143,27 @@ class ReconstructESDEvents(object):
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
 
-        Only writes rows if reconstruction was possible and successful.
-
-        ADL: Perhaps we should always store reconstructions, and use
-        error values in case it failed. However, the usual -999 might be
-        a real value (though unlikely to be exactly -999) in case of
-        core position reconstruction.
+        Unsuccessful reconstructions are also stored but with the NumPy
+        NaN as reconstructed value.
 
         """
-        for event, theta, phi, detector_ids in itertools.izip(
-                self.events, self.theta, self.phi, self.detector_ids):
-            if not isnan(theta) and not isnan(phi):
-                self._store_reconstruction(event, theta, phi, detector_ids)
+        for event, core_x, core_y, theta, phi, detector_ids in izip_longest(
+                self.events, self.core_x, self.core_y,
+                self.theta, self.phi, self.detector_ids):
+            self._store_reconstruction(event, core_x, core_y, theta, phi,
+                                       detector_ids)
         self.reconstructions.flush()
 
-    def _store_reconstruction(self, event, theta, phi, detector_ids):
+    def _store_reconstruction(self, event, core_x, core_y, theta, phi,
+                              detector_ids):
         """Store single reconstruction"""
 
         row = self.reconstructions.row
         row['id'] = event['event_id']
         row['ext_timestamp'] = event['ext_timestamp']
         row['min_n'] = min([event['n%d' % (id + 1)] for id in detector_ids])
+        row['x'] = core_x
+        row['y'] = core_y
         row['zenith'] = theta
         row['azimuth'] = phi
         for id in detector_ids:
@@ -206,11 +178,11 @@ class ReconstructESDCoincidences(object):
     Example usage::
 
         import tables
-        from sapphire.analysis.reconstructions import ReconstructESDCoincidences
+        from sapphire.analysis import reconstructions
 
         data = tables.open_file('2014_1_1.h5', 'a')
-        dirrec = ReconstructESDCoincidences(data, overwrite=True)
-        dirrec.reconstruct_and_store()
+        rec = reconstructions.ReconstructESDCoincidences(data, overwrite=True)
+        rec.reconstruct_and_store()
 
     """
 
@@ -235,31 +207,54 @@ class ReconstructESDCoincidences(object):
         # Get latest position data
         s_numbers = [station.number for station in
                      self.coincidences_group._f_getattr('cluster').stations]
-        self.cluster = HiSPARCStations(s_numbers)
+        last_date = date.fromtimestamp(max(self.coincidences.col('timestamp')))
+        self.cluster = HiSPARCStations(s_numbers, date=last_date)
 
-        self.direct = DirectCoincidenceReconstruction(self.cluster)
-        self.fit = FitCoincidenceReconstruction(self.cluster)
+        self.direction = CoincidenceDirectionReconstruction(self.cluster)
+        self.core = CoincidenceCoreReconstruction(self.cluster)
 
-    def reconstruct_and_store(self):
+        self.theta = []
+        self.phi = []
+        self.station_numbers = []
+        self.core_x = []
+        self.core_y = []
+
+    def reconstruct_and_store(self, station_numbers=None):
         """Shorthand function to reconstruct coincidences and store results"""
 
         self.prepare_output()
         self.get_station_timing_offsets()
-        self.reconstruct_directions()
+        self.reconstruct_directions(station_numbers=station_numbers)
+        self.reconstruct_cores(station_numbers=station_numbers)
         self.store_reconstructions()
 
-    def reconstruct_directions(self):
-        """Reconstruct all coincidences
+    def reconstruct_directions(self, station_numbers=None):
+        """Reconstruct direction for all events
 
-        Reconstruct each coincidence in the coincidences tables.
+        :param detector_ids: list of detector ids to use for reconstructions.
 
         """
-        length = self.coincidences.nrows
         coincidences = self.cq.all_coincidences(iterator=True)
-        coincidence_events = pbar(self.cq.all_events(coincidences, n=0),
-                                  length=length, show=self.progress)
-        angles = [self._reconstruct_direction(c) for c in coincidence_events]
-        self.theta, self.phi, self.station_numbers = zip(*angles)
+        # Progress does not work because the pbar does not know the
+        # number of coincidences
+        angles = self.direction.reconstruct_coincidences(
+            self.cq.all_events(coincidences, n=0), station_numbers,
+            self.offsets, self.progress)
+        self.theta, self.phi, self.station_numbers = angles
+
+    def reconstruct_cores(self, station_numbers=None):
+        """Reconstruct core for all events
+
+        :param detector_ids: list of detector ids to use for reconstructions.
+
+        """
+        coincidences = self.cq.all_coincidences(iterator=True)
+        # Progress does not work because the pbar does not know the
+        # number of coincidences
+        cores = self.core.reconstruct_coincidences(
+            self.cq.all_events(coincidences, n=0), station_numbers,
+            self.progress)
+        self.core_x, self.core_y = cores
 
     def _reconstruct_direction(self, coincidence):
         """Reconstruct a coincidence
@@ -347,15 +342,15 @@ class ReconstructESDCoincidences(object):
                 continue
             station_number = int(s_path.split('station_')[-1])
             station = self.cluster.get_station(station_number)
-            offsets = self.determine_detector_timing_offsets(station,
-                                                             station_group)
+            offsets = determine_detector_timing_offsets(station_group.events,
+                                                        station)
             self.offsets[station_number] = offsets
 
         # Currently disabled station offsets because they do not work well.
 
         # Now determine station offsets and add those to detector offsets
         ref_station = self.cluster.get_station(ref_station_number)
-        ref_id = ref_station.station_id
+        ref_d_ids = range(len(ref_station.detectors))
         ref_z = ref_station.calc_center_of_mass_coordinates()[2]
         ref_d_off = self.offsets[ref_station_number]
 
@@ -363,12 +358,15 @@ class ReconstructESDCoincidences(object):
             # Skip reference station
             if station.number == ref_station_number:
                 continue
+            d_ids = range(len(station.detectors))
             z = station.calc_center_of_mass_coordinates()[2]
-            dt = []
             d_off = self.offsets[station.number]
+
             stations = [ref_station_number, station.number]
             coincidences = self.cq.all(stations)
             c_events = self.cq.events_from_stations(coincidences, stations)
+
+            dt = []
             for events in c_events:
                 # Filter for possibility of same station twice in coincidence
                 if len(events) is not 2:
@@ -380,30 +378,21 @@ class ReconstructESDCoincidences(object):
                     ref_event = events[1][1]
                     event = events[0][1]
 
-                try:
-                    ref_t = min([ref_event['t%d' % (i + 1)] - ref_d_off[i]
-                                 for i in range(4)
-                                 if ref_event['t%d' % (i + 1)] not in ERR])
-                    t = min([event['t%d' % (i + 1)] - d_off[i]
-                             for i in range(4)
-                             if event['t%d' % (i + 1)] not in ERR])
-                except ValueError:
+                ref_ts = ref_event['ext_timestamp']
+                ref_t = station_arrival_time(ref_event, ref_ts, ref_d_ids,
+                                             ref_d_off)
+                if isnan(ref_t):
                     continue
-                if (ref_event['t_trigger'] in ERR or
-                        event['t_trigger'] in ERR):
+                t = station_arrival_time(event, ref_ts, d_ids, d_off)
+                if isnan(t):
                     continue
-                dt.append((int(event['ext_timestamp']) -
-                           int(ref_event['ext_timestamp'])) -
-                          (event['t_trigger'] - ref_event['t_trigger']) +
-                          (t - ref_t))
+                dt.append(t - ref_t)
 
-            r = self.cluster.calc_rphiz_for_stations(station.station_id,
-                                                     ref_id)[0]
-            bins = linspace(-3 * r, 3 * r, 200)
+            bins = linspace(percentile(dt, 2), percentile(dt, 98), 200)
             y, bins = histogram(dt, bins=bins)
             x = (bins[:-1] + bins[1:]) / 2
             try:
-                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., r))
+                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)))
                 station_offset = popt[1] + (z - ref_z) / c
             except RuntimeError:
                 station_offset = 0.
@@ -411,60 +400,30 @@ class ReconstructESDCoincidences(object):
                                             for detector_offset in
                                             self.offsets[station.number]]
 
-    def determine_detector_timing_offsets(self, station, station_group):
-        """Determine the offsets between the station detectors.
-
-        ADL: Currently assumes detector 1 is a good reference.
-        But this is not always the best choice. Perhaps it should be
-        determined using more data (more than one day) to be more
-        accurate.
-
-        """
-        bins = arange(-100 + 1.25, 100, 2.5)
-        c = .3
-
-        t2 = station_group.events.col('t2')
-        z = [d.z for d in station.detectors]
-
-        offsets = [0., 0., 0., 0.]
-        for detector in [0, 2, 3]:
-            timings = station_group.events.col('t%d' % (detector + 1))
-            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
-            y, bins = histogram(dt, bins=bins)
-            x = (bins[:-1] + bins[1:]) / 2
-            try:
-                popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-                offsets[detector] = (popt[1] + (z[detector] - z[1]) / c)
-            except (IndexError, RuntimeError):
-                pass
-
-        return offsets
-
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
 
-        Only writes rows if reconstruction was possible and successful.
-
-        ADL: Perhaps we should always store reconstructions, and use
-        error values in case it failed. However, the usual -999 might be
-        a real value (though unlikely to be exactly -999) in case of
-        core position reconstruction.
+        Unsuccessful reconstructions are also stored but with the NumPy
+        NaN as reconstructed value.
 
         """
-        for coincidence, theta, phi, station_numbers in itertools.izip(
-                self.coincidences, self.theta, self.phi, self.station_numbers):
-            if not isnan(theta) and not isnan(phi):
-                self._store_reconstruction(coincidence, theta, phi,
-                                           station_numbers)
+        for coincidence, x, y, theta, phi, station_numbers in izip_longest(
+                self.coincidences, self.core_x, self.core_y,
+                self.theta, self.phi, self.station_numbers):
+            self._store_reconstruction(coincidence, x, y, theta, phi,
+                                       station_numbers)
         self.reconstructions.flush()
 
-    def _store_reconstruction(self, coincidence, theta, phi, station_numbers):
+    def _store_reconstruction(self, coincidence, core_x, core_y, theta, phi,
+                              station_numbers):
         """Store single reconstruction"""
 
         row = self.reconstructions.row
 
         row['id'] = coincidence['id']
         row['ext_timestamp'] = coincidence['ext_timestamp']
+        row['x'] = core_x
+        row['y'] = core_y
         row['zenith'] = theta
         row['azimuth'] = phi
 

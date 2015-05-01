@@ -1,7 +1,7 @@
 """Perform simulations of CORSIKA air showers on a cluster of stations
 
 This simulation uses a HDF5 file created from a CORSIKA simulation with
-the `store_corsika_data` script. The shower is 'thrown' on the cluster
+the ``store_corsika_data`` script. The shower is 'thrown' on the cluster
 with random core positions and azimuth angles.
 
 Example usage::
@@ -20,6 +20,7 @@ Example usage::
 """
 from math import pi, sin, cos, sqrt
 
+import numpy as np
 import tables
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
@@ -29,19 +30,19 @@ from ..utils import pbar
 class GroundParticlesSimulation(HiSPARCSimulation):
 
     def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
+        """Simulation initialization
+
+        :param corsikafile_path: path to the corsika.h5 file containing
+                                 the groundparticles.
+        :param max_core_distance: maximum distance of shower core to
+                                  center of cluster.
+
+        """
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
 
         self.corsikafile = tables.open_file(corsikafile_path, 'r')
         self.groundparticles = self.corsikafile.get_node('/groundparticles')
         self.max_core_distance = max_core_distance
-
-        for station in self.cluster.stations:
-            station.gps_offset = self.simulate_station_offset()
-            station.detector_offsets = self.simulate_detector_offsets(
-                len(station.detectors))
-
-        # Store updated version of the cluster
-        self.coincidence_group._v_attrs.cluster = self.cluster
 
     def __del__(self):
         self.finish()
@@ -59,11 +60,12 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         interpret these parameters as the position of the cluster, or the
         rotation of the cluster!  Interpret them as *shower* parameters.
 
-        :returns: dictionary with shower parameters: core_pos
-                  (x, y-tuple) and azimuth.
+        :return: dictionary with shower parameters: core_pos
+                 (x, y-tuple) and azimuth.
 
         """
-        R = self.max_core_distance
+        r = self.max_core_distance
+        giga = int(1e9)
 
         event_header = self.corsikafile.get_node_attr('/', 'event_header')
         event_end = self.corsikafile.get_node_attr('/', 'event_end')
@@ -73,7 +75,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'particle': event_header.particle}
 
         for i in pbar(range(self.N)):
-            x, y = self.generate_core_position(R)
+            x, y = self.generate_core_position(r)
 
             # Subtract Corsika shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
@@ -84,7 +86,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             elif alpha <= -pi:
                 alpha += 2 * pi
 
-            shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
+            shower_parameters = {'ext_timestamp': (giga + i) * giga,
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
@@ -98,6 +100,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         Rotate and translate the cluster so that (0, 0) coincides with the
         shower core position and 'East' coincides with the shower azimuth
         direction.
+
+        :param x,y: position of shower core relative to cluster origin in m.
+        :param alpha: angle the cluster needs to be rotated in radians.
 
         """
         # rotate the core position around the original cluster center
@@ -113,26 +118,49 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         of leptons in the detector and the arrival time of the first lepton
         passing the detector.
 
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         the observables will be determined.
+        :param shower_parameters: dictionary with the shower parameters.
+
         """
         particles = self.get_particles_in_detector(detector)
         n_detected = len(particles)
 
         if n_detected:
-            mips = self.simulate_detector_mips(particles)
+            mips = self.simulate_detector_mips_for_particles(particles)
             particles['t'] += self.simulate_signal_transport_time(n_detected)
-            first_signal = particles['t'].min()
-            observables = {'n': mips,
+            first_signal = particles['t'].min() + detector.offset
+            observables = {'n': round(mips, 3),
                            't': self.simulate_adc_sampling(first_signal)}
         else:
             observables = {'n': 0., 't': -999}
 
         return observables
 
+    def simulate_detector_mips_for_particles(self, particles):
+        """Simulate the detector signal for particles
+
+        :param particles: particle rows with the p_[x, y, z]
+                          components of the particle momenta.
+
+        """
+        # determination of lepton angle of incidence
+        theta = np.arccos(abs(particles['p_z']) /
+                          np.sqrt(particles['p_x'] ** 2 +
+                                  particles['p_y'] ** 2 +
+                                  particles['p_z'] ** 2))
+        n = len(particles)
+        mips = self.simulate_detector_mips(n, theta)
+
+        return mips
+
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
 
-        :returns: True if at least 2 detectors detect at least one particle,
-                  False otherwise.
+        :param detector_observables: dictionary containing the
+                                     observables of one detector.
+        :return: True if at least 2 detectors detect at least one particle,
+                 False otherwise.
 
         """
         detectors_hit = [True for observables in detector_observables
@@ -144,8 +172,17 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             return False
 
     def simulate_gps(self, station_observables, shower_parameters, station):
-        """Simulate gps timestamp."""
+        """Simulate gps timestamp.
 
+        :param station_observables: dictionary containing the observables
+                                    of the station.
+        :param shower_parameters: dictionary with the shower parameters.
+        :param station: :class:`~sapphire.clusters.Station` for which
+                         to simulate the gps timestamp.
+        :return: station_observables updated with gps timestamp and
+                 trigger time.
+
+        """
         arrival_times = [station_observables['t%d' % id]
                          for id in range(1, 5)
                          if station_observables.get('n%d' % id, -1) > 0]
@@ -180,7 +217,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         *Detector height is ignored!*
 
-        :param detector: detector for which to get particles.
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
 
         """
         x, y = detector.get_xy_coordinates()
@@ -196,7 +234,9 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
     """ More accuratly simulate the detection area of the detectors.
 
-    This requires a slightly more complex query which is a bit slower.
+    Take the orientation of the detectors into account and use the
+    exact detector boundaries. This requires a slightly more complex
+    query which is a bit slower.
 
     """
 
@@ -209,6 +249,9 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         which actually hit the detector. The advantage of using the
         square is that column indexes can be used, which may speed up
         queries.
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
 
         """
         detector_boundary = 0.6
@@ -237,7 +280,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         is an equation and two boundaries which can be used to test if a
         point is between the two lines.
 
-        :param p0, p1: (x, y) tuples on the same line
+        :param p0,p1: (x, y) tuples on the same line
         :param p2: (x, y) tuple on the parallel line
 
         :return: value1, equation, value2, such that points satisfying
@@ -277,10 +320,31 @@ class ParticleCounterSimulation(GroundParticlesSimulation):
 
     """Do not simulate mips, just count the number of particles."""
 
-    def simulate_detector_mips(self, particle_momenta):
+    def simulate_detector_mips(self, n, theta):
         """A mip for a mip, count number of particles in a detector."""
 
-        return len(particle_momenta)
+        return n
+
+
+class FixedCoreDistanceSimulation(GroundParticlesSimulation):
+
+    """Shower core at a fixed core distance (from cluster origin).
+
+    :param core_distance: distance of shower core to center of cluster.
+
+    """
+
+    def generate_core_position(cls, R):
+        """Generate a random core position on a circle
+
+        :param R: Core distance, in meters.
+        :return: Random x, y position on the circle with radius R.
+
+        """
+        phi = np.random.uniform(-pi, pi)
+        x = R * cos(phi)
+        y = R * sin(phi)
+        return x, y
 
 
 class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,

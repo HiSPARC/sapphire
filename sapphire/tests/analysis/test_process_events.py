@@ -3,6 +3,7 @@ import tempfile
 import os
 import shutil
 import warnings
+import operator
 
 import tables
 
@@ -31,11 +32,32 @@ class ProcessEventsTests(unittest.TestCase):
         event = self.proc.source[0]
         self.assertEqual(self.proc.get_traces_for_event(event)[12][3], 1334)
 
+    def test__find_unique_row_ids(self):
+        ext_timestamps = self.proc.source.col('ext_timestamp')
+        enumerated_timestamps = list(enumerate(ext_timestamps))
+        enumerated_timestamps.sort(key=operator.itemgetter(1))
+        ids_in = [id for id, _ in enumerated_timestamps]
+        ids = self.proc._find_unique_row_ids(enumerated_timestamps)
+        self.assertEqual(ids, ids_in)
+
+        enumerated_timestamps = [(0, 1), (1, 1), (3, 2), (2, 2)]
+        ids = self.proc._find_unique_row_ids(enumerated_timestamps)
+        self.assertEqual(ids, [0, 3])
+
+        # Must be sorted by timestamp or the result will be differenct.
+        enumerated_timestamps = [(0, 1), (3, 2), (1, 1), (2, 2)]
+        ids = self.proc._find_unique_row_ids(enumerated_timestamps)
+        self.assertNotEqual(ids, [0, 3])
+
     def test__reconstruct_time_from_traces(self):
         event = self.proc.source[10]
         times = self.proc._reconstruct_time_from_traces(event)
         self.assertEqual(times[0], 162.5)
         self.assertEqual(times[2], -999)
+
+        event['pulseheights'][0] = -1
+        times = self.proc._reconstruct_time_from_traces(event)
+        self.assertEqual(times[0], -1)
 
     def test__reconstruct_time_from_trace(self):
         trace = [220, 222, 224, 222, 220]

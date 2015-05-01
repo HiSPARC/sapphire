@@ -50,7 +50,7 @@ def time_to_decimal(time):
     """Converts a time or datetime object into decimal time
 
     :param time: datetime.time or datetime.datetime object
-    :returns: decimal number representing the input time
+    :return: decimal number representing the input time
 
     """
     return (time.hour + time.minute / 60. + time.second / 3600. +
@@ -61,7 +61,7 @@ def decimal_to_time(hours):
     """Converts decimal time to a time object
 
     :param hours: datetime.time or datetime.datetime object
-    :returns: decimal number representing the input time
+    :return: decimal number representing the input time
 
     """
     hours, minutes, seconds = base.decimal_to_sexagesimal(hours)
@@ -81,7 +81,7 @@ def date_to_juliandate(year, month, day):
     :param year: A Gregorian year (B.C. years are negative)
     :param month: A Gregorian month (1-12)
     :param day: A Gregorian day (1-31)
-    :returns: The Julian Date for the given year, month, and day
+    :return: The Julian Date for the given year, month, and day
 
     """
     year1 = year
@@ -113,7 +113,7 @@ def datetime_to_juliandate(dt):
     """Convert a datetime object in UTC to a Julian Date
 
     :param dt: datetime object
-    :returns: The Julian Date for the given datetime object
+    :return: The Julian Date for the given datetime object
 
     """
     A = date_to_juliandate(dt.year, dt.month, dt.day)
@@ -125,7 +125,7 @@ def juliandate_to_modifiedjd(juliandate):
     """Convert a Julian Date to a Modified Julian Date
 
     :param juliandate: a Julian Date
-    :returns: the Modified Julian Date
+    :return: the Modified Julian Date
 
     """
     return juliandate - 2400000.5
@@ -135,17 +135,17 @@ def modifiedjd_to_juliandate(modifiedjd):
     """Convert a Modified Julian Date to Julian Date
 
     :param modifiedjf: a Modified Julian Date
-    :returns: Julian Date
+    :return: Julian Date
 
     """
     return modifiedjd + 2400000.5
 
 
-def datetime_modifiedjd(dt):
+def datetime_to_modifiedjd(dt):
     """Convert a datetime object in UTC to a Modified Julian Date
 
     :param dt: datetime object
-    :returns: the Modified Julian Date
+    :return: the Modified Julian Date
 
     """
     jd = datetime_to_juliandate(dt)
@@ -213,7 +213,7 @@ def juliandate_to_utc(juliandate):
     """Convert Julian Date to datetime object in UTC
 
     :param juliandate: a Julian Date
-    :returns: datetime object in UTC time
+    :return: datetime object in UTC time
 
     """
     juliandate += .5
@@ -259,7 +259,7 @@ def modifiedjd_to_utc(modifiedjd):
     """Convert a Modified Julian Date to datetime object in UTC
 
     :param juliandate: a Modified Julian Date
-    :returns: datetime object in UTC time
+    :return: datetime object in UTC time
 
     """
     juliandate = modifiedjd_to_juliandate(modifiedjd)
@@ -271,7 +271,7 @@ def gmst_to_lst(hours, longitude):
 
     :param hours: decimal hours in GMST
     :param longitude: location in degrees, E positive
-    :returns: decimal hours in LST
+    :return: decimal hours in LST
 
     """
     longitude_time = angles.degrees_to_hours(longitude)
@@ -286,7 +286,7 @@ def lst_to_gmst(hours, longitude):
 
     :param hours: decimal hours in LST
     :param longitude: location in degrees, E positive
-    :returns: decimal hours in GMST
+    :return: decimal hours in GMST
 
     """
     longitude_time = angles.degrees_to_hours(longitude)
@@ -301,7 +301,7 @@ def utc_to_lst(dt, longitude):
 
     :param dt: datetime object in UTC
     :param longitude: location in degrees, E positive
-    :returns: decimal hours in LST
+    :return: decimal hours in LST
 
     """
     gmst = utc_to_gmst(dt)
@@ -313,6 +313,7 @@ def gps_to_utc(timestamp):
     """Convert GPS time to UTC
 
     :param timestamp: GPS timestamp in seconds.
+    :return: UTC timestamp in seconds.
 
     """
     offset = next((seconds for date, seconds in LEAP_SECONDS
@@ -324,6 +325,7 @@ def utc_to_gps(timestamp):
     """Convert UTC to GPS time
 
     :param timestamp: UTC timestamp in seconds.
+    :return: GPS timestamp in seconds.
 
     """
     offset = next((seconds for date, seconds in LEAP_SECONDS
@@ -332,15 +334,23 @@ def utc_to_gps(timestamp):
 
 
 def utc_from_string(date):
-    """Convert a date string to UTC"""
+    """Convert a date string to UTC
 
+    :param date: date string.
+    :return: UTC timestamp in seconds.
+
+    """
     t = strptime(date, '%B %d, %Y')
     return calendar.timegm(t)
 
 
 def gps_from_string(date):
-    """Convert a date string to GPS time"""
+    """Convert a date string to GPS time
 
+    :param date: date string.
+    :return: GPS timestamp in seconds.
+
+    """
     t = strptime(date, '%B %d, %Y')
     return utc_to_gps(calendar.timegm(t))
 
@@ -348,12 +358,11 @@ def gps_from_string(date):
 def gps_to_lst(timestamp, longitude):
     """Convert a GPS timestamp to lst
 
-    :param timestamp: GPS timestamp in seconds
-    :param longitude: location in degrees, E positive
-    :returns: decimal hours in LST
+    :param timestamp: GPS timestamp in seconds.
+    :param longitude: location in degrees, E positive.
+    :return: decimal hours in LST.
 
     """
-
     utc_timestamp = gps_to_utc(timestamp)
     utc = datetime.datetime.utcfromtimestamp(utc_timestamp)
     return utc_to_lst(utc, longitude)
@@ -362,9 +371,20 @@ def gps_to_lst(timestamp, longitude):
 def gps_to_datetime(timestamp):
     """Convert a GPS timestamp to datetime object
 
-    :param timestamp: GPS timestamp in seconds
-    :returns: datetime object
+    :param timestamp: GPS timestamp in seconds.
+    :return: datetime object.
 
     """
     gps_dt = datetime.datetime.utcfromtimestamp(timestamp)
     return gps_dt
+
+
+def datetime_to_gps(dt):
+    """Convert a GPS datetime object to a timestamp
+
+    :param dt: GPS datetime object.
+    :return: GPS timestamp in seconds.
+
+    """
+    timestamp = calendar.timegm(dt.timetuple())
+    return timestamp

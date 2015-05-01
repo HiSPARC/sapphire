@@ -9,6 +9,27 @@ from sapphire import api
 STATION = 501
 
 
+class APITests(unittest.TestCase):
+    def setUp(self):
+        self.api = api.API()
+
+    def test_get_active_index(self):
+        """Test if the bisection returns the correct index
+
+        - If timestamp is before the first timestamp return index for
+          first item
+        - If timestamp is after last timestamp return index for last item
+        - If timestamp is in the range return index of rightmost value
+          equal or less than the timestamp
+
+        """
+        timestamps = [1., 2., 3., 4.]
+
+        for idx, ts in [(0, 0.), (0, 1.), (0, 1.5), (1, 2.), (1, 2.1), (3, 4.),
+                        (3, 5.)]:
+            self.assertEqual(self.api.get_active_index(timestamps, ts), idx)
+
+
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class NetworkTests(unittest.TestCase):
     def setUp(self):
@@ -56,7 +77,8 @@ class NetworkTests(unittest.TestCase):
                          [sentinel.number1, sentinel.number2])
 
     @patch.object(api.Network, 'clusters')
-    def test_cluster_numbers(self, mock_clusters):
+    @patch.object(api.Network, 'validate_numbers')
+    def test_cluster_numbers(self, mock_validate, mock_clusters):
         mock_clusters.return_value = [{'number': sentinel.number1},
                                       {'number': sentinel.number2}]
         self.assertEqual(self.network.cluster_numbers(sentinel.country),
@@ -64,7 +86,8 @@ class NetworkTests(unittest.TestCase):
         mock_clusters.assert_called_once_with(country=sentinel.country)
 
     @patch.object(api.Network, 'subclusters')
-    def test_subcluster_numbers(self, mock_subclusters):
+    @patch.object(api.Network, 'validate_numbers')
+    def test_subcluster_numbers(self, mock_validate, mock_subclusters):
         mock_subclusters.return_value = [{'number': sentinel.number1},
                                          {'number': sentinel.number2}]
         self.assertEqual(self.network.subcluster_numbers(sentinel.country,
@@ -74,7 +97,8 @@ class NetworkTests(unittest.TestCase):
                                                  cluster=sentinel.cluster)
 
     @patch.object(api.Network, 'stations')
-    def test_station_numbers(self, mock_stations):
+    @patch.object(api.Network, 'validate_numbers')
+    def test_station_numbers(self, mock_validate, mock_stations):
         mock_stations.return_value = [{'number': sentinel.number1},
                                       {'number': sentinel.number2}]
         self.assertEqual(self.network.station_numbers(sentinel.country,
@@ -85,9 +109,15 @@ class NetworkTests(unittest.TestCase):
                                               cluster=sentinel.cluster,
                                               subcluster=sentinel.subcluster)
 
-    def test_bad_station_numbers(self):
+    def test_invalid_query_for_station_numbers(self):
         bad_number = 1
-        self.assertRaises(Exception, self.network.station_numbers, country=bad_number, allow_stale=False)
+        for allow in (True, False):
+            self.assertRaises(Exception, self.network.station_numbers,
+                              country=bad_number, allow_stale=allow)
+            self.assertRaises(Exception, self.network.station_numbers,
+                              cluster=bad_number, allow_stale=allow)
+            self.assertRaises(Exception, self.network.station_numbers,
+                              subcluster=bad_number, allow_stale=allow)
 
     def test_bad_stations(self):
         self.network.stations()
@@ -115,6 +145,20 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.stations_with_weather, month=1, day=1)
         self.assertRaises(Exception, self.network.stations_with_weather, month=1)
         self.assertRaises(Exception, self.network.stations_with_weather, day=1)
+
+    def test_coincidence_time(self):
+        names = ('hour', 'counts')
+        data = self.network.coincidence_time(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['hour'] == range(24)).all())
+        self.assertEqual(data['counts'][0], 424)
+
+    def test_coincidence_number(self):
+        names = ('n', 'counts')
+        data = self.network.coincidence_number(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['n'] == range(2, 100)).all())
+        self.assertEqual(data['counts'][0], 8763)
 
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
@@ -190,6 +234,102 @@ class StationTests(unittest.TestCase):
 
     def test_event_trace(self):
         self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 268)
+
+    def test_event_time(self):
+        names = ('hour', 'counts')
+        data = self.station.event_time(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['hour'] == range(24)).all())
+
+    def test_pulse_height(self):
+        names = ('pulseheight', 'ph1', 'ph2', 'ph3', 'ph4')
+        data = self.station.pulse_height(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['pulseheight'] == range(0, 2500, 10)).all())
+
+    def test_pulse_integral(self):
+        names = ('pulseintegral', 'pi1', 'pi2', 'pi3', 'pi4')
+        data = self.station.pulse_integral(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+        self.assertTrue((data['pulseintegral'] == range(0, 62500, 250)).all())
+
+    def test_barometer(self):
+        names = ('timestamp', 'air_pressure')
+        data = self.station.barometer(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+
+    def test_temperature(self):
+        names = ('timestamp', 'temperature')
+        data = self.station.temperature(2013, 1, 1)
+        self.assertEqual(data.dtype.names, names)
+
+    def test_voltages(self):
+        names = ('timestamp', 'voltage1', 'voltage2', 'voltage3', 'voltage4')
+        data = self.station.voltages
+        self.assertEqual(data.dtype.names, names)
+
+    @patch.object(api.API, '_get_csv')
+    def test_laziness_voltages(self, mock_get_csv):
+        self.assertFalse(mock_get_csv.called)
+        data = self.station.voltages
+        self.assertTrue(mock_get_csv.called)
+        self.assertEqual(mock_get_csv.call_count, 1)
+        data2 = self.station.voltages
+        self.assertEqual(mock_get_csv.call_count, 1)
+        self.assertEqual(data, data2)
+
+    def test_voltage(self):
+        data = self.station.voltage(1378771200)  # 2013-9-10
+        self.assertEqual(data, (954, 860, 714, 752))
+
+        data = self.station.voltage(0)  # 1970-1-1
+        data2 = self.station.voltages[0]
+        self.assertEqual(data, (data2['voltage1'], data2['voltage2'],
+                                data2['voltage3'], data2['voltage4']))
+        data = self.station.voltage(2208988800)  # 2040-1-1
+        data2 = self.station.voltages[-1]
+        self.assertEqual(data, (data2['voltage1'], data2['voltage2'],
+                                data2['voltage3'], data2['voltage4']))
+
+    @patch.object(api.API, '_get_csv')
+    def test_laziness_currents(self, mock_get_csv):
+        self.assertFalse(mock_get_csv.called)
+        data = self.station.currents
+        self.assertTrue(mock_get_csv.called)
+        self.assertEqual(mock_get_csv.call_count, 1)
+        data2 = self.station.currents
+        self.assertEqual(mock_get_csv.call_count, 1)
+        self.assertEqual(data, data2)
+
+    def test_currents(self):
+        names = ('timestamp', 'current1', 'current2', 'current3', 'current4')
+        data = self.station.currents
+        self.assertEqual(data.dtype.names, names)
+
+    def test_current(self):
+        data = self.station.current(1378771200)  # 2013-9-10
+        self.assertEqual(data, (7.84, 7.94, 10.49, 10.88))
+
+    def test_gps_locations(self):
+        names = ('timestamp', 'latitude', 'longitude', 'altitude')
+        data = self.station.gps_locations
+        self.assertEqual(data.dtype.names, names)
+
+    @patch.object(api.API, '_get_csv')
+    def test_laziness_gps_locations(self, mock_get_csv):
+        self.assertFalse(mock_get_csv.called)
+        data = self.station.gps_locations
+        self.assertTrue(mock_get_csv.called)
+        self.assertEqual(mock_get_csv.call_count, 1)
+        data2 = self.station.gps_locations
+        self.assertEqual(mock_get_csv.call_count, 1)
+        self.assertEqual(data, data2)
+
+    def test_gps_location(self):
+        keys = ['latitude', 'longitude', 'altitude']
+        data = self.station.gps_location(1378771200)  # 2013-9-10
+        self.assertItemsEqual(data.keys(), keys)
+        self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
 
 
 if __name__ == '__main__':

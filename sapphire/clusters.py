@@ -70,14 +70,22 @@ class Detector(object):
         r, phi, z = axes.cartesian_to_cylindrical(x, y, z)
         return r, phi, z
 
+    def get_lla_coordinates(self):
+        lla = self.station.cluster.lla
+        enu = self.get_coordinates()
+
+        transform = geographic.FromWGS84ToENUTransformation(lla)
+        latitude, longitude, altitude = transform.enu_to_lla(enu)
+
+        return latitude, longitude, altitude
+
     def get_corners(self):
         """Get the x, y coordinates of the detector corners
 
         The z-coordinate is not returned because all detectors are
         assumed to be laying flat.
 
-        :return: x, y coordinates of detector corners
-        :rtype: list of (x, y) tuples
+        :return: coordinates of detector corners, list of (x, y) tuples.
 
         """
         X, Y, _, alpha = self.station.get_coordinates()
@@ -101,10 +109,10 @@ class Detector(object):
 
         sina = sin(alpha)
         cosa = cos(alpha)
-        corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
+        corners = [[xc * cosa - yc * sina, xc * sina + yc * cosa] for xc, yc in
                    corners]
 
-        return [(X + x, Y + y) for x, y in corners]
+        return [(X + xc, Y + yc) for xc, yc in corners]
 
 
 class Station(object):
@@ -170,6 +178,18 @@ class Station(object):
     def detectors(self):
         return self._detectors
 
+    def get_area(self, detector_ids=None):
+        """Get the total area covered by the detectors
+
+        :param detector_ids: list of detectors for which to get the total area.
+        :return: total area of the detectors in m^2.
+
+        """
+        if detector_ids is not None:
+            return sum(self._detectors[id].get_area() for id in detector_ids)
+        else:
+            return sum(d.get_area() for d in self._detectors)
+
     def get_xyalpha_coordinates(self):
         """Same as get_coordinates but without the z"""
         x, y, _, alpha = self.get_coordinates()
@@ -202,6 +222,16 @@ class Station(object):
         x, y, z, alpha = self.get_coordinates()
         r, phi, z = axes.cartesian_to_cylindrical(x, y, z)
         return r, phi, z, alpha
+
+    def get_lla_coordinates(self):
+        lla = self.cluster.lla
+        x, y, z, alpha = self.get_coordinates()
+        enu = (x, y, z)
+
+        transform = geographic.FromWGS84ToENUTransformation(lla)
+        latitude, longitude, altitude = transform.enu_to_lla(enu)
+
+        return latitude, longitude, altitude
 
     def calc_r_and_phi_for_detectors(self, d0, d1):
         r, phi, _ = self.calc_rphiz_for_detectors(d0, d1)
@@ -249,17 +279,21 @@ class BaseCluster(object):
 
     _stations = None
 
-    def __init__(self, position=(0, 0, 0), angle=0):
+    def __init__(self, position=(0, 0, 0), angle=0,
+                 lla=(52.35592417, 4.95114402, 56.10234594)):
         """Override this function to build your cluster
 
-        :param position: x,y,z position for the center of the cluster
+        :param position: x,y,z position for the center of the cluster.
         :param angle: rotation of the cluster in the x,y-plane.
+        :param lla: Reference WGS84 location of the cluster origin.
+                    Defaults to the (old) GPS location of 501.
 
         """
         self.x = position[0]
         self.y = position[1]
         self.z = position[2] if len(position) == 3 else 0.
         self.alpha = angle
+        self.lla = lla
 
     def _add_station(self, position, angle, detectors=None, number=None):
         """Add a station to the cluster
@@ -336,6 +370,16 @@ class BaseCluster(object):
         r, phi, z = axes.cartesian_to_cylindrical(self.x, self.y, self.z)
         return r, phi, z, self.alpha
 
+    def get_lla_coordinates(self):
+        lla = self.lla
+        x, y, z, alpha = self.get_coordinates()
+        enu = (x, y, z)
+
+        transform = geographic.FromWGS84ToENUTransformation(lla)
+        latitude, longitude, altitude = transform.enu_to_lla(enu)
+
+        return latitude, longitude, altitude
+
     def set_coordinates(self, x, y, z, alpha):
         """Set cluster coordinates (x, y, z, alpha).
 
@@ -360,7 +404,7 @@ class BaseCluster(object):
     def calc_rphiz_for_stations(self, s0, s1):
         """Calculate distance between and direction of two stations
 
-        :param s0, s1: The station ids for the two stations.
+        :param s0,s1: The station ids for the two stations.
         :return: r, phi, z; the distance between and direction of the two
             given stations.
 
@@ -429,7 +473,8 @@ class RAlphaBetaStations(BaseCluster):
         Example::
 
             >>> cluster = RAlphaBetaStations()
-            >>> cluster._add_station((0, 0, 0), [(5, 90, 0, 0), (5, 270, 0, 0)], 104)
+            >>> cluster._add_station((0, 0, 0),
+            ...                      [(5, 90, 0, 0), (5, 270, 0, 0)], 104)
 
         """
         detectors = [((sin(radians(alpha)) * r, cos(radians(alpha)) * r, z),
@@ -542,7 +587,13 @@ class ScienceParkCluster(BaseCluster):
         station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
                              506: 267, 507: 0, 508: -135, 509: 135}
 
+        for station in stations:
+            if station not in station_rotations.keys():
+                raise KeyError('Station $d is not supported in this class, '
+                               'use HiSPARCStations instead.' % station)
+
         reference = gps_coordinates[stations[0]]
+        self.lla = reference
         transformation = geographic.FromWGS84ToENUTransformation(reference)
 
         for station in stations:
@@ -570,7 +621,7 @@ class ScienceParkCluster(BaseCluster):
                 # detector 1 is moved to the left and detector 2 next to it.
                 station_size = 10.
                 a = station_size / 2
-                detectors = [((-a, station_size), 'UD'), ((a, station_size), 'UD'),
+                detectors = [((-a, a * 2), 'UD'), ((a, a * 2), 'UD'),
                              ((-a, 0.), 'LR'), ((a, 0.), 'LR')]
             elif station == 508:
                 # 508 is diamond-shaped, with detector 2 moved to the
@@ -604,12 +655,12 @@ class HiSPARCStations(RAlphaBetaStations):
 
     """
 
-    def __init__(self, stations, allow_missing=False):
+    def __init__(self, stations, date=None, allow_missing=False):
         super(HiSPARCStations, self).__init__()
 
         for i, station in enumerate(stations):
             try:
-                station_info = api.Station(station)
+                station_info = api.Station(station, date)
             except:
                 if allow_missing:
                     warnings.warn('Could not get info for station %d, '
@@ -631,6 +682,7 @@ class HiSPARCStations(RAlphaBetaStations):
                        location['altitude'])
 
             if i == 0:
+                self.lla = gps
                 transformation = geographic.FromWGS84ToENUTransformation(gps)
 
             enu = transformation.transform(gps)

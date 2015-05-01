@@ -34,6 +34,10 @@ class DateTests(unittest.TestCase):
 
 class ModifiedJulianDateTests(unittest.TestCase):
 
+    def test_datetime_to_modifiedjd(self):
+        mjd = clock.datetime_to_modifiedjd(datetime.datetime(2010, 12, 25, 12))
+        self.assertEqual(mjd, 55555.5)
+
     def test_juliandate_to_modifiedjd(self):
         """Difference between Julian Date and Modified JD is 2400000.5"""
 
@@ -157,6 +161,16 @@ class GPSTimeTests(unittest.TestCase):
     def test_gps_from_string(self):
         for date, timestamp, leapseconds in self.combinations:
             self.assertEqual(clock.gps_from_string(date), timestamp + leapseconds)
+
+    def test_gps_to_datetime(self):
+        for date, timestamp, _ in self.combinations:
+            dt = datetime.datetime.strptime(date, '%B %d, %Y')
+            self.assertEqual(clock.gps_to_datetime(timestamp), dt)
+
+    def test_datetime_to_gps(self):
+        for date, timestamp, _ in self.combinations:
+            dt = datetime.datetime.strptime(date, '%B %d, %Y')
+            self.assertEqual(clock.datetime_to_gps(dt), timestamp)
 
 
 if __name__ == '__main__':

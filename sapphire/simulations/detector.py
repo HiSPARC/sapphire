@@ -13,6 +13,22 @@ from ..utils import ceil_in_base
 
 class HiSPARCSimulation(BaseSimulation):
 
+    def __init__(self, *args, **kwargs):
+        super(HiSPARCSimulation, self).__init__(*args, **kwargs)
+
+        self.simulate_and_store_offsets()
+
+    def simulate_and_store_offsets(self):
+        """Simulate and store station and detector offsets"""
+
+        for station in self.cluster.stations:
+            station.gps_offset = self.simulate_station_offset()
+            for detector in station.detectors:
+                detector.offset = self.simulate_detector_offset()
+
+        # Store updated version of the cluster
+        self.coincidence_group._v_attrs.cluster = self.cluster
+
     @classmethod
     def simulate_detector_offsets(cls, n_detectors):
         """Get multiple detector offsets
@@ -53,7 +69,7 @@ class HiSPARCSimulation(BaseSimulation):
         """Simulate ADC time binning due to the sampling frequency
 
         :param t: time to be binned.
-        :returns: time ceiled in 2.5 ns base.
+        :return: time ceiled in 2.5 ns base.
 
         """
         return ceil_in_base(t, 2.5)
@@ -71,7 +87,7 @@ class HiSPARCSimulation(BaseSimulation):
         the single and vectorized part.
 
         :param n: number of times to simulate
-        :returns: list of signal transport times
+        :return: list of signal transport times
 
         """
         numbers = np.random.random(n)
@@ -85,22 +101,11 @@ class HiSPARCSimulation(BaseSimulation):
         return dt
 
     @classmethod
-    def simulate_detector_mips(cls, particles):
-        """Simulate the detector signal response for particles
-
-        :param particles: an array of particle rows.
-
-        """
-        if len(particles) < 4:
-            mips = sum(cls.simulate_detector_mip(p) for p in particles)
-        else:
-            mips = sum(cls.simulate_detector_mip(particles))
-
-        return mips
-
-    @classmethod
-    def simulate_detector_mip(cls, particle):
+    def simulate_detector_mips(cls, n, theta):
         """Simulate the detector signal for particles
+
+        Simulation of convoluted distribution of electron and
+        muon energy losses with the scintillator response
 
         The detector response (energy loss and detector efficiency) is derived
         in Montanus2014.
@@ -114,51 +119,38 @@ class HiSPARCSimulation(BaseSimulation):
         0 and 1, and convert it to a signal s in MIP using the probablity
         distribution.
 
-        Montanus2014: J.C.M. Montanus, The Landau distribution, \
-                          Internal note (Nikhef), 22 may 2014
+        Montanus2014: J.C.M. Montanus, The Landau distribution,
+                      Internal note (Nikhef), 22 may 2014
 
         Be careful when editting this function, be sure to check both
         the single and vectorized part.
 
-        :param particle: particle row or rows with the p_[x, y, z]
-                         components of the particle momentum.
+        :param n: number of particles.
+        :param theta: angle of incidence of the particles, as float or array.
 
         """
+        costheta = np.cos(theta)
+        y = np.random.random(n)
 
-        # Simulation of convoluted distribution of electron and
-        # muon energy losses with the scintillator response
-        if particle.ndim == 0:
-            # determination of lepton angle of incidence
-            costheta = abs(particle['p_z']) / sqrt(particle['p_x'] ** 2 +
-                                                   particle['p_y'] ** 2 +
-                                                   particle['p_z'] ** 2)
-
-            y = np.random.random()
-
+        if n == 1:
             if y < 0.3394:
-                mip = (0.48 + 0.8583 * sqrt(y)) / costheta
+                mips = (0.48 + 0.8583 * sqrt(y)) / costheta
             elif y < 0.4344:
-                mip = (0.73 + 0.7366 * y) / costheta
+                mips = (0.73 + 0.7366 * y) / costheta
             elif y < 0.9041:
-                mip = (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta
+                mips = (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta
             else:
-                mip = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
+                mips = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
         else:
-            # determination of lepton angle of incidence
-            costheta = abs(particle['p_z']) / np.sqrt(particle['p_x'] ** 2 +
-                                                      particle['p_y'] ** 2 +
-                                                      particle['p_z'] ** 2)
-            y = np.random.random(len(particle))
-
-            mip = np.where(y < 0.3394,
-                           (0.48 + 0.8583 * np.sqrt(y)) / costheta,
-                           (0.73 + 0.7366 * y) / costheta)
-            mip = np.where(y < 0.4344, mip,
-                           (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta)
-            mip = np.where(y < 0.9041, mip,
-                           (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
-
-        return mip
+            mips = np.where(y < 0.3394,
+                            (0.48 + 0.8583 * np.sqrt(y)) / costheta,
+                            (0.73 + 0.7366 * y) / costheta)
+            mips = np.where(y < 0.4344, mips,
+                            (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta)
+            mips = np.where(y < 0.9041, mips,
+                            (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
+            mips = sum(mips)
+        return mips
 
     @classmethod
     def generate_core_position(cls, R):
@@ -172,7 +164,7 @@ class HiSPARCSimulation(BaseSimulation):
         suggested by HM).
 
         :param R: Maximum core distance, in meters.
-        :returns: Random x, y position in the disc with radius R.
+        :return: Random x, y position in the disc with radius R.
 
         """
         r = sqrt(np.random.uniform(0, R ** 2))
@@ -204,7 +196,7 @@ class HiSPARCSimulation(BaseSimulation):
         (internal note), eq 2.4 from Rossi.
 
         :param p: probability value between 0 and 1.
-        :returns: zenith with corresponding cumulative probability.
+        :return: zenith with corresponding cumulative probability.
 
         """
         return acos((1 - p) ** (1 / 8.))
@@ -217,6 +209,24 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         return np.random.uniform(-pi, pi)
+
+    @classmethod
+    def generate_energy(cls, min_E=1e14, max_E=1e21, alpha=-2.75):
+        """Generate a random shower energy
+
+        Source: http://mathworld.wolfram.com/RandomNumber.html
+
+        Simple approximation of the cosmic-ray energy spectrum. Showers
+        with higher energy occur less often, following a power law.
+
+        :param min_E,max_E: Energy bounds for the distribution (in eV).
+        :param alpha: Steepness of the power law distribution.
+
+        """
+        x = np.random.random()
+        a1 = alpha + 1.
+        E = (min_E ** a1 + x * (max_E ** a1 - min_E ** a1)) ** (1 / a1)
+        return E
 
 
 class ErrorlessSimulation(HiSPARCSimulation):
@@ -252,11 +262,6 @@ class ErrorlessSimulation(HiSPARCSimulation):
         return np.array([0.] * n)
 
     @classmethod
-    def simulate_detector_mips(cls, particles):
+    def simulate_detector_mips(cls, n, theta):
 
-        return len(particles)
-
-    @classmethod
-    def simulate_detector_mip(cls, particle):
-
-        return 1.
+        return n

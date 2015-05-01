@@ -31,8 +31,10 @@ import warnings
 from os import path
 from urllib2 import urlopen, HTTPError, URLError
 from StringIO import StringIO
+from bisect import bisect_right
 
-from numpy import genfromtxt
+from lazy import lazy
+from numpy import genfromtxt, atleast_1d
 
 logger = logging.getLogger('api')
 
@@ -115,7 +117,7 @@ class API(object):
         data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
                           names=names)
 
-        return data
+        return atleast_1d(data)
 
     @staticmethod
     def _retrieve_url(urlpath, base=API_BASE):
@@ -150,6 +152,20 @@ class API(object):
         except URLError:
             return False
         return True
+
+    @staticmethod
+    def get_active_index(timestamps, timestamp):
+        """Get the index where the timestamp fits.
+
+        :param timestamps: list of timestamps.
+        :param timestamp: timestamp for which to find the position.
+        :return: index into the timestamps list.
+
+        """
+        idx = bisect_right(timestamps, timestamp, lo=0)
+        if idx == 0:
+            idx = 1
+        return idx - 1
 
 
 class Network(API):
@@ -191,6 +207,7 @@ class Network(API):
         :return: all clusters in the region
 
         """
+        self.validate_numbers(country)
         if country is None:
             if not self._all_clusters:
                 path = self.urls['clusters']
@@ -205,6 +222,7 @@ class Network(API):
     def cluster_numbers(self, country=None):
         """Same as clusters but only retuns a list of cluster numbers"""
 
+        self.validate_numbers(country)
         clusters = self.clusters(country=country)
         return [cluster['number'] for cluster in clusters]
 
@@ -217,6 +235,7 @@ class Network(API):
         :return: all subclusters in the region
 
         """
+        self.validate_numbers(country, cluster)
         if country is None and cluster is None:
             if not self._all_subclusters:
                 path = self.urls['subclusters']
@@ -240,6 +259,7 @@ class Network(API):
     def subcluster_numbers(self, country=None, cluster=None):
         """Same as subclusters but only retuns a list of subcluster numbers"""
 
+        self.validate_numbers(country, cluster)
         subclusters = self.subclusters(country=country, cluster=cluster)
         return [subcluster['number'] for subcluster in subclusters]
 
@@ -252,6 +272,7 @@ class Network(API):
         :return: all stations in the region
 
         """
+        self.validate_numbers(country, cluster, subcluster)
         if country is None and cluster is None and subcluster is None:
             if not self._all_stations:
                 path = self.urls['stations']
@@ -289,25 +310,33 @@ class Network(API):
                         allow_stale=True):
         """Same as stations but only retuns a list of station numbers"""
 
+        self.validate_numbers(country, cluster, subcluster)
         try:
             stations = self.stations(country=country, cluster=cluster,
                                      subcluster=subcluster)
             return [station['number'] for station in stations]
         except Exception, e:
-            if allow_stale:
-                # Try getting the station info from the JSON.
-                try:
-                    with open(JSON_FILE) as data:
-                        stations = [int(s) for s in json.load(data).keys()
-                                    if s != '_info']
-                    warnings.warn('Couldnt get values from the server, using '
-                                  'hard-coded values. Possibly outdated.',
-                                  UserWarning)
-                    return sorted(stations)
-                except:
-                    raise e
-            else:
+            if not allow_stale:
                 raise
+            # Try getting the station info from the JSON.
+            try:
+                if country is None and cluster is None and subcluster is None:
+                    start, end = (0, 1e9)
+                elif country is not None:
+                    start, end = (country, country + 10000)
+                elif cluster is not None:
+                    start, end = (cluster, cluster + 1000)
+                else:
+                    start, end = (subcluster, subcluster + 100)
+                with open(JSON_FILE) as data:
+                    stations = [int(s) for s in json.load(data).keys()
+                                if s != '_info' and start <= int(s) < end]
+                warnings.warn('Couldnt get values from the server, using '
+                              'hard-coded values. Possibly outdated.',
+                              UserWarning)
+                return sorted(stations)
+            except:
+                raise e
 
     def nested_network(self):
         """Get a nested list of the full network"""
@@ -382,8 +411,20 @@ class Network(API):
         """
         columns = ('n', 'counts')
         path = cls.src_urls['coincidencenumber'].format(year=year, month=month,
-                                                      day=day)
+                                                        day=day)
         return cls._get_csv(path, names=columns)
+
+    @staticmethod
+    def validate_numbers(country=None, cluster=None, subcluster=None):
+        if country is not None and country % 10000:
+            raise Exception('Invalid country number, '
+                            'must be multiple of 10000.')
+        if cluster is not None and cluster % 1000:
+            raise Exception('Invalid cluster number, '
+                            'must be multiple of 1000.')
+        if subcluster is not None and subcluster % 100:
+            raise Exception('Invalid subcluster number, '
+                            'must be multiple of 100.')
 
 
 class Station(API):
@@ -625,7 +666,8 @@ class Station(API):
                                                    day=day)
         return self._get_csv(path, names=columns)
 
-    def voltage(self):
+    @lazy
+    def voltages(self):
         """Get the PMT voltage data
 
         :return: array of timestamps and values.
@@ -635,7 +677,21 @@ class Station(API):
         path = self.src_urls['voltage'].format(station_number=self.station)
         return self._get_csv(path, names=columns)
 
-    def current(self):
+    def voltage(self, timestamp):
+        """Get PMT coltage data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        voltages = self.voltages
+        idx = self.get_active_index(voltages['timestamp'], timestamp)
+        voltage = (voltages[idx]['voltage1'], voltages[idx]['voltage2'],
+                   voltages[idx]['voltage3'], voltages[idx]['voltage4'])
+        return voltage
+
+    @lazy
+    def currents(self):
         """Get the PMT current data
 
         :return: array of timestamps and values.
@@ -645,7 +701,21 @@ class Station(API):
         path = self.src_urls['current'].format(station_number=self.station)
         return self._get_csv(path, names=columns)
 
-    def gps(self):
+    def current(self, timestamp):
+        """Get PMT current data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        currents = self.currents
+        idx = self.get_active_index(currents['timestamp'], timestamp)
+        current = (currents[idx]['current1'], currents[idx]['current2'],
+                   currents[idx]['current3'], currents[idx]['current4'])
+        return current
+
+    @lazy
+    def gps_locations(self):
         """Get the GPS location data
 
         :return: array of timestamps and values.
@@ -654,3 +724,17 @@ class Station(API):
         columns = ('timestamp', 'latitude', 'longitude', 'altitude')
         path = self.src_urls['gps'].format(station_number=self.station)
         return self._get_csv(path, names=columns)
+
+    def gps_location(self, timestamp):
+        """Get GPS location for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        locations = self.gps_locations
+        idx = self.get_active_index(locations['timestamp'], timestamp)
+        location = {'latitude': locations[idx]['latitude'],
+                    'longitude': locations[idx]['longitude'],
+                    'altitude': locations[idx]['altitude']}
+        return location

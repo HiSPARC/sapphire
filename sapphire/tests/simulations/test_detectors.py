@@ -1,9 +1,8 @@
-from mock import sentinel, patch
 import unittest
 import os
+import random
 
-from numpy import std, mean
-import tables
+import numpy as np
 
 from sapphire.simulations.detector import (HiSPARCSimulation,
                                            ErrorlessSimulation)
@@ -14,25 +13,17 @@ self_path = os.path.dirname(__file__)
 
 class HiSPARCSimulationTest(unittest.TestCase):
 
-    @patch.object(HiSPARCSimulation, '_prepare_output_tables')
-    def setUp(self, mock_method):
-        self.mock_prepare_output_tables = mock_method
-        self.cluster = sentinel.cluster
-        self.datafile = sentinel.datafile
-        self.output_path = sentinel.output_path
-        self.N = sentinel.N
-
-        self.simulation = HiSPARCSimulation(cluster=self.cluster,
-                                            datafile=self.datafile,
-                                            output_path=self.output_path,
-                                            N=self.N, seed=1)
+    def setUp(self):
+        self.simulation = HiSPARCSimulation
+        random.seed(1)
+        np.random.seed(1)
 
     def test_simulate_detector_offsets(self):
         self.assertEqual(self.simulation.simulate_detector_offsets(1),
                          [4.49943665734718])
         offsets = self.simulation.simulate_detector_offsets(10000)
-        self.assertAlmostEqual(mean(offsets), 0., 1)
-        self.assertAlmostEqual(std(offsets), 2.77, 2)
+        self.assertAlmostEqual(np.mean(offsets), 0., 1)
+        self.assertAlmostEqual(np.std(offsets), 2.77, 2)
 
     def test_simulate_detector_offset(self):
         self.assertEqual(self.simulation.simulate_detector_offset(),
@@ -67,14 +58,10 @@ class HiSPARCSimulationTest(unittest.TestCase):
                           3.0411502792684506])
 
     def test_simulate_detector_mips(self):
-        corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
-        with tables.open_file(corsika_data_path, 'r') as corsika_data:
-            particle = corsika_data.root.groundparticles[0:1]
-            particles = corsika_data.root.groundparticles[:5]
-        self.assertEqual(self.simulation.simulate_detector_mips(particle),
-                         1.285957050294795)
-        self.assertEqual(self.simulation.simulate_detector_mips(particles),
-                         6.3524066579814358)
+        self.assertAlmostEqual(self.simulation.simulate_detector_mips(1, 0.5),
+                               1.1818585)
+        self.assertAlmostEqual(self.simulation.simulate_detector_mips(2, .2),
+                               1.8313342374)
 
     def test_generate_core_position(self):
         x, y = self.simulation.generate_core_position(500)
@@ -85,21 +72,19 @@ class HiSPARCSimulationTest(unittest.TestCase):
         self.assertEqual(self.simulation.generate_azimuth(),
                          -0.521366120872004)
 
+    def test_generate_energy(self):
+        self.assertEqual(self.simulation.generate_energy(), 136117213526167.64)
+        io = 1e17
+        self.assertAlmostEqual(self.simulation.generate_energy(io, io) / io, 1.)
+        self.assertEqual(self.simulation.generate_energy(alpha=-3), 100005719231473.97)
+
 
 class ErrorlessSimulationTest(HiSPARCSimulationTest):
 
-    @patch.object(HiSPARCSimulation, '_prepare_output_tables')
-    def setUp(self, mock_method):
-        self.mock_prepare_output_tables = mock_method
-        self.cluster = sentinel.cluster
-        self.datafile = sentinel.datafile
-        self.output_path = sentinel.output_path
-        self.N = sentinel.N
-
-        self.simulation = ErrorlessSimulation(cluster=self.cluster,
-                                            datafile=self.datafile,
-                                            output_path=self.output_path,
-                                            N=self.N, seed=1)
+    def setUp(self):
+        self.simulation = ErrorlessSimulation
+        random.seed(1)
+        np.random.seed(1)
 
     def test_simulate_detector_offsets(self):
         self.assertEqual(self.simulation.simulate_detector_offsets(1), [0])
@@ -127,13 +112,8 @@ class ErrorlessSimulationTest(HiSPARCSimulationTest):
         self.assertEqual(list(self.simulation.simulate_signal_transport_time(11)), [0] * 11)
 
     def test_simulate_detector_mips(self):
-        corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
-        with tables.open_file(corsika_data_path, 'r') as corsika_data:
-            particle = corsika_data.root.groundparticles[0:1]
-            particles = corsika_data.root.groundparticles[:5]
-        self.assertEqual(self.simulation.simulate_detector_mips(particle), 1)
-        self.assertEqual(self.simulation.simulate_detector_mip(particle), 1)
-        self.assertEqual(self.simulation.simulate_detector_mips(particles), 5)
+        self.assertEqual(self.simulation.simulate_detector_mips(1, 0.5), 1)
+        self.assertEqual(self.simulation.simulate_detector_mips(2, .2), 2)
 
 
 if __name__ == '__main__':
