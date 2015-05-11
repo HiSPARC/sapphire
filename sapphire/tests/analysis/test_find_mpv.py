@@ -26,9 +26,9 @@ class FindMostProbableValueInSpectrumTest(unittest.TestCase):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             mpv, is_fitted = fmpv.find_mpv()
-            self.assertTrue(issubclass(w[0].category, UserWarning))
-            self.assertEqual(mpv, -999)
-            self.assertFalse(is_fitted)
+        self.assertTrue(issubclass(w[0].category, UserWarning))
+        self.assertEqual(mpv, -999)
+        self.assertFalse(is_fitted)
 
         # Exception from the fit mpv function, result outside range
         n = array([1, 3, 7, 70])
