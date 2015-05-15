@@ -52,6 +52,12 @@ def floor_in_base(value, base):
     return base * floor(value / base)
 
 
+def round_in_base(value, base):
+    """Get nearest multiple of base to the value"""
+
+    return base * round(value / base)
+
+
 def gauss(x, N, mu, sigma):
     """Gaussian distribution
 
