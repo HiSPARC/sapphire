@@ -3,7 +3,7 @@
 The module contains some commonly functions and classes.
 
 """
-from numpy import floor, ceil, arccos, cos, sin, pi
+from numpy import floor, ceil, round, arccos, cos, sin, pi
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
