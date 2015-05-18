@@ -345,8 +345,54 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         max_E = 4.0  # 2 MeV per cm * 2cm scintilator depth
         MIP = 3.38  # MeV
 
-        L_rad = 42.52  # cm (radiation length in scinitlator)
-        l_pair = 9. / 7. * L_rad  # mean free path W.R. Leo (1987) p.56
+        def _pair_mean_free_path(Energy):
+
+            l_pair = np.array([[4, 689.31],
+                               [5, 504.52],
+                               [6, 404.96],
+                               [7, 343.56],
+                               [8, 302.00],
+                               [9, 271.84],
+                               [10, 249.03],
+                               [11, 231.28],
+                               [12, 217.04],
+                               [13, 205.23],
+                               [14, 195.32],
+                               [15, 186.88],
+                               [16, 179.47],
+                               [18, 167.40],
+                               [20, 157.85],
+                               [22, 149.97],
+                               [24, 143.51],
+                               [26, 138.00],
+                               [28, 133.30],
+                               [30, 129.20],
+                               [40, 114.65],
+                               [50, 105.64],
+                               [60, 99.37],
+                               [80, 91.17],
+                               [100, 85.90],
+                               [150, 78.25],
+                               [200, 74.07],
+                               [300, 69.44],
+                               [400, 66.93],
+                               [500, 65.34],
+                               [600, 64.21],
+                               [800, 62.73],
+                               [1000, 61.82],
+                               [1500, 60.47],
+                               [2000, 59.72],
+                               [3000, 58.97],
+                               [4000, 58.53],
+                               [5000, 58.28],
+                               [6000, 58.09],
+                               [8000, 57.85]])
+
+            E = l_pair[:, 0]
+            l = l_pair[:, 1]
+
+            idx = E.searchsorted(Energy, side='left')
+            return l[idx]
 
         # W.R. Leo (1987) p 54
         # E photon energy [MeV]
@@ -459,7 +505,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
             depth_compton = \
                 random.expovariate(1 / _compton_mean_free_path(energy))
-            depth_pair = random.expovariate(1 / l_pair)
+            depth_pair = random.expovariate(1 / _pair_mean_free_path(energy))
 
             if ((depth_pair > scintilator_depth / costheta) &
                (depth_compton > scintilator_depth / costheta)):
