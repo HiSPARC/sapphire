@@ -391,8 +391,11 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             E = l_pair[:, 0]
             l = l_pair[:, 1]
 
-            idx = E.searchsorted(Energy, side='left')
-            return l[idx]
+            if Energy > 7999:
+                return 57.8
+            else:
+                idx = E.searchsorted(Energy, side='left')
+                return l[idx]
 
         # W.R. Leo (1987) p 54
         # E photon energy [MeV]
