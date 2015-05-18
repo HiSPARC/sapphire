@@ -96,21 +96,23 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
         self.groundparticles = self.corsika_data.root.groundparticles
         self.simulation.groundparticles = self.groundparticles
 
-        combinations = (((0, 0, 0), (2, 2, 2, 2)),
-                        ((1, -1, 0), (2, 2, 2, 2)),
-                        ((1, -1, pi / 2), (2, 2, 2, 2)))
+        combinations = (((0, 0, 0), (1, 0, 0, 0), (5, 0, 2, 4)),
+                        ((1, -1, 0), (0, 1, 0, 3), (1, 1, 4, 8)),
+                        ((1, -1, pi / 2), (1, 1, 0, 1), (1, 3, 6, 1)))
 
-        for input, expected in combinations:
+        for input, n1, n2 in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
-            for d, n_expected in zip(self.detectors, expected):
-                n_particles = len(self.simulation.get_particles_in_detector(d))
-                self.assertEqual(n_particles, n_expected)
+            for d, n_lep, n_gam in zip(self.detectors, n1, n2):
+                lep, gamma = self.simulation.get_particles_in_detector(d)
+                self.assertEqual(len(lep), n_lep)
+                self.assertEqual(len(gamma), n_gam)
 
 
 class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
 
     def setUp(self):
-        self.simulation = DetectorBoundarySimulation.__new__(DetectorBoundarySimulation)
+        self.simulation = DetectorBoundarySimulation.__new__(
+            DetectorBoundarySimulation)
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
@@ -149,13 +151,14 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
         for input, expected in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             for d, e in zip(self.detectors, expected):
-                self.assertEqual(len(self.simulation.get_particles_in_detector(d)), e)
+                self.assertEqual(
+                    len(self.simulation.get_particles_in_detector(d)), e)
 
     def test_get_line_boundary_eqs(self):
-        combinations = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)),
-                        (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
+        combs = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)),
+                 (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
 
-        for input, expected in combinations:
+        for input, expected in combs:
             result = self.simulation.get_line_boundary_eqs(*input)
             self.assertEqual(result, expected)
 
