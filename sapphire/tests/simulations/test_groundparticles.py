@@ -6,8 +6,9 @@ import tables
 from numpy import pi, sqrt
 
 from sapphire.clusters import SingleDiamondStation
-from sapphire.simulations.groundparticles import (GroundParticlesSimulation,
-                                                  DetectorBoundarySimulation)
+from sapphire.simulations.groundparticles import \
+    (GroundParticlesSimulation, GroundParticlesGammaSimulation,
+     DetectorBoundarySimulation)
 
 
 self_path = os.path.dirname(__file__)
@@ -16,7 +17,8 @@ self_path = os.path.dirname(__file__)
 class GroundParticlesSimulationTest(unittest.TestCase):
 
     def setUp(self):
-        self.simulation = GroundParticlesSimulation.__new__(GroundParticlesSimulation)
+        self.simulation = GroundParticlesSimulation.__new__(
+            GroundParticlesSimulation)
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
@@ -70,7 +72,39 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         for input, expected in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             for d, e in zip(self.detectors, expected):
-                self.assertEqual(len(self.simulation.get_particles_in_detector(d)), e)
+                n_particles = len(self.simulation.get_particles_in_detector(d))
+                self.assertEqual(n_particles, e)
+
+
+class GroundParticlesGammaSimulationTest(unittest.TestCase):
+
+    def setUp(self):
+        self.simulation = GroundParticlesGammaSimulation.__new__(
+            GroundParticlesGammaSimulation)
+
+        corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
+        self.corsika_data = tables.open_file(corsika_data_path, 'r')
+        self.simulation.corsikafile = self.corsika_data
+
+        self.simulation.cluster = SingleDiamondStation()
+        self.detectors = self.simulation.cluster.stations[0].detectors
+
+    def tearDown(self):
+        self.corsika_data.close()
+
+    def test_get_particles(self):
+        self.groundparticles = self.corsika_data.root.groundparticles
+        self.simulation.groundparticles = self.groundparticles
+
+        combinations = (((0, 0, 0), (2, 2, 2, 2)),
+                        ((1, -1, 0), (2, 2, 2, 2)),
+                        ((1, -1, pi / 2), (2, 2, 2, 2)))
+
+        for input, expected in combinations:
+            self.simulation._prepare_cluster_for_shower(*input)
+            for d, n_expected in zip(self.detectors, expected):
+                n_particles = len(self.simulation.get_particles_in_detector(d))
+                self.assertEqual(n_particles, n_expected)
 
 
 class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
