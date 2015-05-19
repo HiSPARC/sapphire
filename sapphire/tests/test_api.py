@@ -280,7 +280,7 @@ class StationTests(unittest.TestCase):
 
     def test_voltage(self):
         data = self.station.voltage(1378771200)  # 2013-9-10
-        self.assertEqual(data, (954, 860, 714, 752))
+        self.assertEqual(data, [954, 860, 714, 752])
 
         data = self.station.voltage(0)  # 1970-1-1
         data2 = self.station.voltages[0]
@@ -308,7 +308,7 @@ class StationTests(unittest.TestCase):
 
     def test_current(self):
         data = self.station.current(1378771200)  # 2013-9-10
-        self.assertEqual(data, (7.84, 7.94, 10.49, 10.88))
+        self.assertEqual(data, [7.84, 7.94, 10.49, 10.88])
 
     def test_gps_locations(self):
         names = ('timestamp', 'latitude', 'longitude', 'altitude')
@@ -330,6 +330,21 @@ class StationTests(unittest.TestCase):
         data = self.station.gps_location(1378771200)  # 2013-9-10
         self.assertItemsEqual(data.keys(), keys)
         self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
+
+    @patch.object(api.API, '_get_csv')
+    def test_laziness_detector_timing_offsets(self, mock_get_csv):
+        self.assertFalse(mock_get_csv.called)
+        data = self.station.detector_timing_offsets
+        self.assertTrue(mock_get_csv.called)
+        self.assertEqual(mock_get_csv.call_count, 1)
+        data2 = self.station.detector_timing_offsets
+        self.assertEqual(mock_get_csv.call_count, 1)
+        self.assertEqual(data, data2)
+
+    def test_detector_timing_offsets(self):
+        names = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
+        data = self.station.detector_timing_offsets
+        self.assertEqual(data.dtype.names, names)
 
 
 if __name__ == '__main__':
