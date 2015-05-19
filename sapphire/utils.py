@@ -3,6 +3,8 @@
 The module contains some commonly functions and classes.
 
 """
+from __future__ import division
+
 from numpy import floor, ceil, round, arccos, cos, sin, pi
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
