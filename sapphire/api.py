@@ -88,7 +88,8 @@ class API(object):
         'temperature': 'temperature/{station_number}/{year}/{month}/{day}/',
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
-        'gps': 'gps/{station_number}/'}
+        'gps': 'gps/{station_number}/',
+        'detector_timing_offsets', 'detector_timing_offsets/{station_number}/'}
 
     @classmethod
     def _get_json(cls, urlpath):
@@ -686,8 +687,7 @@ class Station(API):
         """
         voltages = self.voltages
         idx = self.get_active_index(voltages['timestamp'], timestamp)
-        voltage = (voltages[idx]['voltage1'], voltages[idx]['voltage2'],
-                   voltages[idx]['voltage3'], voltages[idx]['voltage4'])
+        voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
     @lazy
@@ -710,8 +710,7 @@ class Station(API):
         """
         currents = self.currents
         idx = self.get_active_index(currents['timestamp'], timestamp)
-        current = (currents[idx]['current1'], currents[idx]['current2'],
-                   currents[idx]['current3'], currents[idx]['current4'])
+        current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
     @lazy
@@ -738,3 +737,29 @@ class Station(API):
                     'longitude': locations[idx]['longitude'],
                     'altitude': locations[idx]['altitude']}
         return location
+
+    @lazy
+    def detector_timing_offsets(self):
+        """Get the detector timing offsets data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
+        base = self.src_urls['detector_timing_offsets']
+        path = base.format(station_number=self.station)
+        return self._get_csv(path, names=columns)
+
+    def detector_timing_offset(self, timestamp):
+        """Get detector timing offset data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        detector_timing_offsets = self.detector_timing_offsets
+        idx = self.get_active_index(detector_timing_offsets['timestamp'],
+                                    timestamp)
+        detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
+                                  for i in range(1, 5)]
+        return detector_timing_offset
