@@ -107,6 +107,11 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
                 self.assertEqual(len(lep), n_lep)
                 self.assertEqual(len(gamma), n_gam)
 
+# TODO:
+# add test for simulate detctor response.
+# add test for mean free path compton/pair for various energy
+#
+
 
 class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
 
