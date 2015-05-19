@@ -89,7 +89,7 @@ class API(object):
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
-        'detector_timing_offsets', 'detector_timing_offsets/{station_number}/'}
+        'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
     @classmethod
     def _get_json(cls, urlpath):
