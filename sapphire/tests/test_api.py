@@ -284,12 +284,12 @@ class StationTests(unittest.TestCase):
 
         data = self.station.voltage(0)  # 1970-1-1
         data2 = self.station.voltages[0]
-        self.assertEqual(data, (data2['voltage1'], data2['voltage2'],
-                                data2['voltage3'], data2['voltage4']))
+        self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
+                                data2['voltage3'], data2['voltage4']])
         data = self.station.voltage(2208988800)  # 2040-1-1
         data2 = self.station.voltages[-1]
-        self.assertEqual(data, (data2['voltage1'], data2['voltage2'],
-                                data2['voltage3'], data2['voltage4']))
+        self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
+                                data2['voltage3'], data2['voltage4']])
 
     @patch.object(api.API, '_get_csv')
     def test_laziness_currents(self, mock_get_csv):
