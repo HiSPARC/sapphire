@@ -512,6 +512,7 @@ def _read_line_and_store_event(line, table):
 
     # store event
     row.append()
+    table.flush()
 
     return int(timestamp)
 
@@ -559,5 +560,6 @@ def _read_line_and_store_weather(line, table):
 
     # store event
     row.append()
+    table.flush()
 
     return int(timestamp)
