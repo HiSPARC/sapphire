@@ -108,7 +108,6 @@ def load_data(file, group, csv_file, type='events'):
         with read_and_store_class(table) as writer:
             for line in reader:
                 writer.store_line(line)
-        table.flush()
 
 
 def download_data(file, group, station_number, start=None, end=None,
@@ -161,11 +160,11 @@ def download_data(file, group, station_number, start=None, end=None,
     if type == 'events':
         url = EVENTS_URL.format(station_number=station_number, query=query)
         table = _get_or_create_events_table(file, group)
-        read_and_store = _read_line_and_store_event
+        read_and_store = _read_line_and_store_event_class
     elif type == 'weather':
         url = WEATHER_URL.format(station_number=station_number, query=query)
         table = _get_or_create_weather_table(file, group)
-        read_and_store = _read_line_and_store_weather
+        read_and_store = _read_line_and_store_weather_class
     else:
         raise ValueError("Data type not recognized.")
 
@@ -181,13 +180,13 @@ def download_data(file, group, station_number, start=None, end=None,
     # loop over lines in csv as they come streaming in
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
-    for line in reader:
-        timestamp = read_and_store(line, table)
-        # update progressbar every .5 seconds
-        if time.time() - prev_update > .5 and not timestamp == 0.:
-            pbar.update((1. * timestamp - t_start) / t_delta)
-            prev_update = time.time()
-    table.flush()
+    with read_and_store(table) as writer:
+        for line in reader:
+            timestamp = writer.store_line(line)
+            # update progressbar every .5 seconds
+            if time.time() - prev_update > .5 and not timestamp == 0.:
+                pbar.update((1. * timestamp - t_start) / t_delta)
+                prev_update = time.time()
     pbar.finish()
 
 
@@ -455,15 +454,17 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
     row['nanoseconds'] = int(coincidence[0][5])
     row['ext_timestamp'] = (int(coincidence[0][4]) * int(1e9) +
                             int(coincidence[0][5]))
+
     for event in coincidence:
         station_number = int(event[1])
         row['s%d' % station_number] = True
         group_path = station_groups[station_number]['group']
         group = _get_or_create_events_table(file, group_path)
-        s_idx = station_groups[station_number]['s_index']
-        e_idx = len(group)
-        c_idx.append((s_idx, e_idx))
-        _read_line_and_store_event(event[2:], group)
+        with _read_line_and_store_event_class(group) as writer:
+            s_idx = station_groups[station_number]['s_index']
+            e_idx = len(group)
+            c_idx.append((s_idx, e_idx))
+            writer.store_line(event[2:])
 
     row.append()
     c_index = file.get_node('/coincidences', 'c_index')
@@ -477,7 +478,7 @@ class _read_line_and_store_weather_class():
 
     def __init__(self, table):
         self.table = table
-        self.counter = len(self.table)
+        self.event_counter = len(self.table)
 
     def __enter__(self):
         return self
@@ -497,8 +498,8 @@ class _read_line_and_store_weather_class():
         row = self.table.row
 
         # convert string values to correct data types
-        row['event_id'] = self.counter
-        self.counter += 1
+        row['event_id'] = self.event_counter
+        self.event_counter += 1
         row['timestamp'] = int(timestamp)
         row['temp_inside'] = float(temperature_inside)
         row['temp_outside'] = float(temperature_outside)
@@ -527,7 +528,7 @@ class _read_line_and_store_weather_class():
 class _read_line_and_store_event_class():
     def __init__(self, table):
         self.table = table
-        self.counter = len(self.table)
+        self.event_counter = len(self.table)
 
     def __enter__(self):
         return self
@@ -544,8 +545,8 @@ class _read_line_and_store_event_class():
         row = self.table.row
 
         # convert string values to correct data types or calculate values
-        row['event_id'] = self.counter
-        self.counter += 1
+        row['event_id'] = self.event_counter
+        self.event_counter += 1
         row['timestamp'] = int(timestamp)
         row['nanoseconds'] = int(nanoseconds)
         row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
