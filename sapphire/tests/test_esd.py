@@ -4,10 +4,12 @@ import unittest
 from mock import sentinel, MagicMock
 import tables
 
-from sapphire import esd
+from sapphire import esd, api
 
 from esd_load_data import (create_tempfile_path, perform_load_data,
-                           test_data_path)
+                           test_data_path, test_data_coincidences_path,
+                           perform_esd_download_data,
+                           perform_download_coincidences)
 
 
 class ESDTest(unittest.TestCase):
@@ -71,19 +73,42 @@ class ESDTest(unittest.TestCase):
         self.assertRaises(ValueError, esd.load_data, None, None, None, 'bad')
 
     def test_esd_output(self):
-        """Perform a simulation and verify the output"""
+        """Use esd.load_data() to load csv into hdf5 and verify the output"""
 
         output_path = create_tempfile_path()
         perform_load_data(output_path)
-        self.validate_results(test_data_path, output_path)
+        self.validate_results(test_data_path, output_path,
+                              ('/events', '/weather'))
         os.remove(output_path)
 
-    def validate_results(self, expected_path, actual_path):
+    @unittest.skipUnless(api.API.check_connection(),
+                         "Internet connection required")
+    def test_download_data(self):
+        """ Download data and validate results """
+        output_path = create_tempfile_path()
+        perform_esd_download_data(output_path)
+        self.validate_results(test_data_path, output_path,
+                              ('/events', '/weather'))
+        os.remove(output_path)
+
+    @unittest.skipUnless(api.API.check_connection(),
+                         "Internet connection required")
+    def test_download_coincidences(self):
+        """ Download coincidence data from esd and validate results """
+        output_path = create_tempfile_path()
+        perform_download_coincidences(output_path)
+        self.validate_results(test_data_coincidences_path, output_path,
+                              ('/coincidences/coincidences',
+                               '/hisparc/cluster_amsterdam/station_501/events')
+                              )
+        os.remove(output_path)
+
+    def validate_results(self, expected_path, actual_path, groups):
         """Validate simulation results"""
 
         with tables.open_file(expected_path) as expected_file:
             with tables.open_file(actual_path) as actual_file:
-                for table in ('/events', '/weather'):
+                for table in groups:
                     self.validate_table(table, expected_file, actual_file)
 
     def validate_table(self, table, expected_file, actual_file):
