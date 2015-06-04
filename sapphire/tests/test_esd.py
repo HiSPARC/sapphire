@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from mock import sentinel, MagicMock
+from mock import patch, ANY, sentinel, MagicMock
 import tables
 
 from sapphire import esd, api
@@ -80,6 +80,14 @@ class ESDTest(unittest.TestCase):
         self.validate_results(test_data_path, output_path,
                               ('/events', '/weather'))
         os.remove(output_path)
+
+    @patch.object(esd, 'download_data')
+    @patch.object(tables, 'open_file')
+    def test_quick_download(self, mock_open_file, mock_download_data):
+        """ Test esd.quick_download() """
+        esd.quick_download(501)
+        mock_open_file.assert_called_once_with('data1.h5', 'w')
+        mock_download_data.assert_called_once_with(ANY, None, 501, None)
 
     @unittest.skipUnless(api.API.check_connection(),
                          "Internet connection required")
