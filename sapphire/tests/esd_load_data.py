@@ -37,7 +37,7 @@ def perform_esd_download_data(filename):
 
     filters = tables.Filters(complevel=1)
     start = datetime.datetime(2012, 01, 01, 0, 0, 0)
-    eind = datetime.datetime(2012, 01, 01, 0, 2, 0)
+    eind = datetime.datetime(2012, 01, 01, 0, 1, 0)
 
     with tables.open_file(filename, 'w', filters=filters) as datafile:
         esd.download_data(datafile, '/', 501, start, eind, type='events')
@@ -54,13 +54,12 @@ def perform_download_coincidences(filename):
     with tables.open_file(filename, 'w', filters=filters) as datafile:
         esd.download_coincidences(datafile, cluster='Science Park',
                                   start=start, end=eind, n=2)
-        print datafile
 
 
 def create_and_store_test_data():
     """Create test data for future acceptance testing"""
 
-    perform_load_data(test_data_path)
+    perform_esd_download_data(test_data_path)
     perform_download_coincidences(test_data_coincidences_path)
 
 if __name__ == '__main__':
