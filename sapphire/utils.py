@@ -35,7 +35,7 @@ def pbar(iterable, length=None, show=True, **kwargs):
             pass
 
     if length:
-        pb = ProgressBar(widgets=[ETA(), Bar(), Percentage()], maxval=length,
+        pb = ProgressBar(widgets=[Percentage(), Bar(), ETA()], maxval=length,
                          **kwargs)
         return pb(iterable)
     else:
