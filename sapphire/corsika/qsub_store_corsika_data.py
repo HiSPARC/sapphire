@@ -27,6 +27,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     umask 002
     source activate /data/hisparc/corsika_env
     {command}
+    touch {datadir}
     # To alleviate Stoomboot, make sure the job is not to short.
     sleep $[ ( $RANDOM % 60 ) + 60 ]""")
 
@@ -108,7 +109,7 @@ def create_script(seed):
     script_name = 'store_{seed}.sh'.format(seed=seed)
     script_path = os.path.join('/tmp', script_name)
     command = store_command(seed)
-    input = SCRIPT_TEMPLATE.format(command=command)
+    input = SCRIPT_TEMPLATE.format(command=command, datadir=DATADIR)
 
     with open(script_path, 'w') as script:
         script.write(input)
