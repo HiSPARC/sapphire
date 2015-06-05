@@ -585,14 +585,15 @@ class Station(API):
                         year=year, month=month, day=day).strip("/"))
         return self._get_json(path)
 
-    def event_trace(self, timestamp, nanoseconds):
+    def event_trace(self, timestamp, nanoseconds, raw=False):
         """Get the traces for a specific event
 
         The exact timestamp and nanoseconds for the event have to be
         given.
 
         :param timestamp,nanoseconds: the extended timestamp for which
-            to get the traces
+            to get the traces.
+        :param raw: get the raw trace, without the subtracted baselines.
         :return: an array with the traces for each detector in ADCcounts
 
         """
@@ -600,6 +601,8 @@ class Station(API):
         path = (self.urls['event_trace'].format(station_number=self.station,
                                                 ext_timestamp=ext_timestamp)
                 .strip("/"))
+        if raw is True:
+            path += '?raw'
         return self._get_json(path)
 
     def event_time(self, year, month, day):
