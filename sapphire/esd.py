@@ -520,7 +520,7 @@ class _read_line_and_store_weather_class(object):
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if (self.event_counter % 1000000):
+        if not self.event_counter % 1000000:
             self.table.flush()
 
         return int(timestamp)
@@ -530,6 +530,7 @@ class _read_line_and_store_weather_class(object):
 
 
 class _read_line_and_store_event_class(object):
+
     def __init__(self, table):
         self.table = table
         self.event_counter = len(self.table)
@@ -570,7 +571,7 @@ class _read_line_and_store_event_class(object):
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if (self.event_counter % 1000000):
+        if not self.event_counter % 1000000:
             self.table.flush()
 
         return int(timestamp)
