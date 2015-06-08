@@ -474,7 +474,7 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
     return int(coincidence[0][4])
 
 
-class _read_line_and_store_weather_class():
+class _read_line_and_store_weather_class(object):
 
     def __init__(self, table):
         self.table = table
@@ -499,7 +499,6 @@ class _read_line_and_store_weather_class():
 
         # convert string values to correct data types
         row['event_id'] = self.event_counter
-        self.event_counter += 1
         row['timestamp'] = int(timestamp)
         row['temp_inside'] = float(temperature_inside)
         row['temp_outside'] = float(temperature_outside)
@@ -519,13 +518,18 @@ class _read_line_and_store_weather_class():
         # store event
         row.append()
 
+        self.event_counter += 1
+        # force flush every 1e6 rows to free buffers
+        if (self.event_counter % 1000000):
+            self.table.flush()
+
         return int(timestamp)
 
     def __exit__(self, type, value, traceback):
         self.table.flush()
 
 
-class _read_line_and_store_event_class():
+class _read_line_and_store_event_class(object):
     def __init__(self, table):
         self.table = table
         self.event_counter = len(self.table)
@@ -546,7 +550,6 @@ class _read_line_and_store_event_class():
 
         # convert string values to correct data types or calculate values
         row['event_id'] = self.event_counter
-        self.event_counter += 1
         row['timestamp'] = int(timestamp)
         row['nanoseconds'] = int(nanoseconds)
         row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
@@ -564,6 +567,11 @@ class _read_line_and_store_event_class():
 
         # store event
         row.append()
+
+        self.event_counter += 1
+        # force flush every 1e6 rows to free buffers
+        if (self.event_counter % 1000000):
+            self.table.flush()
 
         return int(timestamp)
 
