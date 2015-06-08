@@ -111,7 +111,7 @@ def load_data(file, group, csv_file, type='events'):
 
 
 def download_data(file, group, station_number, start=None, end=None,
-                  type='events'):
+                  type='events', progress=True):
     """Download event summary data
 
     :param file: the PyTables datafile handler
@@ -122,6 +122,7 @@ def download_data(file, group, station_number, start=None, end=None,
     :param end: a datetime instance defining the end of the search
         interval
     :param type: the datatype to download, either 'events' or 'weather'.
+    :param progress: if True, show a progressbar while downloading.
 
     If group is None, use '/s<station_number>' as a default.
 
@@ -175,7 +176,9 @@ def download_data(file, group, station_number, start=None, end=None,
     t_start = calendar.timegm(start.utctimetuple())
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
-    pbar = ProgressBar(maxval=1., widgets=[Percentage(), Bar(), ETA()]).start()
+    if progress:
+        pbar = ProgressBar(maxval=1.,
+                           widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in csv as they come streaming in
     prev_update = time.time()
@@ -184,14 +187,16 @@ def download_data(file, group, station_number, start=None, end=None,
         for line in reader:
             timestamp = writer.store_line(line)
             # update progressbar every .5 seconds
-            if time.time() - prev_update > .5 and not timestamp == 0.:
+            if (progress and time.time() - prev_update > .5 and
+                    not timestamp == 0.):
                 pbar.update((1. * timestamp - t_start) / t_delta)
                 prev_update = time.time()
-    pbar.finish()
+    if progress:
+        pbar.finish()
 
 
 def download_coincidences(file, cluster=None, stations=None,
-                          start=None, end=None, n=2):
+                          start=None, end=None, n=2, progress=True):
     """Download event summary data coincidences
 
     :param file: The PyTables datafile handler.
@@ -248,7 +253,9 @@ def download_coincidences(file, cluster=None, stations=None,
     t_start = calendar.timegm(start.utctimetuple())
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
-    pbar = ProgressBar(maxval=1., widgets=[Percentage(), Bar(), ETA()]).start()
+    if progress:
+        pbar = ProgressBar(maxval=1.,
+                           widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in csv as they come streaming in, keep temporary
     # lists untill a full coincidence is in.
@@ -269,7 +276,8 @@ def download_coincidences(file, cluster=None, stations=None,
                                                           coincidence,
                                                           station_groups)
             # update progressbar every .5 seconds
-            if time.time() - prev_update > .5 and not timestamp == 0.:
+            if (progress and time.time() - prev_update > .5 and
+                    not timestamp == 0.):
                 pbar.update((1. * timestamp - t_start) / t_delta)
                 prev_update = time.time()
             coincidence = [line]
@@ -279,8 +287,8 @@ def download_coincidences(file, cluster=None, stations=None,
     if len(coincidence):
         # Store last coincidence
         _read_lines_and_store_coincidence(file, coincidence, station_groups)
-
-    pbar.finish()
+    if progress:
+        pbar.finish()
 
     cluster = clusters.HiSPARCStations(station_numbers)
     table._v_parent._v_attrs.cluster = cluster
