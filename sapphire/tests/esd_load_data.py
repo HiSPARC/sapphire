@@ -40,8 +40,10 @@ def perform_esd_download_data(filename):
     eind = datetime.datetime(2012, 1, 1, 0, 1, 0)
 
     with tables.open_file(filename, 'w', filters=filters) as datafile:
-        esd.download_data(datafile, '/', 501, start, eind, type='events')
-        esd.download_data(datafile, '/', 501, start, eind, type='weather')
+        esd.download_data(datafile, '/', 501, start, eind, type='events',
+                          progress=False)
+        esd.download_data(datafile, '/', 501, start, eind, type='weather',
+                          progress=False)
 
 
 def perform_download_coincidences(filename):
@@ -53,7 +55,7 @@ def perform_download_coincidences(filename):
 
     with tables.open_file(filename, 'w', filters=filters) as datafile:
         esd.download_coincidences(datafile, cluster='Science Park',
-                                  start=start, end=eind, n=2)
+                                  start=start, end=eind, n=2, progress=False)
 
 
 def create_and_store_test_data():
@@ -61,6 +63,7 @@ def create_and_store_test_data():
 
     perform_esd_download_data(test_data_path)
     perform_download_coincidences(test_data_coincidences_path)
+
 
 if __name__ == '__main__':
     create_and_store_test_data()
