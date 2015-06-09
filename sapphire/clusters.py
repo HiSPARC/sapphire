@@ -14,6 +14,7 @@ from numpy import mean
 
 from .transformations import axes, geographic
 from . import api
+from .utils import get_active_index
 
 
 class Detector(object):
@@ -37,6 +38,11 @@ class Detector(object):
         self.y = position[1]
         self.z = position[2] if len(position) == 3 else 0.
         self.orientation = orientation
+        self.index = -1
+
+    def _update_timestamp(self, timestamp):
+        # do stuff
+        self.index = get_active_index(self.timestamps, timestamp)
 
     @property
     def detector_size(self):
@@ -159,6 +165,13 @@ class Station(object):
 
         for position, orientation in detectors:
             self._add_detector(position, orientation)
+        self.index = -1
+
+    def _update_timestamp(self, timestamp):
+        # do stuff
+        self.index = get_active_index(self.timestamps, timestamp)
+        for detector in self.detectors:
+            detector._update_timestamp(timestamp)
 
     def _add_detector(self, position, orientation):
         """Add detector to station
@@ -294,6 +307,14 @@ class BaseCluster(object):
         self.z = position[2] if len(position) == 3 else 0.
         self.alpha = angle
         self.lla = lla
+        # Set initial timestamp in the future
+        # 2 ** 31 - 1 == 19 Jan 2038
+        self._timestamp = 2147483647
+
+    def set_timestamp(self, timestamp):
+        self._timestamp = timestamp
+        for station in self.stations:
+            station._update_timestamp(self._timestamp)
 
     def _add_station(self, position, angle, detectors=None, number=None):
         """Add a station to the cluster
