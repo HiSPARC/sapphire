@@ -31,10 +31,11 @@ import warnings
 from os import path
 from urllib2 import urlopen, HTTPError, URLError
 from StringIO import StringIO
-from bisect import bisect_right
 
 from lazy import lazy
 from numpy import genfromtxt, atleast_1d
+
+from .utils import get_active_index
 
 logger = logging.getLogger('api')
 
@@ -153,20 +154,6 @@ class API(object):
         except URLError:
             return False
         return True
-
-    @staticmethod
-    def get_active_index(timestamps, timestamp):
-        """Get the index where the timestamp fits.
-
-        :param timestamps: list of timestamps.
-        :param timestamp: timestamp for which to find the position.
-        :return: index into the timestamps list.
-
-        """
-        idx = bisect_right(timestamps, timestamp, lo=0)
-        if idx == 0:
-            idx = 1
-        return idx - 1
 
 
 class Network(API):
@@ -689,7 +676,7 @@ class Station(API):
 
         """
         voltages = self.voltages
-        idx = self.get_active_index(voltages['timestamp'], timestamp)
+        idx = get_active_index(voltages['timestamp'], timestamp)
         voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
@@ -712,7 +699,7 @@ class Station(API):
 
         """
         currents = self.currents
-        idx = self.get_active_index(currents['timestamp'], timestamp)
+        idx = get_active_index(currents['timestamp'], timestamp)
         current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
@@ -735,7 +722,7 @@ class Station(API):
 
         """
         locations = self.gps_locations
-        idx = self.get_active_index(locations['timestamp'], timestamp)
+        idx = get_active_index(locations['timestamp'], timestamp)
         location = {'latitude': locations[idx]['latitude'],
                     'longitude': locations[idx]['longitude'],
                     'altitude': locations[idx]['altitude']}
@@ -761,7 +748,7 @@ class Station(API):
 
         """
         detector_timing_offsets = self.detector_timing_offsets
-        idx = self.get_active_index(detector_timing_offsets['timestamp'],
+        idx = get_active_index(detector_timing_offsets['timestamp'],
                                     timestamp)
         detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
                                   for i in range(1, 5)]
