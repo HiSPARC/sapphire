@@ -36,9 +36,9 @@ class Detector(object):
 
         """
         self.station = station
-        self.x = position[0]
-        self.y = position[1]
-        self.z = position[2] if len(position) == 3 else 0.
+        self.x = [position[0]]
+        self.y = [position[1]]
+        self.z = [position[2] if len(position) == 3 else 0.]
         if orientation == 'UD':
             self.orientation = 0
         elif orientation == 'LR':
@@ -68,9 +68,9 @@ class Detector(object):
         sina = sin(alpha)
         cosa = cos(alpha)
 
-        x = X + (self.x * cosa - self.y * sina)
-        y = Y + (self.x * sina + self.y * cosa)
-        z = Z + self.z
+        x = X + (self.x[self.index] * cosa - self.y[self.index] * sina)
+        y = Y + (self.x[self.index] * sina + self.y[self.index] * cosa)
+        z = Z + self.z[self.index]
 
         return x, y, z
 
@@ -156,10 +156,10 @@ class Station(object):
         """
         self.cluster = cluster
         self.station_id = station_id
-        self.x = position[0]
-        self.y = position[1]
-        self.z = position[2] if len(position) == 3 else 0.
-        self.angle = angle
+        self.x = [position[0]]
+        self.y = [position[1]]
+        self.z = [position[2] if len(position) == 3 else 0.]
+        self.angle = [angle]
         self.number = number if number else station_id
 
         if detectors is None:
@@ -227,10 +227,10 @@ class Station(object):
         sina = sin(alpha)
         cosa = cos(alpha)
 
-        x = X + (self.x * cosa - self.y * sina)
-        y = Y + (self.x * sina + self.y * cosa)
-        z = Z + self.z
-        alpha = alpha + self.angle
+        x = X + (self.x[self.index] * cosa - self.y[self.index] * sina)
+        y = Y + (self.x[self.index] * sina + self.y[self.index] * cosa)
+        z = Z + self.z[self.index]
+        alpha = alpha + self.angle[self.index]
 
         return x, y, z, alpha
 
