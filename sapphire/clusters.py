@@ -28,16 +28,23 @@ class Detector(object):
         :param station: station instance this detector is part of
         :param position: x,y,z position of the center of the detectors
                          relative to the station center. z is optional.
-        :param orientation: either 'UD' or 'LR' meaning an up-down or
-                            left-right orientation of the long side of
-                            the detector respectively.
+        :param orientation: orientation of the long side of the detector.
+                            Either the angle in radians, or 'UD' or 'LR'
+                            meaning an up-down or left-right orientation
+                            of the long side of the detector
+                            respectively.
 
         """
         self.station = station
         self.x = position[0]
         self.y = position[1]
         self.z = position[2] if len(position) == 3 else 0.
-        self.orientation = orientation
+        if orientation == 'UD':
+            self.orientation = 0
+        elif orientation == 'LR':
+            self.orientation = pi / 2
+        else:
+            self.orientation = orientation
         self.index = -1
 
     def _update_timestamp(self, timestamp):
@@ -96,27 +103,27 @@ class Detector(object):
         """
         X, Y, _, alpha = self.station.get_coordinates()
 
-        x = self.x
-        y = self.y
-        orientation = self.orientation
+        x, y, _ = self.get_coordinates()
+        o = self.orientation
         size = self.detector_size
 
+        # detector frame
         dx = size[0] / 2
         dy = size[1] / 2
+        corners = [(-dx, -dy), (dx, -dy),
+                   (dx, dy), (-dx, dy)]
 
-        if orientation == 'UD':
-            corners = [(x - dx, y - dy), (x + dx, y - dy),
-                       (x + dx, y + dy), (x - dx, y + dy)]
-        elif orientation == 'LR':
-            corners = [(x - dy, y - dx), (x + dy, y - dx),
-                       (x + dy, y + dx), (x - dy, y + dx)]
-        else:
-            raise Exception("Unknown detector orientation: %s" % orientation)
+        # station frame
+        coso = cos(-o)
+        sino = sin(-o)
+        corners = [(x + cx * coso - cy * sino, y + cx * sino + cy * coso)
+                   for cx, cy in corners]
 
+        # cluster frame
         sina = sin(alpha)
         cosa = cos(alpha)
-        corners = [[xc * cosa - yc * sina, xc * sina + yc * cosa] for xc, yc in
-                   corners]
+        corners = [[xc * cosa - yc * sina, xc * sina + yc * cosa]
+                   for xc, yc in corners]
 
         return [(X + xc, Y + yc) for xc, yc in corners]
 
@@ -481,8 +488,8 @@ class RAlphaBetaStations(BaseCluster):
             in meters in the x,y-plane. alpha is the clock-wise turning
             angle between North and the detector relative to the GPS in
             degrees. z is the height of the detector relative to the
-            GPS. beta is, like alpha, the clock-wise turning angle
-            between North and the long side of the detector.
+            GPS. beta is the clock-wise turning angle between North and
+            the long side of the detector in degrees.
         :param number: optional unique identifier for a station this can
             later be used to find a specific station and makes it easier
             to link to a real station. If not given it will be equal to
@@ -499,7 +506,7 @@ class RAlphaBetaStations(BaseCluster):
 
         """
         detectors = [((sin(radians(alpha)) * r, cos(radians(alpha)) * r, z),
-                      'UD') for r, alpha, z, beta in detectors]
+                      radians(beta)) for r, alpha, z, beta in detectors]
 
         super(RAlphaBetaStations, self)._add_station(position, 0, detectors,
                                                      number)
