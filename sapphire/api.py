@@ -90,6 +90,7 @@ class API(object):
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
+        'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
     @classmethod
@@ -729,6 +730,34 @@ class Station(API):
         return location
 
     @lazy
+    def station_layouts(self):
+        """Get the station layout data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp',
+                   'radius1', 'alpha1', 'beta1', 'height1',
+                   'radius2', 'alpha2', 'beta2', 'height2',
+                   'radius3', 'alpha3', 'beta3', 'height3',
+                   'radius4', 'alpha4', 'beta4', 'height4')
+
+        base = self.src_urls['layout']
+        path = base.format(station_number=self.station)
+        return self._get_csv(path, names=columns)
+
+    def station_layout(self, timestamp):
+        """Get station layout data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        station_layouts = self.station_layouts
+        idx = get_active_index(station_layouts['timestamp'], timestamp)
+        return station_layouts[idx]
+
+    @lazy
     def detector_timing_offsets(self):
         """Get the detector timing offsets data
 
@@ -749,7 +778,7 @@ class Station(API):
         """
         detector_timing_offsets = self.detector_timing_offsets
         idx = get_active_index(detector_timing_offsets['timestamp'],
-                                    timestamp)
+                               timestamp)
         detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
                                   for i in range(1, 5)]
         return detector_timing_offset
