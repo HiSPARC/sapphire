@@ -719,7 +719,7 @@ class Station(API):
         """Get GPS location for specific timestamp
 
         :param timestamp: timestamp for which the value is valid.
-        :return: list of values for given timestamp.
+        :return: dictionary with the values for given timestamp.
 
         """
         locations = self.gps_locations
@@ -737,10 +737,10 @@ class Station(API):
 
         """
         columns = ('timestamp',
-                   'radius1', 'alpha1', 'beta1', 'height1',
-                   'radius2', 'alpha2', 'beta2', 'height2',
-                   'radius3', 'alpha3', 'beta3', 'height3',
-                   'radius4', 'alpha4', 'beta4', 'height4')
+                   'radius1', 'alpha1', 'height1', 'beta1',
+                   'radius2', 'alpha2', 'height2', 'beta2',
+                   'radius3', 'alpha3', 'height3', 'beta3',
+                   'radius4', 'alpha4', 'height4', 'beta4')
 
         base = self.src_urls['layout']
         path = base.format(station_number=self.station)
@@ -750,12 +750,15 @@ class Station(API):
         """Get station layout data for specific timestamp
 
         :param timestamp: timestamp for which the value is valid.
-        :return: list of values for given timestamp.
+        :return: list of coordinates for given timestamp.
 
         """
         station_layouts = self.station_layouts
         idx = get_active_index(station_layouts['timestamp'], timestamp)
-        return station_layouts[idx]
+        station_layout = [[station_layouts[idx]['%s%d' % (c, i)]
+                           for c in ('radius', 'alpha', 'height', 'beta')]
+                          for i in range(1, 5)]
+        return station_layout
 
     @lazy
     def detector_timing_offsets(self):

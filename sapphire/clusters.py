@@ -25,7 +25,7 @@ class Detector(object):
     def __init__(self, station, position, orientation='UD'):
         """Initialize detector
 
-        :param station: station instance this detector is part of
+        :param station: station instance this detector is part of.
         :param position: x,y,z position of the center of the detectors
                          relative to the station center. z is optional.
         :param orientation: orientation of the long side of the detector.
@@ -480,16 +480,18 @@ class RAlphaBetaStations(BaseCluster):
     def _add_station(self, position, detectors, number=None):
         """Add a station to the cluster
 
-        :param x,y,z: position of the station relative to cluster center
-        :param detectors: list of tuples. Each tuple consists of (r, alpha,
-            z, beta) these define the position of the detector relative to
-            the GPS and the orientation of the detector. r is the
-            distance between the center of the scintillator and the GPS
-            in meters in the x,y-plane. alpha is the clock-wise turning
-            angle between North and the detector relative to the GPS in
-            degrees. z is the height of the detector relative to the
-            GPS. beta is the clock-wise turning angle between North and
-            the long side of the detector in degrees.
+        :param position: x,y,z coordinates of the station relative
+            to cluster center.
+        :param detectors: list of tuples. Each tuple consists of
+            r,alpha,z,beta coordinates, these define the position of the
+            detector relative to the GPS and the orientation of the
+            detector. r is the distance between the center of the
+            scintillator and the GPS in meters in the x,y-plane. alpha
+            is the clock-wise turning angle between North and the
+            detector relative to the GPS in degrees. z is the height of
+            the detector relative to the GPS. beta is the clock-wise
+            turning angle between North and the long side of the
+            detector in degrees.
         :param number: optional unique identifier for a station this can
             later be used to find a specific station and makes it easier
             to link to a real station. If not given it will be equal to
