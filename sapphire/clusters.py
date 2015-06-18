@@ -593,6 +593,17 @@ class SingleStation(BaseCluster):
         self._add_station((0, 0, 0), 0)
 
 
+class SingleDetectorStation(BaseCluster):
+    """Define a cluster containing a single 1-detector station"""
+
+    def __init__(self):
+        super(SingleDetectorStation, self).__init__()
+
+        detectors = [((0, 0, 0), 'UD')]
+
+        self._add_station((0, 0, 0), 0, detectors)
+
+
 class SingleTwoDetectorStation(BaseCluster):
     """Define a cluster containing a single 2 detector station"""
 
