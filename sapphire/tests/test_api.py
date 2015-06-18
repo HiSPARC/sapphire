@@ -9,27 +9,6 @@ from sapphire import api
 STATION = 501
 
 
-class APITests(unittest.TestCase):
-    def setUp(self):
-        self.api = api.API()
-
-    def test_get_active_index(self):
-        """Test if the bisection returns the correct index
-
-        - If timestamp is before the first timestamp return index for
-          first item
-        - If timestamp is after last timestamp return index for last item
-        - If timestamp is in the range return index of rightmost value
-          equal or less than the timestamp
-
-        """
-        timestamps = [1., 2., 3., 4.]
-
-        for idx, ts in [(0, 0.), (0, 1.), (0, 1.5), (1, 2.), (1, 2.1), (3, 4.),
-                        (3, 5.)]:
-            self.assertEqual(self.api.get_active_index(timestamps, ts), idx)
-
-
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class NetworkTests(unittest.TestCase):
     def setUp(self):
