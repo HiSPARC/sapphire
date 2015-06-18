@@ -241,6 +241,11 @@ class Station(object):
         else:
             return sum(d.get_area() for d in self._detectors)
 
+    def get_xy_coordinates(self):
+        """Same as get_coordinates but without the z and alpha"""
+        x, y, _, _ = self.get_coordinates()
+        return x, y
+
     def get_xyalpha_coordinates(self):
         """Same as get_coordinates but without the z"""
         x, y, _, alpha = self.get_coordinates()
@@ -401,6 +406,10 @@ class BaseCluster(object):
         for station in self._stations:
             if number == station.number:
                 return station
+
+    def get_xy_coordinates(self):
+        """Same as get_coordinates but without the z and alpha"""
+        return self.x, self.y
 
     def get_xyalpha_coordinates(self):
         """Like get_coordinates, but without z"""
