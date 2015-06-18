@@ -124,7 +124,7 @@ class Detector(object):
         # detector frame
         dx = size[0] / 2
         dy = size[1] / 2
-        corners = [(dx, -dy), (dx, dy), (-dx, dy), (-dx, -dy)]
+        corners = [(-dx, -dy), (dx, -dy), (dx, dy), (-dx, dy)]
 
         # station frame
         coso = cos(-o)
