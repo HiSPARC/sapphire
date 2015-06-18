@@ -28,10 +28,10 @@ class DetectorTests(unittest.TestCase):
 
     def test_attributes(self):
         self.assertIs(self.detector_1.station, self.mock_station)
-        self.assertEqual(self.detector_s.x, sentinel.x)
-        self.assertEqual(self.detector_s.y, sentinel.y)
-        self.assertEqual(self.detector_s.z, sentinel.z)
-        self.assertEqual(self.detector_s.orientation, sentinel.orientation)
+        self.assertEqual(self.detector_s.x, [sentinel.x])
+        self.assertEqual(self.detector_s.y, [sentinel.y])
+        self.assertEqual(self.detector_s.z, [sentinel.z])
+        self.assertEqual(self.detector_s.orientation, [sentinel.orientation])
 
     def test_get_coordinates(self):
         self.mock_station.get_coordinates.return_value = (0, 0, 0, 0)
@@ -78,7 +78,7 @@ class DetectorTests(unittest.TestCase):
     def test_UD_get_corners(self):
         self.mock_station.get_coordinates.return_value = (.25, 3, 0, 0)
         corners = self.detector_2.get_corners()
-        self.assertEqual(corners, [(-1, 4.5), (-.5, 4.5), (-.5, 5.5), (-1, 5.5)])
+        self.assertEqual(corners, [(-.5, 4.5), (-.5, 5.5), (-1, 5.5), (-1, 4.5)])
 
     def test_unknown_rotation_get_corners(self):
         self.mock_station.get_coordinates.return_value = (0, 0, 0, 0)
@@ -94,20 +94,21 @@ class StationTests(unittest.TestCase):
                                               [((3, 4), 'LR')])
             self.station_s = clusters.Station(self.cluster, sentinel.id,
                                               (sentinel.x, sentinel.y, sentinel.z),
-                                              sentinel.angle, [], sentinel.number)
+                                              sentinel.angle, [],
+                                              number=sentinel.number)
             self.mock_detector_instance = mock_detector.return_value
 
     def test_detector_called(self):
         with patch('sapphire.clusters.Detector') as mock_detector:
             cluster = Mock()
             station = clusters.Station(cluster, 1, (0, 1, 2), pi, [((4, 5, 0), 'LR')])
-            mock_detector.assert_called_with(station, (4, 5, 0), 'LR')
+            mock_detector.assert_called_with(station, (4, 5, 0), 'LR', [0])
 
     def test_attributes(self):
-        self.assertEqual(self.station_s.x, sentinel.x)
-        self.assertEqual(self.station_s.y, sentinel.y)
-        self.assertEqual(self.station_s.z, sentinel.z)
-        self.assertEqual(self.station_s.angle, sentinel.angle)
+        self.assertEqual(self.station_s.x, [sentinel.x])
+        self.assertEqual(self.station_s.y, [sentinel.y])
+        self.assertEqual(self.station_s.z, [sentinel.z])
+        self.assertEqual(self.station_s.angle, [sentinel.angle])
         self.assertEqual(self.station_s.number, sentinel.number)
         self.assertEqual(self.station_1.number, 1)
 
@@ -251,9 +252,9 @@ class BaseClusterTests(unittest.TestCase):
             angle = Mock(name='angle')
             detector_list = Mock(name='detector_list')
             number = Mock(name='number')
-            cluster._add_station((x, y, z), angle, detector_list, number)
+            cluster._add_station((x, y, z), angle, detector_list, number=number)
             mock_station.assert_called_with(cluster, 0, (x, y, z), angle,
-                                            detector_list, number)
+                                            detector_list, [0], [0], number)
 
     def test_attributes(self):
         with patch('sapphire.clusters.Station') as mock_station:
@@ -342,15 +343,24 @@ class BaseClusterTests(unittest.TestCase):
         self.assertAlmostEqual(y, 5 * sqrt(3) / 3)
 
 
-class RAlphaBetaStationsTests(unittest.TestCase):
+class RAlphaZBetaStationsTests(unittest.TestCase):
     def test_cluster_stations(self):
-        cluster = clusters.RAlphaBetaStations()
+        cluster = clusters.RAlphaZBetaStations()
         cluster._add_station((0, 0, 0), [(5, 270, 0, 0)])
         stations = cluster.stations
         self.assertEqual(len(stations), 1)
         detectors = stations[0].detectors
         self.assertEqual(len(detectors), 1)
-        self.assertEqual(detectors[0].x, -5.0)
+        self.assertEqual(detectors[0].x, [-5.0])
+        self.assertTupleAlmostEqual(detectors[0].get_coordinates(),
+                                    (-5.0, 0, 0))
+
+    def assertTupleAlmostEqual(self, actual, expected):
+        self.assertTrue(type(actual) == type(expected) == tuple)
+
+        msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
+        for actual_value, expected_value in zip(actual, expected):
+            self.assertAlmostEqual(actual_value, expected_value, msg=msg)
 
 
 class SimpleClusterTests(unittest.TestCase):
