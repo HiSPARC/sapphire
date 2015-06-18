@@ -28,12 +28,11 @@ class Detector(object):
 
         :param station: station instance this detector is part of.
         :param position: x,y,z position of the center of the detectors
-                         relative to the station center. z is optional.
+            relative to the station center. z is optional.
         :param orientation: orientation of the long side of the detector.
-                            Either the angle in radians, or 'UD' or 'LR'
-                            meaning an up-down or left-right orientation
-                            of the long side of the detector
-                            respectively.
+            Either the angle in radians, or 'UD' or 'LR' meaning an
+            up-down or left-right orientation of the long side of the
+            detector respectively.
 
         """
         self.station = station
@@ -365,7 +364,7 @@ class BaseCluster(object):
         """Add a station to the cluster
 
         :param position: x,y,z position of the station relative to
-                         cluster center. z is optional.
+            cluster center. z is optional.
         :param angle: angle of rotation of the station in radians
         :param detectors: list of tuples.  Each tuple consists of (dx, dy,
             dz, orientation) where dx, dy and dz are the positions of the
