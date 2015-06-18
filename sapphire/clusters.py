@@ -135,7 +135,7 @@ class Station(object):
 
     _detectors = None
 
-    def __init__(self, cluster, station_id, position, angle=0, detectors=None,
+    def __init__(self, cluster, station_id, position, angle=None, detectors=None,
                  station_timestamps=[0], detector_timestamps=[0], number=None):
         """Initialize station
 
@@ -161,10 +161,12 @@ class Station(object):
         self.x = position[0]
         self.y = position[1]
         self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
-        self.angle = angle
+        if angle is None:
+            self.angle = [0.] * len(self.x)
+        else:
+            self.angle = angle
         self.number = number if number else station_id
         self.timestamps = station_timestamps
-        print detectors
 
         if detectors is None:
             # detector positions for a standard station
@@ -184,7 +186,7 @@ class Station(object):
         for detector in self.detectors:
             detector._update_timestamp(timestamp)
 
-    def _add_detector(self, position, orientation):
+    def _add_detector(self, position, orientation, detector_timestamps):
         """Add detector to station
 
         :param position: x,y,z positions of the center of the detectors
@@ -196,7 +198,8 @@ class Station(object):
         """
         if self._detectors is None:
             self._detectors = []
-        self._detectors.append(Detector(self, position, orientation))
+        self._detectors.append(Detector(self, position, orientation,
+                                        detector_timestamps))
 
     @property
     def detectors(self):
@@ -519,14 +522,13 @@ class RAlphaZBetaStations(BaseCluster):
             ...                      number=104)
 
         """
-        print detectors
         detectors = [((np.sin(np.radians(alpha)) * r,
                        np.cos(np.radians(alpha)) * r,
                        z),
                       np.radians(beta)) for r, alpha, z, beta in detectors]
 
         super(RAlphaZBetaStations, self)._add_station(
-            position, 0, detectors, station_timestamps, detector_timestamps,
+            position, None, detectors, station_timestamps, detector_timestamps,
             number)
 
 
