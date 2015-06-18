@@ -37,16 +37,28 @@ class Detector(object):
 
         """
         self.station = station
-        self.x = position[0]
-        self.y = position[1]
-        self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
+        if hasattr(position[0], "__len__"):
+            self.x = position[0]
+            self.y = position[1]
+            self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
+        else:
+            self.x = [position[0]]
+            self.y = [position[1]]
+            self.z = [position[2]] if len(position) == 3 else [0.]
         if orientation == 'UD':
             self.orientation = [0] * len(self.x)
         elif orientation == 'LR':
             self.orientation = [pi / 2] * len(self.x)
         else:
-            self.orientation = orientation
-        self.timestamps = detector_timestamps
+            if hasattr(orientation, "__len__"):
+                self.orientation = orientation
+            else:
+                self.orientation = [orientation]
+        if len(detector_timestamps) == len(self.x):
+            self.timestamps = detector_timestamps
+        else:
+            raise Exception('Number of timestamps must equal number of '
+                            'postions')
         self.index = -1
 
     def _update_timestamp(self, timestamp):
@@ -105,15 +117,15 @@ class Detector(object):
         """
         X, Y, _, alpha = self.station.get_coordinates()
 
-        x, y, _ = self.get_coordinates()
-        o = self.orientation
+        x = self.x[self.index]
+        y = self.y[self.index]
+        o = self.orientation[self.index]
         size = self.detector_size
 
         # detector frame
         dx = size[0] / 2
         dy = size[1] / 2
-        corners = [(-dx, -dy), (dx, -dy),
-                   (dx, dy), (-dx, dy)]
+        corners = [(dx, -dy), (dx, dy), (-dx, dy), (-dx, -dy)]
 
         # station frame
         coso = cos(-o)
@@ -124,10 +136,10 @@ class Detector(object):
         # cluster frame
         sina = sin(alpha)
         cosa = cos(alpha)
-        corners = [[xc * cosa - yc * sina, xc * sina + yc * cosa]
+        corners = [(X + xc * cosa - yc * sina, Y + xc * sina + yc * cosa)
                    for xc, yc in corners]
 
-        return [(X + xc, Y + yc) for xc, yc in corners]
+        return corners
 
 
 class Station(object):
@@ -158,15 +170,27 @@ class Station(object):
         """
         self.cluster = cluster
         self.station_id = station_id
-        self.x = position[0]
-        self.y = position[1]
-        self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
+        if hasattr(position[0], "__len__"):
+            self.x = position[0]
+            self.y = position[1]
+            self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
+        else:
+            self.x = [position[0]]
+            self.y = [position[1]]
+            self.z = [position[2]] if len(position) == 3 else [0.]
         if angle is None:
             self.angle = [0.] * len(self.x)
-        else:
+        elif hasattr(angle, "__len__"):
             self.angle = angle
+        else:
+            self.angle = [angle]
         self.number = number if number else station_id
-        self.timestamps = station_timestamps
+
+        if len(station_timestamps) == len(self.x):
+            self.timestamps = station_timestamps
+        else:
+            raise Exception('Number of timestamps must equal number of '
+                            'postions')
 
         if detectors is None:
             # detector positions for a standard station
@@ -330,7 +354,7 @@ class BaseCluster(object):
         for station in self.stations:
             station._update_timestamp(self._timestamp)
 
-    def _add_station(self, position, angle, detectors=None,
+    def _add_station(self, position, angle=None, detectors=None,
                      station_timestamps=[0], detector_timestamps=[0],
                      number=None):
         """Add a station to the cluster
