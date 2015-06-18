@@ -7,7 +7,7 @@
 """
 from __future__ import division
 
-from math import sqrt, pi, sin, cos, atan2, radians
+from math import sqrt, pi, sin, cos, atan2
 import warnings
 
 import numpy as np
@@ -146,8 +146,9 @@ class Station(object):
 
     _detectors = None
 
-    def __init__(self, cluster, station_id, position, angle=None, detectors=None,
-                 station_timestamps=[0], detector_timestamps=[0], number=None):
+    def __init__(self, cluster, station_id, position, angle=None,
+                 detectors=None, station_timestamps=[0],
+                 detector_timestamps=[0], number=None):
         """Initialize station
 
         :param cluster: cluster this station is a part of
@@ -762,7 +763,7 @@ class HiSPARCStations(RAlphaZBetaStations):
                                   'using GPS location (0, 0, 0).' % station,
                                   UserWarning)
                     llas = [(0., 0., 0.)]
-                    timestamps = [0]
+                    station_ts = [0]
                     n_detectors = 4
                 else:
                     raise KeyError('Could not get info for station %d.' %
@@ -776,7 +777,8 @@ class HiSPARCStations(RAlphaZBetaStations):
             if i == 0:
                 # Most recent location of first station as reference
                 self.lla = llas[-1]
-                transformation = geographic.FromWGS84ToENUTransformation(self.lla)
+                transformation = geographic.FromWGS84ToENUTransformation(
+                    self.lla)
 
             # Station locations in ENU
             enu = [transformation.transform(lla) for lla in llas]
