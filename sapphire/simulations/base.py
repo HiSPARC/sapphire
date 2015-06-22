@@ -11,7 +11,7 @@ Example usage::
     import tables
 
     from sapphire.simulations.base import BaseSimulation
-    from sapphire.clusters import ScienceParkCluster
+    from sapphire import ScienceParkCluster
 
     datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
     cluster = ScienceParkCluster()
@@ -140,9 +140,8 @@ class BaseSimulation(object):
 
         :param detector: :class:`~sapphire.clusters.Detector` instance
         :param shower_parameters: shower parameters
-
-        :returns: dictionary with keys 'n' (number of particles in
-            detector) and 't' (time of arrival of first detected particle)
+        :return: dictionary with keys 'n' (number of particles in
+            detector) and 't' (time of arrival of first detected particle).
 
         """
         # implement this!
@@ -172,8 +171,8 @@ class BaseSimulation(object):
 
         :param detector_observables: list of observables of the detectors
                                      making up a station.
-        :returns: dictionary containing the familiar station observables
-                  like n1, n2, n3, etc.
+        :return: dictionary containing the familiar station observables
+                 like n1, n2, n3, etc.
 
         """
         station_observables = {'pulseheights': 4 * [-1.],
@@ -252,7 +251,7 @@ class BaseSimulation(object):
             first_timestamp = (0, 0, 0)
 
         row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
-                first_timestamp
+            first_timestamp
         row.append()
         self.coincidences.flush()
 

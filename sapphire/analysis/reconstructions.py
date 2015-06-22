@@ -24,7 +24,7 @@ class ReconstructESDEvents(object):
     Example usage::
 
         import tables
-        from sapphire.analysis.reconstructions import ReconstructESDEvents
+        from sapphire import ReconstructESDEvents
 
         data = tables.open_file('2014_1_1.h5', 'a')
         station_path = '/hisparc/cluster_amsterdam/station_506'
@@ -45,7 +45,8 @@ class ReconstructESDEvents(object):
     """
 
     def __init__(self, data, station_group, station,
-                 overwrite=False, progress=True):
+                 overwrite=False, progress=True,
+                 destination='reconstructions'):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -54,6 +55,7 @@ class ReconstructESDEvents(object):
                         :class:`~sapphire.clusters.Station` object.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
+        :param destination: alternative name for reconstruction table.
 
         """
         self.data = data
@@ -61,6 +63,7 @@ class ReconstructESDEvents(object):
         self.events = self.station_group.events
         self.overwrite = overwrite
         self.progress = progress
+        self.destination = destination
         self.offsets = [0., 0., 0., 0.]
 
         if isinstance(station, Station):
@@ -113,16 +116,16 @@ class ReconstructESDEvents(object):
     def prepare_output(self):
         """Prepare output table"""
 
-        if 'reconstructions' in self.station_group:
+        if self.destination in self.station_group:
             if self.overwrite:
-                self.data.remove_node(self.station_group.reconstructions,
+                self.data.remove_node(self.station_group, self.destination,
                                       recursive=True)
             else:
                 raise RuntimeError("Reconstructions table already exists for "
                                    "%s, and overwrite is False" %
                                    self.station_group)
         self.reconstructions = self.data.create_table(
-            self.station_group, 'reconstructions', ReconstructedEvent)
+            self.station_group, self.destination, ReconstructedEvent)
         self.reconstructions._v_attrs.station = self.station
 
     def store_offsets(self):
@@ -178,22 +181,24 @@ class ReconstructESDCoincidences(object):
     Example usage::
 
         import tables
-        from sapphire.analysis.reconstructions import ReconstructESDCoincidences
+        from sapphire.analysis import reconstructions
 
         data = tables.open_file('2014_1_1.h5', 'a')
-        rec = ReconstructESDCoincidences(data, overwrite=True)
+        rec = reconstructions.ReconstructESDCoincidences(data, overwrite=True)
         rec.reconstruct_and_store()
 
     """
 
     def __init__(self, data, coincidences_group='/coincidences',
-                 overwrite=False, progress=True):
+                 overwrite=False, progress=True,
+                 destination='reconstructions'):
         """Initialize the class.
 
         :param data: the PyTables datafile.
         :param coincidences_group: the destination group.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
+        :param destination: alternative name for reconstruction table.
 
         """
         self.data = data
@@ -201,6 +206,7 @@ class ReconstructESDCoincidences(object):
         self.coincidences = self.coincidences_group.coincidences
         self.overwrite = overwrite
         self.progress = progress
+        self.destination = destination
         self.offsets = {}
 
         self.cq = CoincidenceQuery(data, self.coincidences_group)
@@ -278,10 +284,10 @@ class ReconstructESDCoincidences(object):
     def prepare_output(self):
         """Prepare output table"""
 
-        if 'reconstructions' in self.coincidences_group:
+        if self.destination in self.coincidences_group:
             if self.overwrite:
-                self.data.remove_node(self.coincidences_group.reconstructions,
-                                      recursive=True)
+                self.data.remove_node(self.coincidences_group,
+                                      self.destination, recursive=True)
             else:
                 raise RuntimeError("Reconstructions table already exists for "
                                    "%s, and overwrite is False" %
@@ -292,7 +298,7 @@ class ReconstructESDCoincidences(object):
         description = ReconstructedCoincidence
         description.columns.update(s_columns)
         self.reconstructions = self.data.create_table(
-            self.coincidences_group, 'reconstructions', description)
+            self.coincidences_group, self.destination, description)
         self.reconstructions._v_attrs.cluster = self.cluster
 
     def get_station_timing_offsets(self):

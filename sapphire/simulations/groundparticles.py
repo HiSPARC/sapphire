@@ -1,15 +1,14 @@
 """Perform simulations of CORSIKA air showers on a cluster of stations
 
 This simulation uses a HDF5 file created from a CORSIKA simulation with
-the `store_corsika_data` script. The shower is 'thrown' on the cluster
+the ``store_corsika_data`` script. The shower is 'thrown' on the cluster
 with random core positions and azimuth angles.
 
 Example usage::
 
     import tables
 
-    from sapphire.simulations.groundparticles import GroundParticlesSimulation
-    from sapphire.clusters import ScienceParkCluster
+    from sapphire import GroundParticlesSimulation, ScienceParkCluster
 
     data = tables.open_file('/tmp/test_groundparticle_simulation.h5', 'w')
     cluster = ScienceParkCluster()
@@ -61,8 +60,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         interpret these parameters as the position of the cluster, or the
         rotation of the cluster!  Interpret them as *shower* parameters.
 
-        :returns: dictionary with shower parameters: core_pos
-                  (x, y-tuple) and azimuth.
+        :return: dictionary with shower parameters: core_pos
+                 (x, y-tuple) and azimuth.
 
         """
         r = self.max_core_distance
@@ -160,8 +159,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         :param detector_observables: dictionary containing the
                                      observables of one detector.
-        :returns: True if at least 2 detectors detect at least one particle,
-                  False otherwise.
+        :return: True if at least 2 detectors detect at least one particle,
+                 False otherwise.
 
         """
         detectors_hit = [True for observables in detector_observables
@@ -180,8 +179,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
         :param station: :class:`~sapphire.clusters.Station` for which
                          to simulate the gps timestamp.
-        :returns: station_observables updated with gps timestamp and
-                  trigger time.
+        :return: station_observables updated with gps timestamp and
+                 trigger time.
 
         """
         arrival_times = [station_observables['t%d' % id]
@@ -603,7 +602,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         is an equation and two boundaries which can be used to test if a
         point is between the two lines.
 
-        :param p0, p1: (x, y) tuples on the same line
+        :param p0,p1: (x, y) tuples on the same line
         :param p2: (x, y) tuple on the parallel line
 
         :return: value1, equation, value2, such that points satisfying
@@ -661,7 +660,7 @@ class FixedCoreDistanceSimulation(GroundParticlesSimulation):
         """Generate a random core position on a circle
 
         :param R: Core distance, in meters.
-        :returns: Random x, y position on the circle with radius R.
+        :return: Random x, y position on the circle with radius R.
 
         """
         phi = np.random.uniform(-pi, pi)

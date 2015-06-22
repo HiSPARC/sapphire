@@ -6,8 +6,8 @@
     time to read this far), you can call the :func:`quick_download`
     function like this::
 
-        >>> import sapphire.esd
-        >>> data = sapphire.esd.quick_download(501)
+        >>> from sapphire import quick_download
+        >>> data = quick_download(501)
 
     For regular use, look up :func:`download_data`.
 
@@ -42,7 +42,7 @@ def quick_download(station_number, date=None):
     :param date: the date for which to get data (datetime.datetime
         instance), passed unchanged to the :func:`download_data` as
         :param start:.
-    :returns: handle to an open PyTables file
+    :return: handle to an open PyTables file
 
     Everything is handled by this function, including file creation.
     Expect no frills: you just get yesterday's data.
@@ -96,22 +96,22 @@ def load_data(file, group, csv_file, type='events'):
     """
     if type == 'events':
         table = _get_or_create_events_table(file, group)
-        read_and_store = _read_line_and_store_event
+        read_and_store_class = _read_line_and_store_event_class
     elif type == 'weather':
         table = _get_or_create_weather_table(file, group)
-        read_and_store = _read_line_and_store_weather
+        read_and_store_class = _read_line_and_store_weather_class
     else:
         raise ValueError("Data type not recognized.")
 
     with open(csv_file, 'rb') as data:
         reader = csv.reader(data, delimiter='\t')
-        for line in reader:
-            read_and_store(line, table)
-        table.flush()
+        with read_and_store_class(table) as writer:
+            for line in reader:
+                writer.store_line(line)
 
 
 def download_data(file, group, station_number, start=None, end=None,
-                  type='events'):
+                  type='events', progress=True):
     """Download event summary data
 
     :param file: the PyTables datafile handler
@@ -122,6 +122,7 @@ def download_data(file, group, station_number, start=None, end=None,
     :param end: a datetime instance defining the end of the search
         interval
     :param type: the datatype to download, either 'events' or 'weather'.
+    :param progress: if True, show a progressbar while downloading.
 
     If group is None, use '/s<station_number>' as a default.
 
@@ -160,11 +161,11 @@ def download_data(file, group, station_number, start=None, end=None,
     if type == 'events':
         url = EVENTS_URL.format(station_number=station_number, query=query)
         table = _get_or_create_events_table(file, group)
-        read_and_store = _read_line_and_store_event
+        read_and_store = _read_line_and_store_event_class
     elif type == 'weather':
         url = WEATHER_URL.format(station_number=station_number, query=query)
         table = _get_or_create_weather_table(file, group)
-        read_and_store = _read_line_and_store_weather
+        read_and_store = _read_line_and_store_weather_class
     else:
         raise ValueError("Data type not recognized.")
 
@@ -175,23 +176,27 @@ def download_data(file, group, station_number, start=None, end=None,
     t_start = calendar.timegm(start.utctimetuple())
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
-    pbar = ProgressBar(maxval=1., widgets=[Percentage(), Bar(), ETA()]).start()
+    if progress:
+        pbar = ProgressBar(maxval=1.,
+                           widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in csv as they come streaming in
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
-    for line in reader:
-        timestamp = read_and_store(line, table)
-        # update progressbar every .5 seconds
-        if time.time() - prev_update > .5 and not timestamp == 0.:
-            pbar.update((1. * timestamp - t_start) / t_delta)
-            prev_update = time.time()
-    table.flush()
-    pbar.finish()
+    with read_and_store(table) as writer:
+        for line in reader:
+            timestamp = writer.store_line(line)
+            # update progressbar every .5 seconds
+            if (progress and time.time() - prev_update > .5 and
+                    not timestamp == 0.):
+                pbar.update((1. * timestamp - t_start) / t_delta)
+                prev_update = time.time()
+    if progress:
+        pbar.finish()
 
 
 def download_coincidences(file, cluster=None, stations=None,
-                          start=None, end=None, n=2):
+                          start=None, end=None, n=2, progress=True):
     """Download event summary data coincidences
 
     :param file: The PyTables datafile handler.
@@ -248,7 +253,9 @@ def download_coincidences(file, cluster=None, stations=None,
     t_start = calendar.timegm(start.utctimetuple())
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
-    pbar = ProgressBar(maxval=1., widgets=[Percentage(), Bar(), ETA()]).start()
+    if progress:
+        pbar = ProgressBar(maxval=1.,
+                           widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in csv as they come streaming in, keep temporary
     # lists untill a full coincidence is in.
@@ -269,7 +276,8 @@ def download_coincidences(file, cluster=None, stations=None,
                                                           coincidence,
                                                           station_groups)
             # update progressbar every .5 seconds
-            if time.time() - prev_update > .5 and not timestamp == 0.:
+            if (progress and time.time() - prev_update > .5 and
+                    not timestamp == 0.):
                 pbar.update((1. * timestamp - t_start) / t_delta)
                 prev_update = time.time()
             coincidence = [line]
@@ -279,8 +287,8 @@ def download_coincidences(file, cluster=None, stations=None,
     if len(coincidence):
         # Store last coincidence
         _read_lines_and_store_coincidence(file, coincidence, station_groups)
-
-    pbar.finish()
+    if progress:
+        pbar.finish()
 
     cluster = clusters.HiSPARCStations(station_numbers)
     table._v_parent._v_attrs.cluster = cluster
@@ -291,7 +299,7 @@ def _get_or_create_station_numbers(table):
     """Get station numbers from existing cluster attribute or a new set
 
     :param table: coincidence table in PyTables file.
-    :returns: set including existing stations in a cluster.
+    :return: set including existing stations in a cluster.
 
     """
     try:
@@ -454,15 +462,17 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
     row['nanoseconds'] = int(coincidence[0][5])
     row['ext_timestamp'] = (int(coincidence[0][4]) * int(1e9) +
                             int(coincidence[0][5]))
+
     for event in coincidence:
         station_number = int(event[1])
         row['s%d' % station_number] = True
         group_path = station_groups[station_number]['group']
         group = _get_or_create_events_table(file, group_path)
-        s_idx = station_groups[station_number]['s_index']
-        e_idx = len(group)
-        c_idx.append((s_idx, e_idx))
-        _read_line_and_store_event(event[2:], group)
+        with _read_line_and_store_event_class(group) as writer:
+            s_idx = station_groups[station_number]['s_index']
+            e_idx = len(group)
+            c_idx.append((s_idx, e_idx))
+            writer.store_line(event[2:])
 
     row.append()
     c_index = file.get_node('/coincidences', 'c_index')
@@ -472,92 +482,107 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
     return int(coincidence[0][4])
 
 
-def _read_line_and_store_event(line, table):
-    """Read CSV line and store event
+class _read_line_and_store_weather_class(object):
 
-    Read a line from the CSV download and store event.  Return the event
-    timestamp to keep track of the progress.
+    def __init__(self, table):
+        self.table = table
+        self.event_counter = len(self.table)
 
-    :param line: text line from the CSV file
-    :param table: pytables table for event storage
-    :return: event timestamp
+    def __enter__(self):
+        return self
 
-    """
-    # ignore comment lines
-    if line[0][0] == '#':
-        return 0.
+    def store_line(self, line):
+        # ignore comment lines
+        if line[0][0] == '#':
+            return 0.
 
-    # break up CSV line
-    (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
-     int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger) = line
+        # break up CSV line
+        (date, time, timestamp, temperature_inside, temperature_outside,
+         humidity_inside, humidity_outside, atmospheric_pressure,
+         wind_direction, wind_speed, solar_radiation, uv_index,
+         evapotranspiration, rain_rate, heat_index, dew_point,
+         wind_chill) = line
 
-    row = table.row
+        row = self.table.row
 
-    # convert string values to correct data types or calculate values
-    row['event_id'] = len(table)
-    row['timestamp'] = int(timestamp)
-    row['nanoseconds'] = int(nanoseconds)
-    row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
-    row['pulseheights'] = [int(ph1), int(ph2), int(ph3), int(ph4)]
-    row['integrals'] = [int(int1), int(int2), int(int3), int(int4)]
-    row['n1'] = float(n1)
-    row['n2'] = float(n2)
-    row['n3'] = float(n3)
-    row['n4'] = float(n4)
-    row['t1'] = float(t1)
-    row['t2'] = float(t2)
-    row['t3'] = float(t3)
-    row['t4'] = float(t4)
-    row['t_trigger'] = float(t_trigger)
+        # convert string values to correct data types
+        row['event_id'] = self.event_counter
+        row['timestamp'] = int(timestamp)
+        row['temp_inside'] = float(temperature_inside)
+        row['temp_outside'] = float(temperature_outside)
+        row['humidity_inside'] = int(humidity_inside)
+        row['humidity_outside'] = int(humidity_outside)
+        row['barometer'] = float(atmospheric_pressure)
+        row['wind_dir'] = int(wind_direction)
+        row['wind_speed'] = int(wind_speed)
+        row['solar_rad'] = int(solar_radiation)
+        row['uv'] = int(uv_index)
+        row['evapotranspiration'] = float(evapotranspiration)
+        row['rain_rate'] = float(rain_rate)
+        row['heat_index'] = int(heat_index)
+        row['dew_point'] = float(dew_point)
+        row['wind_chill'] = float(wind_chill)
 
-    # store event
-    row.append()
+        # store event
+        row.append()
 
-    return int(timestamp)
+        self.event_counter += 1
+        # force flush every 1e6 rows to free buffers
+        if not self.event_counter % 1000000:
+            self.table.flush()
+
+        return int(timestamp)
+
+    def __exit__(self, type, value, traceback):
+        self.table.flush()
 
 
-def _read_line_and_store_weather(line, table):
-    """Read CSV line and store weather data
+class _read_line_and_store_event_class(object):
 
-    Read a line from the CSV download and store weather.  Return the
-    weather timestamp to keep track of the progress.
+    def __init__(self, table):
+        self.table = table
+        self.event_counter = len(self.table)
 
-    :param line: text line from the CSV file
-    :param table: pytables table for weather storage
-    :return: weather timestamp
+    def __enter__(self):
+        return self
 
-    """
-    # ignore comment lines
-    if line[0][0] == '#':
-        return 0.
+    def store_line(self, line):
+        # ignore comment lines
+        if line[0][0] == '#':
+            return 0.
 
-    # break up CSV line
-    (date, time, timestamp, temperature_inside, temperature_outside,
-     humidity_inside, humidity_outside, atmospheric_pressure,
-     wind_direction, wind_speed, solar_radiation, uv_index,
-     evapotranspiration, rain_rate, heat_index, dew_point, wind_chill) = line
+        # break up CSV line
+        (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
+         int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger) = line
 
-    row = table.row
+        row = self.table.row
 
-    # convert string values to correct data types
-    row['event_id'] = len(table)
-    row['timestamp'] = int(timestamp)
-    row['temp_inside'] = float(temperature_inside)
-    row['temp_outside'] = float(temperature_outside)
-    row['humidity_inside'] = int(humidity_inside)
-    row['humidity_outside'] = int(humidity_outside)
-    row['barometer'] = float(atmospheric_pressure)
-    row['wind_dir'] = int(wind_direction)
-    row['wind_speed'] = int(wind_speed)
-    row['solar_rad'] = int(solar_radiation)
-    row['uv'] = int(uv_index)
-    row['evapotranspiration'] = float(evapotranspiration)
-    row['rain_rate'] = float(rain_rate)
-    row['heat_index'] = int(heat_index)
-    row['dew_point'] = float(dew_point)
-    row['wind_chill'] = float(wind_chill)
+        # convert string values to correct data types or calculate values
+        row['event_id'] = self.event_counter
+        row['timestamp'] = int(timestamp)
+        row['nanoseconds'] = int(nanoseconds)
+        row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
+        row['pulseheights'] = [int(ph1), int(ph2), int(ph3), int(ph4)]
+        row['integrals'] = [int(int1), int(int2), int(int3), int(int4)]
+        row['n1'] = float(n1)
+        row['n2'] = float(n2)
+        row['n3'] = float(n3)
+        row['n4'] = float(n4)
+        row['t1'] = float(t1)
+        row['t2'] = float(t2)
+        row['t3'] = float(t3)
+        row['t4'] = float(t4)
+        row['t_trigger'] = float(t_trigger)
 
-    # store event
-    row.append()
+        # store event
+        row.append()
 
-    return int(timestamp)
+        self.event_counter += 1
+        # force flush every 1e6 rows to free buffers
+        if not self.event_counter % 1000000:
+            self.table.flush()
+
+        return int(timestamp)
+
+    def __exit__(self, type, value, traceback):
+        self.table.flush()

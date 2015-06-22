@@ -1,6 +1,7 @@
 import unittest
 import types
 from StringIO import StringIO
+from math import exp, sqrt
 
 from numpy import pi, random
 import progressbar
@@ -58,9 +59,42 @@ class InBaseTests(unittest.TestCase):
 
     def test_ceil(self):
         self.assertEqual(utils.ceil_in_base(2.4, 2.5), 2.5)
+        self.assertEqual(utils.ceil_in_base(0.1, 2.5), 2.5)
 
     def test_floor(self):
         self.assertEqual(utils.floor_in_base(2.4, 2.5), 0)
+        self.assertEqual(utils.floor_in_base(0.1, 2.5), 0)
+
+    def test_round(self):
+        self.assertEqual(utils.round_in_base(2.4, 2.5), 2.5)
+        self.assertEqual(utils.round_in_base(0.1, 2.5), 0)
+
+    def test_zero_base(self):
+        self.assertRaises(ZeroDivisionError, utils.ceil_in_base, 0.1, 0)
+        self.assertRaises(ZeroDivisionError, utils.floor_in_base, 0.1, 0)
+        self.assertRaises(ZeroDivisionError, utils.round_in_base, 0.1, 0)
+
+    def test_integers(self):
+        self.assertEqual(utils.ceil_in_base(3, 4), 4)
+        self.assertEqual(utils.floor_in_base(3, 4), 0)
+        self.assertEqual(utils.round_in_base(3, 4), 4)
+
+
+class GaussTests(unittest.TestCase):
+    """Test against explicit Gaussian"""
+
+    def gaussian(self, x, N, mu, sigma):
+        return N * exp(-(x - mu) ** 2. / (2. * sigma ** 2)) / (sigma * sqrt(2 * pi))
+
+    def test_gauss(self):
+        x, N, mu, sigma = (1., 1., 0., 1.)
+        self.assertEqual(utils.gauss(x, N, mu, sigma), self.gaussian(x, N, mu, sigma))
+        N = 2.
+        self.assertEqual(utils.gauss(x, N, mu, sigma), self.gaussian(x, N, mu, sigma))
+        sigma = 2.
+        self.assertEqual(utils.gauss(x, N, mu, sigma), self.gaussian(x, N, mu, sigma))
+        x = 1e5
+        self.assertEqual(utils.gauss(x, N, mu, sigma), 0.)
 
 
 class AngleBetweenTests(unittest.TestCase):

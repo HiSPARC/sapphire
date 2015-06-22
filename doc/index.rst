@@ -19,6 +19,7 @@ Contents:
    installation
    tutorial
    sapphire
+   README
 
 
 Indices and tables

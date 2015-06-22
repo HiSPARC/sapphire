@@ -79,7 +79,7 @@ the data, we need the ``datetime`` module.  Thus, we have::
 
     >>> import tables
     >>> import datetime
-    >>> from sapphire import esd
+    >>> from sapphire import download_data
 
 
 Creating an empty data file, with the name ``mydata.h5``, is done easily::
@@ -122,7 +122,7 @@ window in two arbitrarily-named variables, ``start`` and ``end``.  To
 download data from station 501 and store it in a group with name ``/s501``,
 we can use the :func:`sapphire.esd.download_data` function::
 
-    >>> esd.download_data(data, '/s501', 501, start, end)
+    >>> download_data(data, '/s501', 501, start, end)
     100%|####################################|Time: 0:00:16
 
 It will show a progressbar to indicate the progress of the download.
@@ -152,7 +152,7 @@ Finally, *type* selects whether to download event or weather data should
 be downloaded.  We've selected the default, which is *events*. We can also
 download the weather data by changing the type to ``'weather'``::
 
-    >>> esd.download_data(data, '/s501', 501, start, end, type='weather')
+    >>> download_data(data, '/s501', 501, start, end, type='weather')
     100%|####################################|Time: 0:00:10
 
 To access the raw data that includes the original detector traces the
@@ -305,7 +305,7 @@ detectors had relatively large pulseheights, and that they were registered
 as a significant *peak* in the signal.
 
 If you're interested in the pulseheights of *all* events, the fastest way
-to do it is to make use of the :meth:`Table.col`  method of the table::
+to do it is to make use of the ``Table.col`` method of the table::
 
     >>> events.col('pulseheights')
     array([[173,   3, 407,   3],
@@ -327,7 +327,7 @@ time span)::
     2836
 
 Thus, we have selected 2836 events.  The variable ``sel_events`` no longer
-points to a table.  We can no longer make use of the :meth:`Table.col`
+points to a table.  We can no longer make use of the ``Table.col``
 method, but we *can* access all pulseheights in the following way::
 
     >>> sel_events['pulseheights']
@@ -340,7 +340,7 @@ method, but we *can* access all pulseheights in the following way::
            [  2,   2, 271, 381]], dtype=int16)
 
 This notation is possible for arrays, but not for tables.  So, for tables,
-use the :meth:`Table.col` method.  For arrays, use this special notation.
+use the ``Table.col`` method.  For arrays, use this special notation.
 
 
 The :mod:`sapphire.time_util` module
@@ -432,7 +432,7 @@ Plotting data
 Now that we can access the data, we want to visualize it.  Plotting data
 is a great way to do that.  And of course, the venerable histogram is
 still very useful to condense thousands of events into one display.  Pylab
-contains an easy function to do just that: :func:`hist`.  Let's try to
+contains an easy function to do just that: ``hist``.  Let's try to
 recreate a few graphs as seen on the |hisparc| `data display
 <http://data.hisparc.nl/show/stations/501/2012/12/1/>`_::
 
@@ -456,7 +456,7 @@ it is only ten.  Thirdly, the data range continues up to very high values
 with hardly any events.
 
 To fix this, we'll make use of several arguments that can be passed to the
-:func:`hist` function.  We'll also make use of some NumPy (`documentation
+``hist`` function.  We'll also make use of some NumPy (`documentation
 <http://docs.scipy.org/doc/numpy/user/>`_) functionality.  For Pylab
 documentation, see the `Matplotlib site <http://matplotlib.org>`_
 (`function reference
@@ -468,9 +468,9 @@ documentation, see the `Matplotlib site <http://matplotlib.org>`_
     >>> ylabel("Counts")
     >>> title("Pulseheight histogram (log scale)")
 
-The :func:`arange` function returns an array with range from 0 to 2000 in
+The ``arange`` function returns an array with range from 0 to 2000 in
 steps of 20.  It is necessary to say 2001 (or 2002, 2000.1 or whatever)
-and not 2000, if you want the range to be inclusive.  The :func:`hist`
+and not 2000, if you want the range to be inclusive.  The ``hist``
 function will then plot a *stepped* histogram with a log scale.  Finally,
 we add some labels and a title.  This is the result:
 
@@ -505,8 +505,7 @@ Consider the following script, which you can hopefully understand by now
 
         import tables
 
-        from sapphire.esd import download_data
-        from sapphire.analysis.coincidences import CoincidencesESD
+        from sapphire import download_data, CoincidencesESD
 
 
         STATIONS = [501, 503, 506]

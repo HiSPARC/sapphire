@@ -51,6 +51,30 @@ def save_particle(row, p):
     row.append()
 
 
+def store_and_sort_corsika_data(source, destination, overwrite=False,
+                                progress=False):
+    """First convert the data to HDF5 and create a sorted version"""
+
+    corsika_data = CorsikaFile(source)
+    if overwrite:
+        mode = 'w'
+    else:
+        mode = 'a'
+
+    temp_dir = os.path.dirname(destination)
+    temp_path = create_tempfile_path(temp_dir)
+
+    with tables.open_file(temp_path, 'a') as hdf_temp:
+        store_corsika_data(corsika_data, hdf_temp, progress=progress)
+    with tables.open_file(temp_path, 'a') as hdf_temp:
+        create_index(hdf_temp, progress=progress)
+    with tables.open_file(temp_path, 'r') as hdf_temp, \
+            tables.open_file(destination, mode) as hdf_data:
+        copy_and_sort_node(hdf_temp, hdf_data, progress=progress)
+
+    os.remove(temp_path)
+
+
 def store_corsika_data(source, destination, table_name='groundparticles',
                        progress=False):
     """Store particles from a CORSIKA simulation in a HDF5 file
@@ -154,23 +178,8 @@ def main():
                         help='show progressbar during conversion')
     args = parser.parse_args()
 
-    corsika_data = CorsikaFile(args.source)
-    if args.overwrite:
-        mode = 'w'
-    else:
-        mode = 'a'
-
-    temp_dir = os.path.dirname(args.destination)
-    temp_path = create_tempfile_path(temp_dir)
-
-    with tables.open_file(temp_path, 'a') as hdf_temp:
-        store_corsika_data(corsika_data, hdf_temp, progress=args.progress)
-    with tables.open_file(temp_path, 'a') as hdf_temp:
-        create_index(hdf_temp, progress=args.progress)
-    with tables.open_file(temp_path, 'r') as hdf_temp, \
-            tables.open_file(args.destination, mode) as hdf_data:
-        copy_and_sort_node(hdf_temp, hdf_data, progress=args.progress)
-    os.remove(temp_path)
+    store_and_sort_corsika_data(args.source, args.destination, args.overwrite,
+                                args.progress)
 
 
 if __name__ == '__main__':

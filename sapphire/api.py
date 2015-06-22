@@ -8,7 +8,7 @@
 
     .. code-block:: python
 
-        >>> from sapphire.api import Station
+        >>> from sapphire import Station
         >>> stations = [5, 301, 3102, 504, 7101, 8008, 13005]
         >>> clusters = [Station(station).cluster.lower()
         ...             for station in stations]
@@ -88,7 +88,8 @@ class API(object):
         'temperature': 'temperature/{station_number}/{year}/{month}/{day}/',
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
-        'gps': 'gps/{station_number}/'}
+        'gps': 'gps/{station_number}/',
+        'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
     @classmethod
     def _get_json(cls, urlpath):
@@ -207,6 +208,7 @@ class Network(API):
         :return: all clusters in the region
 
         """
+        self.validate_numbers(country)
         if country is None:
             if not self._all_clusters:
                 path = self.urls['clusters']
@@ -221,6 +223,7 @@ class Network(API):
     def cluster_numbers(self, country=None):
         """Same as clusters but only retuns a list of cluster numbers"""
 
+        self.validate_numbers(country)
         clusters = self.clusters(country=country)
         return [cluster['number'] for cluster in clusters]
 
@@ -233,6 +236,7 @@ class Network(API):
         :return: all subclusters in the region
 
         """
+        self.validate_numbers(country, cluster)
         if country is None and cluster is None:
             if not self._all_subclusters:
                 path = self.urls['subclusters']
@@ -256,6 +260,7 @@ class Network(API):
     def subcluster_numbers(self, country=None, cluster=None):
         """Same as subclusters but only retuns a list of subcluster numbers"""
 
+        self.validate_numbers(country, cluster)
         subclusters = self.subclusters(country=country, cluster=cluster)
         return [subcluster['number'] for subcluster in subclusters]
 
@@ -268,6 +273,7 @@ class Network(API):
         :return: all stations in the region
 
         """
+        self.validate_numbers(country, cluster, subcluster)
         if country is None and cluster is None and subcluster is None:
             if not self._all_stations:
                 path = self.urls['stations']
@@ -305,6 +311,7 @@ class Network(API):
                         allow_stale=True):
         """Same as stations but only retuns a list of station numbers"""
 
+        self.validate_numbers(country, cluster, subcluster)
         try:
             stations = self.stations(country=country, cluster=cluster,
                                      subcluster=subcluster)
@@ -405,8 +412,20 @@ class Network(API):
         """
         columns = ('n', 'counts')
         path = cls.src_urls['coincidencenumber'].format(year=year, month=month,
-                                                      day=day)
+                                                        day=day)
         return cls._get_csv(path, names=columns)
+
+    @staticmethod
+    def validate_numbers(country=None, cluster=None, subcluster=None):
+        if country is not None and country % 10000:
+            raise Exception('Invalid country number, '
+                            'must be multiple of 10000.')
+        if cluster is not None and cluster % 1000:
+            raise Exception('Invalid cluster number, '
+                            'must be multiple of 1000.')
+        if subcluster is not None and subcluster % 100:
+            raise Exception('Invalid subcluster number, '
+                            'must be multiple of 100.')
 
 
 class Station(API):
@@ -566,14 +585,15 @@ class Station(API):
                         year=year, month=month, day=day).strip("/"))
         return self._get_json(path)
 
-    def event_trace(self, timestamp, nanoseconds):
+    def event_trace(self, timestamp, nanoseconds, raw=False):
         """Get the traces for a specific event
 
         The exact timestamp and nanoseconds for the event have to be
         given.
 
         :param timestamp,nanoseconds: the extended timestamp for which
-            to get the traces
+            to get the traces.
+        :param raw: get the raw trace, without the subtracted baselines.
         :return: an array with the traces for each detector in ADCcounts
 
         """
@@ -581,6 +601,8 @@ class Station(API):
         path = (self.urls['event_trace'].format(station_number=self.station,
                                                 ext_timestamp=ext_timestamp)
                 .strip("/"))
+        if raw is True:
+            path += '?raw'
         return self._get_json(path)
 
     def event_time(self, year, month, day):
@@ -668,8 +690,7 @@ class Station(API):
         """
         voltages = self.voltages
         idx = self.get_active_index(voltages['timestamp'], timestamp)
-        voltage = (voltages[idx]['voltage1'], voltages[idx]['voltage2'],
-                   voltages[idx]['voltage3'], voltages[idx]['voltage4'])
+        voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
     @lazy
@@ -692,8 +713,7 @@ class Station(API):
         """
         currents = self.currents
         idx = self.get_active_index(currents['timestamp'], timestamp)
-        current = (currents[idx]['current1'], currents[idx]['current2'],
-                   currents[idx]['current3'], currents[idx]['current4'])
+        current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
     @lazy
@@ -720,3 +740,29 @@ class Station(API):
                     'longitude': locations[idx]['longitude'],
                     'altitude': locations[idx]['altitude']}
         return location
+
+    @lazy
+    def detector_timing_offsets(self):
+        """Get the detector timing offsets data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
+        base = self.src_urls['detector_timing_offsets']
+        path = base.format(station_number=self.station)
+        return self._get_csv(path, names=columns)
+
+    def detector_timing_offset(self, timestamp):
+        """Get detector timing offset data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of values for given timestamp.
+
+        """
+        detector_timing_offsets = self.detector_timing_offsets
+        idx = self.get_active_index(detector_timing_offsets['timestamp'],
+                                    timestamp)
+        detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
+                                  for i in range(1, 5)]
+        return detector_timing_offset

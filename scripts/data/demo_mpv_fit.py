@@ -57,7 +57,7 @@ def get_histogram_for_station_on_date(station_id, date):
     """Return a histogram of the spectrum of a station on a date.
 
     :return n, bins: histogram counts and bins, as obtained using
-       :func:`numpy.histogram`.
+       ``numpy.histogram``.
 
     """
     url = HIST_URL % (station_id, date.year, date.month, date.day)

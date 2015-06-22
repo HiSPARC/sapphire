@@ -72,6 +72,12 @@ class HiSPARCSimulationTest(unittest.TestCase):
         self.assertEqual(self.simulation.generate_azimuth(),
                          -0.521366120872004)
 
+    def test_generate_energy(self):
+        self.assertEqual(self.simulation.generate_energy(), 136117213526167.64)
+        io = 1e17
+        self.assertAlmostEqual(self.simulation.generate_energy(io, io) / io, 1.)
+        self.assertEqual(self.simulation.generate_energy(alpha=-3), 100005719231473.97)
+
 
 class ErrorlessSimulationTest(HiSPARCSimulationTest):
 

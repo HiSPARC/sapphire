@@ -10,8 +10,7 @@
         import tables
 
         from sapphire.publicdb import download_data
-        from sapphire.analysis import process_events
-
+        from sapphire import ProcessEvents
 
         STATIONS = [501, 503, 506]
         START = datetime.datetime(2013, 1, 1)
@@ -24,7 +23,7 @@
             data = tables.open_file('data.h5', 'w')
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END, get_blobs=True)
-                proc = process_events.ProcessEvents(data, group)
+                proc = ProcessEvents(data, group)
                 proc.process_and_store_results()
             data.close()
 
@@ -123,7 +122,7 @@ class ProcessEvents(object):
         """Return the traces from an event.
 
         :param event: a row from the events table.
-        :returns: the traces: an array of pulseheight values.
+        :return: the traces: an array of pulseheight values.
 
         """
         traces = [list(self._get_trace(idx)) for idx in event['traces']
@@ -137,7 +136,7 @@ class ProcessEvents(object):
         """Return the traces from event #idx.
 
         :param idx: the index number of the event.
-        :returns: the traces: an array of pulseheight values.
+        :return: the traces: an array of pulseheight values.
 
         """
         event = self.source[idx]
@@ -149,7 +148,7 @@ class ProcessEvents(object):
         :param source: the *name* of the table.  If None, this method will
             try to find the original events table, even if the events were
             previously processed.
-        :returns: table object
+        :return: table object
 
         """
         if source is None:
@@ -325,8 +324,8 @@ class ProcessEvents(object):
         This method loops over the traces.
 
         :param event: row from the events table.
-        :returns: arrival times in the detectors relative to trace start
-                  in ns.
+        :return: arrival times in the detectors relative to trace start
+                 in ns.
 
         """
         timings = []
@@ -353,7 +352,7 @@ class ProcessEvents(object):
         Decompress a trace from the blobs array.
 
         :param idx: index into the blobs array
-        :returns: iterator over the pulseheight values
+        :return: iterator over the pulseheight values
 
         """
         blobs = self._get_blobs()
@@ -377,7 +376,7 @@ class ProcessEvents(object):
 
         :param trace: array containing pulseheight values.
         :param baseline: baseline of the trace.
-        :returns: index in trace for arrival time of first particle.
+        :return: index in trace for arrival time of first particle.
 
         """
         threshold = baseline + ADC_THRESHOLD
@@ -546,7 +545,7 @@ class ProcessEventsWithLINT(ProcessEvents):
 
         :param trace: array containing pulseheight values.
         :param baseline: baseline of the trace
-        :returns: arrival time
+        :return: arrival time
 
         """
         threshold = baseline + ADC_THRESHOLD
@@ -571,7 +570,7 @@ class ProcessIndexedEventsWithLINT(ProcessIndexedEvents,
     """Process a subset of events using LInear INTerpolation.
 
     This is a subclass of :class:`ProcessIndexedEvents` and
-    :class:`ProcessEventsWithLint`.
+    :class:`ProcessEventsWithLINT`.
 
     """
 
@@ -643,8 +642,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         This method loops over the traces.
 
         :param event: row from the events table.
-        :returns: arrival times in the detectors and trigger time
-                  relative to start of trace in ns
+        :return: arrival times in the detectors and trigger time
+                 relative to start of trace in ns
 
         """
         timings = []
@@ -701,16 +700,17 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         not go back.
 
         :param trace: generator over the trace.
-        :param thresholds: list of thresholds.
+        :param thresholds: list of three thresholds.
         :param max_signal: expected max value in trace, based on
                            baseline and pulseheight.
-        :returns: list with three indexes into the trace for the three
-                  thresholds.
+        :return: list with three indexes into the trace for the three
+                 thresholds.
 
         """
         results = [-999, -999, -999]
         ordered_thresholds = sorted([(x, i) for i, x in enumerate(thresholds)])
         last_value = None
+        t = 0
 
         for threshold, i in ordered_thresholds:
             if max_signal < threshold:
@@ -720,8 +720,6 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             else:
                 if last_value is not None:
                     t += 1
-                else:
-                    t = 0
                 t, last_value = cls._first_value_above_threshold(trace,
                                                                  threshold, t)
                 results[i] = t
@@ -747,7 +745,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         :param low_idx, high_idx: list of trace indexes when a detector
                                    crossed a given threshold.
         :param n_detectors: number of detectors (2 or 4).
-        :returns: index in trace where the trigger happened.
+        :return: index in trace where the trigger happened.
 
         """
         low_idx = [idx for idx in low_idx if not idx == -999]
@@ -906,7 +904,7 @@ class ProcessWeather(ProcessEvents):
 
         :param source: the *name* of the table.  If None, this method will
             try to find the original weather table.
-        :returns: table object
+        :return: table object
 
         """
         if source is None:

@@ -2,22 +2,22 @@
 
 Easy transformations between different systems.
 
-:mod:`~sapphire.angles`
+:mod:`~sapphire.transformations.angles`
     conversion between different angle notations
 
-:mod:`~sapphire.axes`
+:mod:`~sapphire.transformations.axes`
     rotation matrices and conversion between coordinate systems
 
-:mod:`~sapphire.base`
+:mod:`~sapphire.transformations.base`
     conversion betweeen decimal and sexagesimal
 
-:mod:`~sapphire.celestial`
+:mod:`~sapphire.transformations.celestial`
     conversion betweeen celestial coordinate systems
 
-:mod:`~sapphire.clock`
+:mod:`~sapphire.transformations.clock`
     conversion between different time keeping systems
 
-:mod:`~sapphire.geographic`
+:mod:`~sapphire.transformations.geographic`
     geographic coordinate transformations (e.g. WGS84 to ENU)
 
 """

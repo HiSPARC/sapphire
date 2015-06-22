@@ -7,8 +7,7 @@ Example usage::
 
     import tables
 
-    from sapphire.simulations.showerfront import FlatFrontSimulation
-    from sapphire.clusters import ScienceParkCluster
+    from sapphire import FlatFrontSimulation, ScienceParkCluster
 
     data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
     cluster = ScienceParkCluster()
@@ -44,8 +43,8 @@ class FlatFrontSimulation(HiSPARCSimulation):
         interpret these parameters as the position of the cluster, or the
         rotation of the cluster!  Interpret them as *shower* parameters.
 
-        :returns: dictionary with shower parameters: core_pos
-                  (x, y-tuple) and azimuth.
+        :return: dictionary with shower parameters: core_pos
+                 (x, y-tuple) and azimuth.
 
         """
         for i in pbar(range(self.N)):
@@ -86,7 +85,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
         not apparent in Fokkema2012 fig 4.4.
 
 
-        :returns: Shower front arrival time in ns.
+        :return: Shower front arrival time in ns.
 
         """
         c = .3
@@ -184,8 +183,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
         import tables
 
-        from sapphire.simulations.showerfront import ConeFrontSimulation
-        from sapphire.clusters import ScienceParkCluster
+        from sapphire import ConeFrontSimulation, ScienceParkCluster
 
         data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
         cluster = ScienceParkCluster()
@@ -210,8 +208,8 @@ class ConeFrontSimulation(FlatFrontSimulation):
         For this cone-shaped showerfront, the core position, the azimuth
         and zenith angle of the shower are generated.
 
-        :returns: dictionary with shower parameters: core_pos
-                  (x, y-tuple), azimuth and zenith.
+        :return: dictionary with shower parameters: core_pos
+                 (x, y-tuple), azimuth and zenith.
 
         """
         R = self.max_core_distance
@@ -277,7 +275,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
         """Delay of the showerfront relative to flat as function of distance
 
         :param r: distance to the shower core in shower frame.
-        :returns: delay time of shower front.
+        :return: delay time of shower front.
 
         """
         return r * .2

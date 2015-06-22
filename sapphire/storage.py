@@ -7,54 +7,6 @@
 import tables
 
 
-class ShowerParticle(tables.IsDescription):
-    """Store information about shower particles reaching round level
-
-    This table stores particles from shower simulations.  For example, AIRES
-    simulations produce ``grdpcles`` files containing all particles which
-    reached ground level.  These files can be read and their contents can be
-    stored in this table.
-
-    .. attribute:: id
-
-        a unique identifier for the particle (unique in this table)
-
-    .. attribute:: pid
-
-        a particle identifier. Possible values are determined by the
-        simulation package.
-
-    .. attribute:: core_distance
-
-        distance from the particle position to the shower core
-
-    .. attribute:: polar_angle
-
-        angle of the particle position vector to a reference line
-
-    .. attribute:: x, y
-
-        particle position
-
-    .. attribute:: arrival_time
-
-        arrival time of the particle [ns]
-
-    .. attribute:: energy
-
-        particle energy [GeV]
-
-    """
-    id = tables.UInt32Col()
-    pid = tables.Int8Col()
-    core_distance = tables.Float32Col()
-    polar_angle = tables.Float32Col()
-    x = tables.Float32Col()
-    y = tables.Float32Col()
-    arrival_time = tables.Float32Col()
-    energy = tables.Float32Col()
-
-
 class EventObservables(tables.IsDescription):
 
     """Store information about the observables of an event.

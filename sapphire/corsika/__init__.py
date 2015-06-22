@@ -11,9 +11,9 @@
     the CORSIKA manual:
 
     * :class:`blocks.RunHeader`
-    * :class:`blocks.RunTrailer`
+    * :class:`blocks.RunEnd`
     * :class:`blocks.EventHeader`
-    * :class:`blocks.EventTrailer`
+    * :class:`blocks.EventEnd`
     * :class:`blocks.ParticleData`
     * :class:`blocks.CherenkovData`
 

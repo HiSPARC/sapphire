@@ -69,7 +69,7 @@ class HiSPARCSimulation(BaseSimulation):
         """Simulate ADC time binning due to the sampling frequency
 
         :param t: time to be binned.
-        :returns: time ceiled in 2.5 ns base.
+        :return: time ceiled in 2.5 ns base.
 
         """
         return ceil_in_base(t, 2.5)
@@ -87,7 +87,7 @@ class HiSPARCSimulation(BaseSimulation):
         the single and vectorized part.
 
         :param n: number of times to simulate
-        :returns: list of signal transport times
+        :return: list of signal transport times
 
         """
         numbers = np.random.random(n)
@@ -164,7 +164,7 @@ class HiSPARCSimulation(BaseSimulation):
         suggested by HM).
 
         :param R: Maximum core distance, in meters.
-        :returns: Random x, y position in the disc with radius R.
+        :return: Random x, y position in the disc with radius R.
 
         """
         r = sqrt(np.random.uniform(0, R ** 2))
@@ -196,7 +196,7 @@ class HiSPARCSimulation(BaseSimulation):
         (internal note), eq 2.4 from Rossi.
 
         :param p: probability value between 0 and 1.
-        :returns: zenith with corresponding cumulative probability.
+        :return: zenith with corresponding cumulative probability.
 
         """
         return acos((1 - p) ** (1 / 8.))

@@ -3,7 +3,9 @@
 The module contains some commonly functions and classes.
 
 """
-from numpy import floor, ceil, arccos, cos, sin, pi
+from __future__ import division
+
+from numpy import floor, ceil, round, arccos, cos, sin, pi
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
@@ -19,8 +21,8 @@ def pbar(iterable, length=None, show=True, **kwargs):
     :param length: in case iterable is a generator, this should be its
                    expected length.
     :param show: boolean, if False simply return the iterable.
-    :returns: a new iterable which iterates over the same elements as
-              the input, but shows a progressbar if possible.
+    :return: a new iterable which iterates over the same elements as
+             the input, but shows a progressbar if possible.
 
     """
     if not show:
@@ -33,7 +35,7 @@ def pbar(iterable, length=None, show=True, **kwargs):
             pass
 
     if length:
-        pb = ProgressBar(widgets=[ETA(), Bar(), Percentage()], maxval=length,
+        pb = ProgressBar(widgets=[Percentage(), Bar(), ETA()], maxval=length,
                          **kwargs)
         return pb(iterable)
     else:
@@ -50,6 +52,12 @@ def floor_in_base(value, base):
     """Get nearest multiple of base below the value"""
 
     return base * floor(value / base)
+
+
+def round_in_base(value, base):
+    """Get nearest multiple of base to the value"""
+
+    return base * round(value / base)
 
 
 def gauss(x, N, mu, sigma):
@@ -79,7 +87,7 @@ def angle_between(zenith1, azimuth1, zenith2, azimuth2):
 
     :param zenith#: Zenith parts of the coordinates, in radians (0, pi/2).
     :param azimuth#: Azimuth parts of the coordinates, in radians (-pi, pi).
-    :returns: Angle between the two coordinates.
+    :return: Angle between the two coordinates.
 
     """
     lat1 = pi / 2 - zenith1

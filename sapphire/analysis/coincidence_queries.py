@@ -4,7 +4,7 @@ import warnings
 
 import tables
 
-from sapphire import api
+from .. import api
 
 
 class CoincidenceQuery(object):
@@ -26,7 +26,7 @@ class CoincidenceQuery(object):
 
     Example usage::
 
-        from sapphire.analysis.coincidence_queries import CoincidenceQuery
+        from sapphire import CoincidenceQuery
 
         cq = CoincidenceQuery('2013_8_1.h5')
         coincidences = cq.all([501, 502, 503, 504], iterator=True)
@@ -253,7 +253,8 @@ class CoincidenceQuery(object):
             return reconstruction
         else:
             raise Exception('Coincidences are not (properly) reconstructed.'
-                'Perform reconstructions and reinitialize this class.')
+                            'Perform reconstructions and reinitialize this '
+                            'class.')
 
     def all_events(self, coincidences, n=0):
         """Get all events for the given coincidences.

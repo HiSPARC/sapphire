@@ -85,8 +85,7 @@ class Detector(object):
         The z-coordinate is not returned because all detectors are
         assumed to be laying flat.
 
-        :return: x, y coordinates of detector corners
-        :rtype: list of (x, y) tuples
+        :return: coordinates of detector corners, list of (x, y) tuples.
 
         """
         X, Y, _, alpha = self.station.get_coordinates()
@@ -110,10 +109,10 @@ class Detector(object):
 
         sina = sin(alpha)
         cosa = cos(alpha)
-        corners = [[x * cosa - y * sina, x * sina + y * cosa] for x, y in
+        corners = [[xc * cosa - yc * sina, xc * sina + yc * cosa] for xc, yc in
                    corners]
 
-        return [(X + x, Y + y) for x, y in corners]
+        return [(X + xc, Y + yc) for xc, yc in corners]
 
 
 class Station(object):
@@ -183,7 +182,7 @@ class Station(object):
         """Get the total area covered by the detectors
 
         :param detector_ids: list of detectors for which to get the total area.
-        :returns: total area of the detectors in m^2.
+        :return: total area of the detectors in m^2.
 
         """
         if detector_ids is not None:
@@ -405,7 +404,7 @@ class BaseCluster(object):
     def calc_rphiz_for_stations(self, s0, s1):
         """Calculate distance between and direction of two stations
 
-        :param s0, s1: The station ids for the two stations.
+        :param s0,s1: The station ids for the two stations.
         :return: r, phi, z; the distance between and direction of the two
             given stations.
 
@@ -474,7 +473,8 @@ class RAlphaBetaStations(BaseCluster):
         Example::
 
             >>> cluster = RAlphaBetaStations()
-            >>> cluster._add_station((0, 0, 0), [(5, 90, 0, 0), (5, 270, 0, 0)], 104)
+            >>> cluster._add_station((0, 0, 0),
+            ...                      [(5, 90, 0, 0), (5, 270, 0, 0)], 104)
 
         """
         detectors = [((sin(radians(alpha)) * r, cos(radians(alpha)) * r, z),
@@ -621,7 +621,7 @@ class ScienceParkCluster(BaseCluster):
                 # detector 1 is moved to the left and detector 2 next to it.
                 station_size = 10.
                 a = station_size / 2
-                detectors = [((-a, station_size), 'UD'), ((a, station_size), 'UD'),
+                detectors = [((-a, a * 2), 'UD'), ((a, a * 2), 'UD'),
                              ((-a, 0.), 'LR'), ((a, 0.), 'LR')]
             elif station == 508:
                 # 508 is diamond-shaped, with detector 2 moved to the

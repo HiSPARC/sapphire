@@ -7,7 +7,7 @@ This package contains modules for performing various analysis tasks:
 
 :mod:`~sapphire.analysis.coincidence_queries`
     Filter coincidences analysed with
-    :class:`~sapphire.analysis.coincidences.CoincidenceESD`
+    :class:`~sapphire.analysis.coincidences.CoincidencesESD`
 
 :mod:`~sapphire.analysis.coincidences`
     Search for coincidences between HiSPARC stations
