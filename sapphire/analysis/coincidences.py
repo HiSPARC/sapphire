@@ -11,9 +11,7 @@
 
         import tables
 
-        from sapphire.publicdb import download_data
-        from sapphire.analysis import coincidences
-
+        from sapphire import CoincidencesESD, download_data
 
         STATIONS = [501, 503, 506]
         START = datetime.datetime(2013, 1, 1)
@@ -27,8 +25,7 @@
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END)
 
-            coin = coincidences.CoincidencesESD(data, '/coincidences',
-                                                station_groups)
+            coin = CoincidencesESD(data, '/coincidences', station_groups)
             coin.search_and_store_coincidences()
 
 """

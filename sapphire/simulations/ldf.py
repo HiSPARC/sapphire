@@ -6,8 +6,7 @@ Example usage::
 
     import tables
 
-    from sapphire.simulations.ldf import NkgLdfSimulation
-    from sapphire.clusters import ScienceParkCluster
+    from sapphire import NkgLdfSimulation, ScienceParkCluster
 
     data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
     cluster = ScienceParkCluster()

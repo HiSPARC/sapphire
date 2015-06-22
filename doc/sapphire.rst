@@ -2,8 +2,6 @@ SAPPHiRE Reference
 ==================
 
 .. automodule:: sapphire
-   :members:
-   :undoc-members:
 
 
 Contents:

@@ -24,7 +24,7 @@ class ReconstructESDEvents(object):
     Example usage::
 
         import tables
-        from sapphire.analysis.reconstructions import ReconstructESDEvents
+        from sapphire import ReconstructESDEvents
 
         data = tables.open_file('2014_1_1.h5', 'a')
         station_path = '/hisparc/cluster_amsterdam/station_506'

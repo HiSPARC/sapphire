@@ -11,7 +11,7 @@ from json import dump
 from datetime import date
 from os import path
 
-from sapphire.api import Network, Station
+from sapphire import Network, Station
 from sapphire.utils import pbar
 
 
