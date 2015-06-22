@@ -11,7 +11,7 @@ Example usage::
     import tables
 
     from sapphire.simulations.base import BaseSimulation
-    from sapphire.clusters import ScienceParkCluster
+    from sapphire import ScienceParkCluster
 
     datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
     cluster = ScienceParkCluster()

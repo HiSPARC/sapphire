@@ -10,8 +10,7 @@
         import tables
 
         from sapphire.publicdb import download_data
-        from sapphire.analysis import process_events
-
+        from sapphire import ProcessEvents
 
         STATIONS = [501, 503, 506]
         START = datetime.datetime(2013, 1, 1)
@@ -24,7 +23,7 @@
             data = tables.open_file('data.h5', 'w')
             for station, group in zip(STATIONS, station_groups):
                 download_data(data, group, station, START, END, get_blobs=True)
-                proc = process_events.ProcessEvents(data, group)
+                proc = ProcessEvents(data, group)
                 proc.process_and_store_results()
             data.close()
 

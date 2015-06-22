@@ -8,7 +8,7 @@
 
     .. code-block:: python
 
-        >>> from sapphire.api import Station
+        >>> from sapphire import Station
         >>> stations = [5, 301, 3102, 504, 7101, 8008, 13005]
         >>> clusters = [Station(station).cluster.lower()
         ...             for station in stations]

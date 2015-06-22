@@ -7,8 +7,7 @@ Example usage::
 
     import tables
 
-    from sapphire.simulations.showerfront import FlatFrontSimulation
-    from sapphire.clusters import ScienceParkCluster
+    from sapphire import FlatFrontSimulation, ScienceParkCluster
 
     data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
     cluster = ScienceParkCluster()
@@ -184,8 +183,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
         import tables
 
-        from sapphire.simulations.showerfront import ConeFrontSimulation
-        from sapphire.clusters import ScienceParkCluster
+        from sapphire import ConeFrontSimulation, ScienceParkCluster
 
         data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
         cluster = ScienceParkCluster()

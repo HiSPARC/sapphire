@@ -79,7 +79,7 @@ the data, we need the ``datetime`` module.  Thus, we have::
 
     >>> import tables
     >>> import datetime
-    >>> from sapphire import esd
+    >>> from sapphire import download_data
 
 
 Creating an empty data file, with the name ``mydata.h5``, is done easily::
@@ -122,7 +122,7 @@ window in two arbitrarily-named variables, ``start`` and ``end``.  To
 download data from station 501 and store it in a group with name ``/s501``,
 we can use the :func:`sapphire.esd.download_data` function::
 
-    >>> esd.download_data(data, '/s501', 501, start, end)
+    >>> download_data(data, '/s501', 501, start, end)
     100%|####################################|Time: 0:00:16
 
 It will show a progressbar to indicate the progress of the download.
@@ -152,7 +152,7 @@ Finally, *type* selects whether to download event or weather data should
 be downloaded.  We've selected the default, which is *events*. We can also
 download the weather data by changing the type to ``'weather'``::
 
-    >>> esd.download_data(data, '/s501', 501, start, end, type='weather')
+    >>> download_data(data, '/s501', 501, start, end, type='weather')
     100%|####################################|Time: 0:00:10
 
 To access the raw data that includes the original detector traces the
@@ -505,8 +505,7 @@ Consider the following script, which you can hopefully understand by now
 
         import tables
 
-        from sapphire.esd import download_data
-        from sapphire.analysis.coincidences import CoincidencesESD
+        from sapphire import download_data, CoincidencesESD
 
 
         STATIONS = [501, 503, 506]

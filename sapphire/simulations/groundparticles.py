@@ -8,8 +8,7 @@ Example usage::
 
     import tables
 
-    from sapphire.simulations.groundparticles import GroundParticlesSimulation
-    from sapphire.clusters import ScienceParkCluster
+    from sapphire import GroundParticlesSimulation, ScienceParkCluster
 
     data = tables.open_file('/tmp/test_groundparticle_simulation.h5', 'w')
     cluster = ScienceParkCluster()

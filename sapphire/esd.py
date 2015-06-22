@@ -6,8 +6,8 @@
     time to read this far), you can call the :func:`quick_download`
     function like this::
 
-        >>> import sapphire.esd
-        >>> data = sapphire.esd.quick_download(501)
+        >>> from sapphire import quick_download
+        >>> data = quick_download(501)
 
     For regular use, look up :func:`download_data`.
 
