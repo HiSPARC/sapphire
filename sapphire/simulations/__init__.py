@@ -11,6 +11,10 @@ This package contains modules for performing simulations:
 :mod:`~sapphire.simulations.groundparticles`
     Perform simulations using CORSIKA ground particles as input
 
+:mod:`~sapphire.simulations.ldf`
+    Perform simulations using lateral distribution functions for particle
+    densities
+
 :mod:`~sapphire.simulations.showerfront`
     Simple simulations of a shower front
 
@@ -18,10 +22,12 @@ This package contains modules for performing simulations:
 from . import base
 from . import detector
 from . import groundparticles
+from . import ldf
 from . import showerfront
 
 
 __all__ = ['base',
            'detector',
            'groundparticles',
+           'ldf',
            'showerfront']
