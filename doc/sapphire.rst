@@ -7,6 +7,7 @@ SAPPHiRE Reference
 Contents:
 
 .. toctree::
+   :maxdepth: 2
 
    analysis
    api
