@@ -501,24 +501,24 @@ Performing the search
 Consider the following script, which you can hopefully understand by now
 (note that the prompt (>>>) is absent, since this is a *script*::
 
-        import datetime
+     import datetime
 
-        import tables
+     import tables
 
-        from sapphire import download_data, CoincidencesESD
-
-
-        STATIONS = [501, 503, 506]
-        START = datetime.datetime(2013, 1, 1)
-        END = datetime.datetime(2013, 1, 2)
+     from sapphire import download_data, CoincidencesESD
 
 
-        if __name__ == '__main__':
-            station_groups = ['/s%d' % u for u in STATIONS]
+     STATIONS = [501, 503, 506]
+     START = datetime.datetime(2013, 1, 1)
+     END = datetime.datetime(2013, 1, 2)
 
-            data = tables.open_file('data.h5', 'w')
-            for station, group in zip(STATIONS, station_groups):
-                download_data(data, group, station, START, END)
+
+     if __name__ == '__main__':
+         station_groups = ['/s%d' % u for u in STATIONS]
+
+         data = tables.open_file('data.h5', 'w')
+         for station, group in zip(STATIONS, station_groups):
+             download_data(data, group, station, START, END)
 
 At this point, we have downloaded data for three stations. Note that we
 used the :mod:`sapphire.esd`. Thus, we have no traces and the download
@@ -574,7 +574,7 @@ let us turn to the results::
     /s506/events (Table(65935,)) ''
 
 The new addition is the ``/coincidences`` group.  It contains three
-tables, which are ``c_index``, ``coincidences`` and ``observables``. 
+tables, which are ``c_index``, ``coincidences`` and ``s_index``. 
 Information about the coincidences is stored in the ``coincidences``
 table.  Let's look at the columns:
 
@@ -606,14 +606,14 @@ not known for certain when working with |hisparc| data, but are included
 nonetheless.  These columns are all set to 0.0.
 
 The ``c_index`` array is used as an index to look up the tables and
-individual events making up a coincidence.  The fifth coincidence is
+individual events making up a coincidence.  The second coincidence is
 accessed by::
 
-    >>> data.root.coincidences.coincidences[2]
+    >>> data.root.coincidences.coincidences[1]
     (2L, 1356998460, 730384055L, 1356998460730384055L, 2, 0.0, 0.0, 0.0,
      0.0, 0.0, 0.0, True, False, True)
 
-Remember, the indexes are zero-based.  The coincidence id is also 4::
+Remember, the indexes are zero-based.  The coincidence id is also 2::
 
     >>> data.root.coincidences.coincidences[2]['id']
     2
@@ -638,7 +638,7 @@ station groups.::
 
     >>> data.root.coincidences.s_index[0]
     '/s501'
-    >>> data.root.s501.events[40]
+    >>> data.get_node('/s501', 'events')[40]
     (40L, 1356998460, 730384055L, 1356998460730384055L, [2, 227, 301, 2],
      [0, 1657, 3173, 0], 0.0, 0.5117999911308289, 0.9417999982833862,
      0.0, -999.0, 12.5, 57.5, -999.0, 62.5)
