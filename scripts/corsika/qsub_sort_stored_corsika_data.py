@@ -30,8 +30,8 @@ logger = logging.getLogger('qsub_store_corsika_data')
 def all_seeds():
     """Get set of all seeds in the corsika data directory"""
 
-    dirs = glob.glob(os.path.join(DATADIR, '*_*'))
-    seeds = [os.path.basename(dir) for dir in dirs]
+    files = glob.glob(os.path.join(DATADIR, '*_*/corsika.h5'))
+    seeds = [os.path.basename(os.path.dirname(file)) for file in files]
     return set(seeds)
 
 
@@ -77,7 +77,7 @@ def get_seeds_todo():
     processed = seeds_processed()
     queued = seeds_in_queue()
 
-    # Remove processed seeds and empty lines form queued log.
+    # Remove processed seeds and empty lines from queued log.
     queued = queued.difference(processed).difference([''])
     write_queued_seeds(queued)
 
@@ -85,22 +85,19 @@ def get_seeds_todo():
     return seeds.difference(processed).difference(queued)
 
 
-def store_command(seed):
-    """Write queued seeds to file"""
 
-    source = os.path.join(DATADIR, seed, SOURCE_FILE)
-    destination = os.path.join(DATADIR, seed, DESTINATION_FILE)
-    command = 'store_corsika_data %s %s' % (source, destination)
+def get_script_path(seed):
+    """Create path for script"""
 
-    return command
+    script_name = 'sort_{seed}.sh'.format(seed=seed)
+    script_path = os.path.join('/tmp', script_name)
+    return script_path
 
 
 def create_script(seed):
     """Create script as temp file to run on Stoomboot"""
 
-    script_name = 'store_{seed}.sh'.format(seed=seed)
-    script_path = os.path.join('/tmp', script_name)
-    command = store_command(seed)
+    script_path = get_script_path(seed)
     input = SCRIPT_TEMPLATE.format(seed=seed)
 
     with open(script_path, 'w') as script:
@@ -113,9 +110,7 @@ def create_script(seed):
 def delete_script(seed):
     """Delete script"""
 
-    script_name = 'store_{seed}.sh'.format(seed=seed)
-    script_path = os.path.join('/tmp', script_name)
-
+    script_path = get_script_path(seed)
     os.remove(script_path)
 
 
@@ -147,7 +142,7 @@ def check_queue():
     """
     queue_check = 'qstat -u $USER | grep short | grep [RQ] | wc -l'
     user_jobs = int(subprocess.check_output(queue_check, shell=True))
-    max_user_jobs = 53
+    max_user_jobs = 5
     keep_free_slots = 50
 
     return max_user_jobs - keep_free_slots - user_jobs
