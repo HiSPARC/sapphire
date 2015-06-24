@@ -142,8 +142,8 @@ def check_queue():
     """
     queue_check = 'qstat -u $USER | grep short | grep [RQ] | wc -l'
     user_jobs = int(subprocess.check_output(queue_check, shell=True))
-    max_user_jobs = 55
-    keep_free_slots = 50
+    max_user_jobs = 1000
+    keep_free_slots = 300
 
     return max_user_jobs - keep_free_slots - user_jobs
 
