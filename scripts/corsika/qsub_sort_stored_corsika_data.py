@@ -1,15 +1,5 @@
-""" Convert CORSIKA stored showers to HDF5 on Stoomboot
+""" Convert unsorted CORSIKA HDF5 to sorted HDF5 using Stoomboot"""
 
-    Automatically submits Stoomboot jobs to convert corsika data. The
-    script ``store_corsika_data`` can be used to convert a DAT000000
-    CORSIKA file to a HDF5 file. This script checks our data folder for
-    new or unconverted simulations and creates Stoomboot jobs to perform
-    the conversion.
-
-    This job is run as a cron job to ensure the simulations remain up to
-    date.
-
-"""
 import os
 import glob
 import textwrap
@@ -17,17 +7,17 @@ import subprocess
 import logging
 
 
-LOGFILE = '/data/hisparc/corsika/logs/qsub_store_corsika.log'
+LOGFILE = '/data/hisparc/corsika/logs/qsub_sort_corsika.log'
 DATADIR = '/data/hisparc/corsika/data'
-QUEUED_SEEDS = '/data/hisparc/corsika/queued.log'
-SOURCE_FILE = 'DAT000000'
-DESTINATION_FILE = 'corsika.h5'
+QUEUED_SEEDS = '/data/hisparc/corsika/sort_queued.log'
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
     umask 002
     source activate /data/hisparc/corsika_env
-    {command}
-    touch {datadir}
+    cd {seed}
+    ptrepack --sortby x --propindexes corsika.h5 corsika_sorted.h5
+    mv corsika_sorted.h5 corsika.h5
+    touch tmp_sorted_flag
     # To alleviate Stoomboot, make sure the job is not to short.
     sleep $[ ( $RANDOM % 60 ) + 60 ]""")
 
@@ -40,15 +30,15 @@ logger = logging.getLogger('qsub_store_corsika_data')
 def all_seeds():
     """Get set of all seeds in the corsika data directory"""
 
-    dirs = glob.glob(os.path.join(DATADIR, '*_*'))
-    seeds = [os.path.basename(dir) for dir in dirs]
+    files = glob.glob(os.path.join(DATADIR, '*_*/corsika.h5'))
+    seeds = [os.path.basename(os.path.dirname(file)) for file in files]
     return set(seeds)
 
 
 def seeds_processed():
-    """Get the seeds of simulations for which the h5 is already created"""
+    """Get the seeds of simulations for which the h5 is already sorted"""
 
-    files = glob.glob(os.path.join(DATADIR, '*_*/corsika.h5'))
+    files = glob.glob(os.path.join(DATADIR, '*_*/tmp_sorted_flag'))
     seeds = [os.path.basename(os.path.dirname(file)) for file in files]
     return set(seeds)
 
@@ -87,59 +77,57 @@ def get_seeds_todo():
     processed = seeds_processed()
     queued = seeds_in_queue()
 
+    # Remove processed seeds and empty lines from queued log.
     queued = queued.difference(processed).difference([''])
     write_queued_seeds(queued)
 
+    # Get seeds not yet processed and not in queue.
     return seeds.difference(processed).difference(queued)
 
 
-def store_command(seed):
-    """Write queued seeds to file"""
 
-    source = os.path.join(DATADIR, seed, SOURCE_FILE)
-    destination = os.path.join(DATADIR, seed, DESTINATION_FILE)
-    command = 'store_corsika_data %s %s' % (source, destination)
+def get_script_path(seed):
+    """Create path for script"""
 
-    return command
+    script_name = 'sort_{seed}.sh'.format(seed=seed)
+    script_path = os.path.join('/tmp', script_name)
+    return script_path
 
 
 def create_script(seed):
     """Create script as temp file to run on Stoomboot"""
 
-    script_name = 'store_{seed}.sh'.format(seed=seed)
-    script_path = os.path.join('/tmp', script_name)
-    command = store_command(seed)
-    input = SCRIPT_TEMPLATE.format(command=command, datadir=DATADIR)
+    script_path = get_script_path(seed)
+    input = SCRIPT_TEMPLATE.format(seed=os.path.join(DATADIR, seed))
 
     with open(script_path, 'w') as script:
         script.write(input)
     os.chmod(script_path, 0774)
 
-    return script_path, script_name
+    return script_path
 
 
 def delete_script(seed):
     """Delete script"""
 
-    script_name = 'store_{seed}.sh'.format(seed=seed)
-    script_path = os.path.join('/tmp', script_name)
-
+    script_path = get_script_path(seed)
     os.remove(script_path)
 
 
 def submit_job(seed):
     """Submit job to Stoomboot"""
 
-    script_path, script_name = create_script(seed)
+    script_path = create_script(seed)
 
     qsub = ('qsub -q short -V -z -j oe -N {name} {script}'
-            .format(name=script_name, script=script_path))
+            .format(name=os.path.basename(script_path), script=script_path))
 
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
                                      shell=True)
     if not result == '':
-        logger.error('%s - Error occured: %s' % (seed, result))
-        raise Exception
+        msg = '%s - Error occured: %s' % (seed, result)
+        logger.error(msg)
+        raise Exception(msg)
 
     delete_script(seed)
 
@@ -155,7 +143,7 @@ def check_queue():
     queue_check = 'qstat -u $USER | grep short | grep [RQ] | wc -l'
     user_jobs = int(subprocess.check_output(queue_check, shell=True))
     max_user_jobs = 1000
-    keep_free_slots = 50
+    keep_free_slots = 300
 
     return max_user_jobs - keep_free_slots - user_jobs
 

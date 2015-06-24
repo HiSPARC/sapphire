@@ -153,13 +153,22 @@ def main():
     parser.add_argument('--progress', action='store_true',
                         help='show progressbar during generation')
     parser.add_argument('--log', action='store_true',
-                        help='write logs to file, only for use on server.')
+                        help='write logs to file, only for use on server')
+    parser.add_argument('--lazy', action='store_true',
+                        help='only run if the overview is outdated')
     args = parser.parse_args()
     if args.log:
         logging.basicConfig(filename=LOGFILE, filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s: '
                                    '%(message)s',
                             datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+    if args.lazy:
+        last_store = os.path.getmtime(args.source)
+        last_overview = os.path.getmtime(args.destination)
+        if last_overview > last_store:
+            logger.info('Overview up to date.')
+            return
+
     generate_corsika_overview(source=args.source,
                               destination=args.destination,
                               progress=args.progress)
