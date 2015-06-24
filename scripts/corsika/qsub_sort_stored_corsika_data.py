@@ -81,7 +81,7 @@ def get_seeds_todo():
     queued = queued.difference(processed).difference([''])
     write_queued_seeds(queued)
 
-    # Get seeds not yet processed and not in queue.
+    # Get seeds not yet processed and not in queue.
     return seeds.difference(processed).difference(queued)
 
 
@@ -98,13 +98,13 @@ def create_script(seed):
     """Create script as temp file to run on Stoomboot"""
 
     script_path = get_script_path(seed)
-    input = SCRIPT_TEMPLATE.format(seed=seed)
+    input = SCRIPT_TEMPLATE.format(seed=os.path.join(DATADIR, seed))
 
     with open(script_path, 'w') as script:
         script.write(input)
     os.chmod(script_path, 0774)
 
-    return script_path, script_name
+    return script_path
 
 
 def delete_script(seed):
@@ -117,10 +117,10 @@ def delete_script(seed):
 def submit_job(seed):
     """Submit job to Stoomboot"""
 
-    script_path, script_name = create_script(seed)
+    script_path = create_script(seed)
 
     qsub = ('qsub -q short -V -z -j oe -N {name} {script}'
-            .format(name=script_name, script=script_path))
+            .format(name=os.path.basename(script_path), script=script_path))
 
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
                                      shell=True)
@@ -142,7 +142,7 @@ def check_queue():
     """
     queue_check = 'qstat -u $USER | grep short | grep [RQ] | wc -l'
     user_jobs = int(subprocess.check_output(queue_check, shell=True))
-    max_user_jobs = 5
+    max_user_jobs = 55
     keep_free_slots = 50
 
     return max_user_jobs - keep_free_slots - user_jobs
