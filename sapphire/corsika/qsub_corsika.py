@@ -343,26 +343,26 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('n', type=int, help="number of jobs to submit")
     parser.add_argument('energy', metavar='energy', type=float,
-                        help="energy of the primary particle in range 12..17 "
-                             "(log10(E[eV])), in steps of .5",
+                        help="energy of the primary particle in range 12..17, "
+                             "in steps of .5 (log10(E[eV]))",
                         choices=[12, 12.5, 13, 13.5, 14, 14.5, 15, 15.5,
                                  16, 16.5, 17, 17.5, 18, 18.5])
     parser.add_argument('particle', help="primary particle kind (e.g. proton "
                                          "or iron)")
     parser.add_argument('zenith', metavar='zenith',
-                        help="zenith angle of primary particle in range 0..60 "
-                             "steps of 7.5 [degrees]",
+                        help="zenith angle of primary particle in range 0..60,"
+                             " in steps of 7.5 [degrees]",
                         type=float,
                         choices=[0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60])
     parser.add_argument('-a', '--azimuth', metavar='angle',
                         help="azimuth angle of primary particle in range "
-                             "0..315 steps of 45 [degrees]",
+                             "0..315, in steps of 45 [degrees]",
                         type=int,
                         default=0,
                         choices=[0, 45, 90, 135, 180, 225, 270, 315])
     parser.add_argument('-q', '--queue', metavar='name',
                         help="name of the Stoomboot queue to use, choose from "
-                             "(express, short, generic, long)",
+                             "express, short, generic (default), and long",
                         default='generic',
                         choices=['express', 'short', 'generic', 'long'])
     parser.add_argument('-c', '--corsika', metavar='exec',

@@ -165,7 +165,7 @@ def main():
     if args.lazy:
         last_store = os.path.getmtime(args.source)
         last_overview = os.path.getmtime(args.destination)
-        if (last_overview > last_store):
+        if last_overview > last_store:
             logger.info('Overview up to date.')
             return
 
