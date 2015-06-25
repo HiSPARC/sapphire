@@ -18,7 +18,7 @@
 from __future__ import division
 import itertools
 
-from numpy import isnan, nan, cos, sqrt, mean, array
+from numpy import isnan, nan, cos, sqrt, log10, mean, array
 
 from .event_utils import station_density, detector_density
 from ..utils import pbar
@@ -176,9 +176,9 @@ class CenterMassAlgorithm(object):
                         reconstructions.
 
         """
-        theta = initial.get('theta', nan)
-        if not isnan(theta):
-            p = [density * cos(theta) for density in p]
+        #theta = initial.get('theta', nan)
+        #if not isnan(theta):
+            #p = [density * cos(theta) for density in p]
 
         return cls.reconstruct(p, x, y)
 
@@ -223,19 +223,18 @@ class AverageIntersectionAlgorithm(object):
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
             raise Exception('This algorithm requires at least 4 detections.')
-
         phit = []
         xhit = []
         yhit = []
         for i in range(len(p)):
-            if p[i] > .01:
+            if p[i] > .00001:
                 phit.append(p[i])
                 xhit.append(x[i])
                 yhit.append(y[i])
 
         statindex = range(len(phit))
         subsets = itertools.combinations(statindex, 3)
-        m = 3.0  # average value in powerlaw  r ^(-m)  for density
+        m = 2.3  # optimized value in powerlaw  r ^(-m)  for density
 
         linelist0 = []
         linelist1 = []
@@ -268,8 +267,8 @@ class AverageIntersectionAlgorithm(object):
             linelist0.append(-e / f)
             linelist1.append((a * e + b * f + g * k) / f)
 
-        newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
-                                                            initial)
+        linx, liny = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
+                                                      initial)
         subsets = itertools.combinations(statindex, 2)
 
         xpointlist = []
@@ -284,48 +283,32 @@ class AverageIntersectionAlgorithm(object):
                 aminc = 0.000000001
             xint = (d - b) / aminc
             yint = (a * d - b * c) / aminc
-            if a != c:
+            if abs(xint)<600. and abs(yint)<600.:
                 xpointlist.append(xint)
                 ypointlist.append(yint)
 
-        subxplist, subyplist = cls.select_newlist(
-            newx, newy, xpointlist, ypointlist, 120.)
-        if len(subxplist) > 3:
-            newx = mean(subxplist)
-            newy = mean(subyplist)
-            subxplist, subyplist = cls.select_newlist(
-                newx, newy, xpointlist, ypointlist, 100.)
-        if len(subxplist) > 2:
-            newx = mean(subxplist)
-            newy = mean(subyplist)
+        if len(xpointlist) > 0:
+            linx = mean(xpointlist)
+            liny = mean(ypointlist)
 
-        return newx, newy
+        return linx, liny
 
-    @staticmethod
-    def select_newlist(newx, newy, xpointlist, ypointlist, distance):
-        """Select intersection points in square around the mean of old list."""
-        newxlist = []
-        newylist = []
-        for xpoint, ypoint in zip(xpointlist, ypointlist):
-            dr = sqrt((xpoint - newx) ** 2 + (ypoint - newy) ** 2)
-            if dr < distance:
-                newxlist.append(xpoint)
-                newylist.append(ypoint)
-
-        return newxlist, newylist
 
 
 class EllipsLdfAlgorithm(object):
 
-    """ Simple core estimator
+    """ Special core and size estimator
 
-    Estimates the core by center of mass of the measurements.
+    Estimates the core and shower size (electrons + muons) by a brute force
+    inspection in a limited region, in combination with regression, with
+    elliptic lateral densities in the neighborhood of cores found with both
+    the CenterMassAlgorithm and AverageIntersectionAlgorithm.
 
     """
 
     @classmethod
     def reconstruct_common(cls, p, x, y, z=None, initial={}):
-        """Reconstruct core position
+        """Reconstruct core position and shower size
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
@@ -340,47 +323,56 @@ class EllipsLdfAlgorithm(object):
 
     @classmethod
     def reconstruct(cls, p, x, y, theta, phi):
-        """Reconstruct the number of electrons that fits best.
+        """Reconstruct core position that performs best.
+        Reconstruct shower size (electrons + muons
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
         :param theta, phi: zenith and azimuth angle in rad.
 
         """
+
         xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
-        xbest = xcmass
-        ybest = ycmass
         factorbest = 1.
-        gridsize = 5.
+        gridsize = 20.          ##################
+
+        xbest, ybest, chi2best, factorbest = cls.selectbest(
+            p, x, y, xcmass, ycmass, factorbest, chi2best, gridsize, theta, phi)
+
+        gridsize = 5.            ##################
         xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x,
-                                                                         y)
+        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
-        xbest = xcmass
-        ybest = ycmass
         factorbest = 1.
+        gridsize = 50.          ##################
+
+        xbest, ybest, chi2best, factorbest = cls.selectbest(
+            p, x, y, xlines, ylines, factorbest, chi2best, gridsize, theta, phi)
+
+        gridsize = 10.          ##################
         xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        if chi2best1 < chi2best2:
-            chi2best = chi2best1
-            xbest = xbest1
-            ybest = ybest1
-            factorbest = factorbest1
-        else:
-            chi2best = chi2best2
-            xbest = xbest2
-            ybest = ybest2
-            factorbest = factorbest2
 
-        gridsize = 2.
+        if chi2best1 < chi2best2:
+            xbest, ybest, chi2best, factorbest = xbest1, ybest1, chi2best1, factorbest1
+        else:
+            xbest, ybest, chi2best, factorbest = xbest2, ybest2, chi2best2, factorbest2
+
+        gridsize = 4.            ################
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        return core_x, core_y, chi2best, factorbest * ldf.EllipsLdf._Ne
+        size = factorbest * ldf.EllipsLdf._Ne
+        coefa = 0.519 * cos(theta) + 0.684
+        coefb = 7.84 + 5.30 * cos(theta)
+        enerpow = (log10(size) +coefb) / coefa
+        energy = 10 ** enerpow
+
+        return core_x, core_y, chi2best, size, energy
 
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
@@ -396,10 +388,11 @@ class EllipsLdfAlgorithm(object):
         ybest = ystart
 
         a = ldf.EllipsLdf(zenith=theta, azimuth=phi)
-        for i in range(41):
-            xtry = xstart + (i - 20) * gridsize
-            for j in range(11):
-                ytry = ystart + (i - 20) * gridsize
+        gridparam = 4
+        for i in range(2 * gridparam + 1):
+            xtry = xstart + (i - gridparam) * gridsize
+            for j in range(2 * gridparam + 1):
+                ytry = ystart + (j - gridparam) * gridsize
                 xstations = array(x)
                 ystations = array(y)
                 r, angle = a.calculate_core_distance_and_angle(
@@ -410,13 +403,14 @@ class EllipsLdfAlgorithm(object):
                 m = 0.
                 l = 0.
 
-                for i, j in zip(p, rho):
-                    mmdivl += 1. * i * i / j
-                    m += i
-                    l += j
+                for ki, kj in zip(p, rho):
+                    mmdivl += 1. * ki * ki / kj
+                    m += ki
+                    l += kj
 
                 sizefactor = sqrt(mmdivl / l)
                 chi2 = 2. * (sizefactor * l - m)
+
                 if chi2 < chi2best:
                     factorbest = sizefactor
                     xbest = xtry
@@ -424,3 +418,105 @@ class EllipsLdfAlgorithm(object):
                     chi2best = chi2
 
         return xbest, ybest, chi2best, factorbest
+
+
+class BruteForceAlgorithm(object):
+
+    """ Brute force core and shower size (electrons + muons) estimator
+
+    Estimates the core and shower size (electrons + muons) by a brute force
+    inspection, in combination with regression, with elliptic lateral
+    densities in the neighborhood of cores found with both the
+    CenterMassAlgorithm and AverageIntersectionAlgorithm.
+
+    NOT RECOMMENDED TO USE since it is extremely slow
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core position and shower size
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions: zenith and azimuth.
+
+        """
+        theta = initial.get('theta', 0.)
+        phi = initial.get('phi', 0.)
+        return cls.reconstruct(p, x, y, theta, phi)
+
+    @classmethod
+    def reconstruct(cls, p, x, y, theta, phi):
+        """Reconstruct core position that performs best.
+        Reconstruct showers size (electrons + muons) that fits best.
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param theta, phi: zenith and azimuth angle in rad.
+
+        """
+        chi2best = 10 ** 99
+        factorbest = 1.
+        xbest = 0.
+        ybest = 0.
+        gridsize = 10.            ################
+
+        core_x, core_y, chi2best, factorbest = cls.selectbest(
+            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
+
+        size = factorbest * ldf.EllipsLdf._Ne
+        coefa = 0.519 * cos(theta) + 0.684
+        coefb = 7.84 +5.30 * cos(theta)
+        enerpow = (log10(size) +coefb) / coefa
+        energy = 10 ** enerpow
+
+        return core_x, core_y, chi2best, size, energy
+
+    @staticmethod
+    def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
+                   theta, phi):
+        """selects the best core position in grid around (xstart, ystart).
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param xcmass,ycmass: start position of core in m.
+
+        """
+        xbest = xstart
+        ybest = ystart
+
+        a = ldf.EllipsLdf(zenith=theta, azimuth=phi)
+        gridparam = 75
+        for i in range(2 * gridparam + 1):
+            xtry = xstart + (i - gridparam) * gridsize
+            for j in range(2 * gridparam + 1):
+                ytry = ystart + (j - gridparam) * gridsize
+                xstations = array(x)
+                ystations = array(y)
+                r, angle = a.calculate_core_distance_and_angle(
+                    xstations, ystations, xtry, ytry)
+                rho = a.calculate_ldf_value(r, angle)
+
+                mmdivl = 0.
+                m = 0.
+                l = 0.
+
+                for ki, kj in zip(p, rho):
+                    mmdivl += 1. * ki * ki / kj
+                    m += ki
+                    l += kj
+
+                sizefactor = sqrt(mmdivl / l)
+                chi2 = 2. * (sizefactor * l - m)
+
+                if chi2 < chi2best:
+                    factorbest = sizefactor
+                    xbest = xtry
+                    ybest = ytry
+                    chi2best = chi2
+
+        return xbest, ybest, chi2best, factorbest
+

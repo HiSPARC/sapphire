@@ -396,14 +396,14 @@ class KascadeLdf(NkgLdf):
 
 class EllipsLdf(KascadeLdf):
 
-    """The NKG function modified for leptons and azimuthal asymmetry"""
+    """NKG function modified for electrons + muons and azimuthal asymmetry"""
 
     # shower parameters
     # Values from Montanus, paper to follow.
-    _Ne = 10 ** 4.8
-    _s1 = -.5  # Shape parameter
-    _s2 = -2.6  # Shape parameter
-    _r0 = 30.
+    _Ne = 10 ** 6.0   # Ne is number of electrons and muons !!!!
+    _s1 = -.63  # Shape parameter
+    _s2 = -2.71  # Shape parameter
+    _r0 = 26.
     _zenith = 0.
     _azimuth = 0.
 
@@ -414,11 +414,12 @@ class EllipsLdf(KascadeLdf):
             self._zenith = zenith
         if azimuth is not None:
             self._azimuth = azimuth
+        self._s1 = self._s1 + 0.21 * self._zenith
+        self._s2 = self._s2 * cos(self._zenith) ** .5
         if s1 is not None:
             self._s1 = s1
         if s2 is not None:
             self._s2 = s2
-
         self._cache_c_s_value()
 
     def _cache_c_s_value(self):
@@ -430,7 +431,8 @@ class EllipsLdf(KascadeLdf):
         self._c_s = self._c(self._s1, self._s2)
 
     def calculate_ldf_value(self, r, phi, Ne=None, zenith=None, azimuth=None):
-        """Calculate the LDF value for a given core distance and polar angle
+        """Calculate the LDF value for a given distance and polar angle
+        w.r.t. the core.
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
@@ -447,15 +449,9 @@ class EllipsLdf(KascadeLdf):
         return self.ldf_value(r, phi, Ne, zenith, azimuth, self._s1, self._s2)
 
     def ldf_value(self, r, phi, Ne, zenith, azimuth, s1, s2):
-        """Calculate the LDF value
-
-        Given a core distance, core polar angle, zenith angle, azimuth angle,
-        shower size and three shape parameters (r0, s1, s2) .
-        As given by Montanus, paper to follow.
-
-        .. warning::
-           The value 11.24 in the expression: muoncorr is only valid
-           for: s1 = -.5, s2 = - 2.6 and r0 = 30.
+        """Calculate the LDF value for a given a distance, polar angle,
+        zenith angle, azimuth angle, shower size and three shape parameters
+        (r0, s1, s2) . Method as given by Montanus, paper to follow.
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
@@ -471,18 +467,22 @@ class EllipsLdf(KascadeLdf):
             c_s = self._c_s
         else:
             c_s = self._c(s1, s2)
-        r0 = self._r0
-        zenith = self._zenith
-        azimuth = self._azimuth
-        relcos = cos(phi - azimuth)
-        ell = sqrt(1 - sin(zenith) * sin(zenith) * relcos * relcos)
-        shift = -0.0575 * sin(2 * zenith) * r * relcos
-        k = shift + r * ell
-        term1 = k / r0
-        term2 = 1 + k / r0
-        muoncorr = 1 + k / (11.24 * r0)  # See warning in docstring.
 
-        return Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
+        r0 = self._r0
+        #zenith = self._zenith
+        #azimuth = self._azimuth
+        relcos = cos(phi - azimuth)
+        ell = sqrt(1. - sin(zenith) * sin(zenith) * relcos * relcos)
+        shift = -0.058 * sin(2. * zenith) * relcos
+        #ell=1.
+        #shift=0.
+        k = r * shift + r * ell
+        term1 = 1. * k / r0
+        term2 = 1. + term1
+
+        dens = Ne * cos(zenith) * c_s * term1 ** s1 * term2 ** s2
+
+        return dens
 
     def _c(self, s1, s2):
         """Normalization of the LDF
@@ -506,11 +506,11 @@ class EllipsLdf(KascadeLdf):
 
         :param x,y: detector position in m.
         :param x0,y0: shower core position in m.
-        :returns: distance and polar angle from detector to the shower core in
+        :returns: distance and polar angle from shower core to detector in
                   horizontal observation plane in m resp. rad.
 
         """
-        x = x - x0
-        y = y - y0
+        dx = x - x0
+        dy = y - y0
 
-        return sqrt(x ** 2 + y ** 2), arctan2(y, x)
+        return sqrt(dx ** 2 + dy ** 2), arctan2(dy, dx)
