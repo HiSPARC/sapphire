@@ -29,8 +29,8 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertEqual(header.id, 'RUNH')
         self.assertAlmostEqual(header.version, 7.4, 4)
         for h in [10., 5000., 30000., 50000., 110000.]:
-            self.assertAlmostEqual(header.thickness_to_height(
-                                       header.height_to_thickness(h)), h, 8)
+            t = header.height_to_thickness(h)
+            self.assertAlmostEqual(header.thickness_to_height(t), h, 8)
 
         end = self.file.get_end()
         self.assertIsInstance(end, corsika.blocks.RunEnd)

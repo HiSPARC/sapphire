@@ -70,8 +70,6 @@ class Coincidences(object):
         to use the subclass :class:`CoincidencesESD` instead.
 
     """
-    ProcessWithTraces = process_events.ProcessIndexedEventsWithLINT
-    ProcessWithoutTraces = process_events.ProcessIndexedEventsWithoutTraces
 
     def __init__(self, data, coincidence_group, station_groups,
                  overwrite=False, progress=True):
@@ -189,10 +187,10 @@ class Coincidences(object):
 
             if 'blobs' in station_group:
                 print "Processing coincidence events with traces"
-                Process = self.ProcessWithTraces
+                Process = process_events.ProcessIndexedEventsWithLINT
             else:
                 print "Processing coincidence events without traces"
-                Process = self.ProcessWithoutTraces
+                Process = process_events.ProcessIndexedEventsWithoutTraces
 
             process = Process(self.data, station_group, index)
             process.process_and_store_results(overwrite=overwrite)
@@ -478,8 +476,8 @@ class CoincidencesESD(Coincidences):
     def search_coincidences(self, window=2000, shifts=None, limit=None):
         """Search for coincidences.
 
-        Instead of storing the results in the tables `_src_c_index` and
-        `_src_timestamps`, they are stored in attributes by the same
+        Instead of storing the results in the tables ``_src_c_index`` and
+        ``_src_timestamps``, they are stored in attributes by the same
         name in the class.
 
         """
@@ -491,9 +489,9 @@ class CoincidencesESD(Coincidences):
         """Store the previously found coincidences.
 
         After having searched for coincidences, you can store the more
-        user-friendly results in the `coincidences` group using this
-        method. It also created a `c_index` and `s_index` table to find
-        the source events.
+        user-friendly results in the ``coincidences`` group using this
+        method. It also created a ``c_index`` and ``s_index`` table to
+        find the source events.
 
         """
         if cluster:
@@ -540,7 +538,7 @@ class CoincidencesESD(Coincidences):
         """Store a single coincidence in the coincidence group.
 
         Stores coincidence in the coincidences table and references
-        to the observables making up each coincidence in `c_index`.
+        to the observables making up each coincidence in ``c_index``.
 
         """
         row = self.coincidences.row
@@ -583,9 +581,9 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
     :param stations: a list of HiSPARC event tables (normally from
         different stations, hence the name)
     :param coincidence: a coincidence, as returned by
-        :func:`search_coincidences`.
+        :meth:`~Coincidences.search_coincidences`.
     :param timestamps: the list of timestamps, as returned by
-        :func:`search_coincidences`.
+        :meth:`~Coincidences.search_coincidences`.
     :param get_raw_traces: boolean.  If true, return the compressed ADC
         values instead of the uncompressed traces.
 

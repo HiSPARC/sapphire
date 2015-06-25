@@ -9,10 +9,10 @@
 
     Each algorithm has a :meth:`~DirectAlgorithm.reconstruct_common`
     method which always requires arrival times, x, and y positions and
-    optionally z positions and previous reconstruction results. The
-    data is then prepared for the algorithm and passed to the
-    `reconstruct` method which returns the reconstructed theta and phi
-    coordinates.
+    optionally z positions and previous reconstruction results. The data
+    is then prepared for the algorithm and passed to
+    the :meth:`~DirectAlgorithm.reconstruct` method which returns the
+    reconstructed theta and phi coordinates.
 
 """
 import warnings
@@ -33,7 +33,7 @@ class EventDirectionReconstruction(object):
     This class is aware of 'events' and 'stations'.  Initialize this class
     with a 'station' and you can reconstruct events using
     :meth:`reconstruct_event`. To use other algorithms overwrite the
-    :attr:`direct` and :attr:`fit` attributes.
+    ``direct`` and ``fit`` attributes.
 
     :param station: :class:`~sapphire.clusters.Station` object.
 
@@ -57,7 +57,7 @@ class EventDirectionReconstruction(object):
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
         :param offsets: time offsets for each detector.
-        :returns: theta, phi, and detector ids.
+        :return: theta, phi, and detector ids.
 
         """
         t, x, y, z, ids = ([], [], [], [], [])
@@ -87,7 +87,7 @@ class EventDirectionReconstruction(object):
                        file.
         :param detector_ids: detectors to use for the reconstructions.
         :param offsets: time offsets for each detector.
-        :returns: list of theta, phi, and detector ids.
+        :return: list of theta, phi, and detector ids.
 
         """
         angles = [self.reconstruct_event(event, detector_ids, offsets)
@@ -103,7 +103,7 @@ class CoincidenceDirectionReconstruction(object):
     This class is aware of 'coincidences' and 'clusters'.  Initialize
     this class with a 'cluster' and you can reconstruct a coincidence
     using :meth:`reconstruct_coincidence`. To use other algorithms
-    overwrite the :attr:`direct` and :attr:`fit` attributes.
+    overwrite the ``direct`` and ``fit`` attributes.
 
     :param cluster: :class:`~sapphire.clusters.BaseCluster` object.
 
@@ -129,7 +129,7 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
-        :returns: list of theta, phi, and station numbers.
+        :return: list of theta, phi, and station numbers.
 
         """
         no_offset = [0., 0., 0., 0.]
@@ -177,7 +177,7 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
-        :returns: list of theta, phi, and station numbers.
+        :return: list of theta, phi, and station numbers.
 
         """
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
@@ -583,17 +583,28 @@ class DirectAlgorithmCartesian3D(object):
 
 class SphereAlgorithm(object):
 
+    """Reconstruct the direction in equatorial coordinates
+
+    Note: currently incompatible with the other algorithms!
+
+    This class uses a different coordinate systems than the other
+    algorithms. The location input is in ECEF coordinates and a
+    timestamp is required to connect the direction to the equatorial
+    coordinates.
+
+    """
+
     @classmethod
     def reconstruct_source_ECS(cls, t, x, y, z, timestamp):
         """Reconstructs the source in the Equatorial Coordinate System.
 
-        :param timestamp: The UTC timestamp of the coincidence in s.
         :param t: An array with three arrival times in ns.
         :param x,y,z: arrays with the ECEF locations of the
                       three detectors / stations in meters.
-        :returns: the declination and right ascension of the source. The
-                  apparent location of the cosmic ray source in the
-                  Equatorial Coordinate System.
+        :param timestamp: The UTC timestamp of the coincidence in s.
+        :return: the declination and right ascension of the source. The
+                 apparent location of the cosmic ray source in the
+                 Equatorial Coordinate System.
 
         """
         t_int = array([-1000, -10000]) + t[0]
@@ -612,12 +623,12 @@ class SphereAlgorithm(object):
         based on location calculations used for LORAN, DECCA, RACAL, GPS
         as described by N.G. Schultheiss 2012
 
-        :param #x, #y, #z: Arrays with the orthogonal coordinates of the three
-                   detectors / stations in m.
-        :param #t: The arrival time of the shower in the detectors / stations
-                   in ns.
-        :param #t_int: The interaction time in ns.
-        :returns: parameters x_int, y_int, z_int
+        :param x,y,z: Arrays with the orthogonal coordinates of the three
+                      detectors / stations in m.
+        :param t: The arrival time of the shower in the detectors / stations
+                  in ns.
+        :param t_int: The interaction time in ns.
+        :return: parameters x_int, y_int, z_int
 
         """
         c = .299792458

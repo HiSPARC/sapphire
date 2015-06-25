@@ -213,13 +213,16 @@ class KascadeCoincidences(object):
             [coinc_dt, coinc_h_idx, coinc_k_idx], names='dt, h_idx, k_idx')
 
     def store_coincidences(self):
-        self.data.create_table(self.kascade_group, 'c_index', self.coincidences)
+        self.data.create_table(self.kascade_group, 'c_index',
+                               self.coincidences)
 
     def _get_cached_sorted_id_and_timestamp_arrays(self):
         if not hasattr(self, '_h'):
-            self._h = self._get_sorted_id_and_timestamp_array(self.hisparc_group)
+            self._h = self._get_sorted_id_and_timestamp_array(
+                self.hisparc_group)
         if not hasattr(self, '_k'):
-            self._k = self._get_sorted_id_and_timestamp_array(self.kascade_group)
+            self._k = self._get_sorted_id_and_timestamp_array(
+                self.kascade_group)
         return self._h.copy(), self._k.copy()
 
     def _get_sorted_id_and_timestamp_array(self, group):

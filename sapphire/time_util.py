@@ -66,8 +66,7 @@ class GPSTime(object):
         return time.asctime(timetuple)
 
     def datetime(self):
-        """Return the GPS date/time as a :class:`datetime.datetime`
-        instance.
+        """Return the GPS date/time as a ``datetime.datetime`` instance.
 
         Example::
 

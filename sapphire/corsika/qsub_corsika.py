@@ -272,10 +272,7 @@ class CorsikaBatch(object):
 def check_queue(queue):
     """Check for available job slots on the selected queue for current user
 
-    Maximum numbers from `qstat -Q -f`
-
-    Caveat: also counts completed jobs still listed in qstat,
-            add `grep [RQ]` to fix.
+    Maximum numbers from ``qstat -Q -f``
 
     :param queue: queue name for which to check current number of job
                   slots in use.

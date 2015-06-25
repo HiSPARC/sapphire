@@ -24,7 +24,7 @@ def station_density(event, detector_ids=None, station=None):
     :param detector_ids: list of detectors ids to consider. If None, the
         detectors in the station object will be used.
     :param station: Station object.
-    :returns: average density over the chosen detectors.
+    :return: average density over the chosen detectors.
 
     """
     if detector_ids is None:
@@ -41,7 +41,7 @@ def detector_densities(event, detector_ids=None, station=None):
     :param detector_ids: list of detectors ids for which to get particle
         densities.
     :param station: Station object.
-    :returns: density in each chosen detector.
+    :return: density in each chosen detector.
 
     """
     if detector_ids is None:
@@ -56,7 +56,7 @@ def detector_density(event, detector_id, station=None):
     :param event: Processed event row.
     :param detector_id: detector id for which to get particle density.
     :param station: Station object, used to determine the detector size.
-    :returns: density in the chosen detector.
+    :return: density in the chosen detector.
 
     """
     number_of_particles = event['n%d' % (detector_id + 1)]
@@ -86,8 +86,8 @@ def station_arrival_time(event, reference_ext_timestamp,
     :param detector_ids: list of detectors ids for which to consider.
     :param offsets: list of detector time offsets.
     :param station: Station object, used to determine the number of detectors.
-    :returns: shower arrival time of the station relative to the
-              reference timestamp.
+    :return: shower arrival time of the station relative to the
+             reference timestamp.
 
     """
     if detector_ids is None:
@@ -114,7 +114,7 @@ def relative_detector_arrival_times(event, reference_ext_timestamp,
     :param detector_ids: list of detectors ids for which to get arrival times.
     :param offsets: list of detector time offsets.
     :param station: Station object, used to determine the number of detectors.
-    :returns: list of shower arrival times relative to the given reference.
+    :return: list of shower arrival times relative to the given reference.
 
     """
     if detector_ids is None:
@@ -138,7 +138,7 @@ def detector_arrival_times(event, detector_ids=None, offsets=NO_OFFSET,
     :param detector_ids: list of detectors ids for which to get arrival times.
     :param offsets: list of detector time offsets.
     :param station: Station object, used to determine the number of detectors.
-    :returns: list of shower arrival times relative to the start of the trace.
+    :return: list of shower arrival times relative to the start of the trace.
 
     """
     if detector_ids is None:
@@ -153,7 +153,7 @@ def detector_arrival_time(event, detector_id, offsets=NO_OFFSET):
     :param event: Event row.
     :param detector_id: detector id for which to get arrival times.
     :param offsets: list of detector time offsets.
-    :returns: arrival time corrected by the offset.
+    :return: arrival time corrected by the offset.
 
     """
     arrival_time = event['t%d' % (detector_id + 1)]
@@ -174,7 +174,7 @@ def get_detector_ids(station=None, event=None):
 
     :param event: Event row.
     :param station: Station object.
-    :returns: list of detector_ids.
+    :return: list of detector_ids.
 
     """
     if station is not None:

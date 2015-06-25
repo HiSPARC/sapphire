@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 from numpy import isnan, pi, sqrt, arcsin, arctan
 
@@ -106,6 +107,9 @@ class BaseAlgorithm(object):
                 theta, phi = self.call_reconstruct(t, x, y, z)
                 self.assertAlmostEqual(phi, azimuths[i], 4)
                 self.assertAlmostEqual(theta, zenith, 4)
+                # Compare with z=None, should default to 0
+                theta_no_z, phi_no_z = self.call_reconstruct(t, x, y, None)
+                self.assertEqual((theta, phi), (theta_no_z, phi_no_z))
 
                 t = [time] * 3
                 t[i] = 0.
@@ -113,18 +117,46 @@ class BaseAlgorithm(object):
                 theta, phi = self.call_reconstruct(t, x, y, z)
                 self.assertAlmostEqual(phi, azimuths[i], 4)
                 self.assertAlmostEqual(theta, zenith, 4)
+                # Compare with z=None, should default to 0
+                theta_no_z, phi_no_z = self.call_reconstruct(t, x, y, None)
+                self.assertEqual((theta, phi), (theta_no_z, phi_no_z))
 
 
-class AltitudeAlgorithm(object):
+class DirectAlgorithm(BaseAlgorithm):
+
+    """Use this class to check algorithms that only support three detections
+
+    They should give similar warnings in some cases.
+
+    """
+
+    def test_to_many_stations(self):
+        """To many stations should issue a warning.
+
+        Moreover, the result should be based on the first three detections
+
+        """
+        # Shower from above (for first three detectors)
+        x = (0., 10., 0., 10.)
+        y = (0., 0., 10., 10.)
+        z = (0., 0., 0., 0.)
+        t = (0., 0., 0., 10.)
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            theta, phi = self.call_reconstruct(t, x, y, z)
+            self.assertTrue(issubclass(w[0].category, UserWarning))
+            self.assertAlmostEqual(theta, 0., 4)
+            self.assertTrue(-pi <= phi <= pi)
+
+
+class AltitudeAlgorithm(BaseAlgorithm):
 
     """Use this class to check the altitude support
 
     They should give similar results and errors in some cases.
 
     """
-
-    def call_reconstruct(self, t, x, y, z):
-        return self.algorithm.reconstruct_common(t, x, y, z)
 
     def test_stations_altitude(self):
         """Simple shower on a non horizontal square."""
@@ -143,16 +175,20 @@ class AltitudeAlgorithm(object):
         self.assertAlmostEqual(theta, zenith, 5)
 
 
-class MultiAlgorithm(object):
+class DirectAltitudeAlgorithm(DirectAlgorithm, AltitudeAlgorithm):
+
+    """Test algorithm that uses only 3 detectors and has altitude support."""
+
+    pass
+
+
+class MultiAlgorithm(BaseAlgorithm):
 
     """Use this class to check the different algorithms for more stations
 
     They should give similar results and errors in some cases.
 
     """
-
-    def call_reconstruct(self, t, x, y, z):
-        return self.algorithm.reconstruct_common(t, x, y, z)
 
     def test_diamond_stations(self):
         """Simple shower from specific zenith angles."""
@@ -230,40 +266,38 @@ class MultiAltitudeAlgorithm(MultiAlgorithm, AltitudeAlgorithm):
         self.assertAlmostEqual(theta, zenith, 4)
 
 
-class DirectAlgorithmTest(unittest.TestCase, BaseAlgorithm):
+class DirectAlgorithmTest(unittest.TestCase, DirectAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.DirectAlgorithm()
 
 
-class DirectAlgorithmCartesian2DTest(unittest.TestCase, BaseAlgorithm):
+class DirectAlgorithmCartesian2DTest(unittest.TestCase, DirectAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian2D()
 
 
-class DirectAlgorithmCartesian3DTest(unittest.TestCase, BaseAlgorithm,
-                                     AltitudeAlgorithm):
+class DirectAlgorithmCartesian3DTest(unittest.TestCase,
+                                     DirectAltitudeAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian3D()
 
 
-class FitAlgorithmTest(unittest.TestCase, BaseAlgorithm,
-                       MultiAltitudeAlgorithm):
+class FitAlgorithmTest(unittest.TestCase, MultiAltitudeAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.FitAlgorithm()
 
 
-class RegressionAlgorithmTest(unittest.TestCase, BaseAlgorithm, MultiAlgorithm):
+class RegressionAlgorithmTest(unittest.TestCase, MultiAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.RegressionAlgorithm()
 
 
-class RegressionAlgorithm3DTest(unittest.TestCase, BaseAlgorithm,
-                                MultiAltitudeAlgorithm):
+class RegressionAlgorithm3DTest(unittest.TestCase, MultiAltitudeAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.RegressionAlgorithm3D()
