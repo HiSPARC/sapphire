@@ -17,11 +17,11 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
     def tearDown(self):
         warnings.resetwarnings()
 
-    @patch('sapphire.utils.ProgressBar')
-    def test_simulation_output(self, mock_progressbar):
+    @patch('sapphire.simulations.groundparticles.time')
+    def test_simulation_output(self, mock_time):
         """Perform a simulation and verify the output"""
 
-        mock_progressbar.return_value.side_effect = lambda x: x
+        mock_time.return_value = int(1e9)
 
         output_path = create_tempfile_path()
         perform_simulation(output_path)

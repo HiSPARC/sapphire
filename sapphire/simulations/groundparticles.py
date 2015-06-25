@@ -18,6 +18,7 @@ Example usage::
 
 """
 from math import pi, sin, cos, sqrt
+from time import time
 
 import numpy as np
 import tables
@@ -64,7 +65,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         r = self.max_core_distance
-        giga = int(1e9)
+        now = int(time())
 
         event_header = self.corsikafile.get_node_attr('/', 'event_header')
         event_end = self.corsikafile.get_node_attr('/', 'event_end')
@@ -73,7 +74,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'energy': event_header.energy,
                               'particle': event_header.particle}
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             x, y = self.generate_core_position(r)
 
             # Subtract Corsika shower azimuth from desired shower azimuth
@@ -85,7 +86,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             elif alpha <= -pi:
                 alpha += 2 * pi
 
-            shower_parameters = {'ext_timestamp': (giga + i) * giga,
+            shower_parameters = {'ext_timestamp': (now + i) * int(1e9),
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)

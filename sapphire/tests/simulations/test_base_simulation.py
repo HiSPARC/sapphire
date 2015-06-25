@@ -20,7 +20,8 @@ class BaseSimulationTest(unittest.TestCase):
         self.N = sentinel.N
 
         self.simulation = BaseSimulation(self.cluster, self.datafile,
-                                         self.output_path, self.N)
+                                         self.output_path, self.N,
+                                         progress=False)
 
     def test_init_sets_attributes(self):
         self.assertIs(self.simulation.cluster, self.cluster)
@@ -59,11 +60,7 @@ class BaseSimulationTest(unittest.TestCase):
         mock_store.assert_called_with(1, sentinel.params2,
                                       sentinel.events)
 
-    @patch('sapphire.utils.ProgressBar')
-    def test_generate_shower_parameters(self, mock_progress):
-        # disable progressbar
-        mock_progress.return_value.side_effect = lambda x: x
-
+    def test_generate_shower_parameters(self):
         self.simulation.N = 10
         output = self.simulation.generate_shower_parameters()
         self.assertIsInstance(output, types.GeneratorType)

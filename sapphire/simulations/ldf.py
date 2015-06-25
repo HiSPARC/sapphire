@@ -61,7 +61,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
         r = self.max_core_distance
         giga = int(1e9)
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             energy = self.generate_energy(self.min_energy, self.max_energy)
             size = 10 ** (log10(energy) - 15 + 4.8)
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
@@ -202,7 +202,7 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         r = self.max_core_distance
         giga = int(1e9)
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             energy = self.generate_energy(self.min_energy, self.max_energy)
             size = 10 ** (log10(energy) - 15 + 4.8)
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
