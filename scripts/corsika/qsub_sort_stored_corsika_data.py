@@ -7,6 +7,7 @@ import subprocess
 import logging
 
 
+QUEUE = 'generic'
 LOGFILE = '/data/hisparc/corsika/logs/qsub_sort_corsika.log'
 DATADIR = '/data/hisparc/corsika/data'
 QUEUED_SEEDS = '/data/hisparc/corsika/sort_queued.log'
@@ -119,8 +120,9 @@ def submit_job(seed):
 
     script_path = create_script(seed)
 
-    qsub = ('qsub -q short -V -z -j oe -N {name} {script}'
-            .format(name=os.path.basename(script_path), script=script_path))
+    qsub = ('qsub -q {queue} -V -z -j oe -N {name} {script}'
+            .format(queue=QUEUE, name=os.path.basename(script_path),
+                    script=script_path))
 
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
                                      shell=True)
@@ -133,14 +135,15 @@ def submit_job(seed):
 
 
 def check_queue():
-    """Check for available job slots on the short queue
+    """Check for available job slots on the chosen queue
 
     Maximum numbers from ``qstat -Q -f``
 
     :return: Number of available slots in the queue.
 
     """
-    queue_check = 'qstat -u $USER | grep short | grep [RQ] | wc -l'
+    queue_check = ('qstat -u $USER | grep {queue} | grep [RQ] | wc -l'
+                   .format(queue=QUEUE))
     user_jobs = int(subprocess.check_output(queue_check, shell=True))
     max_user_jobs = 1000
     keep_free_slots = 300
