@@ -336,7 +336,7 @@ class EllipsLdfAlgorithm(object):
         """
         theta = initial.get('theta', 0.)
         phi = initial.get('phi', 0.)
-        return cls.reconstruct(p, x, y, theta, phi)
+        return cls.reconstruct(p, x, y, theta, phi)[:2]
 
     @classmethod
     def reconstruct(cls, p, x, y, theta, phi):
