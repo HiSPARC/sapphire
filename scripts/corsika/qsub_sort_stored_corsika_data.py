@@ -14,7 +14,7 @@ QUEUED_SEEDS = '/data/hisparc/corsika/sort_queued.log'
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
     umask 002
-    source activate /data/hisparc/corsika_env
+    source activate /data/hisparc/corsika_env &> /dev/null
     cd {seed}
     ptrepack --sortby x --propindexes corsika.h5 corsika_sorted.h5
     mv corsika_sorted.h5 corsika.h5
