@@ -279,10 +279,10 @@ def check_queue(queue):
     :return: boolean, True if slots are available, False otherwise.
 
     """
-    all_jobs = int(subprocess.check_output('qstat | grep {queue} | '
+    all_jobs = int(subprocess.check_output('qstat {queue} | '
                                            'grep " [QR] " | wc -l'
                                            .format(queue=queue), shell=True))
-    user_jobs = int(subprocess.check_output('qstat -u $USER | grep {queue} | '
+    user_jobs = int(subprocess.check_output('qstat -u $USER {queue} | '
                                             'grep " [QR] " | wc -l'
                                             .format(queue=queue), shell=True))
 
