@@ -157,12 +157,13 @@ def check_queue():
     user_queued = ('qstat -u $USER {queue} | grep [RQ] | wc -l'
                    .format(queue=QUEUE))
     n_queued = int(subprocess.check_output(queued, shell=True))
-    n_user_queued = int(subprocess.check_output(user_queued, shell=True))
+    n_queued_user = int(subprocess.check_output(user_queued, shell=True))
     max_queue = 4000
-    max_user_queue = 2000
+    max_queue_user = 2000
     keep_free = 50
 
-    return min(max_queue - n_queued, max_user_queue - user_jobs) - keep_free
+    return min(max_queue - n_queued,
+               max_queue_user - n_queued_user) - keep_free
 
 
 def run():
