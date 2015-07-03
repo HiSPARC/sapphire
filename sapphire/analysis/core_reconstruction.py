@@ -224,7 +224,7 @@ class AverageIntersectionAlgorithm(object):
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
             raise Exception('This algorithm requires at least 4 detections.')
-        return cls.reconstruct(p, x, y, z, initial)
+        return cls.reconstruct(p, x, y)
 
     @staticmethod
     def reconstruct(p, x, y):
