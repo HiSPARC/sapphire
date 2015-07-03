@@ -69,8 +69,7 @@ class ReconstructESDEvents(object):
         if isinstance(station, Station):
             self.station = station
         else:
-            last_date = date.fromtimestamp(max(self.events.col('timestamp')))
-            cluster = HiSPARCStations([station], date=last_date)
+            cluster = HiSPARCStations([station])
             self.station = cluster.get_station(station)
 
         self.direction = EventDirectionReconstruction(self.station)
@@ -191,7 +190,7 @@ class ReconstructESDCoincidences(object):
 
     def __init__(self, data, coincidences_group='/coincidences',
                  overwrite=False, progress=True,
-                 destination='reconstructions'):
+                 destination='reconstructions', cluster=None):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -199,6 +198,7 @@ class ReconstructESDCoincidences(object):
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
+        :param cluster: a Cluster object to use for the reconstructions.
 
         """
         self.data = data
@@ -210,11 +210,12 @@ class ReconstructESDCoincidences(object):
         self.offsets = {}
 
         self.cq = CoincidenceQuery(data, self.coincidences_group)
-        # Get latest position data
-        s_numbers = [station.number for station in
-                     self.coincidences_group._f_getattr('cluster').stations]
-        last_date = date.fromtimestamp(max(self.coincidences.col('timestamp')))
-        self.cluster = HiSPARCStations(s_numbers, date=last_date)
+        if cluster is None:
+            cluster = self.coincidences_group._f_getattr('cluster')
+            s_numbers = [station.number for station in cluster.stations]
+            self.cluster = HiSPARCStations(s_numbers)
+        else:
+            self.cluster = cluster
 
         self.direction = CoincidenceDirectionReconstruction(self.cluster)
         self.core = CoincidenceCoreReconstruction(self.cluster)
