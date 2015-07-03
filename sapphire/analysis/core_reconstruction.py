@@ -226,8 +226,8 @@ class AverageIntersectionAlgorithm(object):
             raise Exception('This algorithm requires at least 4 detections.')
         return cls.reconstruct(p, x, y)
 
-    @staticmethod
-    def reconstruct(p, x, y):
+    @classmethod
+    def reconstruct(cls, p, x, y):
         """Calculate center of mass
 
         :param p: detector particle density in m^-2.
@@ -251,8 +251,8 @@ class AverageIntersectionAlgorithm(object):
         linelist0 = []
         linelist1 = []
         for zero, one, two in subsets:
-            a, b, rsquare = calculate(phit, xhit, yhit, zero, one)
-            c, d, ssquare = calculate(phit, xhit, yhit, zero, two)
+            a, b, rsquare = cls.calculate(phit, xhit, yhit, zero, one)
+            c, d, ssquare = cls.calculate(phit, xhit, yhit, zero, two)
             e = c - a
             f = d - b
             if d == b:
