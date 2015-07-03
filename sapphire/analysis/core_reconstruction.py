@@ -251,25 +251,8 @@ class AverageIntersectionAlgorithm(object):
         linelist0 = []
         linelist1 = []
         for zero, one, two in subsets:
-            pp = (phit[zero] / phit[one]) ** (2. / m)
-            qq = (phit[zero] / phit[two]) ** (2. / m)
-            if pp == 1:
-                pp = 1.000001
-            if qq == 1:
-                qq = 1.000001
-
-            x0 = xhit[zero]
-            x1 = xhit[one]
-            x2 = xhit[two]
-            y0 = yhit[zero]
-            y1 = yhit[one]
-            y2 = yhit[two]
-            a = (x1 - pp * x0) / (1 - pp)
-            b = (y1 - pp * y0) / (1 - pp)
-            c = (x2 - qq * x0) / (1 - qq)
-            d = (y2 - qq * y0) / (1 - qq)
-            rsquare = pp * ((x1 - x0) ** 2 + (y1 - y0) ** 2) / ((1 - pp) ** 2)
-            ssquare = qq * ((x2 - x0) ** 2 + (y2 - y0) ** 2) / ((1 - qq) ** 2)
+            a, b, rsquare = calculate(phit, xhit, yhit, zero, one)
+            c, d, ssquare = calculate(phit, xhit, yhit, zero, two)
             e = c - a
             f = d - b
             if d == b:
@@ -305,6 +288,19 @@ class AverageIntersectionAlgorithm(object):
             return CenterMassAlgorithm.reconstruct_common(p, x, y)
 
         return core_x, core_y, nan, nan
+
+    @staticmethod
+    def calculate(p, x, y, i, j):
+        """Perform a calculation that is used multiple times"""
+
+        pp = (p[i] / p[j]) ** (2. / m)
+        if pp == 1:
+            pp = 1.000001
+        a = (x[j] - pp * x[i]) / (1 - pp)
+        b = (y[j] - pp * y[i]) / (1 - pp)
+        square = (pp * ((x[j] - x[i]) ** 2 +
+                  (y[j] - y[i]) ** 2) / ((1 - pp) ** 2))
+        return a, b, square
 
 
 class EllipsLdfAlgorithm(object):
@@ -542,4 +538,3 @@ class BruteForceAlgorithm(object):
                     chi2best = chi2
 
         return xbest, ybest, chi2best, factorbest
-
