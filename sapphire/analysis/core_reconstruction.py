@@ -176,10 +176,6 @@ class CenterMassAlgorithm(object):
                         reconstructions.
 
         """
-        #theta = initial.get('theta', nan)
-        #if not isnan(theta):
-            #p = [density * cos(theta) for density in p]
-
         return cls.reconstruct(p, x, y)
 
     @staticmethod
@@ -335,24 +331,24 @@ class EllipsLdfAlgorithm(object):
         xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         factorbest = 1.
-        gridsize = 20.          ##################
+        gridsize = 20.
 
         xbest, ybest, chi2best, factorbest = cls.selectbest(
             p, x, y, xcmass, ycmass, factorbest, chi2best, gridsize, theta, phi)
 
-        gridsize = 5.            ##################
+        gridsize = 5.
         xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
         xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         factorbest = 1.
-        gridsize = 50.          ##################
+        gridsize = 50.
 
         xbest, ybest, chi2best, factorbest = cls.selectbest(
             p, x, y, xlines, ylines, factorbest, chi2best, gridsize, theta, phi)
 
-        gridsize = 10.          ##################
+        gridsize = 10.
         xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
@@ -362,14 +358,14 @@ class EllipsLdfAlgorithm(object):
         else:
             xbest, ybest, chi2best, factorbest = xbest2, ybest2, chi2best2, factorbest2
 
-        gridsize = 4.            ################
+        gridsize = 4.
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
         size = factorbest * ldf.EllipsLdf._Ne
         coefa = 0.519 * cos(theta) + 0.684
         coefb = 7.84 + 5.30 * cos(theta)
-        enerpow = (log10(size) +coefb) / coefa
+        enerpow = (log10(size) + coefb) / coefa
         energy = 10 ** enerpow
 
         return core_x, core_y, chi2best, size, energy
@@ -381,7 +377,12 @@ class EllipsLdfAlgorithm(object):
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
-        :param xcmass,ycmass: start position of core in m.
+        :param xstart,ystart: start position of core in m.
+        :param factorbest: current best estimate for shower scale (x ldf.Ne).
+        :param chi2best: chi2 for current core and size.
+        :param gridsize: size of grid around current core.
+        :param theta,phi: shower direction.
+        :return: core position, chi2 and shower scale.
 
         """
         xbest = xstart
@@ -441,7 +442,7 @@ class BruteForceAlgorithm(object):
         :param x,y: positions of detectors in m.
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
-                        reconstructions: zenith and azimuth.
+                        reconstructions, i.e. zenith (theta) and azimuth (phi).
 
         """
         theta = initial.get('theta', 0.)
@@ -455,14 +456,14 @@ class BruteForceAlgorithm(object):
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
-        :param theta, phi: zenith and azimuth angle in rad.
+        :param theta,phi: zenith and azimuth angle in rad.
 
         """
         chi2best = 10 ** 99
         factorbest = 1.
         xbest = 0.
         ybest = 0.
-        gridsize = 10.            ################
+        gridsize = 10.
 
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
@@ -482,7 +483,12 @@ class BruteForceAlgorithm(object):
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
-        :param xcmass,ycmass: start position of core in m.
+        :param xstart,ystart: start position of core in m.
+        :param factorbest: current best estimate for shower scale (x ldf.Ne).
+        :param chi2best: chi2 for current core and size.
+        :param gridsize: size of grid around current core.
+        :param theta,phi: shower direction.
+        :return: core position, chi2 and shower scale.
 
         """
         xbest = xstart
