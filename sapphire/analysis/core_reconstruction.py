@@ -53,7 +53,7 @@ class EventCoreReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :return: (x, y) core position in m.
+        :return: (x, y) core position in m, shower size, and energy.
 
         """
         p, x, y, z = ([], [], [], [])
@@ -67,10 +67,11 @@ class EventCoreReconstruction(object):
                 y.append(self.y[id])
                 z.append(self.z[id])
         if len(p) >= 3:
-            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
+            core_x, core_y, size, energy = \
+                self.estimator.reconstruct_common(p, x, y, z)
         else:
-            core_x, core_y = (nan, nan)
-        return core_x, core_y
+            core_x, core_y, size, energy = (nan, nan, nan, nan)
+        return core_x, core_y, size, energy
 
     def reconstruct_events(self, events, detector_ids=None, progress=True):
         """Reconstruct events
@@ -78,13 +79,13 @@ class EventCoreReconstruction(object):
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
-        :return: (x, y) core positions in m.
+        :return: (x, y) core positions in m, shower sizes, and energies.
 
         """
         cores = [self.reconstruct_event(event, detector_ids)
                  for event in pbar(events, show=progress)]
-        core_x, core_y = zip(*cores)
-        return core_x, core_y
+        core_x, core_y, size, energy = zip(*cores)
+        return core_x, core_y, size, energy
 
 
 class CoincidenceCoreReconstruction(object):
@@ -100,7 +101,7 @@ class CoincidenceCoreReconstruction(object):
     """
 
     def __init__(self, cluster):
-        self.estimator = CenterMassAlgorithm
+        self.estimator = EllipsLdfAlgorithm
         self.cluster = cluster
 
         # Store locations that do not change
@@ -116,7 +117,7 @@ class CoincidenceCoreReconstruction(object):
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :return: (x, y) core position in m.
+        :return: (x, y) core position in m, shower size, and energy.
 
         """
         p, x, y, z = ([], [], [], [])
@@ -135,10 +136,11 @@ class CoincidenceCoreReconstruction(object):
                 z.append(sz)
 
         if len(p) >= 3:
-            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
+            core_x, core_y, size, energy = \
+                self.estimator.reconstruct_common(p, x, y, z)
         else:
-            core_x, core_y = (nan, nan)
-        return core_x, core_y
+            core_x, core_y, size, energy = (nan, nan, nan, nan)
+        return core_x, core_y, size, energy
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
                                  progress=True):
@@ -148,13 +150,13 @@ class CoincidenceCoreReconstruction(object):
                              multiple (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :return: (x, y) core positions in m.
+        :return: (x, y) core positions in m, shower sizes, and energies.
 
         """
         cores = [self.reconstruct_coincidence(coincidence, station_numbers)
                  for coincidence in pbar(coincidences, show=progress)]
-        core_x, core_y = zip(*cores)
-        return core_x, core_y
+        core_x, core_y, size, energy = zip(*cores)
+        return core_x, core_y, size, energy
 
 
 class CenterMassAlgorithm(object):
@@ -174,6 +176,7 @@ class CenterMassAlgorithm(object):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions.
+        :return: (x, y) core position in m. Shower size and energy are nan.
 
         """
         return cls.reconstruct(p, x, y)
@@ -184,11 +187,12 @@ class CenterMassAlgorithm(object):
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
+        :return: (x, y) core position in m. Shower size and energy are nan.
 
         """
         core_x = sum(density * xi for density, xi in zip(p, x)) / sum(p)
         core_y = sum(density * yi for density, yi in zip(p, y)) / sum(p)
-        return core_x, core_y
+        return core_x, core_y, nan, nan
 
 
 class AverageIntersectionAlgorithm(object):
@@ -215,10 +219,22 @@ class AverageIntersectionAlgorithm(object):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions.
+        :return: (x, y) core position in m. Shower size and energy are nan.
 
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
             raise Exception('This algorithm requires at least 4 detections.')
+        return cls.reconstruct(p, x, y, z, initial)
+
+    @staticmethod
+    def reconstruct(p, x, y):
+        """Calculate center of mass
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :return: (x, y) core position in m. Shower size and energy are nan.
+
+        """
         phit = []
         xhit = []
         yhit = []
@@ -263,8 +279,6 @@ class AverageIntersectionAlgorithm(object):
             linelist0.append(-e / f)
             linelist1.append((a * e + b * f + g * k) / f)
 
-        linx, liny = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
-                                                      initial)
         subsets = itertools.combinations(statindex, 2)
 
         xpointlist = []
@@ -279,16 +293,18 @@ class AverageIntersectionAlgorithm(object):
                 aminc = 0.000000001
             xint = (d - b) / aminc
             yint = (a * d - b * c) / aminc
-            if abs(xint)<600. and abs(yint)<600.:
+            if abs(xint) < 600. and abs(yint) < 600.:
                 xpointlist.append(xint)
                 ypointlist.append(yint)
 
-        if len(xpointlist) > 0:
-            linx = mean(xpointlist)
-            liny = mean(ypointlist)
+        if len(xpointlist):
+            core_x = mean(xpointlist)
+            core_y = mean(ypointlist)
+        else:
+            # Fallback to CenterMass
+            return CenterMassAlgorithm.reconstruct_common(p, x, y)
 
-        return linx, liny
-
+        return core_x, core_y, nan, nan
 
 
 class EllipsLdfAlgorithm(object):
@@ -311,6 +327,7 @@ class EllipsLdfAlgorithm(object):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions: zenith and azimuth.
+        :return: (x, y) core position in m, shower size, and energy.
 
         """
         theta = initial.get('theta', 0.)
@@ -325,10 +342,10 @@ class EllipsLdfAlgorithm(object):
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
         :param theta,phi: zenith and azimuth angle in rad.
+        :return: (x, y) core position in m, shower size, and energy.
 
         """
-
-        xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)
+        xcmass, ycmass, _, _ = CenterMassAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         factorbest = 1.
         gridsize = 20.
@@ -340,7 +357,8 @@ class EllipsLdfAlgorithm(object):
         xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x, y)
+        xlines, ylines, _, _ = \
+            AverageIntersectionAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         factorbest = 1.
         gridsize = 50.
@@ -351,7 +369,6 @@ class EllipsLdfAlgorithm(object):
         gridsize = 10.
         xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
-
 
         if chi2best1 < chi2best2:
             xbest, ybest, chi2best, factorbest = xbest1, ybest1, chi2best1, factorbest1
@@ -368,7 +385,7 @@ class EllipsLdfAlgorithm(object):
         enerpow = (log10(size) + coefb) / coefa
         energy = 10 ** enerpow
 
-        return core_x, core_y, chi2best, size, energy
+        return core_x, core_y, size, energy
 
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
@@ -470,11 +487,11 @@ class BruteForceAlgorithm(object):
 
         size = factorbest * ldf.EllipsLdf._Ne
         coefa = 0.519 * cos(theta) + 0.684
-        coefb = 7.84 +5.30 * cos(theta)
-        enerpow = (log10(size) +coefb) / coefa
+        coefb = 7.84 + 5.30 * cos(theta)
+        enerpow = (log10(size) + coefb) / coefa
         energy = 10 ** enerpow
 
-        return core_x, core_y, chi2best, size, energy
+        return core_x, core_y, size, energy
 
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
