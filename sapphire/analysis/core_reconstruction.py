@@ -110,13 +110,15 @@ class CoincidenceCoreReconstruction(object):
                 station.calc_center_of_mass_coordinates()
             station.area = station.get_area()
 
-    def reconstruct_coincidence(self, coincidence, station_numbers=None):
+    def reconstruct_coincidence(self, coincidence, station_numbers=None,
+                                initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
+        :param initial: dictionary with initial data.
         :return: (x, y) core position in m, shower size, and energy.
 
         """
@@ -137,24 +139,27 @@ class CoincidenceCoreReconstruction(object):
 
         if len(p) >= 3:
             core_x, core_y, size, energy = \
-                self.estimator.reconstruct_common(p, x, y, z)
+                self.estimator.reconstruct_common(p, x, y, z, initial=initial)
         else:
             core_x, core_y, size, energy = (nan, nan, nan, nan)
         return core_x, core_y, size, energy
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 progress=True):
+                                 initial=None, progress=True):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidences, each consisting of
                              multiple (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
+        :param initial: list of dictionaries with initial data.
         :return: (x, y) core positions in m, shower sizes, and energies.
 
         """
-        cores = [self.reconstruct_coincidence(coincidence, station_numbers)
-                 for coincidence in pbar(coincidences, show=progress)]
+        cores = [self.reconstruct_coincidence(coincidence, station_numbers,
+                                              initial=ini)
+                 for coincidence, ini
+                 in pbar(itertools.izip(coincidences, initial), show=progress)]
         core_x, core_y, size, energy = zip(*cores)
         return core_x, core_y, size, energy
 

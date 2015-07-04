@@ -257,9 +257,12 @@ class ReconstructESDCoincidences(object):
         coincidences = self.cq.all_coincidences(iterator=True)
         # Progress does not work because the pbar does not know the
         # number of coincidences
+        if len(theta) and len(phi):
+            initial = {'theta': t, 'phi': p for t, p in zip(theta, phi)}
+
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
-            self.progress)
+            initial, self.progress)
         self.core_x, self.core_y, self.size, self.energy = cores
 
     def _reconstruct_direction(self, coincidence):
