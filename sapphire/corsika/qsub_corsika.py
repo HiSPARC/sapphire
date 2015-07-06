@@ -295,7 +295,7 @@ def check_queue(queue):
     elif queue == 'long':
         return min(500 - user_jobs, 1000 - all_jobs)
     else:
-        raise KeyError('Unknown queue name: {queue}'.format(queue))
+        raise KeyError('Unknown queue name: {queue}'.format(queue=queue))
 
 
 def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):

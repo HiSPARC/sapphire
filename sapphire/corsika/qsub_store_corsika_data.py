@@ -15,9 +15,9 @@ import glob
 import textwrap
 import subprocess
 import logging
+import argparse
 
 
-QUEUE = 'generic'
 LOGFILE = '/data/hisparc/corsika/logs/qsub_store_corsika.log'
 DATADIR = '/data/hisparc/corsika/data'
 QUEUED_SEEDS = '/data/hisparc/corsika/queued.log'
@@ -145,34 +145,42 @@ def submit_job(seed):
     delete_script(seed)
 
 
-def check_queue():
-    """Check for available job slots on the queue
+def check_queue(queue):
+    """Check for available job slots on the selected queue for current user
 
     Maximum numbers from ``qstat -Q -f``
 
-    :return: Number of available slots in the queue.
+    :param queue: queue name for which to check current number of job
+                  slots in use.
+    :return: boolean, True if slots are available, False otherwise.
 
     """
-    queued = 'qstat {queue} | grep [RQ] | wc -l'.format(queue=QUEUE)
-    user_queued = ('qstat -u $USER {queue} | grep [RQ] | wc -l'
-                   .format(queue=QUEUE))
-    n_queued = int(subprocess.check_output(queued, shell=True))
-    n_queued_user = int(subprocess.check_output(user_queued, shell=True))
-    max_queue = 4000
-    max_queue_user = 2000
-    keep_free = 50
+    all_jobs = int(subprocess.check_output('qstat {queue} | '
+                                           'grep " [QR] " | wc -l'
+                                           .format(queue=QUEUE), shell=True))
+    user_jobs = int(subprocess.check_output('qstat -u $USER {queue} | '
+                                            'grep " [QR] " | wc -l'
+                                            .format(queue=QUEUE), shell=True))
 
-    return min(max_queue - n_queued,
-               max_queue_user - n_queued_user) - keep_free
+    if QUEUE == 'express':
+        return 2 - user_jobs
+    elif QUEUE == 'short':
+        return 1000 - user_jobs
+    elif QUEUE == 'generic':
+        return min(2000 - user_jobs, 4000 - all_jobs)
+    elif QUEUE == 'long':
+        return min(500 - user_jobs, 1000 - all_jobs)
+    else:
+        raise KeyError('Unknown queue name: {queue}'.format(queue=QUEUE))
 
 
-def run():
+def run(queue):
     """Get list of seeds to process, then submit jobs to process them"""
 
     os.umask(002)
     logger.info('Getting todo list of seeds to convert.')
     seeds = get_seeds_todo()
-    n_jobs_to_submit = min(len(seeds), check_queue())
+    n_jobs_to_submit = min(len(seeds), check_queue(queue))
     logger.info('Submitting jobs for %d simulations.' % n_jobs_to_submit)
     try:
         for _ in xrange(n_jobs_to_submit):
@@ -185,8 +193,15 @@ def run():
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-q', '--queue', metavar='name',
+                        help="name of the Stoomboot queue to use, choose from "
+                             "express, short, generic, and long (default)",
+                        default='long',
+                        choices=['express', 'short', 'generic', 'long'])
+    args = parser.parse_args()
     logger.debug('Starting to submit new jobs.')
-    run()
+    run(args.queue)
     logger.info('Finished submitting jobs.')
 
 
