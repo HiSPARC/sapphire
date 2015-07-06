@@ -157,21 +157,21 @@ def check_queue(queue):
     """
     all_jobs = int(subprocess.check_output('qstat {queue} | '
                                            'grep " [QR] " | wc -l'
-                                           .format(queue=QUEUE), shell=True))
+                                           .format(queue=queue), shell=True))
     user_jobs = int(subprocess.check_output('qstat -u $USER {queue} | '
                                             'grep " [QR] " | wc -l'
-                                            .format(queue=QUEUE), shell=True))
+                                            .format(queue=queue), shell=True))
 
-    if QUEUE == 'express':
+    if queue == 'express':
         return 2 - user_jobs
-    elif QUEUE == 'short':
+    elif queue == 'short':
         return 1000 - user_jobs
-    elif QUEUE == 'generic':
+    elif queue == 'generic':
         return min(2000 - user_jobs, 4000 - all_jobs)
-    elif QUEUE == 'long':
+    elif queue == 'long':
         return min(500 - user_jobs, 1000 - all_jobs)
     else:
-        raise KeyError('Unknown queue name: {queue}'.format(queue=QUEUE))
+        raise KeyError('Unknown queue name: {queue}'.format(queue=queue))
 
 
 def run(queue):
