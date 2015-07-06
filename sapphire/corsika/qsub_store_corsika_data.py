@@ -128,13 +128,13 @@ def delete_script(seed):
     os.remove(script_path)
 
 
-def submit_job(seed):
+def submit_job(seed, queue):
     """Submit job to Stoomboot"""
 
     script_path, script_name = create_script(seed)
 
     qsub = ('qsub -q {queue} -V -z -j oe -N {name} {script}'
-            .format(queue=QUEUE, name=script_name, script=script_path))
+            .format(queue=queue, name=script_name, script=script_path))
 
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
                                      shell=True)
@@ -186,7 +186,7 @@ def run(queue):
         for _ in xrange(n_jobs_to_submit):
             seed = seeds.pop()
             logger.info('Submitting job for %s.' % seed)
-            submit_job(seed)
+            submit_job(seed, queue)
             append_queued_seeds([seed])
     except KeyError:
         logger.error('Out of seeds!')
