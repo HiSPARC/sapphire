@@ -251,7 +251,6 @@ class AverageIntersectionAlgorithm(object):
 
         statindex = range(len(phit))
         subsets = itertools.combinations(statindex, 3)
-        m = 2.3  # optimized value in powerlaw  r ^(-m)  for density
 
         linelist0 = []
         linelist1 = []
@@ -297,6 +296,8 @@ class AverageIntersectionAlgorithm(object):
     @staticmethod
     def calculate(p, x, y, i, j):
         """Perform a calculation that is used multiple times"""
+
+        m = 2.3  # optimized value in powerlaw  r ^(-m)  for density
 
         pp = (p[i] / p[j]) ** (2. / m)
         if pp == 1:

@@ -471,13 +471,13 @@ class EllipsLdf(KascadeLdf):
             c_s = self._c(s1, s2)
 
         r0 = self._r0
-        #zenith = self._zenith
-        #azimuth = self._azimuth
+        # zenith = self._zenith
+        # azimuth = self._azimuth
         relcos = cos(phi - azimuth)
         ell = sqrt(1. - sin(zenith) * sin(zenith) * relcos * relcos)
         shift = -0.058 * sin(2. * zenith) * relcos
-        #ell=1.
-        #shift=0.
+        # ell = 1.
+        # shift = 0.
         k = r * shift + r * ell
         term1 = 1. * k / r0
         term2 = 1. + term1

@@ -149,9 +149,10 @@ class ReconstructESDEvents(object):
         NaN as reconstructed value.
 
         """
-        for event, core_x, core_y, theta, phi, detector_ids in izip_longest(
-                self.events, self.core_x, self.core_y, self.theta, self.phi,
-                self.size, self.energy, self.detector_ids):
+        for event, core_x, core_y, theta, phi, size, energy, detector_ids in \
+                izip_longest(self.events, self.core_x, self.core_y, self.theta,
+                             self.phi, self.size, self.energy,
+                             self.detector_ids):
             self._store_reconstruction(event, core_x, core_y, theta, phi,
                                        size, energy, detector_ids)
         self.reconstructions.flush()
@@ -257,8 +258,9 @@ class ReconstructESDCoincidences(object):
         coincidences = self.cq.all_coincidences(iterator=True)
         # Progress does not work because the pbar does not know the
         # number of coincidences
-        if len(theta) and len(phi):
-            initial = {'theta': t, 'phi': p for t, p in zip(theta, phi)}
+        if len(self.theta) and len(self.phi):
+            initial = [{'theta': t, 'phi': p}
+                       for t, p in zip(self.theta, self.phi)]
 
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
