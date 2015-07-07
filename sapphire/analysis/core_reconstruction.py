@@ -17,6 +17,7 @@
 """
 from __future__ import division
 import itertools
+import warnings
 
 from numpy import isnan, nan, cos, sqrt, log10, mean, array
 
@@ -228,7 +229,9 @@ class AverageIntersectionAlgorithm(object):
 
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
-            raise Exception('This algorithm requires at least 4 detections.')
+            warnings.warn('This algorithm requires at least 4 detections.',
+                          UserWarning)
+            return nan, nan, nan, nan
         return cls.reconstruct(p, x, y)
 
     @classmethod
@@ -350,8 +353,8 @@ class EllipsLdfAlgorithm(object):
         xcmass, ycmass, _, _ = CenterMassAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         factorbest = 1.
-        gridsize = 20.
 
+        gridsize = 20.
         xbest, ybest, chi2best, factorbest = cls.selectbest(
             p, x, y, xcmass, ycmass, factorbest, chi2best, gridsize, theta, phi)
 
@@ -363,8 +366,8 @@ class EllipsLdfAlgorithm(object):
             AverageIntersectionAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         factorbest = 1.
-        gridsize = 50.
 
+        gridsize = 50.
         xbest, ybest, chi2best, factorbest = cls.selectbest(
             p, x, y, xlines, ylines, factorbest, chi2best, gridsize, theta, phi)
 
