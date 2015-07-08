@@ -157,16 +157,24 @@ class GroundParticlesSimulation(HiSPARCSimulation):
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
 
-        :param detector_observables: dictionary containing the
-                                     observables of one detector.
-        :return: True if at least 2 detectors detect at least one particle,
-                 False otherwise.
+        This implements the trigger as used on HiSPARC stations:
+        - 4-detector station: at least two high or three low signals.
+        - 2-detector station: at least 2 low signals.
+
+        :param detector_observables: list of dictionaries, each containing
+                                     the observables of one detector.
+        :return: True if the station triggers, False otherwise.
 
         """
-        detectors_hit = [True for observables in detector_observables
-                         if observables['n'] > 0]
+        n_detectors = len(detector_observables)
+        detectors_low = sum([True for observables in detector_observables
+                             if observables['n'] > 0.3])
+        detectors_high = sum([True for observables in detector_observables
+                              if observables['n'] > 0.5])
 
-        if sum(detectors_hit) >= 2:
+        if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
+            return True
+        elif n_detectors == 2 and detectors_low >= 2:
             return True
         else:
             return False
