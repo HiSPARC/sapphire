@@ -149,7 +149,7 @@ class CoincidenceDirectionReconstruction(object):
                     continue
             t_off = offsets.get(station_number, no_offset)
             station = self.cluster.get_station(station_number)
-            t_first = station_arrival_time(event, ts0, offsets=t_off,
+            t_first = station_arrival_time(event, ets0, offsets=t_off,
                                            station=station)
             if not isnan(t_first):
                 sx, sy, sz = station.calc_center_of_mass_coordinates()

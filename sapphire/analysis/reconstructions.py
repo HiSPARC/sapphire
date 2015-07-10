@@ -1,5 +1,4 @@
 from itertools import izip_longest
-from datetime import date
 
 from numpy import isnan, nan, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
