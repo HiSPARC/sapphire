@@ -292,10 +292,19 @@ class StationTests(unittest.TestCase):
     def test_laziness_station_layouts(self):
         self.laziness_of_attribute('station_layouts')
 
-    def test_gps_locations(self):
-        names = ('timestamp', 'latitude', 'longitude', 'altitude')
-        data = self.station.gps_locations
+    def test_station_layouts(self):
+        names = ('timestamp',
+                 'radius1', 'alpha1', 'height1', 'beta1',
+                 'radius2', 'alpha2', 'height2', 'beta2',
+                 'radius3', 'alpha3', 'height3', 'beta3',
+                 'radius4', 'alpha4', 'height4', 'beta4')
+        data = self.station.station_layouts
         self.assertEqual(data.dtype.names, names)
+
+    def test_station_layout(self):
+        data = self.station.station_layout(0)
+        self.assertEqual(len(data), 4)
+        self.assertEqual(len(data[0]), 4)
 
     def test_laziness_detector_timing_offsets(self):
         self.laziness_of_attribute('detector_timing_offsets')
