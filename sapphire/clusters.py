@@ -743,7 +743,7 @@ class HiSPARCStations(RAlphaZBetaStations):
     :param allow_missing: Set to True to allow stations to have missing
         location data, otherwise an exception will be raised. Stations
         with missing location data will be included but get
-        (lat,lon,alt) = (0, 0, 0).
+        (lat,lon,alt) = (0, 0, 0). Does not apply to detector positions.
 
     Example::
 
@@ -754,14 +754,16 @@ class HiSPARCStations(RAlphaZBetaStations):
     def __init__(self, stations, allow_missing=False):
         super(HiSPARCStations, self).__init__()
 
+        missing_gps = []
+        missing_detectors = []
+
         for i, station in enumerate(stations):
             try:
                 station_info = api.Station(station)
+                locations = station_info.gps_locations
             except:
                 if allow_missing:
-                    warnings.warn('Could not get info for station %d, '
-                                  'using GPS location (0, 0, 0).' % station,
-                                  UserWarning)
+                    missing_gps.append(station)
                     llas = [(0., 0., 0.)]
                     station_ts = [0]
                     n_detectors = 4
@@ -769,7 +771,6 @@ class HiSPARCStations(RAlphaZBetaStations):
                     raise KeyError('Could not get info for station %d.' %
                                    station)
             else:
-                locations = station_info.gps_locations
                 llas = locations[['latitude', 'longitude', 'altitude']]
                 station_ts = locations['timestamp']
                 n_detectors = station_info.n_detectors()
@@ -791,6 +792,7 @@ class HiSPARCStations(RAlphaZBetaStations):
                          for i in range(1, n_detectors + 1)]
                 detector_ts = detectors['timestamp']
             except:
+                missing_detectors.append(station)
                 # Fallback detector positions in (r, alpha, z, beta)
                 if n_detectors == 2:
                     razbs = [(5, 90, 0, 0), (5, 270, 0, 0)]
@@ -804,8 +806,14 @@ class HiSPARCStations(RAlphaZBetaStations):
 
             self._add_station(enu, razbs, station_ts, detector_ts, station)
 
-        warnings.warn('Detector positions may be wrong, defaults are used '
-                      'when not available from API!', UserWarning)
+        if len(missing_gps):
+            warnings.warn('Could not GPS location for stations: %s.'
+                          'Using (0, 0, 0) instead.' % str(missing_gps),
+                          UserWarning)
+        if len(missing_detectors):
+            warnings.warn('Could not get detector layout for stations %s, '
+                          'defaults will be used!' % str(missing_detectors),
+                          UserWarning)
 
 
 class HiSPARCNetwork(HiSPARCStations):

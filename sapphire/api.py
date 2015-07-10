@@ -117,8 +117,10 @@ class API(object):
 
         """
         csv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
-        data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
-                          names=names)
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
+            data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
+                              names=names)
 
         return atleast_1d(data)
 
