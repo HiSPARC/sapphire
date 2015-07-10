@@ -190,10 +190,10 @@ class StationTests(unittest.TestCase):
         self.assertRaises(Exception, api.Station, 501, allow_stale=False)
 
     @patch.object(api.Station, '_get_json')
-    def test_no_stale_station(self, mock_get_json):
+    def test_stale_station(self, mock_get_json):
         mock_get_json.side_effect = Exception('no interwebs!')
         with warnings.catch_warnings(record=True) as warned:
-            station = api.Station(501, allow_stale=True)
+            api.Station(501, allow_stale=True)
         self.assertEqual(len(warned), 1)
 
     def test_id_numbers(self):
