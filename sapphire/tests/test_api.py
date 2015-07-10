@@ -1,5 +1,7 @@
 import unittest
 from datetime import date
+from urllib2 import HTTPError, URLError
+import warnings
 
 from mock import patch, sentinel
 
@@ -7,6 +9,24 @@ from sapphire import api
 
 
 STATION = 501
+
+
+@unittest.skipUnless(api.API.check_connection(), "Internet connection required")
+class APITests(unittest.TestCase):
+    def setUp(self):
+        self.api = api.API()
+
+    @patch.object(api, 'urlopen')
+    def test_no_check_connection(self, mock_urlopen):
+        mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
+        self.assertFalse(self.api.check_connection())
+
+    @patch.object(api, 'urlopen')
+    def test__retrieve_url(self, mock_urlopen):
+        mock_urlopen.return_value.read.side_effect = HTTPError(None, None, None, None, None)
+        self.assertRaises(Exception, self.api._retrieve_url, '')
+        mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
+        self.assertRaises(Exception, self.api._retrieve_url, '')
 
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
@@ -88,6 +108,25 @@ class NetworkTests(unittest.TestCase):
                                               cluster=sentinel.cluster,
                                               subcluster=sentinel.subcluster)
 
+    @patch.object(api.Network, '_get_json')
+    def test_no_stale_station_numbers(self, mock_get_json):
+        mock_get_json.side_effect = Exception('no interwebs!')
+        self.assertRaises(Exception, self.network.station_numbers, allow_stale=False)
+
+    @patch.object(api.Network, '_get_json')
+    def test_stale_station_numbers(self, mock_get_json):
+        mock_get_json.side_effect = Exception('no interwebs!')
+        with warnings.catch_warnings(record=True) as warned:
+            station_numbers = self.network.station_numbers(allow_stale=True)
+            self.assertEqual(min(station_numbers), 2)
+            station_numbers = self.network.station_numbers(country=20000, allow_stale=True)
+            self.assertEqual(min(station_numbers), 20001)
+            station_numbers = self.network.station_numbers(cluster=1000, allow_stale=True)
+            self.assertEqual(min(station_numbers), 1001)
+            station_numbers = self.network.station_numbers(subcluster=500, allow_stale=True)
+            self.assertEqual(min(station_numbers), 501)
+        self.assertEqual(len(warned), 1)
+
     def test_invalid_query_for_station_numbers(self):
         bad_number = 1
         for allow in (True, False):
@@ -144,6 +183,18 @@ class NetworkTests(unittest.TestCase):
 class StationTests(unittest.TestCase):
     def setUp(self):
         self.station = api.Station(STATION)
+
+    @patch.object(api.Station, '_get_json')
+    def test_no_stale_station(self, mock_get_json):
+        mock_get_json.side_effect = Exception('no interwebs!')
+        self.assertRaises(Exception, api.Station, 501, allow_stale=False)
+
+    @patch.object(api.Station, '_get_json')
+    def test_no_stale_station(self, mock_get_json):
+        mock_get_json.side_effect = Exception('no interwebs!')
+        with warnings.catch_warnings(record=True) as warned:
+            station = api.Station(501, allow_stale=True)
+        self.assertEqual(len(warned), 1)
 
     def test_id_numbers(self):
         self.assertEqual(self.station.station, STATION)
