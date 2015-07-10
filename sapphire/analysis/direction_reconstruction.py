@@ -43,8 +43,6 @@ class EventDirectionReconstruction(object):
         self.direct = DirectAlgorithmCartesian3D
         self.fit = RegressionAlgorithm3D
         self.station = station
-        detectors = [d.get_coordinates() for d in self.station.detectors]
-        self.x, self.y, self.z = zip(*detectors)
 
     def reconstruct_event(self, event, detector_ids=None,
                           offsets=[0., 0., 0., 0.]):
@@ -63,13 +61,15 @@ class EventDirectionReconstruction(object):
         t, x, y, z, ids = ([], [], [], [], [])
         if detector_ids is None:
             detector_ids = range(4)
+        self.station.cluster.set_timestamp(event['timestamp'])
         for id in detector_ids:
             t_detector = detector_arrival_time(event, id, offsets)
             if not isnan(t_detector):
+                x, y, z = self.station.detectors[id].get_coordinates()
                 t.append(t_detector)
-                x.append(self.x[id])
-                y.append(self.y[id])
-                z.append(self.z[id])
+                x.append(x)
+                y.append(y)
+                z.append(z)
                 ids.append(id)
         if len(t) == 3:
             theta, phi = self.direct.reconstruct_common(t, x, y, z)
@@ -138,7 +138,9 @@ class CoincidenceDirectionReconstruction(object):
             return nan, nan, []
 
         # Subtract base timestamp to prevent loss of precision
-        ts0 = int(coincidence_events[0][1]['timestamp']) * int(1e9)
+        ts0 = int(coincidence_events[0][1]['timestamp'])
+        ets0 = ts0 * int(1e9)
+        self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
         for station_number, event in coincidence_events:
@@ -150,7 +152,7 @@ class CoincidenceDirectionReconstruction(object):
             t_first = station_arrival_time(event, ts0, offsets=t_off,
                                            station=station)
             if not isnan(t_first):
-                sx, sy, sz = station.center_of_mass_coordinates
+                sx, sy, sz = station.calc_center_of_mass_coordinates()
                 t.append(t_first)
                 x.append(sx)
                 y.append(sy)

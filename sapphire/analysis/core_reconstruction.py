@@ -40,9 +40,6 @@ class EventCoreReconstruction(object):
     def __init__(self, station):
         self.estimator = CenterMassAlgorithm
         self.station = station
-        detectors = [d.get_coordinates() for d in self.station.detectors]
-        self.area = [d.get_area() for d in self.station.detectors]
-        self.x, self.y, self.z = zip(*detectors)
 
     def reconstruct_event(self, event, detector_ids=None):
         """Reconstruct a single event
@@ -59,13 +56,15 @@ class EventCoreReconstruction(object):
         p, x, y, z = ([], [], [], [])
         if detector_ids is None:
             detector_ids = range(4)
+        self.station.cluster.set_timestamp(event['timestamp'])
         for id in detector_ids:
             p_detector = detector_density(event, id, self.station)
             if not isnan(p_detector):
+                x, y, z = self.station.detectors[id].get_coordinates()
                 p.append(p_detector)
-                x.append(self.x[id])
-                y.append(self.y[id])
-                z.append(self.z[id])
+                x.append(x)
+                y.append(y)
+                z.append(z)
         if len(p) >= 3:
             core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
         else:
@@ -103,12 +102,6 @@ class CoincidenceCoreReconstruction(object):
         self.estimator = CenterMassAlgorithm
         self.cluster = cluster
 
-        # Store locations that do not change
-        for station in cluster.stations:
-            station.center_of_mass_coordinates = \
-                station.calc_center_of_mass_coordinates()
-            station.area = station.get_area()
-
     def reconstruct_coincidence(self, coincidence, station_numbers=None):
         """Reconstruct a single coincidence
 
@@ -121,6 +114,8 @@ class CoincidenceCoreReconstruction(object):
         """
         p, x, y, z = ([], [], [], [])
 
+        self.cluster.set_timestamp(coincidence[0][1]['timestamp'])
+
         for station_number, event in coincidence:
             if station_numbers is not None:
                 if station_number not in station_numbers:
@@ -128,7 +123,7 @@ class CoincidenceCoreReconstruction(object):
             station = self.cluster.get_station(station_number)
             p_station = station_density(event, range(4), station)
             if not isnan(p_station):
-                sx, sy, sz = station.center_of_mass_coordinates
+                sx, sy, sz = station.calc_center_of_mass_coordinates()
                 p.append(p_station)
                 x.append(sx)
                 y.append(sy)

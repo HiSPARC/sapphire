@@ -61,7 +61,11 @@ class Detector(object):
         self.index = -1
 
     def _update_timestamp(self, timestamp):
-        # do stuff
+        """Get the position index valid for the given timestamp
+
+        :param timestamp: timestamp in seconds.
+
+        """
         self.index = get_active_index(self.timestamps, timestamp)
 
     @property
@@ -205,7 +209,11 @@ class Station(object):
         self.index = -1
 
     def _update_timestamp(self, timestamp):
-        # do stuff
+        """Get the position index valid for the given timestamp
+
+        :param timestamp: timestamp in seconds.
+
+        """
         self.index = get_active_index(self.timestamps, timestamp)
         for detector in self.detectors:
             detector._update_timestamp(timestamp)
@@ -355,6 +363,11 @@ class BaseCluster(object):
         self._timestamp = 2147483647
 
     def set_timestamp(self, timestamp):
+        """Set the timestamp to set the active station and detector locations
+
+        :param timestamp: timestamp in seconds.
+
+        """
         self._timestamp = timestamp
         for station in self.stations:
             station._update_timestamp(self._timestamp)
