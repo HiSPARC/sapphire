@@ -213,6 +213,7 @@ class StationTests(unittest.TestCase):
 
     def test_event_trace(self):
         self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 268)
+        self.assertEqual(self.station.event_trace(1378771205, 571920029, raw=True)[3][9], 464)
 
     def test_event_time(self):
         names = ('hour', 'counts')
