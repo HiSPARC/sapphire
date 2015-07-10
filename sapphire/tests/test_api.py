@@ -247,15 +247,8 @@ class StationTests(unittest.TestCase):
         data = self.station.voltages
         self.assertEqual(data.dtype.names, names)
 
-    @patch.object(api.API, '_get_csv')
-    def test_laziness_voltages(self, mock_get_csv):
-        self.assertFalse(mock_get_csv.called)
-        data = self.station.voltages
-        self.assertTrue(mock_get_csv.called)
-        self.assertEqual(mock_get_csv.call_count, 1)
-        data2 = self.station.voltages
-        self.assertEqual(mock_get_csv.call_count, 1)
-        self.assertEqual(data, data2)
+    def test_laziness_voltages(self):
+        self.laziness_of_attribute('voltages')
 
     def test_voltage(self):
         data = self.station.voltage(1378771200)  # 2013-9-10
@@ -270,15 +263,8 @@ class StationTests(unittest.TestCase):
         self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
                                 data2['voltage3'], data2['voltage4']])
 
-    @patch.object(api.API, '_get_csv')
-    def test_laziness_currents(self, mock_get_csv):
-        self.assertFalse(mock_get_csv.called)
-        data = self.station.currents
-        self.assertTrue(mock_get_csv.called)
-        self.assertEqual(mock_get_csv.call_count, 1)
-        data2 = self.station.currents
-        self.assertEqual(mock_get_csv.call_count, 1)
-        self.assertEqual(data, data2)
+    def test_laziness_currents(self):
+        self.laziness_of_attribute('currents')
 
     def test_currents(self):
         names = ('timestamp', 'current1', 'current2', 'current3', 'current4')
@@ -289,20 +275,13 @@ class StationTests(unittest.TestCase):
         data = self.station.current(1378771200)  # 2013-9-10
         self.assertEqual(data, [7.84, 7.94, 10.49, 10.88])
 
+    def test_laziness_gps_locations(self):
+        self.laziness_of_attribute('gps_locations')
+
     def test_gps_locations(self):
         names = ('timestamp', 'latitude', 'longitude', 'altitude')
         data = self.station.gps_locations
         self.assertEqual(data.dtype.names, names)
-
-    @patch.object(api.API, '_get_csv')
-    def test_laziness_gps_locations(self, mock_get_csv):
-        self.assertFalse(mock_get_csv.called)
-        data = self.station.gps_locations
-        self.assertTrue(mock_get_csv.called)
-        self.assertEqual(mock_get_csv.call_count, 1)
-        data2 = self.station.gps_locations
-        self.assertEqual(mock_get_csv.call_count, 1)
-        self.assertEqual(data, data2)
 
     def test_gps_location(self):
         keys = ['latitude', 'longitude', 'altitude']
@@ -310,20 +289,35 @@ class StationTests(unittest.TestCase):
         self.assertItemsEqual(data.keys(), keys)
         self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
 
-    @patch.object(api.API, '_get_csv')
-    def test_laziness_detector_timing_offsets(self, mock_get_csv):
-        self.assertFalse(mock_get_csv.called)
-        data = self.station.detector_timing_offsets
-        self.assertTrue(mock_get_csv.called)
-        self.assertEqual(mock_get_csv.call_count, 1)
-        data2 = self.station.detector_timing_offsets
-        self.assertEqual(mock_get_csv.call_count, 1)
-        self.assertEqual(data, data2)
+    def test_laziness_station_layouts(self):
+        self.laziness_of_attribute('station_layouts')
+
+    def test_gps_locations(self):
+        names = ('timestamp', 'latitude', 'longitude', 'altitude')
+        data = self.station.gps_locations
+        self.assertEqual(data.dtype.names, names)
+
+    def test_laziness_detector_timing_offsets(self):
+        self.laziness_of_attribute('detector_timing_offsets')
 
     def test_detector_timing_offsets(self):
         names = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
         data = self.station.detector_timing_offsets
         self.assertEqual(data.dtype.names, names)
+
+    def test_detector_timing_offset(self):
+        offsets = self.station.detector_timing_offset(0)
+        self.assertEqual(len(offsets), 4)
+
+    def laziness_of_attribute(self, attribute):
+        with patch.object(api.API, '_get_csv') as mock_get_csv:
+            self.assertFalse(mock_get_csv.called)
+            data = self.station.__getattribute__(attribute)
+            self.assertTrue(mock_get_csv.called)
+            self.assertEqual(mock_get_csv.call_count, 1)
+            data2 = self.station.__getattribute__(attribute)
+            self.assertEqual(mock_get_csv.call_count, 1)
+            self.assertEqual(data, data2)
 
 
 if __name__ == '__main__':
