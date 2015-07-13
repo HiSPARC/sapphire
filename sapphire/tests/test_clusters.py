@@ -27,7 +27,7 @@ class DetectorTests(unittest.TestCase):
 
     def test__update_timestamp(self):
         self.assertEqual(self.detector_4d.index, -1)
-        for ts, index in [(-1, 0), (0, 0), (3, 0), (7, 1)]:
+        for ts, index in [(-1, 0), (0, 0), (3, 0), (7, 1), (8, 1)]:
             self.detector_4d._update_timestamp(ts)
             self.assertEqual(self.detector_4d.index, index)
 

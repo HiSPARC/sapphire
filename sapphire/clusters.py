@@ -66,7 +66,18 @@ class Detector(object):
         :param timestamp: timestamp in seconds.
 
         """
-        self.index = get_active_index(self.timestamps, timestamp)
+        # Most often the timestamp will be later then the previous,
+        # and often less than the next.
+        ci = self.index
+        if self.timestamps[ci] <= timestamp:
+            try:
+                if timestamp < self.timestamps[ci + 1]:
+                    return
+            except IndexError:
+                pass
+            self.index = get_active_index(self.timestamps[ci:], timestamp) + ci
+        else:
+            self.index = get_active_index(self.timestamps, timestamp)
 
     @property
     def detector_size(self):
@@ -214,9 +225,20 @@ class Station(object):
         :param timestamp: timestamp in seconds.
 
         """
-        self.index = get_active_index(self.timestamps, timestamp)
         for detector in self.detectors:
             detector._update_timestamp(timestamp)
+        # Most often the timestamp will be later then the previous,
+        # and often less than the next.
+        ci = self.index
+        if self.timestamps[ci] <= timestamp:
+            try:
+                if timestamp < self.timestamps[ci + 1]:
+                    return
+            except IndexError:
+                pass
+            self.index = get_active_index(self.timestamps[ci:], timestamp) + ci
+        else:
+            self.index = get_active_index(self.timestamps, timestamp)
 
     def _add_detector(self, position, orientation, detector_timestamps):
         """Add detector to station
