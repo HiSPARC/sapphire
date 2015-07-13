@@ -820,7 +820,7 @@ class HiSPARCStations(RAlphaZBetaStations):
             self._add_station(enu, razbs, station_ts, detector_ts, station)
 
         if len(missing_gps):
-            warnings.warn('Could not GPS location for stations: %s. '
+            warnings.warn('Could not get GPS location for stations: %s. '
                           'Using (0, 0, 0) instead.' % str(missing_gps),
                           UserWarning)
         if len(missing_detectors):

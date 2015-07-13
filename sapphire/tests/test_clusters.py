@@ -17,6 +17,25 @@ class DetectorTests(unittest.TestCase):
         self.detector_s = clusters.Detector(self.mock_station,
                                             (sentinel.x, sentinel.y, sentinel.z),
                                             sentinel.orientation)
+        self.detector_4d = clusters.Detector(station=self.mock_station,
+                                             position=([0, 5], [0, 5], [0, 5]),
+                                             detector_timestamps=[0, 5])
+
+    def test_bad_arguments(self):
+        self.assertRaises(Exception, clusters.Detector, self.mock_station,
+                          (1, 0, 0), 'LR', [0, 1])
+
+    def test__update_timestamp(self):
+        self.assertEqual(self.detector_4d.index, -1)
+        for ts, index in [(-1, 0), (0, 0), (3, 0), (7, 1)]:
+            self.detector_4d._update_timestamp(ts)
+            self.assertEqual(self.detector_4d.index, index)
+
+    def test_4d_positions(self):
+        self.mock_station.get_coordinates.return_value = (0, 0, 0, 0)
+        self.assertEqual(self.detector_4d.get_coordinates(), (5, 5, 5))
+        self.detector_4d._update_timestamp(3)
+        self.assertEqual(self.detector_4d.get_coordinates(), (0, 0, 0))
 
     def test_detector_size(self):
         self.assertEqual(self.detector_1.detector_size, (.5, 1.))
@@ -96,7 +115,29 @@ class StationTests(unittest.TestCase):
                                               (sentinel.x, sentinel.y, sentinel.z),
                                               sentinel.angle, [],
                                               number=sentinel.number)
+            self.station_4d = clusters.Station(self.cluster, 4,
+                                               ([0, 5], [0, 5], [0, 5]), (0, pi),
+                                               station_timestamps=[0, 5])
             self.mock_detector_instance = mock_detector.return_value
+
+    def test_bad_arguments(self):
+        with patch('sapphire.clusters.Detector') as mock_detector:
+            self.assertRaises(Exception, clusters.Station,
+                              cluster=self.cluster, station_id=1,
+                              position=(0, 1, 2), station_timestamps=[1, 2])
+
+    def test_4d_positions(self):
+        self.cluster.get_coordinates.return_value = (0, 0, 0, 0)
+        self.assertEqual(self.station_4d.get_coordinates(), (5, 5, 5, pi))
+        self.station_4d._update_timestamp(3)
+        self.assertEqual(self.station_4d.get_coordinates(), (0, 0, 0, 0))
+
+    def test_get_area(self):
+        self.station_1.detectors[0].get_area.return_value = .5
+        self.assertEqual(self.station_1.get_area(), .5)
+        for d in self.station_4d.detectors:
+            d.get_area.return_value = .5
+        self.assertEqual(self.station_4d.get_area([0, 1, 2]), 1.5)
 
     def test_detector_called(self):
         with patch('sapphire.clusters.Detector') as mock_detector:
@@ -150,6 +191,8 @@ class StationTests(unittest.TestCase):
             self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2, 0, pi / 8))
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2, pi / 8))
+            coordinates = station.get_xy_coordinates()
+            self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2))
 
             # Station *and* cluster not in origin and cluster rotated
             cluster.get_coordinates.return_value = (0, 10, 0, pi / 2)
@@ -158,6 +201,8 @@ class StationTests(unittest.TestCase):
             self.assertTupleAlmostEqual(coordinates, (-5, 10, 0, pi / 2))
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (-5, 10, pi / 2))
+            coordinates = station.get_xy_coordinates()
+            self.assertTupleAlmostEqual(coordinates, (-5, 10))
 
             # Station *and* cluster not in origin and cluster *and* station rotated
             cluster.get_coordinates.return_value = (0, 10, 0, pi / 2)
@@ -166,6 +211,8 @@ class StationTests(unittest.TestCase):
             self.assertTupleAlmostEqual(coordinates, (-5, 10, 0, 3 * pi / 4))
             coordinates = station.get_xyalpha_coordinates()
             self.assertTupleAlmostEqual(coordinates, (-5, 10, 3 * pi / 4))
+            coordinates = station.get_xy_coordinates()
+            self.assertTupleAlmostEqual(coordinates, (-5, 10))
 
             self.assertTrue(mock_detector.called)
 
@@ -256,6 +303,15 @@ class BaseClusterTests(unittest.TestCase):
             mock_station.assert_called_with(cluster, 0, (x, y, z), angle,
                                             detector_list, [0], [0], number)
 
+    def test_set_timestamp(self):
+        with patch('sapphire.clusters.Station') as mock_station:
+            cluster = clusters.BaseCluster()
+            cluster._add_station(sentinel.position)
+            self.assertEqual(cluster._timestamp, 2147483647)
+            cluster.set_timestamp(sentinel.timestamp)
+            self.assertEqual(cluster._timestamp, sentinel.timestamp)
+            cluster.stations[0]._update_timestamp.assert_called_with(sentinel.timestamp)
+
     def test_attributes(self):
         with patch('sapphire.clusters.Station') as mock_station:
             mock_station_instance = Mock()
@@ -294,12 +350,14 @@ class BaseClusterTests(unittest.TestCase):
         self.assertEqual(cluster.z, 0.)
         self.assertEqual(cluster.alpha, pi / 2)
 
-    def test_get_xyalpha_coordinates(self):
+    def test_get_coordinates(self):
         cluster = clusters.BaseCluster((10., 20., 0), pi / 2)
         coordinates = cluster.get_coordinates()
         self.assertEqual(coordinates, (10., 20., 0, pi / 2))
         coordinates = cluster.get_xyalpha_coordinates()
         self.assertEqual(coordinates, (10., 20., pi / 2))
+        coordinates = cluster.get_xy_coordinates()
+        self.assertEqual(coordinates, (10., 20.))
 
     def test_get_polar_alpha_coordinates(self):
         cluster = clusters.BaseCluster((-sqrt(2) / 2, sqrt(2) / 2), pi / 2)
@@ -397,6 +455,25 @@ class SingleStationTests(unittest.TestCase):
         cluster = clusters.SingleStation()
         stations = cluster.stations
         self.assertEqual(len(stations), 1)
+
+
+class SingleDetectorStationTests(unittest.TestCase):
+    def setUp(self):
+        self.cluster = clusters.SingleDetectorStation()
+
+    def test_init_calls_super_init(self):
+        with patch.object(clusters.BaseCluster, '__init__',
+                          mocksignature=True) as mock_base_init:
+            clusters.SingleDetectorStation()
+            self.assertTrue(mock_base_init.called)
+
+    def test_get_coordinates_after_init(self):
+        coordinates = self.cluster.get_xyalpha_coordinates()
+        self.assertEqual(coordinates, (0., 0., 0.))
+
+    def test_single_station_single_detector(self):
+        self.assertEqual(len(self.cluster.stations), 1)
+        self.assertEqual(len(self.cluster.stations[0].detectors), 1)
 
 
 class SingleTwoDetectorStationTests(unittest.TestCase):
