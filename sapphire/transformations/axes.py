@@ -58,7 +58,7 @@ def cartesian_to_compass(x, y, z):
 
     """
     r = sqrt(x * x + y * y)
-    alpha = degrees(arctan2(y, x))
+    alpha = degrees(arctan2(x, y))
 
     return r, alpha, z
 
