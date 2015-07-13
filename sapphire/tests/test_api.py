@@ -43,10 +43,16 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual(nested_network[0]['clusters'][0]['subclusters'][0].keys(),
                          ['stations', 'name', 'number'])
 
+    def test_lazy_countries(self):
+        self.laziness_of_method('countries')
+
     def test_countries(self):
         self.network.countries()
         self.assertEqual(self.network._all_countries, self.network.countries())
         self.assertEqual(self.network.countries()[0].keys(), self.keys)
+
+    def test_lazy_clusters(self):
+        self.laziness_of_method('clusters')
 
     def test_clusters(self):
         self.network.clusters()
@@ -57,6 +63,9 @@ class NetworkTests(unittest.TestCase):
     def test_bad_clusters(self):
         bad_number = 1
         self.assertRaises(Exception, self.network.clusters, country=bad_number)
+
+    def test_lazy_subclusters(self):
+        self.laziness_of_method('subclusters')
 
     def test_subcluster(self):
         self.network.subclusters()
@@ -138,6 +147,9 @@ class NetworkTests(unittest.TestCase):
             self.assertRaises(Exception, self.network.station_numbers,
                               subcluster=bad_number, allow_stale=allow)
 
+    def test_lazy_stations(self):
+        self.laziness_of_method('stations')
+
     def test_stations(self):
         self.network.stations()
         self.assertEqual(self.network._all_stations, self.network.stations())
@@ -185,6 +197,16 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual(data.dtype.names, names)
         self.assertTrue((data['n'] == range(2, 100)).all())
         self.assertEqual(data['counts'][0], 8763)
+
+    def laziness_of_method(self, method):
+        with patch.object(api.API, '_get_json') as mock_get_json:
+            self.assertFalse(mock_get_json.called)
+            data = self.network.__getattribute__(method)()
+            self.assertTrue(mock_get_json.called)
+            self.assertEqual(mock_get_json.call_count, 1)
+            data2 = self.network.__getattribute__(method)()
+            self.assertEqual(mock_get_json.call_count, 1)
+            self.assertEqual(data, data2)
 
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
