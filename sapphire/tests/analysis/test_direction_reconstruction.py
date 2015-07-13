@@ -24,6 +24,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
 
+
 class CoincidenceDirectionReconstructionTest(unittest.TestCase):
 
     def test_init(self):
