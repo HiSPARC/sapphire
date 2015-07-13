@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from mock import Mock, sentinel
+from mock import sentinel
 from numpy import isnan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
