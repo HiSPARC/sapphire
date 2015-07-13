@@ -401,9 +401,9 @@ class BaseClusterTests(unittest.TestCase):
         self.assertAlmostEqual(y, 5 * sqrt(3) / 3)
 
 
-class RAlphaZBetaStationsTests(unittest.TestCase):
+class CompassStationsTests(unittest.TestCase):
     def test_cluster_stations(self):
-        cluster = clusters.RAlphaZBetaStations()
+        cluster = clusters.CompassStations()
         cluster._add_station((0, 0, 0), [(5, 270, 0, 0)])
         stations = cluster.stations
         self.assertEqual(len(stations), 1)

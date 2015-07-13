@@ -5,7 +5,7 @@
 - Create a rotation matrix for rotations around a certain axis.
 
 """
-from numpy import sqrt, arctan2, arccos, sin, cos, matrix
+from numpy import sqrt, arctan2, arccos, sin, cos, matrix, radians, degrees
 
 
 def cartesian_to_spherical(x, y, z):
@@ -49,6 +49,20 @@ def cartesian_to_polar(x, y):
     return r, phi
 
 
+def cartesian_to_compass(x, y, z):
+    """Converts Cartesian coordinates into compass coordinates
+
+    :param x,y,z: Cartesian coordinates
+    :return: tuple of compass coordinates (r, alpha, z),
+             with alpha in degrees.
+
+    """
+    r = sqrt(x * x + y * y)
+    alpha = degrees(arctan2(y, x))
+
+    return r, alpha, z
+
+
 def spherical_to_cartesian(r, theta, phi):
     """Convert spherical coordinates into Cartesian coordinates
 
@@ -83,6 +97,19 @@ def polar_to_cartesian(r, phi):
     """
     x, y, _ = cylindrical_to_cartesian(r, phi, 0)
     return x, y
+
+
+def compass_to_cartesian(r, alpha, z):
+    """Converts compass coordinates into Cartesian coordinates
+
+    :param r,alpha,z: compass coordinates, with alpha in degrees.
+    :return: tuple of cartesian coordinates (x, y, z).
+
+    """
+    x = sin(radians(alpha)) * r
+    y = cos(radians(alpha)) * r
+
+    return x, y, z
 
 
 def rotation_matrix(angle, axis='z'):

@@ -546,9 +546,13 @@ class BaseCluster(object):
         return x0, y0, z0
 
 
-class RAlphaZBetaStations(BaseCluster):
+class CompassStations(BaseCluster):
 
-    """Add detectors to stations using r,alpha,z,beta coordinates
+    """Add detectors to stations using compass coordinates
+
+    Compass coordinates consist of r, alpha, z, beta. These define
+    the location and orientation of detectors. For more information
+    see `Coordinate systems and units in HiSPARC`.
 
     This is meant for data from the Publicdb Database API, which
     uses that coordinate system.
@@ -585,17 +589,15 @@ class RAlphaZBetaStations(BaseCluster):
 
         Example::
 
-            >>> cluster = RAlphaZBetaStations()
+            >>> cluster = CompassStations()
             >>> cluster._add_station((0, 0, 0), [(7, 0, 1, 0), (7, 90, 0, 0)],
             ...                      number=104)
 
         """
-        detectors = [((np.sin(np.radians(alpha)) * r,
-                       np.cos(np.radians(alpha)) * r,
-                       z),
-                      np.radians(beta)) for r, alpha, z, beta in detectors]
+        detectors = [(axes.compass_to_cartesian(r, alpha, z), np.radians(beta))
+                     for r, alpha, z, beta in detectors]
 
-        super(RAlphaZBetaStations, self)._add_station(
+        super(CompassStations, self)._add_station(
             position, None, detectors, station_timestamps, detector_timestamps,
             number)
 
@@ -764,7 +766,7 @@ class ScienceParkCluster(BaseCluster):
             self._add_station(enu, alpha, detectors, station)
 
 
-class HiSPARCStations(RAlphaZBetaStations):
+class HiSPARCStations(CompassStations):
 
     """A cluster containing any real station from the HiSPARC network
 
