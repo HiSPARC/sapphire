@@ -1,9 +1,28 @@
 import unittest
 import warnings
 
+from mock import Mock, sentinel
 from numpy import isnan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
+
+
+class EventDirectionReconstructionTest(unittest.TestCase):
+
+    def test_init(self):
+        self.dirrec = direction_reconstruction.EventDirectionReconstruction(sentinel.station)
+        self.assertEqual(self.dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
+        self.assertEqual(self.dirrec.fit, direction_reconstruction.RegressionAlgorithm3D)
+        self.assertEqual(self.dirrec.station, sentinel.station)
+
+
+class CoincidenceDirectionReconstructionTest(unittest.TestCase):
+
+    def test_init(self):
+        self.dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(sentinel.cluster)
+        self.assertEqual(self.dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
+        self.assertEqual(self.dirrec.fit, direction_reconstruction.RegressionAlgorithm3D)
+        self.assertEqual(self.dirrec.cluster, sentinel.cluster)
 
 
 class BaseAlgorithm(object):
@@ -11,6 +30,7 @@ class BaseAlgorithm(object):
     """Use this class to check the different algorithms
 
     They should give similar results and errors in some cases.
+    Theses tests use three detections at same height.
 
     """
 

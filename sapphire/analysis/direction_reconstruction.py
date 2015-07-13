@@ -114,10 +114,6 @@ class CoincidenceDirectionReconstruction(object):
         self.fit = RegressionAlgorithm3D
         self.cluster = cluster
 
-        for station in self.cluster.stations:
-            station.center_of_mass_coordinates = \
-                station.calc_center_of_mass_coordinates()
-
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
                                 offsets={}):
         """Reconstruct a single coincidence
