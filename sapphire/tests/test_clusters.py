@@ -121,7 +121,7 @@ class StationTests(unittest.TestCase):
             self.mock_detector_instance = mock_detector.return_value
 
     def test_bad_arguments(self):
-        with patch('sapphire.clusters.Detector') as mock_detector:
+        with patch('sapphire.clusters.Detector'):
             self.assertRaises(Exception, clusters.Station,
                               cluster=self.cluster, station_id=1,
                               position=(0, 1, 2), station_timestamps=[1, 2])
@@ -304,7 +304,7 @@ class BaseClusterTests(unittest.TestCase):
                                             detector_list, [0], [0], number)
 
     def test_set_timestamp(self):
-        with patch('sapphire.clusters.Station') as mock_station:
+        with patch('sapphire.clusters.Station'):
             cluster = clusters.BaseCluster()
             cluster._add_station(sentinel.position)
             self.assertEqual(cluster._timestamp, 2147483647)
