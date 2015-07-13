@@ -1,28 +1,45 @@
 import unittest
 import warnings
 
-from mock import sentinel
+from mock import sentinel, Mock
 from numpy import isnan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
+from sapphire.clusters import SingleStation
 
 
 class EventDirectionReconstructionTest(unittest.TestCase):
 
     def test_init(self):
-        self.dirrec = direction_reconstruction.EventDirectionReconstruction(sentinel.station)
-        self.assertEqual(self.dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
-        self.assertEqual(self.dirrec.fit, direction_reconstruction.RegressionAlgorithm3D)
-        self.assertEqual(self.dirrec.station, sentinel.station)
+        dirrec = direction_reconstruction.EventDirectionReconstruction(sentinel.station)
+        self.assertEqual(dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
+        self.assertEqual(dirrec.fit, direction_reconstruction.RegressionAlgorithm3D)
+        self.assertEqual(dirrec.station, sentinel.station)
 
+    def test_set_cluster_timestamp(self):
+        station = Mock()
+        dirrec = direction_reconstruction.EventDirectionReconstruction(station)
+        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[])
+        station.cluster.set_timestamp.assert_called_with(sentinel.timestamp)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
 
 class CoincidenceDirectionReconstructionTest(unittest.TestCase):
 
     def test_init(self):
-        self.dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(sentinel.cluster)
-        self.assertEqual(self.dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
-        self.assertEqual(self.dirrec.fit, direction_reconstruction.RegressionAlgorithm3D)
-        self.assertEqual(self.dirrec.cluster, sentinel.cluster)
+        dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(sentinel.cluster)
+        self.assertEqual(dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
+        self.assertEqual(dirrec.fit, direction_reconstruction.RegressionAlgorithm3D)
+        self.assertEqual(dirrec.cluster, sentinel.cluster)
+
+    def test_set_cluster_timestamp(self):
+        cluster = Mock()
+        dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(cluster)
+        coincidence = [[sentinel.station_number, {'timestamp': 1}], [0, 0], [0, 0]]
+        theta, phi, nums = dirrec.reconstruct_coincidence(coincidence, station_numbers=[])
+        cluster.set_timestamp.assert_called_with(1)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
 
 
 class BaseAlgorithm(object):
