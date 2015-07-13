@@ -33,15 +33,9 @@ class APITests(unittest.TestCase):
 class NetworkTests(unittest.TestCase):
     def setUp(self):
         self.network = api.Network()
+        self.keys = ['name', 'number']
 
-    def test_keys(self):
-        keys = ['name', 'number']
-        self.assertEqual(self.network.countries()[0].keys(), keys)
-        self.assertEqual(self.network.clusters()[0].keys(), keys)
-        self.assertEqual(self.network.subclusters()[0].keys(), keys)
-        self.assertEqual(self.network.stations()[0].keys(), keys)
-        self.assertEqual(self.network.stations_with_data(2004, 1, 9)[0].keys(), keys)
-        self.assertEqual(self.network.stations_with_weather(2004, 10, 9)[0].keys(), keys)
+    def test_nested_network(self):
         nested_network = self.network.nested_network()
         self.assertEqual(nested_network[0].keys(), ['clusters', 'name', 'number'])
         self.assertEqual(nested_network[0]['clusters'][0].keys(),
@@ -52,19 +46,26 @@ class NetworkTests(unittest.TestCase):
     def test_countries(self):
         self.network.countries()
         self.assertEqual(self.network._all_countries, self.network.countries())
+        self.assertEqual(self.network.countries()[0].keys(), self.keys)
 
     def test_clusters(self):
         self.network.clusters()
         self.assertEqual(self.network._all_clusters, self.network.clusters())
+        self.assertEqual(self.network.clusters()[0].keys(), self.keys)
         self.assertEqual(self.network.clusters(country=70000)[0]['number'], 70000)
+
+    def test_bad_clusters(self):
         bad_number = 1
         self.assertRaises(Exception, self.network.clusters, country=bad_number)
 
     def test_subcluster(self):
         self.network.subclusters()
         self.assertEqual(self.network._all_subclusters, self.network.subclusters())
+        self.assertEqual(self.network.subclusters()[0].keys(), self.keys)
         self.assertEqual(self.network.subclusters(country=70000)[0]['number'], 70000)
         self.assertEqual(self.network.subclusters(cluster=70000)[0]['number'], 70000)
+
+    def test_bad_subcluster(self):
         bad_number = 1
         self.assertRaises(Exception, self.network.subclusters, country=bad_number)
         self.assertRaises(Exception, self.network.subclusters, cluster=bad_number)
@@ -137,19 +138,24 @@ class NetworkTests(unittest.TestCase):
             self.assertRaises(Exception, self.network.station_numbers,
                               subcluster=bad_number, allow_stale=allow)
 
-    def test_bad_stations(self):
+    def test_stations(self):
         self.network.stations()
         self.assertEqual(self.network._all_stations, self.network.stations())
+        self.assertEqual(self.network.stations()[0].keys(), self.keys)
         self.assertEqual(self.network.stations(country=70000)[0]['number'], 70001)
         self.assertEqual(self.network.stations(cluster=70000)[0]['number'], 70001)
         self.assertEqual(self.network.stations(subcluster=70000)[0]['number'], 70001)
+
+    def test_bad_stations(self):
         bad_number = 1
         self.assertRaises(Exception, self.network.stations, country=bad_number)
         self.assertRaises(Exception, self.network.stations, cluster=bad_number)
         self.assertRaises(Exception, self.network.stations, subcluster=bad_number)
 
     def test_stations_with_data(self):
-        self.assertEqual(self.network.stations_with_data(2004, 1, 9)[0]['number'], 2)
+        stations_with_data = self.network.stations_with_data(2004, 1, 9)
+        self.assertEqual(stations_with_data[0].keys(), self.keys)
+        self.assertEqual(stations_with_data[0]['number'], 2)
         self.assertEqual(len(self.network.stations_with_data(2004, 1, 1)), 0)
         self.assertRaises(Exception, self.network.stations_with_data, year=2004, day=1)
         self.assertRaises(Exception, self.network.stations_with_data, month=1, day=1)
@@ -157,7 +163,9 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.stations_with_data, day=1)
 
     def test_stations_with_weather(self):
-        self.assertEqual(self.network.stations_with_weather(2004, 10, 9)[0]['number'], 3)
+        stations_with_weather = self.network.stations_with_weather(2004, 10, 9)
+        self.assertEqual(stations_with_weather[0].keys(), self.keys)
+        self.assertEqual(stations_with_weather[0]['number'], 3)
         self.assertEqual(len(self.network.stations_with_weather(2004, 1, 1)), 0)
         self.assertRaises(Exception, self.network.stations_with_weather, year=2004, day=1)
         self.assertRaises(Exception, self.network.stations_with_weather, month=1, day=1)
