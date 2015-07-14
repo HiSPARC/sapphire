@@ -1,8 +1,25 @@
 """ Perform various axes related transformations
 
-- Transformation between Cartesian, polar, cylindrical and spherical
+- Transformation between Cartesian, polar, cylindrical, spherical and compass
   coordinate systems.
 - Create a rotation matrix for rotations around a certain axis.
+
+Cartesian coordinates: x, y, z axes.
+
+Spherical coordinates:
+- r: length of vector.
+- theta: angle of the vector to the z-axis.
+- phi: angle of vector to the x-axis in x,y-plane, rotating counterclockwise.
+
+Cylindrical and polar coordinates:
+- r: length of vector in x,y-plane.
+- phi: angle of vector to the x-axis in x,y-plane, rotating counterclockwise.
+- z: height above x,y-plane.
+
+Compass coordinates:
+- r: length of vector in x,y-plane.
+- alpha: angle of vector to the y-axis in x,y-plane, rotating clockwise.
+- z: height above x,y-plane.
 
 """
 from numpy import sqrt, arctan2, arccos, sin, cos, matrix, radians, degrees

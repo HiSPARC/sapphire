@@ -10,16 +10,19 @@ class CoordinateSystemTests(unittest.TestCase):
     def setUp(self):
         """Test combinations of coordinates
 
-        Cartesian, spherical, cylindrical, and compass coordinates
+        Cartesian, spherical, cylindrical, polar, and compass coordinates
 
         """
         self.combinations = (
             ((0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)),
-            ((1, 0, 0), (1, pi / 2., 0), (1, 0, 0), (1, 90, 0)),
-            ((0, 1, 0), (1, pi / 2., pi / 2.), (1, pi / 2., 0), (1, 0, 0)),
-            ((0, -1, 0), (1, pi / 2., -pi / 2.), (1, -pi / 2., 0), (1, 180, 0)),
-            ((1, 1, 1), (sqrt(3), arccos(1 / sqrt(3)), pi / 4.), (sqrt(2), pi / 4., 1), (sqrt(2), 45, 1)),
-            ((0, 0, 1), (1, 0, 0), (0, 0, 1), (0, 0, 1)))
+            ((1, 0, 0), (1, pi / 2, 0), (1, 0, 0), (1, 90, 0)),
+            ((-1, 0, 0), (1, pi / 2, pi), (1, pi, 0), (1, -90, 0)),
+            ((0, 1, 0), (1, pi / 2, pi / 2.), (1, pi / 2., 0), (1, 0, 0)),
+            ((0, -1, 0), (1, pi / 2, -pi / 2), (1, -pi / 2, 0), (1, 180, 0)),
+            ((0, 0, 1), (1, 0, 0), (0, 0, 1), (0, 0, 1)),
+            ((0, 0, -1), (1, pi, 0), (0, 0, -1), (0, 0, -1)),
+            ((1, 1, 1), (sqrt(3), arccos(1 / sqrt(3)), pi / 4), (sqrt(2), pi / 4, 1), (sqrt(2), 45, 1)),
+            ((-1, -1, -1), (sqrt(3), arccos(-1 / sqrt(3)), -pi * 3 / 4), (sqrt(2), -pi * 3 / 4, -1), (sqrt(2), -135, -1)))
 
     def test_cartesian_to_spherical(self):
         for cartesian, spherical, _, _ in self.combinations:
