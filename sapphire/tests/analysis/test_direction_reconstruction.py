@@ -5,7 +5,6 @@ from mock import sentinel, Mock
 from numpy import isnan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
-from sapphire.clusters import SingleStation
 
 
 class EventDirectionReconstructionTest(unittest.TestCase):
