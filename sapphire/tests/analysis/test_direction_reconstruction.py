@@ -1,9 +1,54 @@
 import unittest
 import warnings
 
-from numpy import isnan, pi, sqrt, arcsin, arctan
+from mock import sentinel, patch, Mock
+from numpy import isnan, nan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
+
+
+class EventDirectionReconstructionTest(unittest.TestCase):
+
+    def test_init(self):
+        dirrec = direction_reconstruction.EventDirectionReconstruction(sentinel.station)
+        self.assertEqual(dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
+        self.assertEqual(dirrec.fit, direction_reconstruction.RegressionAlgorithm3D)
+        self.assertEqual(dirrec.station, sentinel.station)
+
+    def test_set_cluster_timestamp(self):
+        station = Mock()
+        dirrec = direction_reconstruction.EventDirectionReconstruction(station)
+        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[])
+        station.cluster.set_timestamp.assert_called_with(sentinel.timestamp)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
+
+    @patch.object(direction_reconstruction, 'detector_arrival_time')
+    def test_bad_times(self, mock_detector_arrival_time):
+        mock_detector_arrival_time.return_value = nan
+        station = Mock()
+        dirrec = direction_reconstruction.EventDirectionReconstruction(station)
+        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1])
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
+
+
+class CoincidenceDirectionReconstructionTest(unittest.TestCase):
+
+    def test_init(self):
+        dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(sentinel.cluster)
+        self.assertEqual(dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
+        self.assertEqual(dirrec.fit, direction_reconstruction.RegressionAlgorithm3D)
+        self.assertEqual(dirrec.cluster, sentinel.cluster)
+
+    def test_set_cluster_timestamp(self):
+        cluster = Mock()
+        dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(cluster)
+        coincidence = [[sentinel.station_number, {'timestamp': 1}], [0, 0], [0, 0]]
+        theta, phi, nums = dirrec.reconstruct_coincidence(coincidence, station_numbers=[])
+        cluster.set_timestamp.assert_called_with(1)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
 
 
 class BaseAlgorithm(object):
@@ -11,6 +56,7 @@ class BaseAlgorithm(object):
     """Use this class to check the different algorithms
 
     They should give similar results and errors in some cases.
+    Theses tests use three detections at same height.
 
     """
 

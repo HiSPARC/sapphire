@@ -5,6 +5,8 @@ The module contains some commonly functions and classes.
 """
 from __future__ import division
 
+from bisect import bisect_right
+
 from numpy import floor, ceil, round, arccos, cos, sin, pi
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
@@ -58,6 +60,20 @@ def round_in_base(value, base):
     """Get nearest multiple of base to the value"""
 
     return base * round(value / base)
+
+
+def get_active_index(values, value):
+    """Get the index where the value fits.
+
+    :param values: sorted list of values (e.g. list of timestamps).
+    :param value: value for which to find the position (e.g. a timestamp).
+    :return: index into the values list.
+
+    """
+    idx = bisect_right(values, value, lo=0)
+    if idx == 0:
+        idx = 1
+    return idx - 1
 
 
 def gauss(x, N, mu, sigma):

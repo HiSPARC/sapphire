@@ -31,10 +31,11 @@ import warnings
 from os import path
 from urllib2 import urlopen, HTTPError, URLError
 from StringIO import StringIO
-from bisect import bisect_right
 
 from lazy import lazy
 from numpy import genfromtxt, atleast_1d
+
+from .utils import get_active_index
 
 logger = logging.getLogger('api')
 
@@ -89,6 +90,7 @@ class API(object):
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
+        'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
     @classmethod
@@ -115,8 +117,10 @@ class API(object):
 
         """
         csv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
-        data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
-                          names=names)
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore')
+            data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
+                              names=names)
 
         return atleast_1d(data)
 
@@ -153,20 +157,6 @@ class API(object):
         except URLError:
             return False
         return True
-
-    @staticmethod
-    def get_active_index(timestamps, timestamp):
-        """Get the index where the timestamp fits.
-
-        :param timestamps: list of timestamps.
-        :param timestamp: timestamp for which to find the position.
-        :return: index into the timestamps list.
-
-        """
-        idx = bisect_right(timestamps, timestamp, lo=0)
-        if idx == 0:
-            idx = 1
-        return idx - 1
 
 
 class Network(API):
@@ -689,7 +679,7 @@ class Station(API):
 
         """
         voltages = self.voltages
-        idx = self.get_active_index(voltages['timestamp'], timestamp)
+        idx = get_active_index(voltages['timestamp'], timestamp)
         voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
@@ -712,7 +702,7 @@ class Station(API):
 
         """
         currents = self.currents
-        idx = self.get_active_index(currents['timestamp'], timestamp)
+        idx = get_active_index(currents['timestamp'], timestamp)
         current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
@@ -731,15 +721,46 @@ class Station(API):
         """Get GPS location for specific timestamp
 
         :param timestamp: timestamp for which the value is valid.
-        :return: list of values for given timestamp.
+        :return: dictionary with the values for given timestamp.
 
         """
         locations = self.gps_locations
-        idx = self.get_active_index(locations['timestamp'], timestamp)
+        idx = get_active_index(locations['timestamp'], timestamp)
         location = {'latitude': locations[idx]['latitude'],
                     'longitude': locations[idx]['longitude'],
                     'altitude': locations[idx]['altitude']}
         return location
+
+    @lazy
+    def station_layouts(self):
+        """Get the station layout data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp',
+                   'radius1', 'alpha1', 'height1', 'beta1',
+                   'radius2', 'alpha2', 'height2', 'beta2',
+                   'radius3', 'alpha3', 'height3', 'beta3',
+                   'radius4', 'alpha4', 'height4', 'beta4')
+
+        base = self.src_urls['layout']
+        path = base.format(station_number=self.station)
+        return self._get_csv(path, names=columns)
+
+    def station_layout(self, timestamp):
+        """Get station layout data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of coordinates for given timestamp.
+
+        """
+        station_layouts = self.station_layouts
+        idx = get_active_index(station_layouts['timestamp'], timestamp)
+        station_layout = [[station_layouts[idx]['%s%d' % (c, i)]
+                           for c in ('radius', 'alpha', 'height', 'beta')]
+                          for i in range(1, 5)]
+        return station_layout
 
     @lazy
     def detector_timing_offsets(self):
@@ -761,8 +782,8 @@ class Station(API):
 
         """
         detector_timing_offsets = self.detector_timing_offsets
-        idx = self.get_active_index(detector_timing_offsets['timestamp'],
-                                    timestamp)
+        idx = get_active_index(detector_timing_offsets['timestamp'],
+                               timestamp)
         detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
                                   for i in range(1, 5)]
         return detector_timing_offset

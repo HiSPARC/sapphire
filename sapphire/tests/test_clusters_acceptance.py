@@ -14,7 +14,7 @@ class SimpleClusterTest(unittest.TestCase):
         a = sqrt(100 ** 2 - 50 ** 2)
         expected = [(0, 2 * a / 3, 0, 0), (0, 0, 0, 0),
                     (-50, -a / 3, 0, 2 * pi / 3), (50, -a / 3, 0, -2 * pi / 3)]
-        actual = [(station.x, station.y, station.z, station.angle)
+        actual = [(station.x[0], station.y[0], station.z[0], station.angle[0])
                   for station in self.cluster.stations]
 
         for actual_value, expected_value in zip(actual, expected):

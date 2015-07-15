@@ -7,13 +7,14 @@
 """
 from __future__ import division
 
-from math import sqrt, pi, sin, cos, atan2, radians
+from math import sqrt, pi, sin, cos, atan2
 import warnings
 
-from numpy import mean
+import numpy as np
 
 from .transformations import axes, geographic
 from . import api
+from .utils import get_active_index
 
 
 class Detector(object):
@@ -21,22 +22,62 @@ class Detector(object):
 
     _detector_size = (.5, 1.)
 
-    def __init__(self, station, position, orientation='UD'):
+    def __init__(self, station, position, orientation='UD',
+                 detector_timestamps=[0]):
         """Initialize detector
 
-        :param station: station instance this detector is part of
+        :param station: station instance this detector is part of.
         :param position: x,y,z position of the center of the detectors
-                         relative to the station center. z is optional.
-        :param orientation: either 'UD' or 'LR' meaning an up-down or
-                            left-right orientation of the long side of
-                            the detector respectively.
+            relative to the station center. z is optional.
+        :param orientation: orientation of the long side of the detector.
+            Either the angle in radians, or 'UD' or 'LR' meaning an
+            up-down or left-right orientation of the long side of the
+            detector respectively.
 
         """
         self.station = station
-        self.x = position[0]
-        self.y = position[1]
-        self.z = position[2] if len(position) == 3 else 0.
-        self.orientation = orientation
+        if hasattr(position[0], "__len__"):
+            self.x = position[0]
+            self.y = position[1]
+            self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
+        else:
+            self.x = [position[0]]
+            self.y = [position[1]]
+            self.z = [position[2]] if len(position) == 3 else [0.]
+        if orientation == 'UD':
+            self.orientation = [0] * len(self.x)
+        elif orientation == 'LR':
+            self.orientation = [pi / 2] * len(self.x)
+        else:
+            if hasattr(orientation, "__len__"):
+                self.orientation = orientation
+            else:
+                self.orientation = [orientation]
+        if len(detector_timestamps) == len(self.x):
+            self.timestamps = detector_timestamps
+        else:
+            raise Exception('Number of timestamps must equal number of '
+                            'postions')
+        self.index = -1
+
+    def _update_timestamp(self, timestamp):
+        """Get the position index valid for the given timestamp
+
+        :param timestamp: timestamp in seconds.
+
+        """
+        # Most often the timestamp will be later then the previous,
+        # and often less than the next.
+        ci = self.index
+        if self.timestamps[ci] <= timestamp:
+            try:
+                if timestamp < self.timestamps[ci + 1]:
+                    return
+            except IndexError:
+                pass
+            self.index = get_active_index(self.timestamps[ci:], timestamp) + ci
+        else:
+            self.index = get_active_index(self.timestamps, timestamp)
 
     @property
     def detector_size(self):
@@ -55,9 +96,9 @@ class Detector(object):
         sina = sin(alpha)
         cosa = cos(alpha)
 
-        x = X + (self.x * cosa - self.y * sina)
-        y = Y + (self.x * sina + self.y * cosa)
-        z = Z + self.z
+        x = X + (self.x[self.index] * cosa - self.y[self.index] * sina)
+        y = Y + (self.x[self.index] * sina + self.y[self.index] * cosa)
+        z = Z + self.z[self.index]
 
         return x, y, z
 
@@ -90,29 +131,29 @@ class Detector(object):
         """
         X, Y, _, alpha = self.station.get_coordinates()
 
-        x = self.x
-        y = self.y
-        orientation = self.orientation
+        x = self.x[self.index]
+        y = self.y[self.index]
+        o = self.orientation[self.index]
         size = self.detector_size
 
+        # detector frame
         dx = size[0] / 2
         dy = size[1] / 2
+        corners = [(-dx, -dy), (dx, -dy), (dx, dy), (-dx, dy)]
 
-        if orientation == 'UD':
-            corners = [(x - dx, y - dy), (x + dx, y - dy),
-                       (x + dx, y + dy), (x - dx, y + dy)]
-        elif orientation == 'LR':
-            corners = [(x - dy, y - dx), (x + dy, y - dx),
-                       (x + dy, y + dx), (x - dy, y + dx)]
-        else:
-            raise Exception("Unknown detector orientation: %s" % orientation)
+        # station frame
+        coso = cos(-o)
+        sino = sin(-o)
+        corners = [(x + cx * coso - cy * sino, y + cx * sino + cy * coso)
+                   for cx, cy in corners]
 
+        # cluster frame
         sina = sin(alpha)
         cosa = cos(alpha)
-        corners = [[xc * cosa - yc * sina, xc * sina + yc * cosa] for xc, yc in
-                   corners]
+        corners = [(X + xc * cosa - yc * sina, Y + xc * sina + yc * cosa)
+                   for xc, yc in corners]
 
-        return [(X + xc, Y + yc) for xc, yc in corners]
+        return corners
 
 
 class Station(object):
@@ -120,14 +161,15 @@ class Station(object):
 
     _detectors = None
 
-    def __init__(self, cluster, station_id, position, angle=0, detectors=None,
-                 number=None):
+    def __init__(self, cluster, station_id, position, angle=None,
+                 detectors=None, station_timestamps=[0],
+                 detector_timestamps=[0], number=None):
         """Initialize station
 
         :param cluster: cluster this station is a part of
         :param station_id: int (unique identifier)
         :param position: x,y,z position of the station center relative
-                         to the cluster center, z is optional.
+            to the cluster center, z is optional.
         :param angle: angle of rotation of the station in radians
         :param detectors: list of tuples.  Each tuple consists of (dx, dy,
             orientation) where dx and dy are x and y positions of the
@@ -143,11 +185,27 @@ class Station(object):
         """
         self.cluster = cluster
         self.station_id = station_id
-        self.x = position[0]
-        self.y = position[1]
-        self.z = position[2] if len(position) == 3 else 0.
-        self.angle = angle
+        if hasattr(position[0], "__len__"):
+            self.x = position[0]
+            self.y = position[1]
+            self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
+        else:
+            self.x = [position[0]]
+            self.y = [position[1]]
+            self.z = [position[2]] if len(position) == 3 else [0.]
+        if angle is None:
+            self.angle = [0.] * len(self.x)
+        elif hasattr(angle, "__len__"):
+            self.angle = angle
+        else:
+            self.angle = [angle]
         self.number = number if number else station_id
+
+        if len(station_timestamps) == len(self.x):
+            self.timestamps = station_timestamps
+        else:
+            raise Exception('Number of timestamps must equal number of '
+                            'postions')
 
         if detectors is None:
             # detector positions for a standard station
@@ -158,9 +216,31 @@ class Station(object):
                          ((-a, 0, 0), 'LR'), ((a, 0, 0), 'LR')]
 
         for position, orientation in detectors:
-            self._add_detector(position, orientation)
+            self._add_detector(position, orientation, detector_timestamps)
+        self.index = -1
 
-    def _add_detector(self, position, orientation):
+    def _update_timestamp(self, timestamp):
+        """Get the position index valid for the given timestamp
+
+        :param timestamp: timestamp in seconds.
+
+        """
+        for detector in self.detectors:
+            detector._update_timestamp(timestamp)
+        # Most often the timestamp will be later then the previous,
+        # and often less than the next.
+        ci = self.index
+        if self.timestamps[ci] <= timestamp:
+            try:
+                if timestamp < self.timestamps[ci + 1]:
+                    return
+            except IndexError:
+                pass
+            self.index = get_active_index(self.timestamps[ci:], timestamp) + ci
+        else:
+            self.index = get_active_index(self.timestamps, timestamp)
+
+    def _add_detector(self, position, orientation, detector_timestamps):
         """Add detector to station
 
         :param position: x,y,z positions of the center of the detectors
@@ -172,7 +252,8 @@ class Station(object):
         """
         if self._detectors is None:
             self._detectors = []
-        self._detectors.append(Detector(self, position, orientation))
+        self._detectors.append(Detector(self, position, orientation,
+                                        detector_timestamps))
 
     @property
     def detectors(self):
@@ -189,6 +270,11 @@ class Station(object):
             return sum(self._detectors[id].get_area() for id in detector_ids)
         else:
             return sum(d.get_area() for d in self._detectors)
+
+    def get_xy_coordinates(self):
+        """Same as get_coordinates but without the z and alpha"""
+        x, y, _, _ = self.get_coordinates()
+        return x, y
 
     def get_xyalpha_coordinates(self):
         """Same as get_coordinates but without the z"""
@@ -207,10 +293,10 @@ class Station(object):
         sina = sin(alpha)
         cosa = cos(alpha)
 
-        x = X + (self.x * cosa - self.y * sina)
-        y = Y + (self.x * sina + self.y * cosa)
-        z = Z + self.z
-        alpha = alpha + self.angle
+        x = X + (self.x[self.index] * cosa - self.y[self.index] * sina)
+        y = Y + (self.x[self.index] * sina + self.y[self.index] * cosa)
+        z = Z + self.z[self.index]
+        alpha = alpha + self.angle[self.index]
 
         return x, y, z, alpha
 
@@ -267,9 +353,9 @@ class Station(object):
         x, y, z = zip(*[detector.get_coordinates()
                       for detector in self.detectors])
 
-        x0 = mean(x)
-        y0 = mean(y)
-        z0 = mean(z)
+        x0 = np.mean(x)
+        y0 = np.mean(y)
+        z0 = np.mean(z)
 
         return x0, y0, z0
 
@@ -294,12 +380,27 @@ class BaseCluster(object):
         self.z = position[2] if len(position) == 3 else 0.
         self.alpha = angle
         self.lla = lla
+        # Set initial timestamp in the future to use latest positions
+        # 2 ** 31 - 1 == 19 Jan 2038
+        self._timestamp = 2147483647
 
-    def _add_station(self, position, angle, detectors=None, number=None):
+    def set_timestamp(self, timestamp):
+        """Set the timestamp to set the active station and detector locations
+
+        :param timestamp: timestamp in seconds.
+
+        """
+        self._timestamp = timestamp
+        for station in self.stations:
+            station._update_timestamp(self._timestamp)
+
+    def _add_station(self, position, angle=None, detectors=None,
+                     station_timestamps=[0], detector_timestamps=[0],
+                     number=None):
         """Add a station to the cluster
 
         :param position: x,y,z position of the station relative to
-                         cluster center. z is optional.
+            cluster center. z is optional.
         :param angle: angle of rotation of the station in radians
         :param detectors: list of tuples.  Each tuple consists of (dx, dy,
             dz, orientation) where dx, dy and dz are the positions of the
@@ -327,7 +428,8 @@ class BaseCluster(object):
 
         station_id = len(self._stations)
         self._stations.append(Station(self, station_id, position, angle,
-                                      detectors, number))
+                                      detectors, station_timestamps,
+                                      detector_timestamps, number))
 
     @property
     def stations(self):
@@ -339,6 +441,10 @@ class BaseCluster(object):
         for station in self._stations:
             if number == station.number:
                 return station
+
+    def get_xy_coordinates(self):
+        """Same as get_coordinates but without the z and alpha"""
+        return self.x, self.y
 
     def get_xyalpha_coordinates(self):
         """Like get_coordinates, but without z"""
@@ -433,35 +539,46 @@ class BaseCluster(object):
                       for station in self.stations
                       for detector in station.detectors])
 
-        x0 = mean(x)
-        y0 = mean(y)
-        z0 = mean(z)
+        x0 = np.mean(x)
+        y0 = np.mean(y)
+        z0 = np.mean(z)
 
         return x0, y0, z0
 
 
-class RAlphaBetaStations(BaseCluster):
+class CompassStations(BaseCluster):
 
-    """Add detectors to stations using r, alpha coordinates
+    """Add detectors to stations using compass coordinates
+
+    Compass coordinates consist of r, alpha, z, beta. These define
+    the location and orientation of detectors. For more information
+    see `Coordinate systems and units in HiSPARC`.
 
     This is meant for data from the Publicdb Database API, which
     uses that coordinate system.
 
     """
 
-    def _add_station(self, position, detectors, number=None):
+    def _add_station(self, position, detectors, station_timestamps=[0],
+                     detector_timestamps=[0], number=None):
         """Add a station to the cluster
 
-        :param x,y,z: position of the station relative to cluster center
-        :param detectors: list of tuples. Each tuple consists of (r, alpha,
-            z, beta) these define the position of the detector relative to
-            the GPS and the orientation of the detector. r is the
-            distance between the center of the scintillator and the GPS
-            in meters in the x,y-plane. alpha is the clock-wise turning
-            angle between North and the detector relative to the GPS in
-            degrees. z is the height of the detector relative to the
-            GPS. beta is, like alpha, the clock-wise turning angle
-            between North and the long side of the detector.
+        :param position: x,y,z coordinates of the station relative
+            to cluster center (ENU), can be list of multiple positions.
+        :param detectors: list of r,alpha,z,beta coordinates, these
+            define the position of the detector relative to the GPS and
+            the orientation of the detector. r is the distance between
+            the center of the scintillator and the GPS in meters in the
+            x,y-plane. alpha is the clock-wise turning angle between
+            North and the detector relative to the GPS in degrees. z is
+            the height of the detector relative to the GPS. beta is the
+            clock-wise turning angle between North and the long side of
+            the detector in degrees. Each coordinate may be an array, to
+            define multiple station layouts.
+        :param station_timestamps: list of timestamps, the timestamp at
+            which each of the positions became active.
+        :param detector_timestamps: list of timestamps, the timestamp at
+            which each of the layouts became active.
         :param number: optional unique identifier for a station this can
             later be used to find a specific station and makes it easier
             to link to a real station. If not given it will be equal to
@@ -472,16 +589,17 @@ class RAlphaBetaStations(BaseCluster):
 
         Example::
 
-            >>> cluster = RAlphaBetaStations()
-            >>> cluster._add_station((0, 0, 0),
-            ...                      [(5, 90, 0, 0), (5, 270, 0, 0)], 104)
+            >>> cluster = CompassStations()
+            >>> cluster._add_station((0, 0, 0), [(7, 0, 1, 0), (7, 90, 0, 0)],
+            ...                      number=104)
 
         """
-        detectors = [((sin(radians(alpha)) * r, cos(radians(alpha)) * r, z),
-                      'UD') for r, alpha, z, beta in detectors]
+        detectors = [(axes.compass_to_cartesian(r, alpha, z), np.radians(beta))
+                     for r, alpha, z, beta in detectors]
 
-        super(RAlphaBetaStations, self)._add_station(position, 0, detectors,
-                                                     number)
+        super(CompassStations, self)._add_station(
+            position, None, detectors, station_timestamps, detector_timestamps,
+            number)
 
 
 class SimpleCluster(BaseCluster):
@@ -511,6 +629,17 @@ class SingleStation(BaseCluster):
         super(SingleStation, self).__init__()
 
         self._add_station((0, 0, 0), 0)
+
+
+class SingleDetectorStation(BaseCluster):
+    """Define a cluster containing a single 1-detector station"""
+
+    def __init__(self):
+        super(SingleDetectorStation, self).__init__()
+
+        detectors = [((0, 0, 0), 'UD')]
+
+        self._add_station((0, 0, 0), 0, detectors)
 
 
 class SingleTwoDetectorStation(BaseCluster):
@@ -637,7 +766,7 @@ class ScienceParkCluster(BaseCluster):
             self._add_station(enu, alpha, detectors, station)
 
 
-class HiSPARCStations(RAlphaBetaStations):
+class HiSPARCStations(CompassStations):
 
     """A cluster containing any real station from the HiSPARC network
 
@@ -648,6 +777,10 @@ class HiSPARCStations(RAlphaBetaStations):
     :param stations: A list of station numbers to include. The
         coordinates are retrieved from the Public Database API.
         The first station is placed at the origin of the cluster.
+    :param allow_missing: Set to True to allow stations to have missing
+        location data, otherwise an exception will be raised. Stations
+        with missing location data will be included but get
+        (lat,lon,alt) = (0, 0, 0). Does not apply to detector positions.
 
     Example::
 
@@ -655,58 +788,69 @@ class HiSPARCStations(RAlphaBetaStations):
 
     """
 
-    def __init__(self, stations, date=None, allow_missing=False):
+    def __init__(self, stations, allow_missing=False):
         super(HiSPARCStations, self).__init__()
+
+        missing_gps = []
+        missing_detectors = []
 
         for i, station in enumerate(stations):
             try:
-                station_info = api.Station(station, date)
+                station_info = api.Station(station)
+                locations = station_info.gps_locations
             except:
                 if allow_missing:
-                    warnings.warn('Could not get info for station %d, '
-                                  'using GPS location (0, 0, 0).' % station,
-                                  UserWarning)
-                    n_detectors = 2
-                    detectors = n_detectors * [{'radius': 0, 'alpha': 0,
-                                                'height': 0, 'beta': 0}]
-                    gps = (0., 0., 0.)
+                    missing_gps.append(station)
+                    llas = [(0., 0., 0.)]
+                    station_ts = [0]
+                    n_detectors = 4
                 else:
                     raise KeyError('Could not get info for station %d.' %
                                    station)
             else:
-                location = station_info.location()
+                llas = locations[['latitude', 'longitude', 'altitude']]
+                station_ts = locations['timestamp']
                 n_detectors = station_info.n_detectors()
-                detectors = station_info.detectors()
-                gps = (location['latitude'],
-                       location['longitude'],
-                       location['altitude'])
 
             if i == 0:
-                self.lla = gps
-                transformation = geographic.FromWGS84ToENUTransformation(gps)
+                # Most recent location of first station as reference
+                self.lla = llas[-1]
+                transformation = geographic.FromWGS84ToENUTransformation(
+                    self.lla)
 
-            enu = transformation.transform(gps)
+            # Station locations in ENU
+            enu = [transformation.transform(lla) for lla in llas]
+            enu = [list(coordinate) for coordinate in zip(*enu)]
 
-            # Default positions in (r, alpha, z, beta)
-            if n_detectors == 2:
-                default_detectors = [(5, 90, 0, 0), (5, 270, 0, 0)]
-            elif n_detectors == 4:
-                default_detectors = [(8.66, 0, 0, 0), (2.89, 0, 0, 0),
-                                     (5, -90, 0, 90), (5, 90, 0, 90)]
-            else:
-                raise RuntimeError("Detector count unknown for station %d." %
-                                   station)
-            detectors = [
-                (d['radius'] if d['radius'] else default_detectors[i][0],
-                 d['alpha'] if d['alpha'] else default_detectors[i][1],
-                 d['height'] if d['height'] else default_detectors[i][2],
-                 d['beta'] if d['beta'] else default_detectors[i][3])
-                for i, d in enumerate(detectors)]
+            try:
+                detectors = station_info.station_layouts
+                fields = ('radius', 'alpha', 'height', 'beta')
+                razbs = [[detectors['%s%d' % (field, i)] for field in fields]
+                         for i in range(1, n_detectors + 1)]
+                detector_ts = detectors['timestamp']
+            except:
+                missing_detectors.append(station)
+                # Fallback detector positions in (r, alpha, z, beta)
+                if n_detectors == 2:
+                    razbs = [(5, 90, 0, 0), (5, 270, 0, 0)]
+                elif n_detectors == 4:
+                    razbs = [(8.66, 0, 0, 0), (2.89, 0, 0, 0),
+                             (5, -90, 0, 90), (5, 90, 0, 90)]
+                else:
+                    raise RuntimeError("Detector count unknown for station %d."
+                                       % station)
+                detector_ts = [0]
 
-            self._add_station(enu, detectors, station)
+            self._add_station(enu, razbs, station_ts, detector_ts, station)
 
-        warnings.warn('Detector positions may be wrong, defaults are used '
-                      'when not available from API!', UserWarning)
+        if len(missing_gps):
+            warnings.warn('Could not get GPS location for stations: %s. '
+                          'Using (0, 0, 0) instead.' % str(missing_gps),
+                          UserWarning)
+        if len(missing_detectors):
+            warnings.warn('Could not get detector layout for stations %s, '
+                          'defaults will be used!' % str(missing_detectors),
+                          UserWarning)
 
 
 class HiSPARCNetwork(HiSPARCStations):
@@ -715,5 +859,5 @@ class HiSPARCNetwork(HiSPARCStations):
 
     def __init__(self):
         network = api.Network()
-        stations = [station for station in network.station_numbers()]
+        stations = network.station_numbers()
         super(HiSPARCNetwork, self).__init__(stations, allow_missing=True)

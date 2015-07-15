@@ -80,6 +80,25 @@ class InBaseTests(unittest.TestCase):
         self.assertEqual(utils.round_in_base(3, 4), 4)
 
 
+class ActiveIndexTests(unittest.TestCase):
+
+    def test_get_active_index(self):
+        """Test if the bisection returns the correct index
+
+        - If timestamp is before the first timestamp return index for
+          first item
+        - If timestamp is after last timestamp return index for last item
+        - If timestamp is in the range return index of rightmost value
+          equal or less than the timestamp
+
+        """
+        timestamps = [1., 2., 3., 4.]
+
+        for idx, ts in [(0, 0.), (0, 1.), (0, 1.5), (1, 2.), (1, 2.1), (3, 4.),
+                        (3, 5.)]:
+            self.assertEqual(utils.get_active_index(timestamps, ts), idx)
+
+
 class GaussTests(unittest.TestCase):
     """Test against explicit Gaussian"""
 
