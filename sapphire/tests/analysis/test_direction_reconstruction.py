@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from mock import sentinel, patch, Mock
+from mock import sentinel, patch, Mock, MagicMock
 from numpy import isnan, nan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
@@ -32,6 +32,48 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
 
+    @patch.object(direction_reconstruction, 'detector_arrival_time')
+    def test_reconstruct_event(self, mock_detector_arrival_time):
+        mock_detector_arrival_time.return_value = 0.
+        station = MagicMock()
+        detector = Mock()
+        detector.get_coordinates.return_value = [sentinel.x, sentinel.y, sentinel.z]
+        station.detectors.__getitem__.side_effect = lambda name: detector
+        dirrec = direction_reconstruction.EventDirectionReconstruction(station)
+        dirrec.direct = Mock()
+        dirrec.fit = Mock()
+        dirrec.direct.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
+        dirrec.fit.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
+
+        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1])
+        self.assertEqual(dirrec.direct.reconstruct_common.call_count, 0)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
+
+        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1, 2])
+        dirrec.direct.reconstruct_common.assert_called_one_with([0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3)
+        self.assertEqual(dirrec.fit.reconstruct_common.call_count, 0)
+        self.assertEqual(theta, sentinel.theta)
+        self.assertEqual(phi, sentinel.phi)
+
+        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1, 2, 3])
+        self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
+        dirrec.fit.reconstruct_common.assert_called_one_with([0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
+        self.assertEqual(theta, sentinel.theta)
+        self.assertEqual(phi, sentinel.phi)
+        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=None)
+        dirrec.fit.reconstruct_common.assert_called_with([0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
+        self.assertEqual(dirrec.fit.reconstruct_common.call_count, 2)
+
+    @patch.object(direction_reconstruction.EventDirectionReconstruction, 'reconstruct_event')
+    def test_reconstruct_events(self, mock_reconstruct_event):
+        mock_reconstruct_event.return_value = [sentinel.theta, sentinel.phi, sentinel.ids]
+        dirrec = direction_reconstruction.EventDirectionReconstruction(sentinel.station)
+        self.assertEqual(dirrec.reconstruct_events([sentinel.event, sentinel.event], sentinel.detector_ids, sentinel.offsets, progress=False),
+                         ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.ids, sentinel.ids)))
+        self.assertEqual(mock_reconstruct_event.call_count, 2)
+        mock_reconstruct_event.assert_called_with(sentinel.event, sentinel.detector_ids, sentinel.offsets)
+
 
 class CoincidenceDirectionReconstructionTest(unittest.TestCase):
 
@@ -49,6 +91,15 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         cluster.set_timestamp.assert_called_with(1)
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
+
+    @patch.object(direction_reconstruction.CoincidenceDirectionReconstruction, 'reconstruct_coincidence')
+    def test_reconstruct_coincidences(self, mock_reconstruct_coincidence):
+        mock_reconstruct_coincidence.return_value = [sentinel.theta, sentinel.phi, sentinel.nums]
+        dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(sentinel.cluster)
+        self.assertEqual(dirrec.reconstruct_coincidences([sentinel.coincidence, sentinel.coincidence], sentinel.station_numbers, sentinel.offsets, progress=False),
+                         ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.nums, sentinel.nums)))
+        self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
+        mock_reconstruct_coincidence.assert_called_with(sentinel.coincidence, sentinel.station_numbers, sentinel.offsets)
 
 
 class BaseAlgorithm(object):
