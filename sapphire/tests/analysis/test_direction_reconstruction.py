@@ -1,8 +1,8 @@
 import unittest
 import warnings
 
-from mock import sentinel, Mock
-from numpy import isnan, pi, sqrt, arcsin, arctan
+from mock import sentinel, patch, Mock
+from numpy import isnan, nan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
 
@@ -20,6 +20,15 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         dirrec = direction_reconstruction.EventDirectionReconstruction(station)
         theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[])
         station.cluster.set_timestamp.assert_called_with(sentinel.timestamp)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
+
+    @patch.object(direction_reconstruction, 'detector_arrival_time')
+    def test_bad_times(self, mock_detector_arrival_time):
+        mock_detector_arrival_time.return_value = nan
+        station = Mock()
+        dirrec = direction_reconstruction.EventDirectionReconstruction(station)
+        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1])
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
 
