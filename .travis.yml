@@ -22,7 +22,7 @@ before_install:
 
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables
-  - pip install coverage codecov flake8 sphinx
+  - pip install coverage coveralls codecov flake8 sphinx
   - python setup.py develop
 
 script:
@@ -33,3 +33,4 @@ script:
 
 after_success:
   - codecov
+  - coveralls
