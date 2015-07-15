@@ -58,7 +58,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
 
         theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1, 2, 3])
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
-        dirrec.fit.reconstruct_common.assert_called_one_with([0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
+        dirrec.fit.reconstruct_common.assert_called_once_with([0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
         theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=None)
