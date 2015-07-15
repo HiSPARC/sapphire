@@ -1,4 +1,5 @@
 import unittest
+import warnings
 
 from mock import MagicMock, patch, sentinel
 from numpy import isnan, nan
@@ -30,12 +31,16 @@ class DetectorDensitiesTests(unittest.TestCase):
     def test_detector_densities(self, mock_detector_ids, mock_detector_density):
         mock_detector_ids.return_value = range(4)
         mock_detector_density.return_value = sentinel.density
-        self.assertEqual(event_utils.detector_densities(sentinel.event, range(4)), [sentinel.density] * 4)
-        self.assertEqual(event_utils.detector_densities(sentinel.event, range(2)), [sentinel.density] * 2)
+        self.assertEqual(event_utils.detector_densities(sentinel.event, range(4)),
+                         [sentinel.density] * 4)
+        self.assertEqual(event_utils.detector_densities(sentinel.event, range(2)),
+                         [sentinel.density] * 2)
         self.assertEqual(mock_detector_ids.call_count, 0)
-        self.assertEqual(event_utils.detector_densities(sentinel.event), [sentinel.density] * 4)
+        self.assertEqual(event_utils.detector_densities(sentinel.event),
+                         [sentinel.density] * 4)
         mock_detector_ids.assert_called_once_with(None, sentinel.event)
-        self.assertEqual(event_utils.detector_densities(sentinel.event, station=sentinel.station), [sentinel.density] * 4)
+        self.assertEqual(event_utils.detector_densities(sentinel.event, station=sentinel.station),
+                         [sentinel.density] * 4)
         mock_detector_ids.assert_called_with(sentinel.station, sentinel.event)
 
 
@@ -54,6 +59,59 @@ class DetectorDensityTests(unittest.TestCase):
         self.event.__getitem__.side_effect = lambda name: -999
         self.assertTrue(isnan(event_utils.detector_density(self.event, 0)))
         self.event.__getitem__.assert_called_with('n1')
+
+
+class StationArrivalTimeTests(unittest.TestCase):
+
+    @patch.object(event_utils, 'detector_arrival_times')
+    @patch.object(event_utils, 'get_detector_ids')
+    def test_station_density(self, mock_detector_ids, mock_detector_arrival_times):
+        mock_detector_ids.return_value = range(4)
+        mock_detector_arrival_times.return_value = [7.5, 5., 2.5, 5.]
+        event_dict = {'t_trigger': 10, 'ext_timestamp': 1000}
+        event = MagicMock()
+        event.__getitem__.side_effect = lambda name: event_dict[name]
+        self.assertEqual(event_utils.station_arrival_time(event, 500, range(4), sentinel.offsets, sentinel.station),
+                         1000 - 500 - 10 + 2.5)
+        self.assertEqual(mock_detector_ids.call_count, 0)
+        self.assertEqual(event_utils.station_arrival_time(event, 500, None, sentinel.offsets),
+                         1000 - 500 - 10 + 2.5)
+        mock_detector_ids.assert_called_once_with(None, event)
+        self.assertEqual(event_utils.station_arrival_time(event, 500, None, sentinel.offsets, sentinel.station),
+                         1000 - 500 - 10 + 2.5)
+        mock_detector_ids.assert_called_with(sentinel.station, event)
+        mock_detector_arrival_times.return_value = [7.5, 5., nan, 5.]
+        self.assertEqual(event_utils.station_arrival_time(event, 500, None, sentinel.offsets, sentinel.station),
+                         1000 - 500 - 10 + 5)
+        event_dict['t_trigger'] = -999
+        self.assertTrue(isnan(event_utils.station_arrival_time(event, 500, None, sentinel.offsets, sentinel.station)))
+        event_dict['t_trigger'] = nan
+        self.assertTrue(isnan(event_utils.station_arrival_time(event, 500, None, sentinel.offsets, sentinel.station)))
+        mock_detector_arrival_times.return_value = [nan, nan, nan, nan]
+        with warnings.catch_warnings(record=True) as warned:
+            self.assertTrue(isnan(event_utils.station_arrival_time(event, 500, None, sentinel.offsets, sentinel.station)))
+        self.assertEqual(len(warned), 1)
+
+
+class DetectorArrivalTimesTests(unittest.TestCase):
+
+    @patch.object(event_utils, 'detector_arrival_time')
+    @patch.object(event_utils, 'get_detector_ids')
+    def test_detector_densities(self, mock_detector_ids, mock_detector_arrival_time):
+        mock_detector_ids.return_value = range(4)
+
+        mock_detector_arrival_time.return_value = sentinel.time
+        self.assertEqual(event_utils.detector_arrival_times(sentinel.event, range(4)),
+                         [sentinel.time] * 4)
+        self.assertEqual(event_utils.detector_arrival_times(sentinel.event, range(2)),
+                         [sentinel.time] * 2)
+        self.assertEqual(mock_detector_ids.call_count, 0)
+        self.assertEqual(event_utils.detector_arrival_times(sentinel.event),
+                         [sentinel.time] * 4)
+        mock_detector_ids.assert_called_once_with(None, sentinel.event)
+        self.assertEqual(event_utils.detector_arrival_times(sentinel.event, station=sentinel.station),
+                         [sentinel.time] * 4)
+        mock_detector_ids.assert_called_with(sentinel.station, sentinel.event)
 
 
 class DetectorArrivalTimeTests(unittest.TestCase):
