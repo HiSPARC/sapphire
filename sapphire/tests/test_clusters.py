@@ -126,6 +126,12 @@ class StationTests(unittest.TestCase):
                               cluster=self.cluster, station_id=1,
                               position=(0, 1, 2), station_timestamps=[1, 2])
 
+    def test__update_timestamp(self):
+        self.assertEqual(self.station_4d.index, -1)
+        for ts, index in [(-1, 0), (0, 0), (3, 0), (7, 1), (8, 1)]:
+            self.station_4d._update_timestamp(ts)
+            self.assertEqual(self.station_4d.index, index)
+
     def test_4d_positions(self):
         self.cluster.get_coordinates.return_value = (0, 0, 0, 0)
         self.assertEqual(self.station_4d.get_coordinates(), (5, 5, 5, pi))
