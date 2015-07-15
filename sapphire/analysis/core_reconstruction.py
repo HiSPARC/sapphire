@@ -60,11 +60,11 @@ class EventCoreReconstruction(object):
         for id in detector_ids:
             p_detector = detector_density(event, id, self.station)
             if not isnan(p_detector):
-                x, y, z = self.station.detectors[id].get_coordinates()
+                dx, dy, dz = self.station.detectors[id].get_coordinates()
                 p.append(p_detector)
-                x.append(x)
-                y.append(y)
-                z.append(z)
+                x.append(dx)
+                y.append(dy)
+                z.append(dz)
         if len(p) >= 3:
             core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
         else:

@@ -65,11 +65,11 @@ class EventDirectionReconstruction(object):
         for id in detector_ids:
             t_detector = detector_arrival_time(event, id, offsets)
             if not isnan(t_detector):
-                x, y, z = self.station.detectors[id].get_coordinates()
+                dx, dy, dz = self.station.detectors[id].get_coordinates()
                 t.append(t_detector)
-                x.append(x)
-                y.append(y)
-                z.append(z)
+                x.append(dx)
+                y.append(dy)
+                z.append(dz)
                 ids.append(id)
         if len(t) == 3:
             theta, phi = self.direct.reconstruct_common(t, x, y, z)
