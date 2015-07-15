@@ -1,9 +1,42 @@
 import unittest
 
-from mock import MagicMock
-from numpy import isnan
+from mock import MagicMock, patch, sentinel
+from numpy import isnan, nan
 
 from sapphire.analysis import event_utils
+
+
+class StationDensityTests(unittest.TestCase):
+
+    @patch.object(event_utils, 'detector_densities')
+    @patch.object(event_utils, 'get_detector_ids')
+    def test_station_density(self, mock_detector_ids, mock_detector_densities):
+        mock_detector_ids.return_value = range(4)
+        mock_detector_densities.return_value = [1, 1, 2, 2]
+        self.assertEqual(event_utils.station_density(sentinel.event, range(4), sentinel.station), 1.5)
+        mock_detector_densities.return_value = [1, 1, nan, nan]
+        self.assertEqual(event_utils.station_density(sentinel.event, range(4), sentinel.station), 1)
+        self.assertEqual(mock_detector_ids.call_count, 0)
+        self.assertEqual(event_utils.station_density(sentinel.event), 1)
+        mock_detector_ids.assert_called_once_with(None, sentinel.event)
+        self.assertEqual(event_utils.station_density(sentinel.event, station=sentinel.station), 1)
+        mock_detector_ids.assert_called_with(sentinel.station, sentinel.event)
+
+
+class DetectorDensitiesTests(unittest.TestCase):
+
+    @patch.object(event_utils, 'detector_density')
+    @patch.object(event_utils, 'get_detector_ids')
+    def test_detector_densities(self, mock_detector_ids, mock_detector_density):
+        mock_detector_ids.return_value = range(4)
+        mock_detector_density.return_value = sentinel.density
+        self.assertEqual(event_utils.detector_densities(sentinel.event, range(4)), [sentinel.density] * 4)
+        self.assertEqual(event_utils.detector_densities(sentinel.event, range(2)), [sentinel.density] * 2)
+        self.assertEqual(mock_detector_ids.call_count, 0)
+        self.assertEqual(event_utils.detector_densities(sentinel.event), [sentinel.density] * 4)
+        mock_detector_ids.assert_called_once_with(None, sentinel.event)
+        self.assertEqual(event_utils.detector_densities(sentinel.event, station=sentinel.station), [sentinel.density] * 4)
+        mock_detector_ids.assert_called_with(sentinel.station, sentinel.event)
 
 
 class DetectorDensityTests(unittest.TestCase):
