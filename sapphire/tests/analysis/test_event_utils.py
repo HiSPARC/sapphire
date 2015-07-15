@@ -133,7 +133,7 @@ class RelativeDetectorArrivalTimesTests(unittest.TestCase):
 
     @patch.object(event_utils, 'detector_arrival_times')
     @patch.object(event_utils, 'get_detector_ids')
-    def test_relative_detector_arrival_times(self, mock_detector_ids, mock_detector_arrival_times):
+    def test_nan_relative_detector_arrival_times(self, mock_detector_ids, mock_detector_arrival_times):
         mock_detector_ids.return_value = range(4)
         mock_detector_arrival_times.return_value = [7.5, 5., 5., nan]
         event_dict = {'t_trigger': 10, 'ext_timestamp': 1000}
