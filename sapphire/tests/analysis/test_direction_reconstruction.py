@@ -212,6 +212,20 @@ class BaseAlgorithm(object):
         result = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(result).all())
 
+        t = (0., 2., 3.)
+        x = (0., 1., 0.)
+        y = (5., 6., 5.)
+        z = (0., 1., 0.)
+        result = self.call_reconstruct(t, x, y, z)
+        self.assertTrue(isnan(result).all())
+
+        t = (0., 2., 3.)
+        x = (1., 0., 0.)
+        y = (6., 5., 5.)
+        z = (1., 0., 0.)
+        result = self.call_reconstruct(t, x, y, z)
+        self.assertTrue(isnan(result).all())
+
         # Three at same location
         t = (0., 2., 3.)
         x = (0., 0., 0.)  # same x
