@@ -44,25 +44,32 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         dirrec.fit = Mock()
         dirrec.direct.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
         dirrec.fit.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
+        event = {'timestamp': sentinel.timestamp}
 
-        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1])
+        theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1])
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 0)
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
+        self.assertEqual(len(ids), 2)
 
-        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1, 2])
-        dirrec.direct.reconstruct_common.assert_called_once_with([0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3)
+        theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2])
+        dirrec.direct.reconstruct_common.assert_called_once_with(
+            [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3)
         self.assertEqual(dirrec.fit.reconstruct_common.call_count, 0)
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
+        self.assertEqual(len(ids), 3)
 
-        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=[0, 1, 2, 3])
+        theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2, 3])
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
-        dirrec.fit.reconstruct_common.assert_called_once_with([0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
+        dirrec.fit.reconstruct_common.assert_called_once_with(
+            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
-        theta, phi, ids = dirrec.reconstruct_event({'timestamp': sentinel.timestamp}, detector_ids=None)
-        dirrec.fit.reconstruct_common.assert_called_with([0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
+        self.assertEqual(len(ids), 4)
+        theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=None)
+        dirrec.fit.reconstruct_common.assert_called_with(
+            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
         self.assertEqual(dirrec.fit.reconstruct_common.call_count, 2)
 
     @patch.object(direction_reconstruction.EventDirectionReconstruction, 'reconstruct_event')
@@ -91,6 +98,59 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         cluster.set_timestamp.assert_called_with(1)
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
+
+    @patch.object(direction_reconstruction, 'station_arrival_time')
+    def test_reconstruct_coincidence(self, mock_station_arrival_time):
+        mock_station_arrival_time.return_value = 0.
+        cluster = MagicMock()
+        station = MagicMock()
+        cluster.get_station.return_value = station
+        station.calc_center_of_mass_coordinates.return_value = [sentinel.x, sentinel.y, sentinel.z]
+        dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(cluster)
+        dirrec.direct = Mock()
+        dirrec.fit = Mock()
+        dirrec.direct.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
+        dirrec.fit.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
+        coincidence_2 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event]]
+        coincidence_3 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
+                         [2, sentinel.event]]
+        coincidence_4 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
+                         [2, sentinel.event], [3, sentinel.event]]
+
+
+        theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_2)
+        self.assertEqual(dirrec.direct.reconstruct_common.call_count, 0)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
+        self.assertEqual(len(nums), 0)
+
+        theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_3)
+        cluster.set_timestamp.assert_called_with(1)
+        dirrec.direct.reconstruct_common.assert_called_once_with(
+            [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3)
+        self.assertEqual(dirrec.fit.reconstruct_common.call_count, 0)
+        self.assertEqual(theta, sentinel.theta)
+        self.assertEqual(phi, sentinel.phi)
+        self.assertEqual(len(nums), 3)
+
+        theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_4)
+        cluster.set_timestamp.assert_called_with(1)
+        dirrec.fit.reconstruct_common.assert_called_once_with(
+            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4)
+        self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
+        self.assertEqual(theta, sentinel.theta)
+        self.assertEqual(phi, sentinel.phi)
+        self.assertEqual(len(nums), 4)
+
+        mock_station_arrival_time.return_value = nan
+
+        theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_4)
+        cluster.set_timestamp.assert_called_with(1)
+        self.assertEqual(dirrec.fit.reconstruct_common.call_count, 1)
+        self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
+        self.assertEqual(len(nums), 0)
 
     @patch.object(direction_reconstruction.CoincidenceDirectionReconstruction, 'reconstruct_coincidence')
     def test_reconstruct_coincidences(self, mock_reconstruct_coincidence):
