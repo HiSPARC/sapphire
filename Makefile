@@ -1,4 +1,4 @@
-.PHONY: gh-pages
+.PHONY: gh-pages test
 
 gh-pages:
 ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
