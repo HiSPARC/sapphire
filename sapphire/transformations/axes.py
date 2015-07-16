@@ -38,7 +38,6 @@ def cartesian_to_spherical(x, y, z):
         return 0, 0, 0
     theta = arccos(z / r)
     phi = arctan2(y, x)
-
     return r, theta, phi
 
 
@@ -76,7 +75,6 @@ def cartesian_to_compass(x, y, z):
     """
     r = sqrt(x * x + y * y)
     alpha = degrees(arctan2(x, y))
-
     return r, alpha, z
 
 
@@ -120,13 +118,27 @@ def compass_to_cartesian(r, alpha, z):
     """Converts compass coordinates into Cartesian coordinates
 
     :param r,alpha,z: compass coordinates, with alpha in degrees.
-    :return: tuple of cartesian coordinates (x, y, z).
+    :return: tuple of Cartesian coordinates (x, y, z).
 
     """
     x = sin(radians(alpha)) * r
     y = cos(radians(alpha)) * r
-
     return x, y, z
+
+
+def rotate_cartesian(x, y, z, angle, axis='z'):
+    """Rotate Cartesian coordinates
+
+    :param x,y,z: Cartesian coordinates.
+    :param angle: amount of rotation in radians.
+    :param axis: the axis to rotate around, either ``'x', 'y', 'z'``,
+                 or a (x,y,z) tuple specifying the axis to rotate about.
+    :return: tuple of Cartesian coordinates (x, y, z).
+
+    """
+    rot = rotation_matrix(angle, axis)
+    new = (x, y, z) * rot
+    return new.item(0), new.item(1), new.item(2)
 
 
 def rotation_matrix(angle, axis='z'):
@@ -134,7 +146,7 @@ def rotation_matrix(angle, axis='z'):
 
     :param angle: amount of rotation in radians.
     :param axis: the axis to rotate around, either ``'x', 'y', 'z'``,
-        or a (x,y,z) tuple specifying the axis to rotate about.
+                 or a (x,y,z) tuple specifying the axis to rotate about.
 
     :return: unitary rotation matrix.
 
