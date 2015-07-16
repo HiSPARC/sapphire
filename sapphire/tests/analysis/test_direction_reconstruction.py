@@ -117,7 +117,6 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         coincidence_4 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
                          [2, sentinel.event], [3, sentinel.event]]
 
-
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_2)
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 0)
         self.assertTrue(isnan(theta))
