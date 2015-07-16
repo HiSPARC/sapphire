@@ -4,14 +4,16 @@ SAPPHiRE — A Framework for HiSPARC
 Introduction
 ------------
 
-.. image:: http://img.shields.io/pypi/v/hisparc-sapphire.png
+.. image:: http://img.shields.io/pypi/v/hisparc-sapphire.svg
    :target: https://pypi.python.org/pypi/hisparc-sapphire/
-.. image:: http://img.shields.io/badge/license-GPLv3-blue.png
+.. image:: http://img.shields.io/badge/license-GPLv3-blue.svg
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
-.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.png
+.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.svg
    :target: https://travis-ci.org/HiSPARC/sapphire
-.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.png
-   :target: https://coveralls.io/r/HiSPARC/sapphire?branch=master
+.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.svg?label=coveralls
+   :target: https://coveralls.io/r/HiSPARC/sapphire
+.. image:: http://img.shields.io/codecov/c/github/HiSPARC/sapphire/master.svg?label=codecov
+   :target: https://codecov.io/github/HiSPARC/sapphire
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 <http://www.hisparc.nl/>`_ Research and Education.  It was created in the
