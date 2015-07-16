@@ -22,14 +22,15 @@ before_install:
 
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables
-  - pip install coverage coveralls flake8 sphinx
+  - pip install coverage coveralls codecov flake8 sphinx
   - python setup.py develop
 
 script:
-  - coverage run --source=sapphire setup.py test
+  - coverage run --branch --source=sapphire setup.py test
   - flake8 --ignore=E501 --exclude=sapphire/transformations/geographic.py sapphire
   - flake8 --exit-zero --ignore=Z sapphire/transformations/geographic.py
   - sphinx-build -anW doc doc/_build/html
 
 after_success:
-  coveralls
+  - codecov
+  - coveralls
