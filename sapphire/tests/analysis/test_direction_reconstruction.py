@@ -123,6 +123,12 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         self.assertTrue(isnan(phi))
         self.assertEqual(len(nums), 0)
 
+        theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_3, station_numbers=[1, 2])
+        self.assertEqual(dirrec.direct.reconstruct_common.call_count, 0)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
+        self.assertEqual(len(nums), 2)
+
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_3)
         cluster.set_timestamp.assert_called_with(1)
         dirrec.direct.reconstruct_common.assert_called_once_with(
