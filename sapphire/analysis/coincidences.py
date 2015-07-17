@@ -215,16 +215,9 @@ class Coincidences(object):
                                                   'observables',
                                                   storage.EventObservables)
 
-        # ProgressBar does not work for empty iterables.
-        if len(self.coincidence_group._src_c_index):
-            src_c_index = pbar(self.coincidence_group._src_c_index,
-                               show=self.progress)
-            for coincidence in src_c_index:
-                self._store_coincidence(coincidence)
-        else:
-            print "Creating empty tables, no coincidences found"
-            for coincidence in self.coincidence_group._src_c_index:
-                self._store_coincidence(coincidence)
+        for coincidence in pbar(self.coincidence_group._src_c_index,
+                                show=self.progress):
+            self._store_coincidence(coincidence)
 
         c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
                                            tables.UInt32Col())
@@ -371,16 +364,15 @@ class Coincidences(object):
 
         """
         timestamps = []
-        for i in range(len(stations)):
-            ts = [(x['ext_timestamp'], i, j) for j, x in
-                  enumerate(stations[i][:limit])]
+        for id in range(len(stations)):
+            ts = [(x, id, j) for j, x in
+                  enumerate(stations[id].col('ext_timestamp')[:limit])]
             try:
                 # shift data. carefully avoid upcasting (we're adding two
                 # longs, which is a long, and casting that back to uint64. if
                 # we're not careful, an intermediate value will be a float64,
                 # which doesn't hold the precision to store nanoseconds.
-                ts = [(np.uint64(int(x[0]) + shifts[i]), x[1], x[2]) for x in
-                      ts]
+                ts = [(np.uint64(int(x) + shifts[i]), i, j) for x, i, j in ts]
             except (TypeError, IndexError):
                 # shift is None or doesn't exist
                 pass
@@ -491,6 +483,7 @@ class CoincidencesESD(Coincidences):
         find the source events.
 
         """
+        n_coincidences = len(self._src_c_index)
         if cluster:
             self.cluster = cluster
             self.coincidence_group._v_attrs.cluster = cluster
@@ -501,33 +494,27 @@ class CoincidencesESD(Coincidences):
             s_columns = {'s%d' % n: tables.BoolCol(pos=(n + 12))
                          for n, _ in enumerate(self.station_groups)}
 
-        self.c_index = []
-
         description = storage.Coincidence
         description.columns.update(s_columns)
-        self.coincidences = self.data.create_table(self.coincidence_group,
-                                                   'coincidences', description)
+        self.coincidences = self.data.create_table(
+            self.coincidence_group, 'coincidences', description,
+            expectedrows=n_coincidences)
 
-        # ProgressBar does not work for empty iterables.
-        if len(self._src_c_index):
-            src_c_index = pbar(self._src_c_index, show=self.progress)
-            for coincidence in src_c_index:
-                self._store_coincidence(coincidence)
-        else:
-            if self.progress:
-                print "Creating empty tables, no coincidences found"
-            for coincidence in self._src_c_index:
-                self._store_coincidence(coincidence)
+        self.c_index = []
 
-        c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
-                                           tables.UInt32Col(shape=2))
-        for coincidence in self.c_index:
-            c_index.append(coincidence)
+        for coincidence in pbar(self._src_c_index, show=self.progress):
+            self._store_coincidence(coincidence)
+
+        c_index = self.data.create_vlarray(
+            self.coincidence_group, 'c_index', tables.UInt32Col(shape=2),
+            expectedrows=n_coincidences)
+        for observables_idx in pbar(self.c_index, show=self.progress):
+            c_index.append(observables_idx)
         c_index.flush()
-        self.c_index = c_index
 
-        s_index = self.data.create_vlarray(self.coincidence_group, 's_index',
-                                           tables.VLStringAtom())
+        s_index = self.data.create_vlarray(
+            self.coincidence_group, 's_index', tables.VLStringAtom(),
+            expectedrows=len(self.station_groups))
         for station_group in self.station_groups:
             s_index.append(station_group)
         s_index.flush()
