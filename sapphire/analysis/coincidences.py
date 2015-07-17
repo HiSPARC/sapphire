@@ -479,7 +479,7 @@ class CoincidencesESD(Coincidences):
 
         """
         c_index, timestamps = self._search_coincidences(window, shifts, limit)
-        self._src_timestamps = np.array(timestamps, dtype=np.uint64)
+        self._src_timestamps = timestamps
         self._src_c_index = c_index
 
     def store_coincidences(self, cluster=None):
@@ -514,7 +514,8 @@ class CoincidencesESD(Coincidences):
             for coincidence in src_c_index:
                 self._store_coincidence(coincidence)
         else:
-            print "Creating empty tables, no coincidences found"
+            if self.progress:
+                print "Creating empty tables, no coincidences found"
             for coincidence in self._src_c_index:
                 self._store_coincidence(coincidence)
 

@@ -13,6 +13,7 @@ class CoincidencesTests(unittest.TestCase):
                                                       progress=False)
 
     def test__do_search_coincidences(self):
+        # [(timestamp, station_idx, event_idx), ..]
         timestamps = [(0, 0, 0), (0, 1, 0), (10, 1, 1), (15, 2, 0),
                       (100, 1, 2), (200, 2, 1), (250, 0, 1), (251, 0, 2)]
 
