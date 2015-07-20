@@ -484,7 +484,7 @@ class EllipsLdf(KascadeLdf):
         term1 = k / r0
         term2 = 1 + k / r0
         muoncorr = 1 + k / (11.24 * r0)  # See warning in docstring.
-        with warnings.catch_warnings(record=True) as w:
+        with warnings.catch_warnings(record=True):
             p = Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
         return p
 
