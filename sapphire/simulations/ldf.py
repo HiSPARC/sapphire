@@ -17,6 +17,8 @@ Example usage::
     sim.run()
 
 """
+import warnings
+
 from scipy.special import gamma
 from numpy import pi, sin, cos, sqrt, random, arctan2, log10
 
@@ -482,8 +484,9 @@ class EllipsLdf(KascadeLdf):
         term1 = k / r0
         term2 = 1 + k / r0
         muoncorr = 1 + k / (11.24 * r0)  # See warning in docstring.
-
-        return Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
+        with warnings.catch_warnings(record=True) as w:
+            p = Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
+        return p
 
     def _c(self, s1, s2):
         """Normalization of the LDF

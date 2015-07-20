@@ -17,6 +17,7 @@
 """
 from __future__ import division
 import itertools
+import warnings
 
 from numpy import isnan, nan, cos, sqrt, mean, array
 
@@ -411,7 +412,8 @@ class EllipsLdfAlgorithm(object):
                     l += j
 
                 sizefactor = sqrt(mmdivl / l)
-                chi2 = 2. * (sizefactor * l - m)
+                with warnings.catch_warnings(record=True):
+                    chi2 = 2. * (sizefactor * l - m)
                 if chi2 < chi2best:
                     factorbest = sizefactor
                     xbest = xtry
