@@ -243,7 +243,7 @@ class Coincidences(object):
         for index in coincidence:
             event_desc = self.coincidence_group._src_timestamps[index]
             station_id = event_desc[1]
-            event_index = event_desc[2]
+            event_index = int(event_desc[2])
 
             group = self.data.get_node(self.station_groups[station_id])
             event = group.events[event_index]
