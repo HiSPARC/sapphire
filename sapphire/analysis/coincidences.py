@@ -138,7 +138,7 @@ class Coincidences(object):
             t's smaller than this window will be considered a coincidence.
         :param shifts: optionally shift a station's data in time.  This
             can be useful if a station has a misconfigured GPS clock.
-            Expects a list of shifts for each station.
+            Expects a list of shifts, one for each station.
         :param limit: optionally limit the search for this number of
             events.
 
@@ -364,15 +364,16 @@ class Coincidences(object):
 
         """
         timestamps = []
-        for id in range(len(stations)):
-            ts = [(x, id, j) for j, x in
-                  enumerate(stations[id].col('ext_timestamp')[:limit])]
+        for s_id in range(len(stations)):
+            ts = [(x, s_id, j) for j, x in
+                  enumerate(stations[s_id].col('ext_timestamp')[:limit])]
             try:
                 # shift data. carefully avoid upcasting (we're adding two
                 # longs, which is a long, and casting that back to uint64. if
                 # we're not careful, an intermediate value will be a float64,
                 # which doesn't hold the precision to store nanoseconds.
-                ts = [(np.uint64(int(x) + shifts[i]), i, j) for x, i, j in ts]
+                ts = [(np.uint64(int(x) + int(shifts[i])), i, j)
+                      for x, i, j in ts]
             except (TypeError, IndexError):
                 # shift is None or doesn't exist
                 pass

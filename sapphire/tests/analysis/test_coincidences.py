@@ -1,5 +1,7 @@
-from mock import sentinel, patch
+from mock import sentinel, patch, Mock
 import unittest
+
+from numpy import uint64
 
 from sapphire.analysis import coincidences
 
@@ -24,6 +26,45 @@ class CoincidencesTests(unittest.TestCase):
         mock_search.assert_called_with(window=sentinel.window)
         mock_process.assert_called_with()
         mock_store.assert_called_with(sentinel.cluster)
+
+    def test__retrieve_timestamps(self):
+        station1 = Mock()
+        station2 = Mock()
+        # Station 2 timestamps are not already correctly sorted.
+        station1.col.return_value = [uint64(1400000002000000600), uint64(1400000008000000050)]
+        station2.col.return_value = [uint64(1400000002000000700), uint64(1400000008000000000)][::-1]
+        stations = [station1, station2]
+        timestamps = self.c._retrieve_timestamps(stations)
+        self.assertEqual(timestamps,
+                         [(1400000002000000600, 0, 0), (1400000002000000700, 1, 1),
+                          (1400000008000000000, 1, 0), (1400000008000000050, 0, 1)])
+        # Shift both
+        timestamps = self.c._retrieve_timestamps(stations, shifts=[-50, 10])
+        self.assertEqual(timestamps,
+                         [(1400000002000000550, 0, 0), (1400000002000000710, 1, 1),
+                          (1400000008000000000, 0, 1), (1400000008000000010, 1, 0)])
+        # Wrong value type shifts
+        self.assertRaises(ValueError, self.c._retrieve_timestamps, stations, shifts=['', ''])
+        self.assertRaises(ValueError, self.c._retrieve_timestamps, stations, shifts=['', 90])
+        # Different length shifts
+        timestamps = self.c._retrieve_timestamps(stations, shifts=[110])
+        self.assertEqual(timestamps,
+                         [(1400000002000000700, 1, 1), (1400000002000000710, 0, 0),
+                          (1400000008000000000, 1, 0), (1400000008000000160, 0, 1)])
+        timestamps = self.c._retrieve_timestamps(stations, shifts=[None, 60])
+        self.assertEqual(timestamps,
+                         [(1400000002000000600, 0, 0), (1400000002000000760, 1, 1),
+                          (1400000008000000050, 0, 1), (1400000008000000060, 1, 0)])
+        # Subnanosecond shifts
+        timestamps = self.c._retrieve_timestamps(stations, shifts=[0.3, 5.9])
+        self.assertEqual(timestamps,
+                         [(1400000002000000600, 0, 0), (1400000002000000705, 1, 1),
+                          (1400000008000000005, 1, 0), (1400000008000000050, 0, 1)])
+        # Using limits
+        timestamps = self.c._retrieve_timestamps(stations, limit=1)
+        self.assertEqual(timestamps,
+                         [(1400000002000000600, 0, 0), (1400000008000000000, 1, 0)])
+
 
     def test__do_search_coincidences(self):
         # [(timestamp, station_idx, event_idx), ..]
