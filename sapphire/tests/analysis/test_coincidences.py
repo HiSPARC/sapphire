@@ -65,7 +65,6 @@ class CoincidencesTests(unittest.TestCase):
         self.assertEqual(timestamps,
                          [(1400000002000000600, 0, 0), (1400000008000000000, 1, 0)])
 
-
     def test__do_search_coincidences(self):
         # [(timestamp, station_idx, event_idx), ..]
         timestamps = [(0, 0, 0), (0, 1, 0), (10, 1, 1), (15, 2, 0),
