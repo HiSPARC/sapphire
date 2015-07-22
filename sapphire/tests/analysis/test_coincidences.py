@@ -67,8 +67,9 @@ class CoincidencesTests(unittest.TestCase):
 
     def test__do_search_coincidences(self):
         # [(timestamp, station_idx, event_idx), ..]
-        timestamps = [(0, 0, 0), (0, 1, 0), (10, 1, 1), (15, 2, 0),
-                      (100, 1, 2), (200, 2, 1), (250, 0, 1), (251, 0, 2)]
+        timestamps = [(uint64(0), 0, 0), (uint64(0), 1, 0), (uint64(10), 1, 1),
+                      (uint64(15), 2, 0), (uint64(100), 1, 2), (uint64(200), 2, 1),
+                      (uint64(250), 0, 1), (uint64(251), 0, 2)]
 
         c = self.c._do_search_coincidences(timestamps, window=6)
         expected_coincidences = [[0, 1], [2, 3], [6, 7]]
