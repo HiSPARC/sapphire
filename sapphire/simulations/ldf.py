@@ -57,7 +57,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
         assumes the shower to come from the Zenith.
 
         :return: dictionary with shower parameters: core_pos
-                  (x, y-tuple).
+                 (x, y-tuple).
 
         """
         r = self.max_core_distance
