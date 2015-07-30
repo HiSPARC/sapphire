@@ -7,7 +7,7 @@ from __future__ import division
 
 from bisect import bisect_right
 
-from numpy import floor, ceil, round, arccos, cos, sin, pi
+from numpy import floor, ceil, round, arcsin, sin, pi, sqrt
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
@@ -98,15 +98,17 @@ def norm_angle(angle):
 def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     """Calculate the angle between two (zenith, azimuth) coordinates
 
-    Using the spherical law of cosines,
-    from: http://www.movable-type.co.uk/scripts/latlong.html#cosine-law
+    Using the haversine formula,
+    from: http://www.movable-type.co.uk/scripts/latlong.html
 
     :param zenith#: Zenith parts of the coordinates, in radians (0, pi/2).
     :param azimuth#: Azimuth parts of the coordinates, in radians (-pi, pi).
     :return: Angle between the two coordinates.
 
     """
-    lat1 = pi / 2 - zenith1
-    lat2 = pi / 2 - zenith2
-    return arccos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) *
-                  cos(azimuth1 - azimuth2))
+    dlat = zenith1 - zenith2
+    dlon = azimuth2 - azimuth1
+    a = (sin(dlat / 2) ** 2 + sin(zenith1) * sin(zenith2) * sin(dlon / 2) ** 2)
+    angle = 2 * arcsin(sqrt(a))
+
+    return angle
