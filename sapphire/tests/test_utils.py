@@ -2,7 +2,7 @@ import unittest
 import types
 from StringIO import StringIO
 
-from numpy import pi, random, exp, sqrt, nonzero
+from numpy import pi, random, exp, sqrt
 import progressbar
 
 from sapphire import utils
