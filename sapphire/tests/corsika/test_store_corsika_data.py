@@ -9,7 +9,7 @@ from sapphire.corsika.store_corsika_data import store_and_sort_corsika_data
 
 TEST_DATA_FILE = 'test_data/1_2/DAT000000'
 TEST_EXPECTED_FILE = 'test_data/1_2/corsika.h5'
-STORE_SCRIPT = 'store_corsika_data {source} {destination}'
+STORE_CMD = 'store_corsika_data {source} {destination}'
 
 
 class StoreCorsikaDataTests(unittest.TestCase):
@@ -25,7 +25,13 @@ class StoreCorsikaDataTests(unittest.TestCase):
         os.remove(self.destination_path)
 
     def test_store_data(self):
-        store_and_sort_corsika_data(self.source_path, self.destination_path)
+        # First with overwrite false
+        self.assertRaises(Exception, store_and_sort_corsika_data,
+                          self.source_path, self.destination_path,
+                          progress=True)
+        # Now with overwrite true
+        store_and_sort_corsika_data(self.source_path, self.destination_path,
+                                    overwrite=True)
         self.validate_results(self.expected_path, self.destination_path)
 
     def validate_results(self, expected_path, actual_path):
@@ -72,15 +78,16 @@ class StoreCorsikaDataCommandTests(StoreCorsikaDataTests):
         self.source_path = self.get_testdata_path()
         self.expected_path = self.get_expected_path()
         self.destination_path = self.create_tempfile_path()
-        self.command = STORE_SCRIPT.format(source=self.source_path,
-                                           destination=self.destination_path)
+        self.command = STORE_CMD.format(source=self.source_path,
+                                        destination=self.destination_path)
 
     def test_store_data(self):
         result = subprocess.check_output(self.command, shell=True)
         self.assertEqual(result, '')
 
         self.assertRaises(subprocess.CalledProcessError,
-                          subprocess.check_output, self.command,
+                          subprocess.check_output,
+                          self.command + ' --progress',
                           stderr=subprocess.STDOUT, shell=True)
 
         result = subprocess.check_output(self.command + ' --overwrite',
