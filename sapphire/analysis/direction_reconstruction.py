@@ -19,7 +19,7 @@ import warnings
 import itertools
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, where, pi, inf, array)
+                   sqrt, where, pi, inf, array, cross, dot)
 from scipy.optimize import minimize
 
 from .event_utils import station_arrival_time, detector_arrival_time
@@ -523,44 +523,29 @@ class DirectAlgorithmCartesian3D(object):
 
         """
         c = .3
+        d1 = array([dx1, dy1, dz1])
+        d2 = array([dx2, dy2, dz2])
+        u = c * (dt2 * d1 - dt1 * d2)
+        v = cross(d1, d2)
+        uxv = cross(u, v)
 
-        ux = c * (dt2 * dx1 - dt1 * dx2)
-        uy = c * (dt2 * dy1 - dt1 * dy2)
-        uz = c * (dt2 * dz1 - dt1 * dz2)
-
-        vx = dy1 * dz2 - dz1 * dy2
-        vy = dz1 * dx2 - dx1 * dz2
-        vz = dx1 * dy2 - dy1 * dx2
-
-        ucrossvx = uy * vz - uz * vy
-        ucrossvy = uz * vx - ux * vz
-        ucrossvz = ux * vy - uy * vx
-
-        usquared = ux * ux + uy * uy + uz * uz
-        vsquared = vx * vx + vy * vy + vz * vz
+        usquared = dot(u, u)
+        vsquared = dot(v, v)
         underroot = vsquared - usquared
 
         theta = nan
         phi = nan
 
         if underroot > 0 and not vsquared == 0:
-            termx = vx * sqrt(underroot)
-            termy = vy * sqrt(underroot)
-            termz = vz * sqrt(underroot)
+            term = v * sqrt(underroot)
+            nplus = (uxv + term) / vsquared
+            nmin = (uxv - term) / vsquared
 
-            nxplus = (ucrossvx + termx) / vsquared
-            nyplus = (ucrossvy + termy) / vsquared
-            nzplus = (ucrossvz + termz) / vsquared
+            phiplus = arctan2(nplus[1], nplus[0])
+            thetaplus = arccos(nplus[2])
 
-            nxmin = (ucrossvx - termx) / vsquared
-            nymin = (ucrossvy - termy) / vsquared
-            nzmin = (ucrossvz - termz) / vsquared
-
-            phiplus = arctan2(nyplus, nxplus)
-            thetaplus = arccos(nzplus)
-
-            phimin = arctan2(nymin, nxmin)
-            thetamin = arccos(nzmin)
+            phimin = arctan2(nmin[1], nmin[0])
+            thetamin = arccos(nmin[2])
 
             if isnan(thetaplus):
                 thetaplus = pi
