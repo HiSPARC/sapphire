@@ -86,7 +86,7 @@ class EventCoreReconstruction(object):
         if len(cores):
             core_x, core_y = zip(*cores)
         else:
-            core_x, core_y = ([], [])
+            core_x, core_y = ((), ())
         return core_x, core_y
 
 
@@ -155,7 +155,7 @@ class CoincidenceCoreReconstruction(object):
         if len(cores):
             core_x, core_y = zip(*cores)
         else:
-            core_x, core_y = ([], [])
+            core_x, core_y = ((), ())
         return core_x, core_y
 
 

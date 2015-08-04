@@ -80,6 +80,9 @@ class EventDirectionReconstructionTest(unittest.TestCase):
                          ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.ids, sentinel.ids)))
         self.assertEqual(mock_reconstruct_event.call_count, 2)
         mock_reconstruct_event.assert_called_with(sentinel.event, sentinel.detector_ids, sentinel.offsets)
+        self.assertEqual(dirrec.reconstruct_events([], sentinel.detector_ids, sentinel.offsets, progress=False),
+                         ((), (), ()))
+        self.assertEqual(mock_reconstruct_event.call_count, 2)
 
 
 class CoincidenceDirectionReconstructionTest(unittest.TestCase):
@@ -165,6 +168,9 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
                          ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.nums, sentinel.nums)))
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
         mock_reconstruct_coincidence.assert_called_with(sentinel.coincidence, sentinel.station_numbers, sentinel.offsets)
+        self.assertEqual(dirrec.reconstruct_coincidences([], sentinel.station_numbers, sentinel.offsets, progress=False),
+                         ((), (), ()))
+        self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
 
 
 class BaseAlgorithm(object):

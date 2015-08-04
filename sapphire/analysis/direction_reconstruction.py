@@ -95,7 +95,7 @@ class EventDirectionReconstruction(object):
         if len(angles):
             theta, phi, ids = zip(*angles)
         else:
-            theta, phi, ids = ([], [], [])
+            theta, phi, ids = ((), (), ())
         return theta, phi, ids
 
 
@@ -187,7 +187,7 @@ class CoincidenceDirectionReconstruction(object):
         if len(angles):
             theta, phi, nums = zip(*angles)
         else:
-            theta, phi, nums = ([], [], [])
+            theta, phi, nums = ((), (), ())
         return theta, phi, nums
 
 
