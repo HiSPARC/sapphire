@@ -92,7 +92,10 @@ class EventDirectionReconstruction(object):
         """
         angles = [self.reconstruct_event(event, detector_ids, offsets)
                   for event in pbar(events, show=progress)]
-        theta, phi, ids = zip(*angles)
+        if len(angles):
+            theta, phi, ids = zip(*angles)
+        else:
+            theta, phi, ids = ([], [], [])
         return theta, phi, ids
 
 
@@ -181,7 +184,10 @@ class CoincidenceDirectionReconstruction(object):
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
                                                offsets)
                   for coincidence in pbar(coincidences, show=progress)]
-        theta, phi, nums = zip(*angles)
+        if len(angles):
+            theta, phi, nums = zip(*angles)
+        else:
+            theta, phi, nums = ([], [], [])
         return theta, phi, nums
 
 

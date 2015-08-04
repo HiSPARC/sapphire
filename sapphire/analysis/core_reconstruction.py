@@ -83,7 +83,10 @@ class EventCoreReconstruction(object):
         """
         cores = [self.reconstruct_event(event, detector_ids)
                  for event in pbar(events, show=progress)]
-        core_x, core_y = zip(*cores)
+        if len(cores):
+            core_x, core_y = zip(*cores)
+        else:
+            core_x, core_y = ([], [])
         return core_x, core_y
 
 
@@ -149,7 +152,10 @@ class CoincidenceCoreReconstruction(object):
         """
         cores = [self.reconstruct_coincidence(coincidence, station_numbers)
                  for coincidence in pbar(coincidences, show=progress)]
-        core_x, core_y = zip(*cores)
+        if len(cores):
+            core_x, core_y = zip(*cores)
+        else:
+            core_x, core_y = ([], [])
         return core_x, core_y
 
 
