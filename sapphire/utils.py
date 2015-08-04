@@ -112,3 +112,16 @@ def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     angle = 2 * arcsin(sqrt(a))
 
     return angle
+
+
+def distance_between(x1, y1, x2, y2):
+    """Calculate the distance between two (x, y) coordinates
+
+    :param x#: x parts of the coordinates.
+    :param y#: y parts of the coordinates.
+    :return: distance between the two coordinates.
+
+    """
+    d = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    return d
