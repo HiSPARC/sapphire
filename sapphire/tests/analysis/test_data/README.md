@@ -22,3 +22,19 @@ after downloading, and the file repacked otherwise you are left with
 
     $ ptrepack --complevel 9 --complib blosc PE-testdata_temp.h5 PE-testdata.h5
     $ rm PE-testdata_temp.h5
+
+
+Notes on recreating esd_coincidences.h5
+---------------------------------------
+
+    >>> import tables
+    >>> from sapphire import download_data, CoincidencesESD
+    >>> from datetime import datetime
+    >>> filters = tables.Filters(complevel=1)
+    >>> start = datetime(2012, 1, 1, 0, 0, 0)
+    >>> end = datetime(2012, 1, 1, 0, 2, 0)
+    >>> with tables.open_file('esd_coincidences.h5', 'w', filters=filters) as datafile:
+    ...     download_data(datafile, '/station_501', 501, start, end, progress=False)
+    ...     download_data(datafile, '/station_502', 502, start, end, progress=False)
+    ...     coin = CoincidencesESD(datafile, '/coincidences', ['/station_501', '/station_502'], progress=False)
+    ...     coin.search_and_store_coincidences()

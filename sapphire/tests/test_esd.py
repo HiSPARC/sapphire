@@ -3,6 +3,7 @@ import unittest
 
 from mock import patch, ANY, sentinel, MagicMock
 import tables
+from numpy import array
 
 from sapphire import esd, api
 
@@ -80,7 +81,8 @@ class ESDTest(unittest.TestCase):
                           type='bad')
 
     def test_start_end_values(self):
-        """ Check for RuntimeError for impossible end=value with start=None"""
+        """Check for RuntimeError for impossible end=value with start=None"""
+
         self.assertRaises(RuntimeError, esd.download_data, None, None, 501,
                           start=None, end='a_value')
         self.assertRaises(RuntimeError, esd.download_coincidences, None,
@@ -97,7 +99,8 @@ class ESDTest(unittest.TestCase):
     @patch.object(esd, 'download_data')
     @patch.object(tables, 'open_file')
     def test_quick_download(self, mock_open_file, mock_download_data):
-        """ Test esd.quick_download() """
+        """Test esd.quick_download()"""
+
         esd.quick_download(501)
         mock_open_file.assert_called_once_with('data1.h5', 'w')
         mock_download_data.assert_called_once_with(ANY, None, 501, None)
@@ -105,7 +108,8 @@ class ESDTest(unittest.TestCase):
     @unittest.skipUnless(api.API.check_connection(),
                          "Internet connection required")
     def test_download_data(self):
-        """ Download data and validate results """
+        """Download data and validate results"""
+
         output_path = create_tempfile_path()
         perform_esd_download_data(output_path)
         self.validate_results(test_data_path, output_path)
@@ -114,7 +118,8 @@ class ESDTest(unittest.TestCase):
     @unittest.skipUnless(api.API.check_connection(),
                          "Internet connection required")
     def test_download_coincidences(self):
-        """ Download coincidence data from esd and validate results """
+        """Download coincidence data from esd and validate results"""
+
         output_path = create_tempfile_path()
         perform_download_coincidences(output_path)
         self.validate_results(test_data_coincidences_path, output_path)
@@ -133,31 +138,33 @@ class ESDTest(unittest.TestCase):
 
         for expected_node in expected_file.walk_nodes('/', 'Table'):
             try:
-                actual_node = actual_file.get_node(expected_node)
-
-                for colname in expected_node.colnames:
-                    expected_col = expected_node.col(colname)
-                    actual_col = actual_node.col(colname)
-                    if expected_col.shape == actual_col.shape:
-                        self.assertTrue((expected_col == actual_col).all())
-                    else:
-                        self.fail("Columns do not have the same length.")
-            except (NameError):
-                self.fail("node %s does not exist in datafile", expected_node)
+                actual_node = actual_file.get_node(expected_node._v_pathname)
+            except tables.NoSuchNodeError:
+                self.fail("node %s does not exist in datafile" %
+                          expected_node._v_pathname)
+            for colname in expected_node.colnames:
+                expected_col = expected_node.col(colname)
+                actual_col = actual_node.col(colname)
+                if expected_col.shape == actual_col.shape:
+                    self.assertTrue((expected_col == actual_col).all())
+                else:
+                    self.fail("Columns do not have the same length.")
 
     def validate_arrays(self, expected_file, actual_file):
         """Verify that all VLArrays in hdf5 file are identical"""
 
         for expected_node in expected_file.walk_nodes('/', 'VLArray'):
             try:
-                actual_node = actual_file.get_node(expected_node)
+                actual_node = actual_file.get_node(expected_node._v_pathname)
+            except tables.NoSuchNodeError:
+                self.fail("node %s does not exist in datafile" %
+                          expected_node._v_pathname)
+            if expected_node.shape == actual_node.shape:
+                self.assertTrue((array(expected_node.read()) ==
+                                 array(actual_node.read())).all())
+            else:
+                self.fail("Arrays do not have the same length.")
 
-                if expected_node.shape == actual_node.shape:
-                    self.assertTrue((expected_node == actual_node))
-                else:
-                    self.fail("Arrays do not have the same length.")
-            except (NameError):
-                self.fail("node %s does not exist in datafile", expected_node)
 
 if __name__ == '__main__':
     unittest.main()

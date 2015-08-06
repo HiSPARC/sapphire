@@ -1,9 +1,16 @@
-from mock import sentinel, patch, Mock
 import unittest
+import tempfile
+import os
+import shutil
 
-from numpy import uint64
+from mock import sentinel, patch, Mock
+import tables
+from numpy import uint64, array
 
 from sapphire.analysis import coincidences
+
+
+TEST_DATA_FILE = 'test_data/esd_coincidences.h5'
 
 
 class CoincidencesTests(unittest.TestCase):
@@ -114,6 +121,83 @@ class CoincidencesESDTests(CoincidencesTests):
                                    sentinel.limit)
         mock__search.assert_called_with(sentinel.window, sentinel.shifts,
                                         sentinel.limit)
+
+
+class CoincidencesESDDataTests(unittest.TestCase):
+
+    def setUp(self):
+        self.data_path = self.create_tempfile_from_testdata()
+
+    def tearDown(self):
+        os.remove(self.data_path)
+
+    def test_coincidencesesd_output(self):
+        with tables.open_file(self.data_path, 'a') as data:
+            c = coincidences.CoincidencesESD(data, '/coincidences',
+                                             ['/station_501', '/station_502'],
+                                             progress=False)
+            c.search_and_store_coincidences()
+        self.validate_results(self.get_testdata_path(), self.data_path)
+
+    def create_tempfile_from_testdata(self):
+        tmp_path = self.create_tempfile_path()
+        data_path = self.get_testdata_path()
+        shutil.copyfile(data_path, tmp_path)
+        self.remove_existing_coincidences(tmp_path)
+        return tmp_path
+
+    def create_tempfile_path(self):
+        fd, path = tempfile.mkstemp('.h5')
+        os.close(fd)
+        return path
+
+    def get_testdata_path(self):
+        dir_path = os.path.dirname(__file__)
+        return os.path.join(dir_path, TEST_DATA_FILE)
+
+    def remove_existing_coincidences(self, path):
+        with tables.open_file(path, 'a') as data:
+            data.remove_node('/coincidences', recursive=True)
+
+    def validate_results(self, expected_path, actual_path):
+        """Validate simulation results"""
+
+        with tables.open_file(expected_path) as expected_file:
+            with tables.open_file(actual_path) as actual_file:
+                self.validate_tables(expected_file, actual_file)
+                self.validate_arrays(expected_file, actual_file)
+
+    def validate_tables(self, expected_file, actual_file):
+        """Verify that all Tables in hdf5 file are identical"""
+
+        for expected_node in expected_file.walk_nodes('/', 'Table'):
+            try:
+                actual_node = actual_file.get_node(expected_node._v_pathname)
+            except tables.NoSuchNodeError:
+                self.fail("node %s does not exist in datafile" %
+                          expected_node._v_pathname)
+            for colname in expected_node.colnames:
+                expected_col = expected_node.col(colname)
+                actual_col = actual_node.col(colname)
+                if expected_col.shape == actual_col.shape:
+                    self.assertTrue((expected_col == actual_col).all())
+                else:
+                    self.fail("Columns do not have the same length.")
+
+    def validate_arrays(self, expected_file, actual_file):
+        """Verify that all VLArrays in hdf5 file are identical"""
+
+        for expected_node in expected_file.walk_nodes('/', 'VLArray'):
+            try:
+                actual_node = actual_file.get_node(expected_node._v_pathname)
+            except tables.NoSuchNodeError:
+                self.fail("node %s does not exist in datafile" %
+                          expected_node._v_pathname)
+            if expected_node.shape == actual_node.shape:
+                self.assertTrue((array(expected_node.read()) ==
+                                 array(actual_node.read())).all())
+            else:
+                self.fail("Arrays do not have the same length.")
 
 
 if __name__ == '__main__':

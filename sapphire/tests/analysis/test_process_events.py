@@ -14,8 +14,6 @@ TEST_DATA_FILE = 'test_data/PE-testdata.h5'
 DATA_GROUP = '/s501'
 
 
-@unittest.skipIf(not os.path.exists(os.path.join(os.path.dirname(__file__), TEST_DATA_FILE)),
-                 'Missing test datafile.')
 class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
         warnings.filterwarnings('ignore')
