@@ -4,17 +4,23 @@ import os
 import tempfile
 
 import tables
+from mock import patch
 
 import sapphire.clusters
 from sapphire.simulations.groundparticles import GroundParticlesSimulation
+from sapphire.simulations.showerfront import FlatFrontSimulation
 
 
 self_path = os.path.dirname(__file__)
 test_data_path = os.path.join(self_path, 'test_data/groundparticles_sim.h5')
+test_data_flat = os.path.join(self_path, 'test_data/flatfront_sim.h5')
 
 
-def perform_simulation(filename):
+@patch('sapphire.simulations.groundparticles.time')
+def perform_groundparticlessimulation(filename, mock_time):
     """Perform a small simulation and store results in filename"""
+
+    mock_time.return_value = int(1e9)
 
     corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
     cluster = sapphire.clusters.SimpleCluster(size=40)
@@ -22,6 +28,17 @@ def perform_simulation(filename):
     with tables.open_file(filename, 'w', filters=filters) as datafile:
         sim = GroundParticlesSimulation(corsika_data_path, 70, cluster,
                                         datafile, N=10, seed=1, progress=False)
+        sim.run()
+
+
+def perform_flatfrontsimulation(filename):
+    """Perform a small simulation and store results in filename"""
+
+    cluster = sapphire.clusters.SimpleCluster(size=40)
+    filters = tables.Filters(complevel=1)
+    with tables.open_file(filename, 'w', filters=filters) as datafile:
+        sim = FlatFrontSimulation(cluster, datafile, '/', 10, seed=1,
+                                  progress=False)
         sim.run()
 
 
@@ -34,9 +51,10 @@ def create_tempfile_path():
 
 
 def create_and_store_test_data():
-    """Create test data for future acceptance testing"""
+    """Create reference test data for future acceptance testing"""
 
-    perform_simulation(test_data_path)
+    perform_groundparticlessimulation(test_data_path)
+    perform_flatfrontsimulation(test_data_flat)
 
 
 if __name__ == '__main__':
