@@ -33,12 +33,12 @@ def validate_results(test, expected_path, actual_path):
 def validate_tables(test, expected_node, actual_node):
     """Verify that two Tables are identical"""
 
-    if not expected_node.nrows == actual_node.nrows:
-        test.fail("Tables '%s' do not have the same length." %
-                  expected_node._v_pathname)
+    test.assertEqual(expected_node.nrows, actual_node.nrows,
+                     "Tables '%s' do not have the same length." %
+                     expected_node._v_pathname)
     for colname in expected_node.colnames:
-        if colname not in actual_node.colnames:
-            test.fail("Tables '%s' do not have the same columns." %
+        test.assertIn(colname, actual_node.colnames,
+                      "Tables '%s' do not have the same columns." %
                       expected_node._v_pathname)
         expected_col = expected_node.col(colname)
         actual_col = actual_node.col(colname)
@@ -48,20 +48,18 @@ def validate_tables(test, expected_node, actual_node):
 def validate_vlarrays(test, expected_node, actual_node):
     """Verify that two VLArrays are identical"""
 
-    if expected_node.shape == actual_node.shape:
-        test.assertTrue((array(expected_node.read()) ==
-                         array(actual_node.read())).all())
-    else:
-        test.fail("VLArrays '%s' do not have the same length." %
-                  expected_node._v_pathname)
+    test.assertEqual(expected_node.shape, actual_node.shape,
+                     "VLArrays '%s' do not have the same shape." %
+                     expected_node._v_pathname)
+    test.assertTrue((array(expected_node.read()) ==
+                     array(actual_node.read())).all())
 
 
 def validate_arrays(test, expected_node, actual_node):
     """Verify that two Arrays are identical"""
 
-    if expected_node.shape == actual_node.shape:
-        test.assertTrue((array(expected_node.read()) ==
-                         array(actual_node.read())).all())
-    else:
-        test.fail("Arrays '%s' do not have the same length." %
-                  expected_node._v_pathname)
+    test.assertEqual(expected_node.shape, actual_node.shape,
+                     "Arrays '%s' do not have the same shape." %
+                     expected_node._v_pathname)
+    test.assertTrue((array(expected_node.read()) ==
+                     array(actual_node.read())).all())
