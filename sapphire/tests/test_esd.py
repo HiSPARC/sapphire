@@ -3,9 +3,9 @@ import unittest
 
 from mock import patch, ANY, sentinel, MagicMock
 import tables
-from numpy import array
 
 from sapphire import esd, api
+from sapphire.tests.validate_results import validate_results
 
 from esd_load_data import (create_tempfile_path, perform_load_data,
                            test_data_path, test_data_coincidences_path,
@@ -93,7 +93,7 @@ class ESDTest(unittest.TestCase):
 
         output_path = create_tempfile_path()
         perform_load_data(output_path)
-        self.validate_results(test_data_path, output_path)
+        validate_results(self, test_data_path, output_path)
         os.remove(output_path)
 
     @patch.object(esd, 'download_data')
@@ -112,7 +112,7 @@ class ESDTest(unittest.TestCase):
 
         output_path = create_tempfile_path()
         perform_esd_download_data(output_path)
-        self.validate_results(test_data_path, output_path)
+        validate_results(self, test_data_path, output_path)
         os.remove(output_path)
 
     @unittest.skipUnless(api.API.check_connection(),
@@ -122,48 +122,8 @@ class ESDTest(unittest.TestCase):
 
         output_path = create_tempfile_path()
         perform_download_coincidences(output_path)
-        self.validate_results(test_data_coincidences_path, output_path)
+        validate_results(self, test_data_coincidences_path, output_path)
         os.remove(output_path)
-
-    def validate_results(self, expected_path, actual_path):
-        """Validate simulation results"""
-
-        with tables.open_file(expected_path) as expected_file:
-            with tables.open_file(actual_path) as actual_file:
-                self.validate_tables(expected_file, actual_file)
-                self.validate_arrays(expected_file, actual_file)
-
-    def validate_tables(self, expected_file, actual_file):
-        """Verify that all Tables in hdf5 file are identical"""
-
-        for expected_node in expected_file.walk_nodes('/', 'Table'):
-            try:
-                actual_node = actual_file.get_node(expected_node._v_pathname)
-            except tables.NoSuchNodeError:
-                self.fail("node %s does not exist in datafile" %
-                          expected_node._v_pathname)
-            for colname in expected_node.colnames:
-                expected_col = expected_node.col(colname)
-                actual_col = actual_node.col(colname)
-                if expected_col.shape == actual_col.shape:
-                    self.assertTrue((expected_col == actual_col).all())
-                else:
-                    self.fail("Columns do not have the same length.")
-
-    def validate_arrays(self, expected_file, actual_file):
-        """Verify that all VLArrays in hdf5 file are identical"""
-
-        for expected_node in expected_file.walk_nodes('/', 'VLArray'):
-            try:
-                actual_node = actual_file.get_node(expected_node._v_pathname)
-            except tables.NoSuchNodeError:
-                self.fail("node %s does not exist in datafile" %
-                          expected_node._v_pathname)
-            if expected_node.shape == actual_node.shape:
-                self.assertTrue((array(expected_node.read()) ==
-                                 array(actual_node.read())).all())
-            else:
-                self.fail("Arrays do not have the same length.")
 
 
 if __name__ == '__main__':

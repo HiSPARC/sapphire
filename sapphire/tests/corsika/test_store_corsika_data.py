@@ -3,9 +3,8 @@ import tempfile
 import os
 import subprocess
 
-import tables
-
 from sapphire.corsika.store_corsika_data import store_and_sort_corsika_data
+from sapphire.tests.validate_results import validate_results
 
 TEST_DATA_FILE = 'test_data/1_2/DAT000000'
 TEST_EXPECTED_FILE = 'test_data/1_2/corsika.h5'
@@ -32,29 +31,7 @@ class StoreCorsikaDataTests(unittest.TestCase):
         # Now with overwrite true
         store_and_sort_corsika_data(self.source_path, self.destination_path,
                                     overwrite=True)
-        self.validate_results(self.expected_path, self.destination_path)
-
-    def validate_results(self, expected_path, actual_path):
-        """Validate simulation results"""
-
-        table_path = '/groundparticles'
-        with tables.open_file(expected_path) as expected_file:
-            with tables.open_file(actual_path) as actual_file:
-                self.validate_table(table_path, expected_file, actual_file)
-
-    def validate_table(self, table, expected_file, actual_file):
-        """Verify that two tables are identical"""
-
-        expected_node = expected_file.get_node(table)
-        actual_node = actual_file.get_node(table)
-
-        for colname in expected_node.colnames:
-            expected_col = expected_node.col(colname)
-            actual_col = actual_node.col(colname)
-            if expected_col.shape == actual_col.shape:
-                self.assertTrue((expected_col == actual_col).all())
-            else:
-                self.fail("Columns do not have the same length.")
+        validate_results(self, self.expected_path, self.destination_path)
 
     def create_tempfile_path(self):
         fd, path = tempfile.mkstemp('.h5')
@@ -94,7 +71,7 @@ class StoreCorsikaDataCommandTests(StoreCorsikaDataTests):
                                          shell=True)
         self.assertEqual(result, '')
 
-        self.validate_results(self.expected_path, self.destination_path)
+        validate_results(self, self.expected_path, self.destination_path)
 
 
 if __name__ == '__main__':
