@@ -34,9 +34,8 @@ import operator
 
 import tables
 import numpy as np
-from scipy.optimize import curve_fit
 
-from ..utils import pbar, gauss, ERR
+from ..utils import pbar, ERR
 from .find_mpv import FindMostProbableValueInSpectrum
 
 
