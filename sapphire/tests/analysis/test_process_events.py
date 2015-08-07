@@ -10,7 +10,7 @@ import tables
 from sapphire.analysis import process_events
 
 
-TEST_DATA_FILE = 'test_data/PE-testdata.h5'
+TEST_DATA_FILE = 'test_data/process_events.h5'
 DATA_GROUP = '/s501'
 
 
