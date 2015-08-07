@@ -1,6 +1,6 @@
 """Compare HDF5 output from a test to expected result"""
 
-from numpy import array
+from numpy import array, all
 import tables
 
 
@@ -42,7 +42,9 @@ def validate_tables(test, expected_node, actual_node):
                       expected_node._v_pathname)
         expected_col = expected_node.col(colname)
         actual_col = actual_node.col(colname)
-        test.assertTrue((expected_col == actual_col).all())
+        test.assertTrue(all(expected_col == actual_col),
+                        "Tables '%s' column '%s' do not match." %
+                        (expected_node._v_pathname, colname))
 
 
 def validate_vlarrays(test, expected_node, actual_node):
@@ -51,8 +53,10 @@ def validate_vlarrays(test, expected_node, actual_node):
     test.assertEqual(expected_node.shape, actual_node.shape,
                      "VLArrays '%s' do not have the same shape." %
                      expected_node._v_pathname)
-    test.assertTrue((array(expected_node.read()) ==
-                     array(actual_node.read())).all())
+    for i, j in zip(expected_node, actual_node):
+        test.assertTrue(all(i == j),
+                        "VLArrays '%s' do not match." %
+                        expected_node._v_pathname)
 
 
 def validate_arrays(test, expected_node, actual_node):
@@ -61,5 +65,7 @@ def validate_arrays(test, expected_node, actual_node):
     test.assertEqual(expected_node.shape, actual_node.shape,
                      "Arrays '%s' do not have the same shape." %
                      expected_node._v_pathname)
-    test.assertTrue((array(expected_node.read()) ==
-                     array(actual_node.read())).all())
+    test.assertTrue(all(array(expected_node.read()) ==
+                        array(actual_node.read())),
+                    "Arrays '%s' do not match." %
+                    expected_node._v_pathname)
