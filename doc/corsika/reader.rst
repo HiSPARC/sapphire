@@ -1,4 +1,4 @@
-Corsika Reader
+CORSIKA Reader
 ==============
 
 .. automodule:: sapphire.corsika.reader

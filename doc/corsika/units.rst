@@ -1,4 +1,4 @@
-Corsika Units
+CORSIKA Units
 =============
 
 .. automodule:: sapphire.corsika.units

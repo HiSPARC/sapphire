@@ -1,4 +1,4 @@
-Corsika Blocks
+CORSIKA Blocks
 ==============
 
 .. automodule:: sapphire.corsika.blocks

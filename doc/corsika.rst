@@ -48,3 +48,4 @@ Contents
    corsika/units
    corsika/particles
    corsika/qsub
+   corsika/store_corsika_data
