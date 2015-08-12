@@ -19,4 +19,5 @@ Contents:
    analysis/find_mpv
    analysis/landau
    analysis/process_events
+   analysis/process_traces
    analysis/reconstructions
