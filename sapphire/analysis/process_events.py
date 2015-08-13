@@ -470,9 +470,9 @@ class ProcessIndexedEvents(ProcessEvents):
             meaning the default name 'events'.
 
         """
-        super(ProcessIndexedEvents, self).__init__(data, group, source)
+        super(ProcessIndexedEvents, self).__init__(data, group, source,
+                                                   progress)
         self.indexes = indexes
-        self.progress = progress
 
     def _store_results_from_traces(self):
         table = self._tmp_events
