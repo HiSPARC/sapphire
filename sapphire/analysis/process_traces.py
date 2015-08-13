@@ -3,10 +3,58 @@
     This module can be used analyse (raw) traces.
 
 """
-from numpy import around, mean, sign
+from numpy import around, mean, sign, std
 
 
-FILTER_THRESHOLD = 20
+FILTER_THRESHOLD = 15
+INTEGRAL_THRESHOLD = 25
+ADC_TIME_PER_SAMPLE = 2.5  # in ns
+
+# Trigger windows
+PRE_TRIGGER = 400  # samples, i.e. 1000 ns
+TRIGGER = 600  # samples, i.e. 1500 ns
+POST_TRIGGER = 1400  # samples, i.e. 3500 ns
+
+# Trigger thresholds
+ADC_LOW_THRESHOLD = 253
+ADC_HIGH_THRESHOLD = 323
+
+# Thresholds for HiSPARC III with baseline at 30 ADC counts.
+ADC_LOW_THRESHOLD_III = 82
+ADC_HIGH_THRESHOLD_III = 150
+
+
+class TraceObservables(object):
+
+    """Reconstruct trace observables"""
+
+    def __init__(self):
+        pass
+
+    def calculate_obervables(self, traces):
+        self.calculate_baselines(traces)
+        self.calculate_std_dev(traces)
+        self.calculate_pulseheights(traces)
+        self.calculate_integrals(traces)
+
+    def calculate_baselines(self, traces):
+        # Mean value of the first 100 samples of the trace
+        self.baselines = [int(around(mean(t[:100]))) for t in traces]
+
+    def calculate_std_dev(self, traces):
+        # Standard deviation of the first 100 samples of the trace
+        self.std_dev = [int(round(std(t[:100]))) for t in traces]
+
+    def calculate_pulseheights(self, traces):
+        # Maximum peak to baseline value in trace
+        self.pulseheights = [max(t) - b for t, b in zip(traces, self.baselines)]
+
+    def calculate_integrals(self, traces):
+        # Integral of trace for all values over threshold
+        # The threshold is defined by INTEGRAL_THRESHOLD
+        self.integrals = [sum([v - b
+                               for v in trace if v - b > INTEGRAL_THRESHOLD])
+                          for trace, b in zip(traces, self.baselines)]
 
 
 class TriggerReconstruction(object):
