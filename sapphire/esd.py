@@ -218,13 +218,13 @@ def download_coincidences(file, cluster=None, stations=None,
 
     Example::
 
-        import tables
-        import datetime
-        import sapphire.esd
-        data = tables.open_file('data_coincidences.h5', 'w')
-        sapphire.esd.download_coincidences(data, cluster='Aarhus',
-            start=datetime.datetime(2013, 9, 1),
-            end=datetime.datetime(2013, 9, 2), n=3)
+        >>> import tables
+        >>> import datetime
+        >>> import sapphire.esd
+        >>> data = tables.open_file('data_coincidences.h5', 'w')
+        >>> sapphire.esd.download_coincidences(data, cluster='Aarhus',
+        ...     start=datetime.datetime(2013, 9, 1),
+        ...     end=datetime.datetime(2013, 9, 2), n=3)
 
     """
     # sensible defaults for start and end
