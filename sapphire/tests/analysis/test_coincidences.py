@@ -11,7 +11,8 @@ from sapphire.analysis import coincidences
 from sapphire.tests.validate_results import validate_results
 
 
-TEST_DATA_FILE = 'test_data/esd_coincidences.h5'
+TEST_DATA = 'test_data/coincidences.h5'
+TEST_DATA_ESD = 'test_data/esd_coincidences.h5'
 
 
 class CoincidencesTests(unittest.TestCase):
@@ -124,7 +125,7 @@ class CoincidencesESDTests(CoincidencesTests):
                                         sentinel.limit)
 
 
-class CoincidencesESDDataTests(unittest.TestCase):
+class CoincidencesDataTests(unittest.TestCase):
 
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
@@ -134,10 +135,12 @@ class CoincidencesESDDataTests(unittest.TestCase):
 
     def test_coincidencesesd_output(self):
         with tables.open_file(self.data_path, 'a') as data:
-            c = coincidences.CoincidencesESD(data, '/coincidences',
-                                             ['/station_501', '/station_502'],
-                                             progress=False)
-            c.search_and_store_coincidences()
+            with patch('sapphire.analysis.process_events.ProcessIndexedEventsWithoutTraces'):
+                c = coincidences.Coincidences(data, '/coincidences',
+                                              ['/station_501', '/station_502'],
+                                              progress=False)
+                c.search_and_store_coincidences()
+
         validate_results(self, self.get_testdata_path(), self.data_path)
 
     def create_tempfile_from_testdata(self):
@@ -154,11 +157,26 @@ class CoincidencesESDDataTests(unittest.TestCase):
 
     def get_testdata_path(self):
         dir_path = os.path.dirname(__file__)
-        return os.path.join(dir_path, TEST_DATA_FILE)
+        return os.path.join(dir_path, TEST_DATA)
 
     def remove_existing_coincidences(self, path):
         with tables.open_file(path, 'a') as data:
             data.remove_node('/coincidences', recursive=True)
+
+
+class CoincidencesESDDataTests(CoincidencesDataTests):
+
+    def test_coincidencesesd_output(self):
+        with tables.open_file(self.data_path, 'a') as data:
+            c = coincidences.CoincidencesESD(data, '/coincidences',
+                                             ['/station_501', '/station_502'],
+                                             progress=False)
+            c.search_and_store_coincidences()
+        validate_results(self, self.get_testdata_path(), self.data_path)
+
+    def get_testdata_path(self):
+        dir_path = os.path.dirname(__file__)
+        return os.path.join(dir_path, TEST_DATA_ESD)
 
 
 if __name__ == '__main__':
