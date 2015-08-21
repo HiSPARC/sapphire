@@ -50,7 +50,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
         for i in pbar(range(self.N), show=self.progress):
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'azimuth': self.generate_azimuth(),
-                                 'zenith': self.generate_zenith(),
+                                 'zenith': self.generate_attenuated_zenith(),
                                  'core_pos': (None, None),
                                  'size': None,
                                  'energy': None}
@@ -225,7 +225,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'azimuth': azimuth,
-                                 'zenith': self.generate_zenith(),
+                                 'zenith': self.generate_attenuated_zenith(),
                                  'core_pos': (x, y),
                                  'size': None,
                                  'energy': None}

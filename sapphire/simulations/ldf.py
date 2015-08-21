@@ -194,7 +194,7 @@ class EllipsLdfSimulation(BaseLdfSimulation):
     def generate_shower_parameters(self):
         """Generate shower parameters, i.e. core position
 
-        For the elliptic LDF  both the core position and the zenith angle
+        For the elliptic LDF both the core position and the zenith angle
         are relevant.
 
         :return: dictionary with shower parameters: core_pos
