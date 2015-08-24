@@ -472,6 +472,46 @@ class CoincidencesESD(Coincidences):
     You can then provide different parameters to the individual methods.
     See the corresponding docstrings.
 
+    Once the coincidences are stored, there will be a `coincidences` table in
+    the group. This table has multiple columns used for storing analysis
+    results like shower direction and energy. At this point, they contain no
+    information. The useful columns are:
+
+        * ``id``: the index of this coincidence. This index is identical for
+          the ``coincidence`` and ``c_index`` tables.
+        * ``timestamp``: the timestamp of the event in seconds
+        * ``nanoseconds``: the subsecond part of the timestamp in nanoseconds
+        * ``ext_timestamp``: the timestamp of the event in nanoseconds (equal
+          to timestamp * 1000000000 + nanoseconds)
+        * ``N``: the number of stations participating in this coincidence
+        * ``s0``, ``s1``, ...: whether the first (0), second (1) or other
+          stations participated in the coincidence.
+
+    The coincidences group furthermore contains the tables ``s_index`` and
+    ``c_index`` to track down the individual events making up the coincidence.
+    The ``s_index`` table contains a row for each station, pointing to the
+    station's event tables. The ``c_index`` table gives indexes for the
+    individual events inside those tables.
+
+    If you have obtained a particular coincidence from the ``coincidences``
+    table, the ``id`` is the index into all these tables. For example, looking
+    up the source events making up the 40th coincidence::
+
+        >>> group = data.root.coincidences
+        >>> idx = 40
+        >>> group.coincidences[idx]
+
+    can be done in the following way (each row in the ``c_index`` table is a
+    (station index, event index) pair)::
+
+        >>> station_paths = [data.get_node(path, 'events') for path in
+        ... group.s_index]
+        >>> for station_idx, event_idx in group.c_index[idx]:
+        ...     event_group = station_paths[station_idx]
+        ...     event = event_group[event_idx]
+
+    The ``event`` is one of the source events.
+
     """
     def search_and_store_coincidences(self, window=2000, cluster=None):
         """Search and store coincidences.
@@ -486,9 +526,28 @@ class CoincidencesESD(Coincidences):
     def search_coincidences(self, window=2000, shifts=None, limit=None):
         """Search for coincidences.
 
-        Instead of storing the results in the tables ``_src_c_index`` and
-        ``_src_timestamps``, they are stored in attributes by the same
-        name in the class.
+        Search all data in the station_groups for coincidences, and store
+        rudimentary coincidence data in attributes.  This data might be useful,
+        but is very basic.  You can call the :meth:`store_coincidences` method
+        to store the coincidences in an easier format in the coincidences
+        group.
+
+        If you want to process the preliminary results: they are stored in the
+        attributes :attr:`_src_c_index` and :attr:`_src_timestamps`.  The
+        former is a list of coincidences, which each consist of a list with
+        indexes into the timestamps array as a pointer to the events making up
+        the coincidence. The latter is a list of tuples.  Each tuple consists
+        of a timestamp followed by an index into the stations list which
+        designates the detector station which measured the event, and finally
+        an index into that station's event table.
+
+        :param window: the coincidence time window.  All events with delta
+            t's smaller than this window will be considered a coincidence.
+        :param shifts: optionally shift a station's data in time.  This
+            can be useful if a station has a misconfigured GPS clock.
+            Expects a list of shifts, one for each station.
+        :param limit: optionally limit the search for this number of
+            events.
 
         """
         c_index, timestamps = self._search_coincidences(window, shifts, limit)
