@@ -5,7 +5,8 @@
     use :func:`~sapphire.esd.download_coincidences`, this is slightly
     less flexible because you can not choose the coincidence window.
 
-    Example usage::
+    For regular usage, download events from the ESD and use the
+    :class:`CoincidencesESD` class. Example usage::
 
         import datetime
 
@@ -43,6 +44,11 @@ from ..utils import pbar
 class Coincidences(object):
     """Search for and store coincidences between HiSPARC stations.
 
+    .. note::
+        For better compatibility with other modules, such as
+        :mod:`~sapphire.analysis.reconstructions`, it is recommended
+        to use the subclass :class:`CoincidencesESD` instead.
+
     Suppose you want to search for coincidences between stations 501 and
     503.  First, download the data for these stations (with, or without
     traces, depending on your intentions).  Suppose you stored the data in
@@ -60,11 +66,6 @@ class Coincidences(object):
 
     You can then provide different parameters to the individual methods.
     See the corresponding docstrings.
-
-    .. note::
-        For better compatibility with other modules, such as
-        :mod:`~sapphire.analysis.reconstructions`, it is recommended
-        to use the subclass :class:`CoincidencesESD` instead.
 
     """
 
@@ -446,11 +447,30 @@ class Coincidences(object):
 
 
 class CoincidencesESD(Coincidences):
-    """Store coincidences differently for the ESD
+    """Store coincidences specifically using the ESD
 
-    This subclass stores the paths to the station_groups that where
-    used to look for coincidences in a lookup-table, and also
-    stores the original station info and event_id for each coincidence.
+    This is a subclass of :class:`Coincidences`. In addition to searching for
+    coincidences, this subclass stores the paths to the station_groups that
+    where used to look for coincidences in a lookup-table, and also stores the
+    original station info and event_id for each coincidence.
+
+    Suppose you want to search for coincidences between stations 501 and 503.
+    First, download the data for these stations from the ESD. Suppose you
+    stored the data in the '/s501' and '/s503' groups in the 'data' file.
+    Then::
+
+        >>> station_groups = ['/s501', '/s503']
+        >>> coin = CoincidencesESD(data, '/coincidences', station_groups)
+        >>> coin.search_and_store_coincidences()
+
+    If you want a more manual method, replace the last line with::
+
+        >>> coin.search_coincidences(window=50000)
+        >>> coin.process_events()
+        >>> coin.store_coincidences()
+
+    You can then provide different parameters to the individual methods.
+    See the corresponding docstrings.
 
     """
     def search_and_store_coincidences(self, window=2000, cluster=None):
