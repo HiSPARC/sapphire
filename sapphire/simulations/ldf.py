@@ -403,9 +403,9 @@ class EllipsLdf(KascadeLdf):
     # shower parameters
     # Values from Montanus, paper to follow.
     _Ne = 10 ** 6.0   # Ne is number of electrons and muons !!!!
-    _s1 = -.63  # Shape parameter
-    _s2 = -2.71  # Shape parameter
-    _r0 = 26.
+    _s1 = -.592  # Shape parameter
+    _s2 = -3.157  # Shape parameter
+    _r0 = 30.
     _zenith = 0.
     _azimuth = 0.
 
@@ -416,8 +416,8 @@ class EllipsLdf(KascadeLdf):
             self._zenith = zenith
         if azimuth is not None:
             self._azimuth = azimuth
-        self._s1 = self._s1 + 0.21 * self._zenith
-        self._s2 = self._s2 * cos(self._zenith) ** .5
+        self._s1 = self._s1 + 0.229 * self._zenith
+        self._s2 = self._s2 + 0.222 * self._zenith
         if s1 is not None:
             self._s1 = s1
         if s2 is not None:
@@ -438,7 +438,7 @@ class EllipsLdf(KascadeLdf):
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
-        :param Ne: number of electrons in the shower.
+        :param Ne: number of electrons and muons in the shower.
         :return: particle density in m ** -2.
 
         """
@@ -457,7 +457,7 @@ class EllipsLdf(KascadeLdf):
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
-        :param Ne: number of electrons in the shower.
+        :param Ne: number of electrons and muons in the shower.
         :param zenith: zenith angle in rad.
         :param azimuth: azimuth angle in rad.
         :param s1: shower shape parameter.
@@ -473,16 +473,19 @@ class EllipsLdf(KascadeLdf):
         r0 = self._r0
         #zenith = self._zenith
         #azimuth = self._azimuth
-        relcos = cos(phi - azimuth)
-        ell = sqrt(1. - sin(zenith) * sin(zenith) * relcos * relcos)
-        shift = -0.058 * sin(2. * zenith) * relcos
+        relcos = cos(phi - azimuth)                             # relative polar angle
+        ell = sqrt(1. - sin(zenith) * sin(zenith) * relcos * relcos)    # elliptic iso-density contours
+        shift = -0.058 * sin(2. * zenith) * relcos              # shift of the center of elliptic iso-density contours
         #ell=1.
         #shift=0.
         k = r * shift + r * ell
         term1 = 1. * k / r0
         term2 = 1. + term1
+        greis = 11.4 * cos(zenith) * cos(zenith)                # empirical modification
+        normcorr = greis / (2. + s1 - greis * (3 + s1 + s2))    # c(s)*normcorr = normalization
+        term3 = 1. + term1 / greis                              # Greisen modification of NKG LDF
 
-        dens = Ne * cos(zenith) * c_s * term1 ** s1 * term2 ** s2
+        dens = Ne * cos(zenith) * c_s * term1 ** s1 * term2 ** s2 * normcorr * term3
 
         return dens
 
@@ -498,7 +501,7 @@ class EllipsLdf(KascadeLdf):
         """
         r0 = self._r0
         return (gamma(-s2) /
-                (2 * pi * r0 ** 2 * gamma(s1 + 2) * gamma(-s1 - s2 - 2)))
+                (2 * pi * r0 ** 2 * gamma(s1 + 2) * gamma(-s1 - s2 - 3)))
 
     def calculate_core_distance_and_angle(self, x, y, x0, y0):
         """Calculate core distance

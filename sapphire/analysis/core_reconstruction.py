@@ -233,7 +233,7 @@ class AverageIntersectionAlgorithm(object):
                 yhit.append(y[i])
 
         statindex = range(len(phit))
-        subsets = itertools.combinations(statindex, 3)
+        subsets = itertools.combinations(statindex, 3)      # select triples of stations
         m = 2.3  # optimized value in powerlaw  r ^(-m)  for density
 
         linelist0 = []
@@ -242,9 +242,9 @@ class AverageIntersectionAlgorithm(object):
             pp = (phit[zero] / phit[one]) ** (2. / m)
             qq = (phit[zero] / phit[two]) ** (2. / m)
             if pp == 1:
-                pp = 1.000001
+                pp = 1.000001       # to avoid singularity
             if qq == 1:
-                qq = 1.000001
+                qq = 1.000001       # to avoid singularity
 
             x0 = xhit[zero]
             x1 = xhit[one]
@@ -264,12 +264,12 @@ class AverageIntersectionAlgorithm(object):
                 f = 0.000000001
             g = sqrt(e * e + f * f)
             k = 0.5 * (g * g + rsquare - ssquare) / g
-            linelist0.append(-e / f)
-            linelist1.append((a * e + b * f + g * k) / f)
+            linelist0.append(-e / f)                            # coefficient of radical axis
+            linelist1.append((a * e + b * f + g * k) / f)       # coefficient of radical axis
 
         linx, liny = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
-                                                      initial)
-        subsets = itertools.combinations(statindex, 2)
+                                                            initial)  # in case the radical axis method does not deliver possible core positions
+        subsets = itertools.combinations(statindex, 2)          # select pairs of radical axes
 
         xpointlist = []
         ypointlist = []
@@ -280,15 +280,15 @@ class AverageIntersectionAlgorithm(object):
             d = linelist1[one]
             aminc = a - c
             if a == c:
-                aminc = 0.000000001
-            xint = (d - b) / aminc
-            yint = (a * d - b * c) / aminc
-            if abs(xint)<600. and abs(yint)<600.:
+                aminc = 0.000000001             # to avoid singularity
+            xint = (d - b) / aminc              # x coordinate of intersection of pair of radical axes
+            yint = (a * d - b * c) / aminc      # y coordinate of intersection of pair of radical axes
+            if abs(xint) < 600. and abs(yint)<600.:     # accept intersection point if not to far away
                 xpointlist.append(xint)
                 ypointlist.append(yint)
 
         if len(xpointlist) > 0:
-            linx = mean(xpointlist)
+            linx = mean(xpointlist)             # determine the average of the set of intersections of radical axes
             liny = mean(ypointlist)
 
         return linx, liny
@@ -335,41 +335,41 @@ class EllipsLdfAlgorithm(object):
         xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         factorbest = 1.
-        gridsize = 20.          ##################
+        gridsize = 20.          # determine within a grid around the barycenter estimation the position with minimum chi square value
 
         xbest, ybest, chi2best, factorbest = cls.selectbest(
             p, x, y, xcmass, ycmass, factorbest, chi2best, gridsize, theta, phi)
 
-        gridsize = 5.            ##################
+        gridsize = 5.            # determine within a smaller grid around the previous estimation the position with minimum chi square
         xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
         xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x, y)
         chi2best = 10 ** 99
         factorbest = 1.
-        gridsize = 50.          ##################
+        gridsize = 50.          # determine within a grid around the radical axes estimation the position with minimum chi square
 
         xbest, ybest, chi2best, factorbest = cls.selectbest(
             p, x, y, xlines, ylines, factorbest, chi2best, gridsize, theta, phi)
 
-        gridsize = 10.          ##################
+        gridsize = 10.          # determine within a smaller grid around the previous estimation the position with minimum chi square
         xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
 
-        if chi2best1 < chi2best2:
+        if chi2best1 < chi2best2:       # select best estimation out of the two refined grid
             xbest, ybest, chi2best, factorbest = xbest1, ybest1, chi2best1, factorbest1
         else:
             xbest, ybest, chi2best, factorbest = xbest2, ybest2, chi2best2, factorbest2
 
-        gridsize = 4.            ################
+        gridsize = 4.            # determine within a grid around the best estimation the position with minimum chi square
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        size = factorbest * ldf.EllipsLdf._Ne
-        coefa = 0.519 * cos(theta) + 0.684
-        coefb = 7.84 + 5.30 * cos(theta)
-        enerpow = (log10(size) +coefb) / coefa
+        size = factorbest * ldf.EllipsLdf._Ne       # estimated shower size : number of electrons and muons !!!
+        coefa = 0.524 * cos(theta) + 0.681
+        coefb = 7.844 + 5.300 * cos(theta)
+        enerpow = (log10(size) +coefb) / coefa      # estimated energy on the basis of relation between shower size and energy
         energy = 10 ** enerpow
 
         return core_x, core_y, chi2best, size, energy
@@ -377,7 +377,8 @@ class EllipsLdfAlgorithm(object):
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
                    theta, phi):
-        """selects the best core position in grid around (xstart, ystart).
+        """selects the best core position in grid around (xstart, ystart) by
+            optimizing the shower size (electr + muon) by means of regression.
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
