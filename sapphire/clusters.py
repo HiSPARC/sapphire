@@ -763,7 +763,7 @@ class ScienceParkCluster(BaseCluster):
             else:
                 raise RuntimeError("Programming error. Station unknown.")
 
-            self._add_station(enu, alpha, detectors, station)
+            self._add_station(enu, alpha, detectors, number=station)
 
 
 class HiSPARCStations(CompassStations):
