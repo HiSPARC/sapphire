@@ -1,6 +1,10 @@
 """ Process HiSPARC traces
 
-    This module can be used analyse (raw) traces.
+    This module can be used analyse (raw) traces. It implements the same
+    algorithms as are implemented in the HiSPARC DAQ.
+
+    The :class:`MeanFilter` is meant to mimic the filter in the HiSPARC DAQ.
+    It is reproduced here to make it easy to read the algorithm.
 
 """
 from numpy import around, mean, sign, std
