@@ -1,0 +1,19 @@
+# HiSPARC detector locations source
+#
+# Station: 507
+#
+# HiSPARC data is licensed under Creative Commons Attribution-ShareAlike 4.0.
+#
+#
+# This data contains the following columns:
+#
+# timestamp: time the layout was measured in seconds after 1970-1-1 [UNIX timestamp]
+# per detector (4x):
+#     radius: distance to detector from GPS, in plane of GPS [meters]
+#     alpha: angle between detector and true north as seen from GPS [degrees]
+#     height: altitude of the detector above plane of GPS [meters]
+#     beta: angle of the long side of the scintillator to true north [degrees]
+#
+#
+1232928000	19.11	-87.45	-12.0	-45.0	7.21	-78.72	-12.0	45.0	18.0	-65.13	-15.0	-45.0	15.47	-53.57	-12.0	45.0
+

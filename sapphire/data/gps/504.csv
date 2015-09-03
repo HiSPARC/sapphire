@@ -1,0 +1,25 @@
+# HiSPARC GPS positions configuration source
+#
+# Station: 504
+#
+# HiSPARC data is licensed under Creative Commons Attribution-ShareAlike 4.0.
+#
+#
+# This data contains the following columns:
+#
+# timestamp: time of position calibration in seconds after 1970-1-1 [UNIX timestamp]
+# latitude:  latitude of the GPS [degrees]
+# longitude: longitude of the GPS [degrees]
+# altitude:  height of the GPS [meters]
+#
+#
+# timestamp	latitude	longitude	altitude
+1264174164	52.3571894	4.9543713	56.20
+1295888068	52.3571821	4.9543930	51.99
+1300800584	52.3571894	4.9543713	56.20
+1300800722	52.3571879	4.9543794	54.00
+1302191772	52.3571813	4.9543887	53.90
+1302268041	52.3571788	4.9543839	54.62
+1302275538	52.3571813	4.9543887	53.90
+1348594200	52.3571852	4.9543821	54.79
+
