@@ -675,97 +675,6 @@ class SingleDiamondStation(BaseCluster):
         self._add_station((0, 0, 0), 0, detectors)
 
 
-class ScienceParkCluster(BaseCluster):
-
-    """A cluster containing stations from the Science Park subcluster
-
-    :param stations: A list of station numbers to include. Only stations
-        from the Science Park subcluster are supported. By default 507
-        and 509 are excluded.
-
-    """
-
-    def __init__(self, stations=[501, 502, 503, 504, 505, 506, 508]):
-        super(ScienceParkCluster, self).__init__()
-
-        try:
-            gps_coordinates = {}
-            for station in stations:
-                coordinates = api.Station(station).location()
-                gps_coordinates[station] = (coordinates['latitude'],
-                                            coordinates['longitude'],
-                                            coordinates['altitude'])
-        except:
-            warnings.warn('Could not get values from the server, Using '
-                          'hard-coded values.', UserWarning)
-            # 1 day self-survey (8 april 2011) + 506 (Niels, pos from site on
-            # 2 dec, 2011) + 508/509 (from site on 8 jul 2013)
-            gps_coordinates = {
-                501: (52.355924173294305, 4.951144021644267, 56.1023459415882),
-                502: (52.355293344895919, 4.9501047083812697, 55.954367009922),
-                503: (52.356254735127557, 4.9529437445598328, 51.582641703076),
-                504: (52.357178777910278, 4.9543838852175561, 54.622688433155),
-                505: (52.357251580629246, 4.9484007564706891, 47.730995402671),
-                506: (52.3571787512, 4.95198605591, 43.8700314863),
-                507: (52.3560055099, 4.95147879159, 56.7735242238),
-                508: (52.3563513341, 4.95070840124, 52.51091104),
-                509: (52.3545582682, 4.95569730394, 59.942809986)}
-
-        # 502, 505, 508 are now diamond shapes, rotation has less
-        # meaning, need positions of every detector to GPS
-        station_rotations = {501: 135, 502: -15, 503: 45, 504: 175, 505: 86,
-                             506: 267, 507: 0, 508: -135, 509: 135}
-
-        for station in stations:
-            if station not in station_rotations.keys():
-                raise KeyError('Station $d is not supported in this class, '
-                               'use HiSPARCStations instead.' % station)
-
-        reference = gps_coordinates[stations[0]]
-        self.lla = reference
-        transformation = geographic.FromWGS84ToENUTransformation(reference)
-
-        for station in stations:
-            enu = transformation.transform(gps_coordinates[station])
-            alpha = station_rotations[station] / 180 * pi
-
-            if station not in [501, 502, 505, 508]:
-                detectors = [((0., 8.66), 'UD'), ((0., 2.89), 'UD'),
-                             ((-5., 0.), 'LR'), ((5., 0.), 'LR')]
-            elif station == 501:
-                # Precise position measurement of 501
-                detectors = [((0.37, 8.62), 'UD'), ((.07, 2.15), 'UD'),
-                             ((-5.23, 0.), 'LR'), ((5.08, 0.), 'LR')]
-            elif station == 502:
-                # 502 is (since 17 October 2011) diamond-shaped,
-                # with detector 2 moved to the side in LR orientation.
-                # Furthermore, detectors 3 and 4 are reversed (cabling issue)
-                station_size = 10.
-                a = station_size / 2
-                b = a * sqrt(3)
-                detectors = [((0., b), 'UD'), ((a * 2, b), 'LR'),
-                             ((a, 0.), 'LR'), ((-a, 0.), 'LR')]
-            elif station == 505:
-                # 505 is (since 24 April 2013) square-shaped,
-                # detector 1 is moved to the left and detector 2 next to it.
-                station_size = 10.
-                a = station_size / 2
-                detectors = [((-a, a * 2), 'UD'), ((a, a * 2), 'UD'),
-                             ((-a, 0.), 'LR'), ((a, 0.), 'LR')]
-            elif station == 508:
-                # 508 is diamond-shaped, with detector 2 moved to the
-                # side of detector 1 in UD orientation.
-                station_size = 10.
-                a = station_size / 2
-                b = a * sqrt(3)
-                detectors = [((0., b), 'UD'), ((a * 2, b), 'UD'),
-                             ((-a, 0.), 'LR'), ((a, 0.), 'LR')]
-            else:
-                raise RuntimeError("Programming error. Station unknown.")
-
-            self._add_station(enu, alpha, detectors, number=station)
-
-
 class HiSPARCStations(CompassStations):
 
     """A cluster containing any real station from the HiSPARC network
@@ -851,6 +760,27 @@ class HiSPARCStations(CompassStations):
             warnings.warn('Could not get detector layout for stations %s, '
                           'defaults will be used!' % str(missing_detectors),
                           UserWarning)
+
+
+class ScienceParkCluster(HiSPARCStations):
+
+    """A cluster containing stations from the Science Park subcluster
+
+    :param stations: A list of station numbers to include. Only stations
+        from the Science Park subcluster (5xx) are supported. By default 507
+        is excluded.
+
+    """
+
+    def __init__(self, stations=None, allow_missing=False):
+        if stations is None:
+            network = api.Network()
+            stations = [sn for sn in network.station_numbers(subcluster=500)
+                        if sn != 507]
+        else:
+            stations = [sn for sn in stations if 500 < sn < 600]
+        super(ScienceParkCluster, self).__init__(stations,
+                                                 allow_missing=allow_missing)
 
 
 class HiSPARCNetwork(HiSPARCStations):

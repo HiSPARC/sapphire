@@ -19,7 +19,7 @@ from sapphire import api
 from sapphire.utils import pbar
 
 
-JSON_FILE = path.join(path.dirname(__file__), 'hisparc_stations.json')
+JSON_FILE = path.join(api.LOCAL_BASE, 'hisparc_stations.json')
 
 
 def generate_json():
@@ -52,7 +52,7 @@ def save_csv():
     station_numbers = api.Network().station_numbers(subcluster=500)
     for type in ['gps', 'layout']:
         try:
-            mkdir(path.join(path.dirname(__file__), type))
+            mkdir(path.join(api.LOCAL_BASE, type))
         except OSError:
             pass
         for number in pbar(station_numbers):
