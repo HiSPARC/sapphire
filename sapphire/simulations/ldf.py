@@ -471,21 +471,28 @@ class EllipsLdf(KascadeLdf):
             c_s = self._c(s1, s2)
 
         r0 = self._r0
-        #zenith = self._zenith
-        #azimuth = self._azimuth
-        relcos = cos(phi - azimuth)                             # relative polar angle
-        ell = sqrt(1. - sin(zenith) * sin(zenith) * relcos * relcos)    # elliptic iso-density contours
-        shift = -0.058 * sin(2. * zenith) * relcos              # shift of the center of elliptic iso-density contours
-        #ell=1.
-        #shift=0.
+        # zenith = self._zenith
+        # azimuth = self._azimuth
+        # relative polar angle
+        relcos = cos(phi - azimuth)
+        # elliptic iso-density contours
+        ell = sqrt(1. - sin(zenith) * sin(zenith) * relcos * relcos)
+        # shift of the center of elliptic iso-density contours
+        shift = -0.058 * sin(2. * zenith) * relcos
+        # ell = 1.
+        # shift = 0.
         k = r * shift + r * ell
         term1 = 1. * k / r0
         term2 = 1. + term1
-        greis = 11.4 * cos(zenith) * cos(zenith)                # empirical modification
-        normcorr = greis / (2. + s1 - greis * (3 + s1 + s2))    # c(s)*normcorr = normalization
-        term3 = 1. + term1 / greis                              # Greisen modification of NKG LDF
+        # empirical modification
+        greis = 11.4 * cos(zenith) * cos(zenith)
+        # c(s)*normcorr = normalization
+        normcorr = greis / (2. + s1 - greis * (3 + s1 + s2))
+        # Greisen modification of NKG LDF
+        term3 = 1. + term1 / greis
 
-        dens = Ne * cos(zenith) * c_s * term1 ** s1 * term2 ** s2 * normcorr * term3
+        dens = (Ne * cos(zenith) * c_s * term1 ** s1 * term2 ** s2 *
+                normcorr * term3)
 
         return dens
 
