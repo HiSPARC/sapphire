@@ -171,6 +171,9 @@ class Coincidences(object):
         c_index = self.coincidence_group._src_c_index.read()
         timestamps = self.coincidence_group._src_timestamps.read()
 
+        if len(c_index) == 0:
+            return
+
         selected_timestamps = []
         for coincidence in c_index:
             for event in coincidence:
