@@ -17,8 +17,9 @@ import subprocess
 import argparse
 from math import modf
 
-from sapphire.corsika import particles
-from sapphire.utils import pbar
+from . import particles
+from ..utils import pbar
+from ..qsub import check_queue
 
 
 TEMPDIR = '/data/hisparc/corsika/running/'
@@ -267,35 +268,6 @@ class CorsikaBatch(object):
                                 .format(source=source,
                                         destination=destination),
                                 shell=True)
-
-
-def check_queue(queue):
-    """Check for available job slots on the selected queue for current user
-
-    Maximum numbers from ``qstat -Q -f``
-
-    :param queue: queue name for which to check current number of job
-                  slots in use.
-    :return: boolean, True if slots are available, False otherwise.
-
-    """
-    all_jobs = int(subprocess.check_output('qstat {queue} | '
-                                           'grep " [QR] " | wc -l'
-                                           .format(queue=queue), shell=True))
-    user_jobs = int(subprocess.check_output('qstat -u $USER {queue} | '
-                                            'grep " [QR] " | wc -l'
-                                            .format(queue=queue), shell=True))
-
-    if queue == 'express':
-        return 2 - user_jobs
-    elif queue == 'short':
-        return 1000 - user_jobs
-    elif queue == 'generic':
-        return min(2000 - user_jobs, 4000 - all_jobs)
-    elif queue == 'long':
-        return min(500 - user_jobs, 1000 - all_jobs)
-    else:
-        raise KeyError('Unknown queue name: {queue}'.format(queue=queue))
 
 
 def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
