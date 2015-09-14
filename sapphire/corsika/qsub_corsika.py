@@ -250,10 +250,7 @@ class CorsikaBatch(object):
         """
         source = os.path.join(CORSIKADIR, self.corsika + '.log')
         destination = os.path.join(TEMPDIR, self.rundir)
-        subprocess.check_output('cp {source} {destination}'
-                                .format(source=source,
-                                        destination=destination),
-                                shell=True)
+        subprocess.check_output(['cp', source, destination])
 
     def symlink_corsika(self):
         """Create symbolic links to CORSIKA run files
@@ -264,10 +261,7 @@ class CorsikaBatch(object):
         """
         source = os.path.join(CORSIKADIR, self.corsika)
         destination = os.path.join(TEMPDIR, self.rundir)
-        subprocess.check_output('ln -s {source} {destination}'
-                                .format(source=source,
-                                        destination=destination),
-                                shell=True)
+        subprocess.check_output(['ln', '-s', source, destination])
 
 
 def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
