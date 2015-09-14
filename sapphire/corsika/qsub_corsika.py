@@ -200,17 +200,22 @@ class CorsikaBatch(object):
     def make_rundir(self):
         """Make the run directory"""
 
-        os.mkdir(os.path.join(TEMPDIR, self.rundir))
+        os.mkdir(self.get_rundir())
 
     def goto_rundir(self):
         """Move into the run directory"""
 
-        os.chdir(os.path.join(TEMPDIR + self.rundir))
+        os.chdir(self.get_rundir())
+
+    def get_rundir(self):
+        """Get run directory path"""
+
+        return os.path.join(TEMPDIR, self.rundir)
 
     def create_input(self):
         """Make CORSIKA steering file"""
 
-        inputpath = os.path.join(TEMPDIR, self.rundir, 'input-hisparc')
+        inputpath = os.path.join(self.get_rundir(), 'input-hisparc')
         input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                       particle=self.particle, phi=self.phi,
                                       energy_pre=self.energy_pre,
@@ -229,8 +234,8 @@ class CorsikaBatch(object):
             walltime = ""
 
         exec_path = os.path.join(CORSIKADIR, self.corsika)
-        run_path = os.path.join(TEMPDIR, self.rundir)
         script_path = os.path.join(run_path, 'run.sh')
+        run_path = self.get_rundir()
 
         script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
                                         queue=self.queue, walltime=walltime,
@@ -249,7 +254,7 @@ class CorsikaBatch(object):
 
         """
         source = os.path.join(CORSIKADIR, self.corsika + '.log')
-        destination = os.path.join(TEMPDIR, self.rundir)
+        destination = self.get_rundir()
         subprocess.check_output(['cp', source, destination])
 
     def symlink_corsika(self):
@@ -260,7 +265,7 @@ class CorsikaBatch(object):
 
         """
         source = os.path.join(CORSIKADIR, self.corsika)
-        destination = os.path.join(TEMPDIR, self.rundir)
+        destination = self.get_rundir()
         subprocess.check_output(['ln', '-s', source, destination])
 
 
