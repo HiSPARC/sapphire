@@ -19,7 +19,7 @@ from math import modf
 
 from . import particles
 from ..utils import pbar
-from ..qsub import check_queue
+from ..qsub import check_queue, submit_job
 
 
 TEMPDIR = '/data/hisparc/corsika/running/'
@@ -64,15 +64,6 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
 
     umask 002
-
-    NAME="his_{seed1}_{seed2}"
-    SCRIPT=/tmp/$NAME
-
-    # Start Stoomboot script
-    cat >> $SCRIPT << EOF
-    #!/usr/bin/env bash
-
-    umask 002
     export PATH=\${{PBS_O_PATH}}
 
     # Run CORSIKA
@@ -86,14 +77,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     else
         mv {rundir} {faildir}
         exit 1
-    fi
-
-    EOF
-    # End of Stoomboot script
-
-    chmod ug+x $SCRIPT
-    qsub -N ${{NAME}} -q {queue} {walltime} -V -z -j oe -d {rundir} $SCRIPT
-    rm $SCRIPT""")
+    fi""")
 
 
 class CorsikaBatch(object):
@@ -161,17 +145,19 @@ class CorsikaBatch(object):
 
         # Create/copy files
         self.create_input()
-        self.create_script()
         self.copy_config()
 
     def submit_job(self):
         """Submit job to Stoomboot"""
 
-        result = subprocess.check_output('./run.sh', stderr=subprocess.STDOUT,
-                                         shell=True)
-        if not result == '':
-            print '%sError occured: %s' % (self.rundir, result)
-            raise Exception
+        name = "his_{seed1}_{seed2}".format(seed1=self.seed1, seed2=self.seed2)
+        run_path = os.path.join(TEMPDIR, self.rundir)
+        extra = "-d {rundir}".format(rundir=run_path)
+        if self.queue == 'long':
+            extra += " -l walltime=96:00:00"
+        script = self.create_script()
+
+        submit_job(script, name, self.queue, extra)
 
     def taken_seeds(self):
         """Get list of seeds already used"""
@@ -228,23 +214,12 @@ class CorsikaBatch(object):
     def create_script(self):
         """Make Stoomboot script file"""
 
-        if self.queue == 'long':
-            walltime = "-l walltime=96:00:00"
-        else:
-            walltime = ""
-
         exec_path = os.path.join(CORSIKADIR, self.corsika)
-        script_path = os.path.join(run_path, 'run.sh')
         run_path = self.get_rundir()
 
-        script = SCRIPT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
-                                        queue=self.queue, walltime=walltime,
-                                        corsika=exec_path, rundir=run_path,
+        script = SCRIPT_TEMPLATE.format(corsika=exec_path, rundir=run_path,
                                         datadir=DATADIR, faildir=FAILDIR)
-        file = open(script_path, 'w')
-        file.write(script)
-        file.close()
-        os.chmod(script_path, 0774)
+        return script
 
     def copy_config(self):
         """Copy the CORSIKA config file to the output directory
