@@ -17,7 +17,6 @@
 """
 import os
 import subprocess
-import logging
 
 
 def check_queue(queue):

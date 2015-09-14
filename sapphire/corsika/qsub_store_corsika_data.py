@@ -13,7 +13,6 @@
 import os
 import glob
 import textwrap
-import subprocess
 import logging
 import argparse
 
