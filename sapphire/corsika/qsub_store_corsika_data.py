@@ -27,7 +27,7 @@ DESTINATION_FILE = 'corsika.h5'
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
     umask 002
-    source activate /data/hisparc/corsika_env &> /dev/null
+    source activate corsika &> /dev/null
     {command}
     touch {datadir}
     # To alleviate Stoomboot, make sure the job is not to short.

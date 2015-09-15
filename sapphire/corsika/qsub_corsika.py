@@ -6,7 +6,7 @@
 
     To run this file correctly do it in the correct env::
 
-        source activate /data/hisparc/corsika_env
+        source activate corsika
         qsub_corsika 10 16 proton 22.5 -q generic -a 90
 
 """
