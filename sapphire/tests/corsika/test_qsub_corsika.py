@@ -50,17 +50,25 @@ class CorsikaBatchTest(unittest.TestCase):
     def test_submit_job(self, mock_create_script, mock_rundir, mock_submit_job):
         self.cb.seed1 = 123
         self.cb.seed2 = 456
-        mock_rundir.return_value = '/data/123_456'
+        mock_rundir.return_value = '/data/123_456/'
         mock_create_script.return_value = sentinel.script
         self.cb.submit_job()
         mock_submit_job.assert_called_once_with(sentinel.script, 'his_123_456',
-                                                'generic', '-d /data/123_456')
+                                                'generic', '-d /data/123_456/')
         # Check addition of walltime argument for long queue
         self.cb.queue = 'long'
         self.cb.submit_job()
         mock_submit_job.assert_called_with(sentinel.script, 'his_123_456',
                                            'long',
-                                           '-d /data/123_456 -l walltime=96:00:00')
+                                           '-d /data/123_456/ -l walltime=96:00:00')
+
+    @patch.object(qsub_corsika.os, 'listdir')
+    def test_taken_seeds(self, mock_listdir):
+        mock_listdir.return_value = [sentinel.dirs]
+        taken = self.cb.taken_seeds()
+        self.assertEqual(taken, [sentinel.dirs, sentinel.dirs])
+        mock_listdir.assert_any_call(qsub_corsika.DATADIR)
+        mock_listdir.assert_called_with(qsub_corsika.TEMPDIR)
 
     def test_generate_random_seeds(self):
         random.seed(0)
@@ -75,6 +83,25 @@ class CorsikaBatchTest(unittest.TestCase):
         self.assertEqual(self.cb.seed1, 378514423)
         self.assertEqual(self.cb.seed2, 233025076)
         self.assertEqual(self.cb.rundir, '378514423_233025076/')
+
+    @patch.object(qsub_corsika.os, 'mkdir')
+    @patch.object(qsub_corsika.CorsikaBatch, 'get_rundir')
+    def test_make_rundir(self, mock_rundir, mock_mkdir):
+        mock_rundir.return_value = sentinel.rundir
+        self.cb.make_rundir()
+        mock_mkdir.assert_called_once_with(sentinel.rundir)
+
+    @patch.object(qsub_corsika.os, 'chdir')
+    @patch.object(qsub_corsika.CorsikaBatch, 'get_rundir')
+    def test_goto_rundir(self, mock_rundir, mock_chdir):
+        mock_rundir.return_value = sentinel.rundir
+        self.cb.goto_rundir()
+        mock_chdir.assert_called_once_with(sentinel.rundir)
+
+    def test_get_rundir(self):
+        self.cb.rundir = '123_456/'
+        rundir = self.cb.get_rundir()
+        self.assertEqual(rundir, qsub_corsika.TEMPDIR + '123_456/')
 
     @patch.object(qsub_corsika.CorsikaBatch, 'get_rundir')
     def test_create_input(self, mock_rundir):
