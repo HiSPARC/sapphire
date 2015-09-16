@@ -70,6 +70,27 @@ class SeedsTest(unittest.TestCase):
         self.assertEqual(command, 'store_corsika_data /data/123_456/DAT000000 /data/123_456/corsika.h5')
         qsub_store_corsika_data.DATADIR = tmp
 
+    @patch.object(qsub_store_corsika_data.os, 'umask')
+    @patch.object(qsub_store_corsika_data, 'get_seeds_todo')
+    @patch.object(qsub_store_corsika_data.qsub, 'check_queue')
+    @patch.object(qsub_store_corsika_data, 'store_command')
+    @patch.object(qsub_store_corsika_data.qsub, 'submit_job')
+    @patch.object(qsub_store_corsika_data, 'append_queued_seeds')
+    @patch.object(qsub_store_corsika_data, 'SCRIPT_TEMPLATE')
+    def test_run(self, mock_template, mock_append, mock_submit, mock_store,
+                 mock_check, mock_get_seeds, mock_umask):
+        mock_get_seeds.return_value = set([sentinel.seed1, sentinel.seed2])
+        mock_check.return_value = 6
+        mock_template.format.return_value = sentinel.script
+        mock_store.return_value = sentinel.command
+        seeds = qsub_store_corsika_data.run(sentinel.queue)
+        mock_submit.assert_any_call(sentinel.script, sentinel.seed1, sentinel.queue)
+        mock_submit.assert_any_call(sentinel.script, sentinel.seed2, sentinel.queue)
+        mock_template.format.assert_called_with(command=sentinel.command,
+                                                datadir=qsub_store_corsika_data.DATADIR)
+        mock_append.assert_any_call([sentinel.seed1])
+        mock_append.assert_any_call([sentinel.seed2])
+        mock_umask.assert_called_once_with(002)
 
 if __name__ == '__main__':
     unittest.main()
