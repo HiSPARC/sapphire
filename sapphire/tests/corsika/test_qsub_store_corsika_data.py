@@ -80,7 +80,7 @@ class SeedsTest(unittest.TestCase):
     def test_run(self, mock_template, mock_append, mock_submit, mock_store,
                  mock_check, mock_get_seeds, mock_umask):
         seeds = set([sentinel.seed1, sentinel.seed2])
-        mock_get_seeds.return_value = set([sentinel.seed1, sentinel.seed2])
+        mock_get_seeds.return_value = seeds
         mock_check.return_value = 6
         mock_template.format.return_value = sentinel.script
         mock_store.return_value = sentinel.command
