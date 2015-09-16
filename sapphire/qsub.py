@@ -4,15 +4,12 @@
     This checks the available slots on the requested queue, creates the
     scripts to submit, submits the jobs, and cleans up afterwards.
 
-    Example usage:
-
-    .. code-block:: python
+    Example usage::
 
         >>> from sapphire import qsub
         >>> qsub.check_queue('long')
         340
-        >>> qsub.submit_job('#!/usr/bin/env bash\ntouch /data/hisparc/test',
-                            'small_job_1', 'express')
+        >>> qsub.submit_job('touch /data/hisparc/test', 'job_1', 'express')
 
 """
 import os

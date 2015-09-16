@@ -9,19 +9,16 @@
     .. code-block:: python
 
         >>> from sapphire import Station
-        >>> stations = [5, 301, 3102, 504, 7101, 8008, 13005]
-        >>> clusters = [Station(station).cluster.lower()
-        ...             for station in stations]
-        >>> station_groups = ['/hisparc/cluster_%s/station_%d' % (c, s)
-        ...                   for c, s in zip(clusters, stations)]
-        >>> station_groups
-        [u'/hisparc/cluster_amsterdam/station_5',
-         u'/hisparc/cluster_amsterdam/station_301',
-         u'/hisparc/cluster_leiden/station_3102',
-         u'/hisparc/cluster_amsterdam/station_504',
-         u'/hisparc/cluster_enschede/station_7101',
-         u'/hisparc/cluster_eindhoven/station_8008',
-         u'/hisparc/cluster_bristol/station_13005']
+        >>> stations = [5, 3102, 504, 7101, 8008, 13005]
+        >>> clusters = [Station(station).cluster for station in stations]
+        >>> for station, cluster in zip(stations, clusters):
+        ...     print 'Station %d is in cluster %s.' % (station, cluster)
+        Station 5 is in cluster Amsterdam.
+        Station 3102 is in cluster Leiden.
+        Station 504 is in cluster Amsterdam.
+        Station 7101 is in cluster Enschede.
+        Station 8008 is in cluster Eindhoven.
+        Station 13005 is in cluster Bristol.
 
 """
 import logging

@@ -28,6 +28,9 @@ The following packages and modules are included:
 :mod:`~sapphire.publicdb`
     public data access
 
+:mod:`~sapphire.qsub`
+    submit jobs to Stoomboot
+
 :mod:`~sapphire.simulations`
     package containing simulation-related modules
 
@@ -51,6 +54,7 @@ from . import corsika
 from . import esd
 from . import kascade
 from . import publicdb
+from . import qsub
 from . import simulations
 from . import storage
 from . import time_util
@@ -82,6 +86,7 @@ __all__ = ['analysis',
            'esd',
            'kascade',
            'publicdb',
+           'qsub',
            'simulations',
            'storage',
            'time_util',
