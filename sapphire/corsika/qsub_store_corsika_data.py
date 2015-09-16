@@ -33,9 +33,6 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     # To alleviate Stoomboot, make sure the job is not to short.
     sleep $[ ( $RANDOM % 60 ) + 60 ]""")
 
-logging.basicConfig(filename=LOGFILE, filemode='a',
-                    format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-                    datefmt='%y%m%d_%H%M%S', level=logging.INFO)
 logger = logging.getLogger('qsub_store_corsika_data')
 
 
@@ -70,8 +67,7 @@ def write_queued_seeds(seeds):
     """Write queued seeds to file"""
 
     with open(QUEUED_SEEDS, 'w') as queued_seeds:
-        for seed in seeds:
-            queued_seeds.write('%s\n' % seed)
+        queued_seeds.write('\n'.join(seeds))
 
 
 def append_queued_seeds(seeds):
@@ -126,6 +122,9 @@ def run(queue):
 
 
 def main():
+    logging.basicConfig(filename=LOGFILE, filemode='a',
+                        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+                        datefmt='%y%m%d_%H%M%S', level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument('-q', '--queue', metavar='name',
                         help="name of the Stoomboot queue to use, choose from "
