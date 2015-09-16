@@ -79,17 +79,17 @@ class SeedsTest(unittest.TestCase):
     @patch.object(qsub_store_corsika_data, 'SCRIPT_TEMPLATE')
     def test_run(self, mock_template, mock_append, mock_submit, mock_store,
                  mock_check, mock_get_seeds, mock_umask):
+        seeds = set([sentinel.seed1, sentinel.seed2])
         mock_get_seeds.return_value = set([sentinel.seed1, sentinel.seed2])
         mock_check.return_value = 6
         mock_template.format.return_value = sentinel.script
         mock_store.return_value = sentinel.command
-        seeds = qsub_store_corsika_data.run(sentinel.queue)
-        mock_submit.assert_any_call(sentinel.script, sentinel.seed1, sentinel.queue)
-        mock_submit.assert_any_call(sentinel.script, sentinel.seed2, sentinel.queue)
+        qsub_store_corsika_data.run(sentinel.queue)
+        for seed in seeds:
+            mock_submit.assert_any_call(sentinel.script, seed, sentinel.queue)
+            mock_append.assert_any_call([seed])
         mock_template.format.assert_called_with(command=sentinel.command,
                                                 datadir=qsub_store_corsika_data.DATADIR)
-        mock_append.assert_any_call([sentinel.seed1])
-        mock_append.assert_any_call([sentinel.seed2])
         mock_umask.assert_called_once_with(002)
 
 if __name__ == '__main__':
