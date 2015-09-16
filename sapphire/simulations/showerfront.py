@@ -5,15 +5,15 @@ Simulate just the arrival times.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire import FlatFrontSimulation, ScienceParkCluster
+    >>> from sapphire import FlatFrontSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = FlatFrontSimulation(cluster, data, '/', 200)
-    sim.run()
+    >>> sim = FlatFrontSimulation(cluster, data, '/', 200)
+    >>> sim.run()
 
 """
 from math import pi, sin, cos, tan, atan2, sqrt
@@ -181,15 +181,15 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
     Example usage::
 
-        import tables
+        >>> import tables
 
-        from sapphire import ConeFrontSimulation, ScienceParkCluster
+        >>> from sapphire import ConeFrontSimulation, ScienceParkCluster
 
-        data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
-        cluster = ScienceParkCluster()
+        >>> data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
+        >>> cluster = ScienceParkCluster()
 
-        sim = ConeFrontSimulation(100, cluster, data, '/', 200)
-        sim.run()
+        >>> sim = ConeFrontSimulation(100, cluster, data, '/', 200)
+        >>> sim.run()
 
     """
 

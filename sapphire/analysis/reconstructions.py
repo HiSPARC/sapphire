@@ -22,24 +22,24 @@ class ReconstructESDEvents(object):
 
     Example usage::
 
-        import tables
-        from sapphire import ReconstructESDEvents
+        >>> import tables
+        >>> from sapphire import ReconstructESDEvents
 
-        data = tables.open_file('2014_1_1.h5', 'a')
-        station_path = '/hisparc/cluster_amsterdam/station_506'
-        rec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
-        rec.reconstruct_and_store()
+        >>> data = tables.open_file('2014_1_1.h5', 'a')
+        >>> station_path = '/hisparc/cluster_amsterdam/station_506'
+        >>> rec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
+        >>> rec.reconstruct_and_store()
 
     To visualize the results::
 
-        import matplotlib.pyplot as plt
-        plt.polar([p for p in rec.phi if not isnan(p)],
-                  [t for t in rec.theta if not isnan(t)], 'ko', alpha=0.2)
+        >>> import matplotlib.pyplot as plt
+        >>> plt.polar([p for p in rec.phi if not isnan(p)],
+        ...           [t for t in rec.theta if not isnan(t)], 'ko', alpha=0.2)
 
     or::
 
-        plt.polar(rec.reconstructions.col('azimuth'),
-                  rec.reconstructions.col('zenith'), 'ko', alpha=0.2)
+        >>> plt.polar(rec.reconstructions.col('azimuth'),
+        ...           rec.reconstructions.col('zenith'), 'ko', alpha=0.2)
 
     """
 
@@ -184,12 +184,13 @@ class ReconstructESDCoincidences(object):
 
     Example usage::
 
-        import tables
-        from sapphire.analysis import reconstructions
+        >>> import tables
+        >>> from sapphire.analysis import reconstructions
 
-        data = tables.open_file('2014_1_1.h5', 'a')
-        rec = reconstructions.ReconstructESDCoincidences(data, overwrite=True)
-        rec.reconstruct_and_store()
+        >>> data = tables.open_file('2014_1_1.h5', 'a')
+        >>> rec = reconstructions.ReconstructESDCoincidences(data,
+        ...                                                  overwrite=True)
+        >>> rec.reconstruct_and_store()
 
     """
 

@@ -4,17 +4,17 @@ densities and for fitting to data.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire import NkgLdfSimulation, ScienceParkCluster
+    >>> from sapphire import NkgLdfSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
-                           max_energy=1e21, cluster=cluster,
-                           datafile=data, N=200)
-    sim.run()
+    >>> sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
+    ...                        max_energy=1e21, cluster=cluster,
+    ...                        datafile=data, N=200)
+    >>> sim.run()
 
 """
 import warnings

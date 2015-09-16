@@ -6,15 +6,16 @@ with random core positions and azimuth angles.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire import GroundParticlesSimulation, ScienceParkCluster
+    >>> from sapphire import GroundParticlesSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_groundparticle_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_groundparticle_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = GroundParticlesSimulation('corsika.h5', 500, cluster, data, '/', 10)
-    sim.run()
+    >>> sim = GroundParticlesSimulation('corsika.h5', 500, cluster, data,
+    ...                                 '/', 10)
+    >>> sim.run()
 
 """
 from math import pi, sin, cos, sqrt
