@@ -29,16 +29,12 @@ class CorsikaBatchTest(unittest.TestCase):
         self.assertEqual(cb.seed2, None)
         self.assertEqual(cb.rundir, None)
 
-    @patch.object(qsub_corsika.particles, 'particle_id')
-    def test_init_fractional_energy(self, mock_particles):
-        mock_particles.return_value = sentinel.particle_id
+    def test_init_fractional_energy(self):
         cb = qsub_corsika.CorsikaBatch(16.5)
         self.assertEqual(cb.energy_pre, 3.16228)
         self.assertEqual(cb.energy_pow, 7)
 
-    @patch.object(qsub_corsika.particles, 'particle_id')
-    def test_init_bad_energy(self, mock_particles):
-        mock_particles.return_value = sentinel.particle_id
+    def test_init_bad_energy(self):
         self.assertRaises(ValueError, qsub_corsika.CorsikaBatch, 16.15)
 
     @patch.object(qsub_corsika.CorsikaBatch, 'prepare_env')
@@ -47,6 +43,24 @@ class CorsikaBatchTest(unittest.TestCase):
         self.cb.run()
         mock_prepare_env.assert_called_once_with()
         mock_submit_job.assert_called_once_with()
+
+    @patch.object(qsub_corsika.qsub, 'submit_job')
+    @patch.object(qsub_corsika.CorsikaBatch, 'get_rundir')
+    @patch.object(qsub_corsika.CorsikaBatch, 'create_script')
+    def test_submit_job(self, mock_create_script, mock_rundir, mock_submit_job):
+        self.cb.seed1 = 123
+        self.cb.seed2 = 456
+        mock_rundir.return_value = '/data/123_456'
+        mock_create_script.return_value = sentinel.script
+        self.cb.submit_job()
+        mock_submit_job.assert_called_once_with(sentinel.script, 'his_123_456',
+                                                'generic', '-d /data/123_456')
+        # Check addition of walltime argument for long queue
+        self.cb.queue = 'long'
+        self.cb.submit_job()
+        mock_submit_job.assert_called_with(sentinel.script, 'his_123_456',
+                                           'long',
+                                           '-d /data/123_456 -l walltime=96:00:00')
 
     def test_generate_random_seeds(self):
         random.seed(0)
