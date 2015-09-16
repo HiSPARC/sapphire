@@ -71,6 +71,5 @@ class SeedsTest(unittest.TestCase):
         qsub_store_corsika_data.DATADIR = tmp
 
 
-if
-:
+if __name__ == '__main__':
     unittest.main()
