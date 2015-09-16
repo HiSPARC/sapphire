@@ -15,11 +15,12 @@ import random
 import textwrap
 import subprocess
 import argparse
+import warnings
 from math import modf
 
 from . import particles
 from ..utils import pbar
-from ..qsub import check_queue, submit_job
+from .. import qsub
 
 
 TEMPDIR = '/data/hisparc/corsika/running/'
@@ -139,7 +140,7 @@ class CorsikaBatch(object):
 
         # Setup directories
         taken = self.taken_seeds()
-        self.gen_random_seeds(taken)
+        self.generate_random_seeds(taken)
         self.make_rundir()
         self.goto_rundir()
 
@@ -157,7 +158,7 @@ class CorsikaBatch(object):
             extra += " -l walltime=96:00:00"
         script = self.create_script()
 
-        submit_job(script, name, self.queue, extra)
+        qsub.submit_job(script, name, self.queue, extra)
 
     def taken_seeds(self):
         """Get list of seeds already used"""
@@ -166,7 +167,7 @@ class CorsikaBatch(object):
         taken.extend(os.listdir(TEMPDIR))
         return taken
 
-    def gen_random_seeds(self, taken):
+    def generate_random_seeds(self, taken):
         """Get unused combination of two seeds for CORSIKA
 
         :param taken: List of seed combinations already taken
@@ -181,7 +182,7 @@ class CorsikaBatch(object):
             self.seed2 = seed2
             self.rundir = seed + '/'
         else:
-            self.get_random_seeds(taken)
+            self.generate_random_seeds(taken)
 
     def make_rundir(self):
         """Make the run directory"""
@@ -244,7 +245,8 @@ class CorsikaBatch(object):
         subprocess.check_output(['ln', '-s', source, destination])
 
 
-def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
+def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
+                  progress=True):
     """Use this to sumbit multiple jobs to Stoomboot
 
     :param n: Number of jobs to submit
@@ -255,34 +257,34 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika):
     :param azimuth: Azimuth angle in degrees of the primary particle
     :param queue: Stoomboot queue to submit to
     :param corsika: Name of the CORSIKA executable to use
+    :param progress: Toggle printing of overview.
 
     """
-    print textwrap.dedent("""\
-        Batch submitting jobs to Stoomboot:
-        Number of jobs      {n}
-        Particle energy     10^{e} eV
-        Primary particle    {p}
-        Zenith angle        {z} degrees
-        Azimuth angle       {a} degrees
-        Stoomboot queue     {q}
-        CORSIKA executable  {c}
-        """.format(n=n, e=energy, p=particle, z=zenith, a=azimuth, q=queue,
-                   c=corsika))
+    if progress:
+        print textwrap.dedent("""\
+            Batch submitting jobs to Stoomboot:
+            Number of jobs      {n}
+            Particle energy     10^{e} eV
+            Primary particle    {p}
+            Zenith angle        {z} degrees
+            Azimuth angle       {a} degrees
+            Stoomboot queue     {q}
+            CORSIKA executable  {c}
+            """.format(n=n, e=energy, p=particle, z=zenith, a=azimuth, q=queue,
+                       c=corsika))
 
-    available_slots = check_queue(queue)
+    available_slots = qsub.check_queue(queue)
     if available_slots <= 0:
-        n = 0
-        print 'Submitting no jobs because queue is full.'
-        return
+        raise Exception('Submitting no jobs because selected queue is full.')
     elif available_slots < n:
         n = available_slots
-        print 'Submitting {n} jobs because queue is almost full.'.format(n=n)
+        warnings.warn('Submitting {n} jobs because queue almost full.'
+                      .format(n=n))
 
-    for _ in pbar(xrange(n)):
+    for _ in pbar(xrange(n), show=progress):
         batch = CorsikaBatch(energy=energy, particle=particle, zenith=zenith,
                              azimuth=azimuth, queue=queue, corsika=corsika)
         batch.run()
-    print 'Done.'
 
 
 def main():
