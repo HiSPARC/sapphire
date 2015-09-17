@@ -8,10 +8,11 @@
 
 """
 from numpy import around, mean, sign, std
+from lazy import lazy
 
 
-FILTER_THRESHOLD = 15
-INTEGRAL_THRESHOLD = 25
+FILTER_THRESHOLD = 10  # default -6 mV
+BASELINE_THRESHOLD = 17  # default -10 mV
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
 
 # Trigger windows
@@ -20,10 +21,11 @@ TRIGGER = 600  # samples, i.e. 1500 ns
 POST_TRIGGER = 1400  # samples, i.e. 3500 ns
 
 # Trigger thresholds
+# HiSPARC II with baseline at 200 ADC counts.
 ADC_LOW_THRESHOLD = 253
 ADC_HIGH_THRESHOLD = 323
 
-# Thresholds for HiSPARC III with baseline at 30 ADC counts.
+# HiSPARC III with baseline at 30 ADC counts (DAQ v4).
 ADC_LOW_THRESHOLD_III = 82
 ADC_HIGH_THRESHOLD_III = 150
 
@@ -32,33 +34,36 @@ class TraceObservables(object):
 
     """Reconstruct trace observables"""
 
-    def __init__(self):
-        pass
+    def __init__(self, traces):
+        self.traces = traces
 
-    def calculate_obervables(self, traces):
-        self.calculate_baselines(traces)
-        self.calculate_std_dev(traces)
-        self.calculate_pulseheights(traces)
-        self.calculate_integrals(traces)
+    @lazy
+    def baselines(self):
+        """Mean value of the first 100 samples of the trace"""
 
-    def calculate_baselines(self, traces):
-        # Mean value of the first 100 samples of the trace
-        self.baselines = [int(around(mean(t[:100]))) for t in traces]
+        return [int(around(mean(t[:100]))) for t in self.traces]
 
-    def calculate_std_dev(self, traces):
-        # Standard deviation of the first 100 samples of the trace
-        self.std_dev = [int(round(std(t[:100]))) for t in traces]
+    @lazy
+    def std_dev(self):
+        """Standard deviation of the first 100 samples of the trace"""
 
-    def calculate_pulseheights(self, traces):
-        # Maximum peak to baseline value in trace
-        self.pulseheights = [max(t) - b for t, b in zip(traces, self.baselines)]
+        return [int(round(std(t[:100]))) for t in self.traces]
 
-    def calculate_integrals(self, traces):
-        # Integral of trace for all values over threshold
-        # The threshold is defined by INTEGRAL_THRESHOLD
-        self.integrals = [sum([v - b
-                               for v in trace if v - b > INTEGRAL_THRESHOLD])
-                          for trace, b in zip(traces, self.baselines)]
+    @lazy
+    def pulseheights(self):
+        """Maximum peak to baseline value in trace"""
+
+        return [max(t) - b for t, b in zip(self.traces, self.baselines)]
+
+    @lazy
+    def integrals(self):
+        """Integral of trace for all values over threshold
+
+        The threshold is defined by BASELINE_THRESHOLD
+
+        """
+        return [sum(v - b for v in trace if v - b > BASELINE_THRESHOLD)
+                for trace, b in zip(self.traces, self.baselines)]
 
 
 class TriggerReconstruction(object):
