@@ -131,8 +131,9 @@ def distance_between(x1, y1, x2, y2):
 def which(program):
     """Check if a command line program is available
 
+    An Exception is raised if the program is not available.
+
     :param program: name or program to check for, e.g. 'wget'.
-    :raises Exception: if the program is not available.
 
     """
     path = find_executable(program)

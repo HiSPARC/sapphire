@@ -18,7 +18,7 @@
 import os
 import subprocess
 
-from .utils import which
+from . import utils
 
 
 def check_queue(queue):
@@ -33,7 +33,7 @@ def check_queue(queue):
     :return: number of available slots.
 
     """
-    which('qstat')
+    utils.which('qstat')
     all_jobs = int(subprocess.check_output('qstat {queue} | '
                                            'grep " [QR] " | wc -l'
                                            .format(queue=queue), shell=True))
@@ -62,7 +62,7 @@ def submit_job(script, name, queue, extra=''):
     :param extra: optional extra arguments for the qsub command.
 
     """
-    which('qsub')
+    utils.which('qsub')
     script_path, script_name = create_script(script, name)
 
     # Effect of the arguments for qsub:

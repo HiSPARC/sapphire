@@ -170,5 +170,21 @@ class AngleBetweenTests(unittest.TestCase):
         self.assertTrue(angle == 0)
 
 
+class WhichTests(unittest.TestCase):
+
+    """Check if which works"""
+
+    def test_which(self):
+        """Check existence of common command"""
+
+        utils.which('ls')
+
+    def test_non_existent_program(self):
+        """Check for error for non-existent program"""
+
+        self.assertRaises(Exception, utils.which,
+                          'a_very_unlikely_program_name_to_exist_cosmic_ray')
+
+
 if __name__ == '__main__':
     unittest.main()
