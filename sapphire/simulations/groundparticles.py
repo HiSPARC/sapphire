@@ -343,6 +343,7 @@ class FixedCoreDistanceSimulation(GroundParticlesSimulation):
 
     """
 
+    @classmethod
     def generate_core_position(cls, R):
         """Generate a random core position on a circle
 
