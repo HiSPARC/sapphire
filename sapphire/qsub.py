@@ -1,5 +1,8 @@
 """ Nikhef Stoomboot interface
 
+    .. note::
+        This module is only for use at Nikhef.
+
     Easy to use functions to make use of the Nikhef Stoomboot facilities.
     This checks the available slots on the requested queue, creates the
     scripts to submit, submits the jobs, and cleans up afterwards.
@@ -15,6 +18,8 @@
 import os
 import subprocess
 
+from .utils import which
+
 
 def check_queue(queue):
     """Check for available job slots on the selected queue for current user
@@ -28,6 +33,7 @@ def check_queue(queue):
     :return: number of available slots.
 
     """
+    which('qstat')
     all_jobs = int(subprocess.check_output('qstat {queue} | '
                                            'grep " [QR] " | wc -l'
                                            .format(queue=queue), shell=True))
@@ -56,6 +62,7 @@ def submit_job(script, name, queue, extra=''):
     :param extra: optional extra arguments for the qsub command.
 
     """
+    which('qsub')
     script_path, script_name = create_script(script, name)
 
     # Effect of the arguments for qsub:

@@ -6,6 +6,7 @@ The module contains some commonly functions and classes.
 from __future__ import division
 
 from bisect import bisect_right
+from distutils.spawn import find_executable
 
 from numpy import floor, ceil, round, arcsin, sin, pi, sqrt
 from scipy.stats import norm
@@ -125,3 +126,15 @@ def distance_between(x1, y1, x2, y2):
     d = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
     return d
+
+
+def which(program):
+    """Check if a command line program is available
+
+    :param program: name or program to check for, e.g. 'wget'.
+    :raises Exception: if the program is not available.
+
+    """
+    path = find_executable(program)
+    if not path:
+        raise Exception('The program %s is not available.' % program)
