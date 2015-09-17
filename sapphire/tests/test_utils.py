@@ -170,6 +170,24 @@ class AngleBetweenTests(unittest.TestCase):
         self.assertTrue(angle == 0)
 
 
+class DistanceBetweenTests(unittest.TestCase):
+
+    """Check distance between two (x, y) cartesian coordinates"""
+
+    def test_distances(self):
+        """Check if distances are correctly calculated"""
+
+        combinations = [((0, 0, 1.6, 0), 1.6),
+                        ((-1, 0, 1, 0), 2),
+                        ((-1, 0, -1, 0), 0),
+                        ((random.uniform(1e-15, 100),) * 4, 0),
+                        ((-10, -10, 5, 5), sqrt(450))]
+        for coordinates, distance in combinations:
+            self.assertEqual(utils.distance_between(*coordinates), distance)
+            # same result if the coordinates and x, y are swapped
+            self.assertEqual(utils.distance_between(*coordinates[::-1]), distance)
+
+
 class WhichTests(unittest.TestCase):
 
     """Check if which works"""
