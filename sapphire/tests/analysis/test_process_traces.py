@@ -1,6 +1,6 @@
 import unittest
 
-from mock import patch, sentinel, MagicMock
+from mock import patch, sentinel
 
 from sapphire.analysis import process_traces
 
@@ -51,10 +51,64 @@ class MeanFilterTests(unittest.TestCase):
         pass
 
     def test_mean_filter_with_threshold(self):
-        pass
+        # Small deviations in first few elements
+        # (199 + 201 + 199 + 201) / 4. = 200
+        # |199 - 200| < threshold and |201 - 200| < threshold
+        raw_trace = [199, 201, 199, 201]
+        exp_trace = [200, 200, 200, 200]
+        # mean/trace  m    m    m    m
+        filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
+        # Large deviations in first few elements
+        # (199 + 211 + 189 + 201) / 4. = 200
+        # |211 - 200| > threshold or |189 - 200| > threshold
+        raw_trace = [199, 211, 189, 201]
+        exp_trace = [199, 211, 189, 201]
+        # mean/trace  t    t    t    t
+        filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
+        # Large jump in later elements
+        # |236 - 201| > 2 * threshold
+        raw_trace = [199, 201, 199, 201, 236]
+        exp_trace = [200, 200, 200, 200, 236]
+        # mean/trace  m    m    m    m    t
+        filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
+        # Values on same side of local mean:
+        # (201 + 199 + 201 + 202) / 4. = 200.75
+        # 202 > 200.75 and 201 > 200.75
+        raw_trace = [199, 201, 199, 201, 202]
+        exp_trace = [200, 200, 200, 200, 202]
+        # mean/trace  m    m    m    m    t
+        filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
+        # Value far from local mean
+        # 216 - (201 + 199 + 201 + 216) / 4. > threshold
+        raw_trace = [199, 201, 199, 201, 216]
+        exp_trace = [200, 200, 200, 200, 216]
+        # mean/trace  m    m    m    m    t
+        filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
+        # Value close to local mean:
+        # 205 - (201 + 199 + 201 + 205) / 4. < threshold
+        raw_trace = [199, 201, 199, 201, 205]
+        exp_trace = [200, 200, 200, 200, 202]
+        # mean/trace  m    m    m    m    m
+        filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
 
     def test_mean_filter_without_threshold(self):
-        pass
+        raw_trace = [199, 201, 199, 201, 216, 220, 219, 205, 200, 201]
+        exp_trace = [200, 200, 200, 200, 204, 220, 219, 215, 200, 201]
+        # mean/trace  m    m    m    m    m    t    t    m    t    t
+        filtered_trace = self.mf.mean_filter_without_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
 
 if __name__ == '__main__':
     unittest.main()

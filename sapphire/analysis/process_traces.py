@@ -7,7 +7,7 @@
     It is reproduced here to make it easy to read the algorithm.
 
 """
-from numpy import around, mean, sign, std
+from numpy import around, mean, std, convolve, ones
 from lazy import lazy
 
 
@@ -131,8 +131,10 @@ class MeanFilter(object):
     def mean_filter_with_threshold(self, trace):
         """The mean filter in case use_threshold is True"""
 
+        moving_average = convolve(trace, ones(4) / 4)
+
         filtered_trace = []
-        local_mean = mean(trace[:4])
+        local_mean = moving_average[3]
 
         if all([abs(v - local_mean) <= self.threshold for v in trace[:4]]):
             filtered_trace.extend([int(around(local_mean))] * 4)
@@ -140,10 +142,10 @@ class MeanFilter(object):
             filtered_trace.extend(trace[:4])
 
         for i in xrange(4, len(trace)):
+            local_mean = moving_average[i]
             if abs(trace[i] - trace[i - 1]) > 2 * self.threshold:
                 filtered_trace.append(trace[i])
-            elif (sign(trace[i] - local_mean) ==
-                  sign(trace[i - 1] - local_mean)):
+            elif (trace[i] > local_mean) == (trace[i - 1] > local_mean):
                 # Both values on same side of the local_mean
                 filtered_trace.append(trace[i])
             elif abs(trace[i] - local_mean) > self.threshold:
@@ -156,14 +158,16 @@ class MeanFilter(object):
     def mean_filter_without_threshold(self, trace):
         """The mean filter in case use_threshold is False"""
 
-        local_mean = mean(trace[:4])
+        moving_average = convolve(trace, ones(4) / 4)
+        local_mean = moving_average[3]
         filtered_trace = [int(around(local_mean))] * 4
 
         for i in xrange(4, len(trace)):
-            local_mean = mean(trace[i - 4:i])
-            if sign(trace[i] - local_mean) == sign(trace[i - 1] - local_mean):
+            local_mean = moving_average[i]
+            if (trace[i] > local_mean) == (trace[i - 1] > local_mean):
                 # Both values on same side of the local_mean
                 filtered_trace.append(trace[i])
             else:
                 filtered_trace.append(int(around(local_mean)))
+
         return filtered_trace
