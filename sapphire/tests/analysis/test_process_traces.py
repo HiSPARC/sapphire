@@ -1,6 +1,7 @@
 import unittest
+from itertools import cycle
 
-from mock import patch, sentinel
+from mock import patch, sentinel, MagicMock
 
 from sapphire.analysis import process_traces
 
@@ -48,7 +49,19 @@ class MeanFilterTests(unittest.TestCase):
                          [sentinel.filtered_trace, sentinel.filtered_trace])
 
     def test_filter_trace(self):
-        pass
+        mock_filter = MagicMock()
+        self.mf.filter = mock_filter
+        mock_filter.side_effect = cycle([[sentinel.filtered_even] * 2,
+                                         [sentinel.filtered_odd] * 2,
+                                         [sentinel.filtered_recombined]])
+        trace_segment = [sentinel.trace_even, sentinel.trace_odd]
+
+        filtered_trace = self.mf.filter_trace(trace_segment * 4)
+
+        self.assertEqual(filtered_trace, [sentinel.filtered_recombined])
+        mock_filter.assert_any_call([sentinel.trace_even] * 4)
+        mock_filter.assert_any_call([sentinel.trace_odd] * 4)
+        mock_filter.assert_called_with([sentinel.filtered_even, sentinel.filtered_odd] * 2)
 
     def test_mean_filter_with_threshold(self):
         # Small deviations in first few elements
