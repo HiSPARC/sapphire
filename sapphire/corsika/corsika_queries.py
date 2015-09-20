@@ -52,9 +52,11 @@ class CorsikaQuery(object):
 
         """
         if iterator:
-            seeds = ('%d_%d' % (sim.seed1, sim.seed2) for sim in simulations)
+            seeds = ('%d_%d' % (sim['seed1'], sim['seed2'])
+                     for sim in simulations)
         else:
-            seeds = ['%d_%d' % (sim.seed1, sim.seed2) for sim in simulations]
+            seeds = ['%d_%d' % (sim['seed1'], sim['seed2'])
+                     for sim in simulations]
         return seeds
 
     @lazy
