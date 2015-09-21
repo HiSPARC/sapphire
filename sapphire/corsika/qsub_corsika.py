@@ -1,13 +1,27 @@
 """ Run CORSIKA simulations on Stoomboot
 
-    This module submits CORSIKA simulation jobs to Stoomboot, the Nikhef
-    computer cluster. It ensures that a unique combination of seeds for
-    the random number sequences are used for each simulation.
+    In order to quickly get a good sample of simulated showers we use the
+    Nikhef computer cluster Stoomboot to run multiple jobs simultaneously.
+    For this purpose a script has been written that will make this easy.
+    The :mod:`~sapphire.corsika.qsub_corsika` script can submit as many
+    jobs as you want with the parameters that you desire. It automatically
+    ensures that a unique combination of seeds for the random number
+    sequences are used for each simulation.
 
     To run this file correctly do it in the correct env::
 
         source activate corsika
-        qsub_corsika 10 16 proton 22.5 -q generic -a 90
+
+    The syntax for calling the script can be seen by calling its help::
+
+        qsub_corsika --help
+
+
+    For example, running 100 showers with proton primaries of 1e16 eV
+    coming in at 22.5 degrees zenith and 90 degrees azimuth on the
+    standard Stoomboot queue with the default CORSIKA configuration::
+
+        qsub_corsika 100 16 proton 22.5 -q generic -a 90
 
 """
 import os

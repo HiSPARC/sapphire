@@ -47,5 +47,6 @@ Contents
    corsika/blocks
    corsika/units
    corsika/particles
+   corsika/corsika_queries
    corsika/qsub
    corsika/store_corsika_data
