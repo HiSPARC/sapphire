@@ -55,6 +55,22 @@ class CorsikaQuery(object):
                      for sim in simulations]
         return seeds
 
+    def get_info(self, seeds):
+        """Get info for a simulation
+
+        :param seeds: combined string with seed1 and seed2.
+        :return: row matching the seeds.
+
+        """
+        seed1, seed2 = seeds.split('_')
+        queries = []
+        queries.append(self.filter('seed1', seed1))
+        queries.append(self.filter('seed2', seed2))
+        query = ' & '.join(queries)
+        simulation = self.perform_query(query, iterator=False)[0]
+
+        return simulation
+
     @lazy
     def all_energies(self):
         """All available energies
