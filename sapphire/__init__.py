@@ -71,6 +71,7 @@ from .analysis.reconstructions import (ReconstructESDEvents,
                                        ReconstructESDCoincidences)
 from .api import Network, Station
 from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
+from .corsika.corsika_queries import CorsikaQuery
 from .esd import (quick_download, load_data, download_data,
                   download_coincidences)
 from .simulations.groundparticles import GroundParticlesSimulation
@@ -101,6 +102,7 @@ __all__ = ['analysis',
            'ReconstructESDEvents', 'ReconstructESDCoincidences',
            'Network', 'Station',
            'HiSPARCStations', 'HiSPARCNetwork', 'ScienceParkCluster',
+           'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
            'download_coincidences',
            'GroundParticlesSimulation',

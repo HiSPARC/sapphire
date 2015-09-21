@@ -66,11 +66,13 @@
     - Arne de Laat <adelaat@nikhef.nl>
 
 """
+from . import corsika_queries
 from . import particles
 from . import reader
 from . import units
 
 
-__all__ = ['particles',
+__all__ = ['corsika_queries',
+           'particles',
            'reader',
            'units']
