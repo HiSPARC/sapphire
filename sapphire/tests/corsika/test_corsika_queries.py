@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from mock import sentinel, patch, call
+from mock import sentinel, patch
 
 from sapphire.corsika import corsika_queries
 

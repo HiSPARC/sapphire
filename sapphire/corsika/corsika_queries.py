@@ -1,7 +1,3 @@
-import re
-import itertools
-import warnings
-
 from lazy import lazy
 from numpy import degrees, radians, log10
 import tables
