@@ -7,7 +7,7 @@
     It is reproduced here to make it easy to read the algorithm.
 
 """
-from numpy import around, mean, std, convolve, ones, array, where
+from numpy import around, convolve, ones, where
 from lazy import lazy
 
 
