@@ -7,7 +7,7 @@
     It is reproduced here to make it easy to read the algorithm.
 
 """
-from numpy import around, mean, std, convolve, ones
+from numpy import around, mean, std, convolve, ones, array, where
 from lazy import lazy
 
 
@@ -32,28 +32,63 @@ ADC_HIGH_THRESHOLD_III = 150
 
 class TraceObservables(object):
 
-    """Reconstruct trace observables"""
+    """Reconstruct trace observables
+
+    If one wants to reconstruct trace observables from existing data some
+    caveats apply. If the station applied the Mean Filter the trace values
+    will no longer match the raw values used to determine the observables
+    on the station. Additionally, if data reduction was active the trace
+    may be missing samples without a significant signal, this complicates
+    the determination of the baseline. Moreover, data reduction uses the
+    BASELINE_THRESHOLD to determine what signals to keep, so tiny pulses
+    may be removed making it impossible to reconstruct tiny pulseheights.
+
+    The (default) value of BASELINE_THRESHOLD is different for the
+    HiSPARC DAQ prior to v4 and also for PySPARC. Those use 25 ADC as
+    threshold.
+
+    """
 
     def __init__(self, traces):
         self.traces = traces
+        self.n = self.traces.shape[1]
+        self.slave = []
+        if self.n == 2:
+            self.slave = [-1, -1]
+        elif not self.n == 4:
+            raise Exception('Unsupported number of detectors')
 
     @lazy
     def baselines(self):
-        """Mean value of the first 100 samples of the trace"""
+        """Mean value of the first 50 samples of the trace
 
-        return [int(around(mean(t[:100]))) for t in self.traces]
+        Usually this value is either around 200 or 30.
+
+        :return: the baseline in ADC count.
+
+        """
+        baselines = around(self.traces[:50].mean(axis=0)).astype('int')
+        return baselines.tolist() + self.slave
 
     @lazy
     def std_dev(self):
-        """Standard deviation of the first 100 samples of the trace"""
+        """Standard deviation of the first 50 samples of the trace
 
-        return [int(round(std(t[:100]))) for t in self.traces]
+        :return: the standard deviation in milli ADC count.
+
+        """
+        std_dev = around(self.traces[:50].std(axis=0) * 1000).astype('int')
+        return std_dev.tolist() + self.slave
 
     @lazy
     def pulseheights(self):
-        """Maximum peak to baseline value in trace"""
+        """Maximum peak to baseline value in trace
 
-        return [max(t) - b for t, b in zip(self.traces, self.baselines)]
+        :return: the pulseheights in ADC count.
+
+        """
+        pulseheights = self.traces.max(axis=0) - self.baselines[:self.n]
+        return pulseheights.tolist() + self.slave
 
     @lazy
     def integrals(self):
@@ -61,9 +96,13 @@ class TraceObservables(object):
 
         The threshold is defined by BASELINE_THRESHOLD
 
+        :return: the pulse integral in ADC count * sample.
+
         """
-        return [sum(v - b for v in trace if v - b > BASELINE_THRESHOLD)
-                for trace, b in zip(self.traces, self.baselines)]
+        threshold = BASELINE_THRESHOLD
+        integrals = where(self.traces - self.baselines[:self.n] > threshold,
+                          self.traces - self.baselines[:self.n], 0).sum(axis=0)
+        return integrals.tolist() + self.slave
 
 
 class TriggerReconstruction(object):

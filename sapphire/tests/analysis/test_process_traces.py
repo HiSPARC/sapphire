@@ -1,6 +1,7 @@
 import unittest
 from itertools import cycle
 
+from numpy import array
 from mock import patch, sentinel, MagicMock
 
 from sapphire.analysis import process_traces
@@ -9,20 +10,21 @@ from sapphire.analysis import process_traces
 class TraceObservablesTests(unittest.TestCase):
 
     def setUp(self):
-        self.traces = [[200] * 400 + [500] + [400] * 20 + [200] * 600]
+        trace = [200] * 400 + [500] + [400] * 20 + [200] * 600
+        self.traces = array([trace, [0] * len(trace)]).T
         self.to = process_traces.TraceObservables(self.traces)
 
     def test_baselines(self):
-        self.assertEqual(self.to.baselines, [200])
+        self.assertEqual(self.to.baselines, [200, 0, -1, -1])
 
     def test_std_dev(self):
-        self.assertEqual(self.to.std_dev, [0])
+        self.assertEqual(self.to.std_dev, [0, 0, -1, -1])
 
     def test_pulseheights(self):
-        self.assertEqual(self.to.pulseheights, [300])
+        self.assertEqual(self.to.pulseheights, [300, 0, -1, -1])
 
     def test_integrals(self):
-        self.assertEqual(self.to.integrals, [300 + 200 * 20])
+        self.assertEqual(self.to.integrals, [300 + 200 * 20, 0, -1, -1])
 
 
 class MeanFilterTests(unittest.TestCase):
