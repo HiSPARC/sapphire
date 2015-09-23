@@ -61,3 +61,23 @@ To check if it worked start Python and load the package:
     import sapphire
 
 You're done!
+
+
+Version release
+---------------
+
+Important: First check if the last commit passes the tests on Travis CI!
+
+To release a new version modify the version number in ``setup.py``. Then
+create a commit for the new release with a title like 'Bump version to vX.Y.Z'
+and a message that contains a summary of the most important changes since the
+last release. Then tag the commit and push it to GitHub::
+
+   $ git tag vX.Y.Z
+   $ git push --tags
+   
+Then upload the new version to PyPI (this requires the ``wheel`` package)::
+
+   $ python setup.py sdist bdist_wheel upload
+
+The latest version is then available from PyPI.
