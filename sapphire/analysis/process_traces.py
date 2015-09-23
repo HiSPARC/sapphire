@@ -62,7 +62,12 @@ class TraceObservables(object):
     def baselines(self):
         """Mean value of the first 50 samples of the trace
 
-        Usually this value is either around 200 or 30.
+        This does not perfectly match the implementation in the DAQ which
+        is more complicated, this does provide the correct value in most
+        cases, or is off by 1 in most other.
+
+        Usually this value is either around 200 or 30, depending on the used
+        version of the DAQ.
 
         :return: the baseline in ADC count.
 
