@@ -79,7 +79,6 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
 
     umask 002
-    export PATH=\${{PBS_O_PATH}}
 
     # Run CORSIKA
     /usr/bin/time -o time.log {corsika} < input-hisparc > corsika-output.log
