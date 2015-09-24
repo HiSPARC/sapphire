@@ -164,7 +164,7 @@ class CorsikaBatch(object):
     def submit_job(self):
         """Submit job to Stoomboot"""
 
-        name = "his_{seed1}_{seed2}".format(seed1=self.seed1, seed2=self.seed2)
+        name = "cor_{seed1}_{seed2}".format(seed1=self.seed1, seed2=self.seed2)
         extra = "-d {rundir}".format(rundir=self.get_rundir())
         if self.queue == 'long':
             extra += " -l walltime=96:00:00"
