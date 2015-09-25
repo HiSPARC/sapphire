@@ -2,9 +2,9 @@ from struct import unpack
 import warnings
 import os
 
-from blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
-                    ParticleData, Format, ParticleDataThin, FormatThin,
-                    particle_data)
+from .blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
+                     ParticleData, Format, ParticleDataThin, FormatThin,
+                     particle_data)
 
 
 class CorsikaEvent(object):

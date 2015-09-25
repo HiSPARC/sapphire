@@ -16,6 +16,7 @@ Contents:
    esd
    kascade
    publicdb
+   qsub
    simulations
    storage
    time_util

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='hisparc-sapphire',
-      version='0.12.0',
+      version='0.12.4',
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
@@ -27,6 +27,8 @@ setup(name='hisparc-sapphire',
                'sapphire/corsika/qsub_store_corsika_data',
                'sapphire/corsika/store_corsika_data'],
       package_data={'sapphire': ['data/hisparc_stations.json',
+                                 'data/gps/*.csv',
+                                 'data/layout/*.csv',
                                  'corsika/LICENSE',
                                  'tests/analysis/test_data/process_events.h5',
                                  'tests/analysis/test_data/esd_coincidences.h5',

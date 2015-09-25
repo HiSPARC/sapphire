@@ -24,6 +24,24 @@ after downloading, and the file repacked otherwise you are left with
     $ rm process_events_temp.h5
 
 
+Notes on recreating coincidences.h5
+---------------------------------------
+
+    >>> from mock import patch
+    >>> import tables
+    >>> from sapphire import download_data, Coincidences
+    >>> from datetime import datetime
+    >>> filters = tables.Filters(complevel=1)
+    >>> start = datetime(2012, 1, 1, 0, 0, 0)
+    >>> end = datetime(2012, 1, 1, 0, 2, 0)
+    >>> with tables.open_file('coincidences.h5', 'w', filters=filters) as data:
+    ...     download_data(data, '/station_501', 501, start, end, progress=False)
+    ...     download_data(data, '/station_502', 502, start, end, progress=False)
+    ...     with patch('sapphire.analysis.process_events.ProcessIndexedEventsWithoutTraces'):
+    ...         c = Coincidences(data, '/coincidences', ['/station_501', '/station_502'], progress=False)
+    ...         c.search_and_store_coincidences()
+
+
 Notes on recreating esd_coincidences.h5
 ---------------------------------------
 
@@ -33,8 +51,8 @@ Notes on recreating esd_coincidences.h5
     >>> filters = tables.Filters(complevel=1)
     >>> start = datetime(2012, 1, 1, 0, 0, 0)
     >>> end = datetime(2012, 1, 1, 0, 2, 0)
-    >>> with tables.open_file('esd_coincidences.h5', 'w', filters=filters) as datafile:
-    ...     download_data(datafile, '/station_501', 501, start, end, progress=False)
-    ...     download_data(datafile, '/station_502', 502, start, end, progress=False)
-    ...     coin = CoincidencesESD(datafile, '/coincidences', ['/station_501', '/station_502'], progress=False)
-    ...     coin.search_and_store_coincidences()
+    >>> with tables.open_file('esd_coincidences.h5', 'w', filters=filters) as data:
+    ...     download_data(data, '/station_501', 501, start, end, progress=False)
+    ...     download_data(data, '/station_502', 502, start, end, progress=False)
+    ...     c = CoincidencesESD(data, '/coincidences', ['/station_501', '/station_502'], progress=False)
+    ...     c.search_and_store_coincidences()

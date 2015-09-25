@@ -1,11 +1,11 @@
 {
     "2": {
         "active": false, 
-        "altitude": 54.1815330376849, 
+        "altitude": 54.18, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3413386874429, 
-        "longitude": 4.88064264461267, 
+        "latitude": 52.3413387, 
+        "longitude": 4.8806426, 
         "name": "St. Nicolaaslyceum", 
         "number": 2, 
         "scintillators": [
@@ -28,11 +28,11 @@
     }, 
     "3": {
         "active": true, 
-        "altitude": 59.5068918867037, 
+        "altitude": 59.51, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.351017244853, 
-        "longitude": 4.86454094977968, 
+        "latitude": 52.3510172, 
+        "longitude": 4.8645409, 
         "name": "Het Amsterdams Lyceum", 
         "number": 3, 
         "scintillators": [
@@ -54,7 +54,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 194.809968752485, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -69,11 +69,11 @@
     }, 
     "5": {
         "active": true, 
-        "altitude": 54.8100071139634, 
+        "altitude": 54.81, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3230425049338, 
-        "longitude": 4.86750102965381, 
+        "latitude": 52.3230425, 
+        "longitude": 4.867501, 
         "name": "Chr. Sch. Gem. Buitenveldert", 
         "number": 5, 
         "scintillators": [
@@ -81,7 +81,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 197.13215007497, 
+                "mpv": 197.0, 
                 "radius": null
             }, 
             {
@@ -96,11 +96,11 @@
     }, 
     "6": {
         "active": true, 
-        "altitude": 55.1015718523413, 
+        "altitude": 55.1, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3951319208366, 
-        "longitude": 4.92673028834672, 
+        "latitude": 52.3951319, 
+        "longitude": 4.9267303, 
         "name": "Bern. Nieuwetijt Coll. (Damstede)", 
         "number": 6, 
         "scintillators": [
@@ -108,7 +108,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 196.313362419524, 
+                "mpv": 196.0, 
                 "radius": null
             }, 
             {
@@ -123,11 +123,11 @@
     }, 
     "7": {
         "active": true, 
-        "altitude": 60.3261358747259, 
+        "altitude": 60.33, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.352052097281, 
-        "longitude": 4.87690001263334, 
+        "latitude": 52.3520521, 
+        "longitude": 4.8769, 
         "name": "Joke Smit College (ROC)", 
         "number": 7, 
         "scintillators": [
@@ -142,7 +142,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 209.605205736827, 
+                "mpv": 210.0, 
                 "radius": null
             }
         ], 
@@ -150,11 +150,11 @@
     }, 
     "9": {
         "active": true, 
-        "altitude": 73.1957306889817, 
+        "altitude": 73.2, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3328835003824, 
-        "longitude": 4.8668673586009, 
+        "latitude": 52.3328835, 
+        "longitude": 4.8668674, 
         "name": "Vrije Universiteit", 
         "number": 9, 
         "scintillators": [
@@ -162,7 +162,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 199.872352500724, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -191,11 +191,11 @@
     }, 
     "10": {
         "active": true, 
-        "altitude": 60.2404687982053, 
+        "altitude": 60.24, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.2875491419856, 
-        "longitude": 4.85529742163192, 
+        "latitude": 52.2875491, 
+        "longitude": 4.8552974, 
         "name": "Hermann Wesselink College", 
         "number": 10, 
         "scintillators": [
@@ -217,14 +217,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 195.468040796655, 
+                "mpv": 195.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 252.366295759616, 
+                "mpv": 252.0, 
                 "radius": null
             }
         ], 
@@ -232,11 +232,11 @@
     }, 
     "13": {
         "active": true, 
-        "altitude": 55.5982514806092, 
+        "altitude": 55.6, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.362507939077, 
-        "longitude": 4.82478868149194, 
+        "latitude": 52.3625079, 
+        "longitude": 4.8247887, 
         "name": "Hervormd Lyceum West", 
         "number": 13, 
         "scintillators": [
@@ -244,14 +244,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 225.672913347868, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 269.321417053197, 
+                "mpv": 260.0, 
                 "radius": null
             }
         ], 
@@ -259,11 +259,11 @@
     }, 
     "21": {
         "active": true, 
-        "altitude": 50.0642474098131, 
+        "altitude": 50.06, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3096159682416, 
-        "longitude": 5.0307681496617, 
+        "latitude": 52.309616, 
+        "longitude": 5.0307681, 
         "name": "Vechtstede College", 
         "number": 21, 
         "scintillators": [
@@ -271,14 +271,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 210.489542573387, 
+                "mpv": 211.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 220.6488307251, 
+                "mpv": 221.0, 
                 "radius": null
             }
         ], 
@@ -286,11 +286,11 @@
     }, 
     "22": {
         "active": true, 
-        "altitude": 60.6983210835606, 
+        "altitude": 60.7, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3494298462138, 
-        "longitude": 4.87384387313093, 
+        "latitude": 52.3494298, 
+        "longitude": 4.8738439, 
         "name": "St. Ignatius Gymnasium", 
         "number": 22, 
         "scintillators": [
@@ -298,14 +298,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 196.329474824753, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 180.0, 
                 "radius": null
             }
         ], 
@@ -313,11 +313,11 @@
     }, 
     "23": {
         "active": true, 
-        "altitude": 53.8767213458195, 
+        "altitude": 55.49, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3523109823471, 
-        "longitude": 4.87841656511973, 
+        "latitude": 52.3523105, 
+        "longitude": 4.8784078, 
         "name": "Fons Vitae Lyceum", 
         "number": 23, 
         "scintillators": [
@@ -325,14 +325,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 213.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 199.703471476895, 
+                "mpv": 201.0, 
                 "radius": null
             }, 
             {
@@ -354,11 +354,11 @@
     }, 
     "101": {
         "active": true, 
-        "altitude": 50.9857678934932, 
+        "altitude": 50.99, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.4745075518552, 
-        "longitude": 4.82580042468538, 
+        "latitude": 52.4745076, 
+        "longitude": 4.8258004, 
         "name": "St. Michael College", 
         "number": 101, 
         "scintillators": [
@@ -395,11 +395,11 @@
     }, 
     "102": {
         "active": true, 
-        "altitude": 51.2977153277025, 
+        "altitude": 51.3, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.4494079756559, 
-        "longitude": 4.81292727220191, 
+        "latitude": 52.449408, 
+        "longitude": 4.8129273, 
         "name": "Zaanlands Lyceum 1", 
         "number": 102, 
         "scintillators": [
@@ -407,14 +407,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 352.278042769026, 
+                "mpv": 296.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 277.135660531249, 
+                "mpv": 256.0, 
                 "radius": null
             }
         ], 
@@ -422,11 +422,11 @@
     }, 
     "103": {
         "active": true, 
-        "altitude": 53.4343818770722, 
+        "altitude": 53.43, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.4747791266587, 
-        "longitude": 4.79904254401765, 
+        "latitude": 52.4747791, 
+        "longitude": 4.7990425, 
         "name": "Saenredam College", 
         "number": 103, 
         "scintillators": [
@@ -434,7 +434,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 224.740405369343, 
+                "mpv": 222.0, 
                 "radius": null
             }, 
             {
@@ -449,11 +449,11 @@
     }, 
     "104": {
         "active": true, 
-        "altitude": 50.241192964837, 
+        "altitude": 50.24, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.4490787395997, 
-        "longitude": 4.81415732644807, 
+        "latitude": 52.4490787, 
+        "longitude": 4.8141573, 
         "name": "Zaanlands Lyceum 3", 
         "number": 104, 
         "scintillators": [
@@ -461,14 +461,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 204.929114745802, 
+                "mpv": 202.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 216.628821643079, 
+                "mpv": 209.0, 
                 "radius": null
             }
         ], 
@@ -476,11 +476,11 @@
     }, 
     "105": {
         "active": true, 
-        "altitude": 55.2685502255335, 
+        "altitude": 55.27, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.4486406427682, 
-        "longitude": 4.81319761942519, 
+        "latitude": 52.4486406, 
+        "longitude": 4.8131976, 
         "name": "Zaanlands Lyceum 4", 
         "number": 105, 
         "scintillators": [
@@ -503,11 +503,11 @@
     }, 
     "201": {
         "active": true, 
-        "altitude": 53.3421686412767, 
+        "altitude": 53.34, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3624032816362, 
-        "longitude": 4.61308967289895, 
+        "latitude": 52.3624033, 
+        "longitude": 4.6130897, 
         "name": "Coornhert Lyceum", 
         "number": 201, 
         "scintillators": [
@@ -544,11 +544,11 @@
     }, 
     "202": {
         "active": true, 
-        "altitude": 51.1635816898197, 
+        "altitude": 51.16, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3102170182877, 
-        "longitude": 4.68162148144783, 
+        "latitude": 52.310217, 
+        "longitude": 4.6816215, 
         "name": "Kaj Munk College", 
         "number": 202, 
         "scintillators": [
@@ -556,14 +556,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 219.679253249092, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 248.67643813448, 
+                "mpv": 325.0, 
                 "radius": null
             }
         ], 
@@ -571,11 +571,11 @@
     }, 
     "203": {
         "active": true, 
-        "altitude": 45.8093587746844, 
+        "altitude": 45.81, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3474621668926, 
-        "longitude": 4.63236896979136, 
+        "latitude": 52.3474622, 
+        "longitude": 4.632369, 
         "name": "College Hageveld", 
         "number": 203, 
         "scintillators": [
@@ -598,11 +598,11 @@
     }, 
     "301": {
         "active": true, 
-        "altitude": 60.035257935524, 
+        "altitude": 60.04, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.5518566963754, 
-        "longitude": 4.68701061276908, 
+        "latitude": 52.5518567, 
+        "longitude": 4.6870106, 
         "name": "Jac. P. Thijsse College", 
         "number": 301, 
         "scintillators": [
@@ -610,14 +610,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 263.864762717405, 
+                "mpv": 251.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 264.093336093922, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -625,11 +625,11 @@
     }, 
     "303": {
         "active": true, 
-        "altitude": 56.4679075339809, 
+        "altitude": 56.47, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.4943340092875, 
-        "longitude": 4.66132043807454, 
+        "latitude": 52.494334, 
+        "longitude": 4.6613204, 
         "name": "Kennemer College", 
         "number": 303, 
         "scintillators": [
@@ -637,14 +637,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 245.808070811509, 
+                "mpv": 239.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 268.254156853224, 
+                "mpv": 273.0, 
                 "radius": null
             }
         ], 
@@ -652,11 +652,11 @@
     }, 
     "304": {
         "active": true, 
-        "altitude": 49.2934506116435, 
+        "altitude": 49.29, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.5416216994537, 
-        "longitude": 4.66810439268223, 
+        "latitude": 52.5416217, 
+        "longitude": 4.6681044, 
         "name": "Bonhoeffer College", 
         "number": 304, 
         "scintillators": [
@@ -664,14 +664,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 241.002059755505, 
+                "mpv": 233.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 240.332557450974, 
+                "mpv": 231.0, 
                 "radius": null
             }
         ], 
@@ -679,11 +679,11 @@
     }, 
     "305": {
         "active": true, 
-        "altitude": 51.7067562229931, 
+        "altitude": 51.71, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.5493501679059, 
-        "longitude": 4.67181318408866, 
+        "latitude": 52.5493502, 
+        "longitude": 4.6718132, 
         "name": "Gemeentehuis Castricum", 
         "number": 305, 
         "scintillators": [
@@ -691,7 +691,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 670.0, 
                 "radius": null
             }, 
             {
@@ -706,11 +706,11 @@
     }, 
     "401": {
         "active": true, 
-        "altitude": 54.3610057169572, 
+        "altitude": 54.36, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.6390667276126, 
-        "longitude": 4.72264693777004, 
+        "latitude": 52.6390667, 
+        "longitude": 4.7226469, 
         "name": "Willem Blaeu OSG", 
         "number": 401, 
         "scintillators": [
@@ -718,14 +718,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 229.323857374096, 
+                "mpv": 237.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 241.805671522393, 
+                "mpv": 219.0, 
                 "radius": null
             }, 
             {
@@ -747,81 +747,81 @@
     }, 
     "501": {
         "active": true, 
-        "altitude": 57.6463436549529, 
+        "altitude": 57.65, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3558990959991, 
-        "longitude": 4.95098802630528, 
+        "latitude": 52.3558991, 
+        "longitude": 4.950988, 
         "name": "Nikhef", 
         "number": 501, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 240.734723700435, 
-                "radius": null
+                "alpha": -158.07, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 229.0, 
+                "radius": 6.09
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 266.560925327594, 
-                "radius": null
+                "alpha": 73.49, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": null, 
+                "radius": 5.0
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 266.097344792405, 
-                "radius": null
+                "alpha": 95.63, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 306.0, 
+                "radius": 14.51
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 272.807407009901, 
-                "radius": null
+                "alpha": 138.13, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 299.0, 
+                "radius": 11.06
             }
         ], 
         "subcluster": "Science Park"
     }, 
     "502": {
         "active": true, 
-        "altitude": 57.5165005521849, 
+        "altitude": 57.52, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3552939664603, 
-        "longitude": 4.95009211145321, 
-        "name": "Sterrenkundig Instituut Anton Pannekoek", 
+        "latitude": 52.355294, 
+        "longitude": 4.9500921, 
+        "name": "Universiteit van Amsterdam", 
         "number": 502, 
         "scintillators": [
             {
                 "alpha": 15.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 236.687075953608, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 215.0, 
                 "radius": 8.66
             }, 
             {
                 "alpha": 60.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 221.141182869514, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 204.0, 
                 "radius": 13.23
             }, 
             {
                 "alpha": 105.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 258.046557294574, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": null, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 285.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 256.883754585404, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 212.0, 
                 "radius": 5.0
             }
         ], 
@@ -829,40 +829,40 @@
     }, 
     "503": {
         "active": true, 
-        "altitude": 51.4433050034568, 
+        "altitude": 51.44, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3562599596, 
-        "longitude": 4.95294402001001, 
-        "name": "SARA", 
+        "latitude": 52.35626, 
+        "longitude": 4.952944, 
+        "name": "Vancis", 
         "number": 503, 
         "scintillators": [
             {
                 "alpha": 315.0, 
                 "beta": 135.0, 
-                "height": null, 
-                "mpv": 225.979730303245, 
+                "height": 0.0, 
+                "mpv": 294.0, 
                 "radius": 8.97
             }, 
             {
                 "alpha": 315.0, 
                 "beta": 135.0, 
-                "height": null, 
+                "height": 0.0, 
                 "mpv": null, 
                 "radius": 3.15
             }, 
             {
                 "alpha": 225.0, 
                 "beta": 225.0, 
-                "height": null, 
-                "mpv": 225.796599135573, 
+                "height": 0.0, 
+                "mpv": 240.0, 
                 "radius": 5.09
             }, 
             {
                 "alpha": 45.0, 
                 "beta": 225.0, 
-                "height": null, 
-                "mpv": null, 
+                "height": 0.0, 
+                "mpv": 230.0, 
                 "radius": 4.89
             }
         ], 
@@ -870,39 +870,39 @@
     }, 
     "504": {
         "active": true, 
-        "altitude": 54.7881894111633, 
+        "altitude": 54.79, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3571852096689, 
-        "longitude": 4.95438206699017, 
+        "latitude": 52.3571852, 
+        "longitude": 4.9543821, 
         "name": "SURFsara (Matrix)", 
         "number": 504, 
         "scintillators": [
             {
                 "alpha": 190.0, 
                 "beta": 10.0, 
-                "height": null, 
-                "mpv": 250.740200242854, 
+                "height": 0.0, 
+                "mpv": 193.0, 
                 "radius": 9.0
             }, 
             {
                 "alpha": 190.0, 
                 "beta": 190.0, 
-                "height": null, 
-                "mpv": 260.681102289752, 
+                "height": 0.0, 
+                "mpv": 267.0, 
                 "radius": 2.9
             }, 
             {
                 "alpha": 100.0, 
                 "beta": 280.0, 
-                "height": null, 
-                "mpv": 269.102466399325, 
+                "height": 0.0, 
+                "mpv": null, 
                 "radius": 5.02
             }, 
             {
                 "alpha": 280.0, 
                 "beta": 100.0, 
-                "height": null, 
+                "height": 0.0, 
                 "mpv": null, 
                 "radius": 5.0
             }
@@ -911,81 +911,81 @@
     }, 
     "505": {
         "active": true, 
-        "altitude": 47.5990685038269, 
+        "altitude": 47.6, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3572523744515, 
-        "longitude": 4.94838503036866, 
-        "name": "PiMu", 
+        "latitude": 52.3572524, 
+        "longitude": 4.948385, 
+        "name": "ARCNL (PiMu)", 
         "number": 505, 
         "scintillators": [
             {
                 "alpha": 250.0, 
                 "beta": 30.0, 
-                "height": null, 
-                "mpv": 236.352958429568, 
+                "height": 0.0, 
+                "mpv": 223.0, 
                 "radius": 11.21
             }, 
             {
-                "alpha": 300.0, 
+                "alpha": 296.0, 
                 "beta": 210.0, 
-                "height": null, 
-                "mpv": 198.175116700326, 
-                "radius": 11.12
+                "height": 0.0, 
+                "mpv": null, 
+                "radius": 12.95
             }, 
             {
                 "alpha": 170.0, 
                 "beta": 25.0, 
-                "height": null, 
-                "mpv": null, 
+                "height": 0.0, 
+                "mpv": 197.0, 
                 "radius": 4.95
             }, 
             {
-                "alpha": 25.0, 
+                "alpha": 1.2, 
                 "beta": 205.0, 
-                "height": null, 
-                "mpv": 195.268351811447, 
-                "radius": 4.95
+                "height": 0.0, 
+                "mpv": 193.0, 
+                "radius": 4.63
             }
         ], 
         "subcluster": "Science Park"
     }, 
     "506": {
         "active": true, 
-        "altitude": 45.4731753673404, 
+        "altitude": 45.47, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3571869092237, 
-        "longitude": 4.95198066585001, 
+        "latitude": 52.3571869, 
+        "longitude": 4.9519807, 
         "name": "Telecity", 
         "number": 506, 
         "scintillators": [
             {
                 "alpha": 93.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 222.820692137276, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 204.0, 
                 "radius": 8.66
             }, 
             {
                 "alpha": 93.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 218.118983621406, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 223.0, 
                 "radius": 2.89
             }, 
             {
                 "alpha": 3.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": null, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 206.0, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 183.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 216.590540811843, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 236.0, 
                 "radius": 5.0
             }
         ], 
@@ -993,81 +993,81 @@
     }, 
     "507": {
         "active": true, 
-        "altitude": 56.7735242238268, 
+        "altitude": 56.77, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3560055098817, 
-        "longitude": 4.95147879159059, 
+        "latitude": 52.3560055, 
+        "longitude": 4.9514788, 
         "name": "Nikhef (receptie)", 
         "number": 507, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": -87.45, 
+                "beta": -45.0, 
+                "height": -12.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 19.11
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": -78.72, 
+                "beta": 45.0, 
+                "height": -12.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 7.21
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 243.527816769852, 
-                "radius": null
+                "alpha": -65.13, 
+                "beta": -45.0, 
+                "height": -15.0, 
+                "mpv": 250.0, 
+                "radius": 18.0
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 214.518435337722, 
-                "radius": null
+                "alpha": -53.57, 
+                "beta": 45.0, 
+                "height": -12.0, 
+                "mpv": 211.0, 
+                "radius": 15.47
             }
         ], 
         "subcluster": "Science Park"
     }, 
     "508": {
         "active": true, 
-        "altitude": 52.5109110400081, 
+        "altitude": 52.51, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3563513341382, 
-        "longitude": 4.95070840123504, 
+        "latitude": 52.3563513, 
+        "longitude": 4.9507084, 
         "name": "Nikhef (MT)", 
         "number": 508, 
         "scintillators": [
             {
                 "alpha": 135.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 200.359764696041, 
+                "beta": -45.0, 
+                "height": 0.0, 
+                "mpv": 255.0, 
                 "radius": 8.66
             }, 
             {
-                "alpha": 180.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": null, 
-                "radius": 13.23
-            }, 
-            {
-                "alpha": 225.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 221.184689072559, 
-                "radius": 5.0
+                "alpha": 184.1, 
+                "beta": -45.0, 
+                "height": 0.0, 
+                "mpv": 208.0, 
+                "radius": 13.22
             }, 
             {
                 "alpha": 45.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": null, 
+                "beta": 45.0, 
+                "height": 0.0, 
+                "mpv": 225.0, 
+                "radius": 5.0
+            }, 
+            {
+                "alpha": 225.0, 
+                "beta": 45.0, 
+                "height": 0.0, 
+                "mpv": 221.0, 
                 "radius": 5.0
             }
         ], 
@@ -1075,39 +1075,39 @@
     }, 
     "509": {
         "active": true, 
-        "altitude": 56.8426188165322, 
+        "altitude": 56.84, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3545603701053, 
-        "longitude": 4.95569830926911, 
-        "name": "Amstel Instituut", 
+        "latitude": 52.3545604, 
+        "longitude": 4.9556983, 
+        "name": "Universiteit van Amsterdam 2", 
         "number": 509, 
         "scintillators": [
             {
                 "alpha": 225.0, 
-                "beta": null, 
-                "height": null, 
+                "beta": 0.0, 
+                "height": 0.0, 
                 "mpv": null, 
                 "radius": 8.66
             }, 
             {
                 "alpha": 225.0, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 239.786270586646, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 231.0, 
                 "radius": 2.89
             }, 
             {
                 "alpha": 135.0, 
-                "beta": null, 
-                "height": null, 
+                "beta": 0.0, 
+                "height": 0.0, 
                 "mpv": null, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 315.0, 
-                "beta": null, 
-                "height": null, 
+                "beta": 0.0, 
+                "height": 0.0, 
                 "mpv": null, 
                 "radius": 5.0
             }
@@ -1116,52 +1116,93 @@
     }, 
     "510": {
         "active": true, 
-        "altitude": 57.3941961703822, 
+        "altitude": 56.98, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3558859188682, 
-        "longitude": 4.95100828295814, 
+        "latitude": 52.3558849, 
+        "longitude": 4.9510053, 
         "name": "Nikhef 2", 
         "number": 510, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 225.0, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 210.0, 
+                "radius": 5.0
+            }, 
+            {
+                "alpha": 45.0, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 233.0, 
+                "radius": 5.0
+            }, 
+            {
+                "alpha": 87.0, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 249.0, 
+                "radius": 13.2
+            }, 
+            {
+                "alpha": 135.0, 
+                "beta": 0.0, 
+                "height": 0.0, 
+                "mpv": 201.0, 
+                "radius": 8.66
+            }
+        ], 
+        "subcluster": "Science Park"
+    }, 
+    "511": {
+        "active": true, 
+        "altitude": 57.86, 
+        "cluster": "Amsterdam", 
+        "country": "Netherlands", 
+        "latitude": 52.3564362, 
+        "longitude": 4.9485824, 
+        "name": "AMOLF", 
+        "number": 511, 
+        "scintillators": [
+            {
+                "alpha": 45.0, 
+                "beta": -45.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 8.67
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 191.604162181589, 
-                "radius": null
+                "alpha": 90.0, 
+                "beta": -45.0, 
+                "height": 0.0, 
+                "mpv": 212.0, 
+                "radius": 13.23
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 207.025582531078, 
-                "radius": null
-            }, 
-            {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 135.0, 
+                "beta": 45.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 5.0
+            }, 
+            {
+                "alpha": -45.0, 
+                "beta": 45.0, 
+                "height": 0.0, 
+                "mpv": null, 
+                "radius": 5.0
             }
         ], 
         "subcluster": "Science Park"
     }, 
     "601": {
         "active": true, 
-        "altitude": 43.7650674395263, 
+        "altitude": 43.77, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.6474194536538, 
-        "longitude": 5.06911918182369, 
+        "latitude": 52.6474195, 
+        "longitude": 5.0691192, 
         "name": "Werenfridus", 
         "number": 601, 
         "scintillators": [
@@ -1184,11 +1225,11 @@
     }, 
     "1001": {
         "active": true, 
-        "altitude": 85.1580091593787, 
+        "altitude": 85.16, 
         "cluster": "Utrecht", 
         "country": "Netherlands", 
-        "latitude": 52.0872182566183, 
-        "longitude": 5.16593169517659, 
+        "latitude": 52.0872183, 
+        "longitude": 5.1659317, 
         "name": "Universiteit Utrecht", 
         "number": 1001, 
         "scintillators": [
@@ -1203,54 +1244,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 198.035935180194, 
-                "radius": null
-            }
-        ], 
-        "subcluster": "Utrecht"
-    }, 
-    "1002": {
-        "active": false, 
-        "altitude": 68.412958885543, 
-        "cluster": "Utrecht", 
-        "country": "Netherlands", 
-        "latitude": 52.0824974150998, 
-        "longitude": 5.12209051513745, 
-        "name": "Christelijk Gymnasium Utrecht", 
-        "number": 1002, 
-        "scintillators": [
-            {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 294.125077811295, 
+                "mpv": 188.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 286.918513202464, 
-                "radius": null
-            }
-        ], 
-        "subcluster": "Utrecht"
-    }, 
-    "1003": {
-        "active": true, 
-        "altitude": 57.815247984603, 
-        "cluster": "Utrecht", 
-        "country": "Netherlands", 
-        "latitude": 52.0853554836865, 
-        "longitude": 5.12933665741068, 
-        "name": "Museum Sterrenwacht Sonnenborgh", 
-        "number": 1003, 
-        "scintillators": [
-            {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 199.076797040533, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -1263,13 +1264,67 @@
         ], 
         "subcluster": "Utrecht"
     }, 
-    "1006": {
-        "active": true, 
-        "altitude": 56.2168853189796, 
+    "1002": {
+        "active": false, 
+        "altitude": 68.41, 
         "cluster": "Utrecht", 
         "country": "Netherlands", 
-        "latitude": 52.0821266950466, 
-        "longitude": 5.14891577857023, 
+        "latitude": 52.0824974, 
+        "longitude": 5.1220905, 
+        "name": "Christelijk Gymnasium Utrecht", 
+        "number": 1002, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 294.0, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 287.0, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Utrecht"
+    }, 
+    "1003": {
+        "active": true, 
+        "altitude": 57.82, 
+        "cluster": "Utrecht", 
+        "country": "Netherlands", 
+        "latitude": 52.0853555, 
+        "longitude": 5.1293367, 
+        "name": "Museum Sterrenwacht Sonnenborgh", 
+        "number": 1003, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 196.0, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Utrecht"
+    }, 
+    "1006": {
+        "active": true, 
+        "altitude": 56.22, 
+        "cluster": "Utrecht", 
+        "country": "Netherlands", 
+        "latitude": 52.0821267, 
+        "longitude": 5.1489158, 
         "name": "University College Utrecht 1", 
         "number": 1006, 
         "scintillators": [
@@ -1277,14 +1332,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 269.437339832414, 
+                "mpv": 246.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 263.945282506566, 
+                "mpv": 245.0, 
                 "radius": null
             }
         ], 
@@ -1292,11 +1347,11 @@
     }, 
     "1007": {
         "active": true, 
-        "altitude": 49.3273423602805, 
+        "altitude": 49.33, 
         "cluster": "Utrecht", 
         "country": "Netherlands", 
-        "latitude": 52.0839564370364, 
-        "longitude": 5.14995092374735, 
+        "latitude": 52.0839564, 
+        "longitude": 5.1499509, 
         "name": "University College Utrecht 2", 
         "number": 1007, 
         "scintillators": [
@@ -1304,14 +1359,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 297.8090032552, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 248.097554854678, 
+                "mpv": 233.0, 
                 "radius": null
             }
         ], 
@@ -1319,11 +1374,11 @@
     }, 
     "1008": {
         "active": true, 
-        "altitude": 52.8849295303226, 
+        "altitude": 52.88, 
         "cluster": "Utrecht", 
         "country": "Netherlands", 
-        "latitude": 52.0820995772004, 
-        "longitude": 5.13294004788278, 
+        "latitude": 52.0820996, 
+        "longitude": 5.13294, 
         "name": "Stedelijk Gymnasium Utrecht", 
         "number": 1008, 
         "scintillators": [
@@ -1331,14 +1386,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 266.712027767936, 
+                "mpv": 247.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 305.178973034577, 
+                "mpv": 294.0, 
                 "radius": null
             }
         ], 
@@ -1346,11 +1401,11 @@
     }, 
     "1009": {
         "active": true, 
-        "altitude": 61.1708442578092, 
+        "altitude": 61.17, 
         "cluster": "Utrecht", 
         "country": "Netherlands", 
-        "latitude": 52.0752089156772, 
-        "longitude": 5.09708609135669, 
+        "latitude": 52.0752089, 
+        "longitude": 5.0970861, 
         "name": "FOM Bureau", 
         "number": 1009, 
         "scintillators": [
@@ -1365,7 +1420,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 240.958354592582, 
+                "mpv": 241.0, 
                 "radius": null
             }, 
             {
@@ -1379,7 +1434,48 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 208.850651259379, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Utrecht"
+    }, 
+    "1010": {
+        "active": true, 
+        "altitude": 62.24, 
+        "cluster": "Utrecht", 
+        "country": "Netherlands", 
+        "latitude": 52.0883194, 
+        "longitude": 5.1649086, 
+        "name": "Ornstein Laboratory", 
+        "number": 1010, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 216.0, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -1387,11 +1483,11 @@
     }, 
     "2001": {
         "active": true, 
-        "altitude": 103.358894273639, 
+        "altitude": 103.36, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.8232321049752, 
-        "longitude": 5.86854847487412, 
+        "latitude": 51.8232321, 
+        "longitude": 5.8685485, 
         "name": "Radboud Universiteit 1", 
         "number": 2001, 
         "scintillators": [
@@ -1406,7 +1502,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 294.65968949859, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -1414,11 +1510,11 @@
     }, 
     "2002": {
         "active": true, 
-        "altitude": 89.8523727515712, 
+        "altitude": 89.85, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.825623737147, 
-        "longitude": 5.8748952416026, 
+        "latitude": 51.8256237, 
+        "longitude": 5.8748952, 
         "name": "Nijmeegse Scholengemeenschap Groenewoud", 
         "number": 2002, 
         "scintillators": [
@@ -1441,11 +1537,11 @@
     }, 
     "2003": {
         "active": true, 
-        "altitude": 84.1533985566348, 
+        "altitude": 84.15, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.8473680277594, 
-        "longitude": 5.85546993078027, 
+        "latitude": 51.847368, 
+        "longitude": 5.8554699, 
         "name": "Stedelijk Gymnasium Nijmegen", 
         "number": 2003, 
         "scintillators": [
@@ -1468,11 +1564,11 @@
     }, 
     "2004": {
         "active": true, 
-        "altitude": 57.8063082806766, 
+        "altitude": 57.81, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.8370782687171, 
-        "longitude": 5.8176331056944, 
+        "latitude": 51.8370783, 
+        "longitude": 5.8176331, 
         "name": "Dominicus College", 
         "number": 2004, 
         "scintillators": [
@@ -1495,11 +1591,11 @@
     }, 
     "2005": {
         "active": true, 
-        "altitude": 61.4857049221173, 
+        "altitude": 63.16, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.8066141534249, 
-        "longitude": 5.83919031179365, 
+        "latitude": 51.8066215, 
+        "longitude": 5.8391835, 
         "name": "Kandinsky College", 
         "number": 2005, 
         "scintillators": [
@@ -1507,14 +1603,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 251.024115968607, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 284.998403727082, 
+                "mpv": 288.0, 
                 "radius": null
             }
         ], 
@@ -1522,11 +1618,11 @@
     }, 
     "2006": {
         "active": true, 
-        "altitude": 76.1161877773702, 
+        "altitude": 76.12, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.8162950199185, 
-        "longitude": 5.87301599060339, 
+        "latitude": 51.816295, 
+        "longitude": 5.873016, 
         "name": "Radboud Universiteit 2", 
         "number": 2006, 
         "scintillators": [
@@ -1549,11 +1645,11 @@
     }, 
     "2008": {
         "active": true, 
-        "altitude": 80.9944927552715, 
+        "altitude": 80.99, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.8247933899152, 
-        "longitude": 5.84569698272047, 
+        "latitude": 51.8247934, 
+        "longitude": 5.845697, 
         "name": "Stedelijke Scholengemeenschap", 
         "number": 2008, 
         "scintillators": [
@@ -1576,11 +1672,11 @@
     }, 
     "2010": {
         "active": true, 
-        "altitude": 63.5703404834494, 
+        "altitude": 63.57, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.8870295455751, 
-        "longitude": 5.6140412510998, 
+        "latitude": 51.8870295, 
+        "longitude": 5.6140413, 
         "name": "Pax Christi College", 
         "number": 2010, 
         "scintillators": [
@@ -1603,11 +1699,11 @@
     }, 
     "2101": {
         "active": true, 
-        "altitude": 91.4603424277157, 
+        "altitude": 91.46, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.5196388406881, 
-        "longitude": 5.97700396639329, 
+        "latitude": 51.5196388, 
+        "longitude": 5.977004, 
         "name": "Raaijland College", 
         "number": 2101, 
         "scintillators": [
@@ -1630,11 +1726,11 @@
     }, 
     "2102": {
         "active": true, 
-        "altitude": 85.0361724821851, 
+        "altitude": 85.04, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.5187616660915, 
-        "longitude": 5.97490580978707, 
+        "latitude": 51.5187617, 
+        "longitude": 5.9749058, 
         "name": "Raaijland College (Gilde)", 
         "number": 2102, 
         "scintillators": [
@@ -1657,11 +1753,11 @@
     }, 
     "2103": {
         "active": true, 
-        "altitude": 72.3189525250345, 
+        "altitude": 72.32, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 51.5144260741425, 
-        "longitude": 5.98021193208395, 
+        "latitude": 51.5144261, 
+        "longitude": 5.9802119, 
         "name": "Raaijland College (Melkfabriek)", 
         "number": 2103, 
         "scintillators": [
@@ -1676,7 +1772,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 275.0, 
                 "radius": null
             }
         ], 
@@ -1684,11 +1780,11 @@
     }, 
     "2201": {
         "active": true, 
-        "altitude": 55.5179017111659, 
+        "altitude": 55.52, 
         "cluster": "Nijmegen", 
         "country": "Netherlands", 
-        "latitude": 52.3333053204555, 
-        "longitude": 5.61579329279758, 
+        "latitude": 52.3333053, 
+        "longitude": 5.6157933, 
         "name": "RSG-Slingerbos", 
         "number": 2201, 
         "scintillators": [
@@ -1696,14 +1792,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 231.639148451456, 
+                "mpv": 201.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 229.380842510541, 
+                "mpv": 214.0, 
                 "radius": null
             }
         ], 
@@ -1711,11 +1807,11 @@
     }, 
     "3001": {
         "active": true, 
-        "altitude": 51.7719579357654, 
+        "altitude": 51.77, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 52.1690414739015, 
-        "longitude": 4.45859992064793, 
+        "latitude": 52.1690415, 
+        "longitude": 4.4585999, 
         "name": "Universiteit Leiden", 
         "number": 3001, 
         "scintillators": [
@@ -1723,14 +1819,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 268.316809251949, 
+                "mpv": 268.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 263.0455183475, 
+                "mpv": 265.0, 
                 "radius": null
             }
         ], 
@@ -1738,11 +1834,11 @@
     }, 
     "3002": {
         "active": true, 
-        "altitude": 51.4313161456957, 
+        "altitude": 51.43, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 52.1731494366367, 
-        "longitude": 4.4855137408349, 
+        "latitude": 52.1731494, 
+        "longitude": 4.4855137, 
         "name": "Da Vinci College", 
         "number": 3002, 
         "scintillators": [
@@ -1750,14 +1846,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 226.432106795045, 
+                "mpv": 207.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 220.620072425983, 
+                "mpv": 215.0, 
                 "radius": null
             }
         ], 
@@ -1765,11 +1861,11 @@
     }, 
     "3101": {
         "active": true, 
-        "altitude": 55.1287787603214, 
+        "altitude": 55.13, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.8223906295019, 
-        "longitude": 4.65527048839453, 
+        "latitude": 51.8223906, 
+        "longitude": 4.6552705, 
         "name": "Walburg College", 
         "number": 3101, 
         "scintillators": [
@@ -1777,14 +1873,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 189.758071782935, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 250.544631358953, 
+                "mpv": 220.0, 
                 "radius": null
             }, 
             {
@@ -1806,11 +1902,11 @@
     }, 
     "3102": {
         "active": true, 
-        "altitude": 51.3134240210056, 
+        "altitude": 51.31, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.8345367992796, 
-        "longitude": 4.64421178191973, 
+        "latitude": 51.8345368, 
+        "longitude": 4.6442118, 
         "name": "Walburg College (Hendrik Ido Ambacht)", 
         "number": 3102, 
         "scintillators": [
@@ -1818,14 +1914,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 216.321887371046, 
+                "mpv": 221.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 233.222830074005, 
+                "mpv": 197.0, 
                 "radius": null
             }
         ], 
@@ -1833,11 +1929,11 @@
     }, 
     "3103": {
         "active": true, 
-        "altitude": 45.9869269505143, 
+        "altitude": 45.99, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.8171977482416, 
-        "longitude": 4.64302741581581, 
+        "latitude": 51.8171977, 
+        "longitude": 4.6430274, 
         "name": "Walburg College (Lindelaan)", 
         "number": 3103, 
         "scintillators": [
@@ -1845,14 +1941,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 228.888049285021, 
+                "mpv": 229.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 224.109045587388, 
+                "mpv": 224.0, 
                 "radius": null
             }
         ], 
@@ -1860,11 +1956,11 @@
     }, 
     "3104": {
         "active": true, 
-        "altitude": 51.8584148101509, 
+        "altitude": 51.86, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.8437360027269, 
-        "longitude": 4.53215618328978, 
+        "latitude": 51.843736, 
+        "longitude": 4.5321562, 
         "name": "Dalton Lyceum", 
         "number": 3104, 
         "scintillators": [
@@ -1879,7 +1975,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 224.236893060135, 
+                "mpv": 224.0, 
                 "radius": null
             }
         ], 
@@ -1887,11 +1983,11 @@
     }, 
     "3105": {
         "active": true, 
-        "altitude": 56.8044899972156, 
+        "altitude": 56.8, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.8182317298922, 
-        "longitude": 4.39463304877794, 
+        "latitude": 51.8182317, 
+        "longitude": 4.394633, 
         "name": "CSG Willem van Oranje", 
         "number": 3105, 
         "scintillators": [
@@ -1899,14 +1995,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 230.090882112853, 
+                "mpv": 230.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 248.724860808283, 
+                "mpv": 249.0, 
                 "radius": null
             }
         ], 
@@ -1914,11 +2010,11 @@
     }, 
     "3201": {
         "active": true, 
-        "altitude": 51.1334620770067, 
+        "altitude": 51.13, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.7538701693333, 
-        "longitude": 4.15894117867924, 
+        "latitude": 51.7538702, 
+        "longitude": 4.1589412, 
         "name": "CSG Prins Maurits", 
         "number": 3201, 
         "scintillators": [
@@ -1926,7 +2022,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 198.891016652716, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -1940,14 +2036,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 197.020790577542, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 205.827826010538, 
+                "mpv": 194.0, 
                 "radius": null
             }
         ], 
@@ -1955,11 +2051,11 @@
     }, 
     "3202": {
         "active": true, 
-        "altitude": 59.1124289184809, 
+        "altitude": 59.11, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.7558785276051, 
-        "longitude": 4.16035629688256, 
+        "latitude": 51.7558785, 
+        "longitude": 4.1603563, 
         "name": "RSG Middelharnis", 
         "number": 3202, 
         "scintillators": [
@@ -1996,11 +2092,11 @@
     }, 
     "3203": {
         "active": true, 
-        "altitude": 51.3973846817389, 
+        "altitude": 51.4, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.75512281103, 
-        "longitude": 4.16121121764515, 
+        "latitude": 51.7551228, 
+        "longitude": 4.1612112, 
         "name": "RSG Gemeentehuis", 
         "number": 3203, 
         "scintillators": [
@@ -2023,11 +2119,11 @@
     }, 
     "3301": {
         "active": true, 
-        "altitude": 50.3032133802772, 
+        "altitude": 50.3, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 52.1426854274596, 
-        "longitude": 4.67917698723009, 
+        "latitude": 52.1426854, 
+        "longitude": 4.679177, 
         "name": "Scala College", 
         "number": 3301, 
         "scintillators": [
@@ -2035,7 +2131,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 234.601616677285, 
+                "mpv": 213.0, 
                 "radius": null
             }, 
             {
@@ -2050,11 +2146,11 @@
     }, 
     "3302": {
         "active": true, 
-        "altitude": 50.340918966569, 
+        "altitude": 50.34, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 52.1353136100954, 
-        "longitude": 4.65894282781091, 
+        "latitude": 52.1353136, 
+        "longitude": 4.6589428, 
         "name": "Het Groene Hart Lyceum", 
         "number": 3302, 
         "scintillators": [
@@ -2062,14 +2158,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 235.086428829964, 
+                "mpv": 203.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 227.540055300397, 
+                "mpv": 215.0, 
                 "radius": null
             }
         ], 
@@ -2077,11 +2173,11 @@
     }, 
     "3303": {
         "active": true, 
-        "altitude": 53.8564708242193, 
+        "altitude": 53.86, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 52.14646085405, 
-        "longitude": 4.65353849944832, 
+        "latitude": 52.1464609, 
+        "longitude": 4.6535385, 
         "name": "Ashram College", 
         "number": 3303, 
         "scintillators": [
@@ -2089,14 +2185,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 267.672342088153, 
+                "mpv": 212.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 228.874892087591, 
+                "mpv": 194.0, 
                 "radius": null
             }
         ], 
@@ -2104,11 +2200,11 @@
     }, 
     "3401": {
         "active": true, 
-        "altitude": 59.6796583011746, 
+        "altitude": 59.68, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 51.3234257431453, 
-        "longitude": 3.83873334934225, 
+        "latitude": 51.3234257, 
+        "longitude": 3.8387333, 
         "name": "Sted. Scholengem. De Rede ", 
         "number": 3401, 
         "scintillators": [
@@ -2116,14 +2212,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 213.116727723849, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 203.200612832885, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -2131,11 +2227,11 @@
     }, 
     "3501": {
         "active": true, 
-        "altitude": 59.5671734604985, 
+        "altitude": 59.57, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 52.0017816125448, 
-        "longitude": 4.36824630621087, 
+        "latitude": 52.0017816, 
+        "longitude": 4.3682463, 
         "name": "De Haagse Hogeschool (Delft)", 
         "number": 3501, 
         "scintillators": [
@@ -2143,14 +2239,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 216.364009915651, 
+                "mpv": 262.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 222.016800315285, 
+                "mpv": 276.0, 
                 "radius": null
             }, 
             {
@@ -2172,11 +2268,11 @@
     }, 
     "4001": {
         "active": true, 
-        "altitude": 50.5030767638236, 
+        "altitude": 50.5, 
         "cluster": "Groningen", 
         "country": "Netherlands", 
-        "latitude": 53.2499935081849, 
-        "longitude": 6.52681077381854, 
+        "latitude": 53.2499935, 
+        "longitude": 6.5268108, 
         "name": "KVI", 
         "number": 4001, 
         "scintillators": [
@@ -2199,11 +2295,11 @@
     }, 
     "4002": {
         "active": true, 
-        "altitude": 61.2705015568063, 
+        "altitude": 61.27, 
         "cluster": "Groningen", 
         "country": "Netherlands", 
-        "latitude": 53.1842471489737, 
-        "longitude": 6.59164707002918, 
+        "latitude": 53.1842471, 
+        "longitude": 6.5916471, 
         "name": "Maartens College", 
         "number": 4002, 
         "scintillators": [
@@ -2240,11 +2336,11 @@
     }, 
     "4003": {
         "active": true, 
-        "altitude": 49.5769665734842, 
+        "altitude": 49.58, 
         "cluster": "Groningen", 
         "country": "Netherlands", 
-        "latitude": 53.2213833745748, 
-        "longitude": 6.57207024089976, 
+        "latitude": 53.2213834, 
+        "longitude": 6.5720702, 
         "name": "Praedinius Gymnasium", 
         "number": 4003, 
         "scintillators": [
@@ -2252,14 +2348,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 199.965145040389, 
+                "mpv": 200.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 244.801537207798, 
+                "mpv": 245.0, 
                 "radius": null
             }
         ], 
@@ -2267,11 +2363,11 @@
     }, 
     "4004": {
         "active": true, 
-        "altitude": 52.7406190196052, 
+        "altitude": 52.74, 
         "cluster": "Groningen", 
         "country": "Netherlands", 
-        "latitude": 53.2375489789008, 
-        "longitude": 6.57853198218527, 
+        "latitude": 53.237549, 
+        "longitude": 6.578532, 
         "name": "Wessel Gansfort College", 
         "number": 4004, 
         "scintillators": [
@@ -2279,14 +2375,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 279.821458345275, 
+                "mpv": 240.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 223.828096134955, 
+                "mpv": 215.0, 
                 "radius": null
             }
         ], 
@@ -2294,11 +2390,11 @@
     }, 
     "7001": {
         "active": true, 
-        "altitude": 93.7031666431576, 
+        "altitude": 93.7, 
         "cluster": "Enschede", 
         "country": "Netherlands", 
-        "latitude": 52.2387034069148, 
-        "longitude": 6.8584413588373, 
+        "latitude": 52.2387034, 
+        "longitude": 6.8584414, 
         "name": "Universiteit Twente 1", 
         "number": 7001, 
         "scintillators": [
@@ -2306,7 +2402,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 247.445519329698, 
+                "mpv": 240.0, 
                 "radius": null
             }, 
             {
@@ -2321,11 +2417,11 @@
     }, 
     "7002": {
         "active": true, 
-        "altitude": 110.931193244644, 
+        "altitude": 110.93, 
         "cluster": "Enschede", 
         "country": "Netherlands", 
-        "latitude": 52.2382300026687, 
-        "longitude": 6.85810675538453, 
+        "latitude": 52.23823, 
+        "longitude": 6.8581068, 
         "name": "Universiteit Twente 2", 
         "number": 7002, 
         "scintillators": [
@@ -2340,7 +2436,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 212.816643043622, 
+                "mpv": 215.0, 
                 "radius": null
             }
         ], 
@@ -2348,11 +2444,11 @@
     }, 
     "7003": {
         "active": true, 
-        "altitude": 94.5090065756813, 
+        "altitude": 94.51, 
         "cluster": "Enschede", 
         "country": "Netherlands", 
-        "latitude": 52.2383274047962, 
-        "longitude": 6.85744865047943, 
+        "latitude": 52.2383274, 
+        "longitude": 6.8574487, 
         "name": "Universiteit Twente 3", 
         "number": 7003, 
         "scintillators": [
@@ -2360,7 +2456,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 222.040937403763, 
+                "mpv": 215.0, 
                 "radius": null
             }, 
             {
@@ -2375,11 +2471,11 @@
     }, 
     "7101": {
         "active": true, 
-        "altitude": 70.0834072260186, 
+        "altitude": 70.08, 
         "cluster": "Enschede", 
         "country": "Netherlands", 
-        "latitude": 52.273631622201, 
-        "longitude": 6.79792998326168, 
+        "latitude": 52.2736316, 
+        "longitude": 6.79793, 
         "name": "Bataafs Lyceum", 
         "number": 7101, 
         "scintillators": [
@@ -2387,14 +2483,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 200.180869345744, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 206.647178498644, 
+                "mpv": 177.0, 
                 "radius": null
             }
         ], 
@@ -2402,11 +2498,11 @@
     }, 
     "7201": {
         "active": true, 
-        "altitude": 64.1377786900848, 
+        "altitude": 64.14, 
         "cluster": "Enschede", 
         "country": "Netherlands", 
-        "latitude": 52.3688565008344, 
-        "longitude": 6.6600183694362, 
+        "latitude": 52.3688565, 
+        "longitude": 6.6600184, 
         "name": "CSG Het Noordik", 
         "number": 7201, 
         "scintillators": [
@@ -2414,14 +2510,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 386.418598539033, 
+                "mpv": 370.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 329.197658638696, 
+                "mpv": 309.0, 
                 "radius": null
             }
         ], 
@@ -2429,11 +2525,11 @@
     }, 
     "7301": {
         "active": true, 
-        "altitude": 65.0384416794404, 
+        "altitude": 65.04, 
         "cluster": "Enschede", 
         "country": "Netherlands", 
-        "latitude": 52.2745763283024, 
-        "longitude": 6.14447785438452, 
+        "latitude": 52.2745763, 
+        "longitude": 6.1444779, 
         "name": "Etty Hillesum Lyceum", 
         "number": 7301, 
         "scintillators": [
@@ -2455,7 +2551,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 232.915912382854, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -2470,11 +2566,11 @@
     }, 
     "7401": {
         "active": true, 
-        "altitude": 73.3107005022466, 
+        "altitude": 73.31, 
         "cluster": "Enschede", 
         "country": "Netherlands", 
-        "latitude": 52.1585359710273, 
-        "longitude": 6.74051168664218, 
+        "latitude": 52.158536, 
+        "longitude": 6.7405117, 
         "name": "Assink Lyceum", 
         "number": 7401, 
         "scintillators": [
@@ -2482,14 +2578,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 264.313649639769, 
+                "mpv": 244.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 254.886368787879, 
+                "mpv": 214.0, 
                 "radius": null
             }
         ], 
@@ -2497,11 +2593,11 @@
     }, 
     "8001": {
         "active": true, 
-        "altitude": 80.3541364148259, 
+        "altitude": 80.35, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.4493960547224, 
-        "longitude": 5.48796917025935, 
+        "latitude": 51.4493961, 
+        "longitude": 5.4879692, 
         "name": "Universiteit Eindhoven 1", 
         "number": 8001, 
         "scintillators": [
@@ -2509,7 +2605,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 201.721212598395, 
+                "mpv": 199.0, 
                 "radius": null
             }, 
             {
@@ -2524,11 +2620,11 @@
     }, 
     "8002": {
         "active": true, 
-        "altitude": 70.5095062647015, 
+        "altitude": 74.53, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.4779416420674, 
-        "longitude": 5.44691510074213, 
+        "latitude": 51.4779442, 
+        "longitude": 5.4469179, 
         "name": "Pleincollege Bisschop Bekkers", 
         "number": 8002, 
         "scintillators": [
@@ -2536,14 +2632,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 304.811063477519, 
+                "mpv": 263.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 283.571482666445, 
+                "mpv": 274.0, 
                 "radius": null
             }
         ], 
@@ -2551,11 +2647,11 @@
     }, 
     "8003": {
         "active": true, 
-        "altitude": 75.473186342977, 
+        "altitude": 75.47, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.4110530223427, 
-        "longitude": 5.48879651284946, 
+        "latitude": 51.411053, 
+        "longitude": 5.4887965, 
         "name": "Sint-Joriscollege", 
         "number": 8003, 
         "scintillators": [
@@ -2570,7 +2666,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 213.751011956102, 
+                "mpv": 193.0, 
                 "radius": null
             }, 
             {
@@ -2592,11 +2688,11 @@
     }, 
     "8004": {
         "active": true, 
-        "altitude": 77.9008151022717, 
+        "altitude": 89.05, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.4468654044018, 
-        "longitude": 5.49329313072848, 
+        "latitude": 51.4468907, 
+        "longitude": 5.4932927, 
         "name": "Universiteit Eindhoven 2", 
         "number": 8004, 
         "scintillators": [
@@ -2604,7 +2700,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 227.0, 
                 "radius": null
             }, 
             {
@@ -2619,11 +2715,11 @@
     }, 
     "8005": {
         "active": true, 
-        "altitude": 77.8868569983169, 
+        "altitude": 77.89, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.3716618141637, 
-        "longitude": 5.23158600954568, 
+        "latitude": 51.3716618, 
+        "longitude": 5.231586, 
         "name": "Pius X College Bladel", 
         "number": 8005, 
         "scintillators": [
@@ -2646,11 +2742,11 @@
     }, 
     "8006": {
         "active": true, 
-        "altitude": 64.8284308817238, 
+        "altitude": 61.1, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.4825880497091, 
-        "longitude": 5.48766277020957, 
+        "latitude": 51.4825872, 
+        "longitude": 5.4876607, 
         "name": "Stedelijk College Eindhoven", 
         "number": 8006, 
         "scintillators": [
@@ -2658,26 +2754,26 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 217.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 240.675347067499, 
+                "mpv": 234.0, 
                 "radius": null
             }
         ], 
         "subcluster": "Eindhoven"
     }, 
     "8007": {
-        "active": true, 
-        "altitude": 71.9940724913031, 
+        "active": false, 
+        "altitude": 71.99, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.427609737015, 
-        "longitude": 5.57622123919215, 
+        "latitude": 51.4276097, 
+        "longitude": 5.5762212, 
         "name": "Strabrecht College Geldrop", 
         "number": 8007, 
         "scintillators": [
@@ -2692,7 +2788,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 251.511367964256, 
+                "mpv": 252.0, 
                 "radius": null
             }
         ], 
@@ -2700,11 +2796,11 @@
     }, 
     "8008": {
         "active": true, 
-        "altitude": 115.744067841209, 
+        "altitude": 115.74, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.4462932950689, 
-        "longitude": 5.48509480120849, 
+        "latitude": 51.4462933, 
+        "longitude": 5.4850948, 
         "name": "Universiteit Eindhoven 3", 
         "number": 8008, 
         "scintillators": [
@@ -2712,14 +2808,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 577.315384064301, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 250.919698873586, 
+                "mpv": 374.0, 
                 "radius": null
             }
         ], 
@@ -2727,11 +2823,11 @@
     }, 
     "8009": {
         "active": true, 
-        "altitude": 68.0165327545255, 
+        "altitude": 68.02, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.4515243937563, 
-        "longitude": 5.48830752155735, 
+        "latitude": 51.4515244, 
+        "longitude": 5.4883075, 
         "name": "Universiteit Eindhoven 4", 
         "number": 8009, 
         "scintillators": [
@@ -2739,7 +2835,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 208.0, 
                 "radius": null
             }, 
             {
@@ -2754,11 +2850,11 @@
     }, 
     "8101": {
         "active": true, 
-        "altitude": 0.0, 
+        "altitude": 73.1, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 0.0, 
-        "longitude": 0.0, 
+        "latitude": 51.5417273, 
+        "longitude": 5.0840135, 
         "name": "Koning Willem II College", 
         "number": 8101, 
         "scintillators": [
@@ -2795,11 +2891,11 @@
     }, 
     "8102": {
         "active": false, 
-        "altitude": 73.1765449382365, 
+        "altitude": 73.18, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.5571444247045, 
-        "longitude": 5.07717142796905, 
+        "latitude": 51.5571444, 
+        "longitude": 5.0771714, 
         "name": "St. Odulphuslyceum Tilburg", 
         "number": 8102, 
         "scintillators": [
@@ -2814,7 +2910,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 258.373265164499, 
+                "mpv": 258.0, 
                 "radius": null
             }
         ], 
@@ -2822,11 +2918,11 @@
     }, 
     "8103": {
         "active": true, 
-        "altitude": 67.6267269691452, 
+        "altitude": 64.67, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.5615249124033, 
-        "longitude": 5.06195432737082, 
+        "latitude": 51.5615271, 
+        "longitude": 5.0619533, 
         "name": "Theresia Lyceum Tilburg", 
         "number": 8103, 
         "scintillators": [
@@ -2834,14 +2930,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 250.78178659541, 
+                "mpv": 245.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 211.103427559032, 
+                "mpv": 218.0, 
                 "radius": null
             }
         ], 
@@ -2849,11 +2945,11 @@
     }, 
     "8104": {
         "active": true, 
-        "altitude": 57.3576684016734, 
+        "altitude": 57.36, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.6349465642767, 
-        "longitude": 4.85930441889257, 
+        "latitude": 51.6349466, 
+        "longitude": 4.8593044, 
         "name": "Mgr. Frencken College", 
         "number": 8104, 
         "scintillators": [
@@ -2876,11 +2972,11 @@
     }, 
     "8105": {
         "active": true, 
-        "altitude": 67.4581831824034, 
+        "altitude": 67.46, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.5318367628815, 
-        "longitude": 5.05945681920712, 
+        "latitude": 51.5318368, 
+        "longitude": 5.0594568, 
         "name": "Mill Hill College", 
         "number": 8105, 
         "scintillators": [
@@ -2888,14 +2984,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 293.271635566125, 
+                "mpv": 286.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 276.620483226625, 
+                "mpv": 279.0, 
                 "radius": null
             }
         ], 
@@ -2903,11 +2999,11 @@
     }, 
     "8201": {
         "active": true, 
-        "altitude": 90.7347048157826, 
+        "altitude": 90.73, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.3206534118377, 
-        "longitude": 5.9780909750537, 
+        "latitude": 51.3206534, 
+        "longitude": 5.978091, 
         "name": "Bouwens van der Boije College", 
         "number": 8201, 
         "scintillators": [
@@ -2915,14 +3011,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 220.762151293527, 
+                "mpv": 204.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 213.370402249502, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -2930,11 +3026,11 @@
     }, 
     "8301": {
         "active": true, 
-        "altitude": 86.2945904508233, 
+        "altitude": 86.29, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.2560653994288, 
-        "longitude": 5.71773352341388, 
+        "latitude": 51.2560654, 
+        "longitude": 5.7177335, 
         "name": "Philips van Horne 1", 
         "number": 8301, 
         "scintillators": [
@@ -2949,7 +3045,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 257.330853101735, 
+                "mpv": 257.0, 
                 "radius": null
             }
         ], 
@@ -2957,11 +3053,11 @@
     }, 
     "8302": {
         "active": true, 
-        "altitude": 87.0389994196594, 
+        "altitude": 87.04, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.2633194453012, 
-        "longitude": 5.70949150088691, 
+        "latitude": 51.2633194, 
+        "longitude": 5.7094915, 
         "name": "Philips van Horne 2", 
         "number": 8302, 
         "scintillators": [
@@ -2984,11 +3080,11 @@
     }, 
     "8303": {
         "active": true, 
-        "altitude": 77.622690089047, 
+        "altitude": 77.62, 
         "cluster": "Eindhoven", 
         "country": "Netherlands", 
-        "latitude": 51.2636416203052, 
-        "longitude": 5.68471958927159, 
+        "latitude": 51.2636416, 
+        "longitude": 5.6847196, 
         "name": "Philips van Horne 3", 
         "number": 8303, 
         "scintillators": [
@@ -2996,7 +3092,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 187.534174003911, 
+                "mpv": 188.0, 
                 "radius": null
             }, 
             {
@@ -3011,11 +3107,11 @@
     }, 
     "11001": {
         "active": false, 
-        "altitude": 166.97696475219, 
+        "altitude": 166.98, 
         "cluster": "Cambridge", 
         "country": "United Kingdom", 
-        "latitude": 53.3809247637904, 
-        "longitude": -1.48575914778757, 
+        "latitude": 53.3809248, 
+        "longitude": -1.4857591, 
         "name": "HEP Group / Cavendish Laboratory", 
         "number": 11001, 
         "scintillators": [
@@ -3052,11 +3148,11 @@
     }, 
     "12001": {
         "active": true, 
-        "altitude": 142.926795334555, 
+        "altitude": 142.93, 
         "cluster": "Durham", 
         "country": "United Kingdom", 
-        "latitude": 54.53815584055, 
-        "longitude": -1.04764662288967, 
+        "latitude": 54.5381558, 
+        "longitude": -1.0476466, 
         "name": "Prior Pursglove College", 
         "number": 12001, 
         "scintillators": [
@@ -3093,11 +3189,11 @@
     }, 
     "13001": {
         "active": true, 
-        "altitude": 159.094864719547, 
+        "altitude": 159.09, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.4582743354895, 
-        "longitude": -2.60192390274923, 
+        "latitude": 51.4582743, 
+        "longitude": -2.6019239, 
         "name": "Bristol University", 
         "number": 13001, 
         "scintillators": [
@@ -3105,7 +3201,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 214.193762402954, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -3134,11 +3230,11 @@
     }, 
     "13002": {
         "active": true, 
-        "altitude": 116.527286942117, 
+        "altitude": 116.53, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.4895382896845, 
-        "longitude": -2.61315435923293, 
+        "latitude": 51.4895383, 
+        "longitude": -2.6131544, 
         "name": "Red Maids", 
         "number": 13002, 
         "scintillators": [
@@ -3161,11 +3257,11 @@
     }, 
     "13003": {
         "active": true, 
-        "altitude": 125.86112132296, 
+        "altitude": 125.86, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.4579354044765, 
-        "longitude": -2.60441193156848, 
+        "latitude": 51.4579354, 
+        "longitude": -2.6044119, 
         "name": "Bristol Grammar School", 
         "number": 13003, 
         "scintillators": [
@@ -3188,11 +3284,11 @@
     }, 
     "13004": {
         "active": true, 
-        "altitude": 132.979376172647, 
+        "altitude": 132.98, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.458505202703, 
-        "longitude": -2.61953108042307, 
+        "latitude": 51.4585052, 
+        "longitude": -2.6195311, 
         "name": "Clifton High School", 
         "number": 13004, 
         "scintillators": [
@@ -3215,11 +3311,11 @@
     }, 
     "13005": {
         "active": true, 
-        "altitude": 124.759863643907, 
+        "altitude": 124.76, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.5139752074251, 
-        "longitude": -2.57266474121776, 
+        "latitude": 51.5139752, 
+        "longitude": -2.5726647, 
         "name": "Filton College", 
         "number": 13005, 
         "scintillators": [
@@ -3242,11 +3338,11 @@
     }, 
     "13006": {
         "active": true, 
-        "altitude": 122.834579069167, 
+        "altitude": 122.83, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.442831473536, 
-        "longitude": -2.51832214384826, 
+        "latitude": 51.4428315, 
+        "longitude": -2.5183221, 
         "name": "Hanham Woods Academy", 
         "number": 13006, 
         "scintillators": [
@@ -3267,13 +3363,54 @@
         ], 
         "subcluster": "Bristol"
     }, 
-    "13101": {
+    "13007": {
         "active": true, 
-        "altitude": 163.413003211841, 
+        "altitude": 102.35, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.3721967257847, 
-        "longitude": -2.35960230680563, 
+        "latitude": 51.4422756, 
+        "longitude": -2.4715572, 
+        "name": "BernardLovell", 
+        "number": 13007, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Bristol"
+    }, 
+    "13101": {
+        "active": true, 
+        "altitude": 163.41, 
+        "cluster": "Bristol", 
+        "country": "United Kingdom", 
+        "latitude": 51.3721967, 
+        "longitude": -2.3596023, 
         "name": "Beechen Cliff School", 
         "number": 13101, 
         "scintillators": [
@@ -3296,11 +3433,11 @@
     }, 
     "13102": {
         "active": true, 
-        "altitude": 222.717092872597, 
+        "altitude": 222.72, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.3968867896332, 
-        "longitude": -2.36460992538407, 
+        "latitude": 51.3968868, 
+        "longitude": -2.3646099, 
         "name": "Royal High School", 
         "number": 13102, 
         "scintillators": [
@@ -3321,13 +3458,54 @@
         ], 
         "subcluster": "Bath"
     }, 
-    "13201": {
+    "13103": {
         "active": true, 
-        "altitude": 164.857155880891, 
+        "altitude": 216.39, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.5578795907895, 
-        "longitude": -1.75880784871193, 
+        "latitude": 51.3634943, 
+        "longitude": -2.3293978, 
+        "name": "RalphAllen", 
+        "number": 13103, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 216.0, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Bath"
+    }, 
+    "13201": {
+        "active": true, 
+        "altitude": 164.86, 
+        "cluster": "Bristol", 
+        "country": "United Kingdom", 
+        "latitude": 51.5578796, 
+        "longitude": -1.7588078, 
         "name": "New College", 
         "number": 13201, 
         "scintillators": [
@@ -3350,11 +3528,11 @@
     }, 
     "13301": {
         "active": true, 
-        "altitude": 126.832708116621, 
+        "altitude": 126.83, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 51.4673540136224, 
-        "longitude": -2.13362142994284, 
+        "latitude": 51.467354, 
+        "longitude": -2.1336214, 
         "name": "Sheldon School", 
         "number": 13301, 
         "scintillators": [
@@ -3369,21 +3547,171 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 497.904372223314, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
         "subcluster": "Chippenham"
     }, 
+    "13401": {
+        "active": true, 
+        "altitude": 0.0, 
+        "cluster": "Bristol", 
+        "country": "United Kingdom", 
+        "latitude": 0.0, 
+        "longitude": 0.0, 
+        "name": "Okehampton", 
+        "number": 13401, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 269.0, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Okehampton"
+    }, 
+    "13501": {
+        "active": true, 
+        "altitude": 126.26, 
+        "cluster": "Bristol", 
+        "country": "United Kingdom", 
+        "latitude": 50.4770618, 
+        "longitude": -3.5530822, 
+        "name": "Torquay Girls Grammar School", 
+        "number": 13501, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Torquay"
+    }, 
     "14001": {
         "active": true, 
-        "altitude": 204.137509074993, 
+        "altitude": 204.14, 
         "cluster": "Birmingham", 
         "country": "United Kingdom", 
-        "latitude": 52.4498801200987, 
-        "longitude": -1.92904547056437, 
+        "latitude": 52.4498801, 
+        "longitude": -1.9290455, 
         "name": "Birmingham University", 
         "number": 14001, 
+        "scintillators": [
+            {
+                "alpha": 330.64, 
+                "beta": 124.0, 
+                "height": 0.0, 
+                "mpv": null, 
+                "radius": 9.3876
+            }, 
+            {
+                "alpha": 302.42, 
+                "beta": 124.0, 
+                "height": 0.0, 
+                "mpv": 183.0, 
+                "radius": 8.66
+            }, 
+            {
+                "alpha": 330.51, 
+                "beta": 34.0, 
+                "height": 0.0, 
+                "mpv": 217.0, 
+                "radius": 2.45
+            }, 
+            {
+                "alpha": 121.28, 
+                "beta": 124.0, 
+                "height": 0.0, 
+                "mpv": 210.0, 
+                "radius": 5.6
+            }
+        ], 
+        "subcluster": "Birmingham"
+    }, 
+    "14002": {
+        "active": true, 
+        "altitude": 193.15, 
+        "cluster": "Birmingham", 
+        "country": "United Kingdom", 
+        "latitude": 52.4777486, 
+        "longitude": -1.8571519, 
+        "name": "Bordesley Green Girls School and Sixth Form", 
+        "number": 14002, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 482.0, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Birmingham"
+    }, 
+    "14003": {
+        "active": true, 
+        "altitude": 189.11, 
+        "cluster": "Birmingham", 
+        "country": "United Kingdom", 
+        "latitude": 52.4509392, 
+        "longitude": -1.9254742, 
+        "name": "King Edward VI High School for Girls", 
+        "number": 14003, 
         "scintillators": [
             {
                 "alpha": null, 
@@ -3418,11 +3746,11 @@
     }, 
     "20001": {
         "active": true, 
-        "altitude": 89.0914379647002, 
+        "altitude": 89.09, 
         "cluster": "Aarhus", 
         "country": "Denmark", 
-        "latitude": 56.1671240137441, 
-        "longitude": 10.198594628042, 
+        "latitude": 56.167124, 
+        "longitude": 10.1985946, 
         "name": "Aarhus University 1", 
         "number": 20001, 
         "scintillators": [
@@ -3437,7 +3765,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 234.687325363458, 
+                "mpv": 235.0, 
                 "radius": null
             }
         ], 
@@ -3445,11 +3773,11 @@
     }, 
     "20002": {
         "active": true, 
-        "altitude": 80.3618867564946, 
+        "altitude": 80.36, 
         "cluster": "Aarhus", 
         "country": "Denmark", 
-        "latitude": 56.1674328679305, 
-        "longitude": 10.2023598912458, 
+        "latitude": 56.1674329, 
+        "longitude": 10.2023599, 
         "name": "Aarhus University 2", 
         "number": 20002, 
         "scintillators": [
@@ -3464,7 +3792,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 192.619577068049, 
+                "mpv": 265.0, 
                 "radius": null
             }
         ], 
@@ -3472,11 +3800,11 @@
     }, 
     "20003": {
         "active": true, 
-        "altitude": 84.3813317948952, 
+        "altitude": 84.38, 
         "cluster": "Aarhus", 
         "country": "Denmark", 
-        "latitude": 56.1656108468445, 
-        "longitude": 10.2029319598813, 
+        "latitude": 56.1656108, 
+        "longitude": 10.202932, 
         "name": "Aarhus University 3", 
         "number": 20003, 
         "scintillators": [
@@ -3484,7 +3812,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 216.0, 
                 "radius": null
             }, 
             {
@@ -3499,11 +3827,11 @@
     }, 
     "70001": {
         "active": false, 
-        "altitude": 156.812884934247, 
+        "altitude": 156.81, 
         "cluster": "Karlsruhe", 
         "country": "Germany", 
-        "latitude": 49.0994916838749, 
-        "longitude": 8.43842644598621, 
+        "latitude": 49.0994917, 
+        "longitude": 8.4384264, 
         "name": "Karlsruher Institut fur Technologie", 
         "number": 70001, 
         "scintillators": [
@@ -3511,32 +3839,32 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 318.895720645388, 
+                "mpv": 319.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 271.100999952385, 
+                "mpv": 271.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 318.021478572027, 
+                "mpv": 318.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 309.911268244596, 
+                "mpv": 310.0, 
                 "radius": null
             }
         ], 
         "subcluster": "Karlsruhe"
     }, 
-    "_info": "HiSPARC station info on 2015-01-19"
+    "_info": "HiSPARC station info on 2015-09-03"
 }

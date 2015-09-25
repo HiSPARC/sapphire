@@ -170,5 +170,39 @@ class AngleBetweenTests(unittest.TestCase):
         self.assertTrue(angle == 0)
 
 
+class DistanceBetweenTests(unittest.TestCase):
+
+    """Check distance between two (x, y) cartesian coordinates"""
+
+    def test_distances(self):
+        """Check if distances are correctly calculated"""
+
+        combinations = [((0, 0, 1.6, 0), 1.6),
+                        ((-1, 0, 1, 0), 2),
+                        ((-1, 0, -1, 0), 0),
+                        ((random.uniform(1e-15, 100),) * 4, 0),
+                        ((-10, -10, 5, 5), sqrt(450))]
+        for coordinates, distance in combinations:
+            self.assertEqual(utils.distance_between(*coordinates), distance)
+            # same result if the coordinates and x, y are swapped
+            self.assertEqual(utils.distance_between(*coordinates[::-1]), distance)
+
+
+class WhichTests(unittest.TestCase):
+
+    """Check if which works"""
+
+    def test_which(self):
+        """Check existence of common command"""
+
+        utils.which('ls')
+
+    def test_non_existent_program(self):
+        """Check for error for non-existent program"""
+
+        self.assertRaises(Exception, utils.which,
+                          'a_very_unlikely_program_name_to_exist_cosmic_ray')
+
+
 if __name__ == '__main__':
     unittest.main()
