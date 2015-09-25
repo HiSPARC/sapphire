@@ -53,12 +53,12 @@ class CorsikaBatchTest(unittest.TestCase):
         mock_rundir.return_value = '/data/123_456/'
         mock_create_script.return_value = sentinel.script
         self.cb.submit_job()
-        mock_submit_job.assert_called_once_with(sentinel.script, 'his_123_456',
+        mock_submit_job.assert_called_once_with(sentinel.script, 'cor_123_456',
                                                 'generic', '-d /data/123_456/')
         # Check addition of walltime argument for long queue
         self.cb.queue = 'long'
         self.cb.submit_job()
-        mock_submit_job.assert_called_with(sentinel.script, 'his_123_456',
+        mock_submit_job.assert_called_with(sentinel.script, 'cor_123_456',
                                            'long',
                                            '-d /data/123_456/ -l walltime=96:00:00')
 
