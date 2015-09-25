@@ -10,24 +10,25 @@
 from numpy import around, convolve, ones, where
 from lazy import lazy
 
-
-FILTER_THRESHOLD = 10  # default -6 mV
-BASELINE_THRESHOLD = 17  # default -10 mV
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
 
-# Trigger windows
-PRE_TRIGGER = 400  # samples, i.e. 1000 ns
-TRIGGER = 600  # samples, i.e. 1500 ns
-POST_TRIGGER = 1400  # samples, i.e. 3500 ns
+# Trigger windows in number of samples (default windows)
+PRE_TRIGGER = 400  # i.e. 1000 ns
+TRIGGER = 600  # i.e. 1500 ns
+POST_TRIGGER = 1400  # i.e. 3500 ns
 
-# Trigger thresholds
-# HiSPARC II with baseline at 200 ADC counts.
-ADC_LOW_THRESHOLD = 253
-ADC_HIGH_THRESHOLD = 323
+# Processing thresholds in relative ADC counts
+FILTER_THRESHOLD = 10  # default -6 mV
+BASELINE_THRESHOLD = 17  # default -10 mV
+
+# Trigger thresholds in absolute ADC counts (default thresholds)
+# HiSPARC II and III (DAQ <v4) with baseline at 200 ADC counts.
+LOW_THRESHOLD = 253
+HIGH_THRESHOLD = 323
 
 # HiSPARC III with baseline at 30 ADC counts (DAQ v4).
-ADC_LOW_THRESHOLD_III = 82
-ADC_HIGH_THRESHOLD_III = 150
+LOW_THRESHOLD_III = 82
+HIGH_THRESHOLD_III = 150
 
 
 class TraceObservables(object):
@@ -108,6 +109,49 @@ class TraceObservables(object):
         integrals = where(self.traces - self.baselines[:self.n] > threshold,
                           self.traces - self.baselines[:self.n], 0).sum(axis=0)
         return integrals.tolist() + self.slave
+
+    @lazy
+    def n_peaks(self):
+        """Number of peaks in the trace
+
+        The peak threshold is defined by LOW_THRESHOLD
+
+        :return: the pulse integral in ADC count * sample.
+
+        """
+        # Make rough guess at the baseline/threshold to expect
+        if all(b < 100 for b in self.baselines[:self.n]):
+            peak_threshold = LOW_THRESHOLD_III - 30
+        else:
+            peak_threshold = LOW_THRESHOLD - 200
+        traces = self.traces - self.baselines[:self.n]
+
+        n_peaks = []
+        for trace in traces.T:
+            n_peak = 0
+            in_peak = False
+            local_minimum = 0
+            for value in trace:
+                if not in_peak:
+                    if value < local_minimum:
+                        local_minimum = value if value > 0 else 0
+                    elif value - local_minimum > peak_threshold:
+                        # enough signal over local minimum to be in a peak
+                        in_peak = True
+                        local_maximum = value
+                        n_peak += 1
+                else:
+                    if value > local_maximum:
+                        local_maximum = value
+                    elif local_maximum - value > peak_threshold:
+                        # enough signal decrease to be out of peak
+                        in_peak = False
+                        local_minimum = value if value > 0 else 0
+            n_peaks.append(n_peak)
+
+        n_peaks += self.slave
+
+        return n_peaks
 
 
 class TriggerReconstruction(object):
