@@ -10,7 +10,8 @@ from sapphire.analysis import process_traces
 class TraceObservablesTests(unittest.TestCase):
 
     def setUp(self):
-        trace = [200] * 400 + [500] + [400] * 20 + [200] * 600
+        trace = ([200] * 400 + [500] + [510] + [400] * 10 + [200] * 600 +
+                 [400] * 10 + [200])
         self.traces = array([trace, [0] * len(trace)]).T
         self.to = process_traces.TraceObservables(self.traces)
 
@@ -21,10 +22,13 @@ class TraceObservablesTests(unittest.TestCase):
         self.assertEqual(self.to.std_dev, [0, 0, -1, -1])
 
     def test_pulseheights(self):
-        self.assertEqual(self.to.pulseheights, [300, 0, -1, -1])
+        self.assertEqual(self.to.pulseheights, [310, 0, -1, -1])
 
     def test_integrals(self):
-        self.assertEqual(self.to.integrals, [300 + 200 * 20, 0, -1, -1])
+        self.assertEqual(self.to.integrals, [300 + 310 + 200 * 20, 0, -1, -1])
+
+    def test_n_peaks(self):
+        self.assertEqual(self.to.n_peaks, [2, 0, -1, -1])
 
 
 class MeanFilterTests(unittest.TestCase):
