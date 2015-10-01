@@ -47,9 +47,9 @@ def save_json(data):
 
 
 def save_csv():
-    """Get location csv data for Science Park stations"""
+    """Get location csv data for all stations"""
 
-    station_numbers = api.Network().station_numbers(subcluster=500)
+    station_numbers = api.Network().station_numbers()
     for type in ['gps', 'layout']:
         try:
             mkdir(path.join(api.LOCAL_BASE, type))
@@ -62,8 +62,11 @@ def save_csv():
             except:
                 print 'Failed to get %s data for station %d' % (type, number)
                 continue
-            with open(url.strip('/') + extsep + 'csv', 'w') as csvfile:
-                csvfile.write(data)
+            data = '\n'.join(d for d in data.split('\n')
+                             if len(d) and d[0] != '#')
+            if data:
+                with open(url.strip('/') + extsep + 'csv', 'w') as csvfile:
+                    csvfile.write(data)
 
 
 if __name__ == '__main__':
