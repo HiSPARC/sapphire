@@ -63,7 +63,7 @@ class TraceObservables(object):
         self.traces = traces
         self.n = self.traces.shape[1]
         self.missing = [-1] * (4 - self.n)
-        if not self.n in [2, 4]:
+        if self.n not in [2, 4]:
             raise Exception('Unsupported number of detectors')
 
     @lazy
