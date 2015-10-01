@@ -48,15 +48,22 @@ class TraceObservables(object):
     HiSPARC DAQ prior to v4 and also for PySPARC. Those use 25 ADC as
     threshold.
 
+    Each returned list contains at least 4 elements, if there are less than
+    4 traces the list is padded with the code for missing detectors: -1.
+
     """
 
     def __init__(self, traces):
+        """Initialize the class.
+
+        :param traces: a NumPy array of traces, ordered such that the first
+                       element is the first sample of each trace.
+
+        """
         self.traces = traces
         self.n = self.traces.shape[1]
-        self.slave = []
-        if self.n == 2:
-            self.slave = [-1, -1]
-        elif not self.n == 4:
+        self.missing = [-1] * (4 - self.n)
+        if not self.n in [2, 4]:
             raise Exception('Unsupported number of detectors')
 
     @lazy
@@ -74,7 +81,7 @@ class TraceObservables(object):
 
         """
         baselines = around(self.traces[:50].mean(axis=0)).astype('int')
-        return baselines.tolist() + self.slave
+        return baselines.tolist() + self.missing
 
     @lazy
     def std_dev(self):
@@ -84,7 +91,7 @@ class TraceObservables(object):
 
         """
         std_dev = around(self.traces[:50].std(axis=0) * 1000).astype('int')
-        return std_dev.tolist() + self.slave
+        return std_dev.tolist() + self.missing
 
     @lazy
     def pulseheights(self):
@@ -94,7 +101,7 @@ class TraceObservables(object):
 
         """
         pulseheights = self.traces.max(axis=0) - self.baselines[:self.n]
-        return pulseheights.tolist() + self.slave
+        return pulseheights.tolist() + self.missing
 
     @lazy
     def integrals(self):
@@ -108,7 +115,7 @@ class TraceObservables(object):
         threshold = BASELINE_THRESHOLD
         integrals = where(self.traces - self.baselines[:self.n] > threshold,
                           self.traces - self.baselines[:self.n], 0).sum(axis=0)
-        return integrals.tolist() + self.slave
+        return integrals.tolist() + self.missing
 
     @lazy
     def n_peaks(self):
@@ -149,16 +156,7 @@ class TraceObservables(object):
                         local_minimum = value if value > 0 else 0
             n_peaks.append(n_peak)
 
-        n_peaks += self.slave
-
-        return n_peaks
-
-
-class TriggerReconstruction(object):
-
-    """Reconstruct the sample in a trace where the trigger occurred"""
-
-    pass
+        return n_peaks + self.missing
 
 
 class MeanFilter(object):
