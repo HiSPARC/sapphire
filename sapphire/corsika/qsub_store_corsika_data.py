@@ -107,7 +107,11 @@ def run(queue):
     os.umask(002)
     logger.info('Getting todo list of seeds to convert.')
     seeds = get_seeds_todo()
-    n_jobs_to_submit = min(len(seeds), qsub.check_queue(queue))
+    n_jobs_to_submit = min(len(seeds), qsub.check_queue(queue), 50)
+    extra = ''
+    if queue == 'long':
+        extra += " -l walltime=96:00:00"
+
     logger.info('Submitting jobs for %d simulations.' % n_jobs_to_submit)
     try:
         for _ in xrange(n_jobs_to_submit):
@@ -115,7 +119,7 @@ def run(queue):
             command = store_command(seed)
             script = SCRIPT_TEMPLATE.format(command=command, datadir=DATADIR)
             logger.info('Submitting job for %s.' % seed)
-            qsub.submit_job(script, seed, queue)
+            qsub.submit_job(script, seed, queue, extra)
             append_queued_seeds([seed])
     except KeyError:
         logger.error('Out of seeds!')
