@@ -122,8 +122,10 @@ class API(object):
             localpath = path.join(LOCAL_BASE,
                                   urlpath.strip('/') + extsep + 'csv')
             try:
-                data = genfromtxt(localpath, delimiter='\t', dtype=None,
-                                  names=names)
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore')
+                    data = genfromtxt(localpath, delimiter='\t', dtype=None,
+                                      names=names)
             except:
                 raise Exception('Couldn\'t get requested data from server, '
                                 'nor from local data.')
