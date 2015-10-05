@@ -1,4 +1,4 @@
-"""Data analysis
+"""Perform common data analysis tasks on HiSPARC data.
 
 This package contains modules for performing various analysis tasks:
 

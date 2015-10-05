@@ -14,6 +14,7 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
+   :includehidden:
 
    installation
    tutorial
@@ -27,4 +28,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

@@ -1,4 +1,4 @@
-""" HiSPARC cluster definitions
+""" Define HiSPARC detectors, stations and clusters.
 
     The BaseCluster class defines a HiSPARC cluster consisting of one or
     more stations.  The Station class defines a HiSPARC station,

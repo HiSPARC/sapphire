@@ -1,4 +1,4 @@
-""" Fetch events and other data from the event summary data (ESD)
+""" Fetch events and other data from the event summary data (ESD).
 
     This module enables you to access the event summary data.
 

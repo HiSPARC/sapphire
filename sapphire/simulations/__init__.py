@@ -1,4 +1,4 @@
-"""Simulations
+"""Perform common simulation tasks.
 
 This package contains modules for performing simulations:
 

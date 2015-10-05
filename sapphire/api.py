@@ -1,4 +1,4 @@
-""" HiSPARC API interface
+""" Access the HiSPARC public database API.
 
     This provides easy classes and functions to access the HiSPARC
     publicdb API. This takes care of the url retrieval and conversion

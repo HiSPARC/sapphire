@@ -1,5 +1,5 @@
-Module for working with the Stoomboot facilities
-================================================
+Nikhef Stoomboot facilities
+===========================
 
 .. automodule:: sapphire.qsub
    :members:
