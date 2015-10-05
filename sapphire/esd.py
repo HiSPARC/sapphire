@@ -14,6 +14,7 @@
 """
 import urllib2
 import urllib
+from httplib import BadStatusLine
 import csv
 import os.path
 import calendar
@@ -169,7 +170,11 @@ def download_data(file, group, station_number, start=None, end=None,
     else:
         raise ValueError("Data type not recognized.")
 
-    data = urllib2.urlopen(url)
+    try:
+        data = urllib2.urlopen(url)
+    except BadStatusLine:
+        # Unexplained transient error, retry once
+        data = urllib2.urlopen(url)
 
     # keep track of event timestamp within [start, end] interval for
     # progressbar
@@ -246,7 +251,11 @@ def download_coincidences(file, cluster=None, stations=None,
     table = _get_or_create_coincidences_tables(file, station_groups)
     station_numbers = _get_or_create_station_numbers(table)
 
-    data = urllib2.urlopen(url, timeout=1800)
+    try:
+        data = urllib2.urlopen(url, timeout=1800)
+    except BadStatusLine:
+        # Unexplained transient error, retry once
+        data = urllib2.urlopen(url, timeout=1800)
 
     # keep track of event timestamp within [start, end] interval for
     # progressbar
