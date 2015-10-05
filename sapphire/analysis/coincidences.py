@@ -537,7 +537,7 @@ class CoincidencesESD(Coincidences):
         group.
 
         If you want to process the preliminary results: they are stored in the
-        attributes :attr:`_src_c_index` and :attr:`_src_timestamps`.  The
+        attributes ``_src_c_index`` and ``_src_timestamps``.  The
         former is a list of coincidences, which each consist of a list with
         indexes into the timestamps array as a pointer to the events making up
         the coincidence. The latter is a list of tuples.  Each tuple consists
