@@ -11,13 +11,13 @@ from sapphire import api
 STATION = 501
 
 
-@unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class APITests(unittest.TestCase):
     def setUp(self):
         self.api = api.API()
 
     @patch.object(api, 'urlopen')
     def test_no_check_connection(self, mock_urlopen):
+        self.assertTrue(self.api.check_connection())
         mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
         self.assertFalse(self.api.check_connection())
 
@@ -27,6 +27,19 @@ class APITests(unittest.TestCase):
         self.assertRaises(Exception, self.api._retrieve_url, '')
         mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
         self.assertRaises(Exception, self.api._retrieve_url, '')
+
+    @patch.object(api, 'urlopen')
+    def test__get_csv(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1297956608\t52.3414237\t4.8807081\t43.32'
+        self.assertEqual(self.api._get_csv('gps/2/', allow_stale=False).tolist(),
+                         [(1297956608, 52.3414237, 4.8807081, 43.32)])
+        mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
+        self.assertRaises(Exception, self.api._get_csv, 'gps/2/', allow_stale=False)
+        self.assertRaises(Exception, self.api._get_csv, 'gps/0/')
+        with warnings.catch_warnings(record=True) as warned:
+            self.assertEqual(self.api._get_csv('gps/2/', allow_stale=True).tolist()[0],
+                             (1297956608, 52.3414237, 4.8807081, 43.32))
+        self.assertEqual(len(warned), 1)
 
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
