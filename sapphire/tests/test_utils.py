@@ -1,9 +1,8 @@
 import unittest
 import types
 from StringIO import StringIO
-from math import exp, sqrt
 
-from numpy import pi, random
+from numpy import pi, random, exp, sqrt
 import progressbar
 
 from sapphire import utils
@@ -80,7 +79,27 @@ class InBaseTests(unittest.TestCase):
         self.assertEqual(utils.round_in_base(3, 4), 4)
 
 
+class ActiveIndexTests(unittest.TestCase):
+
+    def test_get_active_index(self):
+        """Test if the bisection returns the correct index
+
+        - If timestamp is before the first timestamp return index for
+          first item
+        - If timestamp is after last timestamp return index for last item
+        - If timestamp is in the range return index of rightmost value
+          equal or less than the timestamp
+
+        """
+        timestamps = [1., 2., 3., 4.]
+
+        for idx, ts in [(0, 0.), (0, 1.), (0, 1.5), (1, 2.), (1, 2.1), (3, 4.),
+                        (3, 5.)]:
+            self.assertEqual(utils.get_active_index(timestamps, ts), idx)
+
+
 class GaussTests(unittest.TestCase):
+
     """Test against explicit Gaussian"""
 
     def gaussian(self, x, N, mu, sigma):
@@ -96,25 +115,93 @@ class GaussTests(unittest.TestCase):
         x = 1e5
         self.assertEqual(utils.gauss(x, N, mu, sigma), 0.)
 
+    def test_gauss_array(self):
+        """Test for arrays of random values"""
+
+        n = 10000
+        x, N, mu = random.uniform(-100, 100, size=(3, n))
+        # sigma can not be 0
+        sigma = random.uniform(1e-15, 100, size=n)
+        value1 = utils.gauss(x, N, mu, sigma)
+        value2 = self.gaussian(x, N, mu, sigma)
+        self.assertTrue(all(abs(value1 - value2) < 1e-10))
+
 
 class AngleBetweenTests(unittest.TestCase):
 
+    """Check opening angle between two directions"""
+
     def test_zeniths(self):
-        for zenith in random.uniform(0, pi / 2, 10):
-            self.assertAlmostEqual(utils.angle_between(zenith, 0, 0, 0), zenith)
-            self.assertAlmostEqual(utils.angle_between(0, 0, zenith, 0), zenith)
+        """One of the directions is the Zenith"""
+
+        n = 10000
+        zenith = random.uniform(0, pi / 2, n)
+        azimuth1 = random.uniform(-pi, pi, n)
+        azimuth2 = random.uniform(-pi, pi, n)
+        angle = utils.angle_between(zenith, azimuth1, 0, azimuth2)
+        self.assertTrue(all(abs(angle - zenith) < 1e-15))
+        angle = utils.angle_between(0, azimuth1, zenith, azimuth2)
+        self.assertTrue(all(abs(angle - zenith) < 1e-15))
 
     def test_azimuths(self):
-        # Set both zeniths to pi/2 to give azimuth full effect.
-        z = pi / 2
-        for azimuth in random.uniform(-pi, pi, 20):
-            self.assertAlmostEqual(utils.angle_between(z, azimuth, z, 0), abs(azimuth))
-            self.assertAlmostEqual(utils.angle_between(z, 0, z, azimuth), abs(azimuth))
+        """Both directions at the horizon"""
+
+        zenith = pi / 2
+        azimuth = random.uniform(-pi, pi, 10000)
+        angle = utils.angle_between(zenith, azimuth, zenith, 0)
+        self.assertTrue(all(abs(angle - abs(azimuth)) < 1e-10))
+        angle = utils.angle_between(zenith, 0, zenith, azimuth)
+        self.assertTrue(all(abs(angle - abs(azimuth)) < 1e-10))
 
     def test_no_zenith(self):
-        for azimuth in random.uniform(-pi, pi, 20):
-            self.assertAlmostEqual(utils.angle_between(0, azimuth, 0, 0), 0)
-            self.assertAlmostEqual(utils.angle_between(0, 0, 0, azimuth), 0)
+        """Azimuths are irrelevant when from the Zenith"""
+
+        azimuth1 = random.uniform(-pi, pi, 10000)
+        azimuth2 = random.uniform(-pi, pi, 10000)
+        angle = utils.angle_between(0, azimuth1, 0, azimuth2)
+        self.assertTrue(all(angle == 0))
+
+    def test_single_values(self):
+        """Other tests use arrays, check if single values also work"""
+
+        zenith = random.uniform(0, pi / 2)
+        azimuth = random.uniform(-pi, pi)
+        angle = utils.angle_between(zenith, azimuth, zenith, azimuth)
+        self.assertTrue(angle == 0)
+
+
+class DistanceBetweenTests(unittest.TestCase):
+
+    """Check distance between two (x, y) cartesian coordinates"""
+
+    def test_distances(self):
+        """Check if distances are correctly calculated"""
+
+        combinations = [((0, 0, 1.6, 0), 1.6),
+                        ((-1, 0, 1, 0), 2),
+                        ((-1, 0, -1, 0), 0),
+                        ((random.uniform(1e-15, 100),) * 4, 0),
+                        ((-10, -10, 5, 5), sqrt(450))]
+        for coordinates, distance in combinations:
+            self.assertEqual(utils.distance_between(*coordinates), distance)
+            # same result if the coordinates and x, y are swapped
+            self.assertEqual(utils.distance_between(*coordinates[::-1]), distance)
+
+
+class WhichTests(unittest.TestCase):
+
+    """Check if which works"""
+
+    def test_which(self):
+        """Check existence of common command"""
+
+        utils.which('ls')
+
+    def test_non_existent_program(self):
+        """Check for error for non-existent program"""
+
+        self.assertRaises(Exception, utils.which,
+                          'a_very_unlikely_program_name_to_exist_cosmic_ray')
 
 
 if __name__ == '__main__':

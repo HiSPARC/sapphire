@@ -5,7 +5,10 @@ The module contains some commonly functions and classes.
 """
 from __future__ import division
 
-from numpy import floor, ceil, round, arccos, cos, sin, pi
+from bisect import bisect_right
+from distutils.spawn import find_executable
+
+from numpy import floor, ceil, round, arcsin, sin, pi, sqrt
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
@@ -60,6 +63,20 @@ def round_in_base(value, base):
     return base * round(value / base)
 
 
+def get_active_index(values, value):
+    """Get the index where the value fits.
+
+    :param values: sorted list of values (e.g. list of timestamps).
+    :param value: value for which to find the position (e.g. a timestamp).
+    :return: index into the values list.
+
+    """
+    idx = bisect_right(values, value, lo=0)
+    if idx == 0:
+        idx = 1
+    return idx - 1
+
+
 def gauss(x, N, mu, sigma):
     """Gaussian distribution
 
@@ -82,15 +99,43 @@ def norm_angle(angle):
 def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     """Calculate the angle between two (zenith, azimuth) coordinates
 
-    Using the spherical law of cosines,
-    from: http://www.movable-type.co.uk/scripts/latlong.html#cosine-law
+    Using the haversine formula,
+    from: http://www.movable-type.co.uk/scripts/latlong.html
 
     :param zenith#: Zenith parts of the coordinates, in radians (0, pi/2).
     :param azimuth#: Azimuth parts of the coordinates, in radians (-pi, pi).
     :return: Angle between the two coordinates.
 
     """
-    lat1 = pi / 2 - zenith1
-    lat2 = pi / 2 - zenith2
-    return arccos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) *
-                  cos(azimuth1 - azimuth2))
+    dlat = zenith1 - zenith2
+    dlon = azimuth2 - azimuth1
+    a = (sin(dlat / 2) ** 2 + sin(zenith1) * sin(zenith2) * sin(dlon / 2) ** 2)
+    angle = 2 * arcsin(sqrt(a))
+
+    return angle
+
+
+def distance_between(x1, y1, x2, y2):
+    """Calculate the distance between two (x, y) coordinates
+
+    :param x#: x parts of the coordinates.
+    :param y#: y parts of the coordinates.
+    :return: distance between the two coordinates.
+
+    """
+    d = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+    return d
+
+
+def which(program):
+    """Check if a command line program is available
+
+    An Exception is raised if the program is not available.
+
+    :param program: name or program to check for, e.g. 'wget'.
+
+    """
+    path = find_executable(program)
+    if not path:
+        raise Exception('The program %s is not available.' % program)

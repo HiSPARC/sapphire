@@ -5,6 +5,7 @@ from mock import patch, ANY, sentinel, MagicMock
 import tables
 
 from sapphire import esd, api
+from sapphire.tests.validate_results import validate_results
 
 from esd_load_data import (create_tempfile_path, perform_load_data,
                            test_data_path, test_data_coincidences_path,
@@ -80,7 +81,8 @@ class ESDTest(unittest.TestCase):
                           type='bad')
 
     def test_start_end_values(self):
-        """ Check for RuntimeError for impossible end=value with start=None"""
+        """Check for RuntimeError for impossible end=value with start=None"""
+
         self.assertRaises(RuntimeError, esd.download_data, None, None, 501,
                           start=None, end='a_value')
         self.assertRaises(RuntimeError, esd.download_coincidences, None,
@@ -91,13 +93,14 @@ class ESDTest(unittest.TestCase):
 
         output_path = create_tempfile_path()
         perform_load_data(output_path)
-        self.validate_results(test_data_path, output_path)
+        validate_results(self, test_data_path, output_path)
         os.remove(output_path)
 
     @patch.object(esd, 'download_data')
     @patch.object(tables, 'open_file')
     def test_quick_download(self, mock_open_file, mock_download_data):
-        """ Test esd.quick_download() """
+        """Test esd.quick_download()"""
+
         esd.quick_download(501)
         mock_open_file.assert_called_once_with('data1.h5', 'w')
         mock_download_data.assert_called_once_with(ANY, None, 501, None)
@@ -105,59 +108,28 @@ class ESDTest(unittest.TestCase):
     @unittest.skipUnless(api.API.check_connection(),
                          "Internet connection required")
     def test_download_data(self):
-        """ Download data and validate results """
+        """Download data and validate results"""
+
         output_path = create_tempfile_path()
         perform_esd_download_data(output_path)
-        self.validate_results(test_data_path, output_path)
+        validate_results(self, test_data_path, output_path)
         os.remove(output_path)
 
     @unittest.skipUnless(api.API.check_connection(),
                          "Internet connection required")
     def test_download_coincidences(self):
-        """ Download coincidence data from esd and validate results """
+        """Download coincidence data from esd and validate results
+
+        This test fails when new stations are added because
+        s_index is populated with all HiSPARC stations, just in case
+        any are in a coincidence. So s_index will need to be updated.
+
+        """
         output_path = create_tempfile_path()
         perform_download_coincidences(output_path)
-        self.validate_results(test_data_coincidences_path, output_path)
+        validate_results(self, test_data_coincidences_path, output_path)
         os.remove(output_path)
 
-    def validate_results(self, expected_path, actual_path):
-        """Validate simulation results"""
-
-        with tables.open_file(expected_path) as expected_file:
-            with tables.open_file(actual_path) as actual_file:
-                self.validate_tables(expected_file, actual_file)
-                self.validate_arrays(expected_file, actual_file)
-
-    def validate_tables(self, expected_file, actual_file):
-        """Verify that all Tables in hdf5 file are identical"""
-
-        for expected_node in expected_file.walk_nodes('/', 'Table'):
-            try:
-                actual_node = actual_file.get_node(expected_node)
-
-                for colname in expected_node.colnames:
-                    expected_col = expected_node.col(colname)
-                    actual_col = actual_node.col(colname)
-                    if expected_col.shape == actual_col.shape:
-                        self.assertTrue((expected_col == actual_col).all())
-                    else:
-                        self.fail("Columns do not have the same length.")
-            except (NameError):
-                self.fail("node %s does not exist in datafile", expected_node)
-
-    def validate_arrays(self, expected_file, actual_file):
-        """Verify that all VLArrays in hdf5 file are identical"""
-
-        for expected_node in expected_file.walk_nodes('/', 'VLArray'):
-            try:
-                actual_node = actual_file.get_node(expected_node)
-
-                if expected_node.shape == actual_node.shape:
-                    self.assertTrue((expected_node == actual_node))
-                else:
-                    self.fail("Arrays do not have the same length.")
-            except (NameError):
-                self.fail("node %s does not exist in datafile", expected_node)
 
 if __name__ == '__main__':
     unittest.main()

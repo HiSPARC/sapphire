@@ -448,8 +448,8 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
     Read lines from the CSV download and store the coincidence and events.
     Return the coincidence timestamp to keep track of the progress.
 
-    :param coincidence: text lines from the CSV file for one coincidence
     :param file: pytables file for storage
+    :param coincidence: text lines from the CSV file for one coincidence
     :return: coincidence timestamp
 
     """

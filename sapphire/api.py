@@ -1,4 +1,4 @@
-""" HiSPARC api interface
+""" HiSPARC API interface
 
     This provides easy classes and functions to access the HiSPARC
     publicdb API. This takes care of the url retrieval and conversion
@@ -9,38 +9,37 @@
     .. code-block:: python
 
         >>> from sapphire import Station
-        >>> stations = [5, 301, 3102, 504, 7101, 8008, 13005]
-        >>> clusters = [Station(station).cluster.lower()
-        ...             for station in stations]
-        >>> station_groups = ['/hisparc/cluster_%s/station_%d' % (c, s)
-        ...                   for c, s in zip(clusters, stations)]
-        >>> station_groups
-        [u'/hisparc/cluster_amsterdam/station_5',
-         u'/hisparc/cluster_amsterdam/station_301',
-         u'/hisparc/cluster_leiden/station_3102',
-         u'/hisparc/cluster_amsterdam/station_504',
-         u'/hisparc/cluster_enschede/station_7101',
-         u'/hisparc/cluster_eindhoven/station_8008',
-         u'/hisparc/cluster_bristol/station_13005']
+        >>> stations = [5, 3102, 504, 7101, 8008, 13005]
+        >>> clusters = [Station(station).cluster for station in stations]
+        >>> for station, cluster in zip(stations, clusters):
+        ...     print 'Station %d is in cluster %s.' % (station, cluster)
+        Station 5 is in cluster Amsterdam.
+        Station 3102 is in cluster Leiden.
+        Station 504 is in cluster Amsterdam.
+        Station 7101 is in cluster Enschede.
+        Station 8008 is in cluster Eindhoven.
+        Station 13005 is in cluster Bristol.
 
 """
 import logging
 import datetime
 import json
 import warnings
-from os import path
+from os import path, extsep
 from urllib2 import urlopen, HTTPError, URLError
 from StringIO import StringIO
-from bisect import bisect_right
 
 from lazy import lazy
 from numpy import genfromtxt, atleast_1d
+
+from .utils import get_active_index
 
 logger = logging.getLogger('api')
 
 API_BASE = 'http://data.hisparc.nl/api/'
 SRC_BASE = 'http://data.hisparc.nl/show/source/'
-JSON_FILE = path.join(path.dirname(__file__), 'data/hisparc_stations.json')
+LOCAL_BASE = path.join(path.dirname(__file__), 'data')
+JSON_FILE = path.join(LOCAL_BASE, 'hisparc_stations.json')
 
 
 class API(object):
@@ -89,6 +88,7 @@ class API(object):
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
+        'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
     @classmethod
@@ -106,7 +106,7 @@ class API(object):
         return data
 
     @classmethod
-    def _get_csv(cls, urlpath, names=None):
+    def _get_csv(cls, urlpath, names=None, allow_stale=True):
         """Retrieve a Source CSV from the HiSPARC Public Database
 
         :param urlpath: the csv urlpath to retrieve
@@ -114,9 +114,29 @@ class API(object):
         :return: the data returned as array.
 
         """
-        csv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
-        data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
-                          names=names)
+        try:
+            csv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
+        except Exception:
+            if not allow_stale:
+                raise
+            localpath = path.join(LOCAL_BASE,
+                                  urlpath.strip('/') + extsep + 'csv')
+            try:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore')
+                    data = genfromtxt(localpath, delimiter='\t', dtype=None,
+                                      names=names)
+            except:
+                raise Exception('Couldn\'t get requested data from server, '
+                                'nor from local data.')
+            warnings.warn('Couldn\'t get values from the server, using '
+                          'local data. Possibly outdated.',
+                          UserWarning)
+        else:
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore')
+                data = genfromtxt(StringIO(csv_data), delimiter='\t',
+                                  dtype=None, names=names)
 
         return atleast_1d(data)
 
@@ -154,22 +174,9 @@ class API(object):
             return False
         return True
 
-    @staticmethod
-    def get_active_index(timestamps, timestamp):
-        """Get the index where the timestamp fits.
-
-        :param timestamps: list of timestamps.
-        :param timestamp: timestamp for which to find the position.
-        :return: index into the timestamps list.
-
-        """
-        idx = bisect_right(timestamps, timestamp, lo=0)
-        if idx == 0:
-            idx = 1
-        return idx - 1
-
 
 class Network(API):
+
     """Get info about the network (countries/clusters/subclusters/stations)"""
 
     _all_countries = None
@@ -316,7 +323,7 @@ class Network(API):
             stations = self.stations(country=country, cluster=cluster,
                                      subcluster=subcluster)
             return [station['number'] for station in stations]
-        except Exception, e:
+        except Exception:
             if not allow_stale:
                 raise
             # Try getting the station info from the JSON.
@@ -332,12 +339,13 @@ class Network(API):
                 with open(JSON_FILE) as data:
                     stations = [int(s) for s in json.load(data).keys()
                                 if s != '_info' and start <= int(s) < end]
-                warnings.warn('Couldnt get values from the server, using '
-                              'hard-coded values. Possibly outdated.',
+                warnings.warn('Couldn\'t get values from the server, using '
+                              'local data. Possibly outdated.',
                               UserWarning)
                 return sorted(stations)
             except:
-                raise e
+                raise Exception('Couldn\'t get requested data from server, '
+                                'nor from local data.')
 
     def nested_network(self):
         """Get a nested list of the full network"""
@@ -429,6 +437,7 @@ class Network(API):
 
 
 class Station(API):
+
     """Access data about a single station"""
 
     def __init__(self, station, date=None, allow_stale=True):
@@ -448,19 +457,19 @@ class Station(API):
                         month=date.month, day=date.day))
         try:
             self.info = self._get_json(path)
-        except Exception, e:
-            if allow_stale:
-                # Try getting the station info from the JSON.
-                try:
-                    with open(JSON_FILE) as data:
-                        self.info = json.load(data)[str(station)]
-                    warnings.warn('Couldnt get values from the server, using '
-                                  'hard-coded values. Not all info available.',
-                                  UserWarning)
-                except:
-                    raise e
-            else:
+        except Exception:
+            if not allow_stale:
                 raise
+            # Try getting the station info from the JSON.
+            try:
+                with open(JSON_FILE) as data:
+                    self.info = json.load(data)[str(station)]
+                warnings.warn('Couldn\'t get values from the server, using '
+                              'hard-coded values. Possibly outdated.',
+                              UserWarning)
+            except:
+                raise Exception('Couldn\'t get requested data from server, '
+                                'nor from local data.')
 
     def country(self):
         return self.info['country']
@@ -689,7 +698,7 @@ class Station(API):
 
         """
         voltages = self.voltages
-        idx = self.get_active_index(voltages['timestamp'], timestamp)
+        idx = get_active_index(voltages['timestamp'], timestamp)
         voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
@@ -712,7 +721,7 @@ class Station(API):
 
         """
         currents = self.currents
-        idx = self.get_active_index(currents['timestamp'], timestamp)
+        idx = get_active_index(currents['timestamp'], timestamp)
         current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
@@ -731,15 +740,46 @@ class Station(API):
         """Get GPS location for specific timestamp
 
         :param timestamp: timestamp for which the value is valid.
-        :return: list of values for given timestamp.
+        :return: dictionary with the values for given timestamp.
 
         """
         locations = self.gps_locations
-        idx = self.get_active_index(locations['timestamp'], timestamp)
+        idx = get_active_index(locations['timestamp'], timestamp)
         location = {'latitude': locations[idx]['latitude'],
                     'longitude': locations[idx]['longitude'],
                     'altitude': locations[idx]['altitude']}
         return location
+
+    @lazy
+    def station_layouts(self):
+        """Get the station layout data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp',
+                   'radius1', 'alpha1', 'height1', 'beta1',
+                   'radius2', 'alpha2', 'height2', 'beta2',
+                   'radius3', 'alpha3', 'height3', 'beta3',
+                   'radius4', 'alpha4', 'height4', 'beta4')
+
+        base = self.src_urls['layout']
+        path = base.format(station_number=self.station)
+        return self._get_csv(path, names=columns)
+
+    def station_layout(self, timestamp):
+        """Get station layout data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: list of coordinates for given timestamp.
+
+        """
+        station_layouts = self.station_layouts
+        idx = get_active_index(station_layouts['timestamp'], timestamp)
+        station_layout = [[station_layouts[idx]['%s%d' % (c, i)]
+                           for c in ('radius', 'alpha', 'height', 'beta')]
+                          for i in range(1, 5)]
+        return station_layout
 
     @lazy
     def detector_timing_offsets(self):
@@ -761,8 +801,8 @@ class Station(API):
 
         """
         detector_timing_offsets = self.detector_timing_offsets
-        idx = self.get_active_index(detector_timing_offsets['timestamp'],
-                                    timestamp)
+        idx = get_active_index(detector_timing_offsets['timestamp'],
+                               timestamp)
         detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
                                   for i in range(1, 5)]
         return detector_timing_offset

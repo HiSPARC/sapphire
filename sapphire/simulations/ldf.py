@@ -4,19 +4,21 @@ densities and for fitting to data.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire import NkgLdfSimulation, ScienceParkCluster
+    >>> from sapphire import NkgLdfSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
-                           max_energy=1e21, cluster=cluster,
-                           datafile=data, N=200)
-    sim.run()
+    >>> sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
+    ...                        max_energy=1e21, cluster=cluster,
+    ...                        datafile=data, N=200)
+    >>> sim.run()
 
 """
+import warnings
+
 from scipy.special import gamma
 from numpy import pi, sin, cos, sqrt, random, arctan2, log10
 
@@ -55,13 +57,13 @@ class BaseLdfSimulation(HiSPARCSimulation):
         assumes the shower to come from the Zenith.
 
         :return: dictionary with shower parameters: core_pos
-                  (x, y-tuple).
+                 (x, y-tuple).
 
         """
         r = self.max_core_distance
         giga = int(1e9)
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             energy = self.generate_energy(self.min_energy, self.max_energy)
             size = 10 ** (log10(energy) - 15 + 4.8)
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
@@ -192,7 +194,7 @@ class EllipsLdfSimulation(BaseLdfSimulation):
     def generate_shower_parameters(self):
         """Generate shower parameters, i.e. core position
 
-        For the elliptic LDF  both the core position and the zenith angle
+        For the elliptic LDF both the core position and the zenith angle
         are relevant.
 
         :return: dictionary with shower parameters: core_pos
@@ -202,7 +204,7 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         r = self.max_core_distance
         giga = int(1e9)
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             energy = self.generate_energy(self.min_energy, self.max_energy)
             size = 10 ** (log10(energy) - 15 + 4.8)
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
@@ -482,8 +484,9 @@ class EllipsLdf(KascadeLdf):
         term1 = k / r0
         term2 = 1 + k / r0
         muoncorr = 1 + k / (11.24 * r0)  # See warning in docstring.
-
-        return Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
+        with warnings.catch_warnings(record=True):
+            p = Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
+        return p
 
     def _c(self, s1, s2):
         """Normalization of the LDF

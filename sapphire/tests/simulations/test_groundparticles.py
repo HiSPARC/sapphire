@@ -3,12 +3,14 @@ import unittest
 import os
 
 import tables
-from numpy import pi, sqrt
+from numpy import pi, sqrt, random, testing
 
 from sapphire.clusters import SingleDiamondStation
+
 from sapphire.simulations.groundparticles import \
     (GroundParticlesSimulation, GroundParticlesGammaSimulation,
-     DetectorBoundarySimulation)
+     DetectorBoundarySimulation, FixedCoreDistanceSimulation)
+
 
 
 self_path = os.path.dirname(__file__)
@@ -166,6 +168,14 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
         for input, expected in combs:
             result = self.simulation.get_line_boundary_eqs(*input)
             self.assertEqual(result, expected)
+
+
+class FixedCoreDistanceSimulationTest(unittest.TestCase):
+
+    def test_fixed_core_distance(self):
+        r = random.uniform(1e-15, 4000, size=300)
+        x, y = FixedCoreDistanceSimulation.generate_core_position(r)
+        testing.assert_allclose(sqrt(x ** 2 + y ** 2), r, 1e-11)
 
 
 if __name__ == '__main__':

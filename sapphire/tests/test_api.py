@@ -1,5 +1,7 @@
 import unittest
 from datetime import date
+from urllib2 import HTTPError, URLError
+import warnings
 
 from mock import patch, sentinel
 
@@ -13,36 +15,40 @@ class APITests(unittest.TestCase):
     def setUp(self):
         self.api = api.API()
 
-    def test_get_active_index(self):
-        """Test if the bisection returns the correct index
+    @patch.object(api, 'urlopen')
+    def test_no_check_connection(self, mock_urlopen):
+        self.assertTrue(self.api.check_connection())
+        mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
+        self.assertFalse(self.api.check_connection())
 
-        - If timestamp is before the first timestamp return index for
-          first item
-        - If timestamp is after last timestamp return index for last item
-        - If timestamp is in the range return index of rightmost value
-          equal or less than the timestamp
+    @patch.object(api, 'urlopen')
+    def test__retrieve_url(self, mock_urlopen):
+        mock_urlopen.return_value.read.side_effect = HTTPError(None, None, None, None, None)
+        self.assertRaises(Exception, self.api._retrieve_url, '')
+        mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
+        self.assertRaises(Exception, self.api._retrieve_url, '')
 
-        """
-        timestamps = [1., 2., 3., 4.]
-
-        for idx, ts in [(0, 0.), (0, 1.), (0, 1.5), (1, 2.), (1, 2.1), (3, 4.),
-                        (3, 5.)]:
-            self.assertEqual(self.api.get_active_index(timestamps, ts), idx)
+    @patch.object(api, 'urlopen')
+    def test__get_csv(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1297956608\t52.3414237\t4.8807081\t43.32'
+        self.assertEqual(self.api._get_csv('gps/2/', allow_stale=False).tolist(),
+                         [(1297956608, 52.3414237, 4.8807081, 43.32)])
+        mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
+        self.assertRaises(Exception, self.api._get_csv, 'gps/2/', allow_stale=False)
+        self.assertRaises(Exception, self.api._get_csv, 'gps/0/')
+        with warnings.catch_warnings(record=True) as warned:
+            self.assertEqual(self.api._get_csv('gps/2/', allow_stale=True).tolist()[0],
+                             (1297956608, 52.3414237, 4.8807081, 43.32))
+        self.assertEqual(len(warned), 1)
 
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class NetworkTests(unittest.TestCase):
     def setUp(self):
         self.network = api.Network()
+        self.keys = ['name', 'number']
 
-    def test_keys(self):
-        keys = ['name', 'number']
-        self.assertEqual(self.network.countries()[0].keys(), keys)
-        self.assertEqual(self.network.clusters()[0].keys(), keys)
-        self.assertEqual(self.network.subclusters()[0].keys(), keys)
-        self.assertEqual(self.network.stations()[0].keys(), keys)
-        self.assertEqual(self.network.stations_with_data(2004, 1, 9)[0].keys(), keys)
-        self.assertEqual(self.network.stations_with_weather(2004, 10, 9)[0].keys(), keys)
+    def test_nested_network(self):
         nested_network = self.network.nested_network()
         self.assertEqual(nested_network[0].keys(), ['clusters', 'name', 'number'])
         self.assertEqual(nested_network[0]['clusters'][0].keys(),
@@ -50,22 +56,38 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual(nested_network[0]['clusters'][0]['subclusters'][0].keys(),
                          ['stations', 'name', 'number'])
 
+    def test_lazy_countries(self):
+        self.laziness_of_method('countries')
+
     def test_countries(self):
         self.network.countries()
         self.assertEqual(self.network._all_countries, self.network.countries())
+        self.assertEqual(self.network.countries()[0].keys(), self.keys)
+
+    def test_lazy_clusters(self):
+        self.laziness_of_method('clusters')
 
     def test_clusters(self):
         self.network.clusters()
         self.assertEqual(self.network._all_clusters, self.network.clusters())
+        self.assertEqual(self.network.clusters()[0].keys(), self.keys)
         self.assertEqual(self.network.clusters(country=70000)[0]['number'], 70000)
+
+    def test_bad_clusters(self):
         bad_number = 1
         self.assertRaises(Exception, self.network.clusters, country=bad_number)
+
+    def test_lazy_subclusters(self):
+        self.laziness_of_method('subclusters')
 
     def test_subcluster(self):
         self.network.subclusters()
         self.assertEqual(self.network._all_subclusters, self.network.subclusters())
+        self.assertEqual(self.network.subclusters()[0].keys(), self.keys)
         self.assertEqual(self.network.subclusters(country=70000)[0]['number'], 70000)
         self.assertEqual(self.network.subclusters(cluster=70000)[0]['number'], 70000)
+
+    def test_bad_subcluster(self):
         bad_number = 1
         self.assertRaises(Exception, self.network.subclusters, country=bad_number)
         self.assertRaises(Exception, self.network.subclusters, cluster=bad_number)
@@ -109,6 +131,25 @@ class NetworkTests(unittest.TestCase):
                                               cluster=sentinel.cluster,
                                               subcluster=sentinel.subcluster)
 
+    @patch.object(api.Network, '_get_json')
+    def test_no_stale_station_numbers(self, mock_get_json):
+        mock_get_json.side_effect = Exception('no interwebs!')
+        self.assertRaises(Exception, self.network.station_numbers, allow_stale=False)
+
+    @patch.object(api.Network, '_get_json')
+    def test_stale_station_numbers(self, mock_get_json):
+        mock_get_json.side_effect = Exception('no interwebs!')
+        with warnings.catch_warnings(record=True) as warned:
+            station_numbers = self.network.station_numbers(allow_stale=True)
+            self.assertEqual(min(station_numbers), 2)
+            station_numbers = self.network.station_numbers(country=20000, allow_stale=True)
+            self.assertEqual(min(station_numbers), 20001)
+            station_numbers = self.network.station_numbers(cluster=1000, allow_stale=True)
+            self.assertEqual(min(station_numbers), 1001)
+            station_numbers = self.network.station_numbers(subcluster=500, allow_stale=True)
+            self.assertEqual(min(station_numbers), 501)
+        self.assertEqual(len(warned), 1)
+
     def test_invalid_query_for_station_numbers(self):
         bad_number = 1
         for allow in (True, False):
@@ -119,19 +160,27 @@ class NetworkTests(unittest.TestCase):
             self.assertRaises(Exception, self.network.station_numbers,
                               subcluster=bad_number, allow_stale=allow)
 
-    def test_bad_stations(self):
+    def test_lazy_stations(self):
+        self.laziness_of_method('stations')
+
+    def test_stations(self):
         self.network.stations()
         self.assertEqual(self.network._all_stations, self.network.stations())
+        self.assertEqual(self.network.stations()[0].keys(), self.keys)
         self.assertEqual(self.network.stations(country=70000)[0]['number'], 70001)
         self.assertEqual(self.network.stations(cluster=70000)[0]['number'], 70001)
         self.assertEqual(self.network.stations(subcluster=70000)[0]['number'], 70001)
+
+    def test_bad_stations(self):
         bad_number = 1
         self.assertRaises(Exception, self.network.stations, country=bad_number)
         self.assertRaises(Exception, self.network.stations, cluster=bad_number)
         self.assertRaises(Exception, self.network.stations, subcluster=bad_number)
 
     def test_stations_with_data(self):
-        self.assertEqual(self.network.stations_with_data(2004, 1, 9)[0]['number'], 2)
+        stations_with_data = self.network.stations_with_data(2004, 1, 9)
+        self.assertEqual(stations_with_data[0].keys(), self.keys)
+        self.assertEqual(stations_with_data[0]['number'], 2)
         self.assertEqual(len(self.network.stations_with_data(2004, 1, 1)), 0)
         self.assertRaises(Exception, self.network.stations_with_data, year=2004, day=1)
         self.assertRaises(Exception, self.network.stations_with_data, month=1, day=1)
@@ -139,7 +188,9 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.stations_with_data, day=1)
 
     def test_stations_with_weather(self):
-        self.assertEqual(self.network.stations_with_weather(2004, 10, 9)[0]['number'], 3)
+        stations_with_weather = self.network.stations_with_weather(2004, 10, 9)
+        self.assertEqual(stations_with_weather[0].keys(), self.keys)
+        self.assertEqual(stations_with_weather[0]['number'], 3)
         self.assertEqual(len(self.network.stations_with_weather(2004, 1, 1)), 0)
         self.assertRaises(Exception, self.network.stations_with_weather, year=2004, day=1)
         self.assertRaises(Exception, self.network.stations_with_weather, month=1, day=1)
@@ -160,11 +211,33 @@ class NetworkTests(unittest.TestCase):
         self.assertTrue((data['n'] == range(2, 100)).all())
         self.assertEqual(data['counts'][0], 8763)
 
+    def laziness_of_method(self, method):
+        with patch.object(api.API, '_get_json') as mock_get_json:
+            self.assertFalse(mock_get_json.called)
+            data = self.network.__getattribute__(method)()
+            self.assertTrue(mock_get_json.called)
+            self.assertEqual(mock_get_json.call_count, 1)
+            data2 = self.network.__getattribute__(method)()
+            self.assertEqual(mock_get_json.call_count, 1)
+            self.assertEqual(data, data2)
+
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
 class StationTests(unittest.TestCase):
     def setUp(self):
         self.station = api.Station(STATION)
+
+    @patch.object(api.Station, '_get_json')
+    def test_no_stale_station(self, mock_get_json):
+        mock_get_json.side_effect = Exception('no interwebs!')
+        self.assertRaises(Exception, api.Station, 501, allow_stale=False)
+
+    @patch.object(api.Station, '_get_json')
+    def test_stale_station(self, mock_get_json):
+        mock_get_json.side_effect = Exception('no interwebs!')
+        with warnings.catch_warnings(record=True) as warned:
+            api.Station(501, allow_stale=True)
+        self.assertEqual(len(warned), 1)
 
     def test_id_numbers(self):
         self.assertEqual(self.station.station, STATION)
@@ -234,6 +307,7 @@ class StationTests(unittest.TestCase):
 
     def test_event_trace(self):
         self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 268)
+        self.assertEqual(self.station.event_trace(1378771205, 571920029, raw=True)[3][9], 464)
 
     def test_event_time(self):
         names = ('hour', 'counts')
@@ -268,15 +342,8 @@ class StationTests(unittest.TestCase):
         data = self.station.voltages
         self.assertEqual(data.dtype.names, names)
 
-    @patch.object(api.API, '_get_csv')
-    def test_laziness_voltages(self, mock_get_csv):
-        self.assertFalse(mock_get_csv.called)
-        data = self.station.voltages
-        self.assertTrue(mock_get_csv.called)
-        self.assertEqual(mock_get_csv.call_count, 1)
-        data2 = self.station.voltages
-        self.assertEqual(mock_get_csv.call_count, 1)
-        self.assertEqual(data, data2)
+    def test_laziness_voltages(self):
+        self.laziness_of_attribute('voltages')
 
     def test_voltage(self):
         data = self.station.voltage(1378771200)  # 2013-9-10
@@ -291,15 +358,8 @@ class StationTests(unittest.TestCase):
         self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
                                 data2['voltage3'], data2['voltage4']])
 
-    @patch.object(api.API, '_get_csv')
-    def test_laziness_currents(self, mock_get_csv):
-        self.assertFalse(mock_get_csv.called)
-        data = self.station.currents
-        self.assertTrue(mock_get_csv.called)
-        self.assertEqual(mock_get_csv.call_count, 1)
-        data2 = self.station.currents
-        self.assertEqual(mock_get_csv.call_count, 1)
-        self.assertEqual(data, data2)
+    def test_laziness_currents(self):
+        self.laziness_of_attribute('currents')
 
     def test_currents(self):
         names = ('timestamp', 'current1', 'current2', 'current3', 'current4')
@@ -310,20 +370,13 @@ class StationTests(unittest.TestCase):
         data = self.station.current(1378771200)  # 2013-9-10
         self.assertEqual(data, [7.84, 7.94, 10.49, 10.88])
 
+    def test_laziness_gps_locations(self):
+        self.laziness_of_attribute('gps_locations')
+
     def test_gps_locations(self):
         names = ('timestamp', 'latitude', 'longitude', 'altitude')
         data = self.station.gps_locations
         self.assertEqual(data.dtype.names, names)
-
-    @patch.object(api.API, '_get_csv')
-    def test_laziness_gps_locations(self, mock_get_csv):
-        self.assertFalse(mock_get_csv.called)
-        data = self.station.gps_locations
-        self.assertTrue(mock_get_csv.called)
-        self.assertEqual(mock_get_csv.call_count, 1)
-        data2 = self.station.gps_locations
-        self.assertEqual(mock_get_csv.call_count, 1)
-        self.assertEqual(data, data2)
 
     def test_gps_location(self):
         keys = ['latitude', 'longitude', 'altitude']
@@ -331,20 +384,44 @@ class StationTests(unittest.TestCase):
         self.assertItemsEqual(data.keys(), keys)
         self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
 
-    @patch.object(api.API, '_get_csv')
-    def test_laziness_detector_timing_offsets(self, mock_get_csv):
-        self.assertFalse(mock_get_csv.called)
-        data = self.station.detector_timing_offsets
-        self.assertTrue(mock_get_csv.called)
-        self.assertEqual(mock_get_csv.call_count, 1)
-        data2 = self.station.detector_timing_offsets
-        self.assertEqual(mock_get_csv.call_count, 1)
-        self.assertEqual(data, data2)
+    def test_laziness_station_layouts(self):
+        self.laziness_of_attribute('station_layouts')
+
+    def test_station_layouts(self):
+        names = ('timestamp',
+                 'radius1', 'alpha1', 'height1', 'beta1',
+                 'radius2', 'alpha2', 'height2', 'beta2',
+                 'radius3', 'alpha3', 'height3', 'beta3',
+                 'radius4', 'alpha4', 'height4', 'beta4')
+        data = self.station.station_layouts
+        self.assertEqual(data.dtype.names, names)
+
+    def test_station_layout(self):
+        data = self.station.station_layout(0)
+        self.assertEqual(len(data), 4)
+        self.assertEqual(len(data[0]), 4)
+
+    def test_laziness_detector_timing_offsets(self):
+        self.laziness_of_attribute('detector_timing_offsets')
 
     def test_detector_timing_offsets(self):
         names = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
         data = self.station.detector_timing_offsets
         self.assertEqual(data.dtype.names, names)
+
+    def test_detector_timing_offset(self):
+        offsets = self.station.detector_timing_offset(0)
+        self.assertEqual(len(offsets), 4)
+
+    def laziness_of_attribute(self, attribute):
+        with patch.object(api.API, '_get_csv') as mock_get_csv:
+            self.assertFalse(mock_get_csv.called)
+            data = self.station.__getattribute__(attribute)
+            self.assertTrue(mock_get_csv.called)
+            self.assertEqual(mock_get_csv.call_count, 1)
+            data2 = self.station.__getattribute__(attribute)
+            self.assertEqual(mock_get_csv.call_count, 1)
+            self.assertEqual(data, data2)
 
 
 if __name__ == '__main__':

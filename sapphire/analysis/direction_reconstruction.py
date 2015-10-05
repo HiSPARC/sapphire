@@ -19,7 +19,7 @@ import warnings
 import itertools
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, where, pi, inf, array)
+                   sqrt, where, pi, inf, array, cross, dot)
 from scipy.optimize import minimize
 
 from .event_utils import station_arrival_time, detector_arrival_time
@@ -43,8 +43,6 @@ class EventDirectionReconstruction(object):
         self.direct = DirectAlgorithmCartesian3D
         self.fit = RegressionAlgorithm3D
         self.station = station
-        detectors = [d.get_coordinates() for d in self.station.detectors]
-        self.x, self.y, self.z = zip(*detectors)
 
     def reconstruct_event(self, event, detector_ids=None,
                           offsets=[0., 0., 0., 0.]):
@@ -63,13 +61,15 @@ class EventDirectionReconstruction(object):
         t, x, y, z, ids = ([], [], [], [], [])
         if detector_ids is None:
             detector_ids = range(4)
+        self.station.cluster.set_timestamp(event['timestamp'])
         for id in detector_ids:
             t_detector = detector_arrival_time(event, id, offsets)
             if not isnan(t_detector):
+                dx, dy, dz = self.station.detectors[id].get_coordinates()
                 t.append(t_detector)
-                x.append(self.x[id])
-                y.append(self.y[id])
-                z.append(self.z[id])
+                x.append(dx)
+                y.append(dy)
+                z.append(dz)
                 ids.append(id)
         if len(t) == 3:
             theta, phi = self.direct.reconstruct_common(t, x, y, z)
@@ -92,7 +92,10 @@ class EventDirectionReconstruction(object):
         """
         angles = [self.reconstruct_event(event, detector_ids, offsets)
                   for event in pbar(events, show=progress)]
-        theta, phi, ids = zip(*angles)
+        if len(angles):
+            theta, phi, ids = zip(*angles)
+        else:
+            theta, phi, ids = ((), (), ())
         return theta, phi, ids
 
 
@@ -114,10 +117,6 @@ class CoincidenceDirectionReconstruction(object):
         self.fit = RegressionAlgorithm3D
         self.cluster = cluster
 
-        for station in self.cluster.stations:
-            station.center_of_mass_coordinates = \
-                station.calc_center_of_mass_coordinates()
-
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
                                 offsets={}):
         """Reconstruct a single coincidence
@@ -138,7 +137,9 @@ class CoincidenceDirectionReconstruction(object):
             return nan, nan, []
 
         # Subtract base timestamp to prevent loss of precision
-        ts0 = int(coincidence_events[0][1]['timestamp']) * int(1e9)
+        ts0 = int(coincidence_events[0][1]['timestamp'])
+        ets0 = ts0 * int(1e9)
+        self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
         for station_number, event in coincidence_events:
@@ -147,10 +148,10 @@ class CoincidenceDirectionReconstruction(object):
                     continue
             t_off = offsets.get(station_number, no_offset)
             station = self.cluster.get_station(station_number)
-            t_first = station_arrival_time(event, ts0, offsets=t_off,
+            t_first = station_arrival_time(event, ets0, offsets=t_off,
                                            station=station)
             if not isnan(t_first):
-                sx, sy, sz = station.center_of_mass_coordinates
+                sx, sy, sz = station.calc_center_of_mass_coordinates()
                 t.append(t_first)
                 x.append(sx)
                 y.append(sy)
@@ -183,7 +184,10 @@ class CoincidenceDirectionReconstruction(object):
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
                                                offsets)
                   for coincidence in pbar(coincidences, show=progress)]
-        theta, phi, nums = zip(*angles)
+        if len(angles):
+            theta, phi, nums = zip(*angles)
+        else:
+            theta, phi, nums = ((), (), ())
         return theta, phi, nums
 
 
@@ -525,44 +529,29 @@ class DirectAlgorithmCartesian3D(object):
 
         """
         c = .3
+        d1 = array([dx1, dy1, dz1])
+        d2 = array([dx2, dy2, dz2])
+        u = c * (dt2 * d1 - dt1 * d2)
+        v = cross(d1, d2)
+        uxv = cross(u, v)
 
-        ux = c * (dt2 * dx1 - dt1 * dx2)
-        uy = c * (dt2 * dy1 - dt1 * dy2)
-        uz = c * (dt2 * dz1 - dt1 * dz2)
-
-        vx = dy1 * dz2 - dz1 * dy2
-        vy = dz1 * dx2 - dx1 * dz2
-        vz = dx1 * dy2 - dy1 * dx2
-
-        ucrossvx = uy * vz - uz * vy
-        ucrossvy = uz * vx - ux * vz
-        ucrossvz = ux * vy - uy * vx
-
-        usquared = ux * ux + uy * uy + uz * uz
-        vsquared = vx * vx + vy * vy + vz * vz
+        usquared = dot(u, u)
+        vsquared = dot(v, v)
         underroot = vsquared - usquared
 
         theta = nan
         phi = nan
 
         if underroot > 0 and not vsquared == 0:
-            termx = vx * sqrt(underroot)
-            termy = vy * sqrt(underroot)
-            termz = vz * sqrt(underroot)
+            term = v * sqrt(underroot)
+            nplus = (uxv + term) / vsquared
+            nmin = (uxv - term) / vsquared
 
-            nxplus = (ucrossvx + termx) / vsquared
-            nyplus = (ucrossvy + termy) / vsquared
-            nzplus = (ucrossvz + termz) / vsquared
+            phiplus = arctan2(nplus[1], nplus[0])
+            thetaplus = arccos(nplus[2])
 
-            nxmin = (ucrossvx - termx) / vsquared
-            nymin = (ucrossvy - termy) / vsquared
-            nzmin = (ucrossvz - termz) / vsquared
-
-            phiplus = arctan2(nyplus, nxplus)
-            thetaplus = arccos(nzplus)
-
-            phimin = arctan2(nymin, nxmin)
-            thetamin = arccos(nzmin)
+            phimin = arctan2(nmin[1], nmin[0])
+            thetamin = arccos(nmin[2])
 
             if isnan(thetaplus):
                 thetaplus = pi

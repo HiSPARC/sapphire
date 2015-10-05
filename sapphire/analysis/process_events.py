@@ -34,9 +34,8 @@ import operator
 
 import tables
 import numpy as np
-from scipy.optimize import curve_fit
 
-from ..utils import pbar, gauss, ERR
+from ..utils import pbar, ERR
 from .find_mpv import FindMostProbableValueInSpectrum
 
 
@@ -270,8 +269,8 @@ class ProcessEvents(object):
         source = self.source
 
         for col in pbar(source.colnames, show=self.progress):
-            getattr(table.cols, col)[:self.limit] = getattr(source.cols,
-                                                            col)[:self.limit]
+            table.modify_column(stop=self.limit, colname=col,
+                                column=getattr(source.cols, col)[:self.limit])
         table.flush()
 
     def _store_results_from_traces(self):
@@ -282,7 +281,7 @@ class ProcessEvents(object):
         # Assign values to full table, column-wise.
         for idx in range(4):
             col = 't%d' % (idx + 1)
-            getattr(table.cols, col)[:] = timings[:, idx]
+            table.modify_column(column=timings[:, idx], colname=col)
         table.flush()
 
     def process_traces(self, limit=None):
@@ -405,7 +404,7 @@ class ProcessEvents(object):
         n_particles = self._process_pulseintegrals()
         for idx in range(4):
             col = 'n%d' % (idx + 1)
-            getattr(table.cols, col)[:] = n_particles[:, idx]
+            table.modify_column(column=n_particles[:, idx], colname=col)
         table.flush()
 
     def _process_pulseintegrals(self):
@@ -449,28 +448,6 @@ class ProcessEvents(object):
             self.data.remove_node(self.group, self.destination)
         self._tmp_events.rename(self.destination)
 
-    def determine_detector_timing_offsets(self, timings_table='events'):
-        """Determine the offsets between the station detectors."""
-
-        table = self.data.get_node(self.group, timings_table)
-        t2 = table.col('t2')
-
-        bins = np.arange(-100 + 1.25, 100, 2.5)
-
-        print "Determining offsets based on # events:",
-        offsets = []
-        for timings in 't1', 't3', 't4':
-            timings = table.col(timings)
-            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
-            print len(dt),
-            y, bins = np.histogram(dt, bins=bins)
-            x = (bins[:-1] + bins[1:]) / 2
-            popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-            offsets.append(popt[1])
-        print
-
-        return [offsets[0]] + [0.] + offsets[1:]
-
 
 class ProcessIndexedEvents(ProcessEvents):
 
@@ -493,9 +470,9 @@ class ProcessIndexedEvents(ProcessEvents):
             meaning the default name 'events'.
 
         """
-        super(ProcessIndexedEvents, self).__init__(data, group, source)
+        super(ProcessIndexedEvents, self).__init__(data, group, source,
+                                                   progress)
         self.indexes = indexes
-        self.progress = progress
 
     def _store_results_from_traces(self):
         table = self._tmp_events
@@ -632,8 +609,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         # Assign values to full table, column-wise.
         for idx in range(4):
             col = 't%d' % (idx + 1)
-            getattr(table.cols, col)[:] = timings[:, idx]
-        getattr(table.cols, 't_trigger')[:] = timings[:, 4]
+            table.modify_column(column=timings[:, idx], colname=col)
+        table.modify_column(column=timings[:, 4], colname='t_trigger')
         table.flush()
 
     def _reconstruct_time_from_traces(self, event):

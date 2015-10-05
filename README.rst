@@ -4,14 +4,16 @@ SAPPHiRE — A Framework for HiSPARC
 Introduction
 ------------
 
-.. image:: http://img.shields.io/pypi/v/hisparc-sapphire.png
+.. image:: http://img.shields.io/pypi/v/hisparc-sapphire.svg
    :target: https://pypi.python.org/pypi/hisparc-sapphire/
-.. image:: http://img.shields.io/badge/license-GPLv3-blue.png
+.. image:: http://img.shields.io/badge/license-GPLv3-blue.svg
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
-.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.png
+.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.svg
    :target: https://travis-ci.org/HiSPARC/sapphire
-.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.png
-   :target: https://coveralls.io/r/HiSPARC/sapphire?branch=master
+.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.svg?label=coveralls
+   :target: https://coveralls.io/r/HiSPARC/sapphire
+.. image:: http://img.shields.io/codecov/c/github/HiSPARC/sapphire/master.svg?label=codecov
+   :target: https://codecov.io/github/HiSPARC/sapphire
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 <http://www.hisparc.nl/>`_ Research and Education.  It was created in the
@@ -59,3 +61,23 @@ To check if it worked start Python and load the package:
     import sapphire
 
 You're done!
+
+
+Version release
+---------------
+
+Important: First check if the last commit passes the tests on Travis CI!
+
+To release a new version modify the version number in ``setup.py``. Then
+create a commit for the new release with a title like 'Bump version to vX.Y.Z'
+and a message that contains a summary of the most important changes since the
+last release. Then tag the commit and push it to GitHub::
+
+   $ git tag vX.Y.Z
+   $ git push --tags
+   
+Then upload the new version to PyPI (this requires the ``wheel`` package)::
+
+   $ python setup.py sdist bdist_wheel upload
+
+The latest version is then available from PyPI.

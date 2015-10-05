@@ -13,8 +13,10 @@
 import os
 import glob
 import textwrap
-import subprocess
 import logging
+import argparse
+
+from .. import qsub
 
 
 LOGFILE = '/data/hisparc/corsika/logs/qsub_store_corsika.log'
@@ -25,14 +27,12 @@ DESTINATION_FILE = 'corsika.h5'
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
     umask 002
-    source activate /data/hisparc/corsika_env
+    source activate corsika &> /dev/null
     {command}
+    touch {datadir}
     # To alleviate Stoomboot, make sure the job is not to short.
     sleep $[ ( $RANDOM % 60 ) + 60 ]""")
 
-logging.basicConfig(filename=LOGFILE, filemode='a',
-                    format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-                    datefmt='%y%m%d_%H%M%S', level=logging.INFO)
 logger = logging.getLogger('qsub_store_corsika_data')
 
 
@@ -67,8 +67,7 @@ def write_queued_seeds(seeds):
     """Write queued seeds to file"""
 
     with open(QUEUED_SEEDS, 'w') as queued_seeds:
-        for seed in seeds:
-            queued_seeds.write('%s\n' % seed)
+        queued_seeds.write('\n'.join(seeds))
 
 
 def append_queued_seeds(seeds):
@@ -102,86 +101,45 @@ def store_command(seed):
     return command
 
 
-def create_script(seed):
-    """Create script as temp file to run on Stoomboot"""
-
-    script_name = 'store_{seed}.sh'.format(seed=seed)
-    script_path = os.path.join('/tmp', script_name)
-    command = store_command(seed)
-    input = SCRIPT_TEMPLATE.format(command=command)
-
-    with open(script_path, 'w') as script:
-        script.write(input)
-    os.chmod(script_path, 0774)
-
-    return script_path, script_name
-
-
-def delete_script(seed):
-    """Delete script"""
-
-    script_name = 'store_{seed}.sh'.format(seed=seed)
-    script_path = os.path.join('/tmp', script_name)
-
-    os.remove(script_path)
-
-
-def submit_job(seed):
-    """Submit job to Stoomboot"""
-
-    script_path, script_name = create_script(seed)
-
-    qsub = ('qsub -q short -V -z -j oe -N {name} {script}'
-            .format(name=script_name, script=script_path))
-
-    result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
-                                     shell=True)
-    if not result == '':
-        logger.error('%s - Error occured: %s' % (seed, result))
-        raise Exception
-
-    delete_script(seed)
-
-
-def check_queue():
-    """Check for available job slots on the short queue
-
-    Maximum numbers from ``qstat -Q -f``
-
-    :return: Number of available slots in the queue.
-
-    """
-    queue_check = 'qstat -u $USER | grep short | grep [RQ] | wc -l'
-    user_jobs = int(subprocess.check_output(queue_check, shell=True))
-    max_user_jobs = 1000
-    keep_free_slots = 50
-
-    return max_user_jobs - keep_free_slots - user_jobs
-
-
-def run():
+def run(queue):
     """Get list of seeds to process, then submit jobs to process them"""
 
     os.umask(002)
     logger.info('Getting todo list of seeds to convert.')
     seeds = get_seeds_todo()
-    n_jobs_to_submit = min(len(seeds), check_queue())
+    n_jobs_to_submit = min(len(seeds), qsub.check_queue(queue), 50)
+    extra = ''
+    if queue == 'long':
+        extra += " -l walltime=96:00:00"
+
     logger.info('Submitting jobs for %d simulations.' % n_jobs_to_submit)
     try:
         for _ in xrange(n_jobs_to_submit):
             seed = seeds.pop()
+            command = store_command(seed)
+            script = SCRIPT_TEMPLATE.format(command=command, datadir=DATADIR)
             logger.info('Submitting job for %s.' % seed)
-            submit_job(seed)
+            qsub.submit_job(script, seed, queue, extra)
             append_queued_seeds([seed])
     except KeyError:
         logger.error('Out of seeds!')
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-q', '--queue', metavar='name',
+                        help="name of the Stoomboot queue to use, choose from "
+                             "express, short, generic, and long (default)",
+                        default='long',
+                        choices=['express', 'short', 'generic', 'long'])
+    args = parser.parse_args()
     logger.debug('Starting to submit new jobs.')
-    run()
+    run(args.queue)
     logger.info('Finished submitting jobs.')
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filename=LOGFILE, filemode='a',
+                        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+                        datefmt='%y%m%d_%H%M%S', level=logging.INFO)
     main()

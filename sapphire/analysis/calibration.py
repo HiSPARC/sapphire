@@ -29,14 +29,15 @@ def determine_detector_timing_offsets(events, station=None):
     filters = []
     if station is not None:
         n_detectors = len(station.detectors)
-        z = [d.z for d in station.detectors]
+        station.cluster.set_timestamp(events[0]['timestamp'])
+        z = [d.get_coordinates()[2] for d in station.detectors]
     else:
         n_detectors = 4
         z = [0., 0., 0., 0.]
 
     for id in range(n_detectors):
         t.append(events.col('t%d' % (id + 1)))
-        filters.append((events.col('n%d' % (id + 1)) > .05) & (t[id] >= 0.))
+        filters.append((events.col('n%d' % (id + 1)) > .3) & (t[id] >= 0.))
 
     if n_detectors == 2:
         ref_id = 1
@@ -76,6 +77,8 @@ def determine_detector_timing_offset(dt, dz=0):
     c = .3
     bins = arange(-100 + 1.25, 100, 2.5)
     detector_offset = fit_timing_offset(dt, bins) + dz / c
+    if abs(detector_offset) > 100:
+        detector_offset = nan
     return detector_offset
 
 
@@ -91,6 +94,8 @@ def determine_station_timing_offset(dt, dz=0):
     p = percentile(dt, [2, 98])
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
     station_offset = fit_timing_offset(dt, bins) + dz / c
+    if abs(station_offset) > 1000:
+        station_offset = nan
     return station_offset
 
 

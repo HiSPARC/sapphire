@@ -138,7 +138,8 @@ class Coincidences(object):
             t's smaller than this window will be considered a coincidence.
         :param shifts: optionally shift a station's data in time.  This
             can be useful if a station has a misconfigured GPS clock.
-            Expects a list of shifts for each station.
+            Expects a list of shifts, one for each station, in seconds.
+            Use 'None' for no shift.
         :param limit: optionally limit the search for this number of
             events.
 
@@ -170,6 +171,9 @@ class Coincidences(object):
         c_index = self.coincidence_group._src_c_index.read()
         timestamps = self.coincidence_group._src_timestamps.read()
 
+        if len(c_index) == 0:
+            return
+
         selected_timestamps = []
         for coincidence in c_index:
             for event in coincidence:
@@ -183,13 +187,16 @@ class Coincidences(object):
             index = selected[:, 2]
 
             if 'blobs' in station_group:
-                print "Processing coincidence events with traces"
+                if self.progress:
+                    print "Processing coincidence events with traces"
                 Process = process_events.ProcessIndexedEventsWithLINT
             else:
-                print "Processing coincidence events without traces"
+                if self.progress:
+                    print "Processing coincidence events without traces"
                 Process = process_events.ProcessIndexedEventsWithoutTraces
 
-            process = Process(self.data, station_group, index)
+            process = Process(self.data, station_group, index,
+                              progress=self.progress)
             process.process_and_store_results(overwrite=overwrite)
 
     def store_coincidences(self, cluster=None):
@@ -215,16 +222,9 @@ class Coincidences(object):
                                                   'observables',
                                                   storage.EventObservables)
 
-        # ProgressBar does not work for empty iterables.
-        if len(self.coincidence_group._src_c_index):
-            src_c_index = pbar(self.coincidence_group._src_c_index,
-                               show=self.progress)
-            for coincidence in src_c_index:
-                self._store_coincidence(coincidence)
-        else:
-            print "Creating empty tables, no coincidences found"
-            for coincidence in self.coincidence_group._src_c_index:
-                self._store_coincidence(coincidence)
+        for coincidence in pbar(self.coincidence_group._src_c_index,
+                                show=self.progress):
+            self._store_coincidence(coincidence)
 
         c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
                                            tables.UInt32Col())
@@ -250,7 +250,7 @@ class Coincidences(object):
         for index in coincidence:
             event_desc = self.coincidence_group._src_timestamps[index]
             station_id = event_desc[1]
-            event_index = event_desc[2]
+            event_index = int(event_desc[2])
 
             group = self.data.get_node(self.station_groups[station_id])
             event = group.events[event_index]
@@ -298,14 +298,12 @@ class Coincidences(object):
         occured almost at the same time and thus might be the result of an
         extended air shower.
 
-        :param data: the PyTables data file
-        :param stations: a list of HiSPARC event tables (normally from
-            different stations, hence the name)
         :param window: the time window in nanoseconds which will be searched
             for coincidences.  Events falling outside this window will not be
             part of the coincidence.  Default: 2000 (i.e. 2 us).
-        :param shifts: a list of time shifts which may contain 'None'.
-        :param limit: limit the number of events which are processed
+        :param shifts: a list of time shifts in seconds, use 'None' for no
+            shift.
+        :param limit: limit the number of events which are processed.
 
         :return: coincidences, timestamps. First a list of coincidences, which
             each consist of a list with indexes into the timestamps array as a
@@ -337,21 +335,13 @@ class Coincidences(object):
             if 'events' in station_group:
                 event_tables.append(self.data.get_node(station_group,
                                                        'events'))
-        stations = event_tables
 
-        # calculate the shifts in nanoseconds and cast them to long.
-        # (prevent upcasting timestamps to float64 further on)
-        if shifts:
-            for i in range(len(shifts)):
-                if shifts[i]:
-                    shifts[i] = int(shifts[i] * 1e9)
-
-        timestamps = self._retrieve_timestamps(stations, shifts, limit)
+        timestamps = self._retrieve_timestamps(event_tables, shifts, limit)
         coincidences = self._do_search_coincidences(timestamps, window)
 
         return coincidences, timestamps
 
-    def _retrieve_timestamps(self, stations, shifts=None, limit=None):
+    def _retrieve_timestamps(self, event_tables, shifts=None, limit=None):
         """Retrieve all timestamps from all stations, optionally shifting them
 
         This function retrieves the timestamps from a list of event tables and
@@ -359,10 +349,11 @@ class Coincidences(object):
         necessary when one wants to compare the timestamps of stations who use
         a different time (as in GPS, UTC or local time).
 
-        :param stations: a list of HiSPARC event tables (normally from
-            different stations, hence the name)
-        :param shifts: a list of time shifts which may contain 'None'.
-        :param limit: limit the number of events which are processed
+        :param event_tables: a list of HiSPARC event tables, usually from
+            different stations.
+        :param shifts: a list of time shifts in seconds, use 'None' for no
+            shift.
+        :param limit: limit the number of events which are processed.
 
         :return: list of tuples.  Each tuple consists of a timestamp followed
             by an index into the stations list which designates the detector
@@ -370,17 +361,23 @@ class Coincidences(object):
             event into the station's event table.
 
         """
+        # calculate the shifts in nanoseconds and cast them to int.
+        # (prevent upcasting timestamps to float64 further on)
+        if shifts is not None:
+            shifts = [int(shift * 1e9) if shift is not None else shift
+                      for shift in shifts]
+
         timestamps = []
-        for i in range(len(stations)):
-            ts = [(x['ext_timestamp'], i, j) for j, x in
-                  enumerate(stations[i][:limit])]
+        for s_id, event_table in enumerate(event_tables):
+            ts = [(x, s_id, j) for j, x in
+                  enumerate(event_table.col('ext_timestamp')[:limit])]
             try:
                 # shift data. carefully avoid upcasting (we're adding two
-                # longs, which is a long, and casting that back to uint64. if
+                # ints, which is an int, and casting that back to uint64. if
                 # we're not careful, an intermediate value will be a float64,
                 # which doesn't hold the precision to store nanoseconds.
-                ts = [(np.uint64(int(x[0]) + shifts[i]), x[1], x[2]) for x in
-                      ts]
+                ts = [(np.uint64(int(x) + shifts[i]), i, j)
+                      for x, i, j in ts]
             except (TypeError, IndexError):
                 # shift is None or doesn't exist
                 pass
@@ -479,7 +476,7 @@ class CoincidencesESD(Coincidences):
 
         """
         c_index, timestamps = self._search_coincidences(window, shifts, limit)
-        self._src_timestamps = np.array(timestamps, dtype=np.uint64)
+        self._src_timestamps = timestamps
         self._src_c_index = c_index
 
     def store_coincidences(self, cluster=None):
@@ -491,6 +488,7 @@ class CoincidencesESD(Coincidences):
         find the source events.
 
         """
+        n_coincidences = len(self._src_c_index)
         if cluster:
             self.cluster = cluster
             self.coincidence_group._v_attrs.cluster = cluster
@@ -501,32 +499,27 @@ class CoincidencesESD(Coincidences):
             s_columns = {'s%d' % n: tables.BoolCol(pos=(n + 12))
                          for n, _ in enumerate(self.station_groups)}
 
-        self.c_index = []
-
         description = storage.Coincidence
         description.columns.update(s_columns)
-        self.coincidences = self.data.create_table(self.coincidence_group,
-                                                   'coincidences', description)
+        self.coincidences = self.data.create_table(
+            self.coincidence_group, 'coincidences', description,
+            expectedrows=n_coincidences)
 
-        # ProgressBar does not work for empty iterables.
-        if len(self._src_c_index):
-            src_c_index = pbar(self._src_c_index, show=self.progress)
-            for coincidence in src_c_index:
-                self._store_coincidence(coincidence)
-        else:
-            print "Creating empty tables, no coincidences found"
-            for coincidence in self._src_c_index:
-                self._store_coincidence(coincidence)
+        self.c_index = []
 
-        c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
-                                           tables.UInt32Col(shape=2))
-        for coincidence in self.c_index:
-            c_index.append(coincidence)
+        for coincidence in pbar(self._src_c_index, show=self.progress):
+            self._store_coincidence(coincidence)
+
+        c_index = self.data.create_vlarray(
+            self.coincidence_group, 'c_index', tables.UInt32Col(shape=2),
+            expectedrows=n_coincidences)
+        for observables_idx in pbar(self.c_index, show=self.progress):
+            c_index.append(observables_idx)
         c_index.flush()
-        self.c_index = c_index
 
-        s_index = self.data.create_vlarray(self.coincidence_group, 's_index',
-                                           tables.VLStringAtom())
+        s_index = self.data.create_vlarray(
+            self.coincidence_group, 's_index', tables.VLStringAtom(),
+            expectedrows=len(self.station_groups))
         for station_group in self.station_groups:
             s_index.append(station_group)
         s_index.flush()

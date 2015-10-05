@@ -1,4 +1,4 @@
-Corsika Particles
+CORSIKA Particles
 =================
 
 .. automodule:: sapphire.corsika.particles

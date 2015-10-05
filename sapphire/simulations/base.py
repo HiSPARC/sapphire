@@ -8,16 +8,16 @@ that the same reconstruction analysis can be applied to both.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire.simulations.base import BaseSimulation
-    from sapphire import ScienceParkCluster
+    >>> from sapphire.simulations.base import BaseSimulation
+    >>> from sapphire import ScienceParkCluster
 
-    datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = BaseSimulation(cluster, datafile, '/simulations/this_run', 10)
-    sim.run()
+    >>> sim = BaseSimulation(cluster, datafile, '/simulations/this_run', 10)
+    >>> sim.run()
 
 """
 import warnings
@@ -40,14 +40,18 @@ class BaseSimulation(object):
     :param output_path: path (as string) to the PyTables group (need not
                         exist) in which the result tables will be created.
     :param N: number of simulations to perform.
+    :param seed: seed for the pseudo-random number generators.
+    :param progress: if True, show a progressbar while simulating.
 
     """
 
-    def __init__(self, cluster, datafile, output_path='/', N=1, seed=None):
+    def __init__(self, cluster, datafile, output_path='/', N=1, seed=None,
+                 progress=True):
         self.cluster = cluster
         self.datafile = datafile
         self.output_path = output_path
         self.N = N
+        self.progress = progress
 
         self._prepare_output_tables()
 
@@ -89,7 +93,7 @@ class BaseSimulation(object):
                              'energy': None,
                              'ext_timestamp': None}
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             yield shower_parameters
 
     def simulate_events_for_shower(self, shower_parameters):

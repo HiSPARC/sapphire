@@ -4,6 +4,15 @@
     each particle individually in a HDF5 file, using PyTables.  This file
     can then be used as input for the detector simulation.
 
+    The syntax and options for calling this script can be seen with::
+
+        store_corsika_data --help
+
+    For example to convert a CORSIKA file in the current directory called
+    DAT000000 to a HDF5 called corsika.h5 with a progress bar run::
+
+        store_corsika_data --progress DAT000000 corsika.h5
+
 """
 import argparse
 import tempfile
@@ -12,7 +21,7 @@ import os
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
-from sapphire.corsika.reader import CorsikaFile
+from .reader import CorsikaFile
 
 
 class GroundParticles(tables.IsDescription):
@@ -55,11 +64,15 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
                                 progress=False):
     """First convert the data to HDF5 and create a sorted version"""
 
+    if os.path.exists(destination):
+        if not overwrite:
+            if progress:
+                raise Exception("Destination already exists, doing nothing")
+            return
+        else:
+            os.remove(destination)
+
     corsika_data = CorsikaFile(source)
-    if overwrite:
-        mode = 'w'
-    else:
-        mode = 'a'
 
     temp_dir = os.path.dirname(destination)
     temp_path = create_tempfile_path(temp_dir)
@@ -69,7 +82,7 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
     with tables.open_file(temp_path, 'a') as hdf_temp:
         create_index(hdf_temp, progress=progress)
     with tables.open_file(temp_path, 'r') as hdf_temp, \
-            tables.open_file(destination, mode) as hdf_data:
+            tables.open_file(destination, 'w') as hdf_data:
         copy_and_sort_node(hdf_temp, hdf_data, progress=progress)
 
     os.remove(temp_path)

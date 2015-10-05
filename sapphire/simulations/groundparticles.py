@@ -6,18 +6,20 @@ with random core positions and azimuth angles.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire import GroundParticlesSimulation, ScienceParkCluster
+    >>> from sapphire import GroundParticlesSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_groundparticle_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_groundparticle_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = GroundParticlesSimulation('corsika.h5', 500, cluster, data, '/', 10)
-    sim.run()
+    >>> sim = GroundParticlesSimulation('corsika.h5', 500, cluster, data,
+    ...                                 '/', 10)
+    >>> sim.run()
 
 """
 from math import pi, sin, cos, sqrt
+from time import time
 
 import numpy as np
 import tables
@@ -65,7 +67,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         r = self.max_core_distance
-        giga = int(1e9)
+        now = int(time())
 
         event_header = self.corsikafile.get_node_attr('/', 'event_header')
         event_end = self.corsikafile.get_node_attr('/', 'event_end')
@@ -74,7 +76,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'energy': event_header.energy,
                               'particle': event_header.particle}
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             x, y = self.generate_core_position(r)
 
             # Subtract Corsika shower azimuth from desired shower azimuth
@@ -86,7 +88,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             elif alpha <= -pi:
                 alpha += 2 * pi
 
-            shower_parameters = {'ext_timestamp': (giga + i) * giga,
+            shower_parameters = {'ext_timestamp': (now + i) * int(1e9),
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
@@ -157,16 +159,24 @@ class GroundParticlesSimulation(HiSPARCSimulation):
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
 
-        :param detector_observables: dictionary containing the
-                                     observables of one detector.
-        :return: True if at least 2 detectors detect at least one particle,
-                 False otherwise.
+        This implements the trigger as used on HiSPARC stations:
+        - 4-detector station: at least two high or three low signals.
+        - 2-detector station: at least 2 low signals.
+
+        :param detector_observables: list of dictionaries, each containing
+                                     the observables of one detector.
+        :return: True if the station triggers, False otherwise.
 
         """
-        detectors_hit = [True for observables in detector_observables
-                         if observables['n'] > 0]
+        n_detectors = len(detector_observables)
+        detectors_low = sum([True for observables in detector_observables
+                             if observables['n'] > 0.3])
+        detectors_high = sum([True for observables in detector_observables
+                              if observables['n'] > 0.5])
 
-        if sum(detectors_hit) >= 2:
+        if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
+            return True
+        elif n_detectors == 2 and detectors_low >= 2:
             return True
         else:
             return False
@@ -656,6 +666,7 @@ class FixedCoreDistanceSimulation(GroundParticlesSimulation):
 
     """
 
+    @classmethod
     def generate_core_position(cls, R):
         """Generate a random core position on a circle
 

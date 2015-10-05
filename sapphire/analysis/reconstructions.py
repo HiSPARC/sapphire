@@ -1,5 +1,4 @@
 from itertools import izip_longest
-from datetime import date
 
 from numpy import isnan, nan, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
@@ -23,24 +22,24 @@ class ReconstructESDEvents(object):
 
     Example usage::
 
-        import tables
-        from sapphire import ReconstructESDEvents
+        >>> import tables
+        >>> from sapphire import ReconstructESDEvents
 
-        data = tables.open_file('2014_1_1.h5', 'a')
-        station_path = '/hisparc/cluster_amsterdam/station_506'
-        rec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
-        rec.reconstruct_and_store()
+        >>> data = tables.open_file('2014_1_1.h5', 'a')
+        >>> station_path = '/hisparc/cluster_amsterdam/station_506'
+        >>> rec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
+        >>> rec.reconstruct_and_store()
 
     To visualize the results::
 
-        import matplotlib.pyplot as plt
-        plt.polar([p for p in rec.phi if not isnan(p)],
-                  [t for t in rec.theta if not isnan(t)], 'ko', alpha=0.2)
+        >>> import matplotlib.pyplot as plt
+        >>> plt.polar([p for p in rec.phi if not isnan(p)],
+        ...           [t for t in rec.theta if not isnan(t)], 'ko', alpha=0.2)
 
     or::
 
-        plt.polar(rec.reconstructions.col('azimuth'),
-                  rec.reconstructions.col('zenith'), 'ko', alpha=0.2)
+        >>> plt.polar(rec.reconstructions.col('azimuth'),
+        ...           rec.reconstructions.col('zenith'), 'ko', alpha=0.2)
 
     """
 
@@ -69,8 +68,7 @@ class ReconstructESDEvents(object):
         if isinstance(station, Station):
             self.station = station
         else:
-            last_date = date.fromtimestamp(max(self.events.col('timestamp')))
-            cluster = HiSPARCStations([station], date=last_date)
+            cluster = HiSPARCStations([station])
             self.station = cluster.get_station(station)
 
         self.direction = EventDirectionReconstruction(self.station)
@@ -164,7 +162,13 @@ class ReconstructESDEvents(object):
         row = self.reconstructions.row
         row['id'] = event['event_id']
         row['ext_timestamp'] = event['ext_timestamp']
-        row['min_n'] = min([event['n%d' % (id + 1)] for id in detector_ids])
+        try:
+            row['min_n'] = min([event['n%d' % (id + 1)] for id in
+                                detector_ids])
+        except ValueError:
+            # sometimes, all arrival times are -999 or -1, and then
+            # detector_ids = []. So min([]) gives a ValueError.
+            row['min_n'] = -999.
         row['x'] = core_x
         row['y'] = core_y
         row['zenith'] = theta
@@ -180,18 +184,19 @@ class ReconstructESDCoincidences(object):
 
     Example usage::
 
-        import tables
-        from sapphire.analysis import reconstructions
+        >>> import tables
+        >>> from sapphire.analysis import reconstructions
 
-        data = tables.open_file('2014_1_1.h5', 'a')
-        rec = reconstructions.ReconstructESDCoincidences(data, overwrite=True)
-        rec.reconstruct_and_store()
+        >>> data = tables.open_file('2014_1_1.h5', 'a')
+        >>> rec = reconstructions.ReconstructESDCoincidences(data,
+        ...                                                  overwrite=True)
+        >>> rec.reconstruct_and_store()
 
     """
 
     def __init__(self, data, coincidences_group='/coincidences',
                  overwrite=False, progress=True,
-                 destination='reconstructions'):
+                 destination='reconstructions', cluster=None):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -199,6 +204,7 @@ class ReconstructESDCoincidences(object):
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
+        :param cluster: a Cluster object to use for the reconstructions.
 
         """
         self.data = data
@@ -210,11 +216,12 @@ class ReconstructESDCoincidences(object):
         self.offsets = {}
 
         self.cq = CoincidenceQuery(data, self.coincidences_group)
-        # Get latest position data
-        s_numbers = [station.number for station in
-                     self.coincidences_group._f_getattr('cluster').stations]
-        last_date = date.fromtimestamp(max(self.coincidences.col('timestamp')))
-        self.cluster = HiSPARCStations(s_numbers, date=last_date)
+        if cluster is None:
+            cluster = self.coincidences_group._f_getattr('cluster')
+            s_numbers = [station.number for station in cluster.stations]
+            self.cluster = HiSPARCStations(s_numbers)
+        else:
+            self.cluster = cluster
 
         self.direction = CoincidenceDirectionReconstruction(self.cluster)
         self.core = CoincidenceCoreReconstruction(self.cluster)
