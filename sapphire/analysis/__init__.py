@@ -30,6 +30,9 @@ This package contains modules for performing various analysis tasks:
 :mod:`~sapphire.analysis.process_events`
     Process HiSPARC events
 
+:mod:`~sapphire.analysis.process_traces`
+    Process HiSPARC traces
+
 :mod:`~sapphire.analysis.reconstructions`
     Perform shower reconstructions
 
@@ -43,6 +46,7 @@ from . import event_utils
 from . import find_mpv
 from . import landau
 from . import process_events
+from . import process_traces
 from . import reconstructions
 
 
@@ -55,4 +59,5 @@ __all__ = ['calibration',
            'find_mpv',
            'landau',
            'process_events',
+           'process_traces',
            'reconstructions']

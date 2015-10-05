@@ -8,16 +8,16 @@ that the same reconstruction analysis can be applied to both.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire.simulations.base import BaseSimulation
-    from sapphire import ScienceParkCluster
+    >>> from sapphire.simulations.base import BaseSimulation
+    >>> from sapphire import ScienceParkCluster
 
-    datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = BaseSimulation(cluster, datafile, '/simulations/this_run', 10)
-    sim.run()
+    >>> sim = BaseSimulation(cluster, datafile, '/simulations/this_run', 10)
+    >>> sim.run()
 
 """
 import warnings

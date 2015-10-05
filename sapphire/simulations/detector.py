@@ -174,15 +174,37 @@ class HiSPARCSimulation(BaseSimulation):
         return x, y
 
     @classmethod
-    def generate_zenith(cls):
+    def generate_zenith(cls, min=0, max=pi / 3.):
+        """Generate a random zenith
+
+        Generate a random zenith for a uniform distribution on a sphere.
+        For a random position on a sphere the zenith should not be chosen
+        from a uniform [0, pi/2] distribution.
+
+        Source: http://mathworld.wolfram.com/SpherePointPicking.html
+
+        This fuction does not account for attenuation due to the extra path
+        length, nor for the reduced effective surface of the detectors due to
+        the angle. CORSIKA simulated showers already contain the atmospheric
+        attenuation and precise positions for each particle.
+
+        :param min,max: minimum and maximum zenith angles, in radians.
+        :return: Random zenith position on a sphere.
+
+        """
+        p = np.random.uniform(cos(max), cos(min))
+        return acos(p)
+
+    @classmethod
+    def generate_attenuated_zenith(cls):
         """Generate a random zenith
 
         Pick from the expected zenith distribution.
 
-        TODO: There is a difference between expected shower zeniths
-        detected on the ground and at the top of the atmosphere. So
-        simulations that use CORSIKA generated showers need to take that
-        into account.
+        There is a difference between expected shower zeniths detected on the
+        ground and at the top of the atmosphere. This distribution takes the
+        attenuation of air showers due to the extra path length in the
+        atmosphere into account.
 
         """
         p = np.random.random()

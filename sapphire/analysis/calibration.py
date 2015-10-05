@@ -29,7 +29,8 @@ def determine_detector_timing_offsets(events, station=None):
     filters = []
     if station is not None:
         n_detectors = len(station.detectors)
-        z = [d.z for d in station.detectors]
+        station.cluster.set_timestamp(events[0]['timestamp'])
+        z = [d.get_coordinates()[2] for d in station.detectors]
     else:
         n_detectors = 4
         z = [0., 0., 0., 0.]

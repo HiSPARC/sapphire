@@ -5,15 +5,15 @@ Simulate just the arrival times.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire import FlatFrontSimulation, ScienceParkCluster
+    >>> from sapphire import FlatFrontSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = FlatFrontSimulation(cluster, data, '/', 200)
-    sim.run()
+    >>> sim = FlatFrontSimulation(cluster, data, '/', 200)
+    >>> sim.run()
 
 """
 from math import pi, sin, cos, tan, atan2, sqrt
@@ -50,7 +50,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
         for i in pbar(range(self.N), show=self.progress):
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'azimuth': self.generate_azimuth(),
-                                 'zenith': self.generate_zenith(),
+                                 'zenith': self.generate_attenuated_zenith(),
                                  'core_pos': (None, None),
                                  'size': None,
                                  'energy': None}
@@ -181,15 +181,15 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
     Example usage::
 
-        import tables
+        >>> import tables
 
-        from sapphire import ConeFrontSimulation, ScienceParkCluster
+        >>> from sapphire import ConeFrontSimulation, ScienceParkCluster
 
-        data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
-        cluster = ScienceParkCluster()
+        >>> data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
+        >>> cluster = ScienceParkCluster()
 
-        sim = ConeFrontSimulation(100, cluster, data, '/', 200)
-        sim.run()
+        >>> sim = ConeFrontSimulation(100, cluster, data, '/', 200)
+        >>> sim.run()
 
     """
 
@@ -225,7 +225,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'azimuth': azimuth,
-                                 'zenith': self.generate_zenith(),
+                                 'zenith': self.generate_attenuated_zenith(),
                                  'core_pos': (x, y),
                                  'size': None,
                                  'energy': None}

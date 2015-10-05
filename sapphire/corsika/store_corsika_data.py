@@ -21,7 +21,7 @@ import os
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
-from sapphire.corsika.reader import CorsikaFile
+from .reader import CorsikaFile
 
 
 class GroundParticles(tables.IsDescription):

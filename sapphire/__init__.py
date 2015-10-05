@@ -28,6 +28,9 @@ The following packages and modules are included:
 :mod:`~sapphire.publicdb`
     public data access
 
+:mod:`~sapphire.qsub`
+    submit jobs to Stoomboot
+
 :mod:`~sapphire.simulations`
     package containing simulation-related modules
 
@@ -51,6 +54,7 @@ from . import corsika
 from . import esd
 from . import kascade
 from . import publicdb
+from . import qsub
 from . import simulations
 from . import storage
 from . import time_util
@@ -67,6 +71,7 @@ from .analysis.reconstructions import (ReconstructESDEvents,
                                        ReconstructESDCoincidences)
 from .api import Network, Station
 from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
+from .corsika.corsika_queries import CorsikaQuery
 from .esd import (quick_download, load_data, download_data,
                   download_coincidences)
 from .simulations.groundparticles import GroundParticlesSimulation
@@ -82,6 +87,7 @@ __all__ = ['analysis',
            'esd',
            'kascade',
            'publicdb',
+           'qsub',
            'simulations',
            'storage',
            'time_util',
@@ -96,6 +102,7 @@ __all__ = ['analysis',
            'ReconstructESDEvents', 'ReconstructESDCoincidences',
            'Network', 'Station',
            'HiSPARCStations', 'HiSPARCNetwork', 'ScienceParkCluster',
+           'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
            'download_coincidences',
            'GroundParticlesSimulation',

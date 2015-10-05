@@ -4,17 +4,17 @@ densities and for fitting to data.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire import NkgLdfSimulation, ScienceParkCluster
+    >>> from sapphire import NkgLdfSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
-                           max_energy=1e21, cluster=cluster,
-                           datafile=data, N=200)
-    sim.run()
+    >>> sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
+    ...                        max_energy=1e21, cluster=cluster,
+    ...                        datafile=data, N=200)
+    >>> sim.run()
 
 """
 import warnings
@@ -194,7 +194,7 @@ class EllipsLdfSimulation(BaseLdfSimulation):
     def generate_shower_parameters(self):
         """Generate shower parameters, i.e. core position
 
-        For the elliptic LDF  both the core position and the zenith angle
+        For the elliptic LDF both the core position and the zenith angle
         are relevant.
 
         :return: dictionary with shower parameters: core_pos
