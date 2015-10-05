@@ -86,7 +86,7 @@ class SeedsTest(unittest.TestCase):
         mock_store.return_value = sentinel.command
         qsub_store_corsika_data.run(sentinel.queue)
         for seed in seeds:
-            mock_submit.assert_any_call(sentinel.script, seed, sentinel.queue)
+            mock_submit.assert_any_call(sentinel.script, seed, sentinel.queue, '')
             mock_append.assert_any_call([seed])
         mock_template.format.assert_called_with(command=sentinel.command,
                                                 datadir=qsub_store_corsika_data.DATADIR)
