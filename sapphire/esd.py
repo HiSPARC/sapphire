@@ -299,8 +299,9 @@ def download_coincidences(file, cluster=None, stations=None,
     if progress:
         pbar.finish()
 
-    cluster = clusters.HiSPARCStations(station_numbers)
-    table._v_parent._v_attrs.cluster = cluster
+    if len(station_numbers):
+        cluster = clusters.HiSPARCStations(station_numbers)
+        table._v_parent._v_attrs.cluster = cluster
     file.flush()
 
 
@@ -313,9 +314,13 @@ def _get_or_create_station_numbers(table):
     """
     try:
         cluster = table._v_parent._v_attrs.cluster
-        return {s.number for s in cluster.stations}
     except AttributeError:
         return set()
+    else:
+        if cluster.stations is not None:
+            return {s.number for s in cluster.stations}
+        else:
+            return set()
 
 
 def _get_station_groups():
