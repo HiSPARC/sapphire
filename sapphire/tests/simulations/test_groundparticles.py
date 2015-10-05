@@ -12,7 +12,6 @@ from sapphire.simulations.groundparticles import \
      DetectorBoundarySimulation, FixedCoreDistanceSimulation)
 
 
-
 self_path = os.path.dirname(__file__)
 
 
