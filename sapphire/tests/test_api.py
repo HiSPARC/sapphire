@@ -48,7 +48,20 @@ class NetworkTests(unittest.TestCase):
         self.network = api.Network()
         self.keys = ['name', 'number']
 
-    def test_nested_network(self):
+    @patch.object(api.Network, 'countries')
+    @patch.object(api.Network, 'clusters')
+    @patch.object(api.Network, 'subclusters')
+    @patch.object(api.Network, 'stations')
+    def test_nested_network(self, mock_stations, mock_subcluster,
+                            mock_clusters, mock_countries):
+        mock_countries.return_value = [{'name': sentinel.country_name,
+                                        'number': sentinel.country_number}]
+        mock_clusters.return_value = [{'name': sentinel.cluster_name,
+                                       'number': sentinel.cluster_number}]
+        mock_subcluster.return_value = [{'name': sentinel.subcluster_name,
+                                         'number': sentinel.subcluster_number}]
+        mock_stations.return_value = [{'name': sentinel.station_name,
+                                       'number': sentinel.station_number}]
         nested_network = self.network.nested_network()
         self.assertEqual(nested_network[0].keys(), ['clusters', 'name', 'number'])
         self.assertEqual(nested_network[0]['clusters'][0].keys(),
@@ -305,9 +318,14 @@ class StationTests(unittest.TestCase):
         self.assertRaises(Exception, self.station.has_weather, month=1, day=1)
         self.assertRaises(Exception, self.station.has_weather, year=2011, day=1)
 
-    def test_event_trace(self):
-        self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 268)
-        self.assertEqual(self.station.event_trace(1378771205, 571920029, raw=True)[3][9], 464)
+    @patch.object(api, 'urlopen')
+    def test_event_trace(self, mock_urlopen):
+        trace = '[%s]' % ', '.join(str(v) for v in range(0, 11))
+        mock_urlopen.return_value.read.return_value = '[%s]' % ', '.join(4 * [trace])
+        self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 9)
+        trace = '[%s]' % ', '.join(str(v) for v in range(200, 211))
+        mock_urlopen.return_value.read.return_value = '[%s]' % ', '.join(4 * [trace])
+        self.assertEqual(self.station.event_trace(1378771205, 571920029, raw=True)[3][9], 209)
 
     def test_event_time(self):
         names = ('hour', 'counts')
@@ -404,12 +422,18 @@ class StationTests(unittest.TestCase):
     def test_laziness_detector_timing_offsets(self):
         self.laziness_of_attribute('detector_timing_offsets')
 
-    def test_detector_timing_offsets(self):
+    @patch.object(api, 'urlopen')
+    def test_detector_timing_offsets(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
         names = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
         data = self.station.detector_timing_offsets
         self.assertEqual(data.dtype.names, names)
+        self.assertEqual(len(data), 4)
+        self.assertEqual(len(data[0]), 5)
 
-    def test_detector_timing_offset(self):
+    @patch.object(api, 'urlopen')
+    def test_detector_timing_offset(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
         offsets = self.station.detector_timing_offset(0)
         self.assertEqual(len(offsets), 4)
 
