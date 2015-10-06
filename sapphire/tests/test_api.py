@@ -63,11 +63,18 @@ class NetworkTests(unittest.TestCase):
         mock_stations.return_value = [{'name': sentinel.station_name,
                                        'number': sentinel.station_number}]
         nested_network = self.network.nested_network()
-        self.assertEqual(nested_network[0].keys(), ['clusters', 'name', 'number'])
-        self.assertEqual(nested_network[0]['clusters'][0].keys(),
-                         ['subclusters', 'name', 'number'])
-        self.assertEqual(nested_network[0]['clusters'][0]['subclusters'][0].keys(),
-                         ['stations', 'name', 'number'])
+        self.assertEqual(nested_network,
+                         [{'clusters': [
+                               {'subclusters': [
+                                    {'stations': [
+                                         {'name': sentinel.station_name,
+                                          'number': sentinel.station_number}],
+                                     'name': sentinel.subcluster_name,
+                                     'number': sentinel.subcluster_number}],
+                                'name': sentinel.cluster_name,
+                                'number': sentinel.cluster_number}],
+                           'name': sentinel.country_name,
+                           'number': sentinel.country_number}])
 
     def test_lazy_countries(self):
         self.laziness_of_method('countries')
