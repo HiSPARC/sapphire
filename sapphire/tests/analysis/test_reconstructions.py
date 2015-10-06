@@ -20,7 +20,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.assertEqual(rec.data, self.data)
 
         self.assertEqual(rec.station_group, self.data.get_node.return_value)
-        self.data.get_node.return_value.assert_valled_once_with(sentinel.station_group)
+        self.data.get_node.return_value.assert_called_once_with(sentinel.station_group)
         self.assertEqual(rec.events, self.data.get_node.return_value.events)
 
         self.assertEqual(rec.overwrite, sentinel.overwrite)
