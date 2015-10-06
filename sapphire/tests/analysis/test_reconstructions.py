@@ -1,6 +1,6 @@
 import unittest
 
-from mock import sentinel, patch, MagicMock
+from mock import sentinel, MagicMock
 
 from sapphire.analysis import reconstructions
 
@@ -64,6 +64,13 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.rec.reconstruct_cores(sentinel.detector_ids)
         self.rec.core.reconstruct_events.assert_called_with(
             self.rec.events, sentinel.detector_ids, self.rec.progress)
+
+    def test__store_reconstruction(self):
+        event = MagicMock()
+        self.rec.reconstructions = MagicMock()
+        self.rec._store_reconstruction(event, sentinel.core_x, sentinel.core_y,
+                                       sentinel.theta, sentinel.phi, [1, 3, 4])
+        self.rec.reconstructions.row.append.assert_called_once_with()
 
 
 if __name__ == '__main__':
