@@ -65,14 +65,14 @@ class NetworkTests(unittest.TestCase):
         nested_network = self.network.nested_network()
         self.assertEqual(nested_network,
                          [{'clusters': [
-                               {'subclusters': [
-                                    {'stations': [
-                                         {'name': sentinel.station_name,
-                                          'number': sentinel.station_number}],
-                                     'name': sentinel.subcluster_name,
-                                     'number': sentinel.subcluster_number}],
-                                'name': sentinel.cluster_name,
-                                'number': sentinel.cluster_number}],
+                           {'subclusters': [
+                            {'stations': [
+                             {'name': sentinel.station_name,
+                              'number': sentinel.station_number}],
+                             'name': sentinel.subcluster_name,
+                             'number': sentinel.subcluster_number}],
+                            'name': sentinel.cluster_name,
+                            'number': sentinel.cluster_number}],
                            'name': sentinel.country_name,
                            'number': sentinel.country_number}])
 
