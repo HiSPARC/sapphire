@@ -269,25 +269,6 @@ class ReconstructESDCoincidences(object):
             self.progress)
         self.core_x, self.core_y = cores
 
-    def _reconstruct_direction(self, coincidence):
-        """Reconstruct a coincidence
-
-        Use direct algorithm if three stations are in coincidence,
-        use fit algorithm in case of four or more,
-        return (nan, nan) otherwise.
-
-        """
-        station_numbers = [c[0] for c in coincidence]
-        if len(coincidence) == 3:
-            theta, phi = self.direct.reconstruct_coincidence(coincidence,
-                                                             self.offsets)
-        elif len(coincidence) >= 4:
-            theta, phi = self.fit.reconstruct_coincidence(coincidence,
-                                                          self.offsets)
-        else:
-            theta, phi = (nan, nan)
-        return theta, phi, station_numbers
-
     def prepare_output(self):
         """Prepare output table"""
 
