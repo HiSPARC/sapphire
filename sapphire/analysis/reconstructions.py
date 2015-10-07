@@ -1,6 +1,6 @@
 from itertools import izip_longest
 
-from numpy import isnan, nan, histogram, linspace, percentile, std
+from numpy import isnan, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
 import tables
 

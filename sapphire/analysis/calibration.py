@@ -83,7 +83,7 @@ def determine_detector_timing_offset(dt, dz=0):
 
 
 def determine_station_timing_offset(dt, dz=0):
-    """Determine the timing offset between station.
+    """Determine the timing offset between stations.
 
     :param dt: a list of time differences between stations (t - t_ref).
     :param dz: height difference between the stations (z - z_ref).

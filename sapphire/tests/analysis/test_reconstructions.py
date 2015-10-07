@@ -109,7 +109,6 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
             progress=sentinel.progress, destination=sentinel.destination,
             cluster=self.cluster)
 
-
     def test_init(self):
         rec = self.rec
         self.assertEqual(rec.data, self.data)
