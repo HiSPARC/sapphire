@@ -65,6 +65,30 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.rec.core.reconstruct_events.assert_called_with(
             self.rec.events, sentinel.detector_ids, self.rec.progress)
 
+    def test_prepare_output(self):
+        self.rec.prepare_output()
+        self.data.create_table.assert_called_once_with(
+            self.rec.station_group, sentinel.destination, reconstructions.ReconstructedEvent)
+        self.assertEqual(self.rec.reconstructions, self.data.create_table.return_value)
+        self.assertEqual(self.rec.reconstructions._v_attrs.station, self.station)
+
+    def test_prepare_output_existing(self):
+        self.rec.station_group = [sentinel.destination]
+
+        # Overwrite existing
+        self.rec.overwrite = True
+        self.rec.prepare_output()
+        self.data.remove_node.assert_called_once_with(
+            self.rec.station_group, sentinel.destination, recursive=True)
+        self.data.create_table.assert_called_with(
+            self.rec.station_group, sentinel.destination, reconstructions.ReconstructedEvent)
+        self.assertEqual(self.rec.reconstructions, self.data.create_table.return_value)
+        self.assertEqual(self.rec.reconstructions._v_attrs.station, self.station)
+
+        # Raise exception if table already exists
+        self.rec.overwrite = False
+        self.assertRaises(RuntimeError, self.rec.prepare_output)
+
     def test__store_reconstruction(self):
         event = MagicMock()
         self.rec.reconstructions = MagicMock()
