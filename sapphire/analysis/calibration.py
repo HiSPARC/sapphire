@@ -90,6 +90,8 @@ def determine_station_timing_offset(dt, dz=0):
     :return: mean of a gaussian fit to the data corrected for height.
 
     """
+    if not len(dt):
+        return nan
     c = .3
     p = percentile(dt, [2, 98])
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
