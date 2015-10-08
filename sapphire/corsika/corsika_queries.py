@@ -120,10 +120,10 @@ class CorsikaQuery(object):
         """
         queries = []
         if particle:
-            assert particle in self.all_particles
+            assert particle in self.all_particles, 'Particle not available'
             queries.append(self.filter('particle_id', particle_id(particle)))
         if energy:
-            assert energy in self.all_energies
+            assert energy in self.all_energies, 'Energy not available'
             queries.append(self.filter('log10(energy)', energy))
         if zenith:
             queries.append(self.float_filter('zenith', radians(zenith)))
@@ -134,6 +134,18 @@ class CorsikaQuery(object):
         filtered_simulations = self.perform_query(query, iterator)
 
         return filtered_simulations
+
+    def available_parameters(self, parameter, *args, **kwargs):
+        sims = self.simulations(*args, **kwargs)
+        available = set(sims[parameter])
+        if parameter == 'energy':
+            return {log10(energy) for energy in available}
+        elif parameter in ['zenith', 'azimuth']:
+            return {degrees(angle) for angle in available}
+        elif parameter == 'particle_id':
+            return {name(particle) for particle in available}
+        else:
+            return available
 
     def filter(self, type, value):
         """Filter to be in a range
