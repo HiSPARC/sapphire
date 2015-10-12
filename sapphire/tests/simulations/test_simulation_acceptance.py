@@ -1,6 +1,5 @@
 import os
 import unittest
-import warnings
 
 from sapphire.tests.validate_results import validate_results
 from perform_simulation import (create_tempfile_path,
@@ -11,12 +10,6 @@ from perform_simulation import (create_tempfile_path,
 
 
 class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
-
-    def setUp(self):
-        warnings.filterwarnings('ignore')
-
-    def tearDown(self):
-        warnings.resetwarnings()
 
     def test_simulation_output(self):
         """Perform a simulation and verify the output"""
@@ -39,12 +32,6 @@ class FlatFrontSimulationAcceptanceTest(unittest.TestCase):
 
 
 class NkgLdfSimulationAcceptanceTest(unittest.TestCase):
-
-    def setUp(self):
-        warnings.filterwarnings('ignore')
-
-    def tearDown(self):
-        warnings.resetwarnings()
 
     def test_simulation_output(self):
         """Perform a simulation and verify the output"""

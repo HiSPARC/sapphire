@@ -92,5 +92,6 @@ class SeedsTest(unittest.TestCase):
                                                 datadir=qsub_store_corsika_data.DATADIR)
         mock_umask.assert_called_once_with(002)
 
+
 if __name__ == '__main__':
     unittest.main()
