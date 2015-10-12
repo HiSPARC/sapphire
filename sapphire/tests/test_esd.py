@@ -118,13 +118,8 @@ class ESDTest(unittest.TestCase):
     @unittest.skipUnless(api.API.check_connection(),
                          "Internet connection required")
     def test_download_coincidences(self):
-        """Download coincidence data from esd and validate results
+        """Download coincidence data from esd and validate results"""
 
-        This test fails when new stations are added because
-        s_index is populated with all HiSPARC stations, just in case
-        any are in a coincidence. So s_index will need to be updated.
-
-        """
         output_path = create_tempfile_path()
         perform_download_coincidences(output_path)
         validate_results(self, test_data_coincidences_path, output_path)
