@@ -119,15 +119,15 @@ class CorsikaQuery(object):
 
         """
         queries = []
-        if particle:
+        if particle is not None:
             assert particle in self.all_particles, 'Particle not available'
             queries.append(self.filter('particle_id', particle_id(particle)))
-        if energy:
+        if energy is not None:
             assert energy in self.all_energies, 'Energy not available'
             queries.append(self.filter('log10(energy)', energy))
-        if zenith:
+        if zenith is not None:
             queries.append(self.float_filter('zenith', radians(zenith)))
-        if azimuth:
+        if azimuth is not None:
             queries.append(self.float_filter('azimuth', radians(azimuth)))
         query = ' & '.join(queries)
 
