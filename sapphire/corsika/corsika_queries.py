@@ -47,12 +47,9 @@ class CorsikaQuery(object):
         :return: combined seed1 and seed2.
 
         """
-        if iterator:
-            seeds = ('%d_%d' % (sim['seed1'], sim['seed2'])
-                     for sim in simulations)
-        else:
-            seeds = ['%d_%d' % (sim['seed1'], sim['seed2'])
-                     for sim in simulations]
+        seeds = ('%d_%d' % (sim['seed1'], sim['seed2']) for sim in simulations)
+        if not iterator:
+            seeds = list(seeds)
         return seeds
 
     def get_info(self, seeds):
