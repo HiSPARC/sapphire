@@ -25,7 +25,7 @@ import numpy as np
 import tables
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
-from ..corsika.corsika_query import CorsikaQuery
+from ..corsika.corsika_queries import CorsikaQuery
 from ..utils import pbar, round_in_base
 
 
