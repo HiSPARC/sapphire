@@ -449,7 +449,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
             shower_parameters.update(corsika_parameters)
             self._prepare_cluster_for_shower(x, y, alpha)
 
-            with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
             seeds = self.cq.seeds([sim])[0]
+            with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
                 self.groundparticles = data.get_node('/groundparticles')
                 yield shower_parameters
