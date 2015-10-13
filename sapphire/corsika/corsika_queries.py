@@ -112,6 +112,7 @@ class CorsikaQuery(object):
         """Set of available energies given the requirements
 
         :param particle: primary particle must be this kind, name of particle.
+                         Defaults to proton.
         :param energy: primary energy must be this value, in log10(eV).
         :param zenith: shower zenith must be this value, in degrees.
         :param azimuth: shower azimuth must be this value, in degrees.

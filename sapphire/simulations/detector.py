@@ -193,7 +193,7 @@ class HiSPARCSimulation(BaseSimulation):
         attenuation and precise positions for each particle.
 
         :param min,max: minimum and maximum zenith angles, in radians.
-        :return: Random zenith position on a sphere.
+        :return: random zenith position on a sphere, in radians.
 
         """
         p = np.random.uniform(cos(max), cos(min))
@@ -210,6 +210,8 @@ class HiSPARCSimulation(BaseSimulation):
         attenuation of air showers due to the extra path length in the
         atmosphere into account.
 
+        :return: random zenith angle, in radians.
+
         """
         p = np.random.random()
         return cls.inverse_zenith_probability(p)
@@ -222,7 +224,7 @@ class HiSPARCSimulation(BaseSimulation):
         (internal note), eq 2.4 from Rossi.
 
         :param p: probability value between 0 and 1.
-        :return: zenith with corresponding cumulative probability.
+        :return: zenith with corresponding cumulative probability, in radians.
 
         """
         return acos((1 - p) ** (1 / 8.))
