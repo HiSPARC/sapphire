@@ -442,14 +442,14 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
             corsika_parameters = {'zenith': sim['zenith'],
                                   'size': sim['n_electron'],
                                   'energy': sim['energy'],
-                                  'particle': sim['particle']}
+                                  'particle': sim['particle_id']}
             shower_parameters = {'ext_timestamp': (now + i) * int(1e9),
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
             shower_parameters.update(corsika_parameters)
             self._prepare_cluster_for_shower(x, y, alpha)
 
-            seeds = self.cq.seeds(sim)
             with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
+            seeds = self.cq.seeds([sim])[0]
                 self.groundparticles = data.get_node('/groundparticles')
                 yield shower_parameters
