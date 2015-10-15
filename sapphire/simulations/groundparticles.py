@@ -374,14 +374,16 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
     # CORSIKA data location at Nikhef
     DATA = '/data/hisparc/corsika/data/{seeds}/corsika.h5'
 
-    def __init__(self, corsikaoverview_path, max_core_distance, *args,
-                 **kwargs):
+    def __init__(self, corsikaoverview_path, max_core_distance, min_energy,
+                 max_energy, *args, **kwargs):
         """Simulation initialization
 
         :param corsikaoverview_path: path to the corsika_overview.h5 file
                                      containing the available simulations.
         :param max_core_distance: maximum distance of shower core to
                                   center of cluster.
+        :param min_energy,max_energy: upper and lower shower energy limits,
+                                      in log10(eV).
 
         """
         # Super of the super class.
@@ -389,6 +391,8 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
 
         self.cq = CorsikaQuery(corsikaoverview_path)
         self.max_core_distance = max_core_distance
+        self.min_energy = min_energy
+        self.max_energy = max_energy
 
     def __del__(self):
         self.finish()
@@ -451,11 +455,14 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
                     yield shower_parameters
 
     def select_simulation(self):
-        """Generate parameters for selecting a CORSIKA simulation"""
+        """Generate parameters for selecting a CORSIKA simulation
 
+        :return: simulation row from a CORSIKA Simulations table.
+
+        """
         zenith = self.generate_zenith()
         shower_zenith = round_in_base(np.degrees(zenith), 7.5)
-        energy = self.generate_energy(1e15, 1e17)
+        energy = self.generate_energy(self.min_energy, self.max_energy)
         shower_energy = round_in_base(log10(energy), .5)
 
         sims = self.cq.simulations(energy=shower_energy,
