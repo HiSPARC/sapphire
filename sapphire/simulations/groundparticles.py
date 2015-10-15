@@ -383,7 +383,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         :param max_core_distance: maximum distance of shower core to
                                   center of cluster.
         :param min_energy,max_energy: upper and lower shower energy limits,
-                                      in log10(eV).
+                                      in eV.
 
         """
         # Super of the super class.
@@ -464,6 +464,9 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         shower_zenith = round_in_base(np.degrees(zenith), 7.5)
         energy = self.generate_energy(self.min_energy, self.max_energy)
         shower_energy = round_in_base(log10(energy), .5)
+
+        if shower_energy == 17.5 and shower_zenith < 15.:
+            shower_zenith = 15.
 
         sims = self.cq.simulations(energy=shower_energy,
                                    zenith=shower_zenith)
