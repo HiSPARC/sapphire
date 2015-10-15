@@ -415,7 +415,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
 
         """
         r = self.max_core_distance
-        n_reuse = 100.
+        n_reuse = 100
         now = int(time())
 
         for i in pbar(range(self.N), show=self.progress):
@@ -437,7 +437,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
                     continue
 
                 for j in range(n_reuse):
-                    ext_timestamp = (now + i + (j / n_reuse)) * int(1e9)
+                    ext_timestamp = (now + i + (float(j) / n_reuse)) * int(1e9)
                     x, y = self.generate_core_position(r)
                     shower_azimuth = self.generate_azimuth()
 
