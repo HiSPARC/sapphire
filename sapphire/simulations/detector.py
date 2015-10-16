@@ -77,7 +77,7 @@ class HiSPARCSimulation(BaseSimulation):
 
     @classmethod
     def simulate_signal_transport_time(cls, n=1):
-        """ Simulate transport times of scintillation light to the PMT
+        """Simulate transport times of scintillation light to the PMT
 
         Generates random transit times within a given distribution and
         adds it to the times the particles passed the detector.

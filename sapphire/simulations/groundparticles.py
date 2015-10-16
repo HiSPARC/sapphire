@@ -240,7 +240,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
 
-    """ More accuratly simulate the detection area of the detectors.
+    """More accuratly simulate the detection area of the detectors.
 
     Take the orientation of the detectors into account and use the
     exact detector boundaries. This requires a slightly more complex
