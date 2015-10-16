@@ -371,6 +371,21 @@ class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,
 
 class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
 
+    """Use multiple CORSIKA simulated air showers in one run.
+
+    Simulations will be selected from the set of available showers.
+    Each time an energy and zenith angle is generated a shower is selected
+    from the CORSIKA overview. Each shower is reused multiple times to
+    take advantage of caching, and to reduce IO stress.
+
+    .. warning::
+
+        This simulation loads a new shower often it is therefore more I/O
+        intensive than :class:`GroundParticlesSimulation`. Do not run many
+        of these simulations simultaneously!
+
+    """
+
     # CORSIKA data location at Nikhef
     DATA = '/data/hisparc/corsika/data/{seeds}/corsika.h5'
 
