@@ -409,9 +409,6 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         self.min_energy = min_energy
         self.max_energy = max_energy
 
-    def __del__(self):
-        self.finish()
-
     def finish(self):
         """Clean-up after simulation"""
 
