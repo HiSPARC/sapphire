@@ -1,14 +1,12 @@
-from mock import Mock
 import unittest
 import os
 
+from mock import Mock, sentinel
 import tables
 from numpy import pi, sqrt, random, testing
 
 from sapphire.clusters import SingleDiamondStation
-from sapphire.simulations.groundparticles import (GroundParticlesSimulation,
-                                                  DetectorBoundarySimulation,
-                                                  FixedCoreDistanceSimulation)
+from sapphire.simulations import groundparticles
 
 
 self_path = os.path.dirname(__file__)
@@ -17,7 +15,8 @@ self_path = os.path.dirname(__file__)
 class GroundParticlesSimulationTest(unittest.TestCase):
 
     def setUp(self):
-        self.simulation = GroundParticlesSimulation.__new__(GroundParticlesSimulation)
+        self.simulation = groundparticles.GroundParticlesSimulation.__new__(
+            groundparticles.GroundParticlesSimulation)
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
@@ -77,7 +76,8 @@ class GroundParticlesSimulationTest(unittest.TestCase):
 class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
 
     def setUp(self):
-        self.simulation = DetectorBoundarySimulation.__new__(DetectorBoundarySimulation)
+        self.simulation = groundparticles.DetectorBoundarySimulation.__new__(
+            groundparticles.DetectorBoundarySimulation)
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
@@ -131,8 +131,36 @@ class FixedCoreDistanceSimulationTest(unittest.TestCase):
 
     def test_fixed_core_distance(self):
         r = random.uniform(1e-15, 4000, size=300)
-        x, y = FixedCoreDistanceSimulation.generate_core_position(r)
+        x, y = groundparticles.FixedCoreDistanceSimulation.generate_core_position(r)
         testing.assert_allclose(sqrt(x ** 2 + y ** 2), r, 1e-11)
+
+
+class MultipleGroundParticlesSimulationTest(unittest.TestCase):
+
+    def setUp(self):
+        self.simulation = groundparticles.MultipleGroundParticlesSimulation.__new__(
+            groundparticles.MultipleGroundParticlesSimulation)
+
+        self.simulation.cq = Mock()
+        self.simulation.max_core_distance = sentinel.max_core_distance
+        self.simulation.min_energy = sentinel.min_energy
+        self.simulation.max_energy = sentinel.max_energy
+
+    def test_finish(self):
+        self.simulation.finish()
+        self.simulation.cq.finish.assert_called_once_with()
+
+    def test_select_simulation(self):
+        self.simulation.generate_zenith = lambda: 0.27  # 15.5 deg
+        self.simulation.generate_energy = lambda min_e, max_e: 10**16.4
+        self.simulation.cq.simulations.return_value = [sentinel.sim]
+        result = self.simulation.select_simulation()
+        self.simulation.cq.simulations.assert_called_once_with(energy=16.5, zenith=15.)
+        self.assertEqual(result, sentinel.sim)
+
+        self.simulation.cq.simulations.return_value = []
+        result = self.simulation.select_simulation()
+        self.assertEqual(result, None)
 
 
 if __name__ == '__main__':
