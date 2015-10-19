@@ -152,7 +152,7 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
 
     def test_select_simulation(self):
         self.simulation.generate_zenith = lambda: 0.27  # 15.5 deg
-        self.simulation.generate_energy = lambda min_e, max_e: 10**16.4
+        self.simulation.generate_energy = lambda min_e, max_e: 10 ** 16.4
         self.simulation.cq.simulations.return_value = [sentinel.sim]
         result = self.simulation.select_simulation()
         self.simulation.cq.simulations.assert_called_once_with(energy=16.5, zenith=15.)
@@ -160,7 +160,7 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
 
         self.simulation.cq.simulations.return_value = []
         result = self.simulation.select_simulation()
-        self.assertEqual(result, None)
+        self.assertIsNone(result)
 
 
 if __name__ == '__main__':
