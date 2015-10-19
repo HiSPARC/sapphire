@@ -145,10 +145,20 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.max_core_distance = sentinel.max_core_distance
         self.simulation.min_energy = sentinel.min_energy
         self.simulation.max_energy = sentinel.max_energy
+        self.simulation.progress = False
 
     def test_finish(self):
         self.simulation.finish()
         self.simulation.cq.finish.assert_called_once_with()
+
+    def test_generate_shower_parameters(self):
+        self.simulation.N = 5
+        self.simulation.select_simulation = Mock()
+        self.simulation.select_simulation.return_value = None
+        shower_parameters = self.simulation.generate_shower_parameters()
+        self.assertRaises(StopIteration, shower_parameters.next)
+        self.assertEqual(self.simulation.select_simulation.call_count,
+                         self.simulation.N)
 
     def test_select_simulation(self):
         self.simulation.generate_zenith = lambda: 0.27  # 15.5 deg
