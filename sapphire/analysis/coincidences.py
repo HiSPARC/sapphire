@@ -105,7 +105,7 @@ class Coincidences(object):
 
     The ``event`` is one of the source events, processed to determine particle
     arrival times from the raw traces (if available). It has a
-    :attr:`station_id` attribute which is an index into ``station_groups``.
+    ``station_id`` attribute which is an index into ``station_groups``.
 
     """
 
