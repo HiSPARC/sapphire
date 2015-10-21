@@ -3,6 +3,7 @@ import tempfile
 
 import tables
 import datetime
+from mock import patch
 
 from sapphire import esd
 
@@ -46,8 +47,11 @@ def perform_esd_download_data(filename):
                           progress=False)
 
 
-def perform_download_coincidences(filename):
+@patch.object(esd.api.Network, 'station_numbers')
+def perform_download_coincidences(filename, mock_esd):
     """Load data from esd/api to h5 (filename)"""
+
+    mock_esd.return_value = range(501, 512)
 
     filters = tables.Filters(complevel=1)
     start = datetime.datetime(2012, 1, 1, 0, 0, 0)

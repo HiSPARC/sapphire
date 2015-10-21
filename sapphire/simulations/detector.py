@@ -4,6 +4,7 @@ These are some common simulations for HiSPARC detectors.
 
 """
 from math import sqrt, acos, pi, cos, sin
+import warnings
 
 import numpy as np
 
@@ -132,6 +133,8 @@ class HiSPARCSimulation(BaseSimulation):
         costheta = np.cos(theta)
         y = np.random.random(n)
 
+        # Prevent warning from the square root of negative values.
+        warnings.filterwarnings('ignore')
         if n == 1:
             if y < 0.3394:
                 mips = (0.48 + 0.8583 * sqrt(y)) / costheta
@@ -150,6 +153,7 @@ class HiSPARCSimulation(BaseSimulation):
             mips = np.where(y < 0.9041, mips,
                             (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
             mips = sum(mips)
+        warnings.resetwarnings()
         return mips
 
     @classmethod
