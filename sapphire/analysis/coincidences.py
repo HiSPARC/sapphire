@@ -46,8 +46,10 @@ class Coincidences(object):
 
     .. note::
         For better compatibility with other modules, such as
-        :mod:`~sapphire.analysis.reconstructions`, it is recommended
-        to use the subclass :class:`CoincidencesESD` instead.
+        :mod:`~sapphire.analysis.reconstructions`, it is recommended to use the
+        subclass :class:`CoincidencesESD` instead. This is an old class with a
+        different way to store the results. It can be used, however, on *raw*
+        data downloaded from the public database.
 
     Suppose you want to search for coincidences between stations 501 and
     503.  First, download the data for these stations (with, or without
@@ -66,6 +68,44 @@ class Coincidences(object):
 
     You can then provide different parameters to the individual methods.
     See the corresponding docstrings.
+
+    Once the coincidences are stored, there will be a `coincidences` table in
+    the group. This table has multiple columns used for storing simulation
+    inputs like shower direction and energy. At this point, they contain no
+    information. They are only useful if the original event tables were created
+    by simulations, instead of real detector data. The useful columns are:
+
+        * ``id``: the index of this coincidence. This index is identical for
+          the ``coincidence`` and ``c_index`` tables.
+        * ``timestamp``: the timestamp of the event in seconds
+        * ``nanoseconds``: the subsecond part of the timestamp in nanoseconds
+        * ``ext_timestamp``: the timestamp of the event in nanoseconds (equal
+          to timestamp * 1000000000 + nanoseconds)
+        * ``N``: the number of stations participating in this coincidence
+        * ``s0``, ``s1``, ...: whether the first (0), second (1) or other
+          stations participated in the coincidence.
+
+    The coincidences group furthermore contains the table ``c_index`` to track
+    down the individual events making up the coincidence. The ``c_index`` table
+    gives indexes for the individual events inside the original event tables.
+
+    If you have obtained a particular coincidence from the ``coincidences``
+    table, the ``id`` is the index into all these tables. For example, looking
+    up the source events making up the 40th coincidence::
+
+        >>> group = data.root.coincidences
+        >>> idx = 40
+        >>> group.coincidences[idx]
+
+    can be done in the following way (each row in the ``c_index`` table is a
+    (station index, event index) pair)::
+
+        >>> for event_idx in group.c_index[idx]:
+        ...     event = group.observables[event_idx]
+
+    The ``event`` is one of the source events, processed to determine particle
+    arrival times from the raw traces (if available). It has a
+    :attr:`station_id` attribute which is an index into ``station_groups``.
 
     """
 
@@ -477,9 +517,10 @@ class CoincidencesESD(Coincidences):
     See the corresponding docstrings.
 
     Once the coincidences are stored, there will be a `coincidences` table in
-    the group. This table has multiple columns used for storing analysis
-    results like shower direction and energy. At this point, they contain no
-    information. The useful columns are:
+    the group. This table has multiple columns used for storing simulation
+    inputs like shower direction and energy. At this point, they contain no
+    information. They are only useful if the original event tables were created
+    by simulations, instead of real detector data. The useful columns are:
 
         * ``id``: the index of this coincidence. This index is identical for
           the ``coincidence`` and ``c_index`` tables.
