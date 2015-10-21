@@ -79,13 +79,18 @@ def _first_available_numbered_path():
 
 
 def load_data(file, group, csv_file, type='events'):
-    """Download event summary data
+    """Load downloaded event summary data into PyTables file.
+
+    If you've previously downloaded event summary data from
+    http://data.hisparc.nl/ in CSV format, you can load them into a PyTables
+    file using this method. The data is then indistinguishable from data
+    downloaded using :func:`download_data`.
 
     :param file: the PyTables datafile handler
     :param group: the PyTables destination group, which need not exist
     :param csv_file: path to the csv file downloaded from the HiSPARC
                      Public Database
-    :param type: the datatype to download, either 'events' or 'weather'
+    :param type: the datatype to load, either 'events' or 'weather'
 
     Example::
 
