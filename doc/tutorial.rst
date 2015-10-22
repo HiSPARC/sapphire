@@ -482,17 +482,17 @@ documentation, see the `Matplotlib site <http://matplotlib.org>`_
 (`function reference
 <http://matplotlib.org/1.2.0/api/pyplot_summary.html>`_).  Try this::
 
-    >>> bins = arange(0, 2001, 20)
+    >>> bins = linspace(0, 2000, 101)
     >>> hist(ph, bins, histtype='step', log=True)
     >>> xlabel("Pulseheight [ADC]")
     >>> ylabel("Counts")
     >>> title("Pulseheight histogram (log scale)")
 
-The ``arange`` function returns an array with range from 0 to 2000 in
-steps of 20.  It is necessary to say 2001 (or 2002, 2000.1 or whatever)
-and not 2000, if you want the range to be inclusive.  The ``hist``
-function will then plot a *stepped* histogram with a log scale.  Finally,
-we add some labels and a title.  This is the result:
+The ``linspace`` function returns an array with range from 0 to 2000 with a
+total number of 101 values. The first value is 0, the last is 2000. These are
+the *edges* of the bins. So, 101 values means exactly 100 bins between 0 and
+2000. The ``hist`` function will then plot a *stepped* histogram with a log
+scale.  Finally, we add some labels and a title.  This is the result:
 
 .. image:: images/tutorial-hist-better.png
    :width: 500px
