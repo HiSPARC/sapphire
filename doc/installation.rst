@@ -154,30 +154,25 @@ If you like living on the edge with a possibly broken version of
 Let me see the code!
 --------------------
 
-You want to see the code so that you can change it, or follow the progress
-of |sapphire|.  If you're interested in the development of |sapphire|, you
-can either go to the `GitHub page <https://github.com/hisparc/sapphire/>`_
-or install the version control system (we use `Git <http://git-scm.com>`_)
-yourself.  For that, please see the `GitHub Help pages
-<https://help.github.com/articles/set-up-git>`_.
+If you're interested in the development of |sapphire|, you can either go to the
+`GitHub page <https://github.com/hisparc/sapphire/>`_ or install the version
+control system (we use `Git <http://git-scm.com>`_) yourself.  For that, please
+see the `GitHub Help pages <https://help.github.com/articles/set-up-git>`_.
 
-To just download the code and install |sapphire|, first go to
-https://github.com/hisparc/sapphire/.  Then, click on the *Download ZIP* button
-(see image below).  This will start a download of all the code bundled in a zip
-file. If you click on *Clone in Desktop*, you can download the GitHub desktop
-app (recommended).
+To download the code and install |sapphire|, first go to
+https://github.com/hisparc/sapphire/.  Then, click on the *Clone in Desktop*,
+which will prompt you to download the GitHub Desktop app (recommended).
 
 .. image:: images/github-zipball.png
 
-You can also click the following link:
-https://github.com/hisparc/sapphire/zipball/master.  Uncompress the zip
-file, open a terminal and navigate to the top-level directory containing
-the code.  Then issue::
+Open a terminal and navigate to the top-level directory containing the code.
+Then issue::
 
-    $ python setup.py install
+    $ python setup.py develop
 
-This takes care of installing the missing dependencies and |sapphire|
-itself.
+This takes care of installing the missing dependencies and |sapphire| itself.
+Whenever you update the code using the GitHub Desktop application, the new code
+is immediately available.
 
 
 Checking that |sapphire| is installed correctly
@@ -202,8 +197,8 @@ Or, if you prefer, `IPython <http://ipython.org>`_::
 
     $ ipython
 
-In fact, we recommend using IPython for interactive use (install IPython
-using ``pip install ipython``).  Then, try to import |sapphire|::
+In fact, we recommend using IPython for interactive use.  Then, try to import
+|sapphire|::
 
     >>> import sapphire
 
