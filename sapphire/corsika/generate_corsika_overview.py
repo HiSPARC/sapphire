@@ -85,12 +85,12 @@ def read_seeds(simulations_table, source, seeds):
     :param seeds: directory name of a simulation, format: '{seed1}_{seed2}'.
 
     """
+    path = os.path.join(source, seeds, 'corsika.h5')
     if not os.path.exists(path):
         logger.info('%19s: No corsika.h5 available.' % seeds)
         return
     try:
-        with tables.open_file(os.path.join(source, seeds, 'corsika.h5'),
-                              'r') as corsika_data:
+        with tables.open_file(path, 'r') as corsika_data:
             try:
                 header = corsika_data.get_node_attr('/', 'event_header')
                 end = corsika_data.get_node_attr('/', 'event_end')
