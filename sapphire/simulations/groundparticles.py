@@ -78,7 +78,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         for i in pbar(range(self.N), show=self.progress):
             x, y = self.generate_core_position(r)
 
-            # Subtract Corsika shower azimuth from desired shower azimuth
+            # Subtract CORSIKA shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
             shower_azimuth = self.generate_azimuth()
             alpha = shower_azimuth - event_header.azimuth

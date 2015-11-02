@@ -3,20 +3,20 @@
 This package contains modules for performing simulations:
 
 :mod:`~sapphire.simulations.base`
-    Base simulations class that provides the framework for simulations
+    base simulations class that provides the framework for simulations
 
 :mod:`~sapphire.simulations.detector`
-    Simulate the response of the HiSPARC detectors
+    simulate the response of the HiSPARC detectors
 
 :mod:`~sapphire.simulations.groundparticles`
-    Perform simulations using CORSIKA ground particles as input
+    perform simulations using CORSIKA ground particles as input
 
 :mod:`~sapphire.simulations.ldf`
-    Perform simulations using lateral distribution functions for particle
+    perform simulations using lateral distribution functions for particle
     densities
 
 :mod:`~sapphire.simulations.showerfront`
-    Simple simulations of a shower front
+    simple simulations of a shower front
 
 """
 from . import base
