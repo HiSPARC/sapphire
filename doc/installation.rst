@@ -1,27 +1,66 @@
 .. include:: subst.inc
 
 Installation
-============
+************
 
-In theory, installing a Python package should be as easy as py.  Er, pie.
-Using `Pip <http://www.pip-installer.org/>`_.  Like so::
+Python is a very versatile language. As such, it can be either installed with
+lots and lots of packages to create an environment for e.g. data analysis or
+game development, or it can be installed for a very specific task, taking up
+much less space. To install a complete environment without all the hassle, you
+can install a *Python distribution* which includes Python and a long list of
+packages. This is the recommended approach, certainly if you're new to Python.
+If you really want, you can install a much smaller set of packages for which
+we'll provide minimal instructions only.
 
-    $ pip install hisparc-sapphire
-
-Then, the Python package called ``sapphire`` would be retrieved from the
-internet.  It would have its dependencies listed and ``pip`` would pull
-them in and all should be well.  In fact, |sapphire| *does* have its
-dependencies listed and Pip *will* pull them in.  It is only then, that
-things start go wrong.  Whether you'll experience difficulties depends on
-the operating system you're using and any previously installed software.
-But don't worry, we've got you covered.  Before I'll go on describing how
-to install |sapphire| itself, we will first install the prerequisites.
+Before we'll go on describing how to install |sapphire| itself, we will first
+install the prerequisites.
 
 
 Installing the prerequisites
-----------------------------
+============================
 
-Follow the instructions below for your operating system of choice.
+Python distributions
+--------------------
+
+If you don't mind to install a large package, use a distribution. This mostly
+includes everything you'll ever need. One such distribution is `Anaconda
+<https://www.continuum.io/downloads>`_. It includes many scientific python
+packages, as well as graphical environments for doing your work. Anaconda has
+packages available for the three major platforms: Windows, OS X and Linux.
+
+Anaconda includes a graphical programming environment (`Spyder
+<http://pythonhosted.org/spyder/>`_) which makes it easy to write analysis
+scripts while creating plots, testing small snippets of code, or inspecting
+your variables.
+
+
+Minimal installation (miniconda)
+--------------------------------
+
+In theory, installing a Python package should be very easy. To install
+|sapphire|, the Python package called ``sapphire`` would be retrieved from the
+internet.  It would have its dependencies listed and ``pip`` would pull them in
+and all should be well.  In fact, |sapphire| *does* have its dependencies
+listed and Pip *will* pull them in.  It is only then, that things start go
+wrong.  Whether you'll experience difficulties depends on the operating system
+you're using and any previously installed software. But don't worry, we've got
+you covered.
+
+Miniconda is the package manager used by the Anaconda distribution.
+Installation instructions can be found at
+http://conda.pydata.org/docs/install/quick.html. After installation, install
+the following packages::
+
+    $ conda install matplotlib scipy pytables
+
+This is enough to simply install |sapphire| using Pip (see below).
+
+
+Minimal installation (OS-specific)
+----------------------------------
+
+If you want to use a package manager specifically for your OS, follow the
+(minimal) instructions below for your operating system of choice.
 
 
 Mac OS X
@@ -39,129 +78,53 @@ terminal::
 This will install Python and Pip.
 
 As of this writing, several of the dependencies listed by |sapphire| do not
-have their own dependencies listed in a way that Pip (or other tools, for
-that matter) know how to handle.  Furthermore, matplotlib needs to be
-installed all by itself, and its dependencies must be installed before it.
+have their own dependencies listed in a way that Pip (or other tools, for that
+matter) know how to handle. To install matplotlib with its requirements, you
+can type::
 
-After trial and error, this is the magic incantation which works on my
-system::
+    $ brew install homebrew/python/matplotlib
 
-    $ pip install numpy
-    $ pip install numexpr
-    $ pip install cython
-    $ pip install matplotlib
+Warning: this will install gcc and start a very long compilation process. Alternatively, with the introduction of *wheels* in Python, you can simply try to install packages like numpy, scipy and matplotlib using Pip::
 
-There are more prerequisites to be installed, but they are correctly
-handled by the Python package management software.
+    $ pip install numpy scipy matplotlib
 
-
-Windows
-^^^^^^^
-
-While Python follows a *batteries included* philosophy with an extensive
-standard library, the Unix philosophy favors minimalism.  Therefore, it is
-custom to install Python and then continue to install additional packages
-as needed.  Not so with Windows.  Windows does not have a package manager
-which can handle many software packages.  Instead, it favors installing
-relatively few software packages encompassing lots of functionality.
-Installing a package requires running a separate installer.
-
-Luckily, the `Python(x,y) <http://code.google.com/p/pythonxy/>`_ project
-solves this problem by installing not only Python, but a complete
-scientific environment.  This means that all our prerequisites are
-automatically covered.  Please install Python(x,y).
-
-In a Unix environment it is common to use the *terminal* for management
-tasks.  It is a text-only environment that lets you basically do anything.
-In windows, people are accustomed to performing all kinds of tasks using
-graphical interfaces.  However, these graphical interfaces are much harder
-to write than text-only interfaces.  As a result, graphical interfaces are
-usually somewhat limited.  Luckily, there *is* a terminal-like environment
-in Windows, called the *command prompt*.  You can open a command prompt in
-the following ways:
-
-    **Windows XP:**  Click Start.  Click Run.  Type ``cmd`` and press
-    *Enter*.
-
-    **Windows Vista, 7:**  Click Start.  Type ``cmd`` and press *Enter*.
-
-    **Windows 8:**  From the Start Screen, type ``cmd`` and press *Enter*.
-
-First, we'll install the modern Python package manager Pip::
-
-    c:\> easy_install pip
-
-This will probably try to open another terminal window, install Pip, close
-the window, and *then* complain that easy_install is probably not
-installed correctly (at least, this is how it went for us on Windows 7).
-Just tell Windows the program *was* installed correctly.  Pip will not
-have such idiosyncrasies and this was the last time we'll have used
-``easy_install``.  Note that it is also possible to install Python(x,y)
-and select the Pip package under *Python* in the installation options
-menu.  This makes it unnecessary to manually run ``easy_install``.  The
-end result is the same, however.
-
-.. note::
-    In the rest of this document, we will follow the Unix convention of
-    displaying a dollar sign ($) whenever we work from a terminal.  In
-    Unix environments, the dollar sign signifies the *command prompt*.  In
-    Windows, the command prompt is something like ``c:\>``.  Thus, whenever
-    you see::
-
-        $ pip install foo
-
-    we mean that you should open a command window, and then type ``pip
-    install foo`` at the prompt.  In Windows, this looks something like::
-
-        c:\> pip install foo
-
-When you run Python(x,y), we found it best to select *IPython (Qt)* under
-*Interactive consoles*, and run it in *Console 2* (the left, green, one).
-See below.  This will automatically import Pylab, a plotting package.
-
-.. image:: images/pythonxy-console.png
+If you're lucky, using a wheel will not need a compiler. We haven't tried this
+ourselves for quite a while. YMMV.
 
 
 Debian and derivatives (like Ubuntu)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Debian has a first-class package manager which other distributions and
-operating systems have a hard time competing with.  In my personal
-opinion, anyway.  Lots of Python packages can be installed using
-``apt-get``, but some of them might be outdated, depending on the age of
-your distribution.  Use ``apt-get`` for Python packages at your own
-discretion (read: risk).  Pip handles Python packages very well, so I'll
-give some instructions using Pip.
+operating systems have a hard time competing with.  In my personal opinion,
+anyway.  Lots of Python packages can be installed using ``apt-get``, but some
+of them might be outdated, depending on the age of your distribution.  Use
+``apt-get`` for Python packages at your own discretion (read: risk).  Pip
+handles Python packages very well, so you'll probably need some packages to
+install using Pip.
 
 As of this writing, several of the dependencies listed by |sapphire| do not
 have their own dependencies listed in a way that Pip (or other tools, for
 that matter) know how to handle.  Furthermore, matplotlib needs to be
 installed all by itself, and its dependencies must be installed before it.
 
-You need to install some development libraries::
+You can try to install packages using ``apt-get``, for example::
 
-    $ sudo apt-get install gfortran
-    $ sudo apt-get install python-dev
-    $ sudo apt-get install libfreetype6-dev
-    $ sudo apt-get install libpng-dev
-    $ sudo apt-get install libatlas-base-dev
-    $ sudo apt-get install libhdf5-dev
-    $ sudo apt-get install tk-dev
+    $ sudo apt-get install python-matplotlib
 
-After trial and error, this is the magic incantation which works on my
-system::
+To figure out what you need, look at the prerequisites for |sapphire|, listed
+in the setup.py file in the code repository. You can also try to install
+|sapphire| using pip, and waiting for the installation to fail on some
+prerequisites. If you then need development libraries, ``apt-get`` can help you
+with that::
 
-    $ sudo pip install numpy
-    $ sudo pip install numexpr
-    $ sudo pip install cython
-    $ sudo pip install matplotlib
+    $ sudo apt-get build-dep python-numpy
 
-There are more prerequisites to be installed, but they are correctly
-handled by the Python package management software.
+will install everything you need to build numpy from source.
 
 
 Installing |sapphire|
----------------------
+=====================
 
 The |sapphire| package has been uploaded to `PyPI
 <http://pypi.python.org>`_ so that Pip knows where to find it.
@@ -172,7 +135,7 @@ and use setup.py to install it.
 
 
 Just let me get to work!
-^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------
 
 These scenarios do not involve fetching the code.  They will just
 install |sapphire|, so that you can get to work.  To get the latest
@@ -189,35 +152,31 @@ If you like living on the edge with a possibly broken version of
 
 
 Let me see the code!
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
-You want to see the code so that you can change it, or follow the progress
-of |sapphire|.  If you're interested in the development of |sapphire|, you
-can either go to the `GitHub page <https://github.com/hisparc/sapphire/>`_
-or install the version control system (we use `Git <http://git-scm.com>`_
-yourself.  For that, please see the `GitHub Help pages
-<https://help.github.com/articles/set-up-git>`_.
+If you're interested in the development of |sapphire|, you can either go to the
+`GitHub page <https://github.com/hisparc/sapphire/>`_ or install the version
+control system (we use `Git <http://git-scm.com>`_) yourself.  For that, please
+see the `GitHub Help pages <https://help.github.com/articles/set-up-git>`_.
 
-To just download the code and install |sapphire|, first go to
-https://github.com/hisparc/sapphire/.  Then, click on the *Download ZIP*
-button (see image below).  This will start a download of all the code
-bundled in a zip file.
+To download the code and install |sapphire|, first go to
+https://github.com/hisparc/sapphire/.  Then, click on the *Clone in Desktop*,
+which will prompt you to download the GitHub Desktop app (recommended).
 
 .. image:: images/github-zipball.png
 
-You can also click the following link:
-https://github.com/hisparc/sapphire/zipball/master.  Uncompress the zip
-file, open a terminal and navigate to the top-level directory containing
-the code.  Then issue::
+Open a terminal and navigate to the top-level directory containing the code.
+Then issue::
 
-    $ python setup.py install
+    $ python setup.py develop
 
-This takes care of installing the missing dependencies and |sapphire|
-itself.
+This takes care of installing the missing dependencies and |sapphire| itself.
+Whenever you update the code using the GitHub Desktop application, the new code
+is immediately available.
 
 
 Checking that |sapphire| is installed correctly
------------------------------------------------
+===============================================
 
 First off, the following is not an exhaustive check.  But it will tell you
 if |sapphire| is, in fact, installed on your system and that Python knows
@@ -238,8 +197,8 @@ Or, if you prefer, `IPython <http://ipython.org>`_::
 
     $ ipython
 
-In fact, we recommend using IPython for interactive use (install IPython
-using ``pip install ipython``).  Then, try to import |sapphire|::
+In fact, we recommend using IPython for interactive use.  Then, try to import
+|sapphire|::
 
     >>> import sapphire
 

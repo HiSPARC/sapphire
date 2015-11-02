@@ -1,7 +1,7 @@
 .. include:: subst.inc
 
-Corsika Reader Documentation
-============================
+CORSIKA Reader
+==============
 
 `CORSIKA <https://web.ikp.kit.edu/corsika/>`_ is an Air Shower
 Simulation Program. To be used for detailed simulation of
@@ -42,6 +42,7 @@ Contents
 --------
 
 .. toctree::
+   :hidden:
 
    corsika/reader
    corsika/blocks

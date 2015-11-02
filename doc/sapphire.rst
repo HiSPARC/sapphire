@@ -3,11 +3,8 @@ SAPPHiRE Reference
 
 .. automodule:: sapphire
 
-
-Contents:
-
 .. toctree::
-   :maxdepth: 2
+   :hidden:
 
    analysis
    api

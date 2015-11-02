@@ -1,14 +1,12 @@
-Performing simulations
-======================
+Simulation of the detection of EAS events
+=========================================
 
 .. automodule:: sapphire.simulations
    :members:
    :undoc-members:
 
-
-Contents:
-
 .. toctree::
+   :hidden:
 
    simulations/base
    simulations/detector

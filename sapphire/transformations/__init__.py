@@ -1,4 +1,4 @@
-"""Transformation modules
+"""Convert coordinate and time systems.
 
 Easy transformations between different systems.
 

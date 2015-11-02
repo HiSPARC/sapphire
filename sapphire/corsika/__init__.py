@@ -1,4 +1,4 @@
-""" This module provides the functionality to read CORSIKA files.
+""" Read CORSIKA data files.
 
     It provides the following main classes:
 

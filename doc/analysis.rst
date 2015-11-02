@@ -5,10 +5,8 @@ Data analysis
    :members:
    :undoc-members:
 
-
-Contents:
-
 .. toctree::
+   :hidden:
 
    analysis/calibration
    analysis/coincidence_queries
