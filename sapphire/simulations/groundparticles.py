@@ -477,8 +477,9 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         energy = self.generate_energy(self.min_energy, self.max_energy)
         shower_energy = round_in_base(log10(energy), .5)
 
-        if shower_energy == 17.5 and shower_zenith < 15.:
-            shower_zenith = 15.
+        # Temporary fix for missing showers.
+        if shower_energy == 18 and shower_zenith < 30.:
+            shower_zenith = 30.
 
         sims = self.cq.simulations(energy=shower_energy,
                                    zenith=shower_zenith)
