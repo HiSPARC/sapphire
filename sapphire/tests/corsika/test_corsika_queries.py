@@ -46,6 +46,15 @@ class CorsikaQueryTest(unittest.TestCase):
         zeniths = self.cq.all_zeniths
         self.assertEqual(zeniths, set([0.]))
 
+    def test_available_parameters(self):
+        result = self.cq.available_parameters('energy', particle='proton')
+        self.assertEqual(result, {14.0})
+        result = self.cq.available_parameters('particle_id', zenith=0.)
+        self.assertEqual(result, {'proton'})
+        result = self.cq.available_parameters('zenith', azimuth=-90.)
+        self.assertEqual(result, {0.})
+        self.assertRaises(AssertionError, self.cq.available_parameters, 'zenith', particle='iron')
+
     def get_overview_path(self):
         dir_path = os.path.dirname(__file__)
         return os.path.join(dir_path, TEST_OVERVIEW_FILE)
