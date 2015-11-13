@@ -63,6 +63,12 @@ def round_in_base(value, base):
     return base * round(value / base)
 
 
+def closest_in_list(value, items):
+    """Get nearest item from a list of items to the value"""
+
+    return min(items, key=lambda x: abs(x - value))
+
+
 def get_active_index(values, value):
     """Get the index where the value fits.
 

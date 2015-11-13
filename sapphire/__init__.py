@@ -75,7 +75,8 @@ from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
 from .corsika.corsika_queries import CorsikaQuery
 from .esd import (quick_download, load_data, download_data,
                   download_coincidences)
-from .simulations.groundparticles import GroundParticlesSimulation
+from .simulations.groundparticles import (GroundParticlesSimulation,
+                                          MultipleGroundParticlesSimulation)
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
 from .transformations.celestial import zenithazimuth_to_equatorial
@@ -106,7 +107,7 @@ __all__ = ['analysis',
            'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
            'download_coincidences',
-           'GroundParticlesSimulation',
+           'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
            'zenithazimuth_to_equatorial'

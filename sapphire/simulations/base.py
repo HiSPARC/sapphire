@@ -13,10 +13,10 @@ Example usage::
     >>> from sapphire.simulations.base import BaseSimulation
     >>> from sapphire import ScienceParkCluster
 
-    >>> datafile = tables.open_file('/tmp/test_base_simulation.h5', 'w')
+    >>> data = tables.open_file('/tmp/test_base_simulation.h5', 'w')
     >>> cluster = ScienceParkCluster()
 
-    >>> sim = BaseSimulation(cluster, datafile, '/simulations/this_run', 10)
+    >>> sim = BaseSimulation(cluster, data, '/simulations/this_run', 10)
     >>> sim.run()
 
 """
@@ -36,7 +36,7 @@ class BaseSimulation(object):
     """Base class for simulations.
 
     :param cluster: :class:`~sapphire.clusters.BaseCluster` instance.
-    :param datafile: writeable PyTables file handle.
+    :param data: writeable PyTables file handle.
     :param output_path: path (as string) to the PyTables group (need not
                         exist) in which the result tables will be created.
     :param N: number of simulations to perform.
@@ -45,10 +45,10 @@ class BaseSimulation(object):
 
     """
 
-    def __init__(self, cluster, datafile, output_path='/', N=1, seed=None,
+    def __init__(self, cluster, data, output_path='/', N=1, seed=None,
                  progress=True):
         self.cluster = cluster
-        self.datafile = datafile
+        self.data = data
         self.output_path = output_path
         self.N = N
         self.progress = progress
@@ -60,7 +60,7 @@ class BaseSimulation(object):
             np.random.seed(seed)
 
     def _prepare_output_tables(self):
-        """Prepare output tables in datafile.
+        """Prepare output tables in the output data file.
 
         The groups and tables will be created in the output_path.
 
@@ -270,9 +270,9 @@ class BaseSimulation(object):
         This makes it easy to link events detected by multiple stations.
 
         """
-        self.coincidence_group = self.datafile.create_group(self.output_path,
-                                                            'coincidences',
-                                                            createparents=True)
+        self.coincidence_group = self.data.create_group(self.output_path,
+                                                        'coincidences',
+                                                        createparents=True)
         self.coincidence_group._v_attrs.cluster = self.cluster
 
         description = storage.Coincidence
@@ -280,13 +280,13 @@ class BaseSimulation(object):
                      for p, station in enumerate(self.cluster.stations, 12)}
         description.columns.update(s_columns)
 
-        self.coincidences = self.datafile.create_table(
+        self.coincidences = self.data.create_table(
             self.coincidence_group, 'coincidences', description)
 
-        self.c_index = self.datafile.create_vlarray(
+        self.c_index = self.data.create_vlarray(
             self.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
 
-        self.s_index = self.datafile.create_vlarray(
+        self.s_index = self.data.create_vlarray(
             self.coincidence_group, 's_index', tables.VLStringAtom())
 
     def _prepare_station_tables(self):
@@ -296,17 +296,17 @@ class BaseSimulation(object):
         :param station: a :class:`~sapphire.clusters.Station` object
 
         """
-        self.cluster_group = self.datafile.create_group(self.output_path,
-                                                        'cluster_simulations',
-                                                        createparents=True)
+        self.cluster_group = self.data.create_group(self.output_path,
+                                                    'cluster_simulations',
+                                                    createparents=True)
         self.station_groups = []
         for station in self.cluster.stations:
-            station_group = self.datafile.create_group(self.cluster_group,
-                                                       'station_%d' %
-                                                       station.number)
+            station_group = self.data.create_group(self.cluster_group,
+                                                   'station_%d' %
+                                                   station.number)
             description = ProcessEvents.processed_events_description
-            self.datafile.create_table(station_group, 'events',
-                                       description, expectedrows=self.N)
+            self.data.create_table(station_group, 'events', description,
+                                   expectedrows=self.N)
             self.station_groups.append(station_group)
 
     def _store_station_index(self):

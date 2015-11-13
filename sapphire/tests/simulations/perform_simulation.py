@@ -27,9 +27,9 @@ def perform_groundparticlessimulation(filename, mock_time):
     corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
     cluster = sapphire.clusters.SimpleCluster(size=40)
     filters = tables.Filters(complevel=1)
-    with tables.open_file(filename, 'w', filters=filters) as datafile:
+    with tables.open_file(filename, 'w', filters=filters) as data:
         sim = GroundParticlesSimulation(corsika_data_path, 70, cluster,
-                                        datafile, N=10, seed=1, progress=False)
+                                        data, N=10, seed=1, progress=False)
         sim.run()
 
 
@@ -38,8 +38,8 @@ def perform_flatfrontsimulation(filename):
 
     cluster = sapphire.clusters.SimpleCluster(size=40)
     filters = tables.Filters(complevel=1)
-    with tables.open_file(filename, 'w', filters=filters) as datafile:
-        sim = FlatFrontSimulation(cluster, datafile, '/', 10, seed=1,
+    with tables.open_file(filename, 'w', filters=filters) as data:
+        sim = FlatFrontSimulation(cluster, data, '/', 10, seed=1,
                                   progress=False)
         sim.run()
 
@@ -49,8 +49,8 @@ def perform_nkgldfsimulation(filename):
 
     cluster = sapphire.clusters.SimpleCluster(size=40)
     filters = tables.Filters(complevel=1)
-    with tables.open_file(filename, 'w', filters=filters) as datafile:
-        sim = NkgLdfSimulation(400, 1e15, 1e19, cluster, datafile, '/', 10,
+    with tables.open_file(filename, 'w', filters=filters) as data:
+        sim = NkgLdfSimulation(400, 1e15, 1e19, cluster, data, '/', 10,
                                seed=1, progress=False)
         sim.run()
 

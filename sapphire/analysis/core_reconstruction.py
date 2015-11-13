@@ -161,7 +161,7 @@ class CoincidenceCoreReconstruction(object):
 
 class CenterMassAlgorithm(object):
 
-    """ Simple core estimator
+    """Simple core estimator
 
     Estimates the core by center of mass of the measurements.
 
@@ -199,7 +199,7 @@ class CenterMassAlgorithm(object):
 
 class AverageIntersectionAlgorithm(object):
 
-    """ Core estimator
+    """Core estimator
 
     To the densities in 3 stations correspond 2 possible cores. The line
     through these points is quit stable for the lateral distribution function.
@@ -319,7 +319,7 @@ class AverageIntersectionAlgorithm(object):
 
 class EllipsLdfAlgorithm(object):
 
-    """ Simple core estimator
+    """Simple core estimator
 
     Estimates the core by center of mass of the measurements.
 
