@@ -408,6 +408,11 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         self.max_core_distance = max_core_distance
         self.min_energy = min_energy
         self.max_energy = max_energy
+        self.available_energies = {e for e in self.cq.all_energies
+                                   if min_energy <= 10 ** e <= max_energy}
+        self.available_zeniths = {e: self.cq.available_parameters('zenith',
+                                                                  energy=e)
+                                  for e in self.available_energies}
 
     def finish(self):
         """Clean-up after simulation"""
@@ -473,12 +478,11 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
 
         """
         energy = self.generate_energy(self.min_energy, self.max_energy)
-        shower_energy = closest_in_list(log10(energy), self.cq.all_energies)
+        shower_energy = closest_in_list(log10(energy), self.available_energies)
 
         zenith = self.generate_zenith()
-        available_zeniths = self.cq.available_parameters('zenith',
-                                                         energy=shower_energy)
-        shower_zenith = closest_in_list(np.degrees(zenith), available_zeniths)
+        shower_zenith = closest_in_list(np.degrees(zenith),
+                                        self.available_zeniths[shower_energy])
 
         sims = self.cq.simulations(energy=shower_energy, zenith=shower_zenith)
         if not len(sims):

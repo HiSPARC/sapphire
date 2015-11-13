@@ -134,6 +134,15 @@ class CorsikaQuery(object):
         return filtered_simulations
 
     def available_parameters(self, parameter, *args, **kwargs):
+        """Get set of available values of type parameter for a subset
+
+        :param parameter: name of the parameter for which the available
+                          values are returned.
+        :param: use the arguments available to :meth:`simulations` to filter
+                the simulations.
+        :return: set of available values.
+
+        """
         sims = self.simulations(*args, **kwargs)
         available = set(sims[parameter])
         if parameter == 'energy':
