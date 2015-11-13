@@ -1,5 +1,5 @@
-Module for downloading HiSPARC Event Summary Data
-=================================================
+Event Summary Data
+==================
 
 .. automodule:: sapphire.esd
    :members:

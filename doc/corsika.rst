@@ -1,37 +1,26 @@
 .. include:: subst.inc
 
-Corsika Reader Documentation
-============================
+CORSIKA simulations
+===================
 
 `CORSIKA <https://web.ikp.kit.edu/corsika/>`_ is an Air Shower
 Simulation Program. To be used for detailed simulation of
 extensive air showers initiated by high-energy cosmic-ray particles.
 
-This module makes it easy to work with |corsika| output, it was
+This module makes it easy to work with CORSIKA output, it was
 original written by Javier Gonzalez and adapted for `HiSPARC
 <www.hisparc.nl>`_ by Arne de Laat.
 
-The :ref:`CorsikaModule` provides functionality to read |corsika| output
-files with `Python <www.python.org>`_. It provides the following main
-classes:
-
-* :class:`~sapphire.corsika.reader.CorsikaFile`: The file class provides a
-  generator over all events in the file.
-* :class:`~sapphire.corsika.reader.CorsikaEvent`: The event class that
-  provides a generator over all particles at ground.
-
-This documentation sometimes refers to the |corsika| users manual, this
+This documentation sometimes refers to the CORSIKA users manual, this
 users manual can be found here `CORSIKA User's Guide
-<https://web.ikp.kit.edu/corsika/usersguide/corsika_tech.html>`_
+<https://www.ikp.kit.edu/corsika/70.php>`_
 
-In addition to reading |corsika| output, functionally is provided to
-easily submit many |corsika| jobs to the Nikhef batch facility
+In addition to reading CORSIKA output, functionally is provided to
+easily submit many CORSIKA jobs to the Nikhef batch facility
 (Stoomboot).
 
 
-.. _CorsikaModule:
-
-Corsika Module
+CORSIKA Module
 --------------
 
 .. automodule:: sapphire.corsika
@@ -42,11 +31,14 @@ Contents
 --------
 
 .. toctree::
+   :hidden:
 
-   corsika/reader
    corsika/blocks
-   corsika/units
-   corsika/particles
    corsika/corsika_queries
-   corsika/qsub
+   corsika/generate_corsika_overview
+   corsika/particles
+   corsika/qsub_corsika
+   corsika/qsub_store_corsika_data
+   corsika/reader
    corsika/store_corsika_data
+   corsika/units

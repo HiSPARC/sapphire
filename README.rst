@@ -17,10 +17,12 @@ Introduction
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 <http://www.hisparc.nl/>`_ Research and Education.  It was created in the
-process of completing the PhD research of David Fokkema.  The history of
-this repository contains the complete simulation, analysis and plot
-generation code that formed the basis for David's `thesis
+process of completing the PhD research of David Fokkema.  The history of this
+repository contains the complete simulation, analysis and plot generation code
+that formed the basis for David's `thesis
 <http://www.nikhef.nl/pub/services/biblio/theses_pdf/thesis_D_Fokkema.pdf>`_.
+Arne de Laat took over development of SAPPHiRE while working on his own PhD
+research.
 
 This repository is created with a sole purpose in mind: to enable HiSPARC
 students, teachers and researchers to easily gain access to the data and
@@ -43,7 +45,7 @@ Installation
 ------------
 
 Required: Python with pip, the HDF5 and ATLAS libraries and a
-Fortran compiler. 
+Fortran compiler.
 
 Then, using pip, simply open a Terminal and do::
 
@@ -75,7 +77,7 @@ last release. Then tag the commit and push it to GitHub::
 
    $ git tag vX.Y.Z
    $ git push --tags
-   
+
 Then upload the new version to PyPI (this requires the ``wheel`` package)::
 
    $ python setup.py sdist bdist_wheel upload

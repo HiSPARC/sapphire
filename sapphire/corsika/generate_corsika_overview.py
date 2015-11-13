@@ -86,6 +86,9 @@ def read_seeds(simulations_table, source, seeds):
 
     """
     path = os.path.join(source, seeds, 'corsika.h5')
+    if not os.path.exists(path):
+        logger.info('%19s: No corsika.h5 available.' % seeds)
+        return
     try:
         with tables.open_file(path, 'r') as corsika_data:
             try:

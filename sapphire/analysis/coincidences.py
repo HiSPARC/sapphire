@@ -5,7 +5,8 @@
     use :func:`~sapphire.esd.download_coincidences`, this is slightly
     less flexible because you can not choose the coincidence window.
 
-    Example usage::
+    For regular usage, download events from the ESD and use the
+    :class:`CoincidencesESD` class. Example usage::
 
         import datetime
 
@@ -43,6 +44,13 @@ from ..utils import pbar
 class Coincidences(object):
     """Search for and store coincidences between HiSPARC stations.
 
+    .. note::
+        For better compatibility with other modules, such as
+        :mod:`~sapphire.analysis.reconstructions`, it is recommended to use the
+        subclass :class:`CoincidencesESD` instead. This is an old class with a
+        different way to store the results. It can be used, however, on *raw*
+        data downloaded from the public database.
+
     Suppose you want to search for coincidences between stations 501 and
     503.  First, download the data for these stations (with, or without
     traces, depending on your intentions).  Suppose you stored the data in
@@ -61,10 +69,43 @@ class Coincidences(object):
     You can then provide different parameters to the individual methods.
     See the corresponding docstrings.
 
-    .. note::
-        For better compatibility with other modules, such as
-        :mod:`~sapphire.analysis.reconstructions`, it is recommended
-        to use the subclass :class:`CoincidencesESD` instead.
+    Once the coincidences are stored, there will be a `coincidences` table in
+    the group. This table has multiple columns used for storing simulation
+    inputs like shower direction and energy. At this point, they contain no
+    information. They are only useful if the original event tables were created
+    by simulations, instead of real detector data. The useful columns are:
+
+        * ``id``: the index of this coincidence. This index is identical for
+          the ``coincidence`` and ``c_index`` tables.
+        * ``timestamp``: the timestamp of the event in seconds
+        * ``nanoseconds``: the subsecond part of the timestamp in nanoseconds
+        * ``ext_timestamp``: the timestamp of the event in nanoseconds (equal
+          to timestamp * 1000000000 + nanoseconds)
+        * ``N``: the number of stations participating in this coincidence
+        * ``s0``, ``s1``, ...: whether the first (0), second (1) or other
+          stations participated in the coincidence.
+
+    The coincidences group furthermore contains the table ``c_index`` to track
+    down the individual events making up the coincidence. The ``c_index`` table
+    gives indexes for the individual events inside the original event tables.
+
+    If you have obtained a particular coincidence from the ``coincidences``
+    table, the ``id`` is the index into all these tables. For example, looking
+    up the source events making up the 40th coincidence::
+
+        >>> group = data.root.coincidences
+        >>> idx = 40
+        >>> group.coincidences[idx]
+
+    can be done in the following way (each row in the ``c_index`` table is a
+    (station index, event index) pair)::
+
+        >>> for event_idx in group.c_index[idx]:
+        ...     event = group.observables[event_idx]
+
+    The ``event`` is one of the source events, processed to determine particle
+    arrival times from the raw traces (if available). It has a
+    ``station_id`` attribute which is an index into ``station_groups``.
 
     """
 
@@ -450,11 +491,71 @@ class Coincidences(object):
 
 
 class CoincidencesESD(Coincidences):
-    """Store coincidences differently for the ESD
+    """Store coincidences specifically using the ESD
 
-    This subclass stores the paths to the station_groups that where
-    used to look for coincidences in a lookup-table, and also
-    stores the original station info and event_id for each coincidence.
+    This is a subclass of :class:`Coincidences`. In addition to searching for
+    coincidences, this subclass stores the paths to the station_groups that
+    where used to look for coincidences in a lookup-table, and also stores the
+    original station info and event_id for each coincidence.
+
+    Suppose you want to search for coincidences between stations 501 and 503.
+    First, download the data for these stations from the ESD. Suppose you
+    stored the data in the '/s501' and '/s503' groups in the 'data' file.
+    Then::
+
+        >>> station_groups = ['/s501', '/s503']
+        >>> coin = CoincidencesESD(data, '/coincidences', station_groups)
+        >>> coin.search_and_store_coincidences()
+
+    If you want a more manual method, replace the last line with::
+
+        >>> coin.search_coincidences(window=50000)
+        >>> coin.process_events()
+        >>> coin.store_coincidences()
+
+    You can then provide different parameters to the individual methods.
+    See the corresponding docstrings.
+
+    Once the coincidences are stored, there will be a `coincidences` table in
+    the group. This table has multiple columns used for storing simulation
+    inputs like shower direction and energy. At this point, they contain no
+    information. They are only useful if the original event tables were created
+    by simulations, instead of real detector data. The useful columns are:
+
+        * ``id``: the index of this coincidence. This index is identical for
+          the ``coincidence`` and ``c_index`` tables.
+        * ``timestamp``: the timestamp of the event in seconds
+        * ``nanoseconds``: the subsecond part of the timestamp in nanoseconds
+        * ``ext_timestamp``: the timestamp of the event in nanoseconds (equal
+          to timestamp * 1000000000 + nanoseconds)
+        * ``N``: the number of stations participating in this coincidence
+        * ``s0``, ``s1``, ...: whether the first (0), second (1) or other
+          stations participated in the coincidence.
+
+    The coincidences group furthermore contains the tables ``s_index`` and
+    ``c_index`` to track down the individual events making up the coincidence.
+    The ``s_index`` table contains a row for each station, pointing to the
+    station's event tables. The ``c_index`` table gives indexes for the
+    individual events inside those tables.
+
+    If you have obtained a particular coincidence from the ``coincidences``
+    table, the ``id`` is the index into all these tables. For example, looking
+    up the source events making up the 40th coincidence::
+
+        >>> group = data.root.coincidences
+        >>> idx = 40
+        >>> group.coincidences[idx]
+
+    can be done in the following way (each row in the ``c_index`` table is a
+    (station index, event index) pair)::
+
+        >>> station_paths = [data.get_node(path, 'events') for path in
+        ... group.s_index]
+        >>> for station_idx, event_idx in group.c_index[idx]:
+        ...     event_group = station_paths[station_idx]
+        ...     event = event_group[event_idx]
+
+    The ``event`` is one of the source events.
 
     """
     def search_and_store_coincidences(self, window=2000, cluster=None):
@@ -470,9 +571,28 @@ class CoincidencesESD(Coincidences):
     def search_coincidences(self, window=2000, shifts=None, limit=None):
         """Search for coincidences.
 
-        Instead of storing the results in the tables ``_src_c_index`` and
-        ``_src_timestamps``, they are stored in attributes by the same
-        name in the class.
+        Search all data in the station_groups for coincidences, and store
+        rudimentary coincidence data in attributes.  This data might be useful,
+        but is very basic.  You can call the :meth:`store_coincidences` method
+        to store the coincidences in an easier format in the coincidences
+        group.
+
+        If you want to process the preliminary results: they are stored in the
+        attributes ``_src_c_index`` and ``_src_timestamps``.  The
+        former is a list of coincidences, which each consist of a list with
+        indexes into the timestamps array as a pointer to the events making up
+        the coincidence. The latter is a list of tuples.  Each tuple consists
+        of a timestamp followed by an index into the stations list which
+        designates the detector station which measured the event, and finally
+        an index into that station's event table.
+
+        :param window: the coincidence time window.  All events with delta
+            t's smaller than this window will be considered a coincidence.
+        :param shifts: optionally shift a station's data in time.  This
+            can be useful if a station has a misconfigured GPS clock.
+            Expects a list of shifts, one for each station.
+        :param limit: optionally limit the search for this number of
+            events.
 
         """
         c_index, timestamps = self._search_coincidences(window, shifts, limit)

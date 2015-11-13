@@ -1,4 +1,4 @@
-Corsika on Stoomboot
+CORSIKA on Stoomboot
 ====================
 
 .. automodule:: sapphire.corsika.qsub_corsika
