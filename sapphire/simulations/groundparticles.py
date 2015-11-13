@@ -26,7 +26,7 @@ import tables
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
-from ..utils import pbar, round_in_base, norm_angle
+from ..utils import pbar, norm_angle, closest_in_list
 
 
 class GroundParticlesSimulation(HiSPARCSimulation):
@@ -472,17 +472,15 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         :return: simulation row from a CORSIKA Simulations table.
 
         """
-        zenith = self.generate_zenith()
-        shower_zenith = round_in_base(np.degrees(zenith), 7.5)
         energy = self.generate_energy(self.min_energy, self.max_energy)
-        shower_energy = round_in_base(log10(energy), .5)
+        shower_energy = closest_in_list(log10(energy), self.cq.all_energies)
 
-        # Temporary fix for missing showers.
-        if shower_energy == 18 and shower_zenith < 30.:
-            shower_zenith = 30.
+        zenith = self.generate_zenith()
+        available_zeniths = self.cq.available_parameters('zenith',
+                                                         energy=shower_energy)
+        shower_zenith = closest_in_list(np.degrees(zenith), available_zeniths)
 
-        sims = self.cq.simulations(energy=shower_energy,
-                                   zenith=shower_zenith)
+        sims = self.cq.simulations(energy=shower_energy, zenith=shower_zenith)
         if not len(sims):
             return None
         sim = np.random.choice(sims)

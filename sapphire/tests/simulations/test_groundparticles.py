@@ -3,7 +3,7 @@ import os
 
 from mock import Mock, sentinel
 import tables
-from numpy import pi, sqrt, random, testing
+from numpy import pi, sqrt, random, testing, arange
 
 from sapphire.clusters import SingleDiamondStation
 from sapphire.simulations import groundparticles
@@ -163,6 +163,8 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
     def test_select_simulation(self):
         self.simulation.generate_zenith = lambda: 0.27  # 15.5 deg
         self.simulation.generate_energy = lambda min_e, max_e: 10 ** 16.4
+        self.simulation.cq.all_energies = {e for e in arange(12, 18, .5)}
+        self.simulation.cq.available_parameters.return_value = {z for z in arange(0, 60, 7.5)}
         self.simulation.cq.simulations.return_value = [sentinel.sim]
         result = self.simulation.select_simulation()
         self.simulation.cq.simulations.assert_called_once_with(energy=16.5, zenith=15.)
