@@ -661,7 +661,9 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                  relative to start of trace in ns
 
         """
-        if self.trigger[3]:
+        n_low, n_high, and_or, external = self.trigger
+
+        if external:
             # External trigger not supported
             return [-999] * 5
 
@@ -687,18 +689,19 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             max_signal = baseline + pulseheight
             adc_threshold = baseline + ADC_THRESHOLD
 
-            trace = self._get_trace(trace_idx)
-
             thresholds = [adc_threshold]
             # Only include if needed for trigger and large enough signal
-            if self.trigger[0] and max_signal >= trig_thresholds[0]:
+            if n_low and max_signal >= trig_thresholds[0]:
                 thresholds.append(trig_thresholds[0])
             else:
                 thresholds.append(ADC_LIMIT)
-            if self.trigger[1] and max_signal >= trig_thresholds[1]:
+            if n_high and max_signal >= trig_thresholds[1]:
                 thresholds.append(trig_thresholds[1])
             else:
                 thresholds.append(ADC_LIMIT)
+
+            trace = self._get_trace(trace_idx)
+
             t, l, h = self._first_above_thresholds(trace, thresholds,
                                                    max_signal)
             timings.append(t)
