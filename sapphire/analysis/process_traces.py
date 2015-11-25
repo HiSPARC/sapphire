@@ -131,6 +131,7 @@ class TraceObservables(object):
             peak_threshold = LOW_THRESHOLD_III - 30
         else:
             peak_threshold = LOW_THRESHOLD - 200
+
         traces = self.traces - self.baselines[:self.n]
 
         n_peaks = []
