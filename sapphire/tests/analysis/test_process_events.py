@@ -225,6 +225,11 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         self.proc.trigger = (0, 2, False, 0)
         result = 4
         self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 4, False, 0)
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (1, 3, False, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
 
 
 if __name__ == '__main__':
