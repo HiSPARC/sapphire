@@ -171,6 +171,8 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         high_idx = [-999, -999, -999, -999]
         result = -999
         self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 0, True, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
 
         # Standard two detector trigger
         self.proc.trigger = (2, 0, False, 0)
@@ -210,6 +212,18 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         # Trigger on high
         high_idx = [-999, 5, 2, -999]
         result = 5
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+
+        # Other triggers
+        self.proc.trigger = (1, 2, False, 0)
+        low_idx = [1, 3, 5, 7]
+        high_idx = [2, 4, -999, -999]
+        result = 5
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (3, 0, False, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 2, False, 0)
+        result = 4
         self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
 
 
