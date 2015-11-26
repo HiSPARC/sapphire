@@ -7,8 +7,7 @@ locations. If internet is unavailable :mod:`~sapphire.api` uses this
 JSON.
 
 Cluster objects track station and detector positions over time. To facilitate
-this the csv gps and station layout data for the Science Park cluster is
-stored.
+this the gps and station layout data for the HiSPARC Network is stored.
 
 """
 from json import dump
@@ -46,8 +45,8 @@ def save_json(data):
         dump(data, json_file, indent=4, sort_keys=True)
 
 
-def save_csv():
-    """Get location csv data for all stations"""
+def save_tsv():
+    """Get location tsv data for all stations"""
 
     station_numbers = api.Network().station_numbers()
     for type in ['gps', 'layout']:
@@ -65,11 +64,11 @@ def save_csv():
             data = '\n'.join(d for d in data.split('\n')
                              if len(d) and d[0] != '#')
             if data:
-                with open(url.strip('/') + extsep + 'csv', 'w') as csvfile:
-                    csvfile.write(data)
+                with open(url.strip('/') + extsep + 'tsv', 'w') as tsvfile:
+                    tsvfile.write(data)
 
 
 if __name__ == '__main__':
     data = generate_json()
     save_json(data)
-    save_csv()
+    save_tsv()

@@ -29,15 +29,15 @@ class APITests(unittest.TestCase):
         self.assertRaises(Exception, self.api._retrieve_url, '')
 
     @patch.object(api, 'urlopen')
-    def test__get_csv(self, mock_urlopen):
+    def test__get_tsv(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1297956608\t52.3414237\t4.8807081\t43.32'
-        self.assertEqual(self.api._get_csv('gps/2/', allow_stale=False).tolist(),
+        self.assertEqual(self.api._get_tsv('gps/2/', allow_stale=False).tolist(),
                          [(1297956608, 52.3414237, 4.8807081, 43.32)])
         mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
-        self.assertRaises(Exception, self.api._get_csv, 'gps/2/', allow_stale=False)
-        self.assertRaises(Exception, self.api._get_csv, 'gps/0/')
+        self.assertRaises(Exception, self.api._get_tsv, 'gps/2/', allow_stale=False)
+        self.assertRaises(Exception, self.api._get_tsv, 'gps/0/')
         with warnings.catch_warnings(record=True) as warned:
-            self.assertEqual(self.api._get_csv('gps/2/', allow_stale=True).tolist()[0],
+            self.assertEqual(self.api._get_tsv('gps/2/', allow_stale=True).tolist()[0],
                              (1297956608, 52.3414237, 4.8807081, 43.32))
         self.assertEqual(len(warned), 1)
 
@@ -445,13 +445,13 @@ class StationTests(unittest.TestCase):
         self.assertEqual(len(offsets), 4)
 
     def laziness_of_attribute(self, attribute):
-        with patch.object(api.API, '_get_csv') as mock_get_csv:
-            self.assertFalse(mock_get_csv.called)
+        with patch.object(api.API, '_get_tsv') as mock_get_tsv:
+            self.assertFalse(mock_get_tsv.called)
             data = self.station.__getattribute__(attribute)
-            self.assertTrue(mock_get_csv.called)
-            self.assertEqual(mock_get_csv.call_count, 1)
+            self.assertTrue(mock_get_tsv.called)
+            self.assertEqual(mock_get_tsv.call_count, 1)
             data2 = self.station.__getattribute__(attribute)
-            self.assertEqual(mock_get_csv.call_count, 1)
+            self.assertEqual(mock_get_tsv.call_count, 1)
             self.assertEqual(data, data2)
 
 

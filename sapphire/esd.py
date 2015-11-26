@@ -78,17 +78,17 @@ def _first_available_numbered_path():
                 if not os.path.exists(path % idx))
 
 
-def load_data(file, group, csv_file, type='events'):
+def load_data(file, group, tsv_file, type='events'):
     """Load downloaded event summary data into PyTables file.
 
     If you've previously downloaded event summary data from
-    http://data.hisparc.nl/ in CSV format, you can load them into a PyTables
+    http://data.hisparc.nl/ in TSV format, you can load them into a PyTables
     file using this method. The data is then indistinguishable from data
     downloaded using :func:`download_data`.
 
     :param file: the PyTables datafile handler
     :param group: the PyTables destination group, which need not exist
-    :param csv_file: path to the csv file downloaded from the HiSPARC
+    :param tsv_file: path to the tsv file downloaded from the HiSPARC
                      Public Database
     :param type: the datatype to load, either 'events' or 'weather'
 
@@ -97,7 +97,7 @@ def load_data(file, group, csv_file, type='events'):
         >>> import tables
         >>> import sapphire.esd
         >>> data = tables.open_file('data.h5', 'w')
-        >>> sapphire.esd.load_data(data, '/s501', 'events-s501-20130910.csv')
+        >>> sapphire.esd.load_data(data, '/s501', 'events-s501-20130910.tsv')
 
     """
     if type == 'events':
@@ -109,7 +109,7 @@ def load_data(file, group, csv_file, type='events'):
     else:
         raise ValueError("Data type not recognized.")
 
-    with open(csv_file, 'rb') as data:
+    with open(tsv_file, 'rb') as data:
         reader = csv.reader(data, delimiter='\t')
         with read_and_store_class(table) as writer:
             for line in reader:
@@ -190,7 +190,7 @@ def download_data(file, group, station_number, start=None, end=None,
         pbar = ProgressBar(maxval=1.,
                            widgets=[Percentage(), Bar(), ETA()]).start()
 
-    # loop over lines in csv as they come streaming in
+    # loop over lines in tsv as they come streaming in
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
     with read_and_store(table) as writer:
@@ -271,7 +271,7 @@ def download_coincidences(file, cluster=None, stations=None,
         pbar = ProgressBar(maxval=1.,
                            widgets=[Percentage(), Bar(), ETA()]).start()
 
-    # loop over lines in csv as they come streaming in, keep temporary
+    # loop over lines in tsv as they come streaming in, keep temporary
     # lists untill a full coincidence is in.
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
@@ -395,7 +395,7 @@ def _create_events_table(file, group):
     """Create event table in PyTables file
 
     Create an event table containing the ESD data columns which are
-    available in the CSV download.
+    available in the TSV download.
 
     :param file: PyTables file
     :param group: the group to contain the events table, which need not
@@ -434,7 +434,7 @@ def _create_weather_table(file, group):
     """Create weather table in PyTables file
 
     Create a weather table containing the ESD weather columns which are
-    available in the CSV download.
+    available in the TSV download.
 
     :param file: PyTables file
     :param group: the group to contain the weather table, which need not
@@ -462,13 +462,13 @@ def _create_weather_table(file, group):
 
 
 def _read_lines_and_store_coincidence(file, coincidence, station_groups):
-    """Read CSV lines and store coincidence
+    """Read TSV lines and store coincidence
 
-    Read lines from the CSV download and store the coincidence and events.
+    Read lines from the TSV download and store the coincidence and events.
     Return the coincidence timestamp to keep track of the progress.
 
     :param file: pytables file for storage
-    :param coincidence: text lines from the CSV file for one coincidence
+    :param coincidence: text lines from the TSV file for one coincidence
     :return: coincidence timestamp
 
     """
@@ -515,7 +515,7 @@ class _read_line_and_store_weather_class(object):
         if line[0][0] == '#':
             return 0.
 
-        # break up CSV line
+        # break up TSV line
         (date, time, timestamp, temperature_inside, temperature_outside,
          humidity_inside, humidity_outside, atmospheric_pressure,
          wind_direction, wind_speed, solar_radiation, uv_index,
@@ -570,7 +570,7 @@ class _read_line_and_store_event_class(object):
         if line[0][0] == '#':
             return 0.
 
-        # break up CSV line
+        # break up TSV line
         (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
          int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger) = line
 

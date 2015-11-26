@@ -89,7 +89,7 @@ class ESDTest(unittest.TestCase):
                           start=None, end="a_value")
 
     def test_esd_output(self):
-        """Use esd.load_data() to load csv into hdf5 and verify the output"""
+        """Use esd.load_data() to load tsv into hdf5 and verify the output"""
 
         output_path = create_tempfile_path()
         perform_load_data(output_path)
