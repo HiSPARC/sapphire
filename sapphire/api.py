@@ -88,6 +88,7 @@ class API(object):
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
+        'trigger': 'trigger/{station_number}/',
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
@@ -751,6 +752,36 @@ class Station(API):
         return location
 
     @lazy
+    def triggers(self):
+        """Get the trigger config data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp',
+                   'low1', 'low2', 'low3', 'low4',
+                   'high1', 'high2', 'high3', 'high4',
+                   'n_low', 'n_high', 'and_or', 'external')
+        path = self.src_urls['trigger'].format(station_number=self.station)
+        return self._get_tsv(path, names=columns)
+
+    def trigger(self, timestamp):
+        """Get trigger config for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: thresholds and trigger values for given timestamp.
+
+        """
+        triggers = self.triggers
+        idx = get_active_index(triggers['timestamp'], timestamp)
+        thresholds = [[triggers[idx]['%s%d' % (t, i)]
+                       for t in ('low', 'high')]
+                      for i in range(1, 5)]
+        trigger = [triggers[idx][t]
+                   for t in 'n_low', 'n_high', 'and_or', 'external']
+        return thresholds, trigger
+
+    @lazy
     def station_layouts(self):
         """Get the station layout data
 
@@ -762,7 +793,6 @@ class Station(API):
                    'radius2', 'alpha2', 'height2', 'beta2',
                    'radius3', 'alpha3', 'height3', 'beta3',
                    'radius4', 'alpha4', 'height4', 'beta4')
-
         base = self.src_urls['layout']
         path = base.format(station_number=self.station)
         return self._get_tsv(path, names=columns)
