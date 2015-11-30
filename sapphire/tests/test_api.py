@@ -38,7 +38,7 @@ class APITests(unittest.TestCase):
         self.assertRaises(Exception, self.api._get_tsv, 'gps/0/')
         with warnings.catch_warnings(record=True) as warned:
             self.assertEqual(self.api._get_tsv('gps/2/', allow_stale=True).tolist()[0],
-                             (1297956608, 52.3414237, 4.8807081, 43.32))
+                             (1297953008, 52.3414237, 4.8807081, 43.32))
         self.assertEqual(len(warned), 1)
 
 
@@ -411,6 +411,20 @@ class StationTests(unittest.TestCase):
 
     def test_laziness_station_layouts(self):
         self.laziness_of_attribute('station_layouts')
+
+    def test_triggers(self):
+        names = ('timestamp', 'low1', 'low2', 'low3', 'low4', 'high1', 'high2',
+                 'high3', 'high4', 'n_low', 'n_high', 'and_or', 'external')
+        data = self.station.triggers
+        self.assertEqual(data.dtype.names, names)
+
+    def test_trigger(self):
+        thresholds, trigger = self.station.trigger(1378771200)  # 2013-9-10
+        self.assertItemsEqual(thresholds, [[253, 323]] * 4)
+        self.assertItemsEqual(trigger, [2, 3, 1, 0])
+
+    def test_laziness_triggers(self):
+        self.laziness_of_attribute('triggers')
 
     def test_station_layouts(self):
         names = ('timestamp',
