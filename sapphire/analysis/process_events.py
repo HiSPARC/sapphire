@@ -620,6 +620,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
                                                              source, progress)
         if station is None:
+            self.station = None
             self.thresholds = [(ADC_LOW_THRESHOLD, ADC_HIGH_THRESHOLD)] * 4
             n = sum(1 for idx in self.source[0]['traces'] if idx != -1)
             if n == 2:
