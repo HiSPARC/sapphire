@@ -35,6 +35,7 @@ import operator
 import tables
 import numpy as np
 
+from ..api import Station
 from ..utils import pbar, ERR
 from .find_mpv import FindMostProbableValueInSpectrum
 
@@ -604,31 +605,22 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
     """
 
-    def __init__(self, data, group, source=None, progress=True,
-                 thresholds=None, trigger=None):
+    def __init__(self, data, group, source=None, progress=True, station=None):
         """Initialize the class.
 
         :param data: the PyTables datafile
         :param group: the group containing the station data.  In normal
             cases, this is simply the group containing the events table.
-        :param indexes: a list of indexes into the events table.
         :param source: the name of the events table.  Default: None,
             meaning the default name 'events'.
-        :param thresholds: list of tuples with the low and high thresholds
-            for all four channels.
-        :param trigger: tuple with the number of low and high thresholds
-            required, a boolean to indicate wether both or either need to be
-            satisfied, and finally a value to indicate if and how the external
-            trigger is used.
+        :param progress: boolean to indicate if a progress bar should be shown.
+        :param station: station number of station to which the data belongs.
 
         """
         super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
                                                              source, progress)
-        if thresholds is None:
+        if station is None:
             self.thresholds = [(ADC_LOW_THRESHOLD, ADC_HIGH_THRESHOLD)] * 4
-        else:
-            self.thresholds = thresholds
-        if trigger is None:
             n = sum(1 for idx in self.source[0]['traces'] if idx != -1)
             if n == 2:
                 self.trigger = TRIGGER_2
@@ -637,7 +629,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             else:
                 raise Exception('No trigger settings available')
         else:
-            self.trigger = trigger
+            self.station = Station(station)
 
     def _store_results_from_traces(self):
         table = self._tmp_events
@@ -661,7 +653,12 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                  relative to start of trace in ns
 
         """
-        n_low, n_high, and_or, external = self.trigger
+        if self.station is None:
+            thresholds = self.thresholds
+            n_low, n_high, and_or, external = self.trigger
+        else:
+            thresholds, trigger = self.station.trigger(event['timestamp'])
+            n_low, n_high, and_or, external = trigger
 
         if external:
             # External trigger not supported
@@ -672,7 +669,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         high_idx = []
         for baseline, pulseheight, trace_idx, trig_thresholds in zip(
                 event['baseline'], event['pulseheights'], event['traces'],
-                self.thresholds):
+                thresholds):
             if pulseheight < 0:
                 # Retain -1 and -999 status flags in timing
                 timings.append(pulseheight)
