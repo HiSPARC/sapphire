@@ -48,7 +48,7 @@ class API(object):
 
     This provided the methods to retrieve data from the API. The results
     are converted from JSON data to Python objects (dict/list/etc).
-    Support is also provided for the retrieval of Source CSV data, which
+    Support is also provided for the retrieval of Source TSV data, which
     is returned as NumPy arrays.
 
     """
@@ -88,6 +88,7 @@ class API(object):
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
+        'trigger': 'trigger/{station_number}/',
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
@@ -106,21 +107,21 @@ class API(object):
         return data
 
     @classmethod
-    def _get_csv(cls, urlpath, names=None, allow_stale=True):
-        """Retrieve a Source CSV from the HiSPARC Public Database
+    def _get_tsv(cls, urlpath, names=None, allow_stale=True):
+        """Retrieve a Source TSV from the HiSPARC Public Database
 
-        :param urlpath: the csv urlpath to retrieve
+        :param urlpath: the tsv urlpath to retrieve
             (after http://data.hisparc.nl/show/source/).
         :return: the data returned as array.
 
         """
         try:
-            csv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
+            tsv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
         except Exception:
             if not allow_stale:
                 raise
             localpath = path.join(LOCAL_BASE,
-                                  urlpath.strip('/') + extsep + 'csv')
+                                  urlpath.strip('/') + extsep + 'tsv')
             try:
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
@@ -135,7 +136,7 @@ class API(object):
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
-                data = genfromtxt(StringIO(csv_data), delimiter='\t',
+                data = genfromtxt(StringIO(tsv_data), delimiter='\t',
                                   dtype=None, names=names)
 
         return atleast_1d(data)
@@ -408,7 +409,7 @@ class Network(API):
         columns = ('hour', 'counts')
         path = cls.src_urls['coincidencetime'].format(year=year, month=month,
                                                       day=day)
-        return cls._get_csv(path, names=columns)
+        return cls._get_tsv(path, names=columns)
 
     @classmethod
     def coincidence_number(cls, year, month, day):
@@ -421,7 +422,7 @@ class Network(API):
         columns = ('n', 'counts')
         path = cls.src_urls['coincidencenumber'].format(year=year, month=month,
                                                         day=day)
-        return cls._get_csv(path, names=columns)
+        return cls._get_tsv(path, names=columns)
 
     @staticmethod
     def validate_numbers(country=None, cluster=None, subcluster=None):
@@ -625,7 +626,7 @@ class Station(API):
         path = self.src_urls['eventtime'].format(station_number=self.station,
                                                  year=year, month=month,
                                                  day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def pulse_height(self, year, month, day):
         """Get the pulseheight histogram
@@ -638,7 +639,7 @@ class Station(API):
         path = self.src_urls['pulseheight'].format(station_number=self.station,
                                                    year=year, month=month,
                                                    day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def pulse_integral(self, year, month, day):
         """Get the pulseintegral histogram
@@ -651,7 +652,7 @@ class Station(API):
         path = self.src_urls['integral'].format(station_number=self.station,
                                                 year=year, month=month,
                                                 day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def barometer(self, year, month, day):
         """Get the barometer dataset
@@ -664,7 +665,7 @@ class Station(API):
         path = self.src_urls['barometer'].format(station_number=self.station,
                                                  year=year, month=month,
                                                  day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def temperature(self, year, month, day):
         """Get the temperature dataset
@@ -677,7 +678,7 @@ class Station(API):
         path = self.src_urls['temperature'].format(station_number=self.station,
                                                    year=year, month=month,
                                                    day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     @lazy
     def voltages(self):
@@ -688,7 +689,7 @@ class Station(API):
         """
         columns = ('timestamp', 'voltage1', 'voltage2', 'voltage3', 'voltage4')
         path = self.src_urls['voltage'].format(station_number=self.station)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def voltage(self, timestamp):
         """Get PMT coltage data for specific timestamp
@@ -711,7 +712,7 @@ class Station(API):
         """
         columns = ('timestamp', 'current1', 'current2', 'current3', 'current4')
         path = self.src_urls['current'].format(station_number=self.station)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def current(self, timestamp):
         """Get PMT current data for specific timestamp
@@ -734,7 +735,7 @@ class Station(API):
         """
         columns = ('timestamp', 'latitude', 'longitude', 'altitude')
         path = self.src_urls['gps'].format(station_number=self.station)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def gps_location(self, timestamp):
         """Get GPS location for specific timestamp
@@ -751,6 +752,36 @@ class Station(API):
         return location
 
     @lazy
+    def triggers(self):
+        """Get the trigger config data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp',
+                   'low1', 'low2', 'low3', 'low4',
+                   'high1', 'high2', 'high3', 'high4',
+                   'n_low', 'n_high', 'and_or', 'external')
+        path = self.src_urls['trigger'].format(station_number=self.station)
+        return self._get_tsv(path, names=columns)
+
+    def trigger(self, timestamp):
+        """Get trigger config for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :return: thresholds and trigger values for given timestamp.
+
+        """
+        triggers = self.triggers
+        idx = get_active_index(triggers['timestamp'], timestamp)
+        thresholds = [[triggers[idx]['%s%d' % (t, i)]
+                       for t in ('low', 'high')]
+                      for i in range(1, 5)]
+        trigger = [triggers[idx][t]
+                   for t in 'n_low', 'n_high', 'and_or', 'external']
+        return thresholds, trigger
+
+    @lazy
     def station_layouts(self):
         """Get the station layout data
 
@@ -762,10 +793,9 @@ class Station(API):
                    'radius2', 'alpha2', 'height2', 'beta2',
                    'radius3', 'alpha3', 'height3', 'beta3',
                    'radius4', 'alpha4', 'height4', 'beta4')
-
         base = self.src_urls['layout']
         path = base.format(station_number=self.station)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def station_layout(self, timestamp):
         """Get station layout data for specific timestamp
@@ -791,7 +821,7 @@ class Station(API):
         columns = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
         base = self.src_urls['detector_timing_offsets']
         path = base.format(station_number=self.station)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def detector_timing_offset(self, timestamp):
         """Get detector timing offset data for specific timestamp

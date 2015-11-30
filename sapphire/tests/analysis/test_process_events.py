@@ -166,28 +166,70 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         self.assertEqual(self.proc._first_value_above_threshold(trace, 500), (-999, 0))
 
     def test__reconstruct_trigger(self):
-        # 2 detectors
-        high_idx = []
-        low_idx = [-999, 3]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=2), -999)
-        low_idx = [0, 3]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=2), 3)
+        self.proc.trigger = (0, 0, False, 0)
+        low_idx = [-999, -999, -999, -999]
+        high_idx = [-999, -999, -999, -999]
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 0, True, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
 
-        # 4 detectors
-        high_idx = [-999, -999]
-        low_idx = [-999, 3]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), -999)
-        low_idx = [0, 3, 2]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
-        high_idx = [0, 3]
-        low_idx = [0, 2, 4]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
-        high_idx = [0, 5]
-        low_idx = [0, 2, 3]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
-        high_idx = [0, 5]
-        low_idx = [0, 2]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 5)
+        # Standard two detector trigger
+        self.proc.trigger = (2, 0, False, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        high_idx = [-999, -999, 10, -999]
+        low_idx = [-999, -999, 3, -999]
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [-999, 0, 3, 2]
+        result = 2
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [0, 2, 4, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [0, 2, 3, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [0, 2, -999, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [-999, -999, 3, 6]
+        result = 6
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+
+        # Standard four detector trigger
+        self.proc.trigger = (3, 2, True, 0)
+        low_idx = [-999, -999, -999, -999]
+        high_idx = [-999, -999, -999, -999]
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        # Trigger on low
+        low_idx = [7, 4, 1, -999]
+        high_idx = [-999, -999, -999, -999]
+        result = 7
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        high_idx = [8, 5, -999, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        high_idx = [8, 9, 2, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        # Trigger on high
+        high_idx = [-999, 5, 2, -999]
+        result = 5
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+
+        # Other triggers
+        self.proc.trigger = (1, 2, False, 0)
+        low_idx = [1, 3, 5, 7]
+        high_idx = [2, 4, -999, -999]
+        result = 5
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (3, 0, False, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 2, False, 0)
+        result = 4
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 4, False, 0)
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (1, 3, False, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
 
 
 if __name__ == '__main__':

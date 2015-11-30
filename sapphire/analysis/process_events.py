@@ -35,6 +35,7 @@ import operator
 import tables
 import numpy as np
 
+from ..api import Station
 from ..utils import pbar, ERR
 from .find_mpv import FindMostProbableValueInSpectrum
 
@@ -43,6 +44,9 @@ ADC_THRESHOLD = 20  # This one is relative to the baseline
 ADC_LOW_THRESHOLD = 253
 ADC_HIGH_THRESHOLD = 323
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
+ADC_LIMIT = 2 ** 12
+TRIGGER_2 = (2, 0, False, 0)  # 2 low and no high, no external
+TRIGGER_4 = (3, 2, True, 0)  # 3 low or 2 high, no external
 
 
 class ProcessEvents(object):
@@ -601,6 +605,33 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
     """
 
+    def __init__(self, data, group, source=None, progress=True, station=None):
+        """Initialize the class.
+
+        :param data: the PyTables datafile
+        :param group: the group containing the station data.  In normal
+            cases, this is simply the group containing the events table.
+        :param source: the name of the events table.  Default: None,
+            meaning the default name 'events'.
+        :param progress: boolean to indicate if a progress bar should be shown.
+        :param station: station number of station to which the data belongs.
+
+        """
+        super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
+                                                             source, progress)
+        if station is None:
+            self.station = None
+            self.thresholds = [(ADC_LOW_THRESHOLD, ADC_HIGH_THRESHOLD)] * 4
+            n = sum(1 for idx in self.source[0]['traces'] if idx != -1)
+            if n == 2:
+                self.trigger = TRIGGER_2
+            elif n == 4:
+                self.trigger = TRIGGER_4
+            else:
+                raise Exception('No trigger settings available')
+        else:
+            self.station = Station(station)
+
     def _store_results_from_traces(self):
         table = self._tmp_events
 
@@ -623,37 +654,51 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                  relative to start of trace in ns
 
         """
+        if self.station is None:
+            thresholds = self.thresholds
+            n_low, n_high, and_or, external = self.trigger
+        else:
+            thresholds, trigger = self.station.trigger(event['timestamp'])
+            n_low, n_high, and_or, external = trigger
+
+        if external:
+            # External trigger not supported
+            return [-999] * 5
+
         timings = []
         low_idx = []
         high_idx = []
-        n_detectors = sum(1 for idx in event['traces'] if idx != -1)
-        for baseline, pulseheight, trace_idx in zip(event['baseline'],
-                                                    event['pulseheights'],
-                                                    event['traces']):
+        for baseline, pulseheight, trace_idx, trig_thresholds in zip(
+                event['baseline'], event['pulseheights'], event['traces'],
+                thresholds):
             if pulseheight < 0:
-                # retain -1, -999 status flags in timing
+                # Retain -1 and -999 status flags in timing
                 timings.append(pulseheight)
+                low_idx.append(-999)
+                high_idx.append(-999)
+                continue
+            if pulseheight < ADC_THRESHOLD or baseline > trig_thresholds[0]:
+                # No significant pulse or bad baseline
+                timings.append(-999)
+                low_idx.append(-999)
+                high_idx.append(-999)
                 continue
 
             max_signal = baseline + pulseheight
             adc_threshold = baseline + ADC_THRESHOLD
 
-            if max_signal < adc_threshold and max_signal < ADC_LOW_THRESHOLD:
-                # No significant pulse
-                timings.append(-999)
-                continue
-            elif baseline > ADC_LOW_THRESHOLD:
-                # Bad baseline
-                timings.append(-999)
-                continue
+            thresholds = [adc_threshold]
+            # Only include if needed for trigger and large enough signal
+            if n_low and max_signal >= trig_thresholds[0]:
+                thresholds.append(trig_thresholds[0])
+            else:
+                thresholds.append(ADC_LIMIT)
+            if n_high and max_signal >= trig_thresholds[1]:
+                thresholds.append(trig_thresholds[1])
+            else:
+                thresholds.append(ADC_LIMIT)
 
             trace = self._get_trace(trace_idx)
-
-            if n_detectors == 2:
-                thresholds = (adc_threshold, ADC_LOW_THRESHOLD)
-            else:
-                thresholds = (adc_threshold, ADC_LOW_THRESHOLD,
-                              ADC_HIGH_THRESHOLD)
 
             t, l, h = self._first_above_thresholds(trace, thresholds,
                                                    max_signal)
@@ -661,7 +706,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             low_idx.append(l)
             high_idx.append(h)
 
-        t_trigger = self._reconstruct_trigger(low_idx, high_idx, n_detectors)
+        t_trigger = self._reconstruct_trigger(low_idx, high_idx)
         timings.append(t_trigger)
 
         timings = [time * ADC_TIME_PER_SAMPLE if time not in ERR else time
@@ -716,33 +761,46 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         return next(((i, x) for i, x in enumerate(trace, t) if x >= threshold),
                     (-999, 0))
 
-    def _reconstruct_trigger(self, low_idx, high_idx, n_detectors=None):
+    def _reconstruct_trigger(self, low_idx, high_idx):
         """Reconstruct the moment of trigger from the threshold info
 
-        :param low_idx, high_idx: list of trace indexes when a detector
-                                   crossed a given threshold.
-        :param n_detectors: number of detectors (2 or 4).
+        :param low_idx,high_idx: list of trace indexes when a detector
+                                 crossed a given threshold.
         :return: index in trace where the trigger happened.
 
         """
+        n_low, n_high, and_or, external = self.trigger
+
         low_idx = [idx for idx in low_idx if not idx == -999]
         high_idx = [idx for idx in high_idx if not idx == -999]
         low_idx.sort()
         high_idx.sort()
 
-        if n_detectors == 2 and len(low_idx) > 1:
-            # Two low
-            return low_idx[1]
-        elif n_detectors == 4 and (len(low_idx) >= 3 or len(high_idx) >= 2):
-            # Two high or three low
-            if len(low_idx) < 3 and len(high_idx) >= 2:
-                return high_idx[1]
-            elif len(low_idx) >= 3 and len(high_idx) < 2:
-                return low_idx[2]
-            elif len(low_idx) >= 3 and len(high_idx) >= 2:
-                return min([low_idx[2], high_idx[1]])
+        if and_or:
+            # low or high, which ever is first
+            if (n_low and n_high and
+                    len(low_idx) >= n_low and len(high_idx) >= n_high):
+                return min(low_idx[n_low - 1], high_idx[n_high - 1])
+            elif n_high and len(high_idx) >= n_high:
+                return high_idx[n_high - 1]
+            elif n_low and len(low_idx) >= n_low:
+                return low_idx[n_low - 1]
         else:
-            return -999
+            if n_low and n_high:
+                # low and high
+                if len(low_idx) >= n_low + n_high and len(high_idx) >= n_high:
+                    return max(low_idx[n_low + n_high - 1],
+                               high_idx[n_high - 1])
+            elif n_high:
+                # 0 low and high
+                if len(high_idx) >= n_high:
+                    return high_idx[n_high - 1]
+            elif n_low:
+                # low and 0 high
+                if len(low_idx) >= n_low:
+                    return low_idx[n_low - 1]
+
+        return -999
 
 
 class ProcessEventsFromSource(ProcessEvents):
