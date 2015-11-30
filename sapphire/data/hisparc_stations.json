@@ -105,18 +105,18 @@
         "number": 6, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": null, 
-                "radius": null
+                "alpha": 290.0, 
+                "beta": 20.0, 
+                "height": 0.0, 
+                "mpv": 262.0, 
+                "radius": 4.0
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 230.0, 
-                "radius": null
+                "alpha": 110.0, 
+                "beta": 20.0, 
+                "height": 0.0, 
+                "mpv": 246.0, 
+                "radius": 4.0
             }
         ], 
         "subcluster": "Amsterdam"
@@ -183,7 +183,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 197.0, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -251,7 +251,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 266.0, 
+                "mpv": 257.0, 
                 "radius": null
             }
         ], 
@@ -298,14 +298,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 232.0, 
+                "mpv": 231.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 237.0, 
+                "mpv": 239.0, 
                 "radius": null
             }
         ], 
@@ -325,14 +325,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 207.0, 
+                "mpv": 214.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 188.0, 
+                "mpv": 202.0, 
                 "radius": null
             }, 
             {
@@ -366,7 +366,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 192.0, 
                 "radius": null
             }, 
             {
@@ -387,7 +387,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 211.0, 
+                "mpv": 208.0, 
                 "radius": null
             }
         ], 
@@ -407,14 +407,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 304.0, 
+                "mpv": 289.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 266.0, 
+                "mpv": 259.0, 
                 "radius": null
             }
         ], 
@@ -434,7 +434,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 225.0, 
+                "mpv": 220.0, 
                 "radius": null
             }, 
             {
@@ -544,11 +544,11 @@
     }, 
     "202": {
         "active": true, 
-        "altitude": 50.18, 
+        "altitude": 0.0, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3102175, 
-        "longitude": 4.681626, 
+        "latitude": 0.0, 
+        "longitude": 0.0, 
         "name": "Kaj Munk College", 
         "number": 202, 
         "scintillators": [
@@ -563,7 +563,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 336.0, 
+                "mpv": 333.0, 
                 "radius": null
             }
         ], 
@@ -610,14 +610,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 258.0, 
+                "mpv": 255.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 255.0, 
+                "mpv": 248.0, 
                 "radius": null
             }
         ], 
@@ -664,14 +664,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 237.0, 
+                "mpv": 235.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 239.0, 
+                "mpv": 237.0, 
                 "radius": null
             }
         ], 
@@ -747,11 +747,11 @@
     }, 
     "501": {
         "active": true, 
-        "altitude": 57.65, 
+        "altitude": 0.0, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3558991, 
-        "longitude": 4.950988, 
+        "latitude": 0.0, 
+        "longitude": 0.0, 
         "name": "Nikhef", 
         "number": 501, 
         "scintillators": [
@@ -759,28 +759,28 @@
                 "alpha": -158.07, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 253.0, 
+                "mpv": 249.0, 
                 "radius": 6.09
             }, 
             {
                 "alpha": 73.49, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 249.0, 
+                "mpv": 244.0, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 95.63, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 315.0, 
+                "mpv": 313.0, 
                 "radius": 14.51
             }, 
             {
                 "alpha": 138.13, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 311.0, 
+                "mpv": 304.0, 
                 "radius": 11.06
             }
         ], 
@@ -800,28 +800,28 @@
                 "alpha": 15.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 230.0, 
+                "mpv": 223.0, 
                 "radius": 8.66
             }, 
             {
                 "alpha": 60.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 213.0, 
+                "mpv": 208.0, 
                 "radius": 13.23
             }, 
             {
                 "alpha": 105.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 261.0, 
+                "mpv": 253.0, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 285.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 271.0, 
+                "mpv": 269.0, 
                 "radius": 5.0
             }
         ], 
@@ -841,28 +841,28 @@
                 "alpha": 315.0, 
                 "beta": 135.0, 
                 "height": 0.0, 
-                "mpv": 309.0, 
+                "mpv": 305.0, 
                 "radius": 8.97
             }, 
             {
                 "alpha": 315.0, 
                 "beta": 135.0, 
                 "height": 0.0, 
-                "mpv": null, 
+                "mpv": 200.0, 
                 "radius": 3.15
             }, 
             {
                 "alpha": 225.0, 
                 "beta": 225.0, 
                 "height": 0.0, 
-                "mpv": 254.0, 
+                "mpv": 245.0, 
                 "radius": 5.09
             }, 
             {
                 "alpha": 45.0, 
                 "beta": 225.0, 
                 "height": 0.0, 
-                "mpv": 237.0, 
+                "mpv": 234.0, 
                 "radius": 4.89
             }
         ], 
@@ -882,21 +882,21 @@
                 "alpha": 190.0, 
                 "beta": 10.0, 
                 "height": 0.0, 
-                "mpv": 203.0, 
+                "mpv": null, 
                 "radius": 9.0
             }, 
             {
                 "alpha": 190.0, 
                 "beta": 190.0, 
                 "height": 0.0, 
-                "mpv": 254.0, 
+                "mpv": 249.0, 
                 "radius": 2.9
             }, 
             {
                 "alpha": 100.0, 
                 "beta": 280.0, 
                 "height": 0.0, 
-                "mpv": 263.0, 
+                "mpv": 261.0, 
                 "radius": 5.02
             }, 
             {
@@ -923,14 +923,14 @@
                 "alpha": 250.0, 
                 "beta": 30.0, 
                 "height": 0.0, 
-                "mpv": 243.0, 
+                "mpv": 239.0, 
                 "radius": 11.21
             }, 
             {
                 "alpha": 296.0, 
                 "beta": 210.0, 
                 "height": 0.0, 
-                "mpv": 225.0, 
+                "mpv": 217.0, 
                 "radius": 12.95
             }, 
             {
@@ -944,7 +944,7 @@
                 "alpha": 1.2, 
                 "beta": 205.0, 
                 "height": 0.0, 
-                "mpv": 219.0, 
+                "mpv": 217.0, 
                 "radius": 4.63
             }
         ], 
@@ -964,14 +964,14 @@
                 "alpha": 93.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 216.0, 
+                "mpv": 208.0, 
                 "radius": 8.66
             }, 
             {
                 "alpha": 93.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 229.0, 
+                "mpv": 223.0, 
                 "radius": 2.89
             }, 
             {
@@ -985,7 +985,7 @@
                 "alpha": 183.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 243.0, 
+                "mpv": 237.0, 
                 "radius": 5.0
             }
         ], 
@@ -1005,7 +1005,7 @@
                 "alpha": -87.45, 
                 "beta": -45.0, 
                 "height": -12.0, 
-                "mpv": 455.0, 
+                "mpv": null, 
                 "radius": 19.11
             }, 
             {
@@ -1046,7 +1046,7 @@
                 "alpha": 135.0, 
                 "beta": -45.0, 
                 "height": 0.0, 
-                "mpv": 271.0, 
+                "mpv": 262.0, 
                 "radius": 8.66
             }, 
             {
@@ -1060,14 +1060,14 @@
                 "alpha": 45.0, 
                 "beta": 45.0, 
                 "height": 0.0, 
-                "mpv": 236.0, 
+                "mpv": 234.0, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 225.0, 
                 "beta": 45.0, 
                 "height": 0.0, 
-                "mpv": 211.0, 
+                "mpv": 216.0, 
                 "radius": 5.0
             }
         ], 
@@ -1094,7 +1094,7 @@
                 "alpha": 225.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 236.0, 
+                "mpv": 231.0, 
                 "radius": 2.89
             }, 
             {
@@ -1135,14 +1135,14 @@
                 "alpha": 45.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 205.0, 
+                "mpv": 214.0, 
                 "radius": 5.0
             }, 
             {
                 "alpha": 87.0, 
                 "beta": 0.0, 
                 "height": 0.0, 
-                "mpv": 212.0, 
+                "mpv": 220.0, 
                 "radius": 13.2
             }, 
             {
@@ -1169,28 +1169,28 @@
                 "alpha": 45.0, 
                 "beta": -45.0, 
                 "height": 0.0, 
-                "mpv": 215.0, 
+                "mpv": 221.0, 
                 "radius": 8.67
             }, 
             {
                 "alpha": 90.0, 
                 "beta": -45.0, 
                 "height": 0.0, 
-                "mpv": 220.0, 
+                "mpv": 224.0, 
                 "radius": 13.23
             }, 
             {
                 "alpha": 135.0, 
                 "beta": 45.0, 
                 "height": 0.0, 
-                "mpv": 220.0, 
+                "mpv": 226.0, 
                 "radius": 5.0
             }, 
             {
                 "alpha": -45.0, 
                 "beta": 45.0, 
                 "height": 0.0, 
-                "mpv": 207.0, 
+                "mpv": 212.0, 
                 "radius": 5.0
             }
         ], 
@@ -1244,7 +1244,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 200.0, 
+                "mpv": 197.0, 
                 "radius": null
             }, 
             {
@@ -1305,14 +1305,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 197.0, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 195.0, 
+                "mpv": null, 
                 "radius": null
             }
         ], 
@@ -1332,14 +1332,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 255.0, 
+                "mpv": 256.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 254.0, 
+                "mpv": 249.0, 
                 "radius": null
             }
         ], 
@@ -1393,7 +1393,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 301.0, 
+                "mpv": 298.0, 
                 "radius": null
             }
         ], 
@@ -1413,14 +1413,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 199.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 243.0, 
+                "mpv": 238.0, 
                 "radius": null
             }, 
             {
@@ -1819,14 +1819,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 269.0, 
+                "mpv": 259.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 261.0, 
+                "mpv": 260.0, 
                 "radius": null
             }
         ], 
@@ -2036,14 +2036,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 192.0, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 207.0, 
+                "mpv": 199.0, 
                 "radius": null
             }
         ], 
@@ -2063,7 +2063,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 187.0, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -2131,7 +2131,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 223.0, 
+                "mpv": 217.0, 
                 "radius": null
             }, 
             {
@@ -2158,14 +2158,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 220.0, 
+                "mpv": 219.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 218.0, 
+                "mpv": 217.0, 
                 "radius": null
             }
         ], 
@@ -2185,14 +2185,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 223.0, 
+                "mpv": 218.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 186.0, 
+                "mpv": 197.0, 
                 "radius": null
             }
         ], 
@@ -2402,7 +2402,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 241.0, 
+                "mpv": 254.0, 
                 "radius": null
             }, 
             {
@@ -2436,7 +2436,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 206.0, 
+                "mpv": 211.0, 
                 "radius": null
             }
         ], 
@@ -2456,7 +2456,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 211.0, 
+                "mpv": 215.0, 
                 "radius": null
             }, 
             {
@@ -2510,14 +2510,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 384.0, 
+                "mpv": 374.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 332.0, 
+                "mpv": 322.0, 
                 "radius": null
             }
         ], 
@@ -2666,7 +2666,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 202.0, 
+                "mpv": 199.0, 
                 "radius": null
             }, 
             {
@@ -2761,7 +2761,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 239.0, 
+                "mpv": 234.0, 
                 "radius": null
             }
         ], 
@@ -2835,14 +2835,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 222.0, 
+                "mpv": 220.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 228.0, 
+                "mpv": 232.0, 
                 "radius": null
             }
         ], 
@@ -2862,7 +2862,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 194.0, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -2876,7 +2876,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 222.0, 
+                "mpv": 220.0, 
                 "radius": null
             }, 
             {
@@ -2930,14 +2930,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 252.0, 
+                "mpv": 246.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 229.0, 
+                "mpv": 224.0, 
                 "radius": null
             }
         ], 
@@ -2984,14 +2984,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 287.0, 
+                "mpv": 279.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 270.0, 
+                "mpv": 264.0, 
                 "radius": null
             }
         ], 
@@ -3011,14 +3011,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 221.0, 
+                "mpv": 214.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 211.0, 
+                "mpv": 203.0, 
                 "radius": null
             }
         ], 
@@ -3167,7 +3167,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 274.0, 
+                "mpv": 272.0, 
                 "radius": null
             }
         ], 
@@ -3485,7 +3485,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 199.0, 
                 "radius": null
             }, 
             {
@@ -3567,14 +3567,14 @@
                 "alpha": 330.51, 
                 "beta": 34.0, 
                 "height": 0.0, 
-                "mpv": 186.0, 
+                "mpv": 204.0, 
                 "radius": 2.45
             }, 
             {
                 "alpha": 121.28, 
                 "beta": 124.0, 
                 "height": 0.0, 
-                "mpv": 195.0, 
+                "mpv": 199.0, 
                 "radius": 5.6
             }
         ], 
@@ -3594,14 +3594,14 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 308.0, 
+                "mpv": 282.0, 
                 "radius": null
             }, 
             {
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 284.0, 
+                "mpv": 280.0, 
                 "radius": null
             }, 
             {
@@ -3710,7 +3710,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 254.0, 
+                "mpv": 248.0, 
                 "radius": null
             }
         ], 
@@ -3730,7 +3730,7 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": null, 
+                "mpv": 253.0, 
                 "radius": null
             }, 
             {
@@ -3784,5 +3784,5 @@
         ], 
         "subcluster": "Karlsruhe"
     }, 
-    "_info": "HiSPARC station info on 2015-11-26"
+    "_info": "HiSPARC station info on 2015-11-30"
 }
