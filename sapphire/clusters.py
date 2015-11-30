@@ -2,7 +2,7 @@
 
     The BaseCluster class defines a HiSPARC cluster consisting of one or
     more stations.  The Station class defines a HiSPARC station,
-    consisting of one or more detectors.
+    consisting of one or more Detectors.
 
 """
 from __future__ import division
