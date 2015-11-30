@@ -24,6 +24,7 @@ from scipy.optimize import minimize
 
 from .event_utils import station_arrival_time, detector_arrival_time
 from ..utils import pbar, norm_angle
+from ..api import Station
 
 
 class EventDirectionReconstruction(object):
@@ -54,7 +55,8 @@ class EventDirectionReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :param offsets: time offsets for each detector.
+        :param offsets: time offsets for each detector or a
+            :class:`~sapphire.api.Station` object.
         :return: theta, phi, and detector ids.
 
         """
@@ -62,6 +64,8 @@ class EventDirectionReconstruction(object):
         if detector_ids is None:
             detector_ids = range(4)
         self.station.cluster.set_timestamp(event['timestamp'])
+        if isinstace(offsets, Station):
+            offsets = offsets.detector_timing_offset(event['timestamp'])
         for id in detector_ids:
             t_detector = detector_arrival_time(event, id, offsets)
             if not isnan(t_detector):
