@@ -6,6 +6,7 @@ import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
 from ..clusters import HiSPARCStations, Station
+from .. import api
 from .direction_reconstruction import (EventDirectionReconstruction,
                                        CoincidenceDirectionReconstruction)
 from .core_reconstruction import (EventCoreReconstruction,
@@ -51,7 +52,8 @@ class ReconstructESDEvents(object):
         :param data: the PyTables datafile.
         :param station_group: the destination group.
         :param station: either a station number or
-                        :class:`~sapphire.clusters.Station` object.
+            :class:`~sapphire.clusters.Station` object. If number the
+            positions and offsets are retrieved from the API.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
@@ -67,9 +69,11 @@ class ReconstructESDEvents(object):
 
         if isinstance(station, Station):
             self.station = station
+            self.api_station = None
         else:
             cluster = HiSPARCStations([station])
             self.station = cluster.get_station(station)
+            self.api_station = api.Station(station)
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
@@ -84,9 +88,12 @@ class ReconstructESDEvents(object):
         """Shorthand function to reconstruct event and store the results"""
 
         self.prepare_output()
-        self.offsets = determine_detector_timing_offsets(self.events,
-                                                         self.station)
-        self.store_offsets()
+        if self.api_station is None:
+            self.offsets = determine_detector_timing_offsets(self.events,
+                                                             self.station)
+            self.store_offsets()
+        else:
+            self.offsets = self.api_station
         self.reconstruct_directions(detector_ids=detector_ids)
         self.reconstruct_cores(detector_ids=detector_ids)
         self.store_reconstructions()

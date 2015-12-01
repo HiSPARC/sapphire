@@ -64,7 +64,7 @@ class EventDirectionReconstruction(object):
         if detector_ids is None:
             detector_ids = range(4)
         self.station.cluster.set_timestamp(event['timestamp'])
-        if isinstace(offsets, Station):
+        if isinstance(offsets, Station):
             offsets = offsets.detector_timing_offset(event['timestamp'])
         for id in detector_ids:
             t_detector = detector_arrival_time(event, id, offsets)
