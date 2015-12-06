@@ -28,7 +28,7 @@ class CoincidencesTests(unittest.TestCase):
     def test_search_and_store_coincidences(self, mock_store, mock_process,
                                            mock_search):
         self.c.search_and_store_coincidences()
-        mock_search.assert_called_with(window=2000)
+        mock_search.assert_called_with(window=10000)
         mock_process.assert_called_with()
         mock_store.assert_called_with(None)
         self.c.search_and_store_coincidences(sentinel.window, sentinel.cluster)
@@ -112,7 +112,7 @@ class CoincidencesESDTests(CoincidencesTests):
     @patch.object(coincidences.CoincidencesESD, 'store_coincidences')
     def test_search_and_store_coincidences(self, mock_store, mock_search):
         self.c.search_and_store_coincidences()
-        mock_search.assert_called_with(window=2000)
+        mock_search.assert_called_with(window=10000)
         mock_store.assert_called_with(cluster=None)
         self.c.search_and_store_coincidences(sentinel.window,
                                              sentinel.cluster)
@@ -123,7 +123,7 @@ class CoincidencesESDTests(CoincidencesTests):
     def test_search_coincidences(self, mock__search):
         mock__search.return_value = (sentinel.c_index, sentinel.timestamps)
         self.c.search_coincidences()
-        mock__search.assert_called_with(2000, None, None)
+        mock__search.assert_called_with(10000, None, None)
         self.assertEqual(self.c._src_timestamps, sentinel.timestamps)
         self.assertEqual(self.c._src_c_index, sentinel.c_index)
 
