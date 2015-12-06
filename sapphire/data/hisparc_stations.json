@@ -544,11 +544,11 @@
     }, 
     "202": {
         "active": true, 
-        "altitude": 0.0, 
+        "altitude": 50.18, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 0.0, 
-        "longitude": 0.0, 
+        "latitude": 52.3102175, 
+        "longitude": 4.681626, 
         "name": "Kaj Munk College", 
         "number": 202, 
         "scintillators": [
@@ -747,11 +747,11 @@
     }, 
     "501": {
         "active": true, 
-        "altitude": 0.0, 
+        "altitude": 57.65, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 0.0, 
-        "longitude": 0.0, 
+        "latitude": 52.3558991, 
+        "longitude": 4.950988, 
         "name": "Nikhef", 
         "number": 501, 
         "scintillators": [
@@ -1116,11 +1116,11 @@
     }, 
     "510": {
         "active": true, 
-        "altitude": 56.98, 
+        "altitude": 54.84, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3558849, 
-        "longitude": 4.9510053, 
+        "latitude": 52.3558816, 
+        "longitude": 4.9510079, 
         "name": "Nikhef 2", 
         "number": 510, 
         "scintillators": [
@@ -1410,32 +1410,32 @@
         "number": 1009, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 152.0, 
+                "beta": 62.0, 
+                "height": -2.0, 
                 "mpv": 199.0, 
-                "radius": null
+                "radius": 8.528
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 152.0, 
+                "beta": 152.0, 
+                "height": -17.6, 
                 "mpv": 238.0, 
-                "radius": null
+                "radius": 16.0
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 62.0, 
+                "beta": 62.0, 
+                "height": -2.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 3.175
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 242.0, 
+                "beta": 62.0, 
+                "height": -2.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 3.175
             }
         ], 
         "subcluster": "Utrecht"
@@ -3784,5 +3784,5 @@
         ], 
         "subcluster": "Karlsruhe"
     }, 
-    "_info": "HiSPARC station info on 2015-11-30"
+    "_info": "HiSPARC station info on 2015-12-06"
 }
