@@ -141,7 +141,7 @@ class Coincidences(object):
         self.overwrite = overwrite
         self.progress = progress
 
-    def search_and_store_coincidences(self, window=2000, cluster=None):
+    def search_and_store_coincidences(self, window=10000, cluster=None):
         """Search, process and store coincidences.
 
         This is a semi-automatic method to search for coincidences,
@@ -157,7 +157,7 @@ class Coincidences(object):
         self.process_events()
         self.store_coincidences(cluster)
 
-    def search_coincidences(self, window=2000, shifts=None, limit=None):
+    def search_coincidences(self, window=10000, shifts=None, limit=None):
         """Search for coincidences.
 
         Search all data in the station_groups for coincidences, and store
@@ -175,8 +175,9 @@ class Coincidences(object):
         designates the detector station which measured the event, and
         finally an index into that station's event table.
 
-        :param window: the coincidence time window.  All events with delta
-            t's smaller than this window will be considered a coincidence.
+        :param window: the coincidence time window in nanoseconds. All events
+            with delta t's smaller than this window will be considered a
+            coincidence.
         :param shifts: optionally shift a station's data in time.  This
             can be useful if a station has a misconfigured GPS clock.
             Expects a list of shifts, one for each station, in seconds.
@@ -329,7 +330,7 @@ class Coincidences(object):
         self.observables.flush()
         return event_id
 
-    def _search_coincidences(self, window=2000, shifts=None, limit=None):
+    def _search_coincidences(self, window=10000, shifts=None, limit=None):
         """Search for coincidences
 
         Search for coincidences in a set of PyTables event tables, optionally
@@ -341,7 +342,7 @@ class Coincidences(object):
 
         :param window: the time window in nanoseconds which will be searched
             for coincidences.  Events falling outside this window will not be
-            part of the coincidence.  Default: 2000 (i.e. 2 us).
+            part of the coincidence.  Default: 10000 (i.e. 10 us).
         :param shifts: a list of time shifts in seconds, use 'None' for no
             shift.
         :param limit: limit the number of events which are processed.
@@ -558,7 +559,7 @@ class CoincidencesESD(Coincidences):
     The ``event`` is one of the source events.
 
     """
-    def search_and_store_coincidences(self, window=2000, cluster=None):
+    def search_and_store_coincidences(self, window=10000, cluster=None):
         """Search and store coincidences.
 
         This is a semi-automatic method to search for coincidences
@@ -568,7 +569,7 @@ class CoincidencesESD(Coincidences):
         self.search_coincidences(window=window)
         self.store_coincidences(cluster=cluster)
 
-    def search_coincidences(self, window=2000, shifts=None, limit=None):
+    def search_coincidences(self, window=10000, shifts=None, limit=None):
         """Search for coincidences.
 
         Search all data in the station_groups for coincidences, and store
