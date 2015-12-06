@@ -31,6 +31,7 @@
 import zlib
 from itertools import izip
 import operator
+import os
 
 import tables
 import numpy as np
@@ -654,12 +655,11 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                  relative to start of trace in ns
 
         """
-        if self.station is None:
-            thresholds = self.thresholds
-            n_low, n_high, and_or, external = self.trigger
-        else:
-            thresholds, trigger = self.station.trigger(event['timestamp'])
-            n_low, n_high, and_or, external = trigger
+        if self.station is not None:
+            timestamp = event['timestamp']
+            self.thresholds, self.trigger = self.station.trigger(timestamp)
+
+        n_low, n_high, and_or, external = self.trigger
 
         if external:
             # External trigger not supported
@@ -670,7 +670,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         high_idx = []
         for baseline, pulseheight, trace_idx, trig_thresholds in zip(
                 event['baseline'], event['pulseheights'], event['traces'],
-                thresholds):
+                self.thresholds):
             if pulseheight < 0:
                 # Retain -1 and -999 status flags in timing
                 timings.append(pulseheight)
@@ -827,11 +827,21 @@ class ProcessEventsFromSource(ProcessEvents):
         self.dest_file = dest_file
 
         self.source_group = self.source_file.get_node(source_group)
-        self.dest_group = self.dest_file.get_node(dest_group)
+        self.dest_group = self._get_or_create_group(dest_file, dest_group)
 
         self.source = self._get_source()
 
         self.progress = False
+
+    def _get_or_create_group(self, file, group):
+        """Get or create a group in the datafile"""
+
+        try:
+            group = file.get_node(group)
+        except tables.NoSuchNodeError:
+            parent, newgroup = os.path.split(group)
+            group = file.create_group(parent, newgroup, createparents=True)
+        return group
 
     def _get_source(self):
         """Return the table containing the events.
@@ -900,11 +910,43 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
     This is a subclass of :class:`ProcessEventsFromSource` and
     :class:`ProcessEventsWithTriggerOffset`.  Processing events and
     finding the trigger time in the traces. And storing the results in a
-    different file that the source.
+    different file than the source.
 
     """
 
-    pass
+    def __init__(self, source_file, dest_file, source_group, dest_group,
+                 station=None):
+        """Initialize the class.
+
+        :param source_file: the PyTables source file
+        :param dest_file: the PyTables dest file
+        :param group_path: the pathname of the source (and destination)
+            group
+        :param station: station number of station to which the data belongs.
+
+        """
+        self.source_file = source_file
+        self.dest_file = dest_file
+
+        self.source_group = self.source_file.get_node(source_group)
+        self.dest_group = self._get_or_create_group(dest_file, dest_group)
+
+        self.source = self._get_source()
+
+        self.progress = False
+
+        if station is None:
+            self.station = None
+            self.thresholds = [(ADC_LOW_THRESHOLD, ADC_HIGH_THRESHOLD)] * 4
+            n = sum(1 for idx in self.source[0]['traces'] if idx != -1)
+            if n == 2:
+                self.trigger = TRIGGER_2
+            elif n == 4:
+                self.trigger = TRIGGER_4
+            else:
+                raise Exception('No trigger settings available')
+        else:
+            self.station = Station(station)
 
 
 class ProcessWeather(ProcessEvents):

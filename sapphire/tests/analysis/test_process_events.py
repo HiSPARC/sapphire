@@ -232,5 +232,51 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
 
 
+class ProcessEventsFromSourceTests(ProcessEventsTests):
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+        self.source_path = self.create_tempfile_from_testdata()
+        self.source_data = tables.open_file(self.source_path, 'r')
+        self.dest_path = self.create_tempfile_path()
+        self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.proc = process_events.ProcessEventsFromSource(
+            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
+
+    def tearDown(self):
+        warnings.resetwarnings()
+        self.source_data.close()
+        os.remove(self.source_path)
+        self.dest_data.close()
+        os.remove(self.dest_path)
+
+    def test_process_and_store_results(self):
+        self.proc.process_and_store_results()
+
+
+class ProcessEventsFromSourceWithTriggerOffsetTests(ProcessEventsFromSourceTests,
+                                                    ProcessEventsWithTriggerOffsetTests):
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+        self.source_path = self.create_tempfile_from_testdata()
+        self.source_data = tables.open_file(self.source_path, 'r')
+        self.dest_path = self.create_tempfile_path()
+        self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
+            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
+
+
+class ProcessEventsFromSourceWithTriggerOffsetStationTests(ProcessEventsFromSourceTests,
+                                                           ProcessEventsWithTriggerOffsetTests):
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+        self.source_path = self.create_tempfile_from_testdata()
+        self.source_data = tables.open_file(self.source_path, 'r')
+        self.dest_path = self.create_tempfile_path()
+        self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
+            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP,
+            station=501)
+
+
 if __name__ == '__main__':
     unittest.main()
