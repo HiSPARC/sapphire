@@ -90,7 +90,8 @@ class EventDirectionReconstruction(object):
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors to use for the reconstructions.
-        :param offsets: time offsets for each detector.
+        :param offsets: time offsets for each detector or a
+            :class:`~sapphire.api.Station` object.
         :return: list of theta, phi, and detector ids.
 
         """
