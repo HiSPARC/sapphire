@@ -22,7 +22,8 @@ from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, where, pi, inf, array, cross, dot)
 from scipy.optimize import minimize
 
-from .event_utils import station_arrival_time, detector_arrival_time
+from .event_utils import (station_arrival_time, detector_arrival_time,
+                          relative_detector_arrival_times)
 from ..utils import pbar, norm_angle
 from ..api import Station
 
@@ -147,6 +148,11 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
+        # Get relevant offsets. TODO: station offsets
+        offsets = {s: o if not isinstance(o, Station)
+                   else o.detector_timing_offset(ts0)
+                   for s, o in offsets.iteritems()}
+
         for station_number, event in coincidence_events:
             if station_numbers is not None:
                 if station_number not in station_numbers:
@@ -193,6 +199,75 @@ class CoincidenceDirectionReconstruction(object):
             theta, phi, nums = zip(*angles)
         else:
             theta, phi, nums = ((), (), ())
+        return theta, phi, nums
+
+
+class CoincidenceDirectionReconstructionDetectors(
+        CoincidenceDirectionReconstruction):
+
+    """Reconstruct direction for coincidences using each detector
+
+    Instead of only the first arrival time per station this class
+    uses the arrival time in each detector for the reconstruction.
+
+    """
+
+    def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
+                                offsets={}):
+        """Reconstruct a single coincidence
+
+        :param coincidence_events: a coincidence list consisting of three
+                                   or more (station_number, event) tuples.
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :param offsets: dictionary with detector offsets for each station.
+                        These detector offsets should be relative to one
+                        detector from a specific station.
+        :return: list of theta, phi, and station numbers.
+
+        """
+        no_offset = [0., 0., 0., 0.]
+
+        if len(coincidence_events) < 3:
+            return nan, nan, []
+
+        # Subtract base timestamp to prevent loss of precision
+        ts0 = int(coincidence_events[0][1]['timestamp'])
+        ets0 = ts0 * int(1e9)
+        self.cluster.set_timestamp(ts0)
+        t, x, y, z, nums = ([], [], [], [], [])
+
+        # Get relevant offsets. TODO: station offsets
+        offsets = {s: o if not isinstance(o, Station)
+                   else o.detector_timing_offset(ts0)
+                   for s, o in offsets.iteritems()}
+
+        for station_number, event in coincidence_events:
+            if station_numbers is not None:
+                if station_number not in station_numbers:
+                    continue
+            t_off = offsets.get(station_number, no_offset)
+            station = self.cluster.get_station(station_number)
+            t_detectors = relative_detector_arrival_times(event, ets0,
+                                                          offsets=t_off,
+                                                          station=station)
+            for t_detector, detector in zip(t_detectors, station.detectors):
+                if not isnan(t_detector):
+                    dx, dy, dz = detector.get_coordinates()
+                    t.append(t_detector)
+                    x.append(dx)
+                    y.append(dy)
+                    z.append(dz)
+            if not all(isnan(t_detectors)):
+                nums.append(station_number)
+
+        if len(t) == 3:
+            theta, phi = self.direct.reconstruct_common(t, x, y, z)
+        elif len(t) > 3:
+            theta, phi = self.fit.reconstruct_common(t, x, y, z)
+        else:
+            theta, phi = (nan, nan)
+
         return theta, phi, nums
 
 
