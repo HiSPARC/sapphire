@@ -205,13 +205,14 @@ def download_data(file, group, station_number, start=None, end=None,
         pbar.finish()
 
 
-def download_coincidences(file, cluster=None, stations=None,
+def download_coincidences(file, group='', cluster=None, stations=None,
                           start=None, end=None, n=2, progress=True):
     """Download event summary data coincidences
 
-    :param file: The PyTables datafile handler.
-    :param cluster: The HiSPARC cluster name for which to get data.
-    :param stations: A list of HiSPARC station numbers for which to get data.
+    :param file: PyTables datafile handler.
+    :param group: path of destination group, which need not exist yet.
+    :param cluster: HiSPARC cluster name for which to get data.
+    :param stations: a list of HiSPARC station numbers for which to get data.
     :param start: a datetime instance defining the start of the search
         interval.
     :param end: a datetime instance defining the end of the search
@@ -248,12 +249,15 @@ def download_coincidences(file, cluster=None, stations=None,
     if end is None:
         end = start + datetime.timedelta(days=1)
 
+    if stations is not None and len(stations) < n:
+        raise Exception('To few stations in query, give at least n.')
+
     # build and open url, create tables and set read function
     query = urllib.urlencode({'cluster': cluster, 'stations': stations,
                               'start': start, 'end': end, 'n': n})
     url = COINCIDENCES_URL.format(query=query)
-    station_groups = _get_station_groups()
-    table = _get_or_create_coincidences_tables(file, station_groups)
+    station_groups = _get_station_groups(group)
+    table = _get_or_create_coincidences_tables(file, group, station_groups)
     station_numbers = _get_or_create_station_numbers(table)
 
     try:
@@ -286,7 +290,7 @@ def download_coincidences(file, cluster=None, stations=None,
         else:
             station_numbers.add(int(line[1]))
             # Full coincidence has been received, store it.
-            timestamp = _read_lines_and_store_coincidence(file,
+            timestamp = _read_lines_and_store_coincidence(file, group,
                                                           coincidence,
                                                           station_groups)
             # update progressbar every .5 seconds
@@ -300,13 +304,15 @@ def download_coincidences(file, cluster=None, stations=None,
 
     if len(coincidence):
         # Store last coincidence
-        _read_lines_and_store_coincidence(file, coincidence, station_groups)
+        _read_lines_and_store_coincidence(file, group, coincidence,
+                                          station_groups)
     if progress:
         pbar.finish()
 
-    if len(station_numbers):
-        cluster = clusters.HiSPARCStations(station_numbers)
-        table._v_parent._v_attrs.cluster = cluster
+#     if len(station_numbers):
+#         cluster = clusters.HiSPARCStations(station_numbers)
+#         table._v_parent._v_attrs.cluster = cluster
+
     file.flush()
 
 
@@ -328,7 +334,7 @@ def _get_or_create_station_numbers(table):
             return set()
 
 
-def _get_station_groups():
+def _get_station_groups(group):
     """Generate groups names for all stations
 
     Use the same hierarchy (cluster/station) as used in the HiSPARC
@@ -342,40 +348,41 @@ def _get_station_groups():
     for cluster in clusters:
         stations = api.Network().station_numbers(cluster=cluster['number'])
         for station in stations:
-            groups[station] = {'group': ('/hisparc/cluster_%s/station_%d' %
-                                         (cluster['name'].lower(), station)),
+            groups[station] = {'group': ('%s/hisparc/cluster_%s/station_%d' %
+                                         (group, cluster['name'].lower(),
+                                          station)),
                                's_index': s_index}
             s_index += 1
     return groups
 
 
-def _get_or_create_coincidences_tables(file, station_groups):
+def _get_or_create_coincidences_tables(file, group, station_groups):
     """Get or create event table in PyTables file"""
 
     try:
-        return file.get_node('/', 'coincidences')
+        return file.get_node(group + '/', 'coincidences')
     except tables.NoSuchNodeError:
-        return _create_coincidences_tables(file, station_groups)
+        return _create_coincidences_tables(file, group, station_groups)
 
 
-def _create_coincidences_tables(file, station_groups):
+def _create_coincidences_tables(file, group, station_groups):
     """Setup coincidence tables"""
 
-    group = '/coincidences'
+    coin_group = group + '/coincidences'
 
     # Create coincidences table
     description = storage.Coincidence
     s_columns = {'s%d' % station: tables.BoolCol(pos=p)
                  for p, station in enumerate(station_groups.iterkeys(), 12)}
     description.columns.update(s_columns)
-    coincidences = file.create_table(group, 'coincidences', description,
+    coincidences = file.create_table(coin_group, 'coincidences', description,
                                      createparents=True)
 
     # Create c_index
-    file.create_vlarray(group, 'c_index', tables.UInt32Col(shape=2))
+    file.create_vlarray(coin_group, 'c_index', tables.UInt32Col(shape=2))
 
     # Create and fill s_index
-    s_index = file.create_vlarray(group, 's_index', tables.VLStringAtom())
+    s_index = file.create_vlarray(coin_group, 's_index', tables.VLStringAtom())
     for station_group in station_groups.itervalues():
         s_index.append(station_group['group'])
 
@@ -461,7 +468,8 @@ def _create_weather_table(file, group):
     return file.create_table(group, 'weather', description, createparents=True)
 
 
-def _read_lines_and_store_coincidence(file, coincidence, station_groups):
+def _read_lines_and_store_coincidence(file, group, coincidence,
+                                      station_groups):
     """Read TSV lines and store coincidence
 
     Read lines from the TSV download and store the coincidence and events.
@@ -473,7 +481,7 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
 
     """
     c_idx = []
-    coincidences = file.get_node('/coincidences', 'coincidences')
+    coincidences = file.get_node(group + '/coincidences', 'coincidences')
     row = coincidences.row
     row['id'] = len(coincidences)
     row['N'] = len(coincidence)
@@ -486,15 +494,15 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
         station_number = int(event[1])
         row['s%d' % station_number] = True
         group_path = station_groups[station_number]['group']
-        group = _get_or_create_events_table(file, group_path)
-        with _read_line_and_store_event_class(group) as writer:
+        event_group = _get_or_create_events_table(file, group_path)
+        with _read_line_and_store_event_class(event_group) as writer:
             s_idx = station_groups[station_number]['s_index']
-            e_idx = len(group)
+            e_idx = len(event_group)
             c_idx.append((s_idx, e_idx))
             writer.store_line(event[2:])
 
     row.append()
-    c_index = file.get_node('/coincidences', 'c_index')
+    c_index = file.get_node(group + '/coincidences', 'c_index')
 
     c_index.append(c_idx)
 
