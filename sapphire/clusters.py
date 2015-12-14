@@ -112,6 +112,15 @@ class Detector(object):
         return r, phi, z
 
     def get_lla_coordinates(self):
+        """Get detector LLA coordinates (latitude, longitude, altitude)
+
+        get detector WGS84 coordinates
+        LLA: Latitude, Longitude, Altitude
+
+        :return: tuple (latitude, longitude, altitude).
+                 Latitude, longitude in degrees. Altitude in meters.
+
+        """
         lla = self.station.cluster.lla
         enu = self.get_coordinates()
 
@@ -310,6 +319,14 @@ class Station(object):
         return r, phi, z, alpha
 
     def get_lla_coordinates(self):
+        """Get station LLA coordinates (latitude, longitude, altitude)
+
+        LLA: Latitude, Longitude, Altitude
+
+        :return: tuple (latitude, longitude, altitude).
+                 Latitude, longitude in degrees. Altitude in meters.
+
+        """
         lla = self.cluster.lla
         x, y, z, alpha = self.get_coordinates()
         enu = (x, y, z)
@@ -477,6 +494,15 @@ class BaseCluster(object):
         return r, phi, z, self.alpha
 
     def get_lla_coordinates(self):
+        """Get cluster LLA coordinates (latitude, longitude, altitude)
+
+        get cluster WGS84 coordinates
+        LLA: Latitude, Longitude, Altitude
+
+        :return: tuple (latitude, longitude, altitude).
+                 Latitude, longitude in degrees. Altitude in meters.
+
+        """
         lla = self.lla
         x, y, z, alpha = self.get_coordinates()
         enu = (x, y, z)
@@ -525,13 +551,15 @@ class BaseCluster(object):
         return r, phi, z
 
     def calc_xy_center_of_mass_coordinates(self):
+        """Like calc_center_of_mass_coordinates, but without z"""
+
         x, y, _ = self.calc_center_of_mass_coordinates()
         return x, y
 
     def calc_center_of_mass_coordinates(self):
         """Calculate center of mass coordinates of all detectors in cluster
 
-        :return: x, y; coordinates of cluster center relative to
+        :return: x, y, z; coordinates of cluster center relative to
             absolute coordinate system
 
         """
