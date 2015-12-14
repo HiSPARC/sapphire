@@ -112,6 +112,12 @@ class Detector(object):
         return r, phi, z
 
     def get_lla_coordinates(self):
+        """ Get LLA coordinates
+        LLA: Latitude, Longitude, Altitude
+
+        :return: tuple (latitude, longitude, altitude).
+                 Latitude, longitude in degrees. Altitude in meters.
+        """
         lla = self.station.cluster.lla
         enu = self.get_coordinates()
 
