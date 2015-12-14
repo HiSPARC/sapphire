@@ -27,7 +27,6 @@ import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
 from . import api
-from . import clusters
 from . import storage
 
 
@@ -308,10 +307,6 @@ def download_coincidences(file, group='', cluster=None, stations=None,
                                           station_groups)
     if progress:
         pbar.finish()
-
-#     if len(station_numbers):
-#         cluster = clusters.HiSPARCStations(station_numbers)
-#         table._v_parent._v_attrs.cluster = cluster
 
     file.flush()
 
