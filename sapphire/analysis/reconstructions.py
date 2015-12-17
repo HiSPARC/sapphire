@@ -54,7 +54,8 @@ class ReconstructESDEvents(object):
         :param station_group: the destination group.
         :param station: either a station number or
             :class:`~sapphire.clusters.Station` object. If number the
-            positions and offsets are retrieved from the API.
+            positions and offsets are retrieved from the API. Otherwise
+            the offsets will be determined with the available data.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
