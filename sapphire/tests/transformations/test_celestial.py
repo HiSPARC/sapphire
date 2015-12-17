@@ -79,7 +79,7 @@ class EquatorialTests(unittest.TestCase):
         zenith, azimuth = celestial.horizontal_to_zenithazimuth(
             np.radians(base.sexagesimal_to_decimal(*altitude)),
             np.radians(base.sexagesimal_to_decimal(*azi)))
-        ra, dec = celestial.zenithazimuth_to_equatorial(longitude, latitude,
+        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude,
                                                         gps, zenith, azimuth)
 
         self.assertAlmostEqual(ra, ra_expected, 1)
@@ -115,7 +115,7 @@ class EquatorialTests(unittest.TestCase):
         # SAPPHiRE
         gps = clock.utc_to_gps(calendar.timegm(utc.utctimetuple()))
         zenith, azimuth = celestial.horizontal_to_zenithazimuth(altitude, azi)
-        ra, dec = celestial.zenithazimuth_to_equatorial(longitude, latitude,
+        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude,
                                                         gps, zenith, azimuth)
 
         self.assertAlmostEqual(ra, ra_expected, 2)
@@ -150,7 +150,7 @@ class EquatorialTests(unittest.TestCase):
         # SAPPHiRE
         gps = clock.utc_to_gps(calendar.timegm(utc.utctimetuple()))
         zenith, azimuth = celestial.horizontal_to_zenithazimuth(altitude, azi)
-        ra, dec = celestial.zenithazimuth_to_equatorial(longitude, latitude,
+        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude,
                                                         gps, zenith, azimuth)
 
         self.assertAlmostEqual(ra, ra_expected, 3)

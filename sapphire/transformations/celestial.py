@@ -17,11 +17,11 @@ from ..utils import norm_angle
 from . import clock, angles, axes
 
 
-def zenithazimuth_to_equatorial(longitude, latitude, timestamp, zenith,
+def zenithazimuth_to_equatorial(latitude, longitude, timestamp, zenith,
                                 azimuth):
     """Convert Horizontal to Equatorial coordinates (J2000.0)
 
-    :param longitude,latitude: Position of the observer on Earth in degrees.
+    :param latitude,longitude: Position of the observer on Earth in degrees.
                                North and east positive.
     :param timestamp: GPS timestamp of the observation in seconds.
     :param zenith: zenith is the angle relative to the Zenith in radians.
@@ -133,11 +133,11 @@ def ha_to_ra(ha, lst):
     return ra
 
 
-def equatorial_to_horizontal(longitude, latitude, timestamp, right_ascension,
+def equatorial_to_horizontal(latitude, longitude, timestamp, right_ascension,
                              declination):
     """Convert Equatorial (J2000.0) to Horizontal coordinates
 
-    :param longitude,latitude: Position of the observer on Earth in degrees.
+    :param latitude,longitude: Position of the observer on Earth in degrees.
                                North and east positive.
     :param timestamp: GPS timestamp of the observation in seconds.
     :param right_ascension: right_ascension of the observation in radians.
@@ -198,11 +198,11 @@ def equatorial_to_galactic(right_ascension, declintation, epoch='J2000'):
     # some smart stuff..
 
 
-def galactic_to_equatorial(longitude, latitude, epoch='J2000'):
+def galactic_to_equatorial(latitude, longitude, epoch='J2000'):
     """Convert Galactic to Equatorial coordinates (J2000.0)
 
-    :param longitude: Galactic longitude (l) in degrees.
     :param latitude: Galactic latitude (b) in degrees.
+    :param longitude: Galactic longitude (l) in degrees.
     :param epoch: Epoch for Equatorial coordinates, either 'J2000' or 'B1950'.
 
     :return: Right ascension (ra) and Declination (dec) in radians.
