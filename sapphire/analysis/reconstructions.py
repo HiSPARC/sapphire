@@ -1,3 +1,4 @@
+import re
 from itertools import izip_longest
 
 from numpy import isnan, histogram, linspace, percentile, std
@@ -224,9 +225,14 @@ class ReconstructESDCoincidences(object):
 
         self.cq = CoincidenceQuery(data, self.coincidences_group)
         if cluster is None:
-            cluster = self.coincidences_group._f_getattr('cluster')
-            s_numbers = [station.number for station in cluster.stations]
-            self.cluster = HiSPARCStations(s_numbers)
+            try:
+                self.cluster = self.coincidences_group._f_getattr('cluster')
+            except AttributeError:
+                re_number = re.compile('[0-9]+$')
+                s_index = self.coincidences_group.s_index
+                s_numbers = [int(re_number.search(station_group).group())
+                             for station_group in s_index]
+                self.cluster = HiSPARCStations(s_numbers)
         else:
             self.cluster = cluster
 
