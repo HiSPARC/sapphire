@@ -22,6 +22,7 @@ import time
 import datetime
 import itertools
 import collections
+import re
 
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
@@ -255,9 +256,8 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     query = urllib.urlencode({'cluster': cluster, 'stations': stations,
                               'start': start, 'end': end, 'n': n})
     url = COINCIDENCES_URL.format(query=query)
-    station_groups = _get_station_groups(group)
+    station_groups = _read_or_get_station_groups(file, group)
     table = _get_or_create_coincidences_tables(file, group, station_groups)
-    station_numbers = _get_or_create_station_numbers(table)
 
     try:
         data = urllib2.urlopen(url, timeout=1800)
@@ -284,10 +284,8 @@ def download_coincidences(file, group='', cluster=None, stations=None,
         if line[0][0] == '#':
             continue
         elif int(line[0]) == current_coincidence:
-            station_numbers.add(int(line[1]))
             coincidence.append(line)
         else:
-            station_numbers.add(int(line[1]))
             # Full coincidence has been received, store it.
             timestamp = _read_lines_and_store_coincidence(file, group,
                                                           coincidence,
@@ -311,26 +309,33 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     file.flush()
 
 
-def _get_or_create_station_numbers(table):
+def _read_or_get_station_groups(file, group):
     """Get station numbers from existing cluster attribute or a new set
 
-    :param table: coincidence table in PyTables file.
-    :return: set including existing stations in a cluster.
+    :param file: PyTables datafile handler.
+    :param group: path of destination group.
+    :return: existing or newly generated station group paths with station
+             numbers and ids.
 
     """
     try:
-        cluster = table._v_parent._v_attrs.cluster
-    except AttributeError:
-        return set()
+        s_index = file.get_node(group + '/coincidences', 's_index').read()
+    except tables.NoSuchNodeError:
+        return _get_station_groups(group)
     else:
-        if cluster.stations is not None:
-            return {s.number for s in cluster.stations}
-        else:
-            return set()
+        re_number = re.compile('[0-9]+$')
+        groups = collections.OrderedDict()
+        for sid, station_group in enumerate(s_index):
+            station = int(re_number.search(station_group).group())
+            groups[station] = {'group': station_group,
+                               's_index': sid}
+        return groups
 
 
 def _get_station_groups(group):
     """Generate groups names for all stations
+
+    :param group: path of destination group.
 
     Use the same hierarchy (cluster/station) as used in the HiSPARC
     datastore.
@@ -487,8 +492,12 @@ def _read_lines_and_store_coincidence(file, group, coincidence,
 
     for event in coincidence:
         station_number = int(event[1])
-        row['s%d' % station_number] = True
-        group_path = station_groups[station_number]['group']
+        try:
+            row['s%d' % station_number] = True
+            group_path = station_groups[station_number]['group']
+        except KeyError:
+            raise Exception('Unexpected station number: %d, no column and/or '
+                            'station group path available.' % station_number)
         event_group = _get_or_create_events_table(file, group_path)
         with _read_line_and_store_event_class(event_group) as writer:
             s_idx = station_groups[station_number]['s_index']
