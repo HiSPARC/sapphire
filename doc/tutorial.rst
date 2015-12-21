@@ -172,7 +172,7 @@ Finally, *type* selects whether to download event or weather data should
 be downloaded.  We've selected the default, which is *events*. We can also
 download the weather data by changing the type to ``'weather'``::
 
-    >>> download_data(data, '/s501', 501, start, end, type='weather')
+    >>> esd.download_data(data, '/s501', 501, start, end, type='weather')
     100%|####################################|Time: 0:00:10
 
 To access the raw data that includes the original detector traces the
@@ -542,8 +542,8 @@ Consider the following script, which you can hopefully understand by now
              download_data(data, group, station, START, END)
 
 At this point, we have downloaded data for three stations. Note that we
-used the :mod:`sapphire.esd`. Thus, we have no traces and the download
-is quick. Let's see what the datafile now contains::
+used the :mod:`sapphire.esd` for downloading. Thus, we have no traces
+and the download is quick. Let's see what the datafile now contains::
 
     >>> print data
     data.h5 (File) ''
