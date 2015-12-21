@@ -139,9 +139,10 @@ second.
 We have not actually done anything yet.  We have just stored our time
 window in two arbitrarily-named variables, ``start`` and ``end``.  To
 download data from station 501 and store it in a group with name ``/s501``,
-we can use the :func:`sapphire.esd.download_data` function::
+we can use the :func:`sapphire.esd.download_data` function. Since we've
+imported ``esd`` from ``sapphire``, we can drop the ``sapphire`` prefix::
 
-    >>> download_data(data, '/s501', 501, start, end)
+    >>> esd.download_data(data, '/s501', 501, start, end)
     100%|####################################|Time: 0:00:16
 
 It will show a progressbar to indicate the progress of the download.
