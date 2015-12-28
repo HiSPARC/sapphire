@@ -26,7 +26,9 @@ First steps
 In a few examples, we will plot the data which we have produced.  We make use
 of pylab, which is included with matplotlib. If you have Anaconda installed,
 you can use the Spyder environment. You can write a script in the main window,
-or type short commands in the command prompt in the bottom right. The first thing you have to do is import everything from pylab. That makes it ridiculously easy to plot things::
+or type short commands in the command prompt in the bottom right. The first
+thing you have to do is import everything from pylab. That makes it
+ridiculously easy to plot things::
 
     >>> from pylab import *
 
@@ -507,8 +509,8 @@ histogram, see `David's thesis
 page 44–45, and 49–51.
 
 
-Searching for coincidences
---------------------------
+Obtaining coincidences
+----------------------
 
 If you work with |hisparc| data, invariably you'll be interested in
 *coincidences* between |hisparc| stations.  That is, are there showers
@@ -520,7 +522,7 @@ Performing the search
 ^^^^^^^^^^^^^^^^^^^^^
 
 Consider the following script, which you can hopefully understand by now
-(note that the prompt (>>>) is absent, since this is a *script*::
+(note that the prompt (``>>>``) is absent, since this is a *script*::
 
      import datetime
 
@@ -663,6 +665,66 @@ station groups.::
     (40L, 1356998460, 730384055L, 1356998460730384055L, [2, 227, 301, 2],
      [0, 1657, 3173, 0], 0.0, 0.5117999911308289, 0.9417999982833862,
      0.0, -999.0, 12.5, 57.5, -999.0, 62.5)
+
+
+Downloading coincidences
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Just like events or weather data for a single station the ESD provides
+coincidence data. This means that you can directly download coincidences from
+the server. In most cases this can save a lot of disc space, because only
+events in a coincidence will be stored.
+
+Downloading coincidences is very similar to downloading data. First import the
+required packages, open a PyTables file, and specify the date/time *range*.
+With coincidences two additional options are available, first you can select
+which stations you want to consider. This can be *all* stations in the
+network, by not specifying any. It can be a subset of stations by listing
+those stations (upto 30 stations), or a cluster of stations by giving the name
+of the cluster.
+
+So first import the packages::
+
+   >>> import datetime
+   >>> import tables
+   >>> from sapphire import esd
+
+Set the date/time range::
+
+   >>> start = datetime.datetime(2012, 12, 1)
+   >>> end = datetime.datetime(2012, 12, 3)
+
+Open (in this case create) a datafile::
+
+   >>> data = tables.open_file('data_coincidences.h5', 'w')
+
+Then download the coincidences. Here we specify the cluster 'Enschede' to
+select all stations in that cluster. By setting *n* to 3 we require that a
+coincidence has at least 3 events.
+
+   >>> esd.download_coincidences(data, cluster='Enschede',
+   ...                           start=start, end=end, n=3)
+
+If you now look in the data file it will contain event tables for all stations
+with at least one event in a coincidence, and a coincidence table for the
+coincidence data. Just like when coincidences were searched manually::
+
+   >>> print data
+   Object Tree: 
+   / (RootGroup) ''
+   /coincidences (Group) ''
+   /coincidences/c_index (VLArray(776,)) ''
+   /coincidences/coincidences (Table(776,)) ''
+   /coincidences/s_index (VLArray(124,)) ''
+   /hisparc (Group) ''
+   /hisparc/cluster_enschede (Group) ''
+   /hisparc/cluster_enschede/station_7001 (Group) ''
+   /hisparc/cluster_enschede/station_7001/events (Table(776,)) ''
+   /hisparc/cluster_enschede/station_7002 (Group) ''
+   /hisparc/cluster_enschede/station_7002/events (Table(776,)) ''
+   /hisparc/cluster_enschede/station_7003 (Group) ''
+   /hisparc/cluster_enschede/station_7003/events (Table(776,)) ''
+
 
 .. rubric:: Footnotes
 
