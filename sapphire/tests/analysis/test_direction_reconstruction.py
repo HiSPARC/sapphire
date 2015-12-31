@@ -335,7 +335,7 @@ class BaseAlgorithm(object):
         # azimuth can be any value between -pi and pi
         self.assertTrue(-pi <= phi <= pi)
 
-    def test_show_to_large_dt(self):
+    def test_to_large_dt(self):
         """Time difference larger than expected by speed of light."""
 
         # TODO: Add better test with smaller tolerance
