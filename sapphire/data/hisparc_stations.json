@@ -259,11 +259,11 @@
     }, 
     "21": {
         "active": true, 
-        "altitude": 50.06, 
+        "altitude": 52.05, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.309616, 
-        "longitude": 5.0307681, 
+        "latitude": 52.3099238, 
+        "longitude": 5.0297973, 
         "name": "Vechtstede College", 
         "number": 21, 
         "scintillators": [
@@ -544,11 +544,11 @@
     }, 
     "202": {
         "active": true, 
-        "altitude": 50.18, 
+        "altitude": 50.21, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3102175, 
-        "longitude": 4.681626, 
+        "latitude": 52.3102193, 
+        "longitude": 4.6816268, 
         "name": "Kaj Munk College", 
         "number": 202, 
         "scintillators": [
@@ -1481,6 +1481,33 @@
         ], 
         "subcluster": "Utrecht"
     }, 
+    "1101": {
+        "active": true, 
+        "altitude": 51.9, 
+        "cluster": "Utrecht", 
+        "country": "Netherlands", 
+        "latitude": 52.2342193, 
+        "longitude": 5.1462435, 
+        "name": "Comenius College", 
+        "number": 1101, 
+        "scintillators": [
+            {
+                "alpha": 59.0, 
+                "beta": -31.0, 
+                "height": 0.0, 
+                "mpv": 281.0, 
+                "radius": 2.56
+            }, 
+            {
+                "alpha": 59.0, 
+                "beta": -31.0, 
+                "height": 0.0, 
+                "mpv": 256.0, 
+                "radius": -3.36
+            }
+        ], 
+        "subcluster": "Hilversum"
+    }, 
     "2001": {
         "active": true, 
         "altitude": 103.36, 
@@ -2265,6 +2292,33 @@
             }
         ], 
         "subcluster": "Delft"
+    }, 
+    "3601": {
+        "active": true, 
+        "altitude": 61.35, 
+        "cluster": "Leiden", 
+        "country": "Netherlands", 
+        "latitude": 52.073317, 
+        "longitude": 4.3567373, 
+        "name": "Sint Maartens College", 
+        "number": 3601, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Leidschendam-Voorburg"
     }, 
     "4001": {
         "active": true, 
@@ -3322,6 +3376,33 @@
         ], 
         "subcluster": "Bristol"
     }, 
+    "13008": {
+        "active": true, 
+        "altitude": 74.69, 
+        "cluster": "Bristol", 
+        "country": "United Kingdom", 
+        "latitude": 51.4511197, 
+        "longitude": -2.60013, 
+        "name": "Bristol Cathedral Choir School", 
+        "number": 13008, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 293.0, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 239.0, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Bristol"
+    }, 
     "13101": {
         "active": true, 
         "altitude": 163.41, 
@@ -3500,11 +3581,11 @@
     }, 
     "13501": {
         "active": true, 
-        "altitude": 0.0, 
+        "altitude": 126.26, 
         "cluster": "Bristol", 
         "country": "United Kingdom", 
-        "latitude": 0.0, 
-        "longitude": 0.0, 
+        "latitude": 50.4770618, 
+        "longitude": -3.5530822, 
         "name": "Torquay Girls Grammar School", 
         "number": 13501, 
         "scintillators": [
@@ -3784,5 +3865,5 @@
         ], 
         "subcluster": "Karlsruhe"
     }, 
-    "_info": "HiSPARC station info on 2015-12-06"
+    "_info": "HiSPARC station info on 2015-12-17"
 }

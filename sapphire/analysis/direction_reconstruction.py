@@ -1071,12 +1071,13 @@ def logic_checks(t, x, y, z):
 
     # Check if the time difference it larger than expected by c
     c = .3
+    margin = 0. if len(t) == 3 else 7.5
     for txyz0, txyz1 in itertools.combinations(txyz, 2):
         dt = abs(txyz0[0] - txyz1[0])
         dx = txyz0[1] - txyz1[1]
         dy = txyz0[2] - txyz1[2]
         dz = txyz0[3] - txyz1[3]
-        dt_max = sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
+        dt_max = margin + sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
         if dt_max < dt:
             return False
 

@@ -32,14 +32,6 @@ elaborate installation instructions, heavy customizations to the software,
 countless hours going over opaque parts of code and a general feeling of
 anguish and despair.  SAPPHiRE's ultimate goal: no more of that.
 
-David has tried very hard to write clean code.  However, as is the nature
-of finishing a PhD, severe time constraints prevented him to actually
-write well-documented, clean code.  He feels, however, that the presently
-available code is a good start.  By releasing it now, it can be used,
-accessed, and cleaned up.
-
-In fact, it is probably being cleaned up at this very moment!
-
 
 Installation
 ------------

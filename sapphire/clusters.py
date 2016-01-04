@@ -389,7 +389,7 @@ class BaseCluster(object):
         :param position: x,y,z position for the center of the cluster.
         :param angle: rotation of the cluster in the x,y-plane.
         :param lla: Reference WGS84 location of the cluster origin.
-                    Defaults to the (old) GPS location of 501.
+                    Defaults to (old) GPS location of station 501 (Nikhef).
 
         """
         self.x = position[0]

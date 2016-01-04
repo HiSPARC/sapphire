@@ -93,7 +93,7 @@ def determine_station_timing_offset(dt, dz=0):
     if not len(dt):
         return nan
     c = .3
-    p = percentile(dt, [2, 98])
+    p = percentile(dt, [0.5, 99.5])
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
     station_offset = fit_timing_offset(dt, bins) + dz / c
     if abs(station_offset) > 1000:

@@ -22,6 +22,7 @@ import time
 import datetime
 import itertools
 import collections
+import re
 
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
@@ -255,9 +256,8 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     query = urllib.urlencode({'cluster': cluster, 'stations': stations,
                               'start': start, 'end': end, 'n': n})
     url = COINCIDENCES_URL.format(query=query)
-    station_groups = _get_station_groups(group)
-    table = _get_or_create_coincidences_tables(file, group, station_groups)
-    station_numbers = _get_or_create_station_numbers(table)
+    station_groups = _read_or_get_station_groups(file, group)
+    c_group = _get_or_create_coincidences_tables(file, group, station_groups)
 
     try:
         data = urllib2.urlopen(url, timeout=1800)
@@ -284,12 +284,10 @@ def download_coincidences(file, group='', cluster=None, stations=None,
         if line[0][0] == '#':
             continue
         elif int(line[0]) == current_coincidence:
-            station_numbers.add(int(line[1]))
             coincidence.append(line)
         else:
-            station_numbers.add(int(line[1]))
             # Full coincidence has been received, store it.
-            timestamp = _read_lines_and_store_coincidence(file, group,
+            timestamp = _read_lines_and_store_coincidence(file, c_group,
                                                           coincidence,
                                                           station_groups)
             # update progressbar every .5 seconds
@@ -303,7 +301,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
 
     if len(coincidence):
         # Store last coincidence
-        _read_lines_and_store_coincidence(file, group, coincidence,
+        _read_lines_and_store_coincidence(file, c_group, coincidence,
                                           station_groups)
     if progress:
         pbar.finish()
@@ -311,26 +309,33 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     file.flush()
 
 
-def _get_or_create_station_numbers(table):
+def _read_or_get_station_groups(file, group):
     """Get station numbers from existing cluster attribute or a new set
 
-    :param table: coincidence table in PyTables file.
-    :return: set including existing stations in a cluster.
+    :param file: PyTables datafile handler.
+    :param group: path of destination group.
+    :return: existing or newly generated station group paths with station
+             numbers and ids.
 
     """
     try:
-        cluster = table._v_parent._v_attrs.cluster
-    except AttributeError:
-        return set()
+        s_index = file.get_node(group + '/coincidences', 's_index').read()
+    except tables.NoSuchNodeError:
+        return _get_station_groups(group)
     else:
-        if cluster.stations is not None:
-            return {s.number for s in cluster.stations}
-        else:
-            return set()
+        re_number = re.compile('[0-9]+$')
+        groups = collections.OrderedDict()
+        for sid, station_group in enumerate(s_index):
+            station = int(re_number.search(station_group).group())
+            groups[station] = {'group': station_group,
+                               's_index': sid}
+        return groups
 
 
 def _get_station_groups(group):
     """Generate groups names for all stations
+
+    :param group: path of destination group.
 
     Use the same hierarchy (cluster/station) as used in the HiSPARC
     datastore.
@@ -352,8 +357,11 @@ def _get_station_groups(group):
 
 
 def _get_or_create_coincidences_tables(file, group, station_groups):
-    """Get or create event table in PyTables file"""
+    """Get or create event table in PyTables file
 
+    :return: the existing or created coincidences group
+
+    """
     try:
         return file.get_node(group + '/', 'coincidences')
     except tables.NoSuchNodeError:
@@ -361,8 +369,11 @@ def _get_or_create_coincidences_tables(file, group, station_groups):
 
 
 def _create_coincidences_tables(file, group, station_groups):
-    """Setup coincidence tables"""
+    """Setup coincidence tables
 
+    :return: the created coincidences group
+
+    """
     coin_group = group + '/coincidences'
 
     # Create coincidences table
@@ -381,7 +392,7 @@ def _create_coincidences_tables(file, group, station_groups):
     for station_group in station_groups.itervalues():
         s_index.append(station_group['group'])
 
-    return coincidences
+    return coincidences._v_parent
 
 
 def _get_or_create_events_table(file, group):
@@ -463,20 +474,22 @@ def _create_weather_table(file, group):
     return file.create_table(group, 'weather', description, createparents=True)
 
 
-def _read_lines_and_store_coincidence(file, group, coincidence,
+def _read_lines_and_store_coincidence(file, c_group, coincidence,
                                       station_groups):
     """Read TSV lines and store coincidence
 
     Read lines from the TSV download and store the coincidence and events.
     Return the coincidence timestamp to keep track of the progress.
 
-    :param file: pytables file for storage
+    :param file: PyTables file for storage
+    :param c_group: the coincidences group
     :param coincidence: text lines from the TSV file for one coincidence
+    :param station_groups: dictionary to find the path to a station_group
     :return: coincidence timestamp
 
     """
     c_idx = []
-    coincidences = file.get_node(group + '/coincidences', 'coincidences')
+    coincidences = file.get_node(c_group, 'coincidences')
     row = coincidences.row
     row['id'] = len(coincidences)
     row['N'] = len(coincidence)
@@ -487,8 +500,12 @@ def _read_lines_and_store_coincidence(file, group, coincidence,
 
     for event in coincidence:
         station_number = int(event[1])
-        row['s%d' % station_number] = True
-        group_path = station_groups[station_number]['group']
+        try:
+            row['s%d' % station_number] = True
+            group_path = station_groups[station_number]['group']
+        except KeyError:
+            raise Exception('Unexpected station number: %d, no column and/or '
+                            'station group path available.' % station_number)
         event_group = _get_or_create_events_table(file, group_path)
         with _read_line_and_store_event_class(event_group) as writer:
             s_idx = station_groups[station_number]['s_index']
@@ -497,8 +514,7 @@ def _read_lines_and_store_coincidence(file, group, coincidence,
             writer.store_line(event[2:])
 
     row.append()
-    c_index = file.get_node(group + '/coincidences', 'c_index')
-
+    c_index = file.get_node(c_group, 'c_index')
     c_index.append(c_idx)
 
     return int(coincidence[0][4])

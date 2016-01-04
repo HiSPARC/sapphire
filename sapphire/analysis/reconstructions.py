@@ -1,3 +1,4 @@
+import re
 from itertools import izip_longest
 
 from numpy import isnan, histogram, linspace, percentile, std
@@ -53,7 +54,8 @@ class ReconstructESDEvents(object):
         :param station_group: the destination group.
         :param station: either a station number or
             :class:`~sapphire.clusters.Station` object. If number the
-            positions and offsets are retrieved from the API.
+            positions and offsets are retrieved from the API. Otherwise
+            the offsets will be determined with the available data.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
@@ -224,9 +226,14 @@ class ReconstructESDCoincidences(object):
 
         self.cq = CoincidenceQuery(data, self.coincidences_group)
         if cluster is None:
-            cluster = self.coincidences_group._f_getattr('cluster')
-            s_numbers = [station.number for station in cluster.stations]
-            self.cluster = HiSPARCStations(s_numbers)
+            try:
+                self.cluster = self.coincidences_group._f_getattr('cluster')
+            except AttributeError:
+                re_number = re.compile('[0-9]+$')
+                s_index = self.coincidences_group.s_index
+                s_numbers = [int(re_number.search(station_group).group())
+                             for station_group in s_index]
+                self.cluster = HiSPARCStations(s_numbers)
         else:
             self.cluster = cluster
 
