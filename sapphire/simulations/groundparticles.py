@@ -310,7 +310,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                         (x - detector_boundary, x + detector_boundary,
                          y - detector_boundary, y + detector_boundary))
 
-        return self.groundparticles.read_where(query_leptons), self.groundparticles.read_where(query_gammas)
+        return (self.groundparticles.read_where(query_leptons),
+                self.groundparticles.read_where(query_gammas))
 
     def simulate_detector_mips_for_gammas(self, particles):
         """Simulate the detector signal for gammas
