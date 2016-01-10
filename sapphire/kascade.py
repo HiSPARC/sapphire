@@ -1,6 +1,7 @@
 """ Read and store KASCADE data.
 
-    Read data files provided by the KASCADE collaboration and store them in a format compatible with HiSPARC data.
+    Read data files provided by the KASCADE collaboration and store them
+    in a format compatible with HiSPARC data.
 
     This module contains the following class:
 
@@ -8,7 +9,6 @@
         Read and store KASCADE data files.
 
 """
-
 import gzip
 import time
 
