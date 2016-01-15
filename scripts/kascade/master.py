@@ -47,9 +47,8 @@ class Master(object):
         print "Reading KASCADE data"
 
         try:
-            kascade = StoreKascadeData(self.data, self.hisparc_group,
-                                       self.kascade_group,
-                                       self.kascade_filename)
+            kascade = StoreKascadeData(self.data, self.kascade_filename,
+                                       self.kascade_group, self.hisparc_group)
         except RuntimeError, msg:
             print msg
             return
