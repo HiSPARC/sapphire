@@ -2,8 +2,6 @@ import unittest
 import tempfile
 import os
 
-from mock import MagicMock, patch, sentinel
-
 import tables
 
 from sapphire import kascade
