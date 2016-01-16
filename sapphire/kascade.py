@@ -97,8 +97,7 @@ class StoreKascadeData(object):
         else:
             f = open(self.kascade_filename)
 
-        while True:
-            line = f.readline()
+        for line in f:
             if not line:
                 # no more lines left, EOF
                 break
