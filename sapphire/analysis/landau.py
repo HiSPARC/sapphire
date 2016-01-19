@@ -55,7 +55,7 @@ class Scintillator(object):
     thickness = .02  # m
     xi = 0.172018  # MeV, Fokkema2012, eq 2.12.
     epsilon = 3.10756e-11  # Fokkema2012, eq 2.11.
-    delta = 2.97663 #  Delta
+    delta = 2.97663  # Delta
     Euler = 0.577215665  # Euler-Mascheroni constant
 
     mev_scale = 1
