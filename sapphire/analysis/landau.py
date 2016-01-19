@@ -104,7 +104,7 @@ class Scintillator(object):
         if self.pdf_values is not None:
             return interp(lf, self.pdf_domain, self.pdf_values)
         else:
-            print "Generating pre-computed values for Landau PDF..."
+            # Generate pre-computed values for Landau PDF
             self.pdf_values = pdf(self.pdf_domain)
             return self.pdf(lf)
 
