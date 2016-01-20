@@ -79,8 +79,8 @@ class GroundParticlesSimulationTest(unittest.TestCase):
 class GroundParticlesGammaSimulationTest(unittest.TestCase):
 
     def setUp(self):
-        self.simulation = GroundParticlesGammaSimulation.__new__(
-            GroundParticlesGammaSimulation)
+        self.simulation = groundparticles.GroundParticlesGammaSimulation.__new__(
+            groundparticles.GroundParticlesGammaSimulation)
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
