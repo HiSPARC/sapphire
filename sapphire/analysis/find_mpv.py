@@ -140,8 +140,7 @@ class FindMostProbableValueInSpectrum(object):
 
         # fit to a normal distribution
         f = lambda x, N, a, b: N * norm.pdf(x, loc=a, scale=b)
-        popt, pcov = curve_fit(f, x, y, p0=(y.max(), first_guess,
-                                            first_guess))
+        popt, pcov = curve_fit(f, x, y, p0=(y.max(), first_guess, first_guess))
         mpv = popt[1]
 
         # sanity check: if MPV is outside domain, the MIP peak was not

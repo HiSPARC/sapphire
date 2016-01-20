@@ -22,8 +22,10 @@ from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, where, pi, inf, array, cross, dot)
 from scipy.optimize import minimize
 
-from .event_utils import station_arrival_time, detector_arrival_time
+from .event_utils import (station_arrival_time, detector_arrival_time,
+                          relative_detector_arrival_times)
 from ..utils import pbar, norm_angle
+from ..api import Station
 
 
 class EventDirectionReconstruction(object):
@@ -54,7 +56,8 @@ class EventDirectionReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :param offsets: time offsets for each detector.
+        :param offsets: time offsets for each detector or a
+            :class:`~sapphire.api.Station` object.
         :return: theta, phi, and detector ids.
 
         """
@@ -62,6 +65,8 @@ class EventDirectionReconstruction(object):
         if detector_ids is None:
             detector_ids = range(4)
         self.station.cluster.set_timestamp(event['timestamp'])
+        if isinstance(offsets, Station):
+            offsets = offsets.detector_timing_offset(event['timestamp'])
         for id in detector_ids:
             t_detector = detector_arrival_time(event, id, offsets)
             if not isnan(t_detector):
@@ -86,7 +91,8 @@ class EventDirectionReconstruction(object):
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors to use for the reconstructions.
-        :param offsets: time offsets for each detector.
+        :param offsets: time offsets for each detector or a
+            :class:`~sapphire.api.Station` object.
         :return: list of theta, phi, and detector ids.
 
         """
@@ -142,6 +148,11 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
+        # Get relevant offsets. TODO: station offsets
+        offsets = {s: o if not isinstance(o, Station)
+                   else o.detector_timing_offset(ts0)
+                   for s, o in offsets.iteritems()}
+
         for station_number, event in coincidence_events:
             if station_numbers is not None:
                 if station_number not in station_numbers:
@@ -188,6 +199,75 @@ class CoincidenceDirectionReconstruction(object):
             theta, phi, nums = zip(*angles)
         else:
             theta, phi, nums = ((), (), ())
+        return theta, phi, nums
+
+
+class CoincidenceDirectionReconstructionDetectors(
+        CoincidenceDirectionReconstruction):
+
+    """Reconstruct direction for coincidences using each detector
+
+    Instead of only the first arrival time per station this class
+    uses the arrival time in each detector for the reconstruction.
+
+    """
+
+    def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
+                                offsets={}):
+        """Reconstruct a single coincidence
+
+        :param coincidence_events: a coincidence list consisting of three
+                                   or more (station_number, event) tuples.
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :param offsets: dictionary with detector offsets for each station.
+                        These detector offsets should be relative to one
+                        detector from a specific station.
+        :return: list of theta, phi, and station numbers.
+
+        """
+        no_offset = [0., 0., 0., 0.]
+
+        if len(coincidence_events) < 3:
+            return nan, nan, []
+
+        # Subtract base timestamp to prevent loss of precision
+        ts0 = int(coincidence_events[0][1]['timestamp'])
+        ets0 = ts0 * int(1e9)
+        self.cluster.set_timestamp(ts0)
+        t, x, y, z, nums = ([], [], [], [], [])
+
+        # Get relevant offsets. TODO: station offsets
+        offsets = {s: o if not isinstance(o, Station)
+                   else o.detector_timing_offset(ts0)
+                   for s, o in offsets.iteritems()}
+
+        for station_number, event in coincidence_events:
+            if station_numbers is not None:
+                if station_number not in station_numbers:
+                    continue
+            t_off = offsets.get(station_number, no_offset)
+            station = self.cluster.get_station(station_number)
+            t_detectors = relative_detector_arrival_times(event, ets0,
+                                                          offsets=t_off,
+                                                          station=station)
+            for t_detector, detector in zip(t_detectors, station.detectors):
+                if not isnan(t_detector):
+                    dx, dy, dz = detector.get_coordinates()
+                    t.append(t_detector)
+                    x.append(dx)
+                    y.append(dy)
+                    z.append(dz)
+            if not all(isnan(t_detectors)):
+                nums.append(station_number)
+
+        if len(t) == 3:
+            theta, phi = self.direct.reconstruct_common(t, x, y, z)
+        elif len(t) > 3:
+            theta, phi = self.fit.reconstruct_common(t, x, y, z)
+        else:
+            theta, phi = (nan, nan)
+
         return theta, phi, nums
 
 
@@ -991,12 +1071,13 @@ def logic_checks(t, x, y, z):
 
     # Check if the time difference it larger than expected by c
     c = .3
+    margin = 0. if len(t) == 3 else 7.5
     for txyz0, txyz1 in itertools.combinations(txyz, 2):
         dt = abs(txyz0[0] - txyz1[0])
         dx = txyz0[1] - txyz1[1]
         dy = txyz0[2] - txyz1[2]
         dz = txyz0[3] - txyz1[3]
-        dt_max = sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
+        dt_max = margin + sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
         if dt_max < dt:
             return False
 

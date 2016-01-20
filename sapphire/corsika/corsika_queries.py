@@ -47,12 +47,9 @@ class CorsikaQuery(object):
         :return: combined seed1 and seed2.
 
         """
-        if iterator:
-            seeds = ('%d_%d' % (sim['seed1'], sim['seed2'])
-                     for sim in simulations)
-        else:
-            seeds = ['%d_%d' % (sim['seed1'], sim['seed2'])
-                     for sim in simulations]
+        seeds = ('%d_%d' % (sim['seed1'], sim['seed2']) for sim in simulations)
+        if not iterator:
+            seeds = list(seeds)
         return seeds
 
     def get_info(self, seeds):
@@ -112,6 +109,7 @@ class CorsikaQuery(object):
         """Set of available energies given the requirements
 
         :param particle: primary particle must be this kind, name of particle.
+                         Defaults to proton.
         :param energy: primary energy must be this value, in log10(eV).
         :param zenith: shower zenith must be this value, in degrees.
         :param azimuth: shower azimuth must be this value, in degrees.
@@ -136,6 +134,15 @@ class CorsikaQuery(object):
         return filtered_simulations
 
     def available_parameters(self, parameter, *args, **kwargs):
+        """Get set of available values of type parameter for a subset
+
+        :param parameter: name of the parameter for which the available
+                          values are returned.
+        :param: use the arguments available to :meth:`simulations` to filter
+                the simulations.
+        :return: set of available values.
+
+        """
         sims = self.simulations(*args, **kwargs)
         available = set(sims[parameter])
         if parameter == 'energy':

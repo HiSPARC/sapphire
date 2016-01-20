@@ -1,69 +1,33 @@
-""" This module provides the functionality to read CORSIKA files.
+"""Process CORSIKA simulation data.
 
-    It provides the following main classes:
+This package contains modules for working with CORSIKA simulations:
 
-    * :class:`reader.CorsikaFile`: The file class provides a generator
-      over all events in the file.
-    * :class:`reader.CorsikaEvent`: The event class that provides a
-      generator over all particles at ground.
+:mod:`~sapphire.corsika.blocks`
+    classes for the block and subblocks in CORSIKA data
 
-    and the following classes that correspond to the sub-blocks defined in
-    the CORSIKA manual:
+:mod:`~sapphire.corsika.corsika_queries`
+    select CORSIKA showers from a corsika overview
 
-    * :class:`blocks.RunHeader`
-    * :class:`blocks.RunEnd`
-    * :class:`blocks.EventHeader`
-    * :class:`blocks.EventEnd`
-    * :class:`blocks.ParticleData`
-    * :class:`blocks.CherenkovData`
+:mod:`~sapphire.corsika.generate_corsika_overview`
+    generate an overview table of available CORSIKA simulations
 
-    Additionally version for thinned showers are available:
+:mod:`~sapphire.corsika.particles`
+    convert CORSIKA particle codes to common names
 
-    * :class:`reader.CorsikaFileThin`
-    * :class:`blocks.ParticleDataThin`
-    * :class:`blocks.CherenkovDataThin`
+:mod:`~sapphire.corsika.qsub_corsika`
+    submit CORSIKA simulations to the Nikhef Stoomboot facility
 
+:mod:`~sapphire.corsika.qsub_store_corsika_data`
+    submit store CORSIKA jobs to the Nikhef Stoomboot facility
 
-    Issues
-    ======
+:mod:`~sapphire.corsika.reader`
+    read CORSIKA data files into Python
 
-    This module does not handle platform dependent issues such as byte
-    ordering (endianness) and field size. This was the result of an
-    afternoon hack and has only been tested with files generated using
-    32 bit CORSIKA files on a linux system compiled with gfortran.
+:mod:`~sapphire.corsika.store_corsika_data`
+    convert CORSIKA data files to HDF5 files
 
-    * **Field Size**: According to the Corsika user manual section 10.2
-      all quantities are written as single precision real numbers
-      independently of 32-bit or 64-bit, so each field in the file
-      should be 4 bytes long.
-    * **Endianness**: There is no check for byte ordering. It can be added
-      using Python's `struct module
-      <http://docs.python.org/library/struct.html#struct-alignment>`_.
-    * **Memory mapping**: This module reads the entire CORSIKA file and
-      stores it in memory. This might be a problem with large files and can
-      be solved by using a memory-mapped file.
-    * **Thinning**: This module can handle thinned showers with the
-      special ..Thin subclasses.
-    * **Special Particles**: This module currently ignores all special
-      (book-keeping) particles like for muon additional information and
-      history.
-
-
-    More Info
-    =========
-
-    For short information on fortran unformatted binary files, take a look
-    at http://paulbourke.net/dataformats/reading/
-
-    For detailed information on the CORSIKA format, check the 'Outputs'
-    chapter in the CORSIKA user manual. In particular, check the 'Normal
-    Particle Output' section.
-
-    Authors
-    =======
-
-    - Javier Gonzalez <jgonzalez@ik.fzk.de>
-    - Arne de Laat <adelaat@nikhef.nl>
+:mod:`~sapphire.corsika.units`
+    convert values in units used by CORSIKA to HiSPARC units
 
 """
 from . import corsika_queries

@@ -16,8 +16,8 @@ def determine_detector_timing_offsets(events, station=None):
     """Determine the timing offsets between station detectors.
 
     :param events: events table of processed events.
-    :param station: Station object, to determine number of detectors and
-                    relative altitudes.
+    :param station: :class:`~sapphire.clusters.Station` object, to determine
+        number of detectors and relative altitudes.
     :return: list of detector offsets.
 
     """
@@ -93,7 +93,7 @@ def determine_station_timing_offset(dt, dz=0):
     if not len(dt):
         return nan
     c = .3
-    p = percentile(dt, [2, 98])
+    p = percentile(dt, [0.5, 99.5])
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
     station_offset = fit_timing_offset(dt, bins) + dz / c
     if abs(station_offset) > 1000:

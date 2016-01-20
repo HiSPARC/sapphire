@@ -1,3 +1,4 @@
+import re
 from itertools import izip_longest
 
 from numpy import isnan, histogram, linspace, percentile, std
@@ -6,6 +7,7 @@ import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
 from ..clusters import HiSPARCStations, Station
+from .. import api
 from .direction_reconstruction import (EventDirectionReconstruction,
                                        CoincidenceDirectionReconstruction)
 from .core_reconstruction import (EventCoreReconstruction,
@@ -51,7 +53,9 @@ class ReconstructESDEvents(object):
         :param data: the PyTables datafile.
         :param station_group: the destination group.
         :param station: either a station number or
-                        :class:`~sapphire.clusters.Station` object.
+            :class:`~sapphire.clusters.Station` object. If number the
+            positions and offsets are retrieved from the API. Otherwise
+            the offsets will be determined with the available data.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
@@ -67,9 +71,11 @@ class ReconstructESDEvents(object):
 
         if isinstance(station, Station):
             self.station = station
+            self.api_station = None
         else:
             cluster = HiSPARCStations([station])
             self.station = cluster.get_station(station)
+            self.api_station = api.Station(station)
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
@@ -84,9 +90,12 @@ class ReconstructESDEvents(object):
         """Shorthand function to reconstruct event and store the results"""
 
         self.prepare_output()
-        self.offsets = determine_detector_timing_offsets(self.events,
-                                                         self.station)
-        self.store_offsets()
+        if self.api_station is None:
+            self.offsets = determine_detector_timing_offsets(self.events,
+                                                             self.station)
+            self.store_offsets()
+        else:
+            self.offsets = self.api_station
         self.reconstruct_directions(detector_ids=detector_ids)
         self.reconstruct_cores(detector_ids=detector_ids)
         self.store_reconstructions()
@@ -217,9 +226,14 @@ class ReconstructESDCoincidences(object):
 
         self.cq = CoincidenceQuery(data, self.coincidences_group)
         if cluster is None:
-            cluster = self.coincidences_group._f_getattr('cluster')
-            s_numbers = [station.number for station in cluster.stations]
-            self.cluster = HiSPARCStations(s_numbers)
+            try:
+                self.cluster = self.coincidences_group._f_getattr('cluster')
+            except AttributeError:
+                re_number = re.compile('[0-9]+$')
+                s_index = self.coincidences_group.s_index
+                s_numbers = [int(re_number.search(station_group).group())
+                             for station_group in s_index]
+                self.cluster = HiSPARCStations(s_numbers)
         else:
             self.cluster = cluster
 

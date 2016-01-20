@@ -56,7 +56,7 @@ class StationTimingTests(unittest.TestCase):
         mock_fit.return_value = 1.
         offset = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertEqual(offset, 1.)
-        mock_percentile.assert_called_once_with([sentinel.dt], [2, 98])
+        mock_percentile.assert_called_once_with([sentinel.dt], [0.5, 99.5])
         offset = calibration.determine_station_timing_offset([sentinel.dt],
                                                              dz=.6)
         self.assertEqual(offset, 3.)

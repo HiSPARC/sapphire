@@ -1,9 +1,9 @@
-""" Fetch events and other data from the public database
+""" Fetch raw events and other data from the public database
 
     This module enables you to access the public database and even the raw
-    event data.
-
-    For convenience, you'll want the :func:`download_data` function.
+    event data. This is intended for specialized use only. For most uses, it is
+    faster and more convenient to access the event summary data (ESD) using
+    :mod:`~sapphire.esd`.
 
 """
 import xmlrpclib

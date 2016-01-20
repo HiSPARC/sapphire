@@ -116,13 +116,15 @@ class RunHeader(object):
         """
         a, b, c = self.a_atmospheric, self.b_atmospheric, self.c_atmospheric
 
-        if thickness > self.height_to_thickness(4.e5 * units.cm):
+        layers = [l * units.cm for l in self.atmospheric_layer_boundaries]
+
+        if thickness > self.height_to_thickness(layers[1]):
             height = c[0] * math.log(b[0] / (thickness - a[0]))
-        elif thickness > self.height_to_thickness(1.e6 * units.cm):
+        elif thickness > self.height_to_thickness(layers[2]):
             height = c[1] * math.log(b[1] / (thickness - a[1]))
-        elif thickness > self.height_to_thickness(4.e6 * units.cm):
+        elif thickness > self.height_to_thickness(layers[3]):
             height = c[2] * math.log(b[2] / (thickness - a[2]))
-        elif thickness > self.height_to_thickness(1.e7 * units.cm):
+        elif thickness > self.height_to_thickness(layers[4]):
             height = c[3] * math.log(b[3] / (thickness - a[3]))
         else:
             height = (a[4] - thickness) * c[4] / b[4]
@@ -138,15 +140,20 @@ class RunHeader(object):
         height = height * units.m / units.cm
         a, b, c = self.a_atmospheric, self.b_atmospheric, self.c_atmospheric
 
-        if height < 4.e5:
+        if height < self.atmospheric_layer_boundaries[1]:
+            # 0-4 km
             thickness = a[0] + b[0] * math.exp(-height / c[0])
-        elif height < 1.e6:
+        elif height < self.atmospheric_layer_boundaries[2]:
+            # 4-10 km
             thickness = a[1] + b[1] * math.exp(-height / c[1])
-        elif height < 4.e6:
+        elif height < self.atmospheric_layer_boundaries[3]:
+            # 10-40 km
             thickness = a[2] + b[2] * math.exp(-height / c[2])
-        elif height < 1.e7:
+        elif height < self.atmospheric_layer_boundaries[4]:
+            # 40-100 km
             thickness = a[3] + b[3] * math.exp(-height / c[3])
         else:
+            # >100 km
             thickness = a[4] - b[4] * height / c[4]
 
         return thickness

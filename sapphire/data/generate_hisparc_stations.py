@@ -7,33 +7,26 @@ locations. If internet is unavailable :mod:`~sapphire.api` uses this
 JSON.
 
 Cluster objects track station and detector positions over time. To facilitate
-this the csv gps and station layout data for the Science Park cluster is
-stored.
+this the gps and station layout data for the HiSPARC Network is stored.
 
 """
 from json import dump
 from datetime import date
 from os import path, extsep, mkdir
 
-from sapphire import api
+from sapphire.api import Station, Network, LOCAL_BASE, SRC_BASE
 from sapphire.utils import pbar
 
 
-JSON_FILE = path.join(api.LOCAL_BASE, 'hisparc_stations.json')
+JSON_FILE = path.join(LOCAL_BASE, 'hisparc_stations.json')
 
 
 def generate_json():
     """Get the API info data for each station"""
 
-    station_numbers = api.Network().station_numbers()
-    station_info = {}
-
-    for number in pbar(station_numbers):
-        try:
-            station = api.Station(number)
-            station_info[number] = station.info
-        except:
-            continue
+    station_numbers = Network().station_numbers()
+    station_info = {number: Station(number).info
+                    for number in pbar(station_numbers)}
 
     return station_info
 
@@ -46,30 +39,30 @@ def save_json(data):
         dump(data, json_file, indent=4, sort_keys=True)
 
 
-def save_csv():
-    """Get location csv data for all stations"""
+def save_tsv():
+    """Get location tsv data for all stations"""
 
-    station_numbers = api.Network().station_numbers()
-    for type in ['gps', 'layout']:
+    station_numbers = Network().station_numbers()
+    for type in ['gps', 'trigger', 'layout']:
         try:
-            mkdir(path.join(api.LOCAL_BASE, type))
+            mkdir(path.join(LOCAL_BASE, type))
         except OSError:
             pass
         for number in pbar(station_numbers):
-            url = api.Station.src_urls[type].format(station_number=number)
+            url = Station.src_urls[type].format(station_number=number)
             try:
-                data = api.Station._retrieve_url(url, base=api.SRC_BASE)
+                data = Station._retrieve_url(url, base=SRC_BASE)
             except:
                 print 'Failed to get %s data for station %d' % (type, number)
                 continue
             data = '\n'.join(d for d in data.split('\n')
                              if len(d) and d[0] != '#')
             if data:
-                with open(url.strip('/') + extsep + 'csv', 'w') as csvfile:
-                    csvfile.write(data)
+                with open(url.strip('/') + extsep + 'tsv', 'w') as tsvfile:
+                    tsvfile.write(data)
 
 
 if __name__ == '__main__':
     data = generate_json()
     save_json(data)
-    save_csv()
+    save_tsv()

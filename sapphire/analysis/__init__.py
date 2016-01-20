@@ -1,40 +1,40 @@
-"""Data analysis
+"""Perform common data analysis tasks on HiSPARC data.
 
 This package contains modules for performing various analysis tasks:
 
 :mod:`~sapphire.analysis.calibration`
-    Determine calibration values
+    determine calibration values
 
 :mod:`~sapphire.analysis.coincidence_queries`
-    Filter coincidences analysed with
+    filter coincidences analysed with
     :class:`~sapphire.analysis.coincidences.CoincidencesESD`
 
 :mod:`~sapphire.analysis.coincidences`
-    Search for coincidences between HiSPARC stations
+    search for coincidences between HiSPARC stations
 
 :mod:`~sapphire.analysis.core_reconstruction`
-    Shower core and shower size reconstruction
+    shower core and shower size reconstruction
 
 :mod:`~sapphire.analysis.direction_reconstruction`
     EAS direction reconstruction
 
 :mod:`~sapphire.analysis.event_utils`
-    Module for getting data from processed events
+    get data from processed events
 
 :mod:`~sapphire.analysis.find_mpv`
-    Module for finding the MIP peak MPV in pulseintegral data
+    find the MIP peak MPV in pulseintegral data
 
 :mod:`~sapphire.analysis.landau`
     Landau distribution
 
 :mod:`~sapphire.analysis.process_events`
-    Process HiSPARC events
+    process HiSPARC events
 
 :mod:`~sapphire.analysis.process_traces`
-    Process HiSPARC traces
+    process HiSPARC traces
 
 :mod:`~sapphire.analysis.reconstructions`
-    Perform shower reconstructions
+    perform shower reconstructions
 
 """
 from . import calibration

@@ -25,9 +25,9 @@ class CorsikaBatchTest(unittest.TestCase):
         self.assertEqual(cb.phi, 120)
         self.assertEqual(cb.queue, sentinel.queue)
         self.assertEqual(cb.corsika, sentinel.corsika)
-        self.assertEqual(cb.seed1, None)
-        self.assertEqual(cb.seed2, None)
-        self.assertEqual(cb.rundir, None)
+        self.assertIsNone(cb.seed1)
+        self.assertIsNone(cb.seed2)
+        self.assertIsNone(cb.rundir)
 
     def test_init_fractional_energy(self):
         cb = qsub_corsika.CorsikaBatch(16.5)

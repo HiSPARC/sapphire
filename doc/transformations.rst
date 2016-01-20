@@ -1,14 +1,12 @@
-Transformations
-===============
+Coordinate and time transformations
+===================================
 
 .. automodule:: sapphire.transformations
    :members:
    :undoc-members:
 
-
-Contents:
-
 .. toctree::
+   :hidden:
 
    transformations/angles
    transformations/axes

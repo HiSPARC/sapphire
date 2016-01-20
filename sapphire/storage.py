@@ -71,7 +71,7 @@ class Coincidence(tables.IsDescription):
 
     This table assigns an :attr:`id` to a coincidence and provides some
     additional information.  The events making up the coincidence can be looked
-    up using the :class:`c_index` table.  Let ``coincidence`` be a row from
+    up using the ``c_index`` table.  Let ``coincidence`` be a row from
     this table, then you can do::
 
         >>> coincidence_id = coincidence['id']
@@ -86,9 +86,9 @@ class Coincidence(tables.IsDescription):
     measured the same shower, but simply measured other particles at the same
     time, by chance.
 
-    Simulations may set the :attr:`r`, :attr:`phi`, :attr:`x`, :attr:`y` and
-    :attr:`alpha` attributes to simulation parameters, like core position and
-    cluster rotation.
+    Simulations may set the :attr:`x`, :attr:`y`, :attr:`zenith`,
+    :attr:`azimuth`, :attr:`size`, and :attr:`energy` attributes to simulation
+    parameters, like core position and shower parameters.
 
     .. attribute:: id
 
@@ -98,13 +98,29 @@ class Coincidence(tables.IsDescription):
 
         the number of triggered stations
 
-    .. attribute:: x, y
+    .. attribute:: x
 
-        The coordinates of the shower core in a simulation.
+        The x coordinate of the shower core in a simulation.
 
-    .. attribute:: zenith, azimuth
+    .. attribute:: y
 
-        The direction of the (simulated) shower.
+        The y coordinate of the shower core in a simulation.
+
+    .. attribute:: zenith
+
+        The zenith direction of the (simulated) shower.
+
+    .. attribute:: azimuth
+
+        The azimuth direction of the (simulated) shower.
+
+    .. attribute:: size
+
+        The size (number of leptons) of the (simulated) shower.
+
+    .. attribute:: energy
+
+        The primary particle energy of the (simulated) shower.
 
     """
     id = tables.UInt32Col(pos=0)

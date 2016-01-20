@@ -1,7 +1,8 @@
-""" Nikhef Stoomboot interface
+""" Access the Nikhef Stoomboot cluster.
 
     .. note::
-        This module is only for use at Nikhef.
+        This module is only for use at Nikhef. The Stoomboot cluster is only
+        accessible for Nikhef users.
 
     Easy to use functions to make use of the Nikhef Stoomboot facilities.
     This checks the available slots on the requested queue, creates the

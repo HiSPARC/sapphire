@@ -1,9 +1,10 @@
 """Simulation and Analysis Program Package for HiSPARC Research
 
-SAPPHiRE simplifies data access, simulations and analysis for the
-`HiSPARC <http://www.hisparc.nl>`_ experiment.  It was born out of a
-combination of the old framework and the collection of simulation and
-analysis scripts developed by David Fokkema for his PhD thesis work.
+SAPPHiRE simplifies data access, simulations and analysis for the `HiSPARC
+<http://www.hisparc.nl>`_ experiment.  It was born out of a combination of the
+old framework and the collection of simulation and analysis scripts developed
+by David Fokkema for his PhD thesis work.  Development is ongoing, while Arne
+de Laat is working on his PhD research.
 
 The following packages and modules are included:
 
@@ -74,7 +75,8 @@ from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
 from .corsika.corsika_queries import CorsikaQuery
 from .esd import (quick_download, load_data, download_data,
                   download_coincidences)
-from .simulations.groundparticles import GroundParticlesSimulation
+from .simulations.groundparticles import (GroundParticlesSimulation,
+                                          MultipleGroundParticlesSimulation)
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
 from .transformations.celestial import zenithazimuth_to_equatorial
@@ -105,7 +107,7 @@ __all__ = ['analysis',
            'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
            'download_coincidences',
-           'GroundParticlesSimulation',
+           'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
            'zenithazimuth_to_equatorial'

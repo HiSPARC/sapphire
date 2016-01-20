@@ -1,4 +1,4 @@
-""" Fetch events and other data from the event summary data (ESD)
+""" Fetch events and other data from the event summary data (ESD).
 
     This module enables you to access the event summary data.
 
@@ -22,12 +22,12 @@ import time
 import datetime
 import itertools
 import collections
+import re
 
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
 from . import api
-from . import clusters
 from . import storage
 
 
@@ -78,21 +78,26 @@ def _first_available_numbered_path():
                 if not os.path.exists(path % idx))
 
 
-def load_data(file, group, csv_file, type='events'):
-    """Download event summary data
+def load_data(file, group, tsv_file, type='events'):
+    """Load downloaded event summary data into PyTables file.
+
+    If you've previously downloaded event summary data from
+    http://data.hisparc.nl/ in TSV format, you can load them into a PyTables
+    file using this method. The data is then indistinguishable from data
+    downloaded using :func:`download_data`.
 
     :param file: the PyTables datafile handler
     :param group: the PyTables destination group, which need not exist
-    :param csv_file: path to the csv file downloaded from the HiSPARC
+    :param tsv_file: path to the tsv file downloaded from the HiSPARC
                      Public Database
-    :param type: the datatype to download, either 'events' or 'weather'
+    :param type: the datatype to load, either 'events' or 'weather'
 
     Example::
 
         >>> import tables
         >>> import sapphire.esd
         >>> data = tables.open_file('data.h5', 'w')
-        >>> sapphire.esd.load_data(data, '/s501', 'events-s501-20130910.csv')
+        >>> sapphire.esd.load_data(data, '/s501', 'events-s501-20130910.tsv')
 
     """
     if type == 'events':
@@ -104,7 +109,7 @@ def load_data(file, group, csv_file, type='events'):
     else:
         raise ValueError("Data type not recognized.")
 
-    with open(csv_file, 'rb') as data:
+    with open(tsv_file, 'rb') as data:
         reader = csv.reader(data, delimiter='\t')
         with read_and_store_class(table) as writer:
             for line in reader:
@@ -185,7 +190,7 @@ def download_data(file, group, station_number, start=None, end=None,
         pbar = ProgressBar(maxval=1.,
                            widgets=[Percentage(), Bar(), ETA()]).start()
 
-    # loop over lines in csv as they come streaming in
+    # loop over lines in tsv as they come streaming in
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
     with read_and_store(table) as writer:
@@ -200,13 +205,14 @@ def download_data(file, group, station_number, start=None, end=None,
         pbar.finish()
 
 
-def download_coincidences(file, cluster=None, stations=None,
+def download_coincidences(file, group='', cluster=None, stations=None,
                           start=None, end=None, n=2, progress=True):
     """Download event summary data coincidences
 
-    :param file: The PyTables datafile handler.
-    :param cluster: The HiSPARC cluster name for which to get data.
-    :param stations: A list of HiSPARC station numbers for which to get data.
+    :param file: PyTables datafile handler.
+    :param group: path of destination group, which need not exist yet.
+    :param cluster: HiSPARC cluster name for which to get data.
+    :param stations: a list of HiSPARC station numbers for which to get data.
     :param start: a datetime instance defining the start of the search
         interval.
     :param end: a datetime instance defining the end of the search
@@ -223,13 +229,13 @@ def download_coincidences(file, cluster=None, stations=None,
 
     Example::
 
-        import tables
-        import datetime
-        import sapphire.esd
-        data = tables.open_file('data_coincidences.h5', 'w')
-        sapphire.esd.download_coincidences(data, cluster='Aarhus',
-            start=datetime.datetime(2013, 9, 1),
-            end=datetime.datetime(2013, 9, 2), n=3)
+        >>> import tables
+        >>> import datetime
+        >>> import sapphire.esd
+        >>> data = tables.open_file('data_coincidences.h5', 'w')
+        >>> sapphire.esd.download_coincidences(data, cluster='Aarhus',
+        ...     start=datetime.datetime(2013, 9, 1),
+        ...     end=datetime.datetime(2013, 9, 2), n=3)
 
     """
     # sensible defaults for start and end
@@ -243,13 +249,15 @@ def download_coincidences(file, cluster=None, stations=None,
     if end is None:
         end = start + datetime.timedelta(days=1)
 
+    if stations is not None and len(stations) < n:
+        raise Exception('To few stations in query, give at least n.')
+
     # build and open url, create tables and set read function
     query = urllib.urlencode({'cluster': cluster, 'stations': stations,
                               'start': start, 'end': end, 'n': n})
     url = COINCIDENCES_URL.format(query=query)
-    station_groups = _get_station_groups()
-    table = _get_or_create_coincidences_tables(file, station_groups)
-    station_numbers = _get_or_create_station_numbers(table)
+    station_groups = _read_or_get_station_groups(file, group)
+    c_group = _get_or_create_coincidences_tables(file, group, station_groups)
 
     try:
         data = urllib2.urlopen(url, timeout=1800)
@@ -266,7 +274,7 @@ def download_coincidences(file, cluster=None, stations=None,
         pbar = ProgressBar(maxval=1.,
                            widgets=[Percentage(), Bar(), ETA()]).start()
 
-    # loop over lines in csv as they come streaming in, keep temporary
+    # loop over lines in tsv as they come streaming in, keep temporary
     # lists untill a full coincidence is in.
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
@@ -276,12 +284,10 @@ def download_coincidences(file, cluster=None, stations=None,
         if line[0][0] == '#':
             continue
         elif int(line[0]) == current_coincidence:
-            station_numbers.add(int(line[1]))
             coincidence.append(line)
         else:
-            station_numbers.add(int(line[1]))
             # Full coincidence has been received, store it.
-            timestamp = _read_lines_and_store_coincidence(file,
+            timestamp = _read_lines_and_store_coincidence(file, c_group,
                                                           coincidence,
                                                           station_groups)
             # update progressbar every .5 seconds
@@ -295,36 +301,41 @@ def download_coincidences(file, cluster=None, stations=None,
 
     if len(coincidence):
         # Store last coincidence
-        _read_lines_and_store_coincidence(file, coincidence, station_groups)
+        _read_lines_and_store_coincidence(file, c_group, coincidence,
+                                          station_groups)
     if progress:
         pbar.finish()
 
-    if len(station_numbers):
-        cluster = clusters.HiSPARCStations(station_numbers)
-        table._v_parent._v_attrs.cluster = cluster
     file.flush()
 
 
-def _get_or_create_station_numbers(table):
+def _read_or_get_station_groups(file, group):
     """Get station numbers from existing cluster attribute or a new set
 
-    :param table: coincidence table in PyTables file.
-    :return: set including existing stations in a cluster.
+    :param file: PyTables datafile handler.
+    :param group: path of destination group.
+    :return: existing or newly generated station group paths with station
+             numbers and ids.
 
     """
     try:
-        cluster = table._v_parent._v_attrs.cluster
-    except AttributeError:
-        return set()
+        s_index = file.get_node(group + '/coincidences', 's_index').read()
+    except tables.NoSuchNodeError:
+        return _get_station_groups(group)
     else:
-        if cluster.stations is not None:
-            return {s.number for s in cluster.stations}
-        else:
-            return set()
+        re_number = re.compile('[0-9]+$')
+        groups = collections.OrderedDict()
+        for sid, station_group in enumerate(s_index):
+            station = int(re_number.search(station_group).group())
+            groups[station] = {'group': station_group,
+                               's_index': sid}
+        return groups
 
 
-def _get_station_groups():
+def _get_station_groups(group):
     """Generate groups names for all stations
+
+    :param group: path of destination group.
 
     Use the same hierarchy (cluster/station) as used in the HiSPARC
     datastore.
@@ -337,44 +348,51 @@ def _get_station_groups():
     for cluster in clusters:
         stations = api.Network().station_numbers(cluster=cluster['number'])
         for station in stations:
-            groups[station] = {'group': ('/hisparc/cluster_%s/station_%d' %
-                                         (cluster['name'].lower(), station)),
+            groups[station] = {'group': ('%s/hisparc/cluster_%s/station_%d' %
+                                         (group, cluster['name'].lower(),
+                                          station)),
                                's_index': s_index}
             s_index += 1
     return groups
 
 
-def _get_or_create_coincidences_tables(file, station_groups):
-    """Get or create event table in PyTables file"""
+def _get_or_create_coincidences_tables(file, group, station_groups):
+    """Get or create event table in PyTables file
 
+    :return: the existing or created coincidences group
+
+    """
     try:
-        return file.get_node('/', 'coincidences')
+        return file.get_node(group + '/', 'coincidences')
     except tables.NoSuchNodeError:
-        return _create_coincidences_tables(file, station_groups)
+        return _create_coincidences_tables(file, group, station_groups)
 
 
-def _create_coincidences_tables(file, station_groups):
-    """Setup coincidence tables"""
+def _create_coincidences_tables(file, group, station_groups):
+    """Setup coincidence tables
 
-    group = '/coincidences'
+    :return: the created coincidences group
+
+    """
+    coin_group = group + '/coincidences'
 
     # Create coincidences table
     description = storage.Coincidence
     s_columns = {'s%d' % station: tables.BoolCol(pos=p)
                  for p, station in enumerate(station_groups.iterkeys(), 12)}
     description.columns.update(s_columns)
-    coincidences = file.create_table(group, 'coincidences', description,
+    coincidences = file.create_table(coin_group, 'coincidences', description,
                                      createparents=True)
 
     # Create c_index
-    file.create_vlarray(group, 'c_index', tables.UInt32Col(shape=2))
+    file.create_vlarray(coin_group, 'c_index', tables.UInt32Col(shape=2))
 
     # Create and fill s_index
-    s_index = file.create_vlarray(group, 's_index', tables.VLStringAtom())
+    s_index = file.create_vlarray(coin_group, 's_index', tables.VLStringAtom())
     for station_group in station_groups.itervalues():
         s_index.append(station_group['group'])
 
-    return coincidences
+    return coincidences._v_parent
 
 
 def _get_or_create_events_table(file, group):
@@ -390,7 +408,7 @@ def _create_events_table(file, group):
     """Create event table in PyTables file
 
     Create an event table containing the ESD data columns which are
-    available in the CSV download.
+    available in the TSV download.
 
     :param file: PyTables file
     :param group: the group to contain the events table, which need not
@@ -429,7 +447,7 @@ def _create_weather_table(file, group):
     """Create weather table in PyTables file
 
     Create a weather table containing the ESD weather columns which are
-    available in the CSV download.
+    available in the TSV download.
 
     :param file: PyTables file
     :param group: the group to contain the weather table, which need not
@@ -456,19 +474,22 @@ def _create_weather_table(file, group):
     return file.create_table(group, 'weather', description, createparents=True)
 
 
-def _read_lines_and_store_coincidence(file, coincidence, station_groups):
-    """Read CSV lines and store coincidence
+def _read_lines_and_store_coincidence(file, c_group, coincidence,
+                                      station_groups):
+    """Read TSV lines and store coincidence
 
-    Read lines from the CSV download and store the coincidence and events.
+    Read lines from the TSV download and store the coincidence and events.
     Return the coincidence timestamp to keep track of the progress.
 
-    :param file: pytables file for storage
-    :param coincidence: text lines from the CSV file for one coincidence
+    :param file: PyTables file for storage
+    :param c_group: the coincidences group
+    :param coincidence: text lines from the TSV file for one coincidence
+    :param station_groups: dictionary to find the path to a station_group
     :return: coincidence timestamp
 
     """
     c_idx = []
-    coincidences = file.get_node('/coincidences', 'coincidences')
+    coincidences = file.get_node(c_group, 'coincidences')
     row = coincidences.row
     row['id'] = len(coincidences)
     row['N'] = len(coincidence)
@@ -479,18 +500,21 @@ def _read_lines_and_store_coincidence(file, coincidence, station_groups):
 
     for event in coincidence:
         station_number = int(event[1])
-        row['s%d' % station_number] = True
-        group_path = station_groups[station_number]['group']
-        group = _get_or_create_events_table(file, group_path)
-        with _read_line_and_store_event_class(group) as writer:
+        try:
+            row['s%d' % station_number] = True
+            group_path = station_groups[station_number]['group']
+        except KeyError:
+            raise Exception('Unexpected station number: %d, no column and/or '
+                            'station group path available.' % station_number)
+        event_group = _get_or_create_events_table(file, group_path)
+        with _read_line_and_store_event_class(event_group) as writer:
             s_idx = station_groups[station_number]['s_index']
-            e_idx = len(group)
+            e_idx = len(event_group)
             c_idx.append((s_idx, e_idx))
             writer.store_line(event[2:])
 
     row.append()
-    c_index = file.get_node('/coincidences', 'c_index')
-
+    c_index = file.get_node(c_group, 'c_index')
     c_index.append(c_idx)
 
     return int(coincidence[0][4])
@@ -510,7 +534,7 @@ class _read_line_and_store_weather_class(object):
         if line[0][0] == '#':
             return 0.
 
-        # break up CSV line
+        # break up TSV line
         (date, time, timestamp, temperature_inside, temperature_outside,
          humidity_inside, humidity_outside, atmospheric_pressure,
          wind_direction, wind_speed, solar_radiation, uv_index,
@@ -565,7 +589,7 @@ class _read_line_and_store_event_class(object):
         if line[0][0] == '#':
             return 0.
 
-        # break up CSV line
+        # break up TSV line
         (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
          int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger) = line
 

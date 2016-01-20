@@ -18,7 +18,7 @@ Example usage::
     >>> sim.run()
 
 """
-from math import pi, sin, cos, sqrt
+from math import pi, sin, cos, sqrt, log10
 from time import time
 
 import numpy as np
@@ -26,7 +26,8 @@ import tables
 import random
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
-from ..utils import pbar
+from ..corsika.corsika_queries import CorsikaQuery
+from ..utils import pbar, norm_angle, closest_in_list
 
 
 class GroundParticlesSimulation(HiSPARCSimulation):
@@ -77,23 +78,21 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'particle': event_header.particle}
 
         for i in pbar(range(self.N), show=self.progress):
+            ext_timestamp = (now + i) * int(1e9)
             x, y = self.generate_core_position(r)
+            shower_azimuth = self.generate_azimuth()
+
+            shower_parameters = {'ext_timestamp': ext_timestamp,
+                                 'core_pos': (x, y),
+                                 'azimuth': shower_azimuth}
 
             # Subtract Corsika shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
-            shower_azimuth = self.generate_azimuth()
             alpha = shower_azimuth - event_header.azimuth
-            if alpha > pi:
-                alpha -= 2 * pi
-            elif alpha <= -pi:
-                alpha += 2 * pi
-
-            shower_parameters = {'ext_timestamp': (now + i) * int(1e9),
-                                 'core_pos': (x, y),
-                                 'azimuth': shower_azimuth}
-            shower_parameters.update(corsika_parameters)
+            alpha = norm_angle(alpha)
             self._prepare_cluster_for_shower(x, y, alpha)
 
+            shower_parameters.update(corsika_parameters)
             yield shower_parameters
 
     def _prepare_cluster_for_shower(self, x, y, alpha):
@@ -602,7 +601,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
 
-    """ More accuratly simulate the detection area of the detectors.
+    """More accuratly simulate the detection area of the detectors.
 
     Take the orientation of the detectors into account and use the
     exact detector boundaries. This requires a slightly more complex
@@ -729,3 +728,125 @@ class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,
     """
 
     pass
+
+
+class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
+
+    """Use multiple CORSIKA simulated air showers in one run.
+
+    Simulations will be selected from the set of available showers.
+    Each time an energy and zenith angle is generated a shower is selected
+    from the CORSIKA overview. Each shower is reused multiple times to
+    take advantage of caching, and to reduce IO stress.
+
+    .. warning::
+
+        This simulation loads a new shower often it is therefore more I/O
+        intensive than :class:`GroundParticlesSimulation`. Do not run many
+        of these simulations simultaneously!
+
+    """
+
+    # CORSIKA data location at Nikhef
+    DATA = '/data/hisparc/corsika/data/{seeds}/corsika.h5'
+
+    def __init__(self, corsikaoverview_path, max_core_distance, min_energy,
+                 max_energy, *args, **kwargs):
+        """Simulation initialization
+
+        :param corsikaoverview_path: path to the corsika_overview.h5 file
+                                     containing the available simulations.
+        :param max_core_distance: maximum distance of shower core to
+                                  center of cluster.
+        :param min_energy,max_energy: upper and lower shower energy limits,
+                                      in eV.
+
+        """
+        # Super of the super class.
+        super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
+
+        self.cq = CorsikaQuery(corsikaoverview_path)
+        self.max_core_distance = max_core_distance
+        self.min_energy = min_energy
+        self.max_energy = max_energy
+        self.available_energies = {e for e in self.cq.all_energies
+                                   if min_energy <= 10 ** e <= max_energy}
+        self.available_zeniths = {e: self.cq.available_parameters('zenith',
+                                                                  energy=e)
+                                  for e in self.available_energies}
+
+    def finish(self):
+        """Clean-up after simulation"""
+
+        self.cq.finish()
+
+    def generate_shower_parameters(self):
+        """Generate shower parameters like core position, energy, etc.
+
+        For this groundparticles simulation, only the shower core position
+        and rotation angle of the shower are generated.  Do *not*
+        interpret these parameters as the position of the cluster, or the
+        rotation of the cluster!  Interpret them as *shower* parameters.
+
+        :return: dictionary with shower parameters: core_pos
+                 (x, y-tuple) and azimuth.
+
+        """
+        r = self.max_core_distance
+        n_reuse = 100
+        now = int(time())
+
+        for i in pbar(range(self.N), show=self.progress):
+            sim = self.select_simulation()
+            if sim is None:
+                continue
+
+            corsika_parameters = {'zenith': sim['zenith'],
+                                  'size': sim['n_electron'],
+                                  'energy': sim['energy'],
+                                  'particle': sim['particle_id']}
+
+            seeds = self.cq.seeds([sim])[0]
+            with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
+                try:
+                    self.groundparticles = data.get_node('/groundparticles')
+                except tables.NoSuchNodeError:
+                    print 'No groundparticles in %s' % seeds
+                    continue
+
+                for j in range(n_reuse):
+                    ext_timestamp = (now + i + (float(j) / n_reuse)) * int(1e9)
+                    x, y = self.generate_core_position(r)
+                    shower_azimuth = self.generate_azimuth()
+
+                    shower_parameters = {'ext_timestamp': ext_timestamp,
+                                         'core_pos': (x, y),
+                                         'azimuth': shower_azimuth}
+
+                    # Subtract CORSIKA shower azimuth from desired shower
+                    # azimuth to get rotation angle of the cluster.
+                    alpha = shower_azimuth - sim['azimuth']
+                    alpha = norm_angle(alpha)
+                    self._prepare_cluster_for_shower(x, y, alpha)
+
+                    shower_parameters.update(corsika_parameters)
+                    yield shower_parameters
+
+    def select_simulation(self):
+        """Generate parameters for selecting a CORSIKA simulation
+
+        :return: simulation row from a CORSIKA Simulations table.
+
+        """
+        energy = self.generate_energy(self.min_energy, self.max_energy)
+        shower_energy = closest_in_list(log10(energy), self.available_energies)
+
+        zenith = self.generate_zenith()
+        shower_zenith = closest_in_list(np.degrees(zenith),
+                                        self.available_zeniths[shower_energy])
+
+        sims = self.cq.simulations(energy=shower_energy, zenith=shower_zenith)
+        if not len(sims):
+            return None
+        sim = np.random.choice(sims)
+        return sim
