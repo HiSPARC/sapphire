@@ -125,6 +125,16 @@ class StoreKascadeData(object):
         f.close()
 
     def _store_kascade_event(self, data):
+        """Store a line of KASCADE data in the pytables file
+
+        The stored particle densities are the densities in the plane of the
+        shower front. Multiply by cos(zenith) to get the particle density on
+        the ground.
+
+        :param data: a list of KASCADE reconstructed shower variables for one
+                     event.
+
+        """
         tablerow = self.kascade.row
 
         # read all columns into KASCADE-named variables
