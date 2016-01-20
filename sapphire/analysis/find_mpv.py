@@ -6,8 +6,9 @@
 """
 import warnings
 
-from scipy.stats import norm
 from scipy.optimize import curve_fit
+
+from ..utils import gauss
 
 
 MPV_FIT_WIDTH_FACTOR = .4
@@ -139,8 +140,8 @@ class FindMostProbableValueInSpectrum(object):
             raise RuntimeError("Number of data points not sufficient")
 
         # fit to a normal distribution
-        f = lambda x, N, a, b: N * norm.pdf(x, loc=a, scale=b)
-        popt, pcov = curve_fit(f, x, y, p0=(y.max(), first_guess, first_guess))
+        popt, pcov = curve_fit(gauss, x, y,
+                               p0=(y.max(), first_guess, first_guess))
         mpv = popt[1]
 
         # sanity check: if MPV is outside domain, the MIP peak was not

@@ -191,22 +191,22 @@ class KascadeEvent(tables.IsDescription):
 
     """Store events from KASCADE"""
 
-    run_id = tables.IntCol()
-    event_id = tables.Int64Col()
-    timestamp = tables.Time32Col()
-    nanoseconds = tables.UInt32Col()
-    ext_timestamp = tables.UInt64Col()
+    run_id = tables.IntCol(pos=0)
+    event_id = tables.Int64Col(pos=1)
+    timestamp = tables.Time32Col(pos=2)
+    nanoseconds = tables.UInt32Col(pos=3)
+    ext_timestamp = tables.UInt64Col(pos=4)
 
-    energy = tables.FloatCol()
-    core_pos = tables.FloatCol(shape=2)
-    zenith = tables.FloatCol()
-    azimuth = tables.FloatCol()
-    Num_e = tables.FloatCol()
-    Num_mu = tables.FloatCol()
-    dens_e = tables.FloatCol(shape=4)
-    dens_mu = tables.FloatCol(shape=4)
-    P200 = tables.FloatCol()
-    T200 = tables.FloatCol()
+    energy = tables.FloatCol(pos=5)
+    core_pos = tables.FloatCol(pos=6, shape=2)
+    zenith = tables.FloatCol(pos=7)
+    azimuth = tables.FloatCol(pos=8)
+    Num_e = tables.FloatCol(pos=9)
+    Num_mu = tables.FloatCol(pos=10)
+    dens_e = tables.FloatCol(pos=11, shape=4)
+    dens_mu = tables.FloatCol(pos=12, shape=4)
+    P200 = tables.FloatCol(pos=13)
+    T200 = tables.FloatCol(pos=14)
 
 
 class ReconstructedKascadeEvent(tables.IsDescription):

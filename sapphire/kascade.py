@@ -1,16 +1,20 @@
 """ Read and store KASCADE data.
 
-    Read data files provided by the KASCADE collaboration and store them in a format compatible with HiSPARC data.
+    Read data files provided by the KASCADE collaboration and store them
+    in a format compatible with HiSPARC data.
 
     This module contains the following class:
 
     :class:`StoreKascadeData`
         Read and store KASCADE data files.
 
-"""
+    :class:`KascadeCoincidences`
+        Find HiSPARC and KASCADE events that belong together.
 
+"""
 import gzip
 import time
+from os.path import splitext
 
 import numpy as np
 
@@ -19,11 +23,25 @@ from .storage import KascadeEvent
 
 
 class StoreKascadeData(object):
-    def __init__(self, data, hisparc_path, kascade_path, kascade_filename,
-                 force=False):
+    def __init__(self, data, kascade_filename, kascade_path='/kascade',
+                 hisparc_path=None, force=False, progress=True):
+        """Initialize the class.
 
+        :param data: the PyTables datafile
+        :param hisparc_path: path to the group containing HiSPARC station data.
+        :param kascade_path: path of group where KASCADE data wil be stored.
+        :param kascade_filename: filename of the KASCADE data source.
+        :param force: overwrite existing KASCADE group if it already exists.
+        :param progress: if True, show a progress info will be shown.
+
+        """
         self.data = data
-        self.hisparc = data.get_node(hisparc_path, 'events')
+        self.progress = progress
+
+        if hisparc_path is not None:
+            self.hisparc = data.get_node(hisparc_path, 'events')
+        else:
+            self.hisparc = None
 
         if kascade_path in data:
             if not force:
@@ -44,16 +62,24 @@ class StoreKascadeData(object):
         those events, for later coincidence processing.
 
         """
-        # Determine start and end timestamps from HiSPARC data
-        try:
-            timestamps = self.hisparc.col('timestamp')
-            start = clock.gps_to_utc(min(timestamps))
-            stop = clock.gps_to_utc(max(timestamps))
-        except IndexError:
-            raise RuntimeError("HiSPARC event table is empty")
+        if self.hisparc is not None:
+            # Determine start and end timestamps from HiSPARC data
+            try:
+                timestamps = self.hisparc.col('timestamp')
+                start = clock.gps_to_utc(min(timestamps)) - 5
+                stop = clock.gps_to_utc(max(timestamps)) + 5
+            except IndexError:
+                raise RuntimeError("HiSPARC event table is empty")
 
-        print "Processing data from %s to %s" % (time.ctime(start),
-                                                 time.ctime(stop))
+            if self.progress:
+                print "Processing data from %s to %s" % (time.ctime(start),
+                                                         time.ctime(stop))
+        else:
+            start = None
+            stop = None
+            if self.progress:
+                print "Processing all data"
+
         self._process_events_in_range(start, stop)
 
     def _process_events_in_range(self, start=None, stop=None):
@@ -66,10 +92,12 @@ class StoreKascadeData(object):
         :param stop: end of range (timestamp)
 
         """
-        f = gzip.open(self.kascade_filename)
+        if splitext(self.kascade_filename)[1] == '.gz':
+            f = gzip.open(self.kascade_filename)
+        else:
+            f = open(self.kascade_filename)
 
-        while True:
-            line = f.readline()
+        for line in f:
             if not line:
                 # no more lines left, EOF
                 break
@@ -94,6 +122,7 @@ class StoreKascadeData(object):
 
         # flush the table buffers and write them to disk
         self.kascade.flush()
+        f.close()
 
     def _store_kascade_event(self, data):
         tablerow = self.kascade.row
