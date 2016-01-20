@@ -1,7 +1,6 @@
 import unittest
-import warnings
 
-from numpy import array, linspace
+from numpy import linspace
 
 from sapphire.analysis import landau
 
