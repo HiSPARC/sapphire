@@ -118,7 +118,10 @@ class CoincidenceCoreReconstruction(object):
         """
         p, x, y, z = ([], [], [], [])
 
-        self.cluster.set_timestamp(coincidence[0][1]['timestamp'])
+        try:
+            self.cluster.set_timestamp(coincidence[0][1]['timestamp'])
+        except IndexError:
+            return (nan, nan)
 
         for station_number, event in coincidence:
             if station_numbers is not None:
