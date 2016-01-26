@@ -512,32 +512,32 @@
         "number": 201, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 20.0, 
+                "beta": 20.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 2.73
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 20.0, 
+                "beta": 20.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 8.96
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 110.0, 
+                "beta": 110.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 5.15
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 290.0, 
+                "beta": 110.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 4.78
             }
         ], 
         "subcluster": "Haarlem"
@@ -2254,11 +2254,11 @@
     }, 
     "3501": {
         "active": true, 
-        "altitude": 59.57, 
+        "altitude": 59.69, 
         "cluster": "Leiden", 
         "country": "Netherlands", 
-        "latitude": 52.0017816, 
-        "longitude": 4.3682463, 
+        "latitude": 52.0017811, 
+        "longitude": 4.3682443, 
         "name": "De Haagse Hogeschool (Delft)", 
         "number": 3501, 
         "scintillators": [
@@ -2710,32 +2710,32 @@
         "number": 8003, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 210.0, 
+                "beta": 120.0, 
+                "height": 0.5, 
                 "mpv": null, 
-                "radius": null
+                "radius": 3.0
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 199.0, 
-                "radius": null
+                "alpha": 30.0, 
+                "beta": 120.0, 
+                "height": 0.5, 
+                "mpv": 197.0, 
+                "radius": 12.5
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 320.0, 
+                "beta": 300.0, 
+                "height": 0.5, 
                 "mpv": null, 
-                "radius": null
+                "radius": 14.5
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 354.0, 
+                "beta": 300.0, 
+                "height": 0.5, 
                 "mpv": null, 
-                "radius": null
+                "radius": 24.8
             }
         ], 
         "subcluster": "Eindhoven"
@@ -2913,32 +2913,32 @@
         "number": 8101, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": null, 
-                "radius": null
+                "alpha": 230.0, 
+                "beta": 230.0, 
+                "height": 0.5, 
+                "mpv": 208.0, 
+                "radius": 4.75
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": null, 
-                "radius": null
+                "alpha": 55.0, 
+                "beta": 55.0, 
+                "height": 0.5, 
+                "mpv": 205.0, 
+                "radius": 5.4
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 220.0, 
-                "radius": null
+                "alpha": 325.0, 
+                "beta": 325.0, 
+                "height": 0.5, 
+                "mpv": 222.0, 
+                "radius": 8.3
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 150.0, 
+                "beta": 150.0, 
+                "height": 0.5, 
                 "mpv": null, 
-                "radius": null
+                "radius": 8.75
             }
         ], 
         "subcluster": "Tilburg"
@@ -3865,5 +3865,5 @@
         ], 
         "subcluster": "Karlsruhe"
     }, 
-    "_info": "HiSPARC station info on 2015-12-17"
+    "_info": "HiSPARC station info on 2016-01-25"
 }
