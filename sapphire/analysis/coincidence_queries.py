@@ -316,7 +316,7 @@ class CoincidenceQuery(object):
         reconstructions_iterator = (self._get_reconstructions(coincidence)
                                     for coincidence in coincidences)
         coincidences_recs = (self._events_from_stations(recs, stations)
-                               for recs in reconstructions_iterator)
+                             for recs in reconstructions_iterator)
         return self.minimum_events_for_coincidence(coincidences_recs, n)
 
     def _events_from_stations(self, events, stations):
