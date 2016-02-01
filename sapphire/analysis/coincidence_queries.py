@@ -267,6 +267,18 @@ class CoincidenceQuery(object):
                               for coincidence in coincidences)
         return self.minimum_events_for_coincidence(coincidence_events, n)
 
+    def all_reconstructions(self, coincidences, n=0):
+        """Get all reconstructed events for the given coincidences.
+
+        :param coincidences: list of coincidence rows.
+        :param n: minimum number of events per coincidence.
+        :return: list of reconstructed events for each coincidence.
+
+        """
+        coincidence_recs = (self._get_reconstructions(coincidence)
+                            for coincidence in coincidences)
+        return self.minimum_events_for_coincidence(coincidence_recs, n)
+
     def minimum_events_for_coincidence(self, coincidences_events, n=2):
         """Filter coincidences to only include those with at least n events.
 
@@ -292,6 +304,20 @@ class CoincidenceQuery(object):
         coincidences_events = (self._events_from_stations(events, stations)
                                for events in events_iterator)
         return self.minimum_events_for_coincidence(coincidences_events, n)
+
+    def reconstructions_from_stations(self, coincidences, stations, n=2):
+        """Only get reconstructions for specific stations for coincidences.
+
+        :param coincidences: list of coincidence rows.
+        :param stations: list of station numbers to filter events for.
+        :return: list of filtered reconstructed events for each coincidence.
+
+        """
+        reconstructions_iterator = (self._get_reconstructions(coincidence)
+                                    for coincidence in coincidences)
+        coincidences_recs = (self._events_from_stations(recs, stations)
+                               for recs in reconstructions_iterator)
+        return self.minimum_events_for_coincidence(coincidences_recs, n)
 
     def _events_from_stations(self, events, stations):
         """Get only events from the chosen stations
