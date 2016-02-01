@@ -83,7 +83,7 @@ class FindMostProbableValueInSpectrum(object):
            * Find the maximum *to the right* of this value.  We assume
              this to be the approximate location of the MIP peak.
 
-        :returns mpv: first guess of the most probable value
+        :return mpv: first guess of the most probable value
 
         """
         n, bins = self.n, self.bins
@@ -119,7 +119,7 @@ class FindMostProbableValueInSpectrum(object):
             width of the fit domain.  The domain is given by
             [(1. - width_factor) * first_guess, (1. + width_factor) *
             first_guess]
-        :returns mpv: mpv value obtained from the fit
+        :return mpv: mpv value obtained from the fit
 
         """
         n, bins = self.n, self.bins
