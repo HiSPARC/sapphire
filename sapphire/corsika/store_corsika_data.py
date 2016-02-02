@@ -6,12 +6,12 @@
 
     The syntax and options for calling this script can be seen with::
 
-        store_corsika_data --help
+        $ store_corsika_data --help
 
     For example to convert a CORSIKA file in the current directory called
     DAT000000 to a HDF5 called corsika.h5 with a progress bar run::
 
-        store_corsika_data --progress DAT000000 corsika.h5
+        $ store_corsika_data --progress DAT000000 corsika.h5
 
 """
 import argparse
