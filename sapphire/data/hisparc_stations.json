@@ -404,18 +404,18 @@
         "number": 102, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 289.0, 
-                "radius": null
+                "alpha": -125.3, 
+                "beta": -103.5, 
+                "height": 0.0, 
+                "mpv": 286.0, 
+                "radius": 5.4
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 259.0, 
-                "radius": null
+                "alpha": 98.3, 
+                "beta": 76.5, 
+                "height": 0.0, 
+                "mpv": 251.0, 
+                "radius": 5.4
             }
         ], 
         "subcluster": "Zaanstad"
@@ -458,18 +458,18 @@
         "number": 104, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 201.0, 
-                "radius": null
+                "alpha": -13.7, 
+                "beta": -13.7, 
+                "height": 0.0, 
+                "mpv": 202.0, 
+                "radius": 0.5
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 200.0, 
-                "radius": null
+                "alpha": -13.7, 
+                "beta": -13.7, 
+                "height": 0.0, 
+                "mpv": 215.0, 
+                "radius": 10.5
             }
         ], 
         "subcluster": "Zaanstad"
@@ -485,18 +485,18 @@
         "number": 105, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": -65.9, 
+                "beta": -65.9, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 0.5
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": -65.9, 
+                "beta": -65.9, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 10.5
             }
         ], 
         "subcluster": "Zaanstad"
@@ -2046,32 +2046,32 @@
         "number": 3201, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 87.0, 
+                "beta": 87.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 8.86
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 87.0, 
+                "beta": 87.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 3.11
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": -3.0, 
+                "beta": -3.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 5.25
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 199.0, 
-                "radius": null
+                "alpha": 178.0, 
+                "beta": 178.0, 
+                "height": 0.0, 
+                "mpv": 203.0, 
+                "radius": 5.15
             }
         ], 
         "subcluster": "Middelharnis"
@@ -3478,7 +3478,48 @@
                 "alpha": null, 
                 "beta": null, 
                 "height": null, 
-                "mpv": 196.0, 
+                "mpv": 202.0, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
+                "radius": null
+            }
+        ], 
+        "subcluster": "Bath"
+    }, 
+    "13104": {
+        "active": true, 
+        "altitude": 262.79, 
+        "cluster": "Bristol", 
+        "country": "United Kingdom", 
+        "latitude": 51.3792998, 
+        "longitude": -2.3271618, 
+        "name": "BathUni", 
+        "number": 13104, 
+        "scintillators": [
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": 223.0, 
+                "radius": null
+            }, 
+            {
+                "alpha": null, 
+                "beta": null, 
+                "height": null, 
+                "mpv": null, 
                 "radius": null
             }, 
             {
@@ -3865,5 +3906,5 @@
         ], 
         "subcluster": "Karlsruhe"
     }, 
-    "_info": "HiSPARC station info on 2016-01-25"
+    "_info": "HiSPARC station info on 2016-02-02"
 }
