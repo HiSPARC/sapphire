@@ -1,5 +1,4 @@
-"""
-Defines units in terms of HiSPARC standard units
+""" Defines units in terms of HiSPARC standard units
 
 You should use the units defined in this file whenever you
 have a dimensional quantity in your code.  For example:
@@ -8,13 +7,13 @@ Do:
 
 .. code-block:: python
 
-    s = 1.5 * km
+    >>> s = 1.5 * km
 
 Don't:
 
 .. code-block:: python
 
-    s = 1.5  # don't forget this is in km!
+    >>> s = 1.5  # don't forget this is in km!
 
 The conversion factors defined in this file
 convert your data into HiSPARC base units, so that

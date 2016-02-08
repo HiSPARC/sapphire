@@ -1,8 +1,13 @@
 from setuptools import setup, find_packages
+import sys
+
+
+if sys.version_info[:2] != (2, 7):
+    raise Exception('Only Python 2.7 is supported.')
 
 
 setup(name='hisparc-sapphire',
-      version='0.12.6',
+      version='0.13.0',
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
