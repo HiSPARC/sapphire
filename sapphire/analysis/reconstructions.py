@@ -194,18 +194,20 @@ class ReconstructESDCoincidences(object):
     Example usage::
 
         >>> import tables
-        >>> from sapphire.analysis import reconstructions
+        >>> from sapphire import ReconstructESDCoincidences
 
         >>> data = tables.open_file('2014_1_1.h5', 'a')
-        >>> rec = reconstructions.ReconstructESDCoincidences(data,
-        ...                                                  overwrite=True)
+        >>> rec = ReconstructESDCoincidences(data, stations=[102, 104, 105],
+                                                             overwrite=True)
+        ...
         >>> rec.reconstruct_and_store()
 
     """
 
     def __init__(self, data, coincidences_group='/coincidences',
                  overwrite=False, progress=True,
-                 destination='reconstructions', cluster=None):
+                 destination='reconstructions', cluster=None,
+                 stations=None):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -214,7 +216,7 @@ class ReconstructESDCoincidences(object):
         :param progress: if True, show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
         :param cluster: a Cluster object to use for the reconstructions.
-
+        :param stations: a list of stations to use for the reconstructions.
         """
         self.data = data
         self.coincidences_group = data.get_node(coincidences_group)
@@ -236,6 +238,9 @@ class ReconstructESDCoincidences(object):
                 self.cluster = HiSPARCStations(s_numbers)
         else:
             self.cluster = cluster
+
+        if stations is not None:
+            self.cluster = HiSPARCStations(stations)
 
         self.direction = CoincidenceDirectionReconstruction(self.cluster)
         self.core = CoincidenceCoreReconstruction(self.cluster)
