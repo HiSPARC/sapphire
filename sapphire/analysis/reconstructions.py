@@ -1,4 +1,5 @@
 import re
+import warnings
 from itertools import izip_longest
 
 from numpy import isnan, histogram, linspace, percentile, std
@@ -234,7 +235,12 @@ class ReconstructESDCoincidences(object):
                 s_index = self.coincidences_group.s_index
                 s_numbers = [int(re_number.search(station_group).group())
                              for station_group in s_index]
-                self.cluster = HiSPARCStations(s_numbers)
+                if len(s_numbers) > 100:
+                    warnings.warn('Retrieving %d HiSPARCStations from API. '
+                                  'Use cluster parameter to specify stations.'
+                                  % len(s_numbers), UserWarning)
+
+                self.cluster = HiSPARCStations(s_numbers, allow_missing=True)
         else:
             self.cluster = cluster
 
