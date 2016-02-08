@@ -18,6 +18,7 @@ Contents:
 
    installation
    tutorial
+   examples
    sapphire
    README
 
