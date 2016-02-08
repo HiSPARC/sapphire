@@ -504,6 +504,7 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence,
             row['s%d' % station_number] = True
             group_path = station_groups[station_number]['group']
         except KeyError:
+            # Can not add new column, so user should make a new data file.
             raise Exception('Unexpected station number: %d, no column and/or '
                             'station group path available.' % station_number)
         event_group = _get_or_create_events_table(file, group_path)
