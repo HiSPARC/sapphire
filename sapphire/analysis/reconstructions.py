@@ -2,7 +2,7 @@ import re
 import warnings
 from itertools import izip_longest
 
-from numpy import isnan, histogram, linspace, percentile, std
+from numpy import isnan, histogram, linspace, percentile, std, sum
 from scipy.optimize import curve_fit
 import tables
 
@@ -235,12 +235,8 @@ class ReconstructESDCoincidences(object):
                 s_index = self.coincidences_group.s_index
                 s_numbers = [int(re_number.search(station_group).group())
                              for station_group in s_index]
-                if len(s_numbers) > 100:
-                    warnings.warn('Retrieving %d HiSPARCStations from API. '
-                                  'Use cluster parameter to specify stations.'
-                                  % len(s_numbers), UserWarning)
-
-                self.cluster = HiSPARCStations(s_numbers, allow_missing=True)
+                s_active = self._get_active_stations(s_numbers)
+                self.cluster = HiSPARCStations(s_active)
         else:
             self.cluster = cluster
 
@@ -453,3 +449,7 @@ class ReconstructESDCoincidences(object):
             row['s%d' % number] = True
 
         row.append()
+
+    def _get_active_stations(self, stations):
+        """Return station numbers included in at least one coincidence"""
+        return [s for s in stations if sum(self.coincidences.col('s%d' % s))]
