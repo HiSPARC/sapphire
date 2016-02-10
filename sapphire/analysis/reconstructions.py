@@ -194,7 +194,7 @@ class ReconstructESDCoincidences(object):
     Example usage::
 
         >>> import tables
-        >>> from sapphire import HiSPARCStations, ReconstructESDCoincidences
+        >>> from sapphire import ReconstructESDCoincidences
 
         >>> data = tables.open_file('2014_1_1.h5', 'a')
         >>> rec = ReconstructESDCoincidences(data, cluster=cluster,
