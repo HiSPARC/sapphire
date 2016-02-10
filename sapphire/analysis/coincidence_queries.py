@@ -56,7 +56,8 @@ class CoincidenceQuery(object):
             try:
                 self.s_nodes.append(self.data.get_node(s_path))
             except tables.NoSuchNodeError:
-                warnings.warn('Missing some station groups')
+                warnings.warn('Missing some station groups. This is no '
+                              'problem if those are not in coincidences.')
                 self.s_nodes.append(None)
         re_number = re.compile('[0-9]+$')
         self.s_numbers = [int(re_number.search(s_path).group())
@@ -221,7 +222,12 @@ class CoincidenceQuery(object):
         c_idx = self.c_index[coincidence['id']]
         for s_idx, e_idx in c_idx:
             station_number = self.s_numbers[s_idx]
-            events.append((station_number, self.s_nodes[s_idx].events[e_idx]))
+            s_node = self.s_nodes[s_idx]
+            if s_node is None:
+                warnings.warn('Missing station group for station id %d. '
+                              'Events from it are excluded.' % s_idx)
+                continue
+            events.append((station_number, s_node.events[e_idx]))
         return events
 
     def _get_reconstructions(self, coincidence):
@@ -236,7 +242,12 @@ class CoincidenceQuery(object):
         c_idx = self.c_index[coincidence['id']]
         for s_idx, e_idx in c_idx:
             station_number = self.s_numbers[s_idx]
-            rec_table = self.s_nodes[s_idx].reconstructions
+            s_node = self.s_nodes[s_idx]
+            if s_node is None:
+                warnings.warn('Missing station group for station id %d.'
+                              'Reconstructions from it are excluded.' % s_idx)
+                continue
+            rec_table = s_node.reconstructions
             reconstructions.append((station_number, rec_table[e_idx]))
         return reconstructions
 
