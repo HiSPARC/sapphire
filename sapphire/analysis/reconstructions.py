@@ -448,7 +448,7 @@ class ReconstructESDCoincidences(object):
         def stations_with_events():
             for s_path in self.coincidences_group.s_index:
                 try:
-                    station_event_table = self.data.get_node(s_path+'/events')
+                    station_event_table = self.data.get_node(s_path + '/events')
                 except tables.NoSuchNodeError:
                     continue
                 if not station_event_table.nrows:
