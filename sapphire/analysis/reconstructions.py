@@ -1,7 +1,6 @@
-import re
 from itertools import izip_longest
 
-from numpy import isnan, histogram, linspace, percentile, std, sum
+from numpy import isnan, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
 import tables
 
@@ -229,11 +228,7 @@ class ReconstructESDCoincidences(object):
             try:
                 self.cluster = self.coincidences_group._f_getattr('cluster')
             except AttributeError:
-                re_number = re.compile('[0-9]+$')
-                s_index = self.coincidences_group.s_index
-                s_numbers = [int(re_number.search(station_group).group())
-                             for station_group in s_index]
-                s_active = self._get_active_stations(s_numbers)
+                s_active = self._get_active_stations()
                 self.cluster = HiSPARCStations(s_active)
         else:
             self.cluster = cluster
@@ -448,6 +443,16 @@ class ReconstructESDCoincidences(object):
 
         row.append()
 
-    def _get_active_stations(self, stations):
-        """Return station numbers included in at least one coincidence"""
-        return [s for s in stations if sum(self.coincidences.col('s%d' % s))]
+    def _get_active_stations(self):
+        """Return station numbers with non-empty event table in datafile"""
+        def stations_with_events():
+            for s_path in self.coincidences_group.s_index:
+                try:
+                    station_group = self.data.get_node(s_path+'/events')
+                except tables.NoSuchNodeError:
+                    continue
+                if not station_group.events.nrows:
+                    continue
+                yield int(s_path.split('station_')[-1])
+
+        return [s_number for s_number in stations_with_events()]
