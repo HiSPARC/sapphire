@@ -196,8 +196,7 @@ class ReconstructESDCoincidences(object):
         >>> from sapphire import ReconstructESDCoincidences
 
         >>> data = tables.open_file('2014_1_1.h5', 'a')
-        >>> rec = ReconstructESDCoincidences(data, cluster=cluster,
-        ...                                  overwrite=True)
+        >>> rec = ReconstructESDCoincidences(data, overwrite=True)
         >>> rec.reconstruct_and_store()
 
     """
@@ -455,4 +454,4 @@ class ReconstructESDCoincidences(object):
                     continue
                 yield int(s_path.split('station_')[-1])
 
-        return [s_number for s_number in stations_with_events()]
+        return list(stations_with_events()) 
