@@ -444,14 +444,16 @@ class ReconstructESDCoincidences(object):
 
     def _get_active_stations(self):
         """Return station numbers with non-empty event table in datafile"""
-        def stations_with_events():
-            for s_path in self.coincidences_group.s_index:
-                try:
-                    station_event_table = self.data.get_node(s_path + '/events')
-                except tables.NoSuchNodeError:
-                    continue
-                if not station_event_table.nrows:
-                    continue
-                yield int(s_path.split('station_')[-1])
 
-        return list(stations_with_events()) 
+        active_stations = []
+
+        for s_path in self.coincidences_group.s_index:
+            try:
+                station_event_table = self.data.get_node(s_path + '/events')
+            except tables.NoSuchNodeError:
+                continue
+            if not station_event_table.nrows:
+                continue
+            active_stations.append(int(s_path.split('station_')[-1]))
+
+        return active_stations
