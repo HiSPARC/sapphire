@@ -536,13 +536,16 @@ class BaseCluster(object):
     def calc_rphiz_for_stations(self, s0, s1):
         """Calculate distance between and direction of two stations
 
+        The calculated result is between the center of mass coordinates
+        of the two stations.
+
         :param s0,s1: The station ids for the two stations.
         :return: r, phi, z; the distance between and direction of the two
             given stations.
 
         """
-        x0, y0, z0, alpha0 = self.stations[s0].get_coordinates()
-        x1, y1, z1, alpha1 = self.stations[s1].get_coordinates()
+        x0, y0, z0 = self.stations[s0].calc_center_of_mass_coordinates()
+        x1, y1, z1 = self.stations[s1].calc_center_of_mass_coordinates()
 
         r = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
         phi = atan2((y1 - y0), (x1 - x0))
@@ -631,11 +634,14 @@ class CompassStations(BaseCluster):
 
 
 class SimpleCluster(BaseCluster):
-    """Define a simple cluster containing four stations"""
+
+    """Define a simple cluster containing four stations
+
+    :param size: This value is the distance between the three outer stations.
+
+    """
 
     def __init__(self, size=250):
-        """Build the cluster"""
-
         super(SimpleCluster, self).__init__()
 
         # calculate station positions. the cluster resembles a single
@@ -652,8 +658,6 @@ class SingleStation(BaseCluster):
     """Define a cluster containing a single station"""
 
     def __init__(self):
-        """Build the cluster"""
-
         super(SingleStation, self).__init__()
 
         self._add_station((0, 0, 0), 0)
