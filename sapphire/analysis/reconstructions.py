@@ -1,4 +1,3 @@
-import re
 from itertools import izip_longest
 
 from numpy import isnan, histogram, linspace, percentile, std
@@ -194,12 +193,10 @@ class ReconstructESDCoincidences(object):
     Example usage::
 
         >>> import tables
-        >>> from sapphire import HiSPARCStations, ReconstructESDCoincidences
+        >>> from sapphire import ReconstructESDCoincidences
 
         >>> data = tables.open_file('2014_1_1.h5', 'a')
-        >>> cluster = HiSPARCStations([102, 104, 105])
-        >>> rec = ReconstructESDCoincidences(data, cluster=cluster,
-        ...                                  overwrite=True)
+        >>> rec = ReconstructESDCoincidences(data, overwrite=True)
         >>> rec.reconstruct_and_store()
 
     """
@@ -230,11 +227,8 @@ class ReconstructESDCoincidences(object):
             try:
                 self.cluster = self.coincidences_group._f_getattr('cluster')
             except AttributeError:
-                re_number = re.compile('[0-9]+$')
-                s_index = self.coincidences_group.s_index
-                s_numbers = [int(re_number.search(station_group).group())
-                             for station_group in s_index]
-                self.cluster = HiSPARCStations(s_numbers)
+                s_active = self._get_active_stations()
+                self.cluster = HiSPARCStations(s_active)
         else:
             self.cluster = cluster
 
@@ -447,3 +441,19 @@ class ReconstructESDCoincidences(object):
             row['s%d' % number] = True
 
         row.append()
+
+    def _get_active_stations(self):
+        """Return station numbers with non-empty event table in datafile"""
+
+        active_stations = []
+
+        for s_path in self.coincidences_group.s_index:
+            try:
+                station_event_table = self.data.get_node(s_path + '/events')
+            except tables.NoSuchNodeError:
+                continue
+            if not station_event_table.nrows:
+                continue
+            active_stations.append(int(s_path.split('station_')[-1]))
+
+        return active_stations
