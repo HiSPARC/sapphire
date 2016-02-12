@@ -256,9 +256,8 @@ class ReconstructESDCoincidences(object):
         :param detector_ids: list of detector ids to use for reconstructions.
 
         """
-        coincidences = self.cq.all_coincidences(iterator=True)
-        # Progress does not work because the pbar does not know the
-        # number of coincidences
+        coincidences = pbar(self.cq.all_coincidences(iterator=True),
+                            length=self.coincidences.nrows)
         angles = self.direction.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
             self.offsets, self.progress)
@@ -270,9 +269,8 @@ class ReconstructESDCoincidences(object):
         :param detector_ids: list of detector ids to use for reconstructions.
 
         """
-        coincidences = self.cq.all_coincidences(iterator=True)
-        # Progress does not work because the pbar does not know the
-        # number of coincidences
+        coincidences = pbar(self.cq.all_coincidences(iterator=True),
+                            length=self.coincidences.nrows)
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
             self.progress)
