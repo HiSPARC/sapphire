@@ -253,9 +253,6 @@ class Coincidences(object):
             coincidences group for future reference.
 
         """
-        if cluster:
-            self.coincidence_group._v_attrs.cluster = cluster
-
         self.c_index = []
         self.coincidences = self.data.create_table(self.coincidence_group,
                                                    'coincidences',
@@ -612,7 +609,6 @@ class CoincidencesESD(Coincidences):
         n_coincidences = len(self._src_c_index)
         if cluster:
             self.cluster = cluster
-            self.coincidence_group._v_attrs.cluster = cluster
             s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
                          for p, station in enumerate(cluster.stations, 12)}
         else:
