@@ -137,31 +137,35 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.assertEqual(rec.core_y, [])
 
     def test_reconstruct_directions(self):
+        self.rec.coincidences = MagicMock()
+        self.rec.coincidences.nrows = 1
         self.rec.direction = MagicMock()
         self.rec.direction.reconstruct_coincidences.return_value = (sentinel.theta, sentinel.phi, sentinel.nums)
         self.rec.reconstruct_directions()
         self.rec.direction.reconstruct_coincidences.assert_called_once_with(
-            self.rec.cq.all_events.return_value, None, self.rec.offsets, self.rec.progress)
+            self.rec.cq.all_events.return_value, None, self.rec.offsets, progress=False)
         self.assertEqual(self.rec.theta, sentinel.theta)
         self.assertEqual(self.rec.phi, sentinel.phi)
         self.assertEqual(self.rec.station_numbers, sentinel.nums)
 
         self.rec.reconstruct_directions(sentinel.nums)
         self.rec.direction.reconstruct_coincidences.assert_called_with(
-            self.rec.cq.all_events.return_value, sentinel.nums, self.rec.offsets, self.rec.progress)
+            self.rec.cq.all_events.return_value, sentinel.nums, self.rec.offsets, progress=False)
 
     def test_reconstruct_cores(self):
+        self.rec.coincidences = MagicMock()
+        self.rec.coincidences.nrows = 1
         self.rec.core = MagicMock()
         self.rec.core.reconstruct_coincidences.return_value = (sentinel.core_x, sentinel.core_y)
         self.rec.reconstruct_cores()
         self.rec.core.reconstruct_coincidences.assert_called_once_with(
-            self.rec.cq.all_events.return_value, None, self.rec.progress)
+            self.rec.cq.all_events.return_value, None, progress=False)
         self.assertEqual(self.rec.core_x, sentinel.core_x)
         self.assertEqual(self.rec.core_y, sentinel.core_y)
 
         self.rec.reconstruct_cores(sentinel.nums)
         self.rec.core.reconstruct_coincidences.assert_called_with(
-            self.rec.cq.all_events.return_value, sentinel.nums, self.rec.progress)
+            self.rec.cq.all_events.return_value, sentinel.nums, progress=False)
 
     def test_prepare_output(self):
         self.cluster.stations.return_value = []
