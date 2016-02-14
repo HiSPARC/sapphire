@@ -572,7 +572,7 @@ containing the station data (``station_groups``).  Once that's done, there
 is an easy way to search for coincidences, process the events making up
 the coincidences, and store them in the destination group::
 
-    >>> coincidences.search_and_store_coincidences()
+    >>> coincidences.search_and_store_coincidences(station_numbers=STATIONS)
     100%|######################################|Time: 0:00:02
     100%|######################################|Time: 0:00:00
 
@@ -615,9 +615,9 @@ azimuth         *compatibility reasons*
 zenith          *compatibility reasons*
 size            *compatibility reasons*
 energy          *compatibility reasons*
-s0              flag to indicate if the first station is in coincidence
-s1              as previous but for second station
-s2              as previous but for third station
+s501            flag to indicate if the first station is in coincidence
+s503            as previous but for second station
+s506            as previous but for third station
 =============== ===========
 
 The columns included for compatibility reasons are used by the event

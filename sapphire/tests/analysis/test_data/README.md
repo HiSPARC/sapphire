@@ -55,4 +55,4 @@ Notes on recreating esd_coincidences.h5
     ...     download_data(data, '/station_501', 501, start, end, progress=False)
     ...     download_data(data, '/station_502', 502, start, end, progress=False)
     ...     c = CoincidencesESD(data, '/coincidences', ['/station_501', '/station_502'], progress=False)
-    ...     c.search_and_store_coincidences()
+    ...     c.search_and_store_coincidences(station_numbers=[501, 502])
