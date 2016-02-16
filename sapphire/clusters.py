@@ -775,8 +775,9 @@ class HiSPARCStations(CompassStations):
                 if n_detectors == 2:
                     razbs = [(5, 90, 0, 0), (5, 270, 0, 0)]
                 elif n_detectors == 4:
-                    razbs = [(8.66, 0, 0, 0), (2.89, 0, 0, 0),
-                             (5, -90, 0, 90), (5, 90, 0, 90)]
+                    d = 10 / sqrt(3)
+                    razbs = [(d, 0, 0, 0), (0, 0, 0, 0),
+                             (d, -120, 0, 90), (d, 120, 0, 90)]
                 else:
                     raise RuntimeError("Detector count unknown for station %d."
                                        % station)
