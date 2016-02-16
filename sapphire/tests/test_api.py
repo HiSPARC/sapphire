@@ -222,14 +222,14 @@ class NetworkTests(unittest.TestCase):
         data = self.network.coincidence_time(2013, 1, 1)
         self.assertEqual(data.dtype.names, names)
         self.assertTrue((data['hour'] == range(24)).all())
-        self.assertEqual(data['counts'][0], 424)
+        self.assertEqual(data['counts'][0], 451)
 
     def test_coincidence_number(self):
         names = ('n', 'counts')
         data = self.network.coincidence_number(2013, 1, 1)
         self.assertEqual(data.dtype.names, names)
         self.assertTrue((data['n'] == range(2, 100)).all())
-        self.assertEqual(data['counts'][0], 8763)
+        self.assertEqual(data['counts'][0], 9479)
 
     def laziness_of_method(self, method):
         with patch.object(api.API, '_get_json') as mock_get_json:
