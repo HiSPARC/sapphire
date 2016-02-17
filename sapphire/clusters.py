@@ -746,7 +746,7 @@ class HiSPARCStations(CompassStations):
                     station_ts = [0]
                     n_detectors = 4
                 else:
-                    raise KeyError('Could not get info for station %d.' %
+                    raise KeyError('Could not get GPS info for station %d.' %
                                    station)
             else:
                 llas = locations[['latitude', 'longitude', 'altitude']]
