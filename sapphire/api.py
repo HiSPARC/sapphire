@@ -450,6 +450,7 @@ class Station(API):
                             from the server.
 
         """
+        self.allow_stale = allow_stale
         self.station = station
         if date is None:
             date = datetime.date.today()
@@ -471,6 +472,10 @@ class Station(API):
             except:
                 raise Exception('Couldn\'t get requested data from server, '
                                 'nor from local data.')
+
+    def _get_tsv(self, urlpath, names=None):
+        return super(Station, self)._get_tsv(urlpath, names,
+                                             allow_stale=self.allow_stale)
 
     def country(self):
         return self.info['country']
