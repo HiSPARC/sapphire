@@ -103,6 +103,26 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.rec.reconstructions.row.append.assert_called_once_with()
 
 
+class ReconstructESDEventsFromSourceTest(ReconstructESDEventsTest):
+
+    def setUp(self):
+        self.data = MagicMock()
+        self.dest_data = MagicMock()
+        self.station = MagicMock(spec=reconstructions.Station)
+        self.rec = reconstructions.ReconstructESDEventsFromSource(
+            self.data, self.dest_data, sentinel.station_group,
+            sentinel.dest_group, self.station, overwrite=sentinel.overwrite,
+            progress=sentinel.progress, destination=sentinel.destination)
+
+    @unittest.skip('WIP')
+    def test_prepare_output(self):
+        pass
+
+    @unittest.skip('WIP')
+    def test_prepare_output_existing(self):
+        pass
+
+
 class ReconstructESDCoincidencesTest(unittest.TestCase):
 
     @patch.object(reconstructions, 'CoincidenceQuery')
@@ -226,6 +246,33 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.rec._store_reconstruction(coin, sentinel.core_x, sentinel.core_y,
                                        sentinel.theta, sentinel.phi, [2, 3, 4])
         self.rec.reconstructions.row.append.assert_called_once_with()
+
+
+class ReconstructESDCoincidencesFromSourceTest(ReconstructESDCoincidencesTest):
+
+    @patch.object(reconstructions, 'CoincidenceQuery')
+    def setUp(self, mock_cq):
+        self.data = MagicMock()
+        self.dest_data = MagicMock()
+        self.cluster = MagicMock()
+        self.cq = mock_cq
+        self.rec = reconstructions.ReconstructESDCoincidencesFromSource(
+            self.data, self.dest_data, sentinel.coin_group,
+            sentinel.dest_group, overwrite=sentinel.overwrite,
+            progress=sentinel.progress, destination=sentinel.destination,
+            cluster=self.cluster)
+
+    @unittest.skip('WIP')
+    def test_prepare_output(self):
+        pass
+
+    @unittest.skip('WIP')
+    def test_prepare_output_existing(self):
+        pass
+
+    @unittest.skip('WIP')
+    def test_prepare_output_columns(self):
+        pass
 
 
 if __name__ == '__main__':

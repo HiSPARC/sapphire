@@ -502,3 +502,51 @@ class ReconstructESDCoincidences(object):
             active_stations.append(int(s_path.split('station_')[-1]))
 
         return active_stations
+
+
+class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
+
+    def __init__(self, source_data, dest_data, source_group, dest_group,
+                 overwrite=False, progress=True,
+                 destination='reconstructions', cluster=None):
+        """Initialize the class.
+
+        :param data: the PyTables datafile.
+        :param station_group: the group containing the event table,
+            the results will also be stored in this group.
+        :param station: either a station number or
+            :class:`~sapphire.clusters.Station` object. If number the
+            positions and offsets are retrieved from the API. Otherwise
+            the offsets will be determined with the available data.
+        :param overwrite: if True, overwrite existing reconstruction table.
+        :param progress: if True, show a progressbar while reconstructing.
+        :param destination: alternative name for reconstruction table.
+
+        """
+        super(ReconstructESDCoincidencesFromSource, self).__init__(
+            source_data, source_group, overwrite, progress, destination,
+            cluster)
+        self.dest_data = dest_data
+        self.dest_group = dest_group
+
+    def prepare_output(self):
+        """Prepare output table"""
+
+        dest_path = os.path.join(self.dest_group, self.destination)
+
+        if dest_path in self.dest_data:
+            if self.overwrite:
+                self.dest_data.remove_node(dest_path, recursive=True)
+            else:
+                raise RuntimeError("Reconstructions table already exists for "
+                                   "%s, and overwrite is False" %
+                                   self.dest_group)
+
+        s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
+                     for p, station in enumerate(self.cluster.stations, 26)}
+        description = ReconstructedCoincidence
+        description.columns.update(s_columns)
+        self.reconstructions = self.dest_data.create_table(
+            self.dest_group, self.destination, description,
+            expectedrows=self.coincidences.nrows, createparents=True)
+        self.reconstructions._v_attrs.cluster = self.cluster
