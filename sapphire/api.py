@@ -83,6 +83,8 @@ class API(object):
         'eventtime': 'eventtime/{station_number}/{year}/{month}/{day}/',
         'pulseheight': 'pulseheight/{station_number}/{year}/{month}/{day}/',
         'integral': 'pulseintegral/{station_number}/{year}/{month}/{day}/',
+        'azimuth': 'azimuth/{station_number}/{year}/{month}/{day}/',
+        'zenith': 'zenith/{station_number}/{year}/{month}/{day}/',
         'barometer': 'barometer/{station_number}/{year}/{month}/{day}/',
         'temperature': 'temperature/{station_number}/{year}/{month}/{day}/',
         'voltage': 'voltage/{station_number}/',
@@ -657,6 +659,30 @@ class Station(API):
         path = self.src_urls['integral'].format(station_number=self.station,
                                                 year=year, month=month,
                                                 day=day)
+        return self._get_tsv(path, names=columns)
+
+    def azimuth(self, year, month, day):
+        """Get the azimuth histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('angle', 'counts')
+        path = self.src_urls['azimuth'].format(station_number=self.station,
+                                               year=year, month=month, day=day)
+        return self._get_tsv(path, names=columns)
+
+    def zenith(self, year, month, day):
+        """Get the zenith histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('angle', 'counts')
+        path = self.src_urls['zenith'].format(station_number=self.station,
+                                              year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def barometer(self, year, month, day):
