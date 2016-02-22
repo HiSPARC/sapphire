@@ -593,7 +593,7 @@ class _read_line_and_store_event_class(object):
         # break up TSV line
         (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
          int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger, zenith,
-         azimuth) = line
+         azimuth) = line[:23]
 
         row = self.table.row
 
