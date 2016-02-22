@@ -288,7 +288,7 @@ class StationTests(unittest.TestCase):
 
     def test_num_events(self):
         self.assertIsInstance(self.station.n_events(2004), int)
-        self.assertEqual(self.station.n_events(2004, 1 ,1), 0)
+        self.assertEqual(self.station.n_events(2004, 1, 1), 0)
         self.assertEqual(self.station.n_events(2013, 8, 1), 63735)
         # No year
         self.assertRaises(Exception, self.station.n_events, month=1, day=1, hour=1)
