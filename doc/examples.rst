@@ -1,7 +1,7 @@
 Example scripts
 ===============
 
-In this chapter we'll discuss some scripts showing common examples of how to download and analyse data. We'll start with a short discussion of the general layout of such scripts and how to run them interactively.
+In this chapter we'll discuss some scripts showing common examples of how to download and analyse data. We'll start with a short discussion of the general layout of such scripts and how to run them interactively. Then, we'll continue with examples for some common tasks.
 
 
 First, some tips and tricks
@@ -104,3 +104,30 @@ But we can now also import the script without any unintended side effects::
    256
 
 It is good practice to always include the ``__name__ == '__main__'`` check.
+
+
+Common tasks
+------------
+
+Download event summary data for a few stations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: scripts/download_esd_events.py
+
+
+Download coincidences for a few stations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: scripts/download_esd_coincidences.py
+
+
+Download and reconstruct directions for coincidences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: scripts/download_and_reconstruct_coincidences.py
+
+
+Plot zenith angle distribution
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: scripts/plot_zenith_distribution.py
