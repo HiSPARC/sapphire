@@ -1,5 +1,6 @@
 import os
 import tempfile
+from urllib import urlretrieve
 
 import tables
 import datetime
@@ -67,6 +68,12 @@ def create_and_store_test_data():
 
     perform_esd_download_data(test_data_path)
     perform_download_coincidences(test_data_coincidences_path)
+    urlretrieve('http://data.hisparc.nl/data/501/weather/'
+                '?download=True&start=2012-01-01&end=2012-01-01+00%3A01%3A00',
+                weather_source)
+    urlretrieve('http://data.hisparc.nl/data/501/events/'
+                '?download=True&start=2012-01-01&end=2012-01-01+00%3A01%3A00',
+                events_source)
 
 
 if __name__ == '__main__':
