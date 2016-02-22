@@ -187,9 +187,9 @@ class NetworkTests(unittest.TestCase):
         self.network.stations()
         self.assertEqual(self.network._all_stations, self.network.stations())
         self.assertEqual(self.network.stations()[0].keys(), self.keys)
-        self.assertEqual(self.network.stations(country=70000)[0]['number'], 70001)
-        self.assertEqual(self.network.stations(cluster=70000)[0]['number'], 70001)
-        self.assertEqual(self.network.stations(subcluster=70000)[0]['number'], 70001)
+        self.assertEqual(self.network.stations(country=20000)[0]['number'], 20001)
+        self.assertEqual(self.network.stations(cluster=20000)[0]['number'], 20001)
+        self.assertEqual(self.network.stations(subcluster=20000)[0]['number'], 20001)
 
     def test_bad_stations(self):
         bad_number = 1
@@ -208,10 +208,10 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.stations_with_data, day=1)
 
     def test_stations_with_weather(self):
-        stations_with_weather = self.network.stations_with_weather(2004, 10, 9)
+        stations_with_weather = self.network.stations_with_weather(2013, 1, 1)
         self.assertEqual(stations_with_weather[0].keys(), self.keys)
         self.assertEqual(stations_with_weather[0]['number'], 3)
-        self.assertEqual(len(self.network.stations_with_weather(2004, 1, 1)), 0)
+        self.assertEqual(len(self.network.stations_with_weather(2004, 10, 1)), 0)
         self.assertRaises(Exception, self.network.stations_with_weather, year=2004, day=1)
         self.assertRaises(Exception, self.network.stations_with_weather, month=1, day=1)
         self.assertRaises(Exception, self.network.stations_with_weather, month=1)
@@ -278,7 +278,7 @@ class StationTests(unittest.TestCase):
     def test_location(self):
         keys = ['latitude', 'altitude', 'longitude']
         self.assertEqual(self.station.location().keys(), keys)
-        self.assertEqual(self.station.location(date(2002, 1, 1))['latitude'],
+        self.assertEqual(self.station.location(date(2004, 1, 1))['latitude'],
                          52.3559179545407)
 
     def test_config(self):
@@ -287,8 +287,8 @@ class StationTests(unittest.TestCase):
                          7.54901960784279)
 
     def test_num_events(self):
-        self.assertIsInstance(self.station.n_events(2003), int)
-        self.assertEqual(self.station.n_events(2003), 0)
+        self.assertIsInstance(self.station.n_events(2004), int)
+        self.assertEqual(self.station.n_events(2004, 1 ,1), 0)
         self.assertEqual(self.station.n_events(2013, 8, 1), 63735)
         # No year
         self.assertRaises(Exception, self.station.n_events, month=1, day=1, hour=1)
@@ -308,8 +308,8 @@ class StationTests(unittest.TestCase):
     def test_has_data(self):
         self.assertEqual(self.station.has_data(), True)
         self.assertEqual(self.station.has_data(2014), True)
-        self.assertEqual(self.station.has_data(2002, 1), False)
         self.assertEqual(self.station.has_data(2014, 1, 1), True)
+        self.assertRaises(Exception, self.station.has_data, year=2002, month=1)
         self.assertRaises(Exception, self.station.has_data, day=1)
         self.assertRaises(Exception, self.station.has_data, month=1)
         self.assertRaises(Exception, self.station.has_data, month=1, day=1)
@@ -318,8 +318,8 @@ class StationTests(unittest.TestCase):
     def test_has_weather(self):
         self.assertEqual(self.station.has_weather(), True)
         self.assertEqual(self.station.has_weather(2014), True)
-        self.assertEqual(self.station.has_weather(2002, 1), False)
         self.assertEqual(self.station.has_weather(2014, 1, 1), True)
+        self.assertRaises(Exception, self.station.has_weather, year=2002, month=1)
         self.assertRaises(Exception, self.station.has_weather, day=1)
         self.assertRaises(Exception, self.station.has_weather, month=1)
         self.assertRaises(Exception, self.station.has_weather, month=1, day=1)
