@@ -159,32 +159,32 @@
         "number": 9, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 90.0, 
+                "beta": 90.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 8.33
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 90.0, 
+                "beta": 90.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 2.825
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": -3.8, 
+                "beta": 0.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 5.22
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": null, 
-                "radius": null
+                "alpha": 183.8, 
+                "beta": 180.0, 
+                "height": 0.0, 
+                "mpv": 192.0, 
+                "radius": 5.22
             }
         ], 
         "subcluster": "Amsterdam"
@@ -1116,11 +1116,11 @@
     }, 
     "510": {
         "active": true, 
-        "altitude": 54.84, 
+        "altitude": 55.78, 
         "cluster": "Amsterdam", 
         "country": "Netherlands", 
-        "latitude": 52.3558816, 
-        "longitude": 4.9510079, 
+        "latitude": 52.3558883, 
+        "longitude": 4.9510058, 
         "name": "Nikhef 2", 
         "number": 510, 
         "scintillators": [
@@ -3441,18 +3441,18 @@
         "number": 13102, 
         "scintillators": [
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 126.0, 
+                "beta": 59.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 1.45
             }, 
             {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
+                "alpha": 144.0, 
+                "beta": 66.0, 
+                "height": 0.0, 
                 "mpv": null, 
-                "radius": null
+                "radius": 7.53
             }
         ], 
         "subcluster": "Bath"
@@ -3865,46 +3865,5 @@
         ], 
         "subcluster": "Aarhus"
     }, 
-    "70001": {
-        "active": false, 
-        "altitude": 156.81, 
-        "cluster": "Karlsruhe", 
-        "country": "Germany", 
-        "latitude": 49.0994917, 
-        "longitude": 8.4384264, 
-        "name": "Karlsruher Institut fur Technologie", 
-        "number": 70001, 
-        "scintillators": [
-            {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 319.0, 
-                "radius": null
-            }, 
-            {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 271.0, 
-                "radius": null
-            }, 
-            {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 318.0, 
-                "radius": null
-            }, 
-            {
-                "alpha": null, 
-                "beta": null, 
-                "height": null, 
-                "mpv": 310.0, 
-                "radius": null
-            }
-        ], 
-        "subcluster": "Karlsruhe"
-    }, 
-    "_info": "HiSPARC station info on 2016-02-02"
+    "_info": "HiSPARC station info on 2016-02-23"
 }
