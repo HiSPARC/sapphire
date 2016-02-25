@@ -552,7 +552,8 @@ class CoincidencesESD(Coincidences):
     The ``event`` is one of the events in the coincidence.
 
     """
-    def search_and_store_coincidences(self, window=10000, station_numbers=None):
+    def search_and_store_coincidences(self, window=10000,
+                                      station_numbers=None):
         """Search and store coincidences.
 
         This is a semi-automatic method to search for coincidences
