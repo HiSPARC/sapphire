@@ -204,6 +204,18 @@ def download_data(file, group, station_number, start=None, end=None,
     if progress:
         pbar.finish()
 
+    if line[0][0] == '#':
+        if len(line[0]) == 1:
+            # No events recieved, and no success line
+            raise Exception('Failed to download data, no data recieved.')
+        else:
+            # Successful download because last line is a non-empty comment
+            return
+    else:
+        # Last line is data, report failed download and date/time of last line
+        raise Exception('Failed to complete download, last received data '
+                        'from: %s %s.' % tuple(line[:2]))
+
 
 def download_coincidences(file, group='', cluster=None, stations=None,
                           start=None, end=None, n=2, progress=True):
@@ -305,6 +317,18 @@ def download_coincidences(file, group='', cluster=None, stations=None,
                                           station_groups)
     if progress:
         pbar.finish()
+
+    if line[0][0] == '#':
+        if len(line[0]) == 1:
+            # No events recieved, and no success line
+            raise Exception('Failed to download data, no data recieved.')
+        else:
+            # Successful download because last line is a non-empty comment
+            return
+    else:
+        # Last line is data, report failed download and date/time of last line
+        raise Exception('Failed to complete download, last received data '
+                        'from: %s %s.' % tuple(line[2:4]))
 
     file.flush()
 
