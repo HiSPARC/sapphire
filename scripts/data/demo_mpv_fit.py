@@ -5,18 +5,15 @@ Fit the MPV and show the results
 
 """
 import datetime
-import urllib2
-import StringIO
 import warnings
 
 import numpy as np
 import pylab as plt
 
-from sapphire.analysis.find_mpv import FindMostProbableValueInSpectrum
-from sapphire.api import Network
+from sapphire import Network, Station, FindMostProbableValueInSpectrum
 
 
-HIST_URL = 'http://data.hisparc.nl/show/source/pulseintegral/%d/%d/%d/%d/'
+COLORS = ['black', 'red', 'green', 'blue']
 
 
 def main():
@@ -26,22 +23,22 @@ def main():
     yesterday = today - datetime.timedelta(days=1)
     station_ids = get_station_ids_with_data(yesterday)
 
-    for station in station_ids:
-        if station == 10:
-            continue
-        print station
-        n, bins = get_histogram_for_station_on_date(station, yesterday)
-        find_mpv = FindMostProbableValueInSpectrum(n, bins)
-        mpv, is_fitted = find_mpv.find_mpv()
-
+    for station in station_ids[10:20]:
         plt.figure()
-        plt.plot((bins[:-1] + bins[1:]) / 2., n)
-        if is_fitted:
-            plt.axvline(mpv, c='g')
-        else:
-            plt.axvline(mpv, c='r')
-        plt.title(station)
-        plt.yscale('log')
+        for did in range(Station(station).n_detectors()):
+            n, bins = get_histogram_for_station_on_date(station, yesterday,
+                                                        did)
+            find_mpv = FindMostProbableValueInSpectrum(n, bins)
+            mpv, is_fitted = find_mpv.find_mpv()
+
+            plt.plot((bins[:-1] + bins[1:]) / 2., n, c=COLORS[did])
+            if is_fitted:
+                plt.axvline(mpv + did / 10., c=COLORS[did], ls='solid')
+            else:
+                plt.axvline(mpv + did / 10., c=COLORS[did], ls='dotted')
+            plt.title(station)
+            plt.xlim(0)
+            plt.yscale('log')
 
 
 def get_station_ids_with_data(date):
@@ -53,27 +50,20 @@ def get_station_ids_with_data(date):
     return station_ids
 
 
-def get_histogram_for_station_on_date(station_id, date):
+def get_histogram_for_station_on_date(station_id, date, did):
     """Return a histogram of the spectrum of a station on a date.
 
     :return n, bins: histogram counts and bins, as obtained using
        ``numpy.histogram``.
 
     """
-    url = HIST_URL % (station_id, date.year, date.month, date.day)
+    data = Station(station_id).pulse_height(date.year, date.month, date.day)
 
-    reply = urllib2.urlopen(url)
-    reply = reply.read()
-
-    file_like = StringIO.StringIO(reply)
-    data = np.genfromtxt(file_like)
-
-    bins = data[:, 0]
-    bins = list(bins)
+    bins = list(data['pulseheight'])
     bins.append(bins[-1] + (bins[-1] - bins[-2]))
     bins = np.array(bins)
 
-    n = data[:, 1]
+    n = data['ph%d' % (did + 1)]
 
     return n, bins
 
