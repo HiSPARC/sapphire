@@ -23,7 +23,7 @@ def main():
     yesterday = today - datetime.timedelta(days=1)
     station_ids = get_station_ids_with_data(yesterday)
 
-    for station in station_ids[10:20]:
+    for station in station_ids:
         plt.figure()
         for did in range(Station(station).n_detectors()):
             n, bins = get_histogram_for_station_on_date(station, yesterday,
