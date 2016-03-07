@@ -576,6 +576,48 @@ class BaseCluster(object):
 
         return x0, y0, z0
 
+    @staticmethod
+    def _distance(c1, c2):
+        return np.sqrt(sum((c1 - c2) ** 2))
+
+    def distance_between_stations(self, s1, s2):
+        """"Calculate distance between two stations
+
+        :param s1,s2: station numbers
+        :return: distance between stations
+        """
+        pair = []
+        for s in self._stations:
+            if s.number == s1:
+                pair.append(s)
+            if s.number == s2:
+                pair.append(s)
+        if len(pair) != 2:
+            return None
+
+        xyz = [np.array(s.calc_center_of_mass_coordinates()) for s in pair]
+
+        return self._distance(*xyz)
+
+    def horizontal_distance_between_stations(self, s1, s2):
+        """"Calculate 2D distance between two HiSPARC stations. Ignores altitude
+
+        :param s1,s2: station numbers
+        :return: distance between stations
+        """
+        pair = []
+        for s in self._stations:
+            if s.number == s1:
+                pair.append(s)
+            if s.number == s2:
+                pair.append(s)
+        if len(pair) != 2:
+            return None
+
+        xy = [np.array(s.calc_center_of_mass_coordinates()[:-1]) for s in pair]
+
+        return self._distance(*xy)
+
 
 class CompassStations(BaseCluster):
 
