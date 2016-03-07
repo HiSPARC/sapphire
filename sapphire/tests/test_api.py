@@ -269,7 +269,7 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.n_detectors(), 4)
 
     def test_detectors(self):
-        keys = ['mpv', 'alpha', 'beta', 'radius', 'height']
+        keys = ['alpha', 'beta', 'radius', 'height']
         self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
         self.assertEqual(self.station.detectors()[0].keys(), keys)
         self.assertEqual(self.station.detectors(date(2011, 1, 1))[0].keys(), keys)
