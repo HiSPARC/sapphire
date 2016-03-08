@@ -408,21 +408,21 @@ class BaseClusterTests(unittest.TestCase):
         self.assertAlmostEqual(y, 5 * sqrt(3) / 3)
 
     def test__distance(self):
-        x = array([-5.,  4., 3.])
+        x = array([-5., 4., 3.])
         y = array([2., -1., 0.])
         dist = clusters.BaseCluster()._distance(x, y)
-        self.assertAlmostEqual(dist, sqrt(49+25+9))
-        x = array([-5.,  4.])
+        self.assertAlmostEqual(dist, sqrt(49 + 25 + 9))
+        x = array([-5., 4.])
         y = array([2., -1.])
         dist = clusters.BaseCluster()._distance(x, y)
-        self.assertAlmostEqual(dist, sqrt(49+25))
+        self.assertAlmostEqual(dist, sqrt(49 + 25))
 
     def test_calc_distance_between_stations(self):
         cluster = clusters.BaseCluster()
         cluster._add_station((0, 0, 0), 0, number=1)
         cluster._add_station((3, 4, 5), 0, number=2)
         dist = cluster.calc_distance_between_stations(1, 2)
-        self.assertAlmostEqual(dist, sqrt(9+16+25))
+        self.assertAlmostEqual(dist, sqrt(9 + 16 + 25))
         dist = cluster.calc_distance_between_stations(1, 0)
         self.assertIsNone(dist)
 
@@ -431,7 +431,7 @@ class BaseClusterTests(unittest.TestCase):
         cluster._add_station((0, 0, 0), 0, number=1)
         cluster._add_station((3, 4, 5), 0, number=2)
         dist = cluster.calc_horizontal_distance_between_stations(1, 2)
-        self.assertAlmostEqual(dist, sqrt(9+16))
+        self.assertAlmostEqual(dist, sqrt(9 + 16))
 
 
 class CompassStationsTests(unittest.TestCase):
