@@ -432,6 +432,8 @@ class BaseClusterTests(unittest.TestCase):
         cluster._add_station((3, 4, 5), 0, number=2)
         dist = cluster.calc_horizontal_distance_between_stations(1, 2)
         self.assertAlmostEqual(dist, sqrt(9 + 16))
+        dist = cluster.calc_distance_between_stations(1, 0)
+        self.assertIsNone(dist)
 
 
 class CompassStationsTests(unittest.TestCase):
