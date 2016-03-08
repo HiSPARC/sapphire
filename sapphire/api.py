@@ -866,4 +866,14 @@ class Station(API):
                                timestamp)
         detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
                                   for i in range(1, 5)]
+
         return detector_timing_offset
+
+    # @memoize
+    def eventtime(self):
+        """Get eventtime histogram
+
+        :return: array of timestamps and counts.
+        """
+        urlpath = 'eventtime/%d/' % self.station
+        return self._get_tsv(urlpath, names=['timestamp', 'counts'])
