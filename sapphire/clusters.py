@@ -580,8 +580,8 @@ class BaseCluster(object):
     def _distance(c1, c2):
         return np.sqrt(sum((c1 - c2) ** 2))
 
-    def distance_between_stations(self, s1, s2):
-        """"Calculate distance between two stations
+    def calc_distance_between_stations(self, s1, s2):
+        """Calculate distance between two stations
 
         :param s1,s2: station numbers
         :return: distance between stations
@@ -595,8 +595,8 @@ class BaseCluster(object):
 
         return self._distance(*xyz)
 
-    def horizontal_distance_between_stations(self, s1, s2):
-        """"Calculate 2D distance between two HiSPARC stations. Ignores altitude
+    def calc_horizontal_distance_between_stations(self, s1, s2):
+        """Calculate 2D distance between two HiSPARC stations. Ignores altitude
 
         :param s1,s2: station numbers
         :return: distance between stations
