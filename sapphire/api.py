@@ -441,13 +441,16 @@ class Network(API):
                             'must be multiple of 100.')
 
     def uptime(self, stations=None, start=None, end=None):
-        """
-        adapted from topaz 150805_n_active
-        returns the number of HOURS all stations have simultaneous data/events
+        """Get number of hours which stations have been simultaneously active
 
-        :param stations: station id or a list of station ids
-        :param start, end: start, end timestamp
-        :returns: number of hours with simultaneous data
+        Using hourly eventrate data the number of hours in which the given
+        stations all had data is determined. Only hours in which each station
+        had a reasonable eventrate are counted, to exclude bad data.
+
+        :param stations: station number or a list of station numbers.
+        :param start, end: start, end timestamp.
+        :returns: number of hours with simultaneous data.
+
         """
         data = {}
 
@@ -459,9 +462,7 @@ class Network(API):
             stations = [stations]
 
         for sn in stations:
-            print sn
             data[sn] = Station(sn).eventtime()
-            print "debug: len(eventtime):", len(data[sn])
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
@@ -475,7 +476,6 @@ class Network(API):
             end_i = start_i + len(data[sn])
             is_active[start_i:end_i] = (data[sn]['counts'] > 500) &\
                                        (data[sn]['counts'] < 5000)
-            print "debug: ", sn, count_nonzero(is_active)
             all_active = logical_and(all_active, is_active)
 
         # filter start, end
