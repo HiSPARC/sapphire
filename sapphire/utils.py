@@ -5,13 +5,15 @@ The module contains some commonly functions and classes.
 """
 from __future__ import division
 
+import functools
 from bisect import bisect_right
 from distutils.spawn import find_executable
 
 from numpy import floor, ceil, round, arcsin, sin, pi, sqrt
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
-
+from datetime import datetime
+from .transformations.clock import datetime_to_gps
 
 # Error values used to indicate missing or bad data.
 ERR = [-1, -999]
@@ -145,3 +147,30 @@ def which(program):
     path = find_executable(program)
     if not path:
         raise Exception('The program %s is not available.' % program)
+
+
+def process_time(time):
+    """
+    TODO
+    """
+    if type(time) == int:
+        return time
+    if type(time) == datetime:
+        return datetime_to_gps(time)
+    raise RuntimeError('Unable to parse time: ', time)
+
+
+def memoize(obj):
+    """
+    memoiser decorator
+    https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize
+
+    """
+    cache = obj.cache = {}
+
+    @functools.wraps(obj)
+    def memoizer(*args, **kwargs):
+        if args not in cache:
+            cache[args] = obj(*args, **kwargs)
+        return cache[args]
+    return memoizer

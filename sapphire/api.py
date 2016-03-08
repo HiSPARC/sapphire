@@ -30,9 +30,11 @@ from urllib2 import urlopen, HTTPError, URLError
 from StringIO import StringIO
 
 from lazy import lazy
-from numpy import genfromtxt, atleast_1d
+from numpy import genfromtxt, atleast_1d, zeros, ones, logical_and,\
+                  count_nonzero
 
-from .utils import get_active_index
+from .utils import get_active_index, process_time, memoize
+
 
 logger = logging.getLogger('api')
 
@@ -437,6 +439,57 @@ class Network(API):
         if subcluster is not None and subcluster % 100:
             raise Exception('Invalid subcluster number, '
                             'must be multiple of 100.')
+
+    def uptime(self, stations=None, start=None, end=None):
+        """
+        adapted from topaz 150805_n_active
+        returns the number of HOURS all stations have simultaneous data/events
+
+        :param stations: station id or a list of station ids
+        :param start, end: start, end timestamp
+        :returns: number of hours with simultaneous data
+        """
+        data = {}
+
+        if stations is None:
+            assert False
+            return 0
+
+        if not hasattr(stations, '__len__'):
+            stations = [stations]
+
+        for sn in stations:
+            print sn
+            data[sn] = Station(sn).eventtime()
+            print "debug: len(eventtime):", len(data[sn])
+
+        first = min(values['timestamp'][0] for values in data.values())
+        last = max(values['timestamp'][-1] for values in data.values())
+
+        len_array = (last - first) / 3600 + 1
+        all_active = ones(len_array)
+
+        for sn in data.keys():
+            is_active = zeros(len_array)
+            start_i = (data[sn]['timestamp'][0] - first) / 3600
+            end_i = start_i + len(data[sn])
+            is_active[start_i:end_i] = (data[sn]['counts'] > 500) &\
+                                       (data[sn]['counts'] < 5000)
+            print "debug: ", sn, count_nonzero(is_active)
+            all_active = logical_and(all_active, is_active)
+
+        # filter start, end
+        if start is not None:
+            start_index = max(0, process_time(start) - first) / 3600
+        else:
+            start_index = 0
+
+        if end is not None:
+            end_index = min(last, process_time(end) - first) / 3600
+        else:
+            end_index = len(all_active)
+
+        return count_nonzero(all_active[start_index:end_index])
 
 
 class Station(API):
@@ -869,7 +922,7 @@ class Station(API):
 
         return detector_timing_offset
 
-    # @memoize
+    @memoize
     def eventtime(self):
         """Get eventtime histogram
 
