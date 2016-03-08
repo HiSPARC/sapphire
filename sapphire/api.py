@@ -33,8 +33,8 @@ from lazy import lazy
 from numpy import genfromtxt, atleast_1d, zeros, ones, logical_and,\
                   count_nonzero
 
-from .utils import get_active_index, process_time, memoize
-
+from .utils import get_active_index, memoize
+from .transformations.clock import process_time
 
 logger = logging.getLogger('api')
 
