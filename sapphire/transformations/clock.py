@@ -391,13 +391,14 @@ def datetime_to_gps(dt):
 
 
 def process_time(time):
-    """ Convert timestamp or datetime to datetime
+    """Convert timestamp or datetime to datetime
 
     :param time: GPS datetime object or GPS timestamp
     :return: GPS datetime object
+
     """
-    if type(time) == int:
+    if isinstance(time, int):
         return time
-    if type(time) == datetime.datetime:
+    if isinstance(time, datetime.datetime):
         return datetime_to_gps(time)
     raise RuntimeError('Unable to parse time: ', time)
