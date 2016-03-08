@@ -586,12 +586,8 @@ class BaseCluster(object):
         :param s1,s2: station numbers
         :return: distance between stations
         """
-        pair = []
-        for s in self._stations:
-            if s.number == s1:
-                pair.append(s)
-            if s.number == s2:
-                pair.append(s)
+        pair = [so for so in self._stations if so.number in (s1, s2)]
+
         if len(pair) != 2:
             return None
 
@@ -605,12 +601,8 @@ class BaseCluster(object):
         :param s1,s2: station numbers
         :return: distance between stations
         """
-        pair = []
-        for s in self._stations:
-            if s.number == s1:
-                pair.append(s)
-            if s.number == s2:
-                pair.append(s)
+        pair = [so for so in self._stations if so.number in (s1, s2)]
+
         if len(pair) != 2:
             return None
 
