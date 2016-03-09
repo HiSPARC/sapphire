@@ -96,6 +96,8 @@ class API(object):
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
+    cache = {}
+
     @classmethod
     def _get_json(cls, urlpath):
         """Retrieve a JSON from the HiSPARC API
@@ -111,7 +113,7 @@ class API(object):
         return data
 
     @classmethod
-    def _get_tsv(cls, urlpath, names=None, allow_stale=True):
+    def _get_tsv(cls, urlpath, names=None, allow_stale=True, use_cache=False):
         """Retrieve a Source TSV from the HiSPARC Public Database
 
         :param urlpath: the tsv urlpath to retrieve
@@ -119,31 +121,38 @@ class API(object):
         :return: the data returned as array.
 
         """
-        try:
-            tsv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
-        except Exception:
-            if not allow_stale:
-                raise
-            localpath = path.join(LOCAL_BASE,
-                                  urlpath.strip('/') + extsep + 'tsv')
+        key = str(urlpath) + str(names) + str(allow_stale)
+
+        if use_cache and key in cls.cache:
+            return cls.cache[key]
+        else:
             try:
+                tsv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
+            except Exception:
+                if not allow_stale:
+                    raise
+                localpath = path.join(LOCAL_BASE,
+                                      urlpath.strip('/') + extsep + 'tsv')
+                try:
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings('ignore')
+                        data = genfromtxt(localpath, delimiter='\t',
+                                          dtype=None, names=names)
+                except:
+                    raise Exception('Couldn\'t get requested data from server,'
+                                    ' nor from local data.')
+                warnings.warn('Couldn\'t get values from the server, using '
+                              'local data. Possibly outdated.',
+                              UserWarning)
+            else:
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
-                    data = genfromtxt(localpath, delimiter='\t', dtype=None,
-                                      names=names)
-            except:
-                raise Exception('Couldn\'t get requested data from server, '
-                                'nor from local data.')
-            warnings.warn('Couldn\'t get values from the server, using '
-                          'local data. Possibly outdated.',
-                          UserWarning)
-        else:
-            with warnings.catch_warnings():
-                warnings.filterwarnings('ignore')
-                data = genfromtxt(StringIO(tsv_data), delimiter='\t',
-                                  dtype=None, names=names)
-
-        return atleast_1d(data)
+                    data = genfromtxt(StringIO(tsv_data), delimiter='\t',
+                                      dtype=None, names=names)
+            data = atleast_1d(data)
+            if use_cache:
+                cls.cache[key] = data
+            return data
 
     @staticmethod
     def _retrieve_url(urlpath, base=API_BASE):
@@ -528,9 +537,10 @@ class Station(API):
                 raise Exception('Couldn\'t get requested data from server, '
                                 'nor from local data.')
 
-    def _get_tsv(self, urlpath, names=None):
+    def _get_tsv(self, urlpath, names=None, use_cache=False):
         return super(Station, self)._get_tsv(urlpath, names,
-                                             allow_stale=self.allow_stale)
+                                             allow_stale=self.allow_stale,
+                                             use_cache=use_cache)
 
     def country(self):
         return self.info['country']
@@ -929,4 +939,5 @@ class Station(API):
         :return: array of timestamps and counts.
         """
         urlpath = 'eventtime/%d/' % self.station
-        return self._get_tsv(urlpath, names=['timestamp', 'counts'])
+        return self._get_tsv(urlpath, names=['timestamp', 'counts'],
+                             use_cache=True)
