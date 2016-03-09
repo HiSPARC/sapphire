@@ -1124,4 +1124,4 @@ def logic_checks(t, x, y, z):
 
 
 def warning_only_three():
-    warnings.warn('Only the first three detections will be used', UserWarning)
+    warnings.warn('Only the first three detections will be used')

@@ -138,13 +138,11 @@ class CorsikaEvent(object):
                     continue
                 # muon additional information
                 if type in [75, 76]:
-                    warnings.warn('Ignoring muon additional information.',
-                                  UserWarning)
+                    warnings.warn('Ignoring muon additional information.')
                     continue
                 # ignore all observation levels except for nr. 1
                 if level != 1:
-                    warnings.warn('Only observation level 1 will be read!',
-                                  UserWarning)
+                    warnings.warn('Only observation level 1 will be read!')
                     continue
 
                 yield particle

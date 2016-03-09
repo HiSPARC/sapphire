@@ -826,12 +826,10 @@ class HiSPARCStations(CompassStations):
 
         if len(missing_gps):
             warnings.warn('Could not get GPS location for stations: %s. '
-                          'Using (0, 0, 0) instead.' % str(missing_gps),
-                          UserWarning)
+                          'Using (0, 0, 0) instead.' % str(missing_gps))
         if len(missing_detectors):
             warnings.warn('Could not get detector layout for stations %s, '
-                          'defaults will be used!' % str(missing_detectors),
-                          UserWarning)
+                          'defaults will be used!' % str(missing_detectors))
 
 
 class ScienceParkCluster(HiSPARCStations):

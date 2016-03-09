@@ -133,8 +133,7 @@ class API(object):
                 raise Exception('Couldn\'t get requested data from server, '
                                 'nor from local data.')
             warnings.warn('Couldn\'t get values from the server, using '
-                          'local data. Possibly outdated.',
-                          UserWarning)
+                          'local data. Possibly outdated.')
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
@@ -343,8 +342,7 @@ class Network(API):
                     stations = [int(s) for s in json.load(data).keys()
                                 if s != '_info' and start <= int(s) < end]
                 warnings.warn('Couldn\'t get values from the server, using '
-                              'local data. Possibly outdated.',
-                              UserWarning)
+                              'local data. Possibly outdated.')
                 return sorted(stations)
             except:
                 raise Exception('Couldn\'t get requested data from server, '
@@ -469,8 +467,7 @@ class Station(API):
                 with open(JSON_FILE) as data:
                     self.info = json.load(data)[str(station)]
                 warnings.warn('Couldn\'t get values from the server, using '
-                              'hard-coded values. Possibly outdated.',
-                              UserWarning)
+                              'hard-coded values. Possibly outdated.')
             except:
                 raise Exception('Couldn\'t get requested data from server, '
                                 'nor from local data.')
