@@ -32,6 +32,7 @@ import zlib
 from itertools import izip
 import operator
 import os
+import warnings
 
 import tables
 import numpy as np
@@ -657,13 +658,19 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         """
         if self.station is not None:
             timestamp = event['timestamp']
-            self.thresholds, self.trigger = self.station.trigger(timestamp)
+            try:
+                self.thresholds, self.trigger = self.station.trigger(timestamp)
+            except:
+                warnings.warn('Unknown trigger settings, not reconstructing '
+                              'trigger offset.')
+                # Do not reconstruct t_trigger by pretending external trigger.
+                self.trigger = [0, 0, 0, 1]
 
         n_low, n_high, and_or, external = self.trigger
 
         if external:
-            # External trigger not supported
-            return [-999] * 5
+            # Do not reconstruct thresholds if external trigger is involved
+            self.thresholds = [(ADC_LIMIT, ADC_LIMIT)] * 4
 
         timings = []
         low_idx = []
@@ -770,6 +777,10 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
         """
         n_low, n_high, and_or, external = self.trigger
+
+        # External trigger not supported
+        if external:
+            return -999
 
         low_idx = [idx for idx in low_idx if not idx == -999]
         high_idx = [idx for idx in high_idx if not idx == -999]
