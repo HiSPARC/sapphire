@@ -598,7 +598,7 @@ class BaseCluster(object):
 
     def calc_horizontal_distance_between_stations(self, s1, s2):
         """Calculate 2D distance between two HiSPARC stations. Ignores altitude
-        
+
         The 2D plane is the East-North plane defined by the ENU axes at the
         reference location for this cluster.
 
