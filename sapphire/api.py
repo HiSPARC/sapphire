@@ -33,7 +33,7 @@ from lazy import lazy
 from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
                    count_nonzero)
 
-from .utils import get_active_index, memoize
+from .utils import get_active_index
 from .transformations.clock import process_time
 
 logger = logging.getLogger('api')
@@ -83,6 +83,7 @@ class API(object):
         'coincidencetime': 'coincidencetime/{year}/{month}/{day}/',
         'coincidencenumber': 'coincidencenumber/{year}/{month}/{day}/',
         'eventtime': 'eventtime/{station_number}/{year}/{month}/{day}/',
+        'fulleventtime': 'eventtime/{station_number}/',
         'pulseheight': 'pulseheight/{station_number}/{year}/{month}/{day}/',
         'integral': 'pulseintegral/{station_number}/{year}/{month}/{day}/',
         'azimuth': 'azimuth/{station_number}/{year}/{month}/{day}/',
@@ -471,7 +472,7 @@ class Network(API):
             stations = [stations]
 
         for sn in stations:
-            data[sn] = Station(sn).eventtime()
+            data[sn] = Station(sn, use_cache=True).full_event_time()
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
@@ -505,7 +506,7 @@ class Station(API):
 
     """Access data about a single station"""
 
-    def __init__(self, station, date=None, allow_stale=True):
+    def __init__(self, station, date=None, allow_stale=True, use_cache=False):
         """Initialize station
 
         :param station: station number.
@@ -515,6 +516,7 @@ class Station(API):
 
         """
         self.allow_stale = allow_stale
+        self.use_cache = use_cache
         self.station = station
         if date is None:
             date = datetime.date.today()
@@ -932,12 +934,11 @@ class Station(API):
 
         return detector_timing_offset
 
-    @memoize
-    def eventtime(self):
-        """Get eventtime histogram
+    def full_event_time(self):
+        """Get full eventtime histogram
 
         :return: array of timestamps and counts.
         """
-        urlpath = 'eventtime/%d/' % self.station
-        return self._get_tsv(urlpath, names=['timestamp', 'counts'],
-                             use_cache=True)
+        columns = ('timestamp', 'counts')
+        path = self.src_urls['fulleventtime'].format(station_number=self.station)
+        return self._get_tsv(path, names=columns, use_cache=self.use_cache)
