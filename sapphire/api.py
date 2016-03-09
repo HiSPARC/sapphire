@@ -542,7 +542,7 @@ class Station(API):
     def _get_tsv(self, urlpath, names=None, use_cache=False):
         return super(Station, self)._get_tsv(urlpath, names,
                                              allow_stale=self.allow_stale,
-                                             use_cache=use_cache)
+                                             use_cache=self.use_cache)
 
     def country(self):
         return self.info['country']
@@ -941,4 +941,4 @@ class Station(API):
         """
         columns = ('timestamp', 'counts')
         path = self.src_urls['fulleventtime'].format(station_number=self.station)
-        return self._get_tsv(path, names=columns, use_cache=self.use_cache)
+        return self._get_tsv(path, names=columns)
