@@ -98,8 +98,7 @@ class API(object):
     def _get_json(cls, urlpath):
         """Retrieve a JSON from the HiSPARC API
 
-        :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
-            to retrieve.
+        :param urlpath: api urlpath to retrieve (i.e. after API_BASE).
         :return: the data returned by the api as dictionary or integer.
 
         """
@@ -109,18 +108,26 @@ class API(object):
         return data
 
     @classmethod
-    def _get_tsv(cls, urlpath, names=None, allow_stale=True):
+    def _get_tsv(cls, urlpath, names=None, force_fresh=False,
+                 force_stale=False):
         """Retrieve a Source TSV from the HiSPARC Public Database
 
-        :param urlpath: the tsv urlpath to retrieve
-            (after http://data.hisparc.nl/show/source/).
+        :param urlpath: tsv urlpath to retrieve (i.e. path after SRC_BASE).
+        :param names: data column names.
+        :param force_fresh,force_stale: if either of these is set to True the
+            data must either loaded from server or from local data. Be default
+            fresh data is prefered, but falls back to local data.
         :return: the data returned as array.
 
         """
+        if force_fresh and force_stale:
+            raise Exception('Can not force fresh and stale simultaneously.')
         try:
+            if force_stale:
+                raise Exception
             tsv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
         except Exception:
-            if not allow_stale:
+            if force_fresh:
                 raise
             localpath = path.join(LOCAL_BASE,
                                   urlpath.strip('/') + extsep + 'tsv')
@@ -441,40 +448,61 @@ class Station(API):
 
     """Access data about a single station"""
 
-    def __init__(self, station, date=None, allow_stale=True):
+    def __init__(self, station, date=None, force_fresh=False,
+                 force_stale=False):
         """Initialize station
 
         :param station: station number.
         :param date: date object for which to get the station information.
-        :param allow_stale: set to False to require data to be fresh
+        :param force_fresh: set to True to require data to be fresh
                             from the server.
+        :param force_stale: set to True to require data to be taken from local
+                            data, not valid for all methods.
 
         """
-        self.allow_stale = allow_stale
+        if force_fresh and force_stale:
+            raise Exception('Can not force fresh and stale simultaneously.')
+        self.force_fresh = force_fresh
+        self.force_stale = force_stale
         self.station = station
         if date is None:
-            date = datetime.date.today()
+            self.date = datetime.date.today()
+        else:
+            self.date = date
+
+    def _get_tsv(self, urlpath, names=None):
+        return super(Station, self)._get_tsv(urlpath, names,
+                                             force_fresh=self.force_fresh,
+                                             force_stale=self.force_stale)
+
+    @lazy
+    def info(self):
+        """Get general station info
+
+        :return: array of timestamps and values.
+
+        """
+        date = self.date
         path = (self.urls['station_info']
                 .format(station_number=self.station, year=date.year,
                         month=date.month, day=date.day))
         try:
-            self.info = self._get_json(path)
+            if self.force_stale:
+                raise Exception
+            info = self._get_json(path)
         except Exception:
-            if not allow_stale:
+            if self.force_fresh:
                 raise
             # Try getting the station info from the JSON.
             try:
                 with open(JSON_FILE) as data:
-                    self.info = json.load(data)[str(station)]
+                    info = json.load(data)[str(self.station)]
                 warnings.warn('Couldn\'t get values from the server, using '
                               'hard-coded values. Possibly outdated.')
             except:
                 raise Exception('Couldn\'t get requested data from server, '
                                 'nor from local data.')
-
-    def _get_tsv(self, urlpath, names=None):
-        return super(Station, self)._get_tsv(urlpath, names,
-                                             allow_stale=self.allow_stale)
+        return info
 
     def country(self):
         return self.info['country']
