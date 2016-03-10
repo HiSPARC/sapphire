@@ -128,6 +128,7 @@ class API(object):
         else:
             try:
                 tsv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
+                data_is_fresh = True
             except Exception:
                 if not allow_stale:
                     raise
@@ -150,7 +151,7 @@ class API(object):
                     data = genfromtxt(StringIO(tsv_data), delimiter='\t',
                                       dtype=None, names=names)
             data = atleast_1d(data)
-            if use_cache:
+            if use_cache and data_is_fresh:
                 cls.cache[key] = data
             return data
 
