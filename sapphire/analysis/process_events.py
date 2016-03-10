@@ -825,7 +825,8 @@ class ProcessEventsFromSource(ProcessEvents):
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group):
+    def __init__(self, source_file, dest_file, source_group, dest_group,
+                 progress=False):
         """Initialize the class.
 
         :param source_file: the PyTables source file
@@ -842,7 +843,7 @@ class ProcessEventsFromSource(ProcessEvents):
 
         self.source = self._get_source()
 
-        self.progress = False
+        self.progress = progress
 
     def _get_or_create_group(self, file, group):
         """Get or create a group in the datafile"""
@@ -926,7 +927,7 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
     """
 
     def __init__(self, source_file, dest_file, source_group, dest_group,
-                 station=None):
+                 station=None, progress=False):
         """Initialize the class.
 
         :param source_file: the PyTables source file
@@ -944,7 +945,7 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
 
         self.source = self._get_source()
 
-        self.progress = False
+        self.progress = progress
 
         if station is None:
             self.station = None
@@ -1064,7 +1065,8 @@ class ProcessWeatherFromSource(ProcessWeather):
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group):
+    def __init__(self, source_file, dest_file, source_group, dest_group,
+                 progress=False):
         """Initialize the class.
 
         :param source_file,dest_file: the PyTables source and destination file
@@ -1080,7 +1082,7 @@ class ProcessWeatherFromSource(ProcessWeather):
 
         self.source = self._get_source()
 
-        self.progress = False
+        self.progress = progress
 
     def _get_source(self):
         """Return the table containing the events.
