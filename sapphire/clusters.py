@@ -333,6 +333,9 @@ class Station(object):
 
         transform = geographic.FromWGS84ToENUTransformation(lla)
         latitude, longitude, altitude = transform.enu_to_lla(enu)
+        latitude = latitude if abs(latitude) > 1e-7 else 0.
+        longitude = longitude if abs(longitude) > 1e-7 else 0.
+        altitude = altitude if abs(altitude) > 1e-7 else 0.
 
         return latitude, longitude, altitude
 
