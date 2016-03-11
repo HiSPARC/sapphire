@@ -503,7 +503,6 @@ class Station(API):
         :param date: date object for which to get the station information.
         :param allow_stale: set to False to require data to be fresh
                             from the server.
-        :param use_cache: set to False to disable cacheing.
 
         """
         self.allow_stale = allow_stale
