@@ -399,6 +399,7 @@ def process_time(time):
     """
     if isinstance(time, int):
         return time
-    if isinstance(time, datetime.datetime):
+    try:
         return datetime_to_gps(time)
-    raise RuntimeError('Unable to parse time: ', time)
+    except:
+        raise RuntimeError('Unable to parse time: ', time)
