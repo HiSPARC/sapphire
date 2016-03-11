@@ -142,6 +142,7 @@ class API(object):
                 except:
                     raise Exception('Couldn\'t get requested data from server,'
                                     ' nor from local data.')
+                data_is_fresh = False
                 warnings.warn('Couldn\'t get values from the server, using '
                               'local data. Possibly outdated.',
                               UserWarning)
