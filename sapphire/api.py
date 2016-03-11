@@ -33,7 +33,7 @@ from lazy import lazy
 from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
                    count_nonzero)
 
-from .utils import get_active_index, memoize
+from .utils import get_active_index
 from .transformations.clock import process_time
 
 logger = logging.getLogger('api')
@@ -846,13 +846,18 @@ class Station(API):
         path = self.src_urls['gps'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def gps_location(self, timestamp):
+    def gps_location(self, timestamp=None):
         """Get GPS location for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: optional timestamp or datetime object for which
+        the value is valid.
         :return: dictionary with the values for given timestamp.
 
         """
+        if timestamp is None:
+            timestamp = process_time(self.date)
+        else:
+            timestamp = process_time(timestamp)
         locations = self.gps_locations
         idx = get_active_index(locations['timestamp'], timestamp)
         location = {'latitude': locations[idx]['latitude'],
