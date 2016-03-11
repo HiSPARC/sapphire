@@ -209,7 +209,7 @@ class BaseSimulation(object):
             if key in events_table.colnames:
                 row[key] = value
             else:
-                warnings.warn('Unsupported variable', UserWarning)
+                warnings.warn('Unsupported variable')
         row.append()
         events_table.flush()
 

@@ -43,7 +43,7 @@ def save_tsv():
     """Get location tsv data for all stations"""
 
     station_numbers = Network().station_numbers()
-    for type in ['gps', 'trigger', 'layout']:
+    for type in ['gps', 'trigger', 'layout', 'voltage', 'current']:
         try:
             mkdir(path.join(LOCAL_BASE, type))
         except OSError:

@@ -31,8 +31,8 @@ from . import api
 from . import storage
 
 
-EVENTS_URL = 'http://data.hisparc.nl/data/{station_number:d}/events?{query}'
-WEATHER_URL = 'http://data.hisparc.nl/data/{station_number:d}/weather?{query}'
+EVENTS_URL = 'http://data.hisparc.nl/data/{station_number:d}/events/?{query}'
+WEATHER_URL = 'http://data.hisparc.nl/data/{station_number:d}/weather/?{query}'
 COINCIDENCES_URL = 'http://data.hisparc.nl/data/network/coincidences/?{query}'
 
 

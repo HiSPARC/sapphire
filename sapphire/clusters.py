@@ -333,6 +333,9 @@ class Station(object):
 
         transform = geographic.FromWGS84ToENUTransformation(lla)
         latitude, longitude, altitude = transform.enu_to_lla(enu)
+        latitude = latitude if abs(latitude) > 1e-7 else 0.
+        longitude = longitude if abs(longitude) > 1e-7 else 0.
+        altitude = altitude if abs(altitude) > 1e-7 else 0.
 
         return latitude, longitude, altitude
 
@@ -576,6 +579,45 @@ class BaseCluster(object):
 
         return x0, y0, z0
 
+    @staticmethod
+    def _distance(c1, c2):
+        return np.sqrt(sum((c1 - c2) ** 2))
+
+    def calc_distance_between_stations(self, s1, s2):
+        """Calculate distance between two stations
+
+        :param s1,s2: station numbers.
+        :return: distance between stations.
+
+        """
+        pair = [so for so in self._stations if so.number in (s1, s2)]
+
+        if len(pair) != 2:
+            return None
+
+        xyz = [np.array(s.calc_center_of_mass_coordinates()) for s in pair]
+
+        return self._distance(*xyz)
+
+    def calc_horizontal_distance_between_stations(self, s1, s2):
+        """Calculate 2D distance between two HiSPARC stations. Ignores altitude
+
+        The 2D plane is the East-North plane defined by the ENU axes at the
+        reference location for this cluster.
+
+        :param s1,s2: station numbers.
+        :return: distance between stations.
+
+        """
+        pair = [so for so in self._stations if so.number in (s1, s2)]
+
+        if len(pair) != 2:
+            return None
+
+        xy = [np.array(s.calc_center_of_mass_coordinates()[:-1]) for s in pair]
+
+        return self._distance(*xy)
+
 
 class CompassStations(BaseCluster):
 
@@ -787,12 +829,10 @@ class HiSPARCStations(CompassStations):
 
         if len(missing_gps):
             warnings.warn('Could not get GPS location for stations: %s. '
-                          'Using (0, 0, 0) instead.' % str(missing_gps),
-                          UserWarning)
+                          'Using (0, 0, 0) instead.' % str(missing_gps))
         if len(missing_detectors):
             warnings.warn('Could not get detector layout for stations %s, '
-                          'defaults will be used!' % str(missing_detectors),
-                          UserWarning)
+                          'defaults will be used!' % str(missing_detectors))
 
 
 class ScienceParkCluster(HiSPARCStations):

@@ -32,12 +32,11 @@ def main():
             mpv, is_fitted = find_mpv.find_mpv()
 
             plt.plot((bins[:-1] + bins[1:]) / 2., n, c=COLORS[did])
-            if is_fitted:
-                plt.axvline(mpv + did / 10., c=COLORS[did], ls='solid')
-            else:
-                plt.axvline(mpv + did / 10., c=COLORS[did], ls='dotted')
+            lines = ['dotted', 'solid']
+            plt.axvline(mpv + did * (bins[1] - bins[0]) / 20.,
+                        c=COLORS[did], ls=lines[is_fitted])
             plt.title(station)
-            plt.xlim(0)
+            plt.xlim(0, bins[len(bins)/2])
             plt.yscale('log')
 
 
@@ -57,13 +56,13 @@ def get_histogram_for_station_on_date(station_id, date, did):
        ``numpy.histogram``.
 
     """
-    data = Station(station_id).pulse_height(date.year, date.month, date.day)
+    data = Station(station_id).pulse_integral(date.year, date.month, date.day)
 
-    bins = list(data['pulseheight'])
+    bins = list(data['pulseintegral'])
     bins.append(bins[-1] + (bins[-1] - bins[-2]))
     bins = np.array(bins)
 
-    n = data['ph%d' % (did + 1)]
+    n = data['pi%d' % (did + 1)]
 
     return n, bins
 

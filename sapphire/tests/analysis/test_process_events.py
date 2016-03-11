@@ -6,6 +6,7 @@ import warnings
 import operator
 
 import tables
+from mock import Mock
 
 from sapphire.analysis import process_events
 
@@ -146,6 +147,14 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         self.assertEqual(times[2], -999)
         self.assertEqual(times[4], 165)
 
+    def test__reconstruct_time_from_traces_with_external(self):
+        self.proc.trigger = [0, 0, 0, 1]
+        event = self.proc.source[10]
+        times = self.proc._reconstruct_time_from_traces(event)
+        self.assertEqual(times[0], 162.5)
+        self.assertEqual(times[2], -999)
+        self.assertEqual(times[4], -999)
+
     def test__first_above_thresholds(self):
         # 2 detectors
         self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400], 900), [2, 2, -999])
@@ -276,6 +285,19 @@ class ProcessEventsFromSourceWithTriggerOffsetStationTests(ProcessEventsFromSour
         self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
             self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP,
             station=501)
+
+    def test__reconstruct_time_from_traces_with_external(self):
+        mock_trigger = Mock()
+        mock_trigger.return_value = ([(process_events.ADC_LOW_THRESHOLD,
+                                       process_events.ADC_HIGH_THRESHOLD)] * 4,
+                                     [0, 0, 0, 1])
+        self.proc.station.trigger = mock_trigger
+
+        event = self.proc.source[10]
+        times = self.proc._reconstruct_time_from_traces(event)
+        self.assertEqual(times[0], 162.5)
+        self.assertEqual(times[2], -999)
+        self.assertEqual(times[4], -999)
 
 
 if __name__ == '__main__':
