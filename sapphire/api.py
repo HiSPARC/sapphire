@@ -33,7 +33,7 @@ from lazy import lazy
 from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
                    count_nonzero)
 
-from .utils import get_active_index
+from .utils import get_active_index, memoize
 from .transformations.clock import process_time
 
 logger = logging.getLogger('api')
@@ -462,7 +462,7 @@ class Network(API):
             stations = [stations]
 
         for sn in stations:
-            data[sn] = Station(sn, use_cache=True).event_time()
+            data[sn] = Station(sn).event_time()
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
@@ -496,7 +496,7 @@ class Station(API):
 
     """Access data about a single station"""
 
-    def __init__(self, station, date=None, allow_stale=True, use_cache=False):
+    def __init__(self, station, date=None, allow_stale=True):
         """Initialize station
 
         :param station: station number.
@@ -506,7 +506,6 @@ class Station(API):
 
         """
         self.allow_stale = allow_stale
-        self.use_cache = use_cache
         self.station = station
         if date is None:
             date = datetime.date.today()
