@@ -96,8 +96,6 @@ class API(object):
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
-    cache = {}
-
     @classmethod
     def _get_json(cls, urlpath):
         """Retrieve a JSON from the HiSPARC API
@@ -113,7 +111,7 @@ class API(object):
         return data
 
     @classmethod
-    def _get_tsv(cls, urlpath, names=None, allow_stale=True, use_cache=False):
+    def _get_tsv(cls, urlpath, names=None, allow_stale=True):
         """Retrieve a Source TSV from the HiSPARC Public Database
 
         :param urlpath: the tsv urlpath to retrieve
@@ -121,39 +119,31 @@ class API(object):
         :return: the data returned as array.
 
         """
-        key = str(urlpath) + str(names) + str(allow_stale)
-
-        if use_cache and key in cls.cache:
-            return cls.cache[key]
-        else:
+        try:
+            tsv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
+        except Exception:
+            if not allow_stale:
+                raise
+            localpath = path.join(LOCAL_BASE,
+                                  urlpath.strip('/') + extsep + 'tsv')
             try:
-                tsv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
-                data_is_fresh = True
-            except Exception:
-                if not allow_stale:
-                    raise
-                localpath = path.join(LOCAL_BASE,
-                                      urlpath.strip('/') + extsep + 'tsv')
-                try:
-                    with warnings.catch_warnings():
-                        warnings.filterwarnings('ignore')
-                        data = genfromtxt(localpath, delimiter='\t',
-                                          dtype=None, names=names)
-                except:
-                    raise Exception('Couldn\'t get requested data from server,'
-                                    ' nor from local data.')
-                warnings.warn('Couldn\'t get values from the server, using '
-                              'local data. Possibly outdated.',
-                              UserWarning)
-            else:
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
-                    data = genfromtxt(StringIO(tsv_data), delimiter='\t',
-                                      dtype=None, names=names)
-            data = atleast_1d(data)
-            if use_cache and data_is_fresh:
-                cls.cache[key] = data
-            return data
+                    data = genfromtxt(localpath, delimiter='\t', dtype=None,
+                                      names=names)
+            except:
+                raise Exception('Couldn\'t get requested data from server, '
+                                'nor from local data.')
+            warnings.warn('Couldn\'t get values from the server, using '
+                          'local data. Possibly outdated.',
+                          UserWarning)
+        else:
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore')
+                data = genfromtxt(StringIO(tsv_data), delimiter='\t',
+                                  dtype=None, names=names)
+
+        return atleast_1d(data)
 
     @staticmethod
     def _retrieve_url(urlpath, base=API_BASE):
@@ -540,10 +530,14 @@ class Station(API):
                 raise Exception('Couldn\'t get requested data from server, '
                                 'nor from local data.')
 
-    def _get_tsv(self, urlpath, names=None, use_cache=False):
+    def _get_tsv(self, urlpath, names=None):
         return super(Station, self)._get_tsv(urlpath, names,
+<<<<<<< HEAD
                                              allow_stale=self.allow_stale,
                                              use_cache=self.use_cache)
+=======
+                                             allow_stale=self.allow_stale)
+>>>>>>> parent of 7fc1b99... added optional cache to _get_tsv()
 
     def country(self):
         return self.info['country']
@@ -934,3 +928,15 @@ class Station(API):
                                   for i in range(1, 5)]
 
         return detector_timing_offset
+<<<<<<< HEAD
+=======
+
+    @memoize
+    def eventtime(self):
+        """Get eventtime histogram
+
+        :return: array of timestamps and counts.
+        """
+        urlpath = 'eventtime/%d/' % self.station
+        return self._get_tsv(urlpath, names=['timestamp', 'counts'])
+>>>>>>> parent of 7fc1b99... added optional cache to _get_tsv()
