@@ -1,5 +1,5 @@
 import unittest
-from datetime import date
+from datetime import date, datetime
 from urllib2 import HTTPError, URLError
 import warnings
 
@@ -233,6 +233,38 @@ class NetworkTests(unittest.TestCase):
         self.assertEqual(data.dtype.names, names)
         self.assertTrue((data['n'] == range(2, 100)).all())
         self.assertEqual(data['counts'][0], 9479)
+
+    @patch.object(api, 'urlopen')
+    def test_uptime(self, mock_urlopen):
+        # datetime(2014,1,1) 2 days on, 2 days off, 1 day on
+        event_time_1 = '1388534400\t2000.\n'+\
+                       '1388538000\t2000.\n'+\
+                       '1388541600\t12.\n'+\
+                       '1388545200\t125.\n'+\
+                       '1388548800\t3000.\n'
+        # datetime(2014,1,1) 2 days off, 3 days on
+        event_time_2 = '1388534400\t50.\n'+\
+                       '1388538000\t20.\n'+\
+                       '1388541600\t2000.\n'+\
+                       '1388545200\t2000.\n'+\
+                       '1388548800\t3000.\n'
+        # station 1
+        mock_urlopen.return_value.read.return_value = event_time_1
+        self.assertEqual(self.network.uptime([1]), 3)
+        self.assertEqual(self.network.uptime([1], start=datetime(2014, 1, 1),
+                         end=datetime(2014, 1, 1, 2)), 2)
+        self.assertEqual(self.network.uptime([1], start=datetime(2014, 1, 1),
+                         end=datetime(2014, 1, 2)), 3)
+        # station 2
+        mock_urlopen.return_value.read.return_value = event_time_2
+        self.assertEqual(self.network.uptime([1]), 3)
+        self.assertEqual(self.network.uptime([1], start=datetime(2014, 1, 1),
+                         end=datetime(2014, 1, 1, 2)), 0)
+        self.assertEqual(self.network.uptime([1], start=datetime(2014, 1, 1),
+                         end=datetime(2014, 1, 2)), 3)
+        # two stations together
+        mock_urlopen.return_value.read.side_effect = [event_time_1, event_time_2]
+        self.assertEqual(self.network.uptime([1, 2]), 1)
 
     def laziness_of_method(self, method):
         with patch.object(api.API, '_get_json') as mock_get_json:
