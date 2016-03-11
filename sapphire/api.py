@@ -531,12 +531,7 @@ class Station(API):
 
     def _get_tsv(self, urlpath, names=None):
         return super(Station, self)._get_tsv(urlpath, names,
-<<<<<<< HEAD
-                                             allow_stale=self.allow_stale,
-                                             use_cache=self.use_cache)
-=======
                                              allow_stale=self.allow_stale)
->>>>>>> parent of 7fc1b99... added optional cache to _get_tsv()
 
     def country(self):
         return self.info['country']
@@ -927,15 +922,3 @@ class Station(API):
                                   for i in range(1, 5)]
 
         return detector_timing_offset
-<<<<<<< HEAD
-=======
-
-    @memoize
-    def eventtime(self):
-        """Get eventtime histogram
-
-        :return: array of timestamps and counts.
-        """
-        urlpath = 'eventtime/%d/' % self.station
-        return self._get_tsv(urlpath, names=['timestamp', 'counts'])
->>>>>>> parent of 7fc1b99... added optional cache to _get_tsv()
