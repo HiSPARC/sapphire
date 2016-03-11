@@ -391,10 +391,10 @@ def datetime_to_gps(dt):
 
 
 def process_time(time):
-    """Convert timestamp or datetime to datetime
+    """Convert timestamp or datetime to timestamp
 
     :param time: GPS datetime object or GPS timestamp
-    :return: GPS datetime object
+    :return: GPS timestamp
 
     """
     if isinstance(time, int):
