@@ -397,9 +397,10 @@ def process_time(time):
     :return: GPS timestamp
 
     """
-    if isinstance(time, int):
-        return time
     try:
-        return datetime_to_gps(time)
-    except:
-        raise RuntimeError('Unable to parse time: ', time)
+        return int(time)
+    except (TypeError, ValueError):
+        try:
+            return datetime_to_gps(time)
+        except:
+            raise RuntimeError('Unable to parse time: ', time)
