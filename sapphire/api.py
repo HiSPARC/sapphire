@@ -221,10 +221,12 @@ class Network(API):
 
     """Get info about the network (countries/clusters/subclusters/stations)"""
 
-    _all_countries = None
-    _all_clusters = None
-    _all_subclusters = None
-    _all_stations = None
+    @lazy
+    def _all_countries(self):
+        """All countries data"""
+
+        path = self.urls['countries']
+        return self._get_json(path)
 
     def countries(self):
         """Get a list of countries
@@ -232,9 +234,6 @@ class Network(API):
         :return: all countries in the region
 
         """
-        if not self._all_countries:
-            path = self.urls['countries']
-            self._all_countries = self._get_json(path)
         return self._all_countries
 
     def country_numbers(self):
@@ -242,6 +241,13 @@ class Network(API):
 
         countries = self.countries()
         return [country['number'] for country in countries]
+
+    @lazy
+    def _all_clusters(self):
+        """All countries data"""
+
+        path = self.urls['clusters']
+        return self._get_json(path)
 
     def clusters(self, country=None):
         """Get a list of clusters
@@ -253,9 +259,6 @@ class Network(API):
         """
         self.validate_numbers(country)
         if country is None:
-            if not self._all_clusters:
-                path = self.urls['clusters']
-                self._all_clusters = self._get_json(path)
             clusters = self._all_clusters
         else:
             path = (self.urls['clusters_in_country']
@@ -270,6 +273,13 @@ class Network(API):
         clusters = self.clusters(country=country)
         return [cluster['number'] for cluster in clusters]
 
+    @lazy
+    def _all_subclusters(self):
+        """All countries data"""
+
+        path = self.urls['subclusters']
+        return self._get_json(path)
+
     def subclusters(self, country=None, cluster=None):
         """Get a list of subclusters
 
@@ -281,9 +291,6 @@ class Network(API):
         """
         self.validate_numbers(country, cluster)
         if country is None and cluster is None:
-            if not self._all_subclusters:
-                path = self.urls['subclusters']
-                self._all_subclusters = self._get_json(path)
             subclusters = self._all_subclusters
         elif country is not None:
             subclusters = []
