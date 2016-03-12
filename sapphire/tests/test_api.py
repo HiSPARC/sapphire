@@ -237,7 +237,7 @@ class StaleNetworkTests(NetworkTests):
     @patch.object(api.Network, '_retrieve_url')
     def test_station_numbers_disconnected(self, mock_retrieve_url):
         mock_retrieve_url.side_effect = Exception('no interwebs!')
-        station_numbers = self.network.station_numbers()
+        self.network.station_numbers()
 
     def test_stations_with_data(self):
         self.assertRaises(Exception, self.network.stations_with_data, 2004, 1, 9)
@@ -246,11 +246,9 @@ class StaleNetworkTests(NetworkTests):
         self.assertRaises(Exception, self.network.stations_with_weather, 2013, 1, 1)
 
     def test_coincidence_time(self):
-        names = ('hour', 'counts')
         self.assertRaises(Exception, self.network.coincidence_time, 2013, 1, 1)
 
     def test_coincidence_number(self):
-        names = ('n', 'counts')
         self.assertRaises(Exception, self.network.coincidence_number, 2013, 1, 1)
 
 

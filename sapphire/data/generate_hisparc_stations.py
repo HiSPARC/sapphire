@@ -11,10 +11,9 @@ this the gps and station layout data for the HiSPARC Network is stored.
 
 """
 from json import dump, loads
-from datetime import date
 from os import path, extsep, mkdir
 
-from sapphire.api import API, Station, Network, LOCAL_BASE, API_BASE, SRC_BASE
+from sapphire.api import API, Network, LOCAL_BASE, SRC_BASE
 from sapphire.utils import pbar
 
 
