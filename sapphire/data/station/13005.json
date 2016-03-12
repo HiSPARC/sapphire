@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 124.76, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.5139752, 
+    "longitude": -2.5726647, 
+    "name": "Filton College", 
+    "number": 13005, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Bristol"
+}

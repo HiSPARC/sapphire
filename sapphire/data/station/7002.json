@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 110.93, 
+    "cluster": "Enschede", 
+    "country": "Netherlands", 
+    "latitude": 52.23823, 
+    "longitude": 6.8581068, 
+    "name": "Universiteit Twente 2", 
+    "number": 7002, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Enschede"
+}

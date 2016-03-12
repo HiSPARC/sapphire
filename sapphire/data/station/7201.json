@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 64.14, 
+    "cluster": "Enschede", 
+    "country": "Netherlands", 
+    "latitude": 52.3688565, 
+    "longitude": 6.6600184, 
+    "name": "CSG Het Noordik", 
+    "number": 7201, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Almelo"
+}

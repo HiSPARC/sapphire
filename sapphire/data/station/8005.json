@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 77.89, 
+    "cluster": "Eindhoven", 
+    "country": "Netherlands", 
+    "latitude": 51.3716618, 
+    "longitude": 5.231586, 
+    "name": "Pius X College Bladel", 
+    "number": 8005, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Eindhoven"
+}

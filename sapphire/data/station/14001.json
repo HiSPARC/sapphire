@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 204.14, 
+    "cluster": "Birmingham", 
+    "country": "United Kingdom", 
+    "latitude": 52.4498801, 
+    "longitude": -1.9290455, 
+    "name": "Birmingham University", 
+    "number": 14001, 
+    "scintillators": [
+        {
+            "alpha": 330.64, 
+            "beta": 124.0, 
+            "height": 0.0, 
+            "radius": 9.3876
+        }, 
+        {
+            "alpha": 302.42, 
+            "beta": 124.0, 
+            "height": 0.0, 
+            "radius": 8.66
+        }, 
+        {
+            "alpha": 330.51, 
+            "beta": 34.0, 
+            "height": 0.0, 
+            "radius": 2.45
+        }, 
+        {
+            "alpha": 121.28, 
+            "beta": 124.0, 
+            "height": 0.0, 
+            "radius": 5.6
+        }
+    ], 
+    "subcluster": "Birmingham"
+}

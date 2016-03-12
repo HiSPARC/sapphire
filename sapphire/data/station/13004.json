@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 132.98, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.4585052, 
+    "longitude": -2.6195311, 
+    "name": "Clifton High School", 
+    "number": 13004, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Bristol"
+}

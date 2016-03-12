@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 189.11, 
+    "cluster": "Birmingham", 
+    "country": "United Kingdom", 
+    "latitude": 52.4509392, 
+    "longitude": -1.9254742, 
+    "name": "King Edward VI High School for Girls", 
+    "number": 14003, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Birmingham"
+}

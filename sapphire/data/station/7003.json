@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 94.51, 
+    "cluster": "Enschede", 
+    "country": "Netherlands", 
+    "latitude": 52.2383274, 
+    "longitude": 6.8574487, 
+    "name": "Universiteit Twente 3", 
+    "number": 7003, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Enschede"
+}

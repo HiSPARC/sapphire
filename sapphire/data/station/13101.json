@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 163.41, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.3721967, 
+    "longitude": -2.3596023, 
+    "name": "Beechen Cliff School", 
+    "number": 13101, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Bath"
+}

@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 61.17, 
+    "cluster": "Utrecht", 
+    "country": "Netherlands", 
+    "latitude": 52.0752089, 
+    "longitude": 5.0970861, 
+    "name": "FOM Bureau", 
+    "number": 1009, 
+    "scintillators": [
+        {
+            "alpha": 152.0, 
+            "beta": 62.0, 
+            "height": -2.0, 
+            "radius": 8.528
+        }, 
+        {
+            "alpha": 152.0, 
+            "beta": 152.0, 
+            "height": -17.6, 
+            "radius": 16.0
+        }, 
+        {
+            "alpha": 62.0, 
+            "beta": 62.0, 
+            "height": -2.0, 
+            "radius": 3.175
+        }, 
+        {
+            "alpha": 242.0, 
+            "beta": 62.0, 
+            "height": -2.0, 
+            "radius": 3.175
+        }
+    ], 
+    "subcluster": "Utrecht"
+}

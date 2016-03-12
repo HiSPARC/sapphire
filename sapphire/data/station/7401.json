@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 73.31, 
+    "cluster": "Enschede", 
+    "country": "Netherlands", 
+    "latitude": 52.158536, 
+    "longitude": 6.7405117, 
+    "name": "Assink Lyceum", 
+    "number": 7401, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Haaksbergen"
+}

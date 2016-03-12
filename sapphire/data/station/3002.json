@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 51.43, 
+    "cluster": "Leiden", 
+    "country": "Netherlands", 
+    "latitude": 52.1731494, 
+    "longitude": 4.4855137, 
+    "name": "Da Vinci College", 
+    "number": 3002, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Leiden"
+}

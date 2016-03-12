@@ -1,0 +1,18 @@
+[
+    {
+        "name": "Eindhoven", 
+        "number": 8000
+    }, 
+    {
+        "name": "Tilburg", 
+        "number": 8100
+    }, 
+    {
+        "name": "Panningen", 
+        "number": 8200
+    }, 
+    {
+        "name": "Weert", 
+        "number": 8300
+    }
+]

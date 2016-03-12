@@ -1,0 +1,25 @@
+{
+    "active": false, 
+    "altitude": 54.18, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3413387, 
+    "longitude": 4.8806426, 
+    "name": "St. Nicolaaslyceum", 
+    "number": 2, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

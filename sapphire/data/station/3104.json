@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 51.86, 
+    "cluster": "Leiden", 
+    "country": "Netherlands", 
+    "latitude": 51.843736, 
+    "longitude": 4.5321562, 
+    "name": "Dalton Lyceum", 
+    "number": 3104, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Zwijndrecht"
+}

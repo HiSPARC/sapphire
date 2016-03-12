@@ -39,7 +39,6 @@ logger = logging.getLogger('api')
 API_BASE = 'http://data.hisparc.nl/api/'
 SRC_BASE = 'http://data.hisparc.nl/show/source/'
 LOCAL_BASE = path.join(path.dirname(__file__), 'data')
-JSON_FILE = path.join(LOCAL_BASE, 'hisparc_stations.json')
 
 
 class API(object):
@@ -94,41 +93,65 @@ class API(object):
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
 
-    @classmethod
-    def _get_json(cls, urlpath):
+    def __init__(self, force_fresh=False, force_stale=False):
+        """Initialize API class
+
+        :param force_fresh,force_stale: if either of these is set to True the
+            data must either loaded from server or from local data. Be default
+            fresh data is prefered, but falls back to local data.
+
+        """
+        self.force_fresh = force_fresh
+        self.force_stale = force_stale
+
+    def _get_json(self, urlpath):
         """Retrieve a JSON from the HiSPARC API
 
         :param urlpath: api urlpath to retrieve (i.e. after API_BASE).
         :return: the data returned by the api as dictionary or integer.
 
         """
-        json_data = cls._retrieve_url(urlpath)
-        data = json.loads(json_data)
+        if self.force_fresh and self.force_stale:
+            raise Exception('Can not force fresh and stale simultaneously.')
+        try:
+            if self.force_stale:
+                raise Exception
+            json_data = self._retrieve_url(urlpath)
+            data = json.loads(json_data)
+        except Exception:
+            if self.force_fresh:
+                raise Exception('Couldn\'t get requested data from server.')
+            localpath = path.join(LOCAL_BASE,
+                                  urlpath.strip('/') + extsep + 'json')
+            try:
+                with open(localpath) as localdata:
+                    data = json.load(localdata)
+            except:
+                if self.force_stale:
+                    raise Exception('Couldn\'t find requested data locally.')
+                raise Exception('Couldn\'t get requested data from server '
+                                'nor find it locally.')
+            warnings.warn('Using local data. Possibly outdated.')
 
         return data
 
-    @classmethod
-    def _get_tsv(cls, urlpath, names=None, force_fresh=False,
-                 force_stale=False):
+    def _get_tsv(self, urlpath, names=None):
         """Retrieve a Source TSV from the HiSPARC Public Database
 
         :param urlpath: tsv urlpath to retrieve (i.e. path after SRC_BASE).
         :param names: data column names.
-        :param force_fresh,force_stale: if either of these is set to True the
-            data must either loaded from server or from local data. Be default
-            fresh data is prefered, but falls back to local data.
         :return: the data returned as array.
 
         """
-        if force_fresh and force_stale:
+        if self.force_fresh and self.force_stale:
             raise Exception('Can not force fresh and stale simultaneously.')
         try:
-            if force_stale:
+            if self.force_stale:
                 raise Exception
-            tsv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
+            tsv_data = self._retrieve_url(urlpath, base=SRC_BASE)
         except Exception:
-            if force_fresh:
-                raise
+            if self.force_fresh:
+                raise Exception('Couldn\'t get requested data from server.')
             localpath = path.join(LOCAL_BASE,
                                   urlpath.strip('/') + extsep + 'tsv')
             try:
@@ -137,10 +160,11 @@ class API(object):
                     data = genfromtxt(localpath, delimiter='\t', dtype=None,
                                       names=names)
             except:
-                raise Exception('Couldn\'t get requested data from server, '
-                                'nor from local data.')
-            warnings.warn('Couldn\'t get values from the server, using '
-                          'local data. Possibly outdated.')
+                if self.force_stale:
+                    raise Exception('Couldn\'t find requested data locally.')
+                raise Exception('Couldn\'t get requested data from server '
+                                'nor find it locally.')
+            warnings.warn('Using local data. Possibly outdated.')
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
@@ -183,6 +207,15 @@ class API(object):
             return False
         return True
 
+    @staticmethod
+    def validate_partial_date(year='', month='', day='', hour=''):
+        if year == '' and (month != '' or day != '' or hour != ''):
+            raise Exception('You must also specify the year')
+        elif month == '' and (day != '' or hour != ''):
+            raise Exception('You must also specify the month')
+        elif day == '' and hour != '':
+            raise Exception('You must also specify the day')
+
 
 class Network(API):
 
@@ -192,12 +225,6 @@ class Network(API):
     _all_clusters = None
     _all_subclusters = None
     _all_stations = None
-
-    def __init__(self):
-        """Initialize network
-
-        """
-        pass
 
     def countries(self):
         """Get a list of countries
@@ -280,6 +307,13 @@ class Network(API):
         subclusters = self.subclusters(country=country, cluster=cluster)
         return [subcluster['number'] for subcluster in subclusters]
 
+    @lazy
+    def _all_stations(self):
+        """All stations data"""
+
+        path = self.urls['stations']
+        return self._get_json(path)
+
     def stations(self, country=None, cluster=None, subcluster=None):
         """Get a list of stations
 
@@ -291,9 +325,6 @@ class Network(API):
         """
         self.validate_numbers(country, cluster, subcluster)
         if country is None and cluster is None and subcluster is None:
-            if not self._all_stations:
-                path = self.urls['stations']
-                self._all_stations = self._get_json(path)
             stations = self._all_stations
         elif country is not None:
             stations = []
@@ -317,43 +348,18 @@ class Network(API):
                 path = (self.urls['stations_in_subcluster']
                         .format(subcluster_number=subcluster['number']))
                 stations.extend(self._get_json(path))
-        else:
+        elif subcluster is not None:
             path = (self.urls['stations_in_subcluster']
                     .format(subcluster_number=subcluster))
             stations = self._get_json(path)
         return stations
 
-    def station_numbers(self, country=None, cluster=None, subcluster=None,
-                        allow_stale=True):
+    def station_numbers(self, country=None, cluster=None, subcluster=None):
         """Same as stations but only retuns a list of station numbers"""
 
-        self.validate_numbers(country, cluster, subcluster)
-        try:
-            stations = self.stations(country=country, cluster=cluster,
-                                     subcluster=subcluster)
-            return [station['number'] for station in stations]
-        except Exception:
-            if not allow_stale:
-                raise
-            # Try getting the station info from the JSON.
-            try:
-                if country is None and cluster is None and subcluster is None:
-                    start, end = (0, 1e9)
-                elif country is not None:
-                    start, end = (country, country + 10000)
-                elif cluster is not None:
-                    start, end = (cluster, cluster + 1000)
-                else:
-                    start, end = (subcluster, subcluster + 100)
-                with open(JSON_FILE) as data:
-                    stations = [int(s) for s in json.load(data).keys()
-                                if s != '_info' and start <= int(s) < end]
-                warnings.warn('Couldn\'t get values from the server, using '
-                              'local data. Possibly outdated.')
-                return sorted(stations)
-            except:
-                raise Exception('Couldn\'t get requested data from server, '
-                                'nor from local data.')
+        stations = self.stations(country=country, cluster=cluster,
+                                 subcluster=subcluster)
+        return [station['number'] for station in stations]
 
     def nested_network(self):
         """Get a nested list of the full network"""
@@ -369,8 +375,7 @@ class Network(API):
             country.update({'clusters': clusters})
         return countries
 
-    @classmethod
-    def stations_with_data(cls, year='', month='', day=''):
+    def stations_with_data(self, year='', month='', day=''):
         """Get a list of stations with data on the specified date
 
         :param year,month,day: the date for which to check. It is
@@ -378,17 +383,13 @@ class Network(API):
         :return: all stations with data.
 
         """
-        if year == '' and (month != '' or day != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and day != '':
-            raise Exception('You must also specify the month')
+        self.validate_partial_date(year, month, day)
 
-        path = (cls.urls['stations_with_data']
+        path = (self.urls['stations_with_data']
                 .format(year=year, month=month, day=day).strip("/"))
-        return cls._get_json(path)
+        return self._get_json(path)
 
-    @classmethod
-    def stations_with_weather(cls, year='', month='', day=''):
+    def stations_with_weather(self, year='', month='', day=''):
         """Get a list of stations with weather data on the specified date
 
         :param year,month,day: the date for which to check. It is
@@ -396,17 +397,13 @@ class Network(API):
         :return: all stations with weather data.
 
         """
-        if year == '' and (month != '' or day != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and day != '':
-            raise Exception('You must also specify the month')
+        self.validate_partial_date(year, month, day)
 
-        path = (cls.urls['stations_with_weather']
+        path = (self.urls['stations_with_weather']
                 .format(year=year, month=month, day=day).strip("/"))
-        return cls._get_json(path)
+        return self._get_json(path)
 
-    @classmethod
-    def coincidence_time(cls, year, month, day):
+    def coincidence_time(self, year, month, day):
         """Get the coincidences per hour histogram
 
         :param year,month,day: the date for which to get the histogram.
@@ -414,12 +411,11 @@ class Network(API):
 
         """
         columns = ('hour', 'counts')
-        path = cls.src_urls['coincidencetime'].format(year=year, month=month,
-                                                      day=day)
-        return cls._get_tsv(path, names=columns)
+        path = self.src_urls['coincidencetime'].format(year=year, month=month,
+                                                       day=day)
+        return self._get_tsv(path, names=columns)
 
-    @classmethod
-    def coincidence_number(cls, year, month, day):
+    def coincidence_number(self, year, month, day):
         """Get the number of stations in coincidence histogram
 
         :param year,month,day: the date for which to get the histogram.
@@ -427,9 +423,9 @@ class Network(API):
 
         """
         columns = ('n', 'counts')
-        path = cls.src_urls['coincidencenumber'].format(year=year, month=month,
-                                                        day=day)
-        return cls._get_tsv(path, names=columns)
+        path = self.src_urls['coincidencenumber'].format(year=year, month=month,
+                                                         day=day)
+        return self._get_tsv(path, names=columns)
 
     @staticmethod
     def validate_numbers(country=None, cluster=None, subcluster=None):
@@ -462,47 +458,25 @@ class Station(API):
         """
         if force_fresh and force_stale:
             raise Exception('Can not force fresh and stale simultaneously.')
+        if station not in Network(force_fresh=force_fresh,
+                                  force_stale=force_stale).station_numbers():
+            raise Exception('Station number not valid.')
         self.force_fresh = force_fresh
         self.force_stale = force_stale
         self.station = station
         if date is None:
-            self.date = datetime.date.today()
+            self.year, self.month, self.day = ('', '', '')
         else:
-            self.date = date
-
-    def _get_tsv(self, urlpath, names=None):
-        return super(Station, self)._get_tsv(urlpath, names,
-                                             force_fresh=self.force_fresh,
-                                             force_stale=self.force_stale)
+            self.year, self.month, self.day = (date.year, date.month, date.day)
 
     @lazy
     def info(self):
-        """Get general station info
+        """Get general station info"""
 
-        :return: array of timestamps and values.
-
-        """
-        date = self.date
         path = (self.urls['station_info']
-                .format(station_number=self.station, year=date.year,
-                        month=date.month, day=date.day))
-        try:
-            if self.force_stale:
-                raise Exception
-            info = self._get_json(path)
-        except Exception:
-            if self.force_fresh:
-                raise
-            # Try getting the station info from the JSON.
-            try:
-                with open(JSON_FILE) as data:
-                    info = json.load(data)[str(self.station)]
-                warnings.warn('Couldn\'t get values from the server, using '
-                              'hard-coded values. Possibly outdated.')
-            except:
-                raise Exception('Couldn\'t get requested data from server, '
-                                'nor from local data.')
-        return info
+                .format(station_number=self.station, year=self.year,
+                        month=self.month, day=self.day).strip("/"))
+        return self._get_json(path)
 
     def country(self):
         return self.info['country']
@@ -577,12 +551,7 @@ class Station(API):
         :return: the number of events recorded by the station on date.
 
         """
-        if year == '' and (month != '' or day != '' or hour != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and (day != '' or hour != ''):
-            raise Exception('You must also specify the month')
-        elif day == '' and hour != '':
-            raise Exception('You must also specify the day')
+        self.validate_partial_date(year, month, day, hour)
 
         path = (self.urls['number_of_events']
                 .format(station_number=self.station, year=year, month=month,
@@ -598,10 +567,7 @@ class Station(API):
             data on the date.
 
         """
-        if year == '' and (month != '' or day != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and day != '':
-            raise Exception('You must also specify the month')
+        self.validate_partial_date(year, month, day)
 
         path = (self.urls['has_data'].format(station_number=self.station,
                                              year=year, month=month, day=day)
@@ -617,10 +583,7 @@ class Station(API):
             on the date.
 
         """
-        if year == '' and (month != '' or day != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and day != '':
-            raise Exception('You must also specify the month')
+        self.validate_partial_date(year, month, day)
 
         path = (self.urls['has_weather']
                 .format(station_number=self.station,

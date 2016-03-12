@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 47.6, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3572524, 
+    "longitude": 4.948385, 
+    "name": "ARCNL (PiMu)", 
+    "number": 505, 
+    "scintillators": [
+        {
+            "alpha": 250.0, 
+            "beta": 30.0, 
+            "height": 0.0, 
+            "radius": 11.21
+        }, 
+        {
+            "alpha": 296.0, 
+            "beta": 210.0, 
+            "height": 0.0, 
+            "radius": 12.95
+        }, 
+        {
+            "alpha": 170.0, 
+            "beta": 25.0, 
+            "height": 0.0, 
+            "radius": 4.95
+        }, 
+        {
+            "alpha": 1.2, 
+            "beta": 205.0, 
+            "height": 0.0, 
+            "radius": 4.63
+        }
+    ], 
+    "subcluster": "Science Park"
+}

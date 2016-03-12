@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 49.33, 
+    "cluster": "Utrecht", 
+    "country": "Netherlands", 
+    "latitude": 52.0839564, 
+    "longitude": 5.1499509, 
+    "name": "University College Utrecht 2", 
+    "number": 1007, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Utrecht"
+}

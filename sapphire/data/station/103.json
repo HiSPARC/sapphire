@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 53.43, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.4747791, 
+    "longitude": 4.7990425, 
+    "name": "Saenredam College", 
+    "number": 103, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Zaanstad"
+}
