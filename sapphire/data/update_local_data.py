@@ -1,13 +1,12 @@
-""" Generate HiSPARC stations JSON
+""" Update local JSON and TSV data
 
-This script updates the JSON containing a list of HiSPARC stations. For
-each station the 'info' object from the API is included. This includes
-station numbers, scintillator positions, (sub)cluster name and GPS
-locations. If internet is unavailable :mod:`~sapphire.api` uses this
-JSON.
+This script updates the local copies of the JSON and TSV data from the Public
+Database API. If internet is unavailable the :mod:`~sapphire.api` uses these
+files. The use of local data can also be forced to skip calls to the server or
+prevented to require fresh data from the server.
 
-Cluster objects track station and detector positions over time. To facilitate
-this the gps and station layout data for the HiSPARC Network is stored.
+Not all available data is included by default because then the SAPPHiRE package
+would become to large. It is possible to add those files after installation.
 
 """
 from json import dump, loads
