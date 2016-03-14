@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 51.13, 
+    "cluster": "Leiden", 
+    "country": "Netherlands", 
+    "latitude": 51.7538702, 
+    "longitude": 4.1589412, 
+    "name": "CSG Prins Maurits", 
+    "number": 3201, 
+    "scintillators": [
+        {
+            "alpha": 87.0, 
+            "beta": 87.0, 
+            "height": 0.0, 
+            "radius": 8.86
+        }, 
+        {
+            "alpha": 87.0, 
+            "beta": 87.0, 
+            "height": 0.0, 
+            "radius": 3.11
+        }, 
+        {
+            "alpha": -3.0, 
+            "beta": -3.0, 
+            "height": 0.0, 
+            "radius": 5.25
+        }, 
+        {
+            "alpha": 178.0, 
+            "beta": 178.0, 
+            "height": 0.0, 
+            "radius": 5.15
+        }
+    ], 
+    "subcluster": "Middelharnis"
+}

@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 57.81, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 51.8370783, 
+    "longitude": 5.8176331, 
+    "name": "Dominicus College", 
+    "number": 2004, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Nijmegen"
+}

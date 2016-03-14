@@ -1,0 +1,25 @@
+{
+    "active": false, 
+    "altitude": 68.41, 
+    "cluster": "Utrecht", 
+    "country": "Netherlands", 
+    "latitude": 52.0824974, 
+    "longitude": 5.1220905, 
+    "name": "Christelijk Gymnasium Utrecht", 
+    "number": 1002, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Utrecht"
+}

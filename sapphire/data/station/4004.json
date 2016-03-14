@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 52.74, 
+    "cluster": "Groningen", 
+    "country": "Netherlands", 
+    "latitude": 53.237549, 
+    "longitude": 6.578532, 
+    "name": "Wessel Gansfort College", 
+    "number": 4004, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Groningen"
+}

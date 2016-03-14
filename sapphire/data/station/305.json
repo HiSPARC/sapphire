@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 51.71, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.5493502, 
+    "longitude": 4.6718132, 
+    "name": "Gemeentehuis Castricum", 
+    "number": 305, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Kennemerland"
+}

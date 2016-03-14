@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 70.08, 
+    "cluster": "Enschede", 
+    "country": "Netherlands", 
+    "latitude": 52.2736316, 
+    "longitude": 6.79793, 
+    "name": "Bataafs Lyceum", 
+    "number": 7101, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Hengelo"
+}

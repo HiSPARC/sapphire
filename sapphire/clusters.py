@@ -760,10 +760,10 @@ class HiSPARCStations(CompassStations):
     :param stations: A list of station numbers to include. The
         coordinates are retrieved from the Public Database API.
         The first station is placed at the origin of the cluster.
-    :param allow_missing: Set to True to allow stations to have missing
+    :param skip_missing: Set to True to skip stations which have missing
         location data, otherwise an exception will be raised. Stations
-        with missing location data will be included but get
-        (lat,lon,alt) = (0, 0, 0). Does not apply to detector positions.
+        with missing location data will be excluded. Does not apply
+        to missing detector positions.
 
     Example::
 
@@ -771,7 +771,8 @@ class HiSPARCStations(CompassStations):
 
     """
 
-    def __init__(self, stations, allow_missing=False):
+    def __init__(self, stations, skip_missing=False, force_fresh=False,
+                 force_stale=False):
         super(HiSPARCStations, self).__init__()
 
         missing_gps = []
@@ -779,14 +780,13 @@ class HiSPARCStations(CompassStations):
 
         for i, station in enumerate(stations):
             try:
-                station_info = api.Station(station)
+                station_info = api.Station(station, force_fresh=force_fresh,
+                                           force_stale=force_stale)
                 locations = station_info.gps_locations
             except:
-                if allow_missing:
+                if skip_missing:
                     missing_gps.append(station)
-                    llas = [(0., 0., 0.)]
-                    station_ts = [0]
-                    n_detectors = 4
+                    continue
                 else:
                     raise KeyError('Could not get GPS info for station %d.' %
                                    station)
@@ -845,22 +845,25 @@ class ScienceParkCluster(HiSPARCStations):
 
     """
 
-    def __init__(self, stations=None, allow_missing=False):
+    def __init__(self, stations=None, skip_missing=False, force_fresh=False,
+                 force_stale=False):
         if stations is None:
-            network = api.Network()
+            network = api.Network(force_fresh, force_stale)
             stations = [sn for sn in network.station_numbers(subcluster=500)
                         if sn != 507]
         else:
             stations = [sn for sn in stations if 500 < sn < 600]
-        super(ScienceParkCluster, self).__init__(stations,
-                                                 allow_missing=allow_missing)
+        super(ScienceParkCluster, self).__init__(stations, skip_missing,
+                                                 force_fresh, force_stale)
 
 
 class HiSPARCNetwork(HiSPARCStations):
 
     """A cluster containing all station from the HiSPARC network"""
 
-    def __init__(self):
-        network = api.Network()
+    def __init__(self, force_fresh=False, force_stale=False):
+        network = api.Network(force_fresh, force_stale)
         stations = network.station_numbers()
-        super(HiSPARCNetwork, self).__init__(stations, allow_missing=True)
+        skip_missing = True  # Likely some station without GPS location
+        super(HiSPARCNetwork, self).__init__(stations, skip_missing,
+                                             force_fresh, force_stale)

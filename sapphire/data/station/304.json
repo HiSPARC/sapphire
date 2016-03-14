@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 49.29, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.5416217, 
+    "longitude": 4.6681044, 
+    "name": "Bonhoeffer College", 
+    "number": 304, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Kennemerland"
+}

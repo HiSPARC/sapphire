@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 51.44, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.35626, 
+    "longitude": 4.952944, 
+    "name": "Vancis", 
+    "number": 503, 
+    "scintillators": [
+        {
+            "alpha": 315.0, 
+            "beta": 135.0, 
+            "height": 0.0, 
+            "radius": 8.97
+        }, 
+        {
+            "alpha": 315.0, 
+            "beta": 135.0, 
+            "height": 0.0, 
+            "radius": 3.15
+        }, 
+        {
+            "alpha": 225.0, 
+            "beta": 225.0, 
+            "height": 0.0, 
+            "radius": 5.09
+        }, 
+        {
+            "alpha": 45.0, 
+            "beta": 225.0, 
+            "height": 0.0, 
+            "radius": 4.89
+        }
+    ], 
+    "subcluster": "Science Park"
+}

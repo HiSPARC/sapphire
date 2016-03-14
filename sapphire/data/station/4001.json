@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 50.5, 
+    "cluster": "Groningen", 
+    "country": "Netherlands", 
+    "latitude": 53.2499935, 
+    "longitude": 6.5268108, 
+    "name": "KVI", 
+    "number": 4001, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Groningen"
+}

@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 63.16, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 51.8066215, 
+    "longitude": 5.8391835, 
+    "name": "Kandinsky College", 
+    "number": 2005, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Nijmegen"
+}

@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 193.15, 
+    "cluster": "Birmingham", 
+    "country": "United Kingdom", 
+    "latitude": 52.4777486, 
+    "longitude": -1.8571519, 
+    "name": "Bordesley Green Girls School and Sixth Form", 
+    "number": 14002, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Birmingham"
+}

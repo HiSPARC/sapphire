@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 73.2, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3328835, 
+    "longitude": 4.8668674, 
+    "name": "Vrije Universiteit", 
+    "number": 9, 
+    "scintillators": [
+        {
+            "alpha": 90.0, 
+            "beta": 90.0, 
+            "height": 0.0, 
+            "radius": 8.33
+        }, 
+        {
+            "alpha": 90.0, 
+            "beta": 90.0, 
+            "height": 0.0, 
+            "radius": 2.825
+        }, 
+        {
+            "alpha": -3.8, 
+            "beta": 0.0, 
+            "height": 0.0, 
+            "radius": 5.22
+        }, 
+        {
+            "alpha": 183.8, 
+            "beta": 180.0, 
+            "height": 0.0, 
+            "radius": 5.22
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

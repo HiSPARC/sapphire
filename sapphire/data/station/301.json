@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 60.04, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.5518567, 
+    "longitude": 4.6870106, 
+    "name": "Jac. P. Thijsse College", 
+    "number": 301, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Kennemerland"
+}

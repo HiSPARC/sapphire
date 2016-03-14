@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 55.52, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 52.3333053, 
+    "longitude": 5.6157933, 
+    "name": "RSG-Slingerbos", 
+    "number": 2201, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Harderwijk"
+}

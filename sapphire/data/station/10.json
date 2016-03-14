@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 60.24, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.2875491, 
+    "longitude": 4.8552974, 
+    "name": "Hermann Wesselink College", 
+    "number": 10, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

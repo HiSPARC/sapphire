@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Amsterdam", 
+        "number": 0
+    }, 
+    {
+        "name": "Utrecht", 
+        "number": 1000
+    }, 
+    {
+        "name": "Nijmegen", 
+        "number": 2000
+    }, 
+    {
+        "name": "Leiden", 
+        "number": 3000
+    }, 
+    {
+        "name": "Groningen", 
+        "number": 4000
+    }, 
+    {
+        "name": "Enschede", 
+        "number": 7000
+    }, 
+    {
+        "name": "Eindhoven", 
+        "number": 8000
+    }
+]
