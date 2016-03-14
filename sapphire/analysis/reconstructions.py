@@ -344,33 +344,16 @@ class ReconstructESDCoincidences(object):
         self.reconstructions._v_attrs.cluster = self.cluster
 
     def get_station_timing_offsets(self):
-        """Get predetermined station offsets
+        """Construct a dict of api.Station objects
 
-        References for subclusters:
-        102 for Zaanlands stations, data from 2012/6-2014/8.
-        501 for Science Park stations, data from 2010/1-2014/8.
-        7001 for Twente University stations, data from 2011/8-2014/8.
-        8001 for Eindhoven University stations, data from 2011/10-2014/8.
 
         """
-        self.offsets = {102: [-3.1832, 0.0000, 0.0000, 0.0000],
-                        104: [-1.5925, -5.0107, 0.0000, 0.0000],
-                        105: [-14.1325, -10.9451, 0.0000, 0.0000],
-                        501: [-1.10338, 0.0000, 5.35711, 3.1686],
-                        502: [-8.11711, -8.5528, -8.72451, -9.3388],
-                        503: [-22.9796, -26.6098, -22.7522, -21.8723],
-                        504: [-15.4349, -15.2281, -15.1860, -16.5545],
-                        505: [-21.6035, -21.3060, -19.6826, -25.5366],
-                        506: [-20.2320, -15.8309, -14.1818, -14.1548],
-                        508: [-26.2402, -24.9859, -24.0131, -23.2882],
-                        509: [-24.8369, -23.0218, -20.6011, -24.3757],
-                        7001: [4.5735, 0.0000, 0.0000, 0.0000],
-                        7002: [45.0696, 47.8311, 0.0000, 0.0000],
-                        7003: [-2.2674, -4.9578, 0.0000, 0.0000],
-                        8001: [2.5733, 0.0000, 0.0000, 0.0000],
-                        8004: [-39.3838, -36.1131, 0.0000, 0.0000],
-                        8008: [57.3990, 58.1135, 0.0000, 0.0000],
-                        8009: [-20.3489, -16.9938, 0.0000, 0.0000]}
+        self.offsets = {}
+        for station in self.cluster.stations:
+            try:
+                self.offsets[station.number] = api.Station(station.number)
+            except:
+                print "skipping...", station
 
     def determine_station_timing_offsets(self, ref_station_number=501):
         """Determine the offsets between the stations.

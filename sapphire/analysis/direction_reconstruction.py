@@ -123,6 +123,27 @@ class CoincidenceDirectionReconstruction(object):
         self.fit = RegressionAlgorithm3D
         self.cluster = cluster
 
+    def _calculate_offsets(self, so, ts0):
+        """Calculate combined station and detector offsets
+
+        :param so: station object
+        :param ts0: gps timestamp for which the offsets are valid.
+
+        """
+        # TODO handle reference
+        reference_station = 501
+
+        if not isinstance(so, Station):
+            raise Exception('An api.Station object was expected!')
+
+        detector_offset = so.detector_timing_offset(ts0)
+        if so.station == reference_station:
+            return detector_offset
+
+        station_offset = so.station_timing_offset(ts0, reference_station)
+
+        return [station_offset + detector_offset[i] for i in range(4)]
+
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
                                 offsets={}):
         """Reconstruct a single coincidence
@@ -148,9 +169,9 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        # Get relevant offsets. TODO: station offsets
+        # Get relevant offsets.
         offsets = {s: o if not isinstance(o, Station)
-                   else o.detector_timing_offset(ts0)
+                   else self._calculate_offsets(o, ts0)
                    for s, o in offsets.iteritems()}
 
         for station_number, event in coincidence_events:
