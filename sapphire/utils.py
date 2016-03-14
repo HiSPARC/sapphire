@@ -12,7 +12,6 @@ from numpy import floor, ceil, round, arcsin, sin, pi, sqrt
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
-
 # Error values used to indicate missing or bad data.
 ERR = [-1, -999]
 

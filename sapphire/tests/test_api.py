@@ -1,5 +1,5 @@
 import unittest
-from datetime import date
+from datetime import date, datetime
 from urllib2 import HTTPError, URLError
 import warnings
 
@@ -34,6 +34,7 @@ class APITests(unittest.TestCase):
         self.api.force_fresh = True
         self.assertEqual(self.api._get_tsv('gps/2/').tolist(),
                          [(1297956608, 52.3414237, 4.8807081, 43.32)])
+
         mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
         self.assertRaises(Exception, self.api._get_tsv, 'gps/2/')
         self.api.force_fresh = False
@@ -218,6 +219,39 @@ class NetworkTests(unittest.TestCase):
         self.assertTrue((data['n'] == range(2, 100)).all())
         self.assertEqual(data['counts'][0], 9479)
 
+    @patch.object(api, 'urlopen')
+    def test_uptime(self, mock_urlopen):
+        # datetime(2014,1,1) 2 days on, 2 days off, 1 day on
+        s_1, s_2 = '', ''
+        event_time_1 = ('1388534400\t2000.\n'
+                        '1388538000\t2000.\n'
+                        '1388541600\t12.\n'
+                        '1388545200\t125.\n'
+                        '1388548800\t3000.\n')
+        # datetime(2014,1,1) 2 days off, 3 days on
+        event_time_2 = ('1388534400\t50.\n'
+                        '1388538000\t20.\n'
+                        '1388541600\t2000.\n'
+                        '1388545200\t2000.\n'
+                        '1388548800\t3000.\n')
+        # station 1
+        mock_urlopen.return_value.read.return_value = event_time_1
+        self.assertEqual(self.network.uptime([501]), 3)
+        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
+                         end=datetime(2014, 1, 1, 2)), 2)
+        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
+                         end=datetime(2014, 1, 2)), 3)
+        # station 2
+        mock_urlopen.return_value.read.return_value = event_time_2
+        self.assertEqual(self.network.uptime([501]), 3)
+        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
+                         end=datetime(2014, 1, 1, 2)), 0)
+        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
+                         end=datetime(2014, 1, 2)), 3)
+        # two stations together
+        mock_urlopen.return_value.read.side_effect = [s_1, event_time_1, s_2, event_time_2]
+        self.assertEqual(self.network.uptime([501, 502]), 1)
+
     def laziness_of_method(self, method):
         with patch.object(api.API, '_get_json') as mock_get_json:
             self.assertFalse(mock_get_json.called)
@@ -349,10 +383,10 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.event_trace(1378771205, 571920029, raw=True)[3][9], 209)
 
     def test_event_time(self):
-        names = ('hour', 'counts')
+        names = ('timestamp', 'counts')
         data = self.station.event_time(2013, 1, 1)
         self.assertEqual(data.dtype.names, names)
-        self.assertTrue((data['hour'] == range(24)).all())
+        self.assertTrue((data['timestamp'] == range(24)).all())
 
     def test_pulse_height(self):
         names = ('pulseheight', 'ph1', 'ph2', 'ph3', 'ph4')

@@ -30,9 +30,11 @@ from urllib2 import urlopen, HTTPError, URLError
 from StringIO import StringIO
 
 from lazy import lazy
-from numpy import genfromtxt, atleast_1d
+from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
+                   count_nonzero)
 
 from .utils import get_active_index
+from .transformations.clock import process_time
 
 logger = logging.getLogger('api')
 
@@ -446,6 +448,57 @@ class Network(API):
             raise Exception('Invalid subcluster number, '
                             'must be multiple of 100.')
 
+    def uptime(self, stations=None, start=None, end=None):
+        """Get number of hours which stations have been simultaneously active
+
+        Using hourly eventrate data the number of hours in which the given
+        stations all had data is determined. Only hours in which each station
+        had a reasonable eventrate are counted, to exclude bad data.
+
+        :param stations: station number or a list of station numbers.
+        :param start,end: start, end timestamp.
+        :returns: number of hours with simultaneous data.
+
+        """
+        data = {}
+
+        if stations is None:
+            assert False
+            return 0
+
+        if not hasattr(stations, '__len__'):
+            stations = [stations]
+
+        for sn in stations:
+            data[sn] = Station(sn).event_time()
+
+        first = min(values['timestamp'][0] for values in data.values())
+        last = max(values['timestamp'][-1] for values in data.values())
+
+        len_array = (last - first) / 3600 + 1
+        all_active = ones(len_array)
+
+        for sn in data.keys():
+            is_active = zeros(len_array)
+            start_i = (data[sn]['timestamp'][0] - first) / 3600
+            end_i = start_i + len(data[sn])
+            is_active[start_i:end_i] = (data[sn]['counts'] > 500) &\
+                                       (data[sn]['counts'] < 5000)
+            all_active = logical_and(all_active, is_active)
+
+        # filter start, end
+        if start is not None:
+            start_index = max(0, process_time(start) - first) / 3600
+        else:
+            start_index = 0
+
+        if end is not None:
+            end_index = min(last, process_time(end) - first) / 3600
+        else:
+            end_index = len(all_active)
+
+        return count_nonzero(all_active[start_index:end_index])
+
 
 class Station(API):
 
@@ -617,17 +670,17 @@ class Station(API):
             path += '?raw'
         return self._get_json(path)
 
-    def event_time(self, year, month, day):
+    def event_time(self, year='', month='', day=''):
         """Get the number of events per hour histogram
 
         :param year,month,day: the date for which to get the histogram.
         :return: array of bins and counts.
 
         """
-        columns = ('hour', 'counts')
+        columns = ('timestamp', 'counts')
         path = self.src_urls['eventtime'].format(station_number=self.station,
                                                  year=year, month=month,
-                                                 day=day)
+                                                 day=day).strip("/")
         return self._get_tsv(path, names=columns)
 
     def pulse_height(self, year, month, day):
@@ -763,13 +816,18 @@ class Station(API):
         path = self.src_urls['gps'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def gps_location(self, timestamp):
+    def gps_location(self, timestamp=None):
         """Get GPS location for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: optional timestamp or datetime object for which
+            the value is valid.
         :return: dictionary with the values for given timestamp.
 
         """
+        if timestamp is None:
+            timestamp = process_time(self.date)
+        else:
+            timestamp = process_time(timestamp)
         locations = self.gps_locations
         idx = get_active_index(locations['timestamp'], timestamp)
         location = {'latitude': locations[idx]['latitude'],
@@ -861,4 +919,5 @@ class Station(API):
                                timestamp)
         detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
                                   for i in range(1, 5)]
+
         return detector_timing_offset
