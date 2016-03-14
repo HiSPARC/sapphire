@@ -820,7 +820,7 @@ class Station(API):
         """Get GPS location for specific timestamp
 
         :param timestamp: optional timestamp or datetime object for which
-        the value is valid.
+            the value is valid.
         :return: dictionary with the values for given timestamp.
 
         """
