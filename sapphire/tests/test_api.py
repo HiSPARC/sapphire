@@ -506,6 +506,26 @@ class StationTests(unittest.TestCase):
         offsets = self.station.detector_timing_offset(0)
         self.assertEqual(len(offsets), 4)
 
+    @patch.object(api, 'urlopen')
+    def test_station_timing_offsets(self, mock_urlopen):
+        # 401 and 7001 are stations for which localdata cannot be available
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
+        names = ('timestamp', 'offset')
+        data = self.station.station_timing_offsets(7001)
+        self.assertAlmostEqual(data[0]['offset'], -7.)
+        self.assertEqual(data.dtype.names, names)
+        self.assertEqual(len(data), 4)
+        self.assertEqual(len(data[0]), 2)
+        # check for automatic sorting of station numbers
+        data = self.station.station_timing_offsets(401)
+        self.assertAlmostEqual(data[0]['offset'], 7.)
+
+    @patch.object(api, 'urlopen')
+    def test_station_timing_offset(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
+        offset = self.station.station_timing_offset(0, 401)
+        self.assertAlmostEqual(offset, 7.0)
+
     def laziness_of_attribute(self, attribute):
         with patch.object(api.API, '_get_tsv') as mock_get_tsv:
             self.assertFalse(mock_get_tsv.called)
@@ -577,6 +597,18 @@ class StaleStationTests(StationTests):
     def test_detector_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
         self.assertRaises(Exception, self.station.detector_timing_offset, 0)
+
+    @patch.object(api, 'urlopen')
+    def test_station_timing_offsets(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
+        with self.assertRaises(Exception):
+            self.station.station_timing_offsets(401)
+
+    @patch.object(api, 'urlopen')
+    def test_station_timing_offset(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
+        with self.assertRaises(Exception):
+            self.station.station_timing_offset(0, 401)
 
 
 if __name__ == '__main__':
