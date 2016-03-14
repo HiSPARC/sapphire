@@ -508,17 +508,16 @@ class StationTests(unittest.TestCase):
 
     @patch.object(api, 'urlopen')
     def test_station_timing_offsets(self, mock_urlopen):
-        # 401 and 7001 are stations for which localdata cannot be available
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
         names = ('timestamp', 'offset')
-        data = self.station.station_timing_offsets(7001)
-        self.assertAlmostEqual(data[0]['offset'], -7.)
+        data = self.station.station_timing_offsets(401)
+        self.assertAlmostEqual(data[0]['offset'], 7.)
         self.assertEqual(data.dtype.names, names)
         self.assertEqual(len(data), 4)
         self.assertEqual(len(data[0]), 2)
         # check for automatic sorting of station numbers
-        data = self.station.station_timing_offsets(401)
-        self.assertAlmostEqual(data[0]['offset'], 7.)
+        data = self.station.station_timing_offsets(502)
+        self.assertAlmostEqual(data[0]['offset'], -7.)
 
     @patch.object(api, 'urlopen')
     def test_station_timing_offset(self, mock_urlopen):
