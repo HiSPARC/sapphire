@@ -520,6 +520,11 @@ class StationTests(unittest.TestCase):
         self.assertAlmostEqual(data[0]['offset'], -7.)
 
     @patch.object(api, 'urlopen')
+    def test_laziness_station_timing_offsets(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
+        self.laziness_of_method('station_timing_offsets', 502)
+
+    @patch.object(api, 'urlopen')
     def test_station_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
         offset = self.station.station_timing_offset(0, 401)
@@ -532,6 +537,16 @@ class StationTests(unittest.TestCase):
             self.assertTrue(mock_get_tsv.called)
             self.assertEqual(mock_get_tsv.call_count, 1)
             data2 = self.station.__getattribute__(attribute)
+            self.assertEqual(mock_get_tsv.call_count, 1)
+            self.assertEqual(data, data2)
+
+    def laziness_of_method(self, method, args=None):
+        with patch.object(api.API, '_get_tsv') as mock_get_tsv:
+            self.assertFalse(mock_get_tsv.called)
+            data = self.station.__getattribute__(method)(args)
+            self.assertTrue(mock_get_tsv.called)
+            self.assertEqual(mock_get_tsv.call_count, 1)
+            data2 = self.station.__getattribute__(method)(args)
             self.assertEqual(mock_get_tsv.call_count, 1)
             self.assertEqual(data, data2)
 
