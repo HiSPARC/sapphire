@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 56.77, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3560055, 
+    "longitude": 4.9514788, 
+    "name": "Nikhef (receptie)", 
+    "number": 507, 
+    "scintillators": [
+        {
+            "alpha": -87.45, 
+            "beta": -45.0, 
+            "height": -12.0, 
+            "radius": 19.11
+        }, 
+        {
+            "alpha": -78.72, 
+            "beta": 45.0, 
+            "height": -12.0, 
+            "radius": 7.21
+        }, 
+        {
+            "alpha": -65.13, 
+            "beta": -45.0, 
+            "height": -15.0, 
+            "radius": 18.0
+        }, 
+        {
+            "alpha": -53.57, 
+            "beta": 45.0, 
+            "height": -12.0, 
+            "radius": 15.47
+        }
+    ], 
+    "subcluster": "Science Park"
+}

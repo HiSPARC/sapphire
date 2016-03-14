@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 52.05, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3099238, 
+    "longitude": 5.0297973, 
+    "name": "Vechtstede College", 
+    "number": 21, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

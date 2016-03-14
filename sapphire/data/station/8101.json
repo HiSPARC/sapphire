@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 73.1, 
+    "cluster": "Eindhoven", 
+    "country": "Netherlands", 
+    "latitude": 51.5417273, 
+    "longitude": 5.0840135, 
+    "name": "Koning Willem II College", 
+    "number": 8101, 
+    "scintillators": [
+        {
+            "alpha": 230.0, 
+            "beta": 230.0, 
+            "height": 0.5, 
+            "radius": 4.75
+        }, 
+        {
+            "alpha": 55.0, 
+            "beta": 55.0, 
+            "height": 0.5, 
+            "radius": 5.4
+        }, 
+        {
+            "alpha": 325.0, 
+            "beta": 325.0, 
+            "height": 0.5, 
+            "radius": 8.3
+        }, 
+        {
+            "alpha": 150.0, 
+            "beta": 150.0, 
+            "height": 0.5, 
+            "radius": 8.75
+        }
+    ], 
+    "subcluster": "Tilburg"
+}

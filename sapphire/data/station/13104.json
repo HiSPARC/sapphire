@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 262.79, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.3792998, 
+    "longitude": -2.3271618, 
+    "name": "BathUni", 
+    "number": 13104, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Bath"
+}

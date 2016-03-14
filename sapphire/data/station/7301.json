@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 65.04, 
+    "cluster": "Enschede", 
+    "country": "Netherlands", 
+    "latitude": 52.2745763, 
+    "longitude": 6.1444779, 
+    "name": "Etty Hillesum Lyceum", 
+    "number": 7301, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Deventer"
+}

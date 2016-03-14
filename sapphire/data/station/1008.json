@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 52.88, 
+    "cluster": "Utrecht", 
+    "country": "Netherlands", 
+    "latitude": 52.0820996, 
+    "longitude": 5.13294, 
+    "name": "Stedelijk Gymnasium Utrecht", 
+    "number": 1008, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Utrecht"
+}

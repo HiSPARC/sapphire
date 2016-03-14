@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 89.85, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 51.8256237, 
+    "longitude": 5.8748952, 
+    "name": "Nijmeegse Scholengemeenschap Groenewoud", 
+    "number": 2002, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Nijmegen"
+}

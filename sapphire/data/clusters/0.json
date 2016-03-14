@@ -1,0 +1,30 @@
+[
+    {
+        "name": "Amsterdam", 
+        "number": 0
+    }, 
+    {
+        "name": "Zaanstad", 
+        "number": 100
+    }, 
+    {
+        "name": "Haarlem", 
+        "number": 200
+    }, 
+    {
+        "name": "Kennemerland", 
+        "number": 300
+    }, 
+    {
+        "name": "Alkmaar", 
+        "number": 400
+    }, 
+    {
+        "name": "Science Park", 
+        "number": 500
+    }, 
+    {
+        "name": "Hoorn", 
+        "number": 600
+    }
+]

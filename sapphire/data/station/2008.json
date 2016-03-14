@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 80.99, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 51.8247934, 
+    "longitude": 5.845697, 
+    "name": "Stedelijke Scholengemeenschap", 
+    "number": 2008, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Nijmegen"
+}

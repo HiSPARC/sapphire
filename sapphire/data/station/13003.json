@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 125.86, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.4579354, 
+    "longitude": -2.6044119, 
+    "name": "Bristol Grammar School", 
+    "number": 13003, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Bristol"
+}

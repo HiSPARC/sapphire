@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": null, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": null, 
+    "longitude": null, 
+    "name": "Okehampton", 
+    "number": 13401, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Okehampton"
+}

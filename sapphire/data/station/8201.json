@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 90.73, 
+    "cluster": "Eindhoven", 
+    "country": "Netherlands", 
+    "latitude": 51.3206534, 
+    "longitude": 5.978091, 
+    "name": "Bouwens van der Boije College", 
+    "number": 8201, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Panningen"
+}

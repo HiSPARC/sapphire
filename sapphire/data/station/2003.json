@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 84.15, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 51.847368, 
+    "longitude": 5.8554699, 
+    "name": "Stedelijk Gymnasium Nijmegen", 
+    "number": 2003, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Nijmegen"
+}

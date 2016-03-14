@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 63.57, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 51.8870295, 
+    "longitude": 5.6140413, 
+    "name": "Pax Christi College", 
+    "number": 2010, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Nijmegen"
+}
