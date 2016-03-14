@@ -947,7 +947,7 @@ class Station(API):
         return data
 
     def station_timing_offset(self, timestamp, reference_station):
-        """Get detector timing offset data for specific timestamp
+        """Get station timing offset data for specific timestamp
 
         :param timestamp: timestamp for which the value is valid.
         :param reference_station: reference station
