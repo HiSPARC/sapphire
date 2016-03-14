@@ -510,6 +510,7 @@ class StationTests(unittest.TestCase):
     def test_station_timing_offsets(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
         names = ('timestamp', 'offset')
+        self.assertRaises(Exception, self.station.station_timing_offsets, STATION)
         data = self.station.station_timing_offsets(401)
         self.assertAlmostEqual(data[0]['offset'], 7.)
         self.assertEqual(data.dtype.names, names)

@@ -931,6 +931,8 @@ class Station(API):
         :return: array of timestamps and values.
 
         """
+        if reference_station == self.station:
+            raise Exception('Reference station cannot be the same station')
         if reference_station > self.station:
             station_1, station_2 = self.station, reference_station
             toggle_sign = True
