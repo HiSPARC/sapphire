@@ -448,7 +448,7 @@ class Network(API):
             raise Exception('Invalid subcluster number, '
                             'must be multiple of 100.')
 
-    def uptime(self, stations=None, start=None, end=None):
+    def uptime(self, stations, start=None, end=None):
         """Get number of hours which stations have been simultaneously active
 
         Using hourly eventrate data the number of hours in which the given
@@ -461,10 +461,6 @@ class Network(API):
 
         """
         data = {}
-
-        if stations is None:
-            assert False
-            return 0
 
         if not hasattr(stations, '__len__'):
             stations = [stations]
