@@ -223,16 +223,16 @@ class NetworkTests(unittest.TestCase):
     def test_uptime(self, mock_urlopen):
         # datetime(2014,1,1) 2 days on, 2 days off, 1 day on
         s_1, s_2 = '', ''
-        event_time_1 = '1388534400\t2000.\n'+\
-                       '1388538000\t2000.\n'+\
-                       '1388541600\t12.\n'+\
-                       '1388545200\t125.\n'+\
+        event_time_1 = '1388534400\t2000.\n' + \
+                       '1388538000\t2000.\n' + \
+                       '1388541600\t12.\n' + \
+                       '1388545200\t125.\n' + \
                        '1388548800\t3000.\n'
         # datetime(2014,1,1) 2 days off, 3 days on
-        event_time_2 = '1388534400\t50.\n'+\
-                       '1388538000\t20.\n'+\
-                       '1388541600\t2000.\n'+\
-                       '1388545200\t2000.\n'+\
+        event_time_2 = '1388534400\t50.\n' + \
+                       '1388538000\t20.\n' + \
+                       '1388541600\t2000.\n' + \
+                       '1388545200\t2000.\n' + \
                        '1388548800\t3000.\n'
         # station 1
         mock_urlopen.return_value.read.return_value = event_time_1
