@@ -456,7 +456,7 @@ class Network(API):
         had a reasonable eventrate are counted, to exclude bad data.
 
         :param stations: station number or a list of station numbers.
-        :param start, end: start, end timestamp.
+        :param start,end: start, end timestamp.
         :returns: number of hours with simultaneous data.
 
         """
