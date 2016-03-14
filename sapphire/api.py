@@ -31,7 +31,7 @@ from StringIO import StringIO
 
 from lazy import lazy
 from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
-                   count_nonzero)
+                   count_nonzero, negative)
 
 from .utils import get_active_index, memoize
 from .transformations.clock import process_time
@@ -933,17 +933,17 @@ class Station(API):
         """
         if reference_station > self.station:
             station_1, station_2 = self.station, reference_station
-            offset_sign = -1.
+            toggle_sign = True
         else:
             station_2, station_1 = self.station, reference_station
-            offset_sign = None
+            toggle_sign = False
 
         columns = ('timestamp', 'offset')
         base = self.src_urls['station_timing_offsets']
         path = base.format(station_1=station_1, station_2=station_2)
         data = self._get_tsv(path, names=columns)
-        if offset_sign is not None:
-            data['offset'] = offset_sign * data['offset']
+        if toggle_sign:
+            data['offset'] = negative(data['offset'])
         return data
 
     def station_timing_offset(self, timestamp, reference_station):
