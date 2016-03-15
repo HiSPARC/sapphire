@@ -169,13 +169,23 @@ class CoincidenceDirectionReconstruction(object):
         if station_numbers is None:
             # construct list of stations in event
             station_numbers = [sn for sn, _ in coincidence_events]
+        station_numbers = list(set(station_numbers))
+
+        reference_stations = offsets.keys()
+
+        # prepend stations in coincidence: try these first
+        for sn in station_numbers:
+            reference_stations.remove(sn)
+        reference_stations = station_numbers + reference_stations
 
         # try each station as reference station. Minimize NaNs
         least_nans_so_far = int(1e9)
-        for ref_sn in station_numbers:
+        for ref_sn in reference_stations:
             offsets_ref = {}
             number_of_nans = 0
             for sn, so in offsets.iteritems():
+                if sn not in station_numbers:
+                    continue
                 station_offset = self._calculate_offsets(so, ts0, reference_station=ref_sn)
                 offsets_ref[sn] = station_offset
                 number_of_nans += sum(isnan(station_offset))
