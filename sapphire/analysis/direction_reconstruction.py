@@ -19,7 +19,7 @@ import warnings
 import itertools
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, where, pi, inf, array, cross, dot)
+                   sqrt, where, pi, inf, array, cross, dot, sum)
 from scipy.optimize import minimize
 
 from .event_utils import (station_arrival_time, detector_arrival_time,
@@ -123,16 +123,13 @@ class CoincidenceDirectionReconstruction(object):
         self.fit = RegressionAlgorithm3D
         self.cluster = cluster
 
-    def _calculate_offsets(self, so, ts0):
+    def _calculate_offsets(self, so, ts0, reference_station=501):
         """Calculate combined station and detector offsets
 
         :param so: station object
         :param ts0: gps timestamp for which the offsets are valid.
 
         """
-        # TODO handle reference
-        reference_station = 501
-
         if not isinstance(so, Station):
             raise Exception('An api.Station object was expected!')
 
@@ -169,10 +166,29 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        # Get relevant offsets.
-        offsets = {s: o if not isinstance(o, Station)
-                   else self._calculate_offsets(o, ts0)
-                   for s, o in offsets.iteritems()}
+        if station_numbers is None:
+            # construct list of stations in event
+            station_numbers = [sn for sn, _ in coincidence_events]
+
+        # try each station as reference station. Minimize NaNs
+        least_nans_so_far = int(1e9)
+        for ref_sn in station_numbers:
+            offsets_ref = {}
+            number_of_nans = 0
+            for sn, so in offsets.iteritems():
+                station_offset = self._calculate_offsets(so, ts0, reference_station=ref_sn)
+                offsets_ref[sn] = station_offset
+                number_of_nans += sum(isnan(station_offset))
+            if number_of_nans == 0:
+                # found a solution without NaNs
+                offsets = offsets_ref
+                break
+            if number_of_nans < least_nans_so_far:
+                best = offsets_ref
+
+        # use solution with minimum number of nans
+        if number_of_nans:
+            offsets = best
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:
