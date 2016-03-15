@@ -8,7 +8,6 @@ This data is not included by default because then the SAPPHiRE package would
 become to large. By running this script the data is added after installation.
 
 """
-from json import dump, loads
 from os import path, extsep, mkdir
 
 from sapphire.api import API, Network, LOCAL_BASE, SRC_BASE
