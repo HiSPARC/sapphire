@@ -17,7 +17,7 @@ from sapphire.utils import pbar
 
 
 def save_json():
-    for type in ['stations', 'subclusters', 'clusters', 'countries']:
+    for type in pbar(['stations', 'subclusters', 'clusters', 'countries']):
         url = API.urls[type]
         try:
             data = loads(API._retrieve_url(url))
@@ -46,7 +46,7 @@ def save_json():
         except:
             print 'Failed to get %s data' % type
             continue
-        for number in numbers:
+        for number in pbar(numbers):
             url = API.urls[type].format(**{kwarg: number,
                                            'year': '', 'month': '', 'day': ''})
             try:
@@ -73,7 +73,8 @@ def save_tsv():
             try:
                 data = API._retrieve_url(url, base=SRC_BASE)
             except:
-                print 'Failed to get %s data for station %d' % (type, number)
+                if type != 'layout':
+                    print 'Failed to get %s for station %d' % (type, number)
                 continue
             data = '\n'.join(d for d in data.split('\n')
                              if len(d) and d[0] != '#')
