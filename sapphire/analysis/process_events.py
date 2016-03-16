@@ -100,6 +100,7 @@ class ProcessEvents(object):
         self.group = data.get_node(group)
         self.source = self._get_source(source)
         self.progress = progress
+        self.limit = None
 
     def process_and_store_results(self, destination=None, overwrite=False,
                                   limit=None):
@@ -290,13 +291,10 @@ class ProcessEvents(object):
             table.modify_column(column=timings[:, idx], colname=col)
         table.flush()
 
-    def process_traces(self, limit=None):
+    def process_traces(self):
         """Process traces to yield pulse timing information."""
 
-        if limit:
-            self.limit = limit
-
-        if self.limit:
+        if self.limit is not None:
             events = self.source.iterrows(stop=self.limit)
         else:
             events = self.source
@@ -844,6 +842,7 @@ class ProcessEventsFromSource(ProcessEvents):
         self.source = self._get_source()
 
         self.progress = progress
+        self.limit = None
 
     def _get_or_create_group(self, file, group):
         """Get or create a group in the datafile"""
@@ -946,6 +945,7 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
         self.source = self._get_source()
 
         self.progress = progress
+        self.limit = None
 
         if station is None:
             self.station = None
