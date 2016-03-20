@@ -14,7 +14,7 @@ from sapphire.api import API, Network, LOCAL_BASE, SRC_BASE
 from sapphire.utils import pbar
 
 
-def save_tsv():
+def update_additional_local_tsv():
     """Get location tsv data for all stations"""
 
     station_numbers = Network().station_numbers()
@@ -34,9 +34,11 @@ def save_tsv():
             data = '\n'.join(d for d in data.split('\n')
                              if len(d) and d[0] != '#')
             if data:
-                with open(url.strip('/') + extsep + 'tsv', 'w') as tsvfile:
+                tsv_path = path.join(LOCAL_BASE,
+                                     url.strip('/') + extsep + 'tsv')
+                with open(tsv_path, 'w') as tsvfile:
                     tsvfile.write(data)
 
 
 if __name__ == '__main__':
-    save_tsv()
+    update_additional_local_tsv()
