@@ -8,7 +8,8 @@ Determine the PMT response curve to correct the detected number of MIPs.
 """
 from ..utils import gauss
 
-from numpy import arange, histogram, percentile, linspace, std, nan, isnan
+from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
+                   sqrt, diag, sum, power)
 from scipy.optimize import curve_fit
 
 
@@ -93,12 +94,13 @@ def determine_station_timing_offset(dt, dz=0):
     if not len(dt):
         return nan
     c = .3
-    p = percentile(dt, [0.5, 99.5])
+    p = percentile(dt, [2.5, 97.5])
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
-    station_offset = fit_timing_offset(dt, bins) + dz / c
+    station_offset, rchi2 = fit_timing_offset(dt, bins) 
+    station_offset += dz/c
     if abs(station_offset) > 1000:
-        station_offset = nan
-    return station_offset
+        return nan, nan
+    return station_offset, rchi2
 
 
 def fit_timing_offset(dt, bins):
@@ -111,12 +113,17 @@ def fit_timing_offset(dt, bins):
     """
     y, bins = histogram(dt, bins=bins)
     x = (bins[:-1] + bins[1:]) / 2
+    sigma = sqrt(y)
     try:
-        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)))
+        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt), 0.),
+                               sigma = sigma, absolute_sigma=False)
         offset = popt[1]
+        y_fit = gauss(x, *popt)
+        n_dof = len(x) - len(popt)
+        rchi2 = sum(power((y-y_fit)/sigma, 2)) / n_dof 
     except RuntimeError:
-        offset = nan
-    return offset
+        offset, rchi2 = nan, nan
+    return offset, rchi2
 
 
 def determine_best_reference(filters):
