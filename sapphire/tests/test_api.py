@@ -508,28 +508,29 @@ class StationTests(unittest.TestCase):
 
     @patch.object(api, 'urlopen')
     def test_station_timing_offsets(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
-        names = ('timestamp', 'offset')
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
+        names = ('timestamp', 'offset', 'rchi2')
         self.assertRaises(Exception, self.station.station_timing_offsets, STATION)
         data = self.station.station_timing_offsets(STATION - 1)
         self.assertAlmostEqual(data[0]['offset'], 7.)
         self.assertEqual(data.dtype.names, names)
         self.assertEqual(len(data), 4)
-        self.assertEqual(len(data[0]), 2)
+        self.assertEqual(len(data[0]), 3)
         # check for automatic sorting of station numbers
         data = self.station.station_timing_offsets(STATION + 1)
         self.assertAlmostEqual(data[0]['offset'], -7.)
 
     @patch.object(api, 'urlopen')
     def test_laziness_station_timing_offsets(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
         self.laziness_of_method('station_timing_offsets', STATION + 1)
 
     @patch.object(api, 'urlopen')
     def test_station_timing_offset(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
-        offset = self.station.station_timing_offset(0, STATION - 1)
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
+        offset, rchi2 = self.station.station_timing_offset(0, STATION - 1)
         self.assertAlmostEqual(offset, 7.0)
+        self.assertAlmostEqual(rchi2, 1.0)
 
     def laziness_of_attribute(self, attribute):
         with patch.object(api.API, '_get_tsv') as mock_get_tsv:
