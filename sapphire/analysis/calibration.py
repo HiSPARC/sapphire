@@ -115,7 +115,7 @@ def fit_timing_offset(dt, bins):
     x = (bins[:-1] + bins[1:]) / 2
     sigma = sqrt(y + 1)
     try:
-        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt), 0.),
+        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)),
                                sigma=sigma, absolute_sigma=False)
         offset = popt[1]
         y_fit = gauss(x, *popt)
