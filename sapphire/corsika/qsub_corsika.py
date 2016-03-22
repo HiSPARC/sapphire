@@ -131,7 +131,7 @@ class CorsikaBatch(object):
             self.energy_pow = int(modf(energy)[1] - 9)
         else:
             raise ValueError('Energy must either be an integer or end in .5.')
-        self.particle = particles.particle_id(particle)  # Stored as particle id
+        self.particle = particles.particle_id(particle)  # Store as particle id
         self.theta = zenith
         self.phi = (azimuth + 90) % 360  # Stored as Phi defined by CORSIKA
         self.queue = queue
