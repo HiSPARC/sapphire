@@ -77,7 +77,7 @@ def determine_detector_timing_offset(dt, dz=0):
         return nan
     c = .3
     bins = arange(-100 + 1.25, 100, 2.5)
-    detector_offset = fit_timing_offset(dt, bins) + dz / c
+    detector_offset, _ = fit_timing_offset(dt, bins) + dz / c
     if abs(detector_offset) > 100:
         detector_offset = nan
     return detector_offset
