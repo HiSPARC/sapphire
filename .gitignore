@@ -3,6 +3,7 @@
 # Specific
 sapphire/data/eventtime/
 sapphire/data/detector_timing_offsets/
+sapphire/data/station_timing_offsets/
 _build/
 build/
 dist/
