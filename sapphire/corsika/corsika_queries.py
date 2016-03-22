@@ -124,7 +124,7 @@ class CorsikaQuery(object):
         if energy is not None:
             if energy not in self.all_energies:
                 raise RuntimeError('Energy not available')
-            queries.append(self.filter('log10(energy)', energy))
+            queries.append(self.float_filter('log10(energy)', energy))
         if zenith is not None:
             queries.append(self.float_filter('zenith', radians(zenith)))
         if azimuth is not None:
@@ -178,7 +178,7 @@ class CorsikaQuery(object):
         :return: query.
 
         """
-        query = '(abs(%s - %s) < 1e-5)' % (type, value)
+        query = '(abs(%s - %s) < 1e-4)' % (type, value)
 
         return query
 

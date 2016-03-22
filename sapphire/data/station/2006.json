@@ -9,16 +9,16 @@
     "number": 2006, 
     "scintillators": [
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
-            "radius": null
+            "alpha": 110.0, 
+            "beta": 45.0, 
+            "height": 0.0, 
+            "radius": 3.3
         }, 
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
-            "radius": null
+            "alpha": 345.0, 
+            "beta": 45.0, 
+            "height": 0.0, 
+            "radius": 2.75
         }
     ], 
     "subcluster": "Nijmegen"

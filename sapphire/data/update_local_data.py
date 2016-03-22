@@ -16,8 +16,8 @@ from sapphire.api import API, Network, LOCAL_BASE, SRC_BASE
 from sapphire.utils import pbar
 
 
-def save_json():
-    for type in ['stations', 'subclusters', 'clusters', 'countries']:
+def update_local_json():
+    for type in pbar(['stations', 'subclusters', 'clusters', 'countries']):
         url = API.urls[type]
         try:
             data = loads(API._retrieve_url(url))
@@ -25,7 +25,9 @@ def save_json():
             print 'Failed to get %s data' % type
             continue
         if data:
-            with open(url.strip('/') + extsep + 'json', 'w') as jsonfile:
+            json_path = path.join(LOCAL_BASE,
+                                  url.strip('/') + extsep + 'json')
+            with open(json_path, 'w') as jsonfile:
                 dump(data, jsonfile, indent=4, sort_keys=True)
 
     for arg, kwarg, type in [
@@ -46,7 +48,7 @@ def save_json():
         except:
             print 'Failed to get %s data' % type
             continue
-        for number in numbers:
+        for number in pbar(numbers):
             url = API.urls[type].format(**{kwarg: number,
                                            'year': '', 'month': '', 'day': ''})
             try:
@@ -55,11 +57,13 @@ def save_json():
                 print 'Failed to get %s data for %s %d' % (type, arg, number)
                 continue
             if data:
-                with open(url.strip('/') + extsep + 'json', 'w') as jsonfile:
+                json_path = path.join(LOCAL_BASE,
+                                      url.strip('/') + extsep + 'json')
+                with open(json_path, 'w') as jsonfile:
                     dump(data, jsonfile, indent=4, sort_keys=True)
 
 
-def save_tsv():
+def update_local_tsv():
     """Get location tsv data for all stations"""
 
     station_numbers = Network().station_numbers()
@@ -73,15 +77,18 @@ def save_tsv():
             try:
                 data = API._retrieve_url(url, base=SRC_BASE)
             except:
-                print 'Failed to get %s data for station %d' % (type, number)
+                if type != 'layout':
+                    print 'Failed to get %s for station %d' % (type, number)
                 continue
             data = '\n'.join(d for d in data.split('\n')
                              if len(d) and d[0] != '#')
             if data:
-                with open(url.strip('/') + extsep + 'tsv', 'w') as tsvfile:
+                tsv_path = path.join(LOCAL_BASE,
+                                     url.strip('/') + extsep + 'tsv')
+                with open(tsv_path, 'w') as tsvfile:
                     tsvfile.write(data)
 
 
 if __name__ == '__main__':
-    save_json()
-    save_tsv()
+    update_local_json()
+    update_local_tsv()
