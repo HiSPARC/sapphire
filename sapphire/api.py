@@ -94,7 +94,8 @@ class API(object):
         'trigger': 'trigger/{station_number}/',
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/',
-        'station_timing_offsets': 'station_timing_offsets/{station_1}/{station_2}/'}
+        'station_timing_offsets': 'station_timing_offsets/{station_1}/'
+                                  '{station_2}/'}
 
     def __init__(self, force_fresh=False, force_stale=False):
         """Initialize API class
@@ -433,7 +434,8 @@ class Network(API):
 
         """
         columns = ('n', 'counts')
-        path = self.src_urls['coincidencenumber'].format(year=year, month=month,
+        path = self.src_urls['coincidencenumber'].format(year=year,
+                                                         month=month,
                                                          day=day)
         return self._get_tsv(path, names=columns)
 
