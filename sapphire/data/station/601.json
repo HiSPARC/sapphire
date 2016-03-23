@@ -9,16 +9,16 @@
     "number": 601, 
     "scintillators": [
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
-            "radius": null
+            "alpha": 291.0, 
+            "beta": 70.0, 
+            "height": 0.0, 
+            "radius": 1.45
         }, 
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
-            "radius": null
+            "alpha": 331.0, 
+            "beta": 70.0, 
+            "height": 0.0, 
+            "radius": 8.15
         }
     ], 
     "subcluster": "Hoorn"
