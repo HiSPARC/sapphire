@@ -9,7 +9,9 @@ become to large. By running this script the data is added after installation.
 
 """
 from os import path, extsep, mkdir
+from itertools import combinations
 
+from sapphire import HiSPARCNetwork
 from sapphire.api import API, Network, LOCAL_BASE, SRC_BASE
 from sapphire.utils import pbar
 
@@ -38,6 +40,33 @@ def update_additional_local_tsv():
                                      url.strip('/') + extsep + 'tsv')
                 with open(tsv_path, 'w') as tsvfile:
                     tsvfile.write(data)
+
+    type = 'station_timing_offsets'
+    network = HiSPARCNetwork()
+    station_numbers = Network().station_numbers()
+    try:
+        mkdir(path.join(LOCAL_BASE, type))
+    except OSError:
+        pass
+    for number1, number2 in pbar(combinations(station_numbers, 2)):
+        if network.calc_distance_between_stations(number1, number2) > 1e3:
+            continue
+        try:
+            mkdir(path.join(LOCAL_BASE, type, number))
+        except OSError:
+            pass
+        url = API.src_urls[type].format(station_1=number1, station_2=number2)
+        try:
+            data = API._retrieve_url(url.strip('/'), base=SRC_BASE)
+        except:
+            print 'Failed to get %s data for station pair %d-%d' % (number1,
+                                                                    number2)
+            continue
+        data = '\n'.join(d for d in data.split('\n') if len(d) and d[0] != '#')
+        if data:
+            tsv_path = path.join(LOCAL_BASE, url.strip('/') + extsep + 'tsv')
+            with open(tsv_path, 'w') as tsvfile:
+                tsvfile.write(data)
 
 
 if __name__ == '__main__':
