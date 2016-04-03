@@ -91,6 +91,14 @@ def get_seeds_todo():
     return seeds.difference(processed).difference(queued)
 
 
+def filter_large_seeds(seeds_todo):
+    """Exclude seeds for data files that are to large"""
+
+    limit = 15e9  # 10 GB
+    return {s for s in seeds_todo
+            if os.path.getsize(os.path.join(DATADIR, s, SOURCE_FILE)) < limit}
+
+
 def store_command(seed):
     """Write queued seeds to file"""
 
@@ -106,7 +114,8 @@ def run(queue):
 
     os.umask(002)
     logger.info('Getting todo list of seeds to convert.')
-    seeds = get_seeds_todo()
+    seeds_todo = get_seeds_todo()
+    seeds = filter_large_seeds(seeds_todo)
     n_jobs_to_submit = min(len(seeds), qsub.check_queue(queue), 50)
     extra = ''
     if queue == 'long':
