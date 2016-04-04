@@ -9,8 +9,9 @@ Determine the PMT response curve to correct the detected number of MIPs.
 from ..utils import gauss
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
-                   sqrt, sum, power)
+                   sqrt, abs, sum, power)
 from scipy.optimize import curve_fit
+from sapphire.utils import round_in_base
 
 
 def determine_detector_timing_offsets(events, station=None):
@@ -51,7 +52,7 @@ def determine_detector_timing_offsets(events, station=None):
             continue
         dt = (t[id] - t[ref_id]).compress(filters[id] & filters[ref_id])
         dz = z[id] - z[ref_id]
-        offsets[id] = determine_detector_timing_offset(dt, dz)
+        offsets[id], _ = determine_detector_timing_offset(dt, dz)
 
     # If all except reference are nan, make reference nan.
     if sum(isnan(offsets)) == 3:
@@ -76,12 +77,13 @@ def determine_detector_timing_offset(dt, dz=0):
     if not len(dt):
         return nan
     c = .3
-    bins = arange(-100 + 1.25, 100, 2.5)
-    detector_offset, _ = fit_timing_offset(dt, bins)
+    p = round_in_base(percentile(dt.compress(abs(dt) < 100), [0.5, 99.5]), 2.5)
+    bins = arange(p[0] + 1.25, p[1], 2.5)
+    detector_offset, rchi2 = fit_timing_offset(dt, bins)
     detector_offset += dz / c
     if abs(detector_offset) > 100:
         detector_offset = nan
-    return detector_offset
+    return detector_offset, rchi2
 
 
 def determine_station_timing_offset(dt, dz=0):

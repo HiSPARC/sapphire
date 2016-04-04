@@ -14,30 +14,31 @@ class DetectorTimingTests(unittest.TestCase):
         offset = calibration.determine_detector_timing_offset([])
         self.assertTrue(isnan(offset))
 
+        dt = array([-10, 0, 10])
+
         # Good result
         mock_fit.return_value = (1., 2.)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, 1.)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt],
-                                                              dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
         self.assertEqual(offset, 3.)
 
         mock_fit.return_value = (-1.5, 5.)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, -1.5)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt],
-                                                              dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
+
         self.assertEqual(offset, 0.5)
 
         mock_fit.return_value = (250., 100.)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
         self.assertTrue(isnan(offset))
         mock_fit.return_value = (-150., 100.)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
         self.assertTrue(isnan(offset))
 
         mock_fit.return_value = (nan, nan)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
         self.assertTrue(isnan(offset))
 
 
