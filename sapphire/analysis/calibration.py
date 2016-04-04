@@ -75,7 +75,7 @@ def determine_detector_timing_offset(dt, dz=0):
 
     """
     if not len(dt):
-        return nan
+        return nan, nan
     c = .3
     p = round_in_base(percentile(dt.compress(abs(dt) < 100), [0.5, 99.5]), 2.5)
     bins = arange(p[0] + 1.25, p[1], 2.5)
@@ -95,7 +95,7 @@ def determine_station_timing_offset(dt, dz=0):
 
     """
     if not len(dt):
-        return nan
+        return nan, nan
     c = .3
     p = percentile(dt, [0.5, 99.5])
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))

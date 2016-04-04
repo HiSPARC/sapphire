@@ -1,7 +1,7 @@
 import unittest
 
 from mock import patch, sentinel
-from numpy import isnan, nan, array
+from numpy import isnan, nan, array, all
 
 from sapphire.analysis import calibration
 
@@ -12,7 +12,7 @@ class DetectorTimingTests(unittest.TestCase):
     def test_determine_detector_timing_offset(self, mock_fit):
         # Empty list
         offset = calibration.determine_detector_timing_offset([])
-        self.assertTrue(isnan(offset))
+        self.assertTrue(all(isnan(offset)))
 
         dt = array([-10, 0, 10])
 
@@ -51,7 +51,7 @@ class StationTimingTests(unittest.TestCase):
 
         # Empty list
         offset = calibration.determine_station_timing_offset([])
-        self.assertTrue(isnan(offset))
+        self.assertTrue(all(isnan(offset)))
 
         # Good result
         mock_fit.return_value = (1., 5.)
