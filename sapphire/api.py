@@ -31,9 +31,9 @@ from StringIO import StringIO
 
 from lazy import lazy
 from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
-                   count_nonzero)
+                   count_nonzero, negative)
 
-from .utils import get_active_index
+from .utils import get_active_index, memoize
 from .transformations.clock import process_time
 
 logger = logging.getLogger('api')
@@ -93,7 +93,9 @@ class API(object):
         'gps': 'gps/{station_number}/',
         'trigger': 'trigger/{station_number}/',
         'layout': 'layout/{station_number}/',
-        'detector_timing_offsets': 'detector_timing_offsets/{station_number}/'}
+        'detector_timing_offsets': 'detector_timing_offsets/{station_number}/',
+        'station_timing_offsets': 'station_timing_offsets/{station_1}/'
+                                  '{station_2}/'}
 
     def __init__(self, force_fresh=False, force_stale=False):
         """Initialize API class
@@ -432,7 +434,8 @@ class Network(API):
 
         """
         columns = ('n', 'counts')
-        path = self.src_urls['coincidencenumber'].format(year=year, month=month,
+        path = self.src_urls['coincidencenumber'].format(year=year,
+                                                         month=month,
                                                          day=day)
         return self._get_tsv(path, names=columns)
 
@@ -917,3 +920,44 @@ class Station(API):
                                   for i in range(1, 5)]
 
         return detector_timing_offset
+
+    @memoize
+    def station_timing_offsets(self, reference_station):
+        """Get the station timing offset relative to reference_station
+
+        :param reference_station: reference station
+        :return: array of timestamps and values.
+
+        """
+        if reference_station == self.station:
+            raise Exception('Reference station cannot be the same station')
+        if reference_station > self.station:
+            station_1, station_2 = self.station, reference_station
+            toggle_sign = True
+        else:
+            station_2, station_1 = self.station, reference_station
+            toggle_sign = False
+
+        columns = ('timestamp', 'offset', 'rchi2')
+        base = self.src_urls['station_timing_offsets']
+        path = base.format(station_1=station_1, station_2=station_2)
+        data = self._get_tsv(path, names=columns)
+        if toggle_sign:
+            data['offset'] = negative(data['offset'])
+        return data
+
+    def station_timing_offset(self, timestamp, reference_station):
+        """Get station timing offset data for specific timestamp
+
+        :param timestamp: timestamp for which the value is valid.
+        :param reference_station: reference station
+        :return: list of values for given timestamp.
+
+        """
+        station_timing_offsets = self.station_timing_offsets(reference_station)
+        idx = get_active_index(station_timing_offsets['timestamp'],
+                               timestamp)
+        station_timing_offset = (station_timing_offsets[idx]['offset'],
+                                 station_timing_offsets[idx]['rchi2'])
+
+        return station_timing_offset

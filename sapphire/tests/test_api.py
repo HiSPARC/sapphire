@@ -506,6 +506,32 @@ class StationTests(unittest.TestCase):
         offsets = self.station.detector_timing_offset(0)
         self.assertEqual(len(offsets), 4)
 
+    @patch.object(api, 'urlopen')
+    def test_station_timing_offsets(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
+        names = ('timestamp', 'offset', 'rchi2')
+        self.assertRaises(Exception, self.station.station_timing_offsets, STATION)
+        data = self.station.station_timing_offsets(STATION - 1)
+        self.assertAlmostEqual(data[0]['offset'], 7.)
+        self.assertEqual(data.dtype.names, names)
+        self.assertEqual(len(data), 4)
+        self.assertEqual(len(data[0]), 3)
+        # check for automatic sorting of station numbers
+        data = self.station.station_timing_offsets(STATION + 1)
+        self.assertAlmostEqual(data[0]['offset'], -7.)
+
+    @patch.object(api, 'urlopen')
+    def test_laziness_station_timing_offsets(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
+        self.laziness_of_method('station_timing_offsets', STATION + 1)
+
+    @patch.object(api, 'urlopen')
+    def test_station_timing_offset(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
+        offset, rchi2 = self.station.station_timing_offset(0, STATION - 1)
+        self.assertAlmostEqual(offset, 7.0)
+        self.assertAlmostEqual(rchi2, 1.0)
+
     def laziness_of_attribute(self, attribute):
         with patch.object(api.API, '_get_tsv') as mock_get_tsv:
             self.assertFalse(mock_get_tsv.called)
@@ -513,6 +539,16 @@ class StationTests(unittest.TestCase):
             self.assertTrue(mock_get_tsv.called)
             self.assertEqual(mock_get_tsv.call_count, 1)
             data2 = self.station.__getattribute__(attribute)
+            self.assertEqual(mock_get_tsv.call_count, 1)
+            self.assertEqual(data, data2)
+
+    def laziness_of_method(self, method, args=None):
+        with patch.object(api.API, '_get_tsv') as mock_get_tsv:
+            self.assertFalse(mock_get_tsv.called)
+            data = self.station.__getattribute__(method)(args)
+            self.assertTrue(mock_get_tsv.called)
+            self.assertEqual(mock_get_tsv.call_count, 1)
+            data2 = self.station.__getattribute__(method)(args)
             self.assertEqual(mock_get_tsv.call_count, 1)
             self.assertEqual(data, data2)
 
@@ -577,6 +613,18 @@ class StaleStationTests(StationTests):
     def test_detector_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
         self.assertRaises(Exception, self.station.detector_timing_offset, 0)
+
+    @patch.object(api, 'urlopen')
+    def test_station_timing_offsets(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
+        with self.assertRaises(Exception):
+            self.station.station_timing_offsets(STATION - 1)
+
+    @patch.object(api, 'urlopen')
+    def test_station_timing_offset(self, mock_urlopen):
+        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
+        with self.assertRaises(Exception):
+            self.station.station_timing_offset(0, STATION - 1)
 
 
 if __name__ == '__main__':

@@ -8,8 +8,10 @@ Determine the PMT response curve to correct the detected number of MIPs.
 """
 from ..utils import gauss
 
-from numpy import arange, histogram, percentile, linspace, std, nan, isnan
+from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
+                   sqrt, abs, sum, power)
 from scipy.optimize import curve_fit
+from sapphire.utils import round_in_base
 
 
 def determine_detector_timing_offsets(events, station=None):
@@ -50,7 +52,7 @@ def determine_detector_timing_offsets(events, station=None):
             continue
         dt = (t[id] - t[ref_id]).compress(filters[id] & filters[ref_id])
         dz = z[id] - z[ref_id]
-        offsets[id] = determine_detector_timing_offset(dt, dz)
+        offsets[id], _ = determine_detector_timing_offset(dt, dz)
 
     # If all except reference are nan, make reference nan.
     if sum(isnan(offsets)) == 3:
@@ -73,13 +75,15 @@ def determine_detector_timing_offset(dt, dz=0):
 
     """
     if not len(dt):
-        return nan
+        return nan, nan
     c = .3
-    bins = arange(-100 + 1.25, 100, 2.5)
-    detector_offset = fit_timing_offset(dt, bins) + dz / c
+    p = round_in_base(percentile(dt.compress(abs(dt) < 100), [0.5, 99.5]), 2.5)
+    bins = arange(p[0] + 1.25, p[1], 2.5)
+    detector_offset, rchi2 = fit_timing_offset(dt, bins)
+    detector_offset += dz / c
     if abs(detector_offset) > 100:
         detector_offset = nan
-    return detector_offset
+    return detector_offset, rchi2
 
 
 def determine_station_timing_offset(dt, dz=0):
@@ -91,14 +95,15 @@ def determine_station_timing_offset(dt, dz=0):
 
     """
     if not len(dt):
-        return nan
+        return nan, nan
     c = .3
     p = percentile(dt, [0.5, 99.5])
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
-    station_offset = fit_timing_offset(dt, bins) + dz / c
+    station_offset, rchi2 = fit_timing_offset(dt, bins)
+    station_offset += dz / c
     if abs(station_offset) > 1000:
-        station_offset = nan
-    return station_offset
+        return nan, nan
+    return station_offset, rchi2
 
 
 def fit_timing_offset(dt, bins):
@@ -111,12 +116,17 @@ def fit_timing_offset(dt, bins):
     """
     y, bins = histogram(dt, bins=bins)
     x = (bins[:-1] + bins[1:]) / 2
+    sigma = sqrt(y + 1)
     try:
-        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)))
+        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)),
+                               sigma=sigma, absolute_sigma=False)
         offset = popt[1]
+        y_fit = gauss(x, *popt)
+        n_dof = len(x) - len(popt)
+        rchi2 = sum(power((y - y_fit) / sigma, 2)) / n_dof
     except RuntimeError:
-        offset = nan
-    return offset
+        offset, rchi2 = nan, nan
+    return offset, rchi2
 
 
 def determine_best_reference(filters):

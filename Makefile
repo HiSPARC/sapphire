@@ -19,6 +19,8 @@ endif
 
 test:
 	python setup.py test
-	flake8 --ignore=E501 --exclude=sapphire/transformations/geographic.py sapphire
+	flake8 --ignore=Z --exclude=sapphire/transformations/geographic.py,sapphire/tests/,sapphire/corsika/qsub_corsika.py sapphire
+	flake8 --ignore=E501 sapphire/tests/
+	flake8 --ignore=E501 sapphire/corsika/qsub_corsika.py
 	flake8 --exit-zero --ignore=Z sapphire/transformations/geographic.py
 	sphinx-build -anW doc doc/_build/html

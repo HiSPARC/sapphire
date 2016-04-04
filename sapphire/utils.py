@@ -5,6 +5,7 @@ The module contains some commonly functions and classes.
 """
 from __future__ import division
 
+from functools import wraps
 from bisect import bisect_right
 from distutils.spawn import find_executable
 
@@ -144,3 +145,18 @@ def which(program):
     path = find_executable(program)
     if not path:
         raise Exception('The program %s is not available.' % program)
+
+
+def memoize(obj):
+    """ Memoisation cache decorator
+
+    """
+    cache = obj.cache = {}
+
+    @wraps(obj)
+    def memoizer(*args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key not in cache:
+            cache[key] = obj(*args, **kwargs)
+        return cache[key]
+    return memoizer

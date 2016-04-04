@@ -148,7 +148,8 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename=LOGFILE, filemode='a',
-                        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-                        datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+    logging.basicConfig(
+        filename=LOGFILE, filemode='a',
+        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+        datefmt='%y%m%d_%H%M%S', level=logging.INFO)
     main()
