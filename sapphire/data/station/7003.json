@@ -9,16 +9,16 @@
     "number": 7003, 
     "scintillators": [
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
-            "radius": null
+            "alpha": 11.1, 
+            "beta": 21.6, 
+            "height": -0.09, 
+            "radius": 3.56
         }, 
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
-            "radius": null
+            "alpha": -147.9, 
+            "beta": 21.6, 
+            "height": -0.09, 
+            "radius": 3.4
         }
     ], 
     "subcluster": "Enschede"

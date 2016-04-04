@@ -70,6 +70,7 @@ class SeedsTest(unittest.TestCase):
         self.assertEqual(command, 'store_corsika_data /data/123_456/DAT000000 /data/123_456/corsika.h5')
         qsub_store_corsika_data.DATADIR = tmp
 
+    @patch.object(qsub_store_corsika_data.os.path, 'getsize')
     @patch.object(qsub_store_corsika_data.os, 'umask')
     @patch.object(qsub_store_corsika_data, 'get_seeds_todo')
     @patch.object(qsub_store_corsika_data.qsub, 'check_queue')
@@ -78,8 +79,9 @@ class SeedsTest(unittest.TestCase):
     @patch.object(qsub_store_corsika_data, 'append_queued_seeds')
     @patch.object(qsub_store_corsika_data, 'SCRIPT_TEMPLATE')
     def test_run(self, mock_template, mock_append, mock_submit, mock_store,
-                 mock_check, mock_get_seeds, mock_umask):
-        seeds = set([sentinel.seed1, sentinel.seed2])
+                 mock_check, mock_get_seeds, mock_umask, mock_size):
+        seeds = set(['123_456', '234_567'])
+        mock_size.return_value = 12355L
         mock_get_seeds.return_value = seeds.copy()
         mock_check.return_value = 6
         mock_template.format.return_value = sentinel.script
