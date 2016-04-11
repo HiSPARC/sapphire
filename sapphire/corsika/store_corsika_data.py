@@ -22,6 +22,7 @@ import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
 from .reader import CorsikaFile
+from .mergesort import TableMergeSort
 
 
 class GroundParticles(tables.IsDescription):
@@ -75,17 +76,33 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
     corsika_data = CorsikaFile(source)
 
     temp_dir = os.path.dirname(destination)
+    unsorted = create_tempfile_path(temp_dir)
     temp_path = create_tempfile_path(temp_dir)
 
-    with tables.open_file(temp_path, 'a') as hdf_temp:
+    with tables.open_file(unsorted, 'a') as hdf_temp:
         store_corsika_data(corsika_data, hdf_temp, progress=progress)
-    with tables.open_file(temp_path, 'a') as hdf_temp:
-        create_index(hdf_temp, progress=progress)
-    with tables.open_file(temp_path, 'r') as hdf_temp, \
-            tables.open_file(destination, 'w') as hdf_data:
-        copy_and_sort_node(hdf_temp, hdf_data, progress=progress)
+    with tables.open_file(unsorted, 'r') as hdf_unsorted, \
+            tables.open_file(destination, 'w') as hdf_data, \
+            tables.open_file(temp_path, 'w') as hdf_temp:
 
+        with TableMergeSort('x', hdf_unsorted, hdf_data, hdf_data,
+                            progress=progress) as mergesort:
+            mergesort.sort()
+
+            event_header = hdf_unsorted.get_node_attr('/', 'event_header')
+            run_header = hdf_unsorted.get_node_attr('/', 'run_header')
+            event_end = hdf_unsorted.get_node_attr('/', 'event_end')
+            run_end = hdf_unsorted.get_node_attr('/', 'run_end')
+            hdf_data.set_node_attr('/', 'event_header', event_header)
+            hdf_data.set_node_attr('/', 'run_header', run_header)
+            hdf_data.set_node_attr('/', 'event_end', event_end)
+            hdf_data.set_node_attr('/', 'run_end', run_end)
+
+    os.remove(unsorted)
     os.remove(temp_path)
+
+    with tables.open_file(destination, 'a') as hdf_data:
+        create_index(hdf_data, progress=progress)
 
 
 def store_corsika_data(source, destination, table_name='groundparticles',

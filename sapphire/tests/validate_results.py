@@ -29,6 +29,8 @@ def validate_results(test, expected_path, actual_path):
                 validate_arrays(test, expected_node, actual_node)
             else:
                 raise NotImplementedError
+            validate_attributes(test, expected_node, actual_node)
+        validate_attributes(test, expected_file.root, actual_file.root)
 
 
 def validate_results_node(test, expected_path, actual_path, expected_node,
@@ -98,3 +100,10 @@ def validate_arrays(test, expected_node, actual_node):
                         array(actual_node.read())),
                     "Arrays '%s' do not match." %
                     expected_node._v_pathname)
+
+
+def validate_attributes(test, expected_node, actual_node):
+    """Verify that two nodes have the same user attributes"""
+
+    test.assertEqual(expected_node._v_attrs._v_attrnamesuser,
+                     actual_node._v_attrs._v_attrnamesuser)
