@@ -272,7 +272,7 @@ def load_coincidences(file, tsv_file, group=''):
                 raise Exception('No data to load, source contains no data.')
             else:
                 # Successful download because last line is a non-empty comment
-                return
+                pass
         else:
             # Last line is data, report possible fail and last date/time
             raise Exception('Source file seems incomplete, last received data '
@@ -388,7 +388,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
             raise Exception('Failed to download data, no data recieved.')
         else:
             # Successful download because last line is a non-empty comment
-            return
+            pass
     else:
         # Last line is data, report failed download and date/time of last line
         raise Exception('Failed to complete download, last received data '
