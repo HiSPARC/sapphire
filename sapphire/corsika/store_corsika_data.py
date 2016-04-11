@@ -89,6 +89,15 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
                             progress=progress) as mergesort:
             mergesort.sort()
 
+            event_header = hdf_unsorted.get_node_attr('/', 'event_header')
+            run_header = hdf_unsorted.get_node_attr('/', 'run_header')
+            event_end = hdf_unsorted.get_node_attr('/', 'event_end')
+            run_end = hdf_unsorted.get_node_attr('/', 'run_end')
+            hdf_data.set_node_attr(event_header)
+            hdf_data.set_node_attr(run_header)
+            hdf_data.set_node_attr(event_end)
+            hdf_data.set_node_attr(run_end)
+
     os.remove(unsorted)
     os.remove(temp_path)
 
