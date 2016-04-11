@@ -76,7 +76,7 @@ class TableMergeSort(object):
                 self.hdf5_temp = tempfile
             if self.progress:
                 parts = int(len(self.table) / self.nrows_in_chunk) + 1
-                print "On disk mergesort in %d parts." % (parts)
+                print "On disk mergesort in %d parts." % parts
         else:
             if self.progress:
                 print "Table can be sorted in memory."
@@ -97,8 +97,7 @@ class TableMergeSort(object):
         if parts == 1:
             if self.progress:
                 print "Sorting table in memory and writing to disk."
-                self._sort_chunk(self.outtable, 0, nrows)
-
+            self._sort_chunk(self.outtable, 0, nrows)
         else:
             if self.progress:
                 print "Sorting in %d chunks of %d rows:" % (parts, chunk)
