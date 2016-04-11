@@ -70,8 +70,8 @@ class TableMergeSort(object):
 
         if self.nrows > self.nrows_in_chunk:
             if self.tempfile is None:
-                tempfile_path = self._create_tempfile_path()
-                self.hdf5_temp = tables.open_file(tempfile_path, 'w')
+                self.tempfile_path = self._create_tempfile_path()
+                self.hdf5_temp = tables.open_file(self.tempfile_path, 'w')
             else:
                 self.hdf5_temp = tempfile
             if self.progress:
@@ -87,6 +87,7 @@ class TableMergeSort(object):
     def __exit__(self, type, value, traceback):
         if self.hdf5_temp is not None:
             self.hdf5_temp.close()
+            os.remove(self.tempfile_path)
 
     def sort(self):
         """Sort the table"""
