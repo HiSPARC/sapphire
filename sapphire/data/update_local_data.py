@@ -84,6 +84,9 @@ def update_local_tsv():
 
 def get_and_store_json(url):
     data = loads(API._retrieve_url(url))
+    json_path = path.join(LOCAL_BASE, url.strip('/') + extsep + 'json')
+    with open(json_path, 'w') as jsonfile:
+        dump(data, jsonfile, indent=4, sort_keys=True)
 
 
 def get_and_store_tsv(url):
