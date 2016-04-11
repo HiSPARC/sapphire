@@ -4,7 +4,6 @@ from urllib import urlretrieve
 
 import tables
 import datetime
-from mock import patch
 
 from sapphire import esd
 

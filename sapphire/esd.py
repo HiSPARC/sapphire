@@ -254,9 +254,8 @@ def load_coincidences(file, tsv_file, group=''):
                 coincidence.append(line)
             else:
                 # Full coincidence has been received, store it.
-                timestamp = _read_lines_and_store_coincidence(file, c_group,
-                                                              coincidence,
-                                                              station_groups)
+                _read_lines_and_store_coincidence(file, c_group,
+                                                  coincidence, station_groups)
                 coincidence = [line]
                 current_coincidence = int(line[0])
                 file.flush()
