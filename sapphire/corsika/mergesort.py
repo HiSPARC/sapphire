@@ -76,7 +76,6 @@ class TableMergeSort(object):
                 self.hdf5_temp = tempfile
             if self.progress:
                 parts = int(len(self.table) / self.nrows_in_chunk) + 1
-                print "Table (nrows = %d) is too large for in memory sort." % self.nrows
                 print "On disk mergesort in %d parts." % (parts)
         else:
             if self.progress:
