@@ -29,12 +29,8 @@ def validate_results(test, expected_path, actual_path):
                 validate_arrays(test, expected_node, actual_node)
             else:
                 raise NotImplementedError
-            for attribute in expected_node._v_attrs._v_attrnamesuser:
-                try:
-                    validate_attributes(test, expected_node, actual_node,
-                                        attribute)
-                except KeyError:
-                    test.fail('Expected attribute %s not found" % attribute')
+            validate_attributes(test, expected_node, actual_node)
+        validate_attributes(test, expected_file.root, actual_file.root)
 
 
 def validate_results_node(test, expected_path, actual_path, expected_node,
@@ -106,15 +102,8 @@ def validate_arrays(test, expected_node, actual_node):
                     expected_node._v_pathname)
 
 
-def validate_attributes(test, expected_node, actual_node, attributes):
-    """Verify that two nodes have identical attributes"""
+def validate_attributes(test, expected_node, actual_node):
+    """Verify that two nodes have the same user attributes"""
 
-    for attribute in expected_node._v_attrs._v_attrnamesuser:
-        print "DEbUG: attribute: ", attribute
-        expected_attribute = expected_node._v_attrs[attribute]
-        try:
-            actual_attribute = actual_node._v_attrs[attribute]
-        except KeyError:
-            test.fail('Expected attribute %s not found" % attribute')
-        test.AssertEqual(expected_attribute.__dict__,
-                         actual_attribute.__dict__)
+    test.assertEqual(expected_node._v_attrs._v_attrnamesuser,
+                     actual_node._v_attrs._v_attrnamesuser)
