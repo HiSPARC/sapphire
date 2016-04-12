@@ -21,16 +21,18 @@ class TableMergeSort(object):
 
         """ Initialize the class
 
-        :param inputfile: Pytables HDF5 input file.
-        :param outputfile: optional Pytable HDF5 output file.
-        :param tempfile: optional Pytables HDF5 tempfile. If not specified
-            a temp file will be created and removed.
-        :param tablename: the name of the table to sort
-        :param destination: optional name of the sorted table
-        :param overwrite: if True, overwrite destination table
-        :param progress: if True, show verbose output and progre
-        """
+        :param key: the name of the column which is to be sorted.
+        :param inputfile: PyTables HDF5 input file.
+        :param outputfile: optional PyTables HDF5 output file. If None the
+            inputfile will be used for output.
+        :param tempfile: optional PyTables HDF5 tempfile. If not specified
+             a temp file will be created and removed when finished.
+        :param tablename: the name of the table to sort.
+        :param destination: optional name of the sorted table.
+        :param overwrite: if True, overwrite destination table.
+        :param progress: if True, show verbose output and progress.
 
+        """
         self.key = key
         self.hdf5_in = inputfile
         self.table = self.hdf5_in.get_node('/%s' % tablename)
@@ -45,7 +47,7 @@ class TableMergeSort(object):
                 self.hdf5_out = inputfile
                 self.destination = destination
             else:
-                raise RuntimeError("must specify either an outputfile or a "
+                raise RuntimeError("Must specify either an outputfile or a "
                                    "destination table")
         else:
             self.hdf5_out = outputfile
@@ -59,7 +61,7 @@ class TableMergeSort(object):
             if self.overwrite:
                 self.hd5_out.remove_nove('/', self.destination, recursive=True)
             else:
-                raise RuntimeError("Destination table exists and overwrite"
+                raise RuntimeError("Destination table exists and overwrite "
                                    "is False")
         except tables.NoSuchNodeError:
             self.outtable = self.hdf5_out.create_table('/', self.destination,
@@ -150,7 +152,8 @@ class TableMergeSort(object):
     def _sort_table(self, tablechunk):
         """Sort the chunk
 
-        use mergesort: much faster than quicksort and heapsort for large chunks
+        Sort using mergesort, this is much faster than quicksort and
+        heapsort for large chunks.
 
         """
         return tablechunk.sort(order=self.key, kind='mergesort')
@@ -166,13 +169,16 @@ class TableMergeSort(object):
         return self._iter_chunk(table)
 
     def _calc_nrows_in_chunk(self):
-        """
-        Determine maximum in memory table (sort) size based on available memory
-        In general larger chunks are much faster
+        """Determine maximum in memory table (sort) size
 
-        not implemented:
+        This should be based on available memory because larger chunks are
+        much faster. It is hard to determine the RAM that will be available,
+        and the total RAM that will be used by Python.
 
-        1e7 rows is about 350Mb for CORSIKA groundparticles
+        Currently not implemented.
+
+        Each CORSIKA groundparticles row is about 36 bytes, so 1e7 rows are
+        about 350 MB.
 
         """
         self.nrows_in_chunk = int(5e7)
