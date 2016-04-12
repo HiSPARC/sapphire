@@ -127,9 +127,7 @@ class CorsikaEvent(object):
         """
         for sub_block_index in self._raw_file._subblocks_indices(
                 self._header_index, self._end_index):
-            for p in range(self.format.particles_per_subblock):
-                pos = sub_block_index + p * self.format.particle_size
-                particle = self._raw_file._get_particle_record_tuple(pos)
+            for particle in self._raw_file._get_particles(sub_block_index):
                 type = particle[6]  # particle type
                 level = particle[9]  # observation level
 
@@ -341,6 +339,14 @@ class CorsikaFile(object):
 
         return particle_data(self._unpack_particle(word))
 
+    def _get_particles(self, word):
+        """Get subblock of particles from the contents as tuples"""
+
+        unpacked_particles = self._unpack_particles(word)
+        particles = zip(*[iter(unpacked_particles)] *
+                        self.format.fields_per_particle)
+        return (particle_data(particle) for particle in particles)
+
     def _unpack_subblock(self, word):
         """Unpack a subblock block
 
@@ -360,6 +366,16 @@ class CorsikaFile(object):
         self._file.seek(word)
         return unpack(self.format.particle_format,
                       self._file.read(self.format.particle_size))
+
+    def _unpack_particles(self, word):
+        """Unpack a particles subblock
+
+        :param word: the index where the particle subblock starts
+
+        """
+        self._file.seek(word)
+        return unpack(self.format.particles_format,
+                      self._file.read(self.format.particles_size))
 
     def Blocks():
         pass
