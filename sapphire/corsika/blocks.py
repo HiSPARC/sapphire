@@ -17,8 +17,8 @@ import particles
 try:
     from numba import jit
 except ImportError:
-    def jit():
-        pass
+    def jit(func):
+        return func
 
 
 # All sizes are in bytes
