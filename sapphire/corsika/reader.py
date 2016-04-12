@@ -68,6 +68,7 @@
 from struct import unpack
 import warnings
 import os
+from io import open
 
 from .blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
                      ParticleData, Format, ParticleDataThin, FormatThin,
