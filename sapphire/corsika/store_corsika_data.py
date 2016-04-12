@@ -85,7 +85,7 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
             tables.open_file(destination, 'w') as hdf_data, \
             tables.open_file(temp_path, 'w') as hdf_temp:
 
-        with TableMergeSort('x', hdf_unsorted, hdf_data, hdf_data,
+        with TableMergeSort('x', hdf_unsorted, hdf_data, hdf_temp,
                             progress=progress) as mergesort:
             mergesort.sort()
 
