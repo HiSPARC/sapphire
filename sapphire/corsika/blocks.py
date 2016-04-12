@@ -14,7 +14,7 @@ import numpy
 
 import units
 import particles
-
+from numba import jit
 
 # All sizes are in bytes
 
@@ -381,6 +381,7 @@ class EventEnd(object):
         self.n_preshower_EM_particles = subblock[266]
 
 
+@jit(nopython=True)
 def particle_data(subblock):
     """Get particle data.
 
