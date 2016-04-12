@@ -85,6 +85,10 @@ class TableMergeSort(object):
         return self
 
     def __exit__(self, type, value, traceback):
+        try:
+            self.tempfile_path
+        except AttributeError:
+            return
         if self.hdf5_temp is not None:
             self.hdf5_temp.close()
             os.remove(self.tempfile_path)
