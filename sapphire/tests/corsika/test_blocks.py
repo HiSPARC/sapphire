@@ -6,7 +6,7 @@ from sapphire.corsika import blocks
 
 try:
     import numba
-    numba.__version__  # stop flake8 from complaining about used module
+    numba.__version__  # stop flake8 from complaining about unused module
 except ImportError:
     numba_available = False
 else:
