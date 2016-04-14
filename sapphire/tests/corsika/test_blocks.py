@@ -6,7 +6,6 @@ from sapphire.corsika import blocks
 
 try:
     import numba
-    numba.__version__  # stop flake8 from complaining about unused module
 except ImportError:
     numba_available = False
 else:
@@ -93,6 +92,11 @@ class ParticleDataTests(unittest.TestCase):
         self.result = (p_x, p_y, -p_z, -y, x, t, id / 1000,
                        sqrt(x ** 2 + y ** 2), id / 10 % 100,
                        id % 10, atan2(x, -y))
+
+    def tearDown(self):
+        if numba_available:
+            reload(numba)
+        reload(blocks)
 
     def test_particle_data(self):
         """ verify conversion of particle information by particle_data() """
