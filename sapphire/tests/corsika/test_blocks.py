@@ -98,8 +98,6 @@ class ParticleDataTests(unittest.TestCase):
         """ verify conversion of particle information by particle_data() """
         self.assertAlmostEqual(blocks.particle_data(self.subblock), self.result)
 
-
-class ParticleDataNumbaTests(ParticleDataTests):
     @unittest.skipUnless(numba_available, "Numba required")
     def test_numba_jit(self):
         """ verify particle_data() when compiled by numba """
