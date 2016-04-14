@@ -1,6 +1,16 @@
 import unittest
+from mock import patch
+from math import sqrt, atan2
 
 from sapphire.corsika import blocks
+
+try:
+    import numba
+    numba.__version__  # stop flake8 from complaining about used module
+except ImportError:
+    numba_available = False
+else:
+    numba_available = True
 
 
 class CorsikaBlocksTests(unittest.TestCase):
@@ -61,6 +71,48 @@ class CorsikaBlocksThinTests(CorsikaBlocksTests):
                          msg=('The thinned particle format ({particle}) is incorrect.'
                               .format(particle=self.format.particle_format)))
 
+
+class ParticleDataTests(unittest.TestCase):
+    def setUp(self):
+        id = 1000
+        p_x = 2.   # GeV
+        p_y = 1.   # GeV
+        p_z = 10.  # GeV
+        x = 300.   # cm
+        y = 400.   # cm
+        t = 12345678.  # ns
+
+        self.subblock = (id, p_x, p_y, p_z, x, y, t)
+
+        p_x *= 1e9  # eV
+        p_y *= 1e9
+        p_z *= 1e9
+        x *= 1e-2   # m
+        y *= 1e-2
+
+        self.result = (p_x, p_y, -p_z, -y, x, t, id / 1000,
+                       sqrt(x ** 2 + y ** 2), id / 10 % 100,
+                       id % 10, atan2(x, -y))
+
+    def test_particle_data(self):
+        """ verify conversion of particle information by particle_data() """
+        self.assertAlmostEqual(blocks.particle_data(self.subblock), self.result)
+
+
+class ParticleDataNumbaTests(ParticleDataTests):
+    @unittest.skipUnless(numba_available, "Numba required")
+    def test_numba_jit(self):
+        """ verify particle_data() when compiled by numba """
+        self.assertTrue(hasattr(blocks.particle_data, '__numba__'))
+        self.assertAlmostEqual(blocks.particle_data(self.subblock), self.result)
+
+    @unittest.skipUnless(numba_available, "Numba required")
+    @patch('numba.jit', lambda x: x)
+    def test_without_jit(self):
+        """ test particla_data() without numba, while numba is installed """
+        reload(blocks)
+        self.assertFalse(hasattr(blocks.particle_data, '__numba__'))
+        self.assertAlmostEqual(blocks.particle_data(self.subblock), self.result)
 
 if __name__ == '__main__':
     unittest.main()
