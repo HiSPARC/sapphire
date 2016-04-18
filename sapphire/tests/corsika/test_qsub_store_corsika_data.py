@@ -67,7 +67,9 @@ class SeedsTest(unittest.TestCase):
         tmp = qsub_store_corsika_data.DATADIR
         qsub_store_corsika_data.DATADIR = '/data'
         command = qsub_store_corsika_data.store_command('123_456')
-        self.assertEqual(command, 'store_corsika_data /data/123_456/DAT000000 /data/123_456/corsika.h5')
+        self.assertEqual(command, '/data/hisparc/env/miniconda/envs/corsika/bin/python '
+                                  '/data/hisparc/env/miniconda/envs/corsika/bin/store_corsika_data '
+                                  '/data/123_456/DAT000000 /data/123_456/corsika.h5')
         qsub_store_corsika_data.DATADIR = tmp
 
     @patch.object(qsub_store_corsika_data.os.path, 'getsize')
