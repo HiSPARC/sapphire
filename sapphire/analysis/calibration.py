@@ -6,12 +6,17 @@ Determine timing offsets for detectors and stations to correct arrival times.
 Determine the PMT response curve to correct the detected number of MIPs.
 
 """
+from ..clusters import HiSPARCStations
 from ..utils import gauss, round_in_base
+from ..api import Station
+from ..transformations.clock import datetime_to_gps, gps_to_datetime
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
                    sqrt, abs, sum, power)
+import numpy as np
 from scipy.optimize import curve_fit
 from datetime import timedelta
+from itertools import tee, izip
 
 
 def determine_detector_timing_offsets(events, station=None):
@@ -84,6 +89,67 @@ def determine_detector_timing_offset(dt, dz=0):
     if abs(detector_offset) > 100:
         detector_offset = nan
     return detector_offset, rchi2
+
+
+class station_timing_offsets(object):
+    """Determine the timing offsets between stations"""
+
+    def __init__(self, data, station_id, ref_station_id):
+        """
+
+        :param data: pytables HDF5 file with timedelta tables
+        :param station_id: station for which to determine station offsets
+        :param ref_station_id: station id of reference station
+        """
+        self.data = data
+        self.station_id = station_id
+        self.ref_station_id = ref_station_id
+        self.station = Station(station_id)
+        self.ref_station = Station(ref_station_id)
+        self.cluster = HiSPARCStations([station_id, ref_station_id])
+        self.r, _, self.dz = self.cluster.calc_rphiz_for_stations(0, 1)
+
+    def read_dt(self, start, end):
+        """ Overload this method on publicdb """
+
+        table = self.data.get_node('/s%d' % self.station_id)
+        ts0 = datetime_to_gps(start)
+        ts1 = datetime_to_gps(end)
+        return table.read_where('(timestamp >= ts0) & (timestamp < ts1)',
+                                field='delta')
+
+    def determine_station_timing_offsets(self, start, end):
+        """Determine the timing offsets between stations
+
+        :param start, end: datetime instances
+
+        """
+
+        # TODO: add electronics changes to "split"
+        gps = self.station.gps_locations['timestamp']
+        gps_ref = self.ref_station.gps_locations['timestamp']
+
+        split = np.append(gps, gps_ref)
+        split.sort()
+        split = map(gps_to_datetime, split)
+
+        offsets = []
+
+        # TODO: determine sensible number of days
+        step = int(self.r ** 1.12)
+
+        for b, e in pairwise(split):
+            print "interval: ", b, e, e - b
+            for b1, e1 in datetime_range(b, e, step):
+                print "**** interval: ", b1, e1, e1 - b1
+                ts0 = datetime_to_gps(b1)
+                dt = self.read_dt(b1, e1)
+                if len(dt) < 100:
+                    s_off, rchi2 = nan, nan
+                else:
+                    s_off, rchi2 = determine_station_timing_offset(dt, self.dz)
+                offsets.append((ts0, s_off, rchi2))
+        return offsets
 
 
 def determine_station_timing_offset(dt, dz=0):
@@ -174,3 +240,11 @@ def datetime_range(start, end, step):
         yield chunk_start, chunk_end
         chunk_start = chunk_end
         remainder = max(0, remainder - 1)
+
+
+def pairwise(iterable):
+    """s -> (s0,s1), (s1,s2), (s2, s3), ..."""
+
+    a, b = tee(iterable)
+    next(b, None)
+    return izip(a, b)
