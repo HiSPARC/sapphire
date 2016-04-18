@@ -2,6 +2,7 @@ import unittest
 
 from mock import patch, sentinel
 from numpy import isnan, nan, array, all
+from datetime import datetime
 
 from sapphire.analysis import calibration
 
@@ -104,6 +105,45 @@ class BestReferenceTests(unittest.TestCase):
         self.assertRaises(IndexError, calibration.determine_best_reference,
                           filters)
 
+
+class SplitDatetimeRangeTests(unittest.TestCase):
+
+    def test_split_range(self):
+        # 101 days
+        start = datetime(2016, 1, 1)
+        end_5days = datetime(2016, 1, 6)
+        end_100days = datetime(2016, 4, 11)
+
+        # single interval
+        result = list(calibration.datetime_range(start, end_5days, 5))
+        self.assertEqual(len(result), 1)
+        begin, end = result[0]
+        self.assertEqual(begin, start)
+        self.assertEqual(end, end_5days)
+
+        # split an even interval in two parts
+        result = list(calibration.datetime_range(start, end_5days, 2))
+        self.assertEqual(len(result), 2)
+        begin, _ = result[0]
+        _, end = result[-1]
+        self.assertEqual(begin, start)
+        self.assertEqual(end, end_5days)
+
+        # split large interval, remainder = 0
+        result = list(calibration.datetime_range(start, end_100days, 10))
+        self.assertEqual(len(result), 10)
+        begin, _ = result[0]
+        _, end = result[-1]
+        self.assertEqual(begin, start)
+        self.assertEqual(end, end_100days)
+
+        # split large interval, divide remainder
+        result = list(calibration.datetime_range(start, end_100days, 7))
+        self.assertEqual(len(result), 14)
+        begin, _ = result[0]
+        _, end = result[-1]
+        self.assertEqual(begin, start)
+        self.assertEqual(end, end_100days)
 
 if __name__ == '__main__':
     unittest.main()

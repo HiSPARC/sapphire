@@ -6,12 +6,12 @@ Determine timing offsets for detectors and stations to correct arrival times.
 Determine the PMT response curve to correct the detected number of MIPs.
 
 """
-from ..utils import gauss
+from ..utils import gauss, round_in_base
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
                    sqrt, abs, sum, power)
 from scipy.optimize import curve_fit
-from sapphire.utils import round_in_base
+from datetime import timedelta
 
 
 def determine_detector_timing_offsets(events, station=None):
@@ -146,3 +146,31 @@ def determine_best_reference(filters):
         lengths.append(sum(filters[id] & (filters[idx[0]] |
                                           filters[idx[1]] | filters[idx[2]])))
     return lengths.index(max(lengths))
+
+
+def datetime_range(start, end, step):
+    """Generator that splits a datetime range in (almost) equal intervals
+
+    The yielded interval lengths are integer days
+    Spreads remaining days over first intervals
+
+    :param start, end: datetime instances
+    :param step: the integer number of days in each interval
+    :return: a tuple of datetime instances for each interval
+
+    """
+    interval = (end - start).days
+
+    number_of_steps = interval // step
+    if number_of_steps == 0:
+        yield start, end
+        return
+
+    remainder = interval % step
+
+    chunk_start = start
+    for i in range(number_of_steps):
+        chunk_end = chunk_start + timedelta(step + min(1, remainder))
+        yield chunk_start, chunk_end
+        chunk_start = chunk_end
+        remainder = max(0, remainder - 1)
