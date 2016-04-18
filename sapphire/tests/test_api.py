@@ -2,11 +2,11 @@ import unittest
 from datetime import date, datetime
 from urllib2 import HTTPError, URLError
 import warnings
+import os
 
 from mock import patch, sentinel
 
 from sapphire import api
-
 
 STATION = 501
 
@@ -589,7 +589,8 @@ class StaleStationTests(StationTests):
         self.assertRaises(Exception, self.station.event_trace, 1378771205, 571920029, raw=True)
 
     def test_event_time(self):
-        self.assertRaises(Exception, self.station.event_time, 2013, 1, 1)
+        if not self.has_extended_local_data(STATION, 'eventtime'):
+            self.assertRaises(Exception, self.station.event_time, 2013, 1, 1)
 
     def test_pulse_height(self):
         self.assertRaises(Exception, self.station.pulse_height, 2013, 1, 1)
@@ -606,13 +607,15 @@ class StaleStationTests(StationTests):
     @patch.object(api, 'urlopen')
     def test_detector_timing_offsets(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
-        with self.assertRaises(Exception):
-            self.station.detector_timing_offsets
+        if not self.has_extended_local_data(STATION, 'detector_timing_offsets'):
+            with self.assertRaises(Exception):
+                self.station.detector_timing_offsets
 
     @patch.object(api, 'urlopen')
     def test_detector_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
-        self.assertRaises(Exception, self.station.detector_timing_offset, 0)
+        if not self.has_extended_local_data(STATION, 'detector_timing_offsets'):
+            self.assertRaises(Exception, self.station.detector_timing_offset, 0)
 
     @patch.object(api, 'urlopen')
     def test_station_timing_offsets(self, mock_urlopen):
@@ -625,6 +628,10 @@ class StaleStationTests(StationTests):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
         with self.assertRaises(Exception):
             self.station.station_timing_offset(0, STATION - 1)
+
+    def has_extended_local_data(self, station, apiname):
+        """Check if local data has been extended"""
+        return os.path.exists(api.LOCAL_BASE + '/' + apiname + '/%d.tsv' % station)
 
 
 if __name__ == '__main__':
