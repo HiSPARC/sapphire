@@ -4,13 +4,6 @@ python:
 
 sudo: false
 
-addons:
-  apt_packages:
-    - libatlas-dev
-    - libatlas-base-dev
-    - liblapack-dev
-    - gfortran
-
 # Miniconda copied from
 # https://gist.github.com/dan-blanchard/7045057
 before_install:
