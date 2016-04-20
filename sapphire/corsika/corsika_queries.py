@@ -131,7 +131,10 @@ class CorsikaQuery(object):
             queries.append(self.float_filter('azimuth', radians(azimuth)))
         query = ' & '.join(queries)
 
-        filtered_simulations = self.perform_query(query, iterator)
+        if query:
+            filtered_simulations = self.perform_query(query, iterator)
+        else:
+            filtered_simulations = self.all_simulations(iterator)
 
         return filtered_simulations
 
