@@ -133,7 +133,7 @@ class station_timing_offsets(object):
             self.cluster.get_station(station).station_id)
 
         # TODO: determine sensible number of days
-        step = 7
+        step = max(int(r**1.12 / 10), 7)
 
         # TODO: add electronics change
         splits = concatenate((self._get_gps_timestamps(station),
