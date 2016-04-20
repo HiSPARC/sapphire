@@ -131,10 +131,7 @@ class CorsikaQuery(object):
             queries.append(self.float_filter('azimuth', radians(azimuth)))
         query = ' & '.join(queries)
 
-        if query:
-            filtered_simulations = self.perform_query(query, iterator)
-        else:
-            filtered_simulations = self.all_simulations(iterator)
+        filtered_simulations = self.perform_query(query, iterator)
 
         return filtered_simulations
 
@@ -209,8 +206,12 @@ class CorsikaQuery(object):
         :return: simulations matching the query.
 
         """
-        if iterator:
-            filtered_simulations = self.sims.where(query)
+        if query:
+            if iterator:
+                filtered_simulations = self.sims.where(query)
+            else:
+                filtered_simulations = self.sims.read_where(query)
         else:
-            filtered_simulations = self.sims.read_where(query)
+            filtered_simulations = self.all_simulations(iterator)
+
         return filtered_simulations
