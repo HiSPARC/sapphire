@@ -129,12 +129,6 @@ class station_timing_offsets(object):
         :return: list of station offsets: tuple (timestamp, offset, rchi2)
 
         """
-        r, _, dz = self.cluster.calc_rphiz_for_stations(
-            self.cluster.get_station(ref_station).station_id,
-            self.cluster.get_station(station).station_id)
-
-        # TODO: determine sensible number of days
-        step = max(int(r**1.12 / 10), 7)
 
         # TODO: add electronics change
         splits = concatenate((self._get_gps_timestamps(station),
@@ -147,6 +141,15 @@ class station_timing_offsets(object):
         for b, e in pairwise(splits):
             start_date = (b + timedelta(1)).date()
             end_date = e.date()
+
+            self.cluster.set_timestamp(datetime_to_gps(start_date))
+            r, _, dz = self.cluster.calc_rphiz_for_stations(
+                self.cluster.get_station(ref_station).station_id,
+                self.cluster.get_station(station).station_id)
+
+            # TODO: determine sensible number of days
+            step = max(int(r**1.12 / 10), 7)
+
             print ">>>>>>> interval: ", start_date, end_date
             for b1, e1 in datetime_range(start_date, end_date, step):
                 print "   **** interval: ", b1, e1, e1 - b1
