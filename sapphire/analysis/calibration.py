@@ -124,7 +124,8 @@ class station_timing_offsets(object):
     def determine_station_timing_offsets(self, station, ref_station):
         """Determine the timing offsets between a station pair
 
-        :param station, ref_station: station numbers of station pair
+        :param station: station number
+        :param ref_station: reference station number
         :return: list of station offsets: tuple (timestamp, offset, rchi2)
 
         """
@@ -227,7 +228,8 @@ def datetime_range(start, end, step):
     The yielded interval lengths are integer days
     Spreads remaining days over first intervals
 
-    :param start, end: date instances
+    :param start: date instance
+    :param end: date instance
     :param step: the integer number of days in each interval
     :return: a tuple of datetime instances for each interval
 
