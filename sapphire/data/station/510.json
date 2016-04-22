@@ -9,28 +9,28 @@
     "number": 510, 
     "scintillators": [
         {
-            "alpha": 225.0, 
-            "beta": 0.0, 
+            "alpha": 248.3, 
+            "beta": 315.0, 
             "height": 0.0, 
-            "radius": 5.0
+            "radius": 5.38
         }, 
         {
-            "alpha": 45.0, 
-            "beta": 0.0, 
+            "alpha": 22.17, 
+            "beta": 315.0, 
             "height": 0.0, 
-            "radius": 5.0
+            "radius": 5.49
         }, 
         {
-            "alpha": 87.0, 
-            "beta": 0.0, 
+            "alpha": 79.19, 
+            "beta": 45.0, 
             "height": 0.0, 
-            "radius": 13.2
+            "radius": 11.93
         }, 
         {
-            "alpha": 135.0, 
-            "beta": 0.0, 
+            "alpha": 134.5, 
+            "beta": 45.0, 
             "height": 0.0, 
-            "radius": 8.66
+            "radius": 6.53
         }
     ], 
     "subcluster": "Science Park"
