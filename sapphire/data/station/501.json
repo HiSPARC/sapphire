@@ -10,25 +10,25 @@
     "scintillators": [
         {
             "alpha": -158.07, 
-            "beta": 0.0, 
+            "beta": 45.0, 
             "height": 0.0, 
             "radius": 6.09
         }, 
         {
             "alpha": 73.49, 
-            "beta": 0.0, 
+            "beta": 45.0, 
             "height": 0.0, 
             "radius": 5.0
         }, 
         {
             "alpha": 95.63, 
-            "beta": 0.0, 
+            "beta": 315.0, 
             "height": 0.0, 
             "radius": 14.51
         }, 
         {
             "alpha": 138.13, 
-            "beta": 0.0, 
+            "beta": 315.0, 
             "height": 0.0, 
             "radius": 11.06
         }

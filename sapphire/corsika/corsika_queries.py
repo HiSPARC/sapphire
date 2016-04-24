@@ -206,8 +206,12 @@ class CorsikaQuery(object):
         :return: simulations matching the query.
 
         """
-        if iterator:
-            filtered_simulations = self.sims.where(query)
+        if query:
+            if iterator:
+                filtered_simulations = self.sims.where(query)
+            else:
+                filtered_simulations = self.sims.read_where(query)
         else:
-            filtered_simulations = self.sims.read_where(query)
+            filtered_simulations = self.all_simulations(iterator)
+
         return filtered_simulations
