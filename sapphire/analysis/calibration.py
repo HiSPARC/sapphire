@@ -90,7 +90,7 @@ def determine_detector_timing_offset(dt, dz=0):
     return detector_offset, rchi2
 
 
-class station_timing_offsets(object):
+class StationTimingOffsets(object):
     """Determine the timing offsets between stations"""
 
     def __init__(self, stations=None, data=None):
