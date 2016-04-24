@@ -225,7 +225,7 @@ def determine_best_reference(filters):
     return lengths.index(max(lengths))
 
 
-def datetime_range(start, end, step):
+def datetime_range(start, end, step=1):
     """Generator that splits a date range in (almost) equal intervals
 
     The yielded interval lengths are integer days
