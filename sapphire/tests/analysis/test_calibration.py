@@ -2,9 +2,10 @@ import unittest
 
 from mock import patch, sentinel
 from numpy import isnan, nan, array, all
-from datetime import datetime
+from datetime import date, datetime
 
 from sapphire.analysis import calibration
+from sapphire.transformations.clock import datetime_to_gps
 
 
 class DetectorTimingTests(unittest.TestCase):
@@ -110,9 +111,17 @@ class SplitDatetimeRangeTests(unittest.TestCase):
 
     def test_split_range(self):
         # 101 days
-        start = datetime(2016, 1, 1)
-        end_5days = datetime(2016, 1, 6)
-        end_100days = datetime(2016, 4, 11)
+        start = date(2016, 1, 1)
+        end_5days = date(2016, 1, 6)
+        end_100days = date(2016, 4, 11)
+
+        # no step, dates:
+        result = list(calibration.datetime_range(start, end_5days))
+        self.assertEqual(len(result), 5)
+        begin, _ = result[0]
+        _, end = result[-1]
+        self.assertEqual(begin, start)
+        self.assertEqual(end, end_5days)
 
         # single interval
         result = list(calibration.datetime_range(start, end_5days, 5))
@@ -144,6 +153,21 @@ class SplitDatetimeRangeTests(unittest.TestCase):
         _, end = result[-1]
         self.assertEqual(begin, start)
         self.assertEqual(end, end_100days)
+
+
+class DetermineTimingOffsetsTests(unittest.TestCase):
+
+    def test_intervals(self):
+        first = ('%d\t51.0\t4.0\t0.0\n' % datetime_to_gps(datetime(2014, 1, 1)) +
+                 '%d\t51.0\t4.0\t0.0\n' % datetime_to_gps(datetime(2014, 1, 21)) +
+                 '%d\t51.0\t4.0\t0.0\n' % datetime_to_gps(datetime(2014, 3, 1)))
+
+        second = ('%d\t51.0\t4.0\t0.0\n' % datetime_to_gps(datetime(2014, 1, 7)) +
+                  '%d\t51.0\t4.0\t0.0\n' % datetime_to_gps(datetime(2014, 1, 21)) +
+                  '%d\t51.0\t4.0\t0.0\n' % datetime_to_gps(datetime(2014, 3, 5)))
+        # WIP
+        first, second = second, first
+
 
 if __name__ == '__main__':
     unittest.main()
