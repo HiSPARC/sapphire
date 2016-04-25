@@ -7,7 +7,7 @@ Determine the PMT response curve to correct the detected number of MIPs.
 
 """
 from ..clusters import HiSPARCStations, HiSPARCNetwork
-from ..utils import gauss, round_in_base, memoize
+from ..utils import gauss, round_in_base, memoize, get_active_index
 from ..api import Station
 from ..transformations.clock import datetime_to_gps, gps_to_datetime
 
@@ -118,8 +118,95 @@ class DetermineStationTimingOffsets(object):
 
     @memoize
     def _get_gps_timestamps(self, station):
-        """ overload on publicdb """
+        """Get station gps_locations"""
         return Station(station).gps_locations['timestamp']
+
+    def get_cuts(self, station, ref_station):
+        """Get cuts for determination of offsets
+
+        Get a list of events (new gps location, new electronics)
+        that (may) cause a large shift in station timing offset
+        :param station: station number
+        :param ref_station: reference station number
+        :return: list of datetime objects
+
+        """
+        # TODO: add electronics change
+        cuts = concatenate((self._get_gps_timestamps(station),
+                            self._get_gps_timestamps(ref_station)))
+        cuts.sort()
+        cuts = map(gps_to_datetime, cuts)
+        cuts = concatenate((cuts, [datetime.now()]))
+        return cuts
+
+    def get_r_dz(self, date, station, ref_station):
+        """Determine r and dz at date """
+        self.cluster.set_timestamp(datetime_to_gps(date))
+        r, _, dz = self.cluster.calc_rphiz_for_stations(
+            self.cluster.get_station(ref_station).station_id,
+            self.cluster.get_station(station).station_id)
+        return r, dz
+
+    def determine_interval(self, r):
+        """Determine interval (number of days) in which to fit timedelta's
+
+        :param r: distrance between stations (m)
+        :return: number of days in interval
+
+        """
+        # TODO: determine sensible number of days
+        return max(int(r**1.12 / 10), 7)
+
+    def _get_left_and_right_bounds(self, cuts, date, days):
+        """ determine left and right bounds between cuts
+
+        :param cuts: list of datetime objects
+        :param date: date (middle of interval)
+        :param days: number of days
+        :return: tuple of datetime objects (left bound, right bound)
+
+        """
+        date = datetime(date.year, date.month, date.day)
+        left = get_active_index(cuts, date)
+        right = min(left + 1, len(cuts))
+        lower_bound = cuts[left].date()
+        upper_bound = cuts[right].date()
+        date = date.date()
+        # TODO: check if date = bound, choose left/right?
+        print "bounds: ", lower_bound, upper_bound
+
+        step = timedelta(round(days / 2))
+        if days >= (upper_bound - lower_bound).days:
+            return lower_bound, upper_bound
+        elif date + step > upper_bound:
+            return upper_bound - 2 * step, upper_bound
+        elif date - step < lower_bound:
+            return lower_bound, lower_bound + 2 * step
+        else:
+            return date - step, date + step
+
+    def determine_station_timing_offset(self, date, station, ref_station):
+        """Determine the timing offset between a station pair at certain date
+
+        :param date: datetime.date
+        :param station: station number
+        :param ref_station: reference station number
+        :return: list of station offsets: tuple (timestamp, offset, rchi2)
+
+        """
+        cuts = self.get_cuts(station, ref_station)
+        r, dz = self.get_r_dz(date, station, ref_station)
+        interval = self.determine_interval(r)
+
+        left, right = self._get_left_and_right_bounds(cuts, date, interval)
+
+        dt = self.read_dt(station, ref_station, left, right)
+        if len(dt) < 100:
+            s_off, rchi2 = nan, nan
+        else:
+            s_off, rchi2 = determine_station_timing_offset(dt, dz)
+
+        return s_off, rchi2
 
     def determine_station_timing_offsets(self, station, ref_station):
         """Determine the timing offsets between a station pair
@@ -129,29 +216,18 @@ class DetermineStationTimingOffsets(object):
         :return: list of station offsets: tuple (timestamp, offset, rchi2)
 
         """
-
-        # TODO: add electronics change
-        splits = concatenate((self._get_gps_timestamps(station),
-                              self._get_gps_timestamps(ref_station)))
-        splits.sort()
-        splits = map(gps_to_datetime, splits)
-        splits = concatenate((splits, [datetime.now()]))
+        splits = self.get_splits(station, ref_station)
 
         offsets = []
         for b, e in pairwise(splits):
             start_date = (b + timedelta(1)).date()
             end_date = e.date()
 
-            self.cluster.set_timestamp(datetime_to_gps(start_date))
-            r, _, dz = self.cluster.calc_rphiz_for_stations(
-                self.cluster.get_station(ref_station).station_id,
-                self.cluster.get_station(station).station_id)
-
-            # TODO: determine sensible number of days
-            step = max(int(r**1.12 / 10), 7)
+            r, dz = self.get_r_dz(start_date, station, ref_station)
+            interval = self.determine_interval(r)
 
             print ">>>>>>> interval: ", start_date, end_date
-            for b1, e1 in datetime_range(start_date, end_date, step):
+            for b1, e1 in datetime_range(start_date, end_date, interval):
                 print "   **** interval: ", b1, e1, e1 - b1
                 ts0 = datetime_to_gps(b1)
                 dt = self.read_dt(station, ref_station, b1, e1)
