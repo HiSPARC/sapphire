@@ -7,7 +7,7 @@ Determine the PMT response curve to correct the detected number of MIPs.
 
 """
 from ..clusters import HiSPARCStations, HiSPARCNetwork
-from ..utils import gauss, round_in_base, memoize, get_active_index
+from ..utils import gauss, round_in_base, memoize, get_active_index, pbar
 from ..api import Station
 from ..transformations.clock import datetime_to_gps, gps_to_datetime
 
@@ -93,7 +93,7 @@ def determine_detector_timing_offset(dt, dz=0):
 class DetermineStationTimingOffsets(object):
     """Determine the timing offsets between stations"""
 
-    def __init__(self, stations=None, data=None):
+    def __init__(self, stations=None, data=None, progress=False):
         """ Initialize the class
 
         :param data: pytables HDF5 file with timedelta tables
@@ -101,6 +101,7 @@ class DetermineStationTimingOffsets(object):
 
         """
         self.data = data
+        self.progress = progress
         if stations is not None:
             self.cluster = HiSPARCStations(stations)
         else:
@@ -169,11 +170,10 @@ class DetermineStationTimingOffsets(object):
         date = datetime(date.year, date.month, date.day)
         left = get_active_index(cuts, date)
         right = min(left + 1, len(cuts))
-        lower_bound = cuts[left].date()
-        upper_bound = cuts[right].date()
+        lower_bound = cuts[left].date() + timedelta(1)
+        upper_bound = cuts[right].date() - timedelta(1)
         date = date.date()
         # TODO: check if date = bound, choose left/right?
-        print "bounds: ", lower_bound, upper_bound
 
         step = timedelta(round(days / 2))
         if days >= (upper_bound - lower_bound).days:
@@ -226,8 +226,9 @@ class DetermineStationTimingOffsets(object):
             end = datetime.now().date()
 
         offsets = []
-        for date, _ in datetime_range(start, end):
-            print date
+        length = (end - start).days
+        for date, _ in pbar(datetime_range(start, end), show=self.progress,
+                            length=length):
             ts0 = datetime_to_gps(date)
             s_off, rchi2 = self.determine_station_timing_offset(date, station,
                                                                 ref_station)
