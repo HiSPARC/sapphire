@@ -208,34 +208,30 @@ class DetermineStationTimingOffsets(object):
 
         return s_off, rchi2
 
-    def determine_station_timing_offsets(self, station, ref_station):
+    def determine_station_timing_offsets(self, station, ref_station,
+                                         start=None, end=None):
         """Determine the timing offsets between a station pair
 
         :param station: station number
         :param ref_station: reference station number
+        :param start: datetime.date object
+        :param end: datetime.date object
         :return: list of station offsets: tuple (timestamp, offset, rchi2)
 
         """
-        splits = self.get_splits(station, ref_station)
+        if start is None:
+            cuts = self.get_cuts(station, ref_station)
+            start = cuts[0].date()
+        if end is None:
+            end = datetime.now().date()
 
         offsets = []
-        for b, e in pairwise(splits):
-            start_date = (b + timedelta(1)).date()
-            end_date = e.date()
-
-            r, dz = self.get_r_dz(start_date, station, ref_station)
-            interval = self.determine_interval(r)
-
-            print ">>>>>>> interval: ", start_date, end_date
-            for b1, e1 in datetime_range(start_date, end_date, interval):
-                print "   **** interval: ", b1, e1, e1 - b1
-                ts0 = datetime_to_gps(b1)
-                dt = self.read_dt(station, ref_station, b1, e1)
-                if len(dt) < 100:
-                    s_off, rchi2 = nan, nan
-                else:
-                    s_off, rchi2 = determine_station_timing_offset(dt, dz)
-                offsets.append((ts0, s_off, rchi2))
+        for date, _ in datetime_range(start, end):
+            print date
+            ts0 = datetime_to_gps(date)
+            s_off, rchi2 = self.determine_station_timing_offset(date, station,
+                                                                ref_station)
+            offsets.append((ts0, s_off, rchi2))
         return offsets
 
 
