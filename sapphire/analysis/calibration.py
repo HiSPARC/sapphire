@@ -108,7 +108,8 @@ class DetermineStationTimingOffsets(object):
         if stations is not None:
             # FIXME: remove force_stale for production!!
             print "FIXME: remove force_stale!"
-            self.cluster = HiSPARCStations(stations, force_stale=True)
+            self.cluster = HiSPARCStations(stations, skip_missing=True,
+                                           force_stale=True)
         else:
             self.cluster = HiSPARCNetwork()
 
