@@ -770,6 +770,19 @@ class Station(API):
         path = self.src_urls['electronics'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
+    def electronic(self, timestamp):
+        """Get electronics version data for specific timestamp
+
+        :param timestamp: timestamp for which the values are valid.
+        :return: list of values for given timestamp.
+
+        """
+        electronics = self.electronics
+        idx = get_active_index(electronics['timestamp'], timestamp)
+        electronic = [electronics[idx][field] for field in
+                      ('master', 'slave', 'master_fpga', 'slave_fpga')]
+        return electronic
+
     @lazy
     def voltages(self):
         """Get the PMT voltage data
@@ -782,9 +795,9 @@ class Station(API):
         return self._get_tsv(path, names=columns)
 
     def voltage(self, timestamp):
-        """Get PMT coltage data for specific timestamp
+        """Get PMT voltage data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
@@ -807,7 +820,7 @@ class Station(API):
     def current(self, timestamp):
         """Get PMT current data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
@@ -831,7 +844,7 @@ class Station(API):
         """Get GPS location for specific timestamp
 
         :param timestamp: optional timestamp or datetime object for which
-            the value is valid.
+            the values are valid.
         :return: dictionary with the values for given timestamp.
 
         """
@@ -863,7 +876,7 @@ class Station(API):
     def trigger(self, timestamp):
         """Get trigger config for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: thresholds and trigger values for given timestamp.
 
         """
@@ -895,7 +908,7 @@ class Station(API):
     def station_layout(self, timestamp):
         """Get station layout data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of coordinates for given timestamp.
 
         """
@@ -921,7 +934,7 @@ class Station(API):
     def detector_timing_offset(self, timestamp):
         """Get detector timing offset data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
