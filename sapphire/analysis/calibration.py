@@ -15,7 +15,7 @@ from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
                    sqrt, abs, sum, power, concatenate)
 from scipy.optimize import curve_fit
 from datetime import datetime, timedelta
-from itertools import tee, izip
+from itertools import tee, izip, combinations
 
 
 def determine_detector_timing_offsets(events, station=None):
@@ -93,6 +93,9 @@ def determine_detector_timing_offset(dt, dz=0):
 class DetermineStationTimingOffsets(object):
     """Determine the timing offsets between stations"""
 
+    MAX_DISTANCE = 1000  # m
+    """maximum distance between station pairs that are included in analysis"""
+
     def __init__(self, stations=None, data=None, progress=False):
         """ Initialize the class
 
@@ -103,7 +106,9 @@ class DetermineStationTimingOffsets(object):
         self.data = data
         self.progress = progress
         if stations is not None:
-            self.cluster = HiSPARCStations(stations)
+            # FIXME: remove force_stale for production!!
+            print "FIXME: remove force_stale!"
+            self.cluster = HiSPARCStations(stations, force_stale=True)
         else:
             self.cluster = HiSPARCNetwork()
 
@@ -122,7 +127,7 @@ class DetermineStationTimingOffsets(object):
         """Get station gps_locations"""
         return Station(station).gps_locations['timestamp']
 
-    def get_cuts(self, station, ref_station):
+    def _get_cuts(self, station, ref_station):
         """Get cuts for determination of offsets
 
         Get a list of events (new gps location, new electronics)
@@ -140,7 +145,8 @@ class DetermineStationTimingOffsets(object):
         cuts = concatenate((cuts, [datetime.now()]))
         return cuts
 
-    def get_r_dz(self, date, station, ref_station):
+    @memoize
+    def _get_r_dz(self, date, station, ref_station):
         """Determine r and dz at date """
         self.cluster.set_timestamp(datetime_to_gps(date))
         r, _, dz = self.cluster.calc_rphiz_for_stations(
@@ -148,7 +154,7 @@ class DetermineStationTimingOffsets(object):
             self.cluster.get_station(station).station_id)
         return r, dz
 
-    def determine_interval(self, r):
+    def _determine_interval(self, r):
         """Determine interval (number of days) in which to fit timedelta's
 
         :param r: distrance between stations (m)
@@ -185,6 +191,17 @@ class DetermineStationTimingOffsets(object):
         else:
             return date - step, date + step
 
+    def determine_first_and_last_date(self, date, station, ref_station):
+        """
+        Determine first and last date to include in determination of
+        station offset around date
+        """
+        cuts = self._get_cuts(station, ref_station)
+        r, dz = self._get_r_dz(date, station, ref_station)
+        interval = self._determine_interval(r)
+
+        return self._get_left_and_right_bounds(cuts, date, interval)
+
     def determine_station_timing_offset(self, date, station, ref_station):
         """Determine the timing offset between a station pair at certain date
 
@@ -194,12 +211,9 @@ class DetermineStationTimingOffsets(object):
         :return: list of station offsets: tuple (timestamp, offset, rchi2)
 
         """
-        cuts = self.get_cuts(station, ref_station)
-        r, dz = self.get_r_dz(date, station, ref_station)
-        interval = self.determine_interval(r)
-
-        left, right = self._get_left_and_right_bounds(cuts, date, interval)
-
+        left, right = self.determine_first_and_last_date(date, station,
+                                                         ref_station)
+        r, dz = self._get_r_dz(date, station, ref_station)
         dt = self.read_dt(station, ref_station, left, right)
         if len(dt) < 100:
             s_off, rchi2 = nan, nan
@@ -220,7 +234,7 @@ class DetermineStationTimingOffsets(object):
 
         """
         if start is None:
-            cuts = self.get_cuts(station, ref_station)
+            cuts = self._get_cuts(station, ref_station)
             start = cuts[0].date()
         if end is None:
             end = datetime.now().date()
@@ -234,6 +248,15 @@ class DetermineStationTimingOffsets(object):
                                                                 ref_station)
             offsets.append((ts0, s_off, rchi2))
         return offsets
+
+    def get_station_pairs_within_max_distance(self):
+        """Iterator that yields stations pairs that are close to each other"""
+
+        for so1, so2 in combinations(self.cluster.stations, 2):
+            s1, s2 = so1.number, so2.number
+            r = self.cluster.calc_distance_between_stations(s1, s2)
+            if r <= self.MAX_DISTANCE:
+                yield s1, s2
 
 
 def determine_station_timing_offset(dt, dz=0):
