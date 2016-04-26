@@ -39,8 +39,8 @@ class CoincidenceQuery(object):
     def __init__(self, data, coincidence_group='/coincidences'):
         """Setup variables to point to the tables
 
-        :param data: either a PyTables file or path to a HDF5 file
-        :param coincidence_group: path to the coincidences group
+        :param data: either a PyTables file or path to a HDF5 file.
+        :param coincidence_group: path to the coincidences group.
 
         """
         if not isinstance(data, tables.File):
