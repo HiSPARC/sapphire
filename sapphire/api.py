@@ -88,6 +88,7 @@ class API(object):
         'zenith': 'zenith/{station_number}/{year}/{month}/{day}/',
         'barometer': 'barometer/{station_number}/{year}/{month}/{day}/',
         'temperature': 'temperature/{station_number}/{year}/{month}/{day}/',
+        'electronics': 'electronics/{station_number}/',
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
@@ -756,6 +757,17 @@ class Station(API):
         path = self.src_urls['temperature'].format(station_number=self.station,
                                                    year=year, month=month,
                                                    day=day)
+        return self._get_tsv(path, names=columns)
+
+    @lazy
+    def electronics(self):
+        """Get the electronics version data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'master', 'slave', 'master_fpga', 'slave_fpga')
+        path = self.src_urls['electronics'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
     @lazy

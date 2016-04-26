@@ -65,7 +65,8 @@ def update_local_tsv():
 
     station_numbers = Network().station_numbers()
 
-    for type in ['gps', 'trigger', 'layout', 'voltage', 'current']:
+    for type in ['gps', 'trigger', 'layout', 'voltage', 'current',
+                 'electronics']:
         subdir = API.src_urls[type].split('/')[0]
         try:
             mkdir(path.join(LOCAL_BASE, subdir))
