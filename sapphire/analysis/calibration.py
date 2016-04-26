@@ -257,7 +257,10 @@ class DetermineStationTimingOffsets(object):
             s1, s2 = so1.number, so2.number
             r = self.cluster.calc_distance_between_stations(s1, s2)
             if r <= self.MAX_DISTANCE:
-                yield s1, s2
+                if s1 < s2:
+                    yield s1, s2
+                else:
+                    yield s2, s1
 
 
 def determine_station_timing_offset(dt, dz=0):
