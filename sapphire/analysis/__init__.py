@@ -36,6 +36,9 @@ This package contains modules for performing various analysis tasks:
 :mod:`~sapphire.analysis.reconstructions`
     perform shower reconstructions
 
+:mod:`~sapphire.analysis.time_deltas`
+    determine time deltas for station pairs
+
 """
 from . import calibration
 from . import coincidence_queries
@@ -48,6 +51,7 @@ from . import landau
 from . import process_events
 from . import process_traces
 from . import reconstructions
+from . import time_deltas
 
 
 __all__ = ['calibration',
@@ -60,4 +64,5 @@ __all__ = ['calibration',
            'landau',
            'process_events',
            'process_traces',
-           'reconstructions']
+           'reconstructions',
+           'time_deltas']
