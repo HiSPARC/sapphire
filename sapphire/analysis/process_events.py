@@ -20,12 +20,11 @@
         if __name__ == '__main__':
             station_groups = ['/s%d' % u for u in STATIONS]
 
-            data = tables.open_file('data.h5', 'w')
-            for station, group in zip(STATIONS, station_groups):
-                download_data(data, group, station, START, END, get_blobs=True)
-                proc = ProcessEvents(data, group)
-                proc.process_and_store_results()
-            data.close()
+            with tables.open_file('data.h5', 'w') as data:
+                for station, group in zip(STATIONS, station_groups):
+                    download_data(data, group, station, START, END, True)
+                    proc = ProcessEvents(data, group)
+                    proc.process_and_store_results()
 
 """
 import zlib
