@@ -136,7 +136,8 @@ class API(object):
                     raise Exception('Couldn\'t find requested data locally.')
                 raise Exception('Couldn\'t get requested data from server '
                                 'nor find it locally.')
-            warnings.warn('Using local data. Possibly outdated.')
+            if not self.force_stale:
+                warnings.warn('Using local data. Possibly outdated.')
 
         return data
 
@@ -169,7 +170,8 @@ class API(object):
                     raise Exception('Couldn\'t find requested data locally.')
                 raise Exception('Couldn\'t get requested data from server '
                                 'nor find it locally.')
-            warnings.warn('Using local data. Possibly outdated.')
+            if not self.force_stale:
+                warnings.warn('Using local data. Possibly outdated.')
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
@@ -470,7 +472,8 @@ class Network(API):
             stations = [stations]
 
         for sn in stations:
-            data[sn] = Station(sn).event_time()
+            data[sn] = Station(sn, force_fresh=self.force_fresh,
+                               force_stale=self.force_stale).event_time()
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
