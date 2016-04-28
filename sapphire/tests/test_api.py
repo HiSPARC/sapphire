@@ -2,13 +2,20 @@ import unittest
 from datetime import date, datetime
 from urllib2 import HTTPError, URLError
 import warnings
-import os
+from os import path, extsep
 
 from mock import patch, sentinel
 
 from sapphire import api
 
 STATION = 501
+
+
+def has_extended_local_data(urlpath):
+    """Check if local data has been extended"""
+
+    localpath = path.join(api.LOCAL_BASE, urlpath.strip('/') + extsep + 'tsv')
+    return path.exists(localpath)
 
 
 class APITests(unittest.TestCase):
@@ -222,7 +229,7 @@ class NetworkTests(unittest.TestCase):
     @patch.object(api, 'urlopen')
     def test_uptime(self, mock_urlopen):
         # datetime(2014,1,1) 2 days on, 2 days off, 1 day on
-        s_1, s_2 = '', ''
+        sn = '[{"name": "foo", "number": 501}, {"name": "bar", "number": 502}]'
         event_time_1 = ('1388534400\t2000.\n'
                         '1388538000\t2000.\n'
                         '1388541600\t12.\n'
@@ -235,21 +242,22 @@ class NetworkTests(unittest.TestCase):
                         '1388545200\t2000.\n'
                         '1388548800\t3000.\n')
         # station 1
-        mock_urlopen.return_value.read.return_value = event_time_1
+        mock_urlopen.return_value.read.side_effect = [sn, event_time_1] * 3
         self.assertEqual(self.network.uptime([501]), 3)
         self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
                          end=datetime(2014, 1, 1, 2)), 2)
         self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
                          end=datetime(2014, 1, 2)), 3)
         # station 2
-        mock_urlopen.return_value.read.return_value = event_time_2
+        mock_urlopen.return_value.read.side_effect = [sn, event_time_2] * 3
         self.assertEqual(self.network.uptime([501]), 3)
         self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
                          end=datetime(2014, 1, 1, 2)), 0)
         self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
                          end=datetime(2014, 1, 2)), 3)
         # two stations together
-        mock_urlopen.return_value.read.side_effect = [s_1, event_time_1, s_2, event_time_2]
+        mock_urlopen.return_value.read.side_effect = [sn, event_time_1,
+                                                      sn, event_time_2]
         self.assertEqual(self.network.uptime([501, 502]), 1)
 
     def laziness_of_method(self, method):
@@ -284,6 +292,14 @@ class StaleNetworkTests(NetworkTests):
 
     def test_coincidence_number(self):
         self.assertRaises(Exception, self.network.coincidence_number, 2013, 1, 1)
+
+    @unittest.skipIf(has_extended_local_data('eventtime/%d/' % STATION),
+                     "Local data is extended")
+    def test_uptime(self, mock_urlopen):
+        self.assertRaises(Exception, self.network.uptime, [501])
+        self.assertRaises(Exception, self.network.uptime, [501],
+                          start=datetime(2014, 1, 1),
+                          end=datetime(2014, 1, 1, 2))
 
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
@@ -589,8 +605,7 @@ class StaleStationTests(StationTests):
         self.assertRaises(Exception, self.station.event_trace, 1378771205, 571920029, raw=True)
 
     def test_event_time(self):
-        if not self.has_extended_local_data(STATION, 'eventtime'):
-            self.assertRaises(Exception, self.station.event_time, 2013, 1, 1)
+        self.assertRaises(Exception, self.station.event_time, 2013, 1, 1)
 
     def test_pulse_height(self):
         self.assertRaises(Exception, self.station.pulse_height, 2013, 1, 1)
@@ -604,18 +619,20 @@ class StaleStationTests(StationTests):
     def test_temperature(self):
         self.assertRaises(Exception, self.station.temperature, 2013, 1, 1)
 
+    @unittest.skipIf(has_extended_local_data('detector_timing_offsets/%d/' % STATION),
+                     "Local data is extended")
     @patch.object(api, 'urlopen')
     def test_detector_timing_offsets(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
-        if not self.has_extended_local_data(STATION, 'detector_timing_offsets'):
-            with self.assertRaises(Exception):
-                self.station.detector_timing_offsets
+        with self.assertRaises(Exception):
+            self.station.detector_timing_offsets
 
+    @unittest.skipIf(has_extended_local_data('detector_timing_offsets/%d/' % STATION),
+                     "Local data is extended")
     @patch.object(api, 'urlopen')
     def test_detector_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
-        if not self.has_extended_local_data(STATION, 'detector_timing_offsets'):
-            self.assertRaises(Exception, self.station.detector_timing_offset, 0)
+        self.assertRaises(Exception, self.station.detector_timing_offset, 0)
 
     @patch.object(api, 'urlopen')
     def test_station_timing_offsets(self, mock_urlopen):
@@ -628,10 +645,6 @@ class StaleStationTests(StationTests):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
         with self.assertRaises(Exception):
             self.station.station_timing_offset(0, STATION - 1)
-
-    def has_extended_local_data(self, station, apiname):
-        """Check if local data has been extended"""
-        return os.path.exists(api.LOCAL_BASE + '/' + apiname + '/%d.tsv' % station)
 
 
 if __name__ == '__main__':
