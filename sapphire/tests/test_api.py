@@ -295,7 +295,7 @@ class StaleNetworkTests(NetworkTests):
 
     @unittest.skipIf(has_extended_local_data('eventtime/%d/' % STATION),
                      "Local data is extended")
-    def test_uptime(self, mock_urlopen):
+    def test_uptime(self):
         self.assertRaises(Exception, self.network.uptime, [501])
         self.assertRaises(Exception, self.network.uptime, [501],
                           start=datetime(2014, 1, 1),
