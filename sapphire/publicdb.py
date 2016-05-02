@@ -207,8 +207,8 @@ def _get_or_create_group(file, group):
         group = file.get_node(group)
     except tables.NoSuchNodeError:
         parent, newgroup = os.path.split(group)
-        file.create_group(parent, newgroup, 'Data group',
-                          createparents=True)
+        group = file.create_group(parent, newgroup, 'Data group',
+                                  createparents=True)
     return group
 
 
@@ -218,10 +218,10 @@ def _get_or_create_node(file, group, src_node):
     try:
         node = file.get_node(group, src_node.name)
     except tables.NoSuchNodeError:
-        if type(src_node) == tables.Table:
+        if isinstance(src_node, tables.Table):
             node = file.create_table(group, src_node.name,
                                      src_node.description, src_node.title)
-        elif type(src_node) == tables.VLArray:
+        elif isinstance(src_node, tables.VLArray):
             node = file.create_vlarray(group, src_node.name, src_node.atom,
                                        src_node.title)
         else:
