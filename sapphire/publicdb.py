@@ -207,8 +207,8 @@ def _get_or_create_group(file, group):
         group = file.get_node(group)
     except tables.NoSuchNodeError:
         parent, newgroup = os.path.split(group)
-        file.create_group(parent, newgroup, 'Data group',
-                          createparents=True)
+        group = file.create_group(parent, newgroup, 'Data group',
+                                  createparents=True)
     return group
 
 
