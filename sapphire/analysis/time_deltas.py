@@ -56,10 +56,15 @@ class ProcessTimeDeltas(object):
         self.progress = progress
 
     def determine_and_store_time_deltas(self):
-        """Determine time deltas and store the results."""
+        """Find station pairs, determine time deltas, and store the results."""
 
         self.find_station_pairs()
         self.get_detector_offsets()
+        self.determine_and_store_time_deltas_for_pairs()
+
+    def determine_and_store_time_deltas_for_pairs(self):
+        """Determine time deltas for all pairs and store the results."""
+
         for pair in pbar(self.pairs, show=self.progress):
             ets, dt = self.determine_time_deltas_for_pair(*pair)
             if len(ets):
@@ -79,8 +84,12 @@ class ProcessTimeDeltas(object):
                       for s1, s2 in combinations(sorted(c_idx[:, 0]), 2)}
 
     def get_detector_offsets(self):
-        """Retrieve the API detector_timing_offset function for all pairs"""
+        """Retrieve the API detector_timing_offset method for all pairs
 
+        The detector_timing_offset methods accept a single timestamp as
+        argument, and return the detector offsets for this timestamp.
+
+        """
         station_numbers = {station for pair in self.pairs for station in pair}
         self.detector_timing_offsets = {sn: Station(sn).detector_timing_offset
                                         for sn in station_numbers}
