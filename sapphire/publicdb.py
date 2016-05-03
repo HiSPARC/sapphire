@@ -179,7 +179,9 @@ def datetimerange(start, stop):
          datetime.datetime(2010, 1, 5, 13, 0))
 
     """
-    if start.date() == stop.date():
+    if start > stop:
+        raise Exception('Start can not be after stop.')
+    elif start.date() == stop.date():
         yield start, stop
         return
     else:
