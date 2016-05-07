@@ -85,6 +85,8 @@ class DownloadDataTest(unittest.TestCase):
               (datetime(2010, 1, 5), datetime(2010, 1, 5, 13))])]
         for start, stop, result in combinations:
             self.assertEqual(list(publicdb.datetimerange(start, stop)), result)
+            self.assertRaises(Exception, next,
+                              publicdb.datetimerange(stop, start))
 
     def test__get_or_create_group(self):
         file = Mock()
