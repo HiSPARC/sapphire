@@ -64,6 +64,20 @@ class DownloadDataTest(unittest.TestCase):
         validate_results(self, test_data_path, output_path)
         os.remove(output_path)
 
+    def test__store_data_no_end(self):
+        # store data removes the source data when completed, so use a temp
+        tmp_src_path = create_tempfile_path()
+        shutil.copy(test_data_src_path, tmp_src_path)
+
+        output_path = create_tempfile_path()
+        start = datetime(2016, 4, 21)
+        filters = tables.Filters(complevel=1)
+        with tables.open_file(output_path, 'w', filters=filters) as datafile:
+            publicdb._store_data(datafile, '/station_501', tmp_src_path, start,
+                                 None)
+        validate_results(self, test_data_src_path, output_path)
+        os.remove(output_path)
+
     def test_datetimerange(self):
         combinations = [
             (datetime(2010, 1, 1, 11),
