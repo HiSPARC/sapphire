@@ -1,11 +1,21 @@
 import unittest
 from datetime import datetime
 import logging
+import shutil
+import os
 
 from mock import sentinel, Mock, patch
 import tables
 
 from sapphire import publicdb
+from sapphire.tests.validate_results import validate_results
+
+from esd_load_data import create_tempfile_path
+
+
+self_path = os.path.dirname(__file__)
+test_data_src_path = os.path.join(self_path, 'test_data/publicdb_src.h5')
+test_data_path = os.path.join(self_path, 'test_data/publicdb.h5')
 
 
 class DownloadDataTest(unittest.TestCase):
@@ -40,10 +50,33 @@ class DownloadDataTest(unittest.TestCase):
                           sentinel.group, sentinel.station_id, start,
                           end, get_blobs=sentinel.blobs)
 
-    @unittest.skip('WIP')
     def test__store_data(self):
-        pass
-        # publicdb._store_data(dst_file, dst_group, src_filename, t0, t1)
+        # store data removes the source data when completed, so use a temp
+        tmp_src_path = create_tempfile_path()
+        shutil.copy(test_data_src_path, tmp_src_path)
+
+        output_path = create_tempfile_path()
+        start = datetime(2016, 4, 21)
+        end = datetime(2016, 4, 21, 0, 1)
+        filters = tables.Filters(complevel=1)
+        with tables.open_file(output_path, 'w', filters=filters) as datafile:
+            publicdb._store_data(datafile, '/s501', tmp_src_path, start, end)
+        validate_results(self, test_data_path, output_path)
+        os.remove(output_path)
+
+    def test__store_data_no_end(self):
+        # store data removes the source data when completed, so use a temp
+        tmp_src_path = create_tempfile_path()
+        shutil.copy(test_data_src_path, tmp_src_path)
+
+        output_path = create_tempfile_path()
+        start = datetime(2016, 4, 21)
+        filters = tables.Filters(complevel=1)
+        with tables.open_file(output_path, 'w', filters=filters) as datafile:
+            publicdb._store_data(datafile, '/station_501', tmp_src_path, start,
+                                 None)
+        validate_results(self, test_data_src_path, output_path)
+        os.remove(output_path)
 
     def test_datetimerange(self):
         combinations = [
@@ -66,6 +99,8 @@ class DownloadDataTest(unittest.TestCase):
               (datetime(2010, 1, 5), datetime(2010, 1, 5, 13))])]
         for start, stop, result in combinations:
             self.assertEqual(list(publicdb.datetimerange(start, stop)), result)
+            self.assertRaises(Exception, next,
+                              publicdb.datetimerange(stop, start))
 
     def test__get_or_create_group(self):
         file = Mock()

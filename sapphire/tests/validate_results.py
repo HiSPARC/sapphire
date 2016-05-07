@@ -13,8 +13,8 @@ def validate_results(test, expected_path, actual_path):
     :param actual_path: path to the output from the test.
 
     """
-    with tables.open_file(expected_path) as expected_file, \
-            tables.open_file(actual_path) as actual_file:
+    with tables.open_file(expected_path, 'r') as expected_file, \
+            tables.open_file(actual_path, 'r') as actual_file:
         for expected_node in expected_file.walk_nodes('/', 'Leaf'):
             try:
                 actual_node = actual_file.get_node(expected_node._v_pathname)
@@ -44,8 +44,8 @@ def validate_results_node(test, expected_path, actual_path, expected_node,
     :param actual_node: path to the output node from the test.
 
     """
-    with tables.open_file(expected_path) as expected_file, \
-            tables.open_file(actual_path) as actual_file:
+    with tables.open_file(expected_path, 'r') as expected_file, \
+            tables.open_file(actual_path, 'r') as actual_file:
         expected = expected_file.get_node(expected_node)
         try:
             actual = actual_file.get_node(actual_node)

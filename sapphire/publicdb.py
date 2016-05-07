@@ -11,10 +11,12 @@ import urllib
 import datetime
 import tables
 import os
-import calendar
 import re
 
 import logging
+
+from .transformations.clock import datetime_to_gps
+
 
 logger = logging.getLogger('hisparc.publicdb')
 
@@ -80,11 +82,8 @@ def _store_data(dst_file, dst_group, src_filename, t0, t1):
     This function takes a file containing downloaded data and copies it to
     the destination file, based on start and end timestamps.
 
-    This can be further optimized at the expense of spaghetti code.
-
     """
-    # Open in rw mode, need to update blob idxs, if necessary
-    with tables.open_file(src_filename, 'a') as src_file:
+    with tables.open_file(src_filename, 'r') as src_file:
         src_group = src_file.list_nodes('/')[0]
         dst_group = _get_or_create_group(dst_file, dst_group)
 
@@ -100,36 +99,32 @@ def _store_data(dst_file, dst_group, src_filename, t0, t1):
                 for row in node:
                     dst_node.append(row)
 
-            elif node.name == 'events':
-                if not t1:
-                    cond = 'timestamp >= %d' % \
-                        calendar.timegm(t0.utctimetuple())
+            elif node.name in ['events', 'errors', 'config', 'comparator',
+                               'singles', 'satellites', 'weather',
+                               'weather_error', 'weather_config']:
+                if t1 is None:
+                    cond = 'timestamp >= %d' % datetime_to_gps(t0)
                 else:
-                    cond = '(%d <= timestamp) & (timestamp <= %d)' % \
-                        (calendar.timegm(t0.utctimetuple()),
-                         calendar.timegm(t1.utctimetuple()))
+                    cond = ('(%d <= timestamp) & (timestamp <= %d)' %
+                            (datetime_to_gps(t0), datetime_to_gps(t1)))
+
+                rows = node.read_where(cond)
 
                 if len_blobs:
-                    for row in node.read_where(cond):
-                        row['traces'] += len_blobs
-                        dst_node.append([tuple(row)])
-                else:
-                    for row in node.read_where(cond):
-                        dst_node.append([tuple(row)])
+                    if node.name == 'events':
+                        rows['traces'] += len_blobs
+                    elif node.name in ['errors', 'weather_error']:
+                        rows['messages'] += len_blobs
+                    elif node.name == 'config':
+                        rows['mas_version'] += len_blobs
+                        rows['slv_version'] += len_blobs
+                        rows['password'] += len_blobs
+                        rows['buffer'] += len_blobs
+                    elif node.name == 'weather_config':
+                        rows['help_url'] += len_blobs
+                        rows['database_name'] += len_blobs
 
-            elif node.name == 'errors' and len_blobs:
-                for row in node:
-                    row['messages'] += len_blobs
-                    dst_node.append([row[:]])
-
-            elif node.name == 'config' and len_blobs:
-                for row in node:
-                    row['mas_version'] += len_blobs
-                    row['slv_version'] += len_blobs
-                    row['password'] += len_blobs
-                    row['buffer'] += len_blobs
-                    dst_node.append([row[:]])
-
+                dst_node.append(rows)
             else:
                 rows = node.read()
                 dst_node.append(rows)
@@ -184,7 +179,9 @@ def datetimerange(start, stop):
          datetime.datetime(2010, 1, 5, 13, 0))
 
     """
-    if start.date() == stop.date():
+    if start > stop:
+        raise Exception('Start can not be after stop.')
+    elif start.date() == stop.date():
         yield start, stop
         return
     else:
