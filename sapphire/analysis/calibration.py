@@ -6,16 +6,19 @@ Determine timing offsets for detectors and stations to correct arrival times.
 Determine the PMT response curve to correct the detected number of MIPs.
 
 """
-from ..clusters import HiSPARCStations, HiSPARCNetwork
-from ..utils import gauss, round_in_base, memoize, get_active_index, pbar
-from ..api import Station
-from ..transformations.clock import datetime_to_gps, gps_to_datetime
+from __future__ import division
+
+from datetime import datetime, timedelta
+from itertools import tee, izip, combinations
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
                    sqrt, abs, sum, power, concatenate)
 from scipy.optimize import curve_fit
-from datetime import datetime, timedelta
-from itertools import tee, izip, combinations
+
+from ..clusters import HiSPARCStations, HiSPARCNetwork
+from ..utils import gauss, round_in_base, memoize, get_active_index, pbar
+from ..api import Station
+from ..transformations.clock import datetime_to_gps, gps_to_datetime
 
 
 def determine_detector_timing_offsets(events, station=None):
@@ -95,45 +98,50 @@ class DetermineStationTimingOffsets(object):
 
     MAX_DISTANCE = 1000  # m
     """maximum distance between station pairs that are included in analysis"""
-    MIN_LEN_DT = 1000
+    MIN_LEN_DT = 100
     """minimum number of timedeltas required to attempt a fit"""
 
-    def __init__(self, stations=None, data=None, progress=False):
-        """ Initialize the class
+    def __init__(self, stations=None, data=None, progress=False,
+                 force_stale=False):
+        """Initialize the class
 
         :param data: pytables HDF5 file with timedelta tables
         :param stations: list of station for which to determine station offsets
+        :param progress: if true: show progressbar if true
+        :param force_stale: if true: do not get network information from API.
 
         """
         self.data = data
         self.progress = progress
+        self.force_stale = force_stale
         if stations is not None:
-            # FIXME: remove force_stale for production!!
-            print "FIXME: remove force_stale!"
             self.cluster = HiSPARCStations(stations, skip_missing=True,
-                                           force_stale=True)
+                                           force_stale=self.force_stale)
         else:
-            self.cluster = HiSPARCNetwork()
+            self.cluster = HiSPARCNetwork(force_stale=self.force_stale)
 
     def read_dt(self, station, ref_station, start, end):
-        """ Overload this method on publicdb """
+        """Read timedelta's from HDF5 file"""
 
-        # TODO: This is not the correct node name
-        table = self.data.get_node('/s%d' % station)
+        table_path = '/time_deltas/station_%d/station_%d' % (ref_station,
+                                                             station)
+        table = self.data.get_node(table_path, 'time_deltas')
         ts0 = datetime_to_gps(start)  # noqa
-        ts1 = datetime_to_gps(end)    # noqa
+        ts1 = datetime_to_gps(end)  # noqa
         return table.read_where('(timestamp >= ts0) & (timestamp < ts1)',
                                 field='delta')
 
     @memoize
     def _get_gps_timestamps(self, station):
         """Get timestamps of station gps changes"""
-        return Station(station).gps_locations['timestamp']
+        return Station(station,
+                       force_stale=self.force_stale).gps_locations['timestamp']
 
     @memoize
     def _get_electronics_timestamps(self, station):
         """Get timestamps of station electronics (hardware) changes"""
-        return Station(station).electronics['timestamp']
+        return Station(station,
+                       force_stale=self.force_stale).electronics['timestamp']
 
     def _get_cuts(self, station, ref_station):
         """Get cuts for determination of offsets
@@ -151,7 +159,8 @@ class DetermineStationTimingOffsets(object):
                             self._get_electronics_timestamps(ref_station)))
         cuts.sort()
         cuts = map(gps_to_datetime, cuts)
-        cuts = concatenate((cuts, [datetime.now()]))
+        today = self._datetime(datetime.now())
+        cuts = concatenate((cuts, [today]))
         return cuts
 
     @memoize
@@ -176,19 +185,27 @@ class DetermineStationTimingOffsets(object):
     def _get_left_and_right_bounds(self, cuts, date, days):
         """ determine left and right bounds between cuts
 
+        Offsets are determined per day, so intervals are based on days.
+        Cuts are excluded. Start date (left side bound) is the day
+        after a cut, end date (right side bound) is the day before a cut.
+        The last cut (today) is always *included* in the interval,
+        as this is not a cut that influences the timing offset.
+        Returns datetime objects with hours, min, sec, msec = 0.
         :param cuts: list of datetime objects
-        :param date: date (middle of interval)
+        :param date: datetime (middle of interval)
         :param days: number of days
         :return: tuple of datetime objects (left bound, right bound)
 
         """
-        date = datetime(date.year, date.month, date.day)
-        left = get_active_index(cuts, date)
-        right = min(left + 1, len(cuts))
-        lower_bound = cuts[left].date() + timedelta(1)
-        upper_bound = cuts[right].date() - timedelta(1)
-        date = date.date()
-        # TODO: check if date = bound, choose left/right?
+        left = get_active_index(cuts, self._datetime(date))
+
+        if left == len(cuts) - 1:
+            lower_bound = cuts[left - 1] + timedelta(1)
+            upper_bound = cuts[-1]  # include last day (today) in interval
+        else:
+            right = min(left + 1, len(cuts) - 1)
+            lower_bound = cuts[left] + timedelta(1)
+            upper_bound = cuts[right] - timedelta(1)
 
         step = timedelta(round(days / 2))
         if days >= (upper_bound - lower_bound).days:
@@ -206,11 +223,17 @@ class DetermineStationTimingOffsets(object):
         station offset around date
 
         """
+        date = self._datetime(date)
         cuts = self._get_cuts(station, ref_station)
         r, dz = self._get_r_dz(date, station, ref_station)
         interval = self._determine_interval(r)
 
         return self._get_left_and_right_bounds(cuts, date, interval)
+
+    def _datetime(self, date):
+        """ Ensure date is a datetime object with h, m, s, ms = 0 """
+
+        return datetime(date.year, date.month, date.day)
 
     def determine_station_timing_offset(self, date, station, ref_station):
         """Determine the timing offset between a station pair at certain date
@@ -221,6 +244,7 @@ class DetermineStationTimingOffsets(object):
         :return: list of station offsets: tuple (timestamp, offset, rchi2)
 
         """
+        date = self._datetime(date)
         left, right = self.determine_first_and_last_date(date, station,
                                                          ref_station)
         r, dz = self._get_r_dz(date, station, ref_station)
@@ -245,9 +269,9 @@ class DetermineStationTimingOffsets(object):
         """
         if start is None:
             cuts = self._get_cuts(station, ref_station)
-            start = cuts[0].date()
+            start = self._datetime(cuts[0])
         if end is None:
-            end = datetime.now().date()
+            end = self._datetime(datetime.now())
 
         offsets = []
         length = (end - start).days
