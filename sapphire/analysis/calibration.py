@@ -127,8 +127,13 @@ class DetermineStationTimingOffsets(object):
 
     @memoize
     def _get_gps_timestamps(self, station):
-        """Get station gps_locations"""
+        """Get timestamps of station gps changes"""
         return Station(station).gps_locations['timestamp']
+
+    @memoize
+    def _get_electronics_timestamps(self, station):
+        """Get timestamps of station electronics (hardware) changes"""
+        return Station(station).electronics['timestamp']
 
     def _get_cuts(self, station, ref_station):
         """Get cuts for determination of offsets
@@ -140,9 +145,10 @@ class DetermineStationTimingOffsets(object):
         :return: list of datetime objects
 
         """
-        # TODO: add electronics change
         cuts = concatenate((self._get_gps_timestamps(station),
-                            self._get_gps_timestamps(ref_station)))
+                            self._get_gps_timestamps(ref_station),
+                            self._get_electronics_timestamps(station),
+                            self._get_electronics_timestamps(ref_station)))
         cuts.sort()
         cuts = map(gps_to_datetime, cuts)
         cuts = concatenate((cuts, [datetime.now()]))
