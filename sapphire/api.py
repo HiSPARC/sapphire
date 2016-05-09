@@ -88,6 +88,7 @@ class API(object):
         'zenith': 'zenith/{station_number}/{year}/{month}/{day}/',
         'barometer': 'barometer/{station_number}/{year}/{month}/{day}/',
         'temperature': 'temperature/{station_number}/{year}/{month}/{day}/',
+        'electronics': 'electronics/{station_number}/',
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
@@ -135,7 +136,8 @@ class API(object):
                     raise Exception('Couldn\'t find requested data locally.')
                 raise Exception('Couldn\'t get requested data from server '
                                 'nor find it locally.')
-            warnings.warn('Using local data. Possibly outdated.')
+            if not self.force_stale:
+                warnings.warn('Using local data. Possibly outdated.')
 
         return data
 
@@ -168,7 +170,8 @@ class API(object):
                     raise Exception('Couldn\'t find requested data locally.')
                 raise Exception('Couldn\'t get requested data from server '
                                 'nor find it locally.')
-            warnings.warn('Using local data. Possibly outdated.')
+            if not self.force_stale:
+                warnings.warn('Using local data. Possibly outdated.')
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
@@ -469,7 +472,8 @@ class Network(API):
             stations = [stations]
 
         for sn in stations:
-            data[sn] = Station(sn).event_time()
+            data[sn] = Station(sn, force_fresh=self.force_fresh,
+                               force_stale=self.force_stale).event_time()
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
@@ -759,6 +763,30 @@ class Station(API):
         return self._get_tsv(path, names=columns)
 
     @lazy
+    def electronics(self):
+        """Get the electronics version data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'master', 'slave', 'master_fpga', 'slave_fpga')
+        path = self.src_urls['electronics'].format(station_number=self.station)
+        return self._get_tsv(path, names=columns)
+
+    def electronic(self, timestamp):
+        """Get electronics version data for specific timestamp
+
+        :param timestamp: timestamp for which the values are valid.
+        :return: list of values for given timestamp.
+
+        """
+        electronics = self.electronics
+        idx = get_active_index(electronics['timestamp'], timestamp)
+        electronic = [electronics[idx][field] for field in
+                      ('master', 'slave', 'master_fpga', 'slave_fpga')]
+        return electronic
+
+    @lazy
     def voltages(self):
         """Get the PMT voltage data
 
@@ -770,9 +798,9 @@ class Station(API):
         return self._get_tsv(path, names=columns)
 
     def voltage(self, timestamp):
-        """Get PMT coltage data for specific timestamp
+        """Get PMT voltage data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
@@ -795,7 +823,7 @@ class Station(API):
     def current(self, timestamp):
         """Get PMT current data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
@@ -819,7 +847,7 @@ class Station(API):
         """Get GPS location for specific timestamp
 
         :param timestamp: optional timestamp or datetime object for which
-            the value is valid.
+            the values are valid.
         :return: dictionary with the values for given timestamp.
 
         """
@@ -851,7 +879,7 @@ class Station(API):
     def trigger(self, timestamp):
         """Get trigger config for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: thresholds and trigger values for given timestamp.
 
         """
@@ -883,7 +911,7 @@ class Station(API):
     def station_layout(self, timestamp):
         """Get station layout data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of coordinates for given timestamp.
 
         """
@@ -909,7 +937,7 @@ class Station(API):
     def detector_timing_offset(self, timestamp):
         """Get detector timing offset data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """

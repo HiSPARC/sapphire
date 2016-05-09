@@ -14,7 +14,7 @@ after downloading, and the file repacked otherwise you are left with
     >>> import tables
     >>> from datetime import datetime
     >>> from sapphire.publicdb import download_data
-    >>> with tables.openFile('process_events_temp.h5', 'w') as data:
+    >>> with tables.open_file('process_events_temp.h5', 'w') as data:
     ...     download_data(data, '/s501', 501, datetime(2010, 9, 1),
     ...                   datetime(2010, 9, 1, 0, 5), get_blobs=True)
     ...     max_trace_id = data.root.s501.events.col('traces').max()

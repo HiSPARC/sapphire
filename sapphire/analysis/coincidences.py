@@ -348,20 +348,6 @@ class Coincidences(object):
             station which measured the event, and finally an index into that
             station's event table.
 
-        Example usage::
-
-            >>> import tables
-            >>> from hisparc.analysis.coincidences import search_coincidences
-            >>> data = tables.open_file('test.h5', 'a')
-            >>> coincidences, timestamps = search_coincidences(data,
-            ... ['/hisparc/station501', '/hisparc/station502',
-            ... '/hisparc/station503', '/hisparc/station504',
-            ... '/hisparc/station505'], shifts=[None, None, -15, None, None])
-            >>> coincidences[:3]
-            [[73, 74], [81, 82], [98, 99]]
-            >>> timestamps[73], timestamps[74]
-            ((1235433610410730837, 0, 23), (1235433610410731004, 2, 17))
-
         """
         # get the 'events' tables from the groups or groupnames
         event_tables = []
