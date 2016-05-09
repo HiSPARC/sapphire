@@ -95,6 +95,8 @@ class DetermineStationTimingOffsets(object):
 
     MAX_DISTANCE = 1000  # m
     """maximum distance between station pairs that are included in analysis"""
+    MIN_LEN_DT = 1000
+    """minimum number of timedeltas required to attempt a fit"""
 
     def __init__(self, stations=None, data=None, progress=False):
         """ Initialize the class
@@ -196,6 +198,7 @@ class DetermineStationTimingOffsets(object):
         """
         Determine first and last date to include in determination of
         station offset around date
+
         """
         cuts = self._get_cuts(station, ref_station)
         r, dz = self._get_r_dz(date, station, ref_station)
@@ -216,7 +219,7 @@ class DetermineStationTimingOffsets(object):
                                                          ref_station)
         r, dz = self._get_r_dz(date, station, ref_station)
         dt = self.read_dt(station, ref_station, left, right)
-        if len(dt) < 100:
+        if len(dt) < self.MIN_LEN_DT:
             s_off, rchi2 = nan, nan
         else:
             s_off, rchi2 = determine_station_timing_offset(dt, dz)
