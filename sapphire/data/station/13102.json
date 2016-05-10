@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 222.72, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.3968868, 
+    "longitude": -2.3646099, 
+    "name": "Royal High School", 
+    "number": 13102, 
+    "scintillators": [
+        {
+            "alpha": 126.0, 
+            "beta": 59.0, 
+            "height": 0.0, 
+            "radius": 1.45
+        }, 
+        {
+            "alpha": 144.0, 
+            "beta": 66.0, 
+            "height": 0.0, 
+            "radius": 7.53
+        }
+    ], 
+    "subcluster": "Bath"
+}

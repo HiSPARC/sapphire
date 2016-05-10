@@ -19,6 +19,7 @@ import argparse
 from .. import qsub
 
 
+BIN_PATH = '/data/hisparc/env/miniconda/envs/corsika/bin/'
 LOGFILE = '/data/hisparc/corsika/logs/qsub_store_corsika.log'
 DATADIR = '/data/hisparc/corsika/data'
 QUEUED_SEEDS = '/data/hisparc/corsika/queued.log'
@@ -27,7 +28,6 @@ DESTINATION_FILE = 'corsika.h5'
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
     umask 002
-    source activate corsika &> /dev/null
     {command}
     touch {datadir}
     # To alleviate Stoomboot, make sure the job is not to short.
@@ -91,12 +91,22 @@ def get_seeds_todo():
     return seeds.difference(processed).difference(queued)
 
 
+def filter_large_seeds(seeds_todo):
+    """Exclude seeds for data files that are to large"""
+
+    limit = 70e9  # larger than 70 GB has not been tested yet
+    return {s for s in seeds_todo
+            if os.path.getsize(os.path.join(DATADIR, s, SOURCE_FILE)) < limit}
+
+
 def store_command(seed):
     """Write queued seeds to file"""
 
     source = os.path.join(DATADIR, seed, SOURCE_FILE)
     destination = os.path.join(DATADIR, seed, DESTINATION_FILE)
-    command = 'store_corsika_data %s %s' % (source, destination)
+    command = ('{bin_path}python {bin_path}store_corsika_data {source} '
+               '{destination}'.format(bin_path=BIN_PATH, source=source,
+                                      destination=destination))
 
     return command
 
@@ -107,6 +117,7 @@ def run(queue):
     os.umask(002)
     logger.info('Getting todo list of seeds to convert.')
     seeds = get_seeds_todo()
+    # seeds = filter_large_seeds(seeds)
     n_jobs_to_submit = min(len(seeds), qsub.check_queue(queue), 50)
     extra = ''
     if queue == 'long':
@@ -139,7 +150,8 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(filename=LOGFILE, filemode='a',
-                        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-                        datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+    logging.basicConfig(
+        filename=LOGFILE, filemode='a',
+        format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+        datefmt='%y%m%d_%H%M%S', level=logging.INFO)
     main()

@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 116.53, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.4895383, 
+    "longitude": -2.6131544, 
+    "name": "Red Maids", 
+    "number": 13002, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Bristol"
+}

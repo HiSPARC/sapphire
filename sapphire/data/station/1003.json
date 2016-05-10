@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 57.82, 
+    "cluster": "Utrecht", 
+    "country": "Netherlands", 
+    "latitude": 52.0853555, 
+    "longitude": 5.1293367, 
+    "name": "Museum Sterrenwacht Sonnenborgh", 
+    "number": 1003, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Utrecht"
+}

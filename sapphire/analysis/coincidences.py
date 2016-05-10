@@ -141,7 +141,7 @@ class Coincidences(object):
         self.overwrite = overwrite
         self.progress = progress
 
-    def search_and_store_coincidences(self, window=10000, cluster=None):
+    def search_and_store_coincidences(self, window=10000):
         """Search, process and store coincidences.
 
         This is a semi-automatic method to search for coincidences,
@@ -155,7 +155,7 @@ class Coincidences(object):
         """
         self.search_coincidences(window=window)
         self.process_events()
-        self.store_coincidences(cluster)
+        self.store_coincidences()
 
     def search_coincidences(self, window=10000, shifts=None, limit=None):
         """Search for coincidences.
@@ -241,21 +241,14 @@ class Coincidences(object):
                               progress=self.progress)
             process.process_and_store_results(overwrite=overwrite)
 
-    def store_coincidences(self, cluster=None):
+    def store_coincidences(self):
         """Store the previously found coincidences.
 
         After you have searched for coincidences, you can store the
         more user-friendly results in the coincidences group using this
         method.
 
-        :param cluster: optionally store a
-            :class:`~sapphire.clusters.BaseCluster` instance in the
-            coincidences group for future reference.
-
         """
-        if cluster:
-            self.coincidence_group._v_attrs.cluster = cluster
-
         self.c_index = []
         self.coincidences = self.data.create_table(self.coincidence_group,
                                                    'coincidences',
@@ -354,20 +347,6 @@ class Coincidences(object):
             into the stations list which designates the detector
             station which measured the event, and finally an index into that
             station's event table.
-
-        Example usage::
-
-            >>> import tables
-            >>> from hisparc.analysis.coincidences import search_coincidences
-            >>> data = tables.open_file('test.h5', 'a')
-            >>> coincidences, timestamps = search_coincidences(data,
-            ... ['/hisparc/station501', '/hisparc/station502',
-            ... '/hisparc/station503', '/hisparc/station504',
-            ... '/hisparc/station505'], shifts=[None, None, -15, None, None])
-            >>> coincidences[:3]
-            [[73, 74], [81, 82], [98, 99]]
-            >>> timestamps[73], timestamps[74]
-            ((1235433610410730837, 0, 23), (1235433610410731004, 2, 17))
 
         """
         # get the 'events' tables from the groups or groupnames
@@ -494,14 +473,14 @@ class Coincidences(object):
 class CoincidencesESD(Coincidences):
     """Store coincidences specifically using the ESD
 
-    This is a subclass of :class:`Coincidences`. In addition to searching for
-    coincidences, this subclass stores the paths to the station_groups that
-    where used to look for coincidences in a lookup-table, and also stores the
-    original station info and event_id for each coincidence.
+    This is a subclass of :class:`Coincidences`. This subclass stores the paths
+    to the station_groups that where used to look for coincidences in a
+    lookup-table. The c_index stores the station and event id for each event in
+    the coincidence, allowing you to find the original event row.
 
     Suppose you want to search for coincidences between stations 501 and 503.
     First, download the data for these stations from the ESD. Suppose you
-    stored the data in the '/s501' and '/s503' groups in the 'data' file.
+    stored the data in the '/s501' and '/s503' groups in the file 'data'.
     Then::
 
         >>> station_groups = ['/s501', '/s503']
@@ -510,7 +489,7 @@ class CoincidencesESD(Coincidences):
 
     If you want a more manual method, replace the last line with::
 
-        >>> coin.search_coincidences(window=50000)
+        >>> coin.search_coincidences(window=5000)
         >>> coin.process_events()
         >>> coin.store_coincidences()
 
@@ -520,8 +499,9 @@ class CoincidencesESD(Coincidences):
     Once the coincidences are stored, there will be a `coincidences` table in
     the group. This table has multiple columns used for storing simulation
     inputs like shower direction and energy. At this point, they contain no
-    information. They are only useful if the original event tables were created
-    by simulations, instead of real detector data. The useful columns are:
+    information. They are only used if the event and coincidence tables were
+    created by simulations, instead of real detector data. The useful columns
+    are:
 
         * ``id``: the index of this coincidence. This index is identical for
           the ``coincidence`` and ``c_index`` tables.
@@ -530,8 +510,8 @@ class CoincidencesESD(Coincidences):
         * ``ext_timestamp``: the timestamp of the event in nanoseconds (equal
           to timestamp * 1000000000 + nanoseconds)
         * ``N``: the number of stations participating in this coincidence
-        * ``s0``, ``s1``, ...: whether the first (0), second (1) or other
-          stations participated in the coincidence.
+        * ``s0``, ``s1``, ...: for each station indicate whether it
+          participated in the coincidence.
 
     The coincidences group furthermore contains the tables ``s_index`` and
     ``c_index`` to track down the individual events making up the coincidence.
@@ -550,16 +530,16 @@ class CoincidencesESD(Coincidences):
     can be done in the following way (each row in the ``c_index`` table is a
     (station index, event index) pair)::
 
-        >>> station_paths = [data.get_node(path, 'events') for path in
-        ... group.s_index]
         >>> for station_idx, event_idx in group.c_index[idx]:
-        ...     event_group = station_paths[station_idx]
+        ...     station_path = group.s_index[station_idx]
+        ...     event_group = data.get_node(station_path, 'events')
         ...     event = event_group[event_idx]
 
-    The ``event`` is one of the source events.
+    The ``event`` is one of the events in the coincidence.
 
     """
-    def search_and_store_coincidences(self, window=10000, cluster=None):
+    def search_and_store_coincidences(self, window=10000,
+                                      station_numbers=None):
         """Search and store coincidences.
 
         This is a semi-automatic method to search for coincidences
@@ -567,7 +547,7 @@ class CoincidencesESD(Coincidences):
 
         """
         self.search_coincidences(window=window)
-        self.store_coincidences(cluster=cluster)
+        self.store_coincidences(station_numbers=station_numbers)
 
     def search_coincidences(self, window=10000, shifts=None, limit=None):
         """Search for coincidences.
@@ -600,7 +580,7 @@ class CoincidencesESD(Coincidences):
         self._src_timestamps = timestamps
         self._src_c_index = c_index
 
-    def store_coincidences(self, cluster=None):
+    def store_coincidences(self, station_numbers=None):
         """Store the previously found coincidences.
 
         After having searched for coincidences, you can store the more
@@ -608,15 +588,23 @@ class CoincidencesESD(Coincidences):
         method. It also created a ``c_index`` and ``s_index`` table to
         find the source events.
 
+        :param station_numbers: optional list of station_numbers.
+            If given these will be used to attach correct numbers to the
+            station column names in the coincidences table. Otherwise
+            they will simply be numbered by id. This list must be the
+            same length as the station_groups.
+
         """
         n_coincidences = len(self._src_c_index)
-        if cluster:
-            self.cluster = cluster
-            self.coincidence_group._v_attrs.cluster = cluster
-            s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
-                         for p, station in enumerate(cluster.stations, 12)}
+        if station_numbers is not None:
+            if len(station_numbers) != len(self.station_groups):
+                raise RuntimeError(
+                    "Number of station numbers must equal number of groups.")
+            self.station_numbers = station_numbers
+            s_columns = {'s%d' % number: tables.BoolCol(pos=p)
+                         for p, number in enumerate(station_numbers, 12)}
         else:
-            self.cluster = None
+            self.station_numbers = None
             s_columns = {'s%d' % n: tables.BoolCol(pos=(n + 12))
                          for n, _ in enumerate(self.station_groups)}
 
@@ -663,8 +651,8 @@ class CoincidencesESD(Coincidences):
             event_desc = self._src_timestamps[index]
             station_id = event_desc[1]
             event_index = event_desc[2]
-            if self.cluster:
-                station_number = self.cluster.stations[station_id].number
+            if self.station_numbers is not None:
+                station_number = self.station_numbers[station_id]
                 row['s%d' % station_number] = True
             else:
                 row['s%d' % station_id] = True

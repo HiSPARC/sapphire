@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 55.49, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3523105, 
+    "longitude": 4.8784078, 
+    "name": "Fons Vitae Lyceum", 
+    "number": 23, 
+    "scintillators": [
+        {
+            "alpha": 140.0, 
+            "beta": 60.0, 
+            "height": 0.0, 
+            "radius": 3.05
+        }, 
+        {
+            "alpha": 320.0, 
+            "beta": 60.0, 
+            "height": 0.0, 
+            "radius": 3.05
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

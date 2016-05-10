@@ -62,6 +62,7 @@ from . import time_util
 from . import transformations
 from . import utils
 
+from .analysis.calibration import determine_detector_timing_offsets
 from .analysis.coincidence_queries import CoincidenceQuery
 from .analysis.coincidences import Coincidences, CoincidencesESD
 from .analysis.find_mpv import FindMostProbableValueInSpectrum
@@ -69,7 +70,9 @@ from .analysis.process_events import (ProcessEvents, ProcessEventsFromSource,
                                       ProcessEventsFromSourceWithTriggerOffset,
                                       ProcessWeather, ProcessWeatherFromSource)
 from .analysis.reconstructions import (ReconstructESDEvents,
+                                       ReconstructESDEventsFromSource,
                                        ReconstructESDCoincidences)
+from .analysis.time_deltas import ProcessTimeDeltas
 from .api import Network, Station
 from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
 from .corsika.corsika_queries import CorsikaQuery
@@ -95,13 +98,16 @@ __all__ = ['analysis',
            'time_util',
            'transformations',
            'utils',
+           'determine_detector_timing_offsets',
            'CoincidenceQuery',
            'Coincidences', 'CoincidencesESD',
            'FindMostProbableValueInSpectrum',
            'ProcessEvents', 'ProcessEventsFromSource',
            'ProcessEventsFromSourceWithTriggerOffset',
            'ProcessWeather', 'ProcessWeatherFromSource',
-           'ReconstructESDEvents', 'ReconstructESDCoincidences',
+           'ReconstructESDEvents', 'ReconstructESDEventsFromSource',
+           'ReconstructESDCoincidences',
+           'ProcessTimeDeltas',
            'Network', 'Station',
            'HiSPARCStations', 'HiSPARCNetwork', 'ScienceParkCluster',
            'CorsikaQuery',

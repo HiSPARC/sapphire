@@ -1,5 +1,5 @@
-import re
 from itertools import izip_longest
+import os
 
 from numpy import isnan, histogram, linspace, percentile, std
 from scipy.optimize import curve_fit
@@ -51,7 +51,8 @@ class ReconstructESDEvents(object):
         """Initialize the class.
 
         :param data: the PyTables datafile.
-        :param station_group: the destination group.
+        :param station_group: the group containing the event table,
+            the results will also be stored in this group.
         :param station: either a station number or
             :class:`~sapphire.clusters.Station` object. If number the
             positions and offsets are retrieved from the API. Otherwise
@@ -132,7 +133,8 @@ class ReconstructESDEvents(object):
                                    "%s, and overwrite is False" %
                                    self.station_group)
         self.reconstructions = self.data.create_table(
-            self.station_group, self.destination, ReconstructedEvent)
+            self.station_group, self.destination, ReconstructedEvent,
+            expectedrows=self.events.nrows)
         self.reconstructions._v_attrs.station = self.station
 
     def store_offsets(self):
@@ -187,6 +189,49 @@ class ReconstructESDEvents(object):
         row.append()
 
 
+class ReconstructESDEventsFromSource(ReconstructESDEvents):
+
+    def __init__(self, source_data, dest_data, source_group, dest_group,
+                 station, overwrite=False, progress=True,
+                 destination='reconstructions'):
+        """Initialize the class.
+
+        :param data: the PyTables datafile.
+        :param station_group: the group containing the event table,
+            the results will also be stored in this group.
+        :param station: either a station number or
+            :class:`~sapphire.clusters.Station` object. If number the
+            positions and offsets are retrieved from the API. Otherwise
+            the offsets will be determined with the available data.
+        :param overwrite: if True, overwrite existing reconstruction table.
+        :param progress: if True, show a progressbar while reconstructing.
+        :param destination: alternative name for reconstruction table.
+
+        """
+        super(ReconstructESDEventsFromSource, self).__init__(
+            source_data, source_group, station, overwrite, progress,
+            destination)
+        self.dest_data = dest_data
+        self.dest_group = dest_group
+
+    def prepare_output(self):
+        """Prepare output table"""
+
+        dest_path = os.path.join(self.dest_group, self.destination)
+
+        if dest_path in self.dest_data:
+            if self.overwrite:
+                self.dest_data.remove_node(dest_path, recursive=True)
+            else:
+                raise RuntimeError("Reconstructions table already exists for "
+                                   "%s, and overwrite is False" %
+                                   self.dest_group)
+        self.reconstructions = self.dest_data.create_table(
+            self.dest_group, self.destination, ReconstructedEvent,
+            expectedrows=self.events.nrows, createparents=True)
+        self.reconstructions._v_attrs.station = self.station
+
+
 class ReconstructESDCoincidences(object):
 
     """Reconstruct coincidences, e.g. event between multiple stations
@@ -194,11 +239,10 @@ class ReconstructESDCoincidences(object):
     Example usage::
 
         >>> import tables
-        >>> from sapphire.analysis import reconstructions
+        >>> from sapphire import ReconstructESDCoincidences
 
         >>> data = tables.open_file('2014_1_1.h5', 'a')
-        >>> rec = reconstructions.ReconstructESDCoincidences(data,
-        ...                                                  overwrite=True)
+        >>> rec = ReconstructESDCoincidences(data, overwrite=True)
         >>> rec.reconstruct_and_store()
 
     """
@@ -229,11 +273,8 @@ class ReconstructESDCoincidences(object):
             try:
                 self.cluster = self.coincidences_group._f_getattr('cluster')
             except AttributeError:
-                re_number = re.compile('[0-9]+$')
-                s_index = self.coincidences_group.s_index
-                s_numbers = [int(re_number.search(station_group).group())
-                             for station_group in s_index]
-                self.cluster = HiSPARCStations(s_numbers)
+                s_active = self._get_active_stations()
+                self.cluster = HiSPARCStations(s_active)
         else:
             self.cluster = cluster
 
@@ -261,12 +302,11 @@ class ReconstructESDCoincidences(object):
         :param detector_ids: list of detector ids to use for reconstructions.
 
         """
-        coincidences = self.cq.all_coincidences(iterator=True)
-        # Progress does not work because the pbar does not know the
-        # number of coincidences
+        coincidences = pbar(self.cq.all_coincidences(iterator=True),
+                            length=self.coincidences.nrows, show=self.progress)
         angles = self.direction.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
-            self.offsets, self.progress)
+            self.offsets, progress=False)
         self.theta, self.phi, self.station_numbers = angles
 
     def reconstruct_cores(self, station_numbers=None):
@@ -275,12 +315,11 @@ class ReconstructESDCoincidences(object):
         :param detector_ids: list of detector ids to use for reconstructions.
 
         """
-        coincidences = self.cq.all_coincidences(iterator=True)
-        # Progress does not work because the pbar does not know the
-        # number of coincidences
+        coincidences = pbar(self.cq.all_coincidences(iterator=True),
+                            length=self.coincidences.nrows, show=self.progress)
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
-            self.progress)
+            progress=False)
         self.core_x, self.core_y = cores
 
     def prepare_output(self):
@@ -300,7 +339,8 @@ class ReconstructESDCoincidences(object):
         description = ReconstructedCoincidence
         description.columns.update(s_columns)
         self.reconstructions = self.data.create_table(
-            self.coincidences_group, self.destination, description)
+            self.coincidences_group, self.destination, description,
+            expectedrows=self.coincidences.nrows)
         self.reconstructions._v_attrs.cluster = self.cluster
 
     def get_station_timing_offsets(self):
@@ -446,3 +486,67 @@ class ReconstructESDCoincidences(object):
             row['s%d' % number] = True
 
         row.append()
+
+    def _get_active_stations(self):
+        """Return station numbers with non-empty event table in datafile"""
+
+        active_stations = []
+
+        for s_path in self.coincidences_group.s_index:
+            try:
+                station_event_table = self.data.get_node(s_path + '/events')
+            except tables.NoSuchNodeError:
+                continue
+            if not station_event_table.nrows:
+                continue
+            active_stations.append(int(s_path.split('station_')[-1]))
+
+        return active_stations
+
+
+class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
+
+    def __init__(self, source_data, dest_data, source_group, dest_group,
+                 overwrite=False, progress=True,
+                 destination='reconstructions', cluster=None):
+        """Initialize the class.
+
+        :param data: the PyTables datafile.
+        :param station_group: the group containing the event table,
+            the results will also be stored in this group.
+        :param station: either a station number or
+            :class:`~sapphire.clusters.Station` object. If number the
+            positions and offsets are retrieved from the API. Otherwise
+            the offsets will be determined with the available data.
+        :param overwrite: if True, overwrite existing reconstruction table.
+        :param progress: if True, show a progressbar while reconstructing.
+        :param destination: alternative name for reconstruction table.
+
+        """
+        super(ReconstructESDCoincidencesFromSource, self).__init__(
+            source_data, source_group, overwrite, progress, destination,
+            cluster)
+        self.dest_data = dest_data
+        self.dest_group = dest_group
+
+    def prepare_output(self):
+        """Prepare output table"""
+
+        dest_path = os.path.join(self.dest_group, self.destination)
+
+        if dest_path in self.dest_data:
+            if self.overwrite:
+                self.dest_data.remove_node(dest_path, recursive=True)
+            else:
+                raise RuntimeError("Reconstructions table already exists for "
+                                   "%s, and overwrite is False" %
+                                   self.dest_group)
+
+        s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
+                     for p, station in enumerate(self.cluster.stations, 26)}
+        description = ReconstructedCoincidence
+        description.columns.update(s_columns)
+        self.reconstructions = self.dest_data.create_table(
+            self.dest_group, self.destination, description,
+            expectedrows=self.coincidences.nrows, createparents=True)
+        self.reconstructions._v_attrs.cluster = self.cluster

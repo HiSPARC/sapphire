@@ -30,11 +30,11 @@ class CoincidencesTests(unittest.TestCase):
         self.c.search_and_store_coincidences()
         mock_search.assert_called_with(window=10000)
         mock_process.assert_called_with()
-        mock_store.assert_called_with(None)
-        self.c.search_and_store_coincidences(sentinel.window, sentinel.cluster)
+        mock_store.assert_called_with()
+        self.c.search_and_store_coincidences(sentinel.window)
         mock_search.assert_called_with(window=sentinel.window)
         mock_process.assert_called_with()
-        mock_store.assert_called_with(sentinel.cluster)
+        mock_store.assert_called_with()
 
     def test__retrieve_timestamps(self):
         station1 = Mock()
@@ -113,11 +113,11 @@ class CoincidencesESDTests(CoincidencesTests):
     def test_search_and_store_coincidences(self, mock_store, mock_search):
         self.c.search_and_store_coincidences()
         mock_search.assert_called_with(window=10000)
-        mock_store.assert_called_with(cluster=None)
+        mock_store.assert_called_with(station_numbers=None)
         self.c.search_and_store_coincidences(sentinel.window,
-                                             sentinel.cluster)
+                                             sentinel.station_numbers)
         mock_search.assert_called_with(window=sentinel.window)
-        mock_store.assert_called_with(cluster=sentinel.cluster)
+        mock_store.assert_called_with(station_numbers=sentinel.station_numbers)
 
     @patch.object(coincidences.CoincidencesESD, '_search_coincidences')
     def test_search_coincidences(self, mock__search):
@@ -179,7 +179,9 @@ class CoincidencesESDDataTests(CoincidencesDataTests):
             c = coincidences.CoincidencesESD(data, '/coincidences',
                                              ['/station_501', '/station_502'],
                                              progress=False)
-            c.search_and_store_coincidences()
+            self.assertRaises(RuntimeError, c.search_and_store_coincidences,
+                              station_numbers=[501])
+            c.search_and_store_coincidences(station_numbers=[501, 502])
         validate_results(self, self.get_testdata_path(), self.data_path)
 
     def get_testdata_path(self):

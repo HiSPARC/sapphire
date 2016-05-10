@@ -1,8 +1,13 @@
 from setuptools import setup, find_packages
+import sys
+
+
+if sys.version_info[:2] != (2, 7):
+    raise Exception('Only Python 2.7 is supported.')
 
 
 setup(name='hisparc-sapphire',
-      version='0.12.6',
+      version='0.13.8',
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
@@ -26,10 +31,14 @@ setup(name='hisparc-sapphire',
                'sapphire/corsika/qsub_corsika',
                'sapphire/corsika/qsub_store_corsika_data',
                'sapphire/corsika/store_corsika_data'],
-      package_data={'sapphire': ['data/hisparc_stations.json',
-                                 'data/gps/*.csv',
-                                 'data/trigger/*.csv',
-                                 'data/layout/*.csv',
+      package_data={'sapphire': ['data/*.json',
+                                 'data/*/*.json',
+                                 'data/current/*.tsv',
+                                 'data/gps/*.tsv',
+                                 'data/layout/*.tsv',
+                                 'data/trigger/*.tsv',
+                                 'data/voltage/*.tsv',
+                                 'data/electronics/*.tsv',
                                  'corsika/LICENSE',
                                  'tests/test_data/*.h5',
                                  'tests/test_data/*.tsv',

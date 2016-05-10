@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 115.74, 
+    "cluster": "Eindhoven", 
+    "country": "Netherlands", 
+    "latitude": 51.4462933, 
+    "longitude": 5.4850948, 
+    "name": "Universiteit Eindhoven 3", 
+    "number": 8008, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Eindhoven"
+}

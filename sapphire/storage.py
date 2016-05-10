@@ -137,6 +137,16 @@ class Coincidence(tables.IsDescription):
     energy = tables.Float32Col(pos=10)
 
 
+class TimeDelta(tables.IsDescription):
+
+    """Store time differences"""
+
+    ext_timestamp = tables.UInt64Col(pos=0)
+    timestamp = tables.UInt32Col(pos=1)
+    nanoseconds = tables.UInt32Col(pos=2)
+    delta = tables.FloatCol(pos=3)
+
+
 class ReconstructedCoincidence(tables.IsDescription):
 
     """Store information about reconstructed coincidences"""

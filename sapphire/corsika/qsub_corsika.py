@@ -10,18 +10,17 @@
 
     To run this file correctly do it in the correct env::
 
-        source activate corsika
+        $ source activate corsika
 
     The syntax for calling the script can be seen by calling its help::
 
-        qsub_corsika --help
-
+        $ qsub_corsika --help
 
     For example, running 100 showers with proton primaries of 1e16 eV
     coming in at 22.5 degrees zenith and 90 degrees azimuth on the
     standard Stoomboot queue with the default CORSIKA configuration::
 
-        qsub_corsika 100 16 proton 22.5 -q generic -a 90
+        $ qsub_corsika 100 16 proton 22.5 -q generic -a 90
 
 """
 import os
@@ -132,7 +131,7 @@ class CorsikaBatch(object):
             self.energy_pow = int(modf(energy)[1] - 9)
         else:
             raise ValueError('Energy must either be an integer or end in .5.')
-        self.particle = particles.particle_id(particle)  # Stored as particle id
+        self.particle = particles.particle_id(particle)  # Store as particle id
         self.theta = zenith
         self.phi = (azimuth + 90) % 360  # Stored as Phi defined by CORSIKA
         self.queue = queue

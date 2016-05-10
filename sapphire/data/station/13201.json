@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 164.86, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.5578796, 
+    "longitude": -1.7588078, 
+    "name": "New College", 
+    "number": 13201, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Swindon"
+}

@@ -44,9 +44,9 @@ class Detector(object):
             self.x = [position[0]]
             self.y = [position[1]]
             self.z = [position[2]] if len(position) == 3 else [0.]
-        if orientation == 'UD':
+        if orientation is 'UD':
             self.orientation = [0] * len(self.x)
-        elif orientation == 'LR':
+        elif orientation is 'LR':
             self.orientation = [pi / 2] * len(self.x)
         else:
             if hasattr(orientation, "__len__"):
@@ -66,18 +66,7 @@ class Detector(object):
         :param timestamp: timestamp in seconds.
 
         """
-        # Most often the timestamp will be later then the previous,
-        # and often less than the next.
-        ci = self.index
-        if self.timestamps[ci] <= timestamp:
-            try:
-                if timestamp < self.timestamps[ci + 1]:
-                    return
-            except IndexError:
-                pass
-            self.index = get_active_index(self.timestamps[ci:], timestamp) + ci
-        else:
-            self.index = get_active_index(self.timestamps, timestamp)
+        self.index = get_active_index(self.timestamps, timestamp)
 
     @property
     def detector_size(self):
@@ -236,18 +225,7 @@ class Station(object):
         """
         for detector in self.detectors:
             detector._update_timestamp(timestamp)
-        # Most often the timestamp will be later then the previous,
-        # and often less than the next.
-        ci = self.index
-        if self.timestamps[ci] <= timestamp:
-            try:
-                if timestamp < self.timestamps[ci + 1]:
-                    return
-            except IndexError:
-                pass
-            self.index = get_active_index(self.timestamps[ci:], timestamp) + ci
-        else:
-            self.index = get_active_index(self.timestamps, timestamp)
+        self.index = get_active_index(self.timestamps, timestamp)
 
     def _add_detector(self, position, orientation, detector_timestamps):
         """Add detector to station
@@ -333,6 +311,9 @@ class Station(object):
 
         transform = geographic.FromWGS84ToENUTransformation(lla)
         latitude, longitude, altitude = transform.enu_to_lla(enu)
+        latitude = latitude if abs(latitude) > 1e-7 else 0.
+        longitude = longitude if abs(longitude) > 1e-7 else 0.
+        altitude = altitude if abs(altitude) > 1e-7 else 0.
 
         return latitude, longitude, altitude
 
@@ -536,13 +517,16 @@ class BaseCluster(object):
     def calc_rphiz_for_stations(self, s0, s1):
         """Calculate distance between and direction of two stations
 
+        The calculated result is between the center of mass coordinates
+        of the two stations.
+
         :param s0,s1: The station ids for the two stations.
         :return: r, phi, z; the distance between and direction of the two
             given stations.
 
         """
-        x0, y0, z0, alpha0 = self.stations[s0].get_coordinates()
-        x1, y1, z1, alpha1 = self.stations[s1].get_coordinates()
+        x0, y0, z0 = self.stations[s0].calc_center_of_mass_coordinates()
+        x1, y1, z1 = self.stations[s1].calc_center_of_mass_coordinates()
 
         r = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
         phi = atan2((y1 - y0), (x1 - x0))
@@ -572,6 +556,45 @@ class BaseCluster(object):
         z0 = np.mean(z)
 
         return x0, y0, z0
+
+    @staticmethod
+    def _distance(c1, c2):
+        return np.sqrt(sum((c1 - c2) ** 2))
+
+    def calc_distance_between_stations(self, s1, s2):
+        """Calculate distance between two stations
+
+        :param s1,s2: station numbers.
+        :return: distance between stations.
+
+        """
+        pair = [so for so in self._stations if so.number in (s1, s2)]
+
+        if len(pair) != 2:
+            return None
+
+        xyz = [np.array(s.calc_center_of_mass_coordinates()) for s in pair]
+
+        return self._distance(*xyz)
+
+    def calc_horizontal_distance_between_stations(self, s1, s2):
+        """Calculate 2D distance between two HiSPARC stations. Ignores altitude
+
+        The 2D plane is the East-North plane defined by the ENU axes at the
+        reference location for this cluster.
+
+        :param s1,s2: station numbers.
+        :return: distance between stations.
+
+        """
+        pair = [so for so in self._stations if so.number in (s1, s2)]
+
+        if len(pair) != 2:
+            return None
+
+        xy = [np.array(s.calc_center_of_mass_coordinates()[:-1]) for s in pair]
+
+        return self._distance(*xy)
 
 
 class CompassStations(BaseCluster):
@@ -631,11 +654,14 @@ class CompassStations(BaseCluster):
 
 
 class SimpleCluster(BaseCluster):
-    """Define a simple cluster containing four stations"""
+
+    """Define a simple cluster containing four stations
+
+    :param size: This value is the distance between the three outer stations.
+
+    """
 
     def __init__(self, size=250):
-        """Build the cluster"""
-
         super(SimpleCluster, self).__init__()
 
         # calculate station positions. the cluster resembles a single
@@ -652,8 +678,6 @@ class SingleStation(BaseCluster):
     """Define a cluster containing a single station"""
 
     def __init__(self):
-        """Build the cluster"""
-
         super(SingleStation, self).__init__()
 
         self._add_station((0, 0, 0), 0)
@@ -714,10 +738,10 @@ class HiSPARCStations(CompassStations):
     :param stations: A list of station numbers to include. The
         coordinates are retrieved from the Public Database API.
         The first station is placed at the origin of the cluster.
-    :param allow_missing: Set to True to allow stations to have missing
+    :param skip_missing: Set to True to skip stations which have missing
         location data, otherwise an exception will be raised. Stations
-        with missing location data will be included but get
-        (lat,lon,alt) = (0, 0, 0). Does not apply to detector positions.
+        with missing location data will be excluded. Does not apply
+        to missing detector positions.
 
     Example::
 
@@ -725,7 +749,8 @@ class HiSPARCStations(CompassStations):
 
     """
 
-    def __init__(self, stations, allow_missing=False):
+    def __init__(self, stations, skip_missing=False, force_fresh=False,
+                 force_stale=False):
         super(HiSPARCStations, self).__init__()
 
         missing_gps = []
@@ -733,16 +758,15 @@ class HiSPARCStations(CompassStations):
 
         for i, station in enumerate(stations):
             try:
-                station_info = api.Station(station)
+                station_info = api.Station(station, force_fresh=force_fresh,
+                                           force_stale=force_stale)
                 locations = station_info.gps_locations
             except:
-                if allow_missing:
+                if skip_missing:
                     missing_gps.append(station)
-                    llas = [(0., 0., 0.)]
-                    station_ts = [0]
-                    n_detectors = 4
+                    continue
                 else:
-                    raise KeyError('Could not get info for station %d.' %
+                    raise KeyError('Could not get GPS info for station %d.' %
                                    station)
             else:
                 llas = locations[['latitude', 'longitude', 'altitude']]
@@ -771,8 +795,9 @@ class HiSPARCStations(CompassStations):
                 if n_detectors == 2:
                     razbs = [(5, 90, 0, 0), (5, 270, 0, 0)]
                 elif n_detectors == 4:
-                    razbs = [(8.66, 0, 0, 0), (2.89, 0, 0, 0),
-                             (5, -90, 0, 90), (5, 90, 0, 90)]
+                    d = 10 / sqrt(3)
+                    razbs = [(d, 0, 0, 0), (0, 0, 0, 0),
+                             (d, -120, 0, 90), (d, 120, 0, 90)]
                 else:
                     raise RuntimeError("Detector count unknown for station %d."
                                        % station)
@@ -782,12 +807,10 @@ class HiSPARCStations(CompassStations):
 
         if len(missing_gps):
             warnings.warn('Could not get GPS location for stations: %s. '
-                          'Using (0, 0, 0) instead.' % str(missing_gps),
-                          UserWarning)
+                          'Using (0, 0, 0) instead.' % str(missing_gps))
         if len(missing_detectors):
             warnings.warn('Could not get detector layout for stations %s, '
-                          'defaults will be used!' % str(missing_detectors),
-                          UserWarning)
+                          'defaults will be used!' % str(missing_detectors))
 
 
 class ScienceParkCluster(HiSPARCStations):
@@ -800,22 +823,25 @@ class ScienceParkCluster(HiSPARCStations):
 
     """
 
-    def __init__(self, stations=None, allow_missing=False):
+    def __init__(self, stations=None, skip_missing=False, force_fresh=False,
+                 force_stale=False):
         if stations is None:
-            network = api.Network()
+            network = api.Network(force_fresh, force_stale)
             stations = [sn for sn in network.station_numbers(subcluster=500)
                         if sn != 507]
         else:
             stations = [sn for sn in stations if 500 < sn < 600]
-        super(ScienceParkCluster, self).__init__(stations,
-                                                 allow_missing=allow_missing)
+        super(ScienceParkCluster, self).__init__(stations, skip_missing,
+                                                 force_fresh, force_stale)
 
 
 class HiSPARCNetwork(HiSPARCStations):
 
     """A cluster containing all station from the HiSPARC network"""
 
-    def __init__(self):
-        network = api.Network()
+    def __init__(self, force_fresh=False, force_stale=False):
+        network = api.Network(force_fresh, force_stale)
         stations = network.station_numbers()
-        super(HiSPARCNetwork, self).__init__(stations, allow_missing=True)
+        skip_missing = True  # Likely some station without GPS location
+        super(HiSPARCNetwork, self).__init__(stations, skip_missing,
+                                             force_fresh, force_stale)

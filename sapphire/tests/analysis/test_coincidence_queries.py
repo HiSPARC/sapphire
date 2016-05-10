@@ -140,6 +140,18 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         # mock_events_from.assert_called_once_with(sentinel.events, sentinel.stations)
         # mock_minimum.assert_called_once_with([sentinel.coincidence_events])
 
+    @patch.object(coincidence_queries.CoincidenceQuery, 'minimum_events_for_coincidence')
+    @patch.object(coincidence_queries.CoincidenceQuery, '_events_from_stations')
+    @patch.object(coincidence_queries.CoincidenceQuery, '_get_reconstructions')
+    def test_reconstructions_from_stations(self, mock_get_reconstructions, mock_events_from, mock_minimum):
+        mock_get_reconstructions.return_value = sentinel.reconstructions
+        mock_events_from.return_value = sentinel.coincidence_reconstructions
+        coincidences = [sentinel.coincidence]
+        self.cq.reconstructions_from_stations(coincidences, sentinel.stations)
+        # mock_get_events.assert_called_once_with(sentinel.coincidence)
+        # mock_events_from.assert_called_once_with(sentinel.events, sentinel.stations)
+        # mock_minimum.assert_called_once_with([sentinel.coincidence_events])
+
     def test__events_from_stations(self):
         events = ([sentinel.station1, sentinel.event1],
                   [sentinel.station2, sentinel.event2])

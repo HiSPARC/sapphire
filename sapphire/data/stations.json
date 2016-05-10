@@ -1,0 +1,506 @@
+[
+    {
+        "name": "St. Nicolaaslyceum", 
+        "number": 2
+    }, 
+    {
+        "name": "Het Amsterdams Lyceum", 
+        "number": 3
+    }, 
+    {
+        "name": "Chr. Sch. Gem. Buitenveldert", 
+        "number": 5
+    }, 
+    {
+        "name": "Bern. Nieuwetijt Coll. (Damstede)", 
+        "number": 6
+    }, 
+    {
+        "name": "Joke Smit College (ROC)", 
+        "number": 7
+    }, 
+    {
+        "name": "Vrije Universiteit", 
+        "number": 9
+    }, 
+    {
+        "name": "Hermann Wesselink College", 
+        "number": 10
+    }, 
+    {
+        "name": "Hervormd Lyceum West", 
+        "number": 13
+    }, 
+    {
+        "name": "Vechtstede College", 
+        "number": 21
+    }, 
+    {
+        "name": "St. Ignatius Gymnasium", 
+        "number": 22
+    }, 
+    {
+        "name": "Fons Vitae Lyceum", 
+        "number": 23
+    }, 
+    {
+        "name": "St. Michael College", 
+        "number": 101
+    }, 
+    {
+        "name": "Zaanlands Lyceum 1", 
+        "number": 102
+    }, 
+    {
+        "name": "Saenredam College", 
+        "number": 103
+    }, 
+    {
+        "name": "Zaanlands Lyceum 3", 
+        "number": 104
+    }, 
+    {
+        "name": "Zaanlands Lyceum 4", 
+        "number": 105
+    }, 
+    {
+        "name": "Coornhert Lyceum", 
+        "number": 201
+    }, 
+    {
+        "name": "Kaj Munk College", 
+        "number": 202
+    }, 
+    {
+        "name": "College Hageveld", 
+        "number": 203
+    }, 
+    {
+        "name": "Jac. P. Thijsse College", 
+        "number": 301
+    }, 
+    {
+        "name": "Kennemer College", 
+        "number": 303
+    }, 
+    {
+        "name": "Bonhoeffer College", 
+        "number": 304
+    }, 
+    {
+        "name": "Gemeentehuis Castricum", 
+        "number": 305
+    }, 
+    {
+        "name": "Willem Blaeu OSG", 
+        "number": 401
+    }, 
+    {
+        "name": "Nikhef", 
+        "number": 501
+    }, 
+    {
+        "name": "Universiteit van Amsterdam", 
+        "number": 502
+    }, 
+    {
+        "name": "Vancis", 
+        "number": 503
+    }, 
+    {
+        "name": "SURFsara (Matrix)", 
+        "number": 504
+    }, 
+    {
+        "name": "ARCNL (PiMu)", 
+        "number": 505
+    }, 
+    {
+        "name": "Telecity", 
+        "number": 506
+    }, 
+    {
+        "name": "Nikhef (receptie)", 
+        "number": 507
+    }, 
+    {
+        "name": "Nikhef (MT)", 
+        "number": 508
+    }, 
+    {
+        "name": "Universiteit van Amsterdam 2", 
+        "number": 509
+    }, 
+    {
+        "name": "Nikhef 2", 
+        "number": 510
+    }, 
+    {
+        "name": "AMOLF", 
+        "number": 511
+    }, 
+    {
+        "name": "Werenfridus", 
+        "number": 601
+    }, 
+    {
+        "name": "Universiteit Utrecht", 
+        "number": 1001
+    }, 
+    {
+        "name": "Christelijk Gymnasium Utrecht", 
+        "number": 1002
+    }, 
+    {
+        "name": "Museum Sterrenwacht Sonnenborgh", 
+        "number": 1003
+    }, 
+    {
+        "name": "University College Utrecht 1", 
+        "number": 1006
+    }, 
+    {
+        "name": "University College Utrecht 2", 
+        "number": 1007
+    }, 
+    {
+        "name": "Stedelijk Gymnasium Utrecht", 
+        "number": 1008
+    }, 
+    {
+        "name": "FOM Bureau", 
+        "number": 1009
+    }, 
+    {
+        "name": "Ornstein Laboratory", 
+        "number": 1010
+    }, 
+    {
+        "name": "Comenius College", 
+        "number": 1101
+    }, 
+    {
+        "name": "Gemeentelijk Gymnasium Hilversum", 
+        "number": 1102
+    }, 
+    {
+        "name": "Radboud Universiteit 1", 
+        "number": 2001
+    }, 
+    {
+        "name": "Nijmeegse Scholengemeenschap Groenewoud", 
+        "number": 2002
+    }, 
+    {
+        "name": "Stedelijk Gymnasium Nijmegen", 
+        "number": 2003
+    }, 
+    {
+        "name": "Dominicus College", 
+        "number": 2004
+    }, 
+    {
+        "name": "Kandinsky College", 
+        "number": 2005
+    }, 
+    {
+        "name": "Radboud Universiteit 2", 
+        "number": 2006
+    }, 
+    {
+        "name": "Stedelijke Scholengemeenschap", 
+        "number": 2008
+    }, 
+    {
+        "name": "Pax Christi College", 
+        "number": 2010
+    }, 
+    {
+        "name": "Raaijland College", 
+        "number": 2101
+    }, 
+    {
+        "name": "Raaijland College (Gilde)", 
+        "number": 2102
+    }, 
+    {
+        "name": "Raaijland College (Melkfabriek)", 
+        "number": 2103
+    }, 
+    {
+        "name": "RSG-Slingerbos", 
+        "number": 2201
+    }, 
+    {
+        "name": "Universiteit Leiden", 
+        "number": 3001
+    }, 
+    {
+        "name": "Da Vinci College", 
+        "number": 3002
+    }, 
+    {
+        "name": "Walburg College", 
+        "number": 3101
+    }, 
+    {
+        "name": "Walburg College (Hendrik Ido Ambacht)", 
+        "number": 3102
+    }, 
+    {
+        "name": "Walburg College (Lindelaan)", 
+        "number": 3103
+    }, 
+    {
+        "name": "Dalton Lyceum", 
+        "number": 3104
+    }, 
+    {
+        "name": "CSG Willem van Oranje", 
+        "number": 3105
+    }, 
+    {
+        "name": "CSG Prins Maurits", 
+        "number": 3201
+    }, 
+    {
+        "name": "RSG Middelharnis", 
+        "number": 3202
+    }, 
+    {
+        "name": "RSG Gemeentehuis", 
+        "number": 3203
+    }, 
+    {
+        "name": "Scala College", 
+        "number": 3301
+    }, 
+    {
+        "name": "Het Groene Hart Lyceum", 
+        "number": 3302
+    }, 
+    {
+        "name": "Ashram College", 
+        "number": 3303
+    }, 
+    {
+        "name": "Sted. Scholengem. De Rede ", 
+        "number": 3401
+    }, 
+    {
+        "name": "De Haagse Hogeschool (Delft)", 
+        "number": 3501
+    }, 
+    {
+        "name": "Sint Maartens College", 
+        "number": 3601
+    }, 
+    {
+        "name": "Segbroek College", 
+        "number": 3701
+    }, 
+    {
+        "name": "KVI", 
+        "number": 4001
+    }, 
+    {
+        "name": "Maartens College", 
+        "number": 4002
+    }, 
+    {
+        "name": "Praedinius Gymnasium", 
+        "number": 4003
+    }, 
+    {
+        "name": "Wessel Gansfort College", 
+        "number": 4004
+    }, 
+    {
+        "name": "Universiteit Twente 1", 
+        "number": 7001
+    }, 
+    {
+        "name": "Universiteit Twente 2", 
+        "number": 7002
+    }, 
+    {
+        "name": "Universiteit Twente 3", 
+        "number": 7003
+    }, 
+    {
+        "name": "Bataafs Lyceum", 
+        "number": 7101
+    }, 
+    {
+        "name": "CSG Het Noordik", 
+        "number": 7201
+    }, 
+    {
+        "name": "Etty Hillesum Lyceum", 
+        "number": 7301
+    }, 
+    {
+        "name": "Assink Lyceum", 
+        "number": 7401
+    }, 
+    {
+        "name": "Universiteit Eindhoven 1", 
+        "number": 8001
+    }, 
+    {
+        "name": "Pleincollege Bisschop Bekkers", 
+        "number": 8002
+    }, 
+    {
+        "name": "Sint-Joriscollege", 
+        "number": 8003
+    }, 
+    {
+        "name": "Universiteit Eindhoven 2", 
+        "number": 8004
+    }, 
+    {
+        "name": "Pius X College Bladel", 
+        "number": 8005
+    }, 
+    {
+        "name": "Stedelijk College Eindhoven", 
+        "number": 8006
+    }, 
+    {
+        "name": "Strabrecht College Geldrop", 
+        "number": 8007
+    }, 
+    {
+        "name": "Universiteit Eindhoven 3", 
+        "number": 8008
+    }, 
+    {
+        "name": "Universiteit Eindhoven 4", 
+        "number": 8009
+    }, 
+    {
+        "name": "Koning Willem II College", 
+        "number": 8101
+    }, 
+    {
+        "name": "St. Odulphuslyceum Tilburg", 
+        "number": 8102
+    }, 
+    {
+        "name": "Theresia Lyceum Tilburg", 
+        "number": 8103
+    }, 
+    {
+        "name": "Mgr. Frencken College", 
+        "number": 8104
+    }, 
+    {
+        "name": "Mill Hill College", 
+        "number": 8105
+    }, 
+    {
+        "name": "Bouwens van der Boije College", 
+        "number": 8201
+    }, 
+    {
+        "name": "Philips van Horne 1", 
+        "number": 8301
+    }, 
+    {
+        "name": "Philips van Horne 2", 
+        "number": 8302
+    }, 
+    {
+        "name": "Philips van Horne 3", 
+        "number": 8303
+    }, 
+    {
+        "name": "Bristol University", 
+        "number": 13001
+    }, 
+    {
+        "name": "Red Maids", 
+        "number": 13002
+    }, 
+    {
+        "name": "Bristol Grammar School", 
+        "number": 13003
+    }, 
+    {
+        "name": "Clifton High School", 
+        "number": 13004
+    }, 
+    {
+        "name": "Filton College", 
+        "number": 13005
+    }, 
+    {
+        "name": "Hanham Woods Academy", 
+        "number": 13006
+    }, 
+    {
+        "name": "BernardLovell", 
+        "number": 13007
+    }, 
+    {
+        "name": "Bristol Cathedral Choir School", 
+        "number": 13008
+    }, 
+    {
+        "name": "Beechen Cliff School", 
+        "number": 13101
+    }, 
+    {
+        "name": "Royal High School", 
+        "number": 13102
+    }, 
+    {
+        "name": "RalphAllen", 
+        "number": 13103
+    }, 
+    {
+        "name": "BathUni", 
+        "number": 13104
+    }, 
+    {
+        "name": "New College", 
+        "number": 13201
+    }, 
+    {
+        "name": "Sheldon School", 
+        "number": 13301
+    }, 
+    {
+        "name": "Okehampton", 
+        "number": 13401
+    }, 
+    {
+        "name": "Torquay Girls Grammar School", 
+        "number": 13501
+    }, 
+    {
+        "name": "Birmingham University", 
+        "number": 14001
+    }, 
+    {
+        "name": "Bordesley Green Girls School and Sixth Form", 
+        "number": 14002
+    }, 
+    {
+        "name": "King Edward VI High School for Girls", 
+        "number": 14003
+    }, 
+    {
+        "name": "Aarhus University 1", 
+        "number": 20001
+    }, 
+    {
+        "name": "Aarhus University 2", 
+        "number": 20002
+    }, 
+    {
+        "name": "Aarhus University 3", 
+        "number": 20003
+    }
+]

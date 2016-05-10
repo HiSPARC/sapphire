@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 56.47, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.494334, 
+    "longitude": 4.6613204, 
+    "name": "Kennemer College", 
+    "number": 303, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Kennemerland"
+}

@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 60.7, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3494298, 
+    "longitude": 4.8738439, 
+    "name": "St. Ignatius Gymnasium", 
+    "number": 22, 
+    "scintillators": [
+        {
+            "alpha": 25.0, 
+            "beta": 7.0, 
+            "height": 0.0, 
+            "radius": 1.44
+        }, 
+        {
+            "alpha": 84.0, 
+            "beta": 88.0, 
+            "height": 0.0, 
+            "radius": 14.23
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

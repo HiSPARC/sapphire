@@ -20,18 +20,18 @@
         if __name__ == '__main__':
             station_groups = ['/s%d' % u for u in STATIONS]
 
-            data = tables.open_file('data.h5', 'w')
-            for station, group in zip(STATIONS, station_groups):
-                download_data(data, group, station, START, END, get_blobs=True)
-                proc = ProcessEvents(data, group)
-                proc.process_and_store_results()
-            data.close()
+            with tables.open_file('data.h5', 'w') as data:
+                for station, group in zip(STATIONS, station_groups):
+                    download_data(data, group, station, START, END, True)
+                    proc = ProcessEvents(data, group)
+                    proc.process_and_store_results()
 
 """
 import zlib
 from itertools import izip
 import operator
 import os
+import warnings
 
 import tables
 import numpy as np
@@ -99,6 +99,7 @@ class ProcessEvents(object):
         self.group = data.get_node(group)
         self.source = self._get_source(source)
         self.progress = progress
+        self.limit = None
 
     def process_and_store_results(self, destination=None, overwrite=False,
                                   limit=None):
@@ -289,13 +290,10 @@ class ProcessEvents(object):
             table.modify_column(column=timings[:, idx], colname=col)
         table.flush()
 
-    def process_traces(self, limit=None):
+    def process_traces(self):
         """Process traces to yield pulse timing information."""
 
-        if limit:
-            self.limit = limit
-
-        if self.limit:
+        if self.limit is not None:
             events = self.source.iterrows(stop=self.limit)
         else:
             events = self.source
@@ -657,13 +655,19 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         """
         if self.station is not None:
             timestamp = event['timestamp']
-            self.thresholds, self.trigger = self.station.trigger(timestamp)
+            try:
+                self.thresholds, self.trigger = self.station.trigger(timestamp)
+            except:
+                warnings.warn('Unknown trigger settings, not reconstructing '
+                              'trigger offset.')
+                # Do not reconstruct t_trigger by pretending external trigger.
+                self.trigger = [0, 0, 0, 1]
 
         n_low, n_high, and_or, external = self.trigger
 
         if external:
-            # External trigger not supported
-            return [-999] * 5
+            # Do not reconstruct thresholds if external trigger is involved
+            self.thresholds = [(ADC_LIMIT, ADC_LIMIT)] * 4
 
         timings = []
         low_idx = []
@@ -771,6 +775,10 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         """
         n_low, n_high, and_or, external = self.trigger
 
+        # External trigger not supported
+        if external:
+            return -999
+
         low_idx = [idx for idx in low_idx if not idx == -999]
         high_idx = [idx for idx in high_idx if not idx == -999]
         low_idx.sort()
@@ -814,7 +822,8 @@ class ProcessEventsFromSource(ProcessEvents):
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group):
+    def __init__(self, source_file, dest_file, source_group, dest_group,
+                 progress=False):
         """Initialize the class.
 
         :param source_file: the PyTables source file
@@ -831,7 +840,8 @@ class ProcessEventsFromSource(ProcessEvents):
 
         self.source = self._get_source()
 
-        self.progress = False
+        self.progress = progress
+        self.limit = None
 
     def _get_or_create_group(self, file, group):
         """Get or create a group in the datafile"""
@@ -915,7 +925,7 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
     """
 
     def __init__(self, source_file, dest_file, source_group, dest_group,
-                 station=None):
+                 station=None, progress=False):
         """Initialize the class.
 
         :param source_file: the PyTables source file
@@ -933,7 +943,8 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
 
         self.source = self._get_source()
 
-        self.progress = False
+        self.progress = progress
+        self.limit = None
 
         if station is None:
             self.station = None
@@ -1053,7 +1064,8 @@ class ProcessWeatherFromSource(ProcessWeather):
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group):
+    def __init__(self, source_file, dest_file, source_group, dest_group,
+                 progress=False):
         """Initialize the class.
 
         :param source_file,dest_file: the PyTables source and destination file
@@ -1069,7 +1081,7 @@ class ProcessWeatherFromSource(ProcessWeather):
 
         self.source = self._get_source()
 
-        self.progress = False
+        self.progress = progress
 
     def _get_source(self):
         """Return the table containing the events.

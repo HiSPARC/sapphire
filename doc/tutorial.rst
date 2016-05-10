@@ -77,7 +77,7 @@ quickly start playing with data::
 
     >>> from sapphire import esd
     >>> data = esd.quick_download(102)
-    100%|################################################################|Time: 5.91
+    100%|####################################|Time: 5.91
     >>> print data
     data8.h5 (File) ''
     Last modif.: 'Thu Oct 22 16:02:05 2015'
@@ -311,7 +311,9 @@ Now, we have stored a short-hand reference to the events table. Let's get
 the first event::
 
     >>> events[0]
-    (0L, 1445385601, 613271528L, 1445385601613271528L, [3, 266, 400, 372], [0, 3090, 5695, 5621], 0.0, 1.0312000513076782, 1.551300048828125, 1.5881999731063843, -999.0, 1002.5, 1000.0, 1022.5, 1030.0)
+    (0L, 1445385601, 613271528L, 1445385601613271528L, [3, 266, 400, 372],
+     [0, 3090, 5695, 5621], 0.0, 1.03120, 1.55130, 1.58820,
+     -999.0, 1002.5, 1000.0, 1022.5, 1030.0, -999.0, -999.0)
 
 That's the first event!  It is not, however, immediately clear what
 numbers correspond to which columns.  They are in order, however, so you
@@ -572,7 +574,7 @@ containing the station data (``station_groups``).  Once that's done, there
 is an easy way to search for coincidences, process the events making up
 the coincidences, and store them in the destination group::
 
-    >>> coincidences.search_and_store_coincidences()
+    >>> coincidences.search_and_store_coincidences(station_numbers=STATIONS)
     100%|######################################|Time: 0:00:02
     100%|######################################|Time: 0:00:00
 
@@ -615,9 +617,9 @@ azimuth         *compatibility reasons*
 zenith          *compatibility reasons*
 size            *compatibility reasons*
 energy          *compatibility reasons*
-s0              flag to indicate if the first station is in coincidence
-s1              as previous but for second station
-s2              as previous but for third station
+s501            flag to indicate if the first station is in coincidence
+s503            as previous but for second station
+s506            as previous but for third station
 =============== ===========
 
 The columns included for compatibility reasons are used by the event

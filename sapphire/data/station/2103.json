@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 72.32, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 51.5144261, 
+    "longitude": 5.9802119, 
+    "name": "Raaijland College (Melkfabriek)", 
+    "number": 2103, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Venray"
+}

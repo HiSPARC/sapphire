@@ -118,7 +118,10 @@ class CoincidenceCoreReconstruction(object):
         """
         p, x, y, z = ([], [], [], [])
 
-        self.cluster.set_timestamp(coincidence[0][1]['timestamp'])
+        try:
+            self.cluster.set_timestamp(coincidence[0][1]['timestamp'])
+        except IndexError:
+            return (nan, nan)
 
         for station_number, event in coincidence:
             if station_numbers is not None:
@@ -156,6 +159,54 @@ class CoincidenceCoreReconstruction(object):
             core_x, core_y = zip(*cores)
         else:
             core_x, core_y = ((), ())
+        return core_x, core_y
+
+
+class CoincidenceCoreReconstructionDetectors(
+        CoincidenceCoreReconstruction):
+
+    """Reconstruct core for coincidences using each detector
+
+    Instead of using the average station particle density this class
+    uses the particle density in each detector for the reconstruction.
+
+    """
+
+    def reconstruct_coincidence(self, coincidence, station_numbers=None):
+        """Reconstruct a single coincidence
+
+        :param coincidence: a coincidence list consisting of
+                            multiple (station_number, event) tuples
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :return: (x, y) core position in m.
+
+        """
+        p, x, y, z = ([], [], [], [])
+
+        try:
+            self.cluster.set_timestamp(coincidence[0][1]['timestamp'])
+        except IndexError:
+            return (nan, nan)
+
+        for station_number, event in coincidence:
+            if station_numbers is not None:
+                if station_number not in station_numbers:
+                    continue
+            station = self.cluster.get_station(station_number)
+            for id in range(4):
+                p_detector = detector_density(event, id, station)
+                if not isnan(p_detector):
+                    dx, dy, dz = station.detectors[id].get_coordinates()
+                    p.append(p_detector)
+                    x.append(dx)
+                    y.append(dy)
+                    z.append(dz)
+
+        if len(p) >= 3:
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
+        else:
+            core_x, core_y = (nan, nan)
         return core_x, core_y
 
 

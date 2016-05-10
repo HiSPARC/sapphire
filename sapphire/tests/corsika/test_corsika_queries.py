@@ -53,7 +53,10 @@ class CorsikaQueryTest(unittest.TestCase):
         self.assertEqual(result, {'proton'})
         result = self.cq.available_parameters('zenith', azimuth=-90.)
         self.assertEqual(result, {0.})
-        self.assertRaises(AssertionError, self.cq.available_parameters, 'zenith', particle='iron')
+        self.assertRaises(RuntimeError, self.cq.available_parameters, 'zenith',
+                          energy=19)
+        self.assertRaises(RuntimeError, self.cq.available_parameters, 'zenith',
+                          particle='iron')
 
     def get_overview_path(self):
         dir_path = os.path.dirname(__file__)
@@ -100,9 +103,10 @@ class MockCorsikaQueryTest(unittest.TestCase):
                                      zenith=22.5, azimuth=90.)
         self.assertEqual(result, sentinel.simulations)
         mock_perform.assert_called_with(
-            '(particle_id == 3) & (log10(energy) == 15.5) & '
-            '(abs(zenith - 0.392699081699) < 1e-5) & '
-            '(abs(azimuth - 1.57079632679) < 1e-5)', False)
+            '(particle_id == 3) & '
+            '(abs(log10(energy) - 15.5) < 1e-4) & '
+            '(abs(zenith - 0.392699081699) < 1e-4) & '
+            '(abs(azimuth - 1.57079632679) < 1e-4)', False)
 
     def test_filter(self):
         filter = self.cq.filter('type', 123)
@@ -110,7 +114,7 @@ class MockCorsikaQueryTest(unittest.TestCase):
 
     def test_float_filter(self):
         filter = self.cq.float_filter('type', 12.3)
-        self.assertEqual(filter, '(abs(type - 12.3) < 1e-5)')
+        self.assertEqual(filter, '(abs(type - 12.3) < 1e-4)')
 
     def test_range_filter(self):
         filter = self.cq.range_filter('type', 12.3, 14.5)

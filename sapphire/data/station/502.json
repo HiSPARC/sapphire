@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 57.52, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.355294, 
+    "longitude": 4.9500921, 
+    "name": "Universiteit van Amsterdam", 
+    "number": 502, 
+    "scintillators": [
+        {
+            "alpha": 15.0, 
+            "beta": 195.0, 
+            "height": 0.0, 
+            "radius": 8.66
+        }, 
+        {
+            "alpha": 60.0, 
+            "beta": 275.0, 
+            "height": 0.0, 
+            "radius": 13.23
+        }, 
+        {
+            "alpha": 105.0, 
+            "beta": 285.0, 
+            "height": 0.0, 
+            "radius": 5.0
+        }, 
+        {
+            "alpha": 285.0, 
+            "beta": 105.0, 
+            "height": 0.0, 
+            "radius": 5.0
+        }
+    ], 
+    "subcluster": "Science Park"
+}

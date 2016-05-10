@@ -1064,25 +1064,26 @@ def logic_checks(t, x, y, z):
 
     """
     # Check for identical positions
-    if not len(zip(x, y, z)) == len(set(zip(x, y, z))):
-        return False
+    if len(t) == 3:
+        if not len(zip(x, y, z)) == len(set(zip(x, y, z))):
+            return False
 
     txyz = zip(t, x, y, z)
 
     # Check if the time difference it larger than expected by c
-    c = .3
-    margin = 0. if len(t) == 3 else 7.5
-    for txyz0, txyz1 in itertools.combinations(txyz, 2):
-        dt = abs(txyz0[0] - txyz1[0])
-        dx = txyz0[1] - txyz1[1]
-        dy = txyz0[2] - txyz1[2]
-        dz = txyz0[3] - txyz1[3]
-        dt_max = margin + sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
-        if dt_max < dt:
-            return False
+    if len(t) == 3:
+        c = .3
+        for txyz0, txyz1 in itertools.combinations(txyz, 2):
+            dt = abs(txyz0[0] - txyz1[0])
+            dx = txyz0[1] - txyz1[1]
+            dy = txyz0[2] - txyz1[2]
+            dz = txyz0[3] - txyz1[3]
+            dt_max = sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
+            if dt_max < dt:
+                return False
 
     # Check if all the positions are (almost) on a single line
-    memolssin = 0
+    largest_of_smallest_angles = 0
     for txyz0, txyz1, txyz2 in itertools.combinations(txyz, 3):
         dx1 = txyz0[1] - txyz1[1]
         dy1 = txyz0[2] - txyz1[2]
@@ -1107,19 +1108,20 @@ def logic_checks(t, x, y, z):
         sin3 = area / lenvec02 / lenvec12
 
         # smallest sine
-        ssin = min(sin1, sin2, sin3)
+        smallest_angle = min(sin1, sin2, sin3)
 
         # remember largest of smallest sines
-        memolssin = max(memolssin, ssin)
+        largest_of_smallest_angles = max(largest_of_smallest_angles,
+                                         smallest_angle)
 
     # discard reconstruction if the largest of the smallest angles of each
     # triangle is smaller than 0.1 rad  (5.73 degrees)
 
-    if memolssin < 0.1:
+    if largest_of_smallest_angles < 0.1:
         return False
 
     return True
 
 
 def warning_only_three():
-    warnings.warn('Only the first three detections will be used', UserWarning)
+    warnings.warn('Only the first three detections will be used')

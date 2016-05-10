@@ -12,6 +12,7 @@
 
 """
 import os
+import glob
 import tables
 import logging
 import shutil
@@ -105,8 +106,7 @@ def get_simulations(source, simulations, overview, progress=False):
     """Get the information of the simulations and create a table."""
 
     simulations_table = overview.get_node('/simulations')
-    simulations = pbar(simulations, show=progress)
-    for seeds in simulations:
+    for seeds in pbar(simulations, show=progress):
         read_seeds(simulations_table, source, seeds)
     simulations_table.flush()
 
@@ -136,10 +136,18 @@ def move_tempfile_to_destination(tmp_path, destination):
     shutil.move(tmp_path, destination)
 
 
+def all_seeds(source):
+    """Get set of all seeds in the corsika data directory"""
+
+    dirs = glob.glob(os.path.join(source, '*_*'))
+    seeds = [os.path.basename(dir) for dir in dirs]
+    return set(seeds)
+
+
 def generate_corsika_overview(source, destination, progress=False):
     logger.info('Getting simulation list.')
     # Get names of all subdirectories
-    simulations = os.walk(source).next()[1]
+    simulations = all_seeds(source)
     tmp_path, overview = prepare_output(len(simulations))
     get_simulations(source, simulations, overview, progress=progress)
     overview.close()

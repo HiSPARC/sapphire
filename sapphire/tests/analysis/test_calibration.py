@@ -1,7 +1,7 @@
 import unittest
 
 from mock import patch, sentinel
-from numpy import isnan, nan, array
+from numpy import isnan, nan, array, all
 
 from sapphire.analysis import calibration
 
@@ -12,32 +12,33 @@ class DetectorTimingTests(unittest.TestCase):
     def test_determine_detector_timing_offset(self, mock_fit):
         # Empty list
         offset = calibration.determine_detector_timing_offset([])
-        self.assertTrue(isnan(offset))
+        self.assertTrue(all(isnan(offset)))
+
+        dt = array([-10, 0, 10])
 
         # Good result
-        mock_fit.return_value = 1.
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        mock_fit.return_value = (1., 2.)
+        offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, 1.)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt],
-                                                              dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
         self.assertEqual(offset, 3.)
 
-        mock_fit.return_value = -1.5
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        mock_fit.return_value = (-1.5, 5.)
+        offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, -1.5)
-        offset = calibration.determine_detector_timing_offset([sentinel.dt],
-                                                              dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
+
         self.assertEqual(offset, 0.5)
 
-        mock_fit.return_value = 250.
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        mock_fit.return_value = (250., 100.)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
         self.assertTrue(isnan(offset))
-        mock_fit.return_value = -150.
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        mock_fit.return_value = (-150., 100.)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
         self.assertTrue(isnan(offset))
 
-        mock_fit.return_value = nan
-        offset = calibration.determine_detector_timing_offset([sentinel.dt])
+        mock_fit.return_value = (nan, nan)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
         self.assertTrue(isnan(offset))
 
 
@@ -50,33 +51,33 @@ class StationTimingTests(unittest.TestCase):
 
         # Empty list
         offset = calibration.determine_station_timing_offset([])
-        self.assertTrue(isnan(offset))
+        self.assertTrue(all(isnan(offset)))
 
         # Good result
-        mock_fit.return_value = 1.
-        offset = calibration.determine_station_timing_offset([sentinel.dt])
+        mock_fit.return_value = (1., 5.)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertEqual(offset, 1.)
         mock_percentile.assert_called_once_with([sentinel.dt], [0.5, 99.5])
-        offset = calibration.determine_station_timing_offset([sentinel.dt],
-                                                             dz=.6)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt],
+                                                                dz=.6)
         self.assertEqual(offset, 3.)
 
-        mock_fit.return_value = -1.5
-        offset = calibration.determine_station_timing_offset([sentinel.dt])
+        mock_fit.return_value = (-1.5, 5.)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertEqual(offset, -1.5)
-        offset = calibration.determine_station_timing_offset([sentinel.dt],
-                                                             dz=.6)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt],
+                                                                dz=.6)
         self.assertEqual(offset, 0.5)
 
-        mock_fit.return_value = 2500.
-        offset = calibration.determine_station_timing_offset([sentinel.dt])
+        mock_fit.return_value = (2500., 100.)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertTrue(isnan(offset))
-        mock_fit.return_value = -1500.
-        offset = calibration.determine_station_timing_offset([sentinel.dt])
+        mock_fit.return_value = (-1500., 100.)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertTrue(isnan(offset))
 
-        mock_fit.return_value = nan
-        offset = calibration.determine_station_timing_offset([sentinel.dt])
+        mock_fit.return_value = (nan, nan)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertTrue(isnan(offset))
 
 

@@ -7,8 +7,9 @@ import tables
 from sapphire import esd, api
 from sapphire.tests.validate_results import validate_results
 
-from esd_load_data import (create_tempfile_path, perform_load_data,
+from esd_load_data import (create_tempfile_path,
                            test_data_path, test_data_coincidences_path,
+                           perform_load_data, perform_load_coincidences,
                            perform_esd_download_data,
                            perform_download_coincidences)
 
@@ -88,12 +89,20 @@ class ESDTest(unittest.TestCase):
         self.assertRaises(RuntimeError, esd.download_coincidences, None,
                           start=None, end="a_value")
 
-    def test_esd_output(self):
-        """Use esd.load_data() to load tsv into hdf5 and verify the output"""
+    def test_load_data_output(self):
+        """Load data tsv into hdf5 and verify the output"""
 
         output_path = create_tempfile_path()
         perform_load_data(output_path)
         validate_results(self, test_data_path, output_path)
+        os.remove(output_path)
+
+    def test_load_coincidences_output(self):
+        """Load coincidences tsv into hdf5 and verify the output"""
+
+        output_path = create_tempfile_path()
+        perform_load_coincidences(output_path)
+        validate_results(self, test_data_coincidences_path, output_path)
         os.remove(output_path)
 
     @patch.object(esd, 'download_data')

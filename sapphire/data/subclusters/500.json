@@ -1,0 +1,46 @@
+[
+    {
+        "name": "Nikhef", 
+        "number": 501
+    }, 
+    {
+        "name": "Universiteit van Amsterdam", 
+        "number": 502
+    }, 
+    {
+        "name": "Vancis", 
+        "number": 503
+    }, 
+    {
+        "name": "SURFsara (Matrix)", 
+        "number": 504
+    }, 
+    {
+        "name": "ARCNL (PiMu)", 
+        "number": 505
+    }, 
+    {
+        "name": "Telecity", 
+        "number": 506
+    }, 
+    {
+        "name": "Nikhef (receptie)", 
+        "number": 507
+    }, 
+    {
+        "name": "Nikhef (MT)", 
+        "number": 508
+    }, 
+    {
+        "name": "Universiteit van Amsterdam 2", 
+        "number": 509
+    }, 
+    {
+        "name": "Nikhef 2", 
+        "number": 510
+    }, 
+    {
+        "name": "AMOLF", 
+        "number": 511
+    }
+]

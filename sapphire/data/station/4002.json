@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 61.27, 
+    "cluster": "Groningen", 
+    "country": "Netherlands", 
+    "latitude": 53.1842471, 
+    "longitude": 6.5916471, 
+    "name": "Maartens College", 
+    "number": 4002, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Groningen"
+}

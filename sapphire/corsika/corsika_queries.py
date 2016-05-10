@@ -118,11 +118,13 @@ class CorsikaQuery(object):
         """
         queries = []
         if particle is not None:
-            assert particle in self.all_particles, 'Particle not available'
+            if particle not in self.all_particles:
+                raise RuntimeError('Particle not available')
             queries.append(self.filter('particle_id', particle_id(particle)))
         if energy is not None:
-            assert energy in self.all_energies, 'Energy not available'
-            queries.append(self.filter('log10(energy)', energy))
+            if energy not in self.all_energies:
+                raise RuntimeError('Energy not available')
+            queries.append(self.float_filter('log10(energy)', energy))
         if zenith is not None:
             queries.append(self.float_filter('zenith', radians(zenith)))
         if azimuth is not None:
@@ -176,7 +178,7 @@ class CorsikaQuery(object):
         :return: query.
 
         """
-        query = '(abs(%s - %s) < 1e-5)' % (type, value)
+        query = '(abs(%s - %s) < 1e-4)' % (type, value)
 
         return query
 
@@ -204,8 +206,12 @@ class CorsikaQuery(object):
         :return: simulations matching the query.
 
         """
-        if iterator:
-            filtered_simulations = self.sims.where(query)
+        if query:
+            if iterator:
+                filtered_simulations = self.sims.where(query)
+            else:
+                filtered_simulations = self.sims.read_where(query)
         else:
-            filtered_simulations = self.sims.read_where(query)
+            filtered_simulations = self.all_simulations(iterator)
+
         return filtered_simulations

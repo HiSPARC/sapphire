@@ -14,7 +14,7 @@ after downloading, and the file repacked otherwise you are left with
     >>> import tables
     >>> from datetime import datetime
     >>> from sapphire.publicdb import download_data
-    >>> with tables.openFile('process_events_temp.h5', 'w') as data:
+    >>> with tables.open_file('process_events_temp.h5', 'w') as data:
     ...     download_data(data, '/s501', 501, datetime(2010, 9, 1),
     ...                   datetime(2010, 9, 1, 0, 5), get_blobs=True)
     ...     max_trace_id = data.root.s501.events.col('traces').max()
@@ -55,4 +55,4 @@ Notes on recreating esd_coincidences.h5
     ...     download_data(data, '/station_501', 501, start, end, progress=False)
     ...     download_data(data, '/station_502', 502, start, end, progress=False)
     ...     c = CoincidencesESD(data, '/coincidences', ['/station_501', '/station_502'], progress=False)
-    ...     c.search_and_store_coincidences()
+    ...     c.search_and_store_coincidences(station_numbers=[501, 502])

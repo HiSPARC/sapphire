@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 49.58, 
+    "cluster": "Groningen", 
+    "country": "Netherlands", 
+    "latitude": 53.2213834, 
+    "longitude": 6.5720702, 
+    "name": "Praedinius Gymnasium", 
+    "number": 4003, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Groningen"
+}
