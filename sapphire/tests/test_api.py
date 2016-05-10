@@ -315,7 +315,9 @@ class StationTests(unittest.TestCase):
     @patch.object(api.Network, 'station_numbers')
     def test_bad_station_number(self, mock_station_numbers):
         mock_station_numbers.side_effect = [501, 502, 503]
-        self.assertRaises(Exception, api.Station, 1)
+        with warnings.catch_warnings(record=True) as warned:
+            api.Station(1)
+        self.assertEqual(len(warned), 1)
 
     def test_id_numbers(self):
         self.assertEqual(self.station.station, STATION)
