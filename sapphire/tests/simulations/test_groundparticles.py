@@ -160,10 +160,10 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
                     len(self.simulation.get_particles_in_detector(d)), e)
 
     def test_get_line_boundary_eqs(self):
-        combs = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)),
-                 (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
+        combos = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)),
+                  (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
 
-        for input, expected in combs:
+        for input, expected in combos:
             result = self.simulation.get_line_boundary_eqs(*input)
             self.assertEqual(result, expected)
 
