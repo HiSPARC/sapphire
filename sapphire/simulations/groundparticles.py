@@ -237,7 +237,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
 
 class GroundParticlesGammaSimulation(GroundParticlesSimulation):
-    """ Implement digitisation of gamma photons """
+    """Simulation which includes signals from gamma particles in the shower"""
 
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
@@ -261,16 +261,23 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         if n_leptons:
             mips_lepton = self.simulate_detector_mips_for_particles(leptons)
             leptons['t'] += self.simulate_signal_transport_time(n_leptons)
-            first_signal = leptons['t'].min() + detector.offset
+            first_lepton = leptons['t'].min()
         else:
             mips_lepton = 0
 
         if n_gammas:
             mips_gamma = self.simulate_detector_mips_for_gammas(gammas)
             gammas['t'] += self.simulate_signal_transport_time(n_gammas)
-            first_signal = gammas['t'].min() + detector.offset
+            first_gamma = gammas['t'].min()
         else:
             mips_gamma = 0
+
+        if n_leptons and n_gammas:
+            first_signal = min(first_lepton, first_gamma) + detector.offset
+        elif n_leptons:
+            first_signal = first_lepton + detector.offset
+        elif n_gammas:
+            first_signal = first_gamma + detector.offset
 
         return {'n': mips_lepton + mips_gamma,
                 't': self.simulate_adc_sampling(first_signal)}
@@ -341,7 +348,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         max_E = 4.0  # 2 MeV per cm * 2cm scintilator depth
         MIP = 3.38  # MeV
 
-        def _pair_mean_free_path(Energy):
+        def _pair_mean_free_path(gamma_energy):
             """Mean free path pair production
 
             NIST XCOM database: http://www.nist.gov/pml/data/xcom/
@@ -395,28 +402,28 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             E = l_pair[:, 0]
             l = l_pair[:, 1]
 
-            if Energy > 7999:
+            if gamma_energy > 7999:
                 return 57.8
             else:
-                idx = E.searchsorted(Energy, side='left')
+                idx = E.searchsorted(gamma_energy, side='left')
                 return l[idx]
 
-        def _compton_edge(E):
+        def _compton_edge(gamma_energy):
             """Calculate Compton edge for photon energy.
 
             W.R. Leo (1987) p.54
 
-            :param E: photon energy [MeV]
+            :param gamma_energy: photon energy [MeV]
             :return: compton edge [MeV]
 
             """
             electron_rest_mass_MeV = 0.5109989  # MeV
 
-            gamma = E / electron_rest_mass_MeV
+            gamma = gamma_energy / electron_rest_mass_MeV
 
             return E * 2 * gamma / (1 + 2 * gamma)
 
-        def _compton_energy_transfer(E):
+        def _compton_energy_transfer(gamma_energy):
             """Energy transfered to electron
 
             From lio-project/photons/electron_energy_distribution.py
@@ -429,11 +436,11 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             the lookup table.
               => the polynomial coefficients corresponding to the energy (E)
 
-            :param E: photon energy [MeV]
+            :param gamma_energy: photon energy [MeV]
             :return: energy transfered to electron [MeV]
 
             """
-            Energy_table = np.array([
+            energy_table = np.array([
                 0.100000, 0.127427, 0.162378, 0.206914, 0.263665, 0.335982,
                 0.428133, 0.545559, 0.695193, 0.885867, 1.128838, 1.438450,
                 1.832981, 2.335721, 2.976351, 3.792690, 4.832930, 6.158482,
@@ -462,11 +469,11 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 [0.691794, 0.038463, 0.048368],
                 [0.691794, 0.038463, 0.048368]]  # extra item E > 10
 
-            idx = Energy_table.searchsorted(E, side='left')
+            idx = energy_table.searchsorted(gamma_energy, side='left')
             p = np.poly1d(transfer_function_table[idx])
-            return p(np.random.random()) * _compton_edge(E)
+            return p(np.random.random()) * _compton_edge(gamma_energy)
 
-        def _compton_mean_free_path(Energy):
+        def _compton_mean_free_path(gamma_energy):
             """Mean free path compton scattering
 
             NIST XCOM database: http://www.nist.gov/pml/data/xcom/
@@ -516,13 +523,13 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                                   [6000, 13048.02],
                                   [8000, 16940.54]])
 
-            E = l_compton[:, 0]
+            energy_table = l_compton[:, 0]
             l = l_compton[:, 1]
 
-            if Energy > 7999:
+            if gamma_energy > 7999:
                 return 171791.
             else:
-                idx = E.searchsorted(Energy, side='left')
+                idx = energy_table.searchsorted(gamma_energy, side='left')
                 return l[idx]
 
         # p [eV] and E [MeV]
