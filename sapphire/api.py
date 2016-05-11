@@ -523,7 +523,7 @@ class Station(API):
             raise Exception('Can not force fresh and stale simultaneously.')
         if station not in Network(force_fresh=force_fresh,
                                   force_stale=force_stale).station_numbers():
-            raise Exception('Station number not valid.')
+            warnings.warn('Possibly invalid station, or without config.')
         self.force_fresh = force_fresh
         self.force_stale = force_stale
         self.station = station
@@ -564,7 +564,8 @@ class Station(API):
         if date is None:
             return self.info['scintillators']
         else:
-            station = Station(self.station, date)
+            station = Station(self.station, date, self.force_fresh,
+                              self.force_stale)
             return station.detectors()
 
     def location(self, date=None):

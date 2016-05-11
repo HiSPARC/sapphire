@@ -314,8 +314,11 @@ class StationTests(unittest.TestCase):
 
     @patch.object(api.Network, 'station_numbers')
     def test_bad_station_number(self, mock_station_numbers):
-        mock_station_numbers.side_effect = [501, 502, 503]
-        self.assertRaises(Exception, api.Station, 1)
+        mock_station_numbers.return_value = [501, 502, 503]
+        with warnings.catch_warnings(record=True) as warned:
+            warnings.simplefilter("always")
+            api.Station(1)
+        self.assertEqual(len(warned), 1)
 
     def test_id_numbers(self):
         self.assertEqual(self.station.station, STATION)
@@ -572,6 +575,12 @@ class StationTests(unittest.TestCase):
 class StaleStationTests(StationTests):
     def setUp(self):
         self.station = api.Station(STATION, force_stale=True)
+
+    def test_detectors(self):
+        keys = ['alpha', 'beta', 'radius', 'height']
+        self.assertEqual(self.station.detectors()[0].keys(), keys)
+        self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
+        self.assertRaises(Exception, self.station.detectors, date(2004, 1, 1))
 
     def test_location(self):
         keys = ['latitude', 'altitude', 'longitude']
