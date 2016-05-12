@@ -298,9 +298,27 @@ class DetermineStationTimingOffsets(object):
             offsets.append((ts0, s_off, rchi2))
         return offsets
 
-    def get_station_pairs_within_max_distance(self):
+    def determine_station_timing_offsets_for_date(self, date):
+        """Determine the timing offsets between a station pair
+
+        :param date: date for which to determine offsets as datetime.date.
+        :return: list of station offsets as tuple
+                 (station, ref_station, offset, rchi2).
+
+        """
+        station_pairs = self.get_station_pairs_within_max_distance(date)
+        offsets = []
+        for station, ref_station in station_pairs:
+            s_off, rchi2 = determine_station_timing_offset(date, station,
+                                                           ref_station)
+            offsets.append((station, ref_station, s_off, rchi2))
+        return offsets
+
+    def get_station_pairs_within_max_distance(self, date=None):
         """Iterator that yields stations pairs that are close to each other"""
 
+        if date is not None:
+            self.cluster.set_timestamp(datetime_to_gps(date))
         for so1, so2 in combinations(self.cluster.stations, 2):
             s1, s2 = so1.number, so2.number
             r = self.cluster.calc_distance_between_stations(s1, s2)
