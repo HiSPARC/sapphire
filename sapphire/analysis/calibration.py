@@ -96,18 +96,18 @@ def determine_detector_timing_offset(dt, dz=0):
 class DetermineStationTimingOffsets(object):
     """Determine the timing offsets between stations"""
 
+    # Maximum distance between station pairs that are included in analysis
     MAX_DISTANCE = 1000  # m
-    """maximum distance between station pairs that are included in analysis"""
+    # Minimum number of timedeltas required to attempt a fit
     MIN_LEN_DT = 100
-    """minimum number of timedeltas required to attempt a fit"""
 
     def __init__(self, stations=None, data=None, progress=False,
                  force_stale=False):
         """Initialize the class
 
-        :param data: pytables HDF5 file with timedelta tables
-        :param stations: list of station for which to determine station offsets
-        :param progress: if true: show progressbar if true
+        :param stations: list of stations for which to determine offsets.
+        :param data: the PyTables datafile with timedelta tables.
+        :param progress: if true: show progressbar if true.
         :param force_stale: if true: do not get network information from API.
 
         """
@@ -121,7 +121,7 @@ class DetermineStationTimingOffsets(object):
             self.cluster = HiSPARCNetwork(force_stale=self.force_stale)
 
     def read_dt(self, station, ref_station, start, end):
-        """Read timedelta's from HDF5 file"""
+        """Read timedeltas from HDF5 file"""
 
         table_path = '/time_deltas/station_%d/station_%d' % (ref_station,
                                                              station)
@@ -165,7 +165,13 @@ class DetermineStationTimingOffsets(object):
 
     @memoize
     def _get_r_dz(self, date, station, ref_station):
-        """Determine r and dz at date """
+        """Determine r and dz at date
+
+        :param date: date for which to get the distances.
+        :param station,ref_station: station numbers of the station pair.
+        :return: tuple containing the horizontal and vertical distances.
+
+        """
         self.cluster.set_timestamp(datetime_to_gps(date))
         r, _, dz = self.cluster.calc_rphiz_for_stations(
             self.cluster.get_station(ref_station).station_id,
@@ -175,15 +181,15 @@ class DetermineStationTimingOffsets(object):
     def _determine_interval(self, r):
         """Determine interval (number of days) in which to fit timedelta's
 
-        :param r: distrance between stations (m)
-        :return: number of days in interval
+        :param r: distrance between stations (m).
+        :return: number of days in interval.
 
         """
         # TODO: determine sensible number of days
-        return max(int(r**1.12 / 10), 7)
+        return max(int(r ** 1.12 / 10), 7)
 
     def _get_left_and_right_bounds(self, cuts, date, days):
-        """ determine left and right bounds between cuts
+        """Determine left and right bounds between cuts
 
         Offsets are determined per day, so intervals are based on days.
         Cuts are excluded. Start date (left side bound) is the day
@@ -191,10 +197,11 @@ class DetermineStationTimingOffsets(object):
         The last cut (today) is always *included* in the interval,
         as this is not a cut that influences the timing offset.
         Returns datetime objects with hours, min, sec, msec = 0.
-        :param cuts: list of datetime objects
-        :param date: datetime (middle of interval)
-        :param days: number of days
-        :return: tuple of datetime objects (left bound, right bound)
+
+        :param cuts: list of datetime objects.
+        :param date: datetime (middle of interval).
+        :param days: number of days.
+        :return: tuple of datetime objects (left bound, right bound).
 
         """
         left = get_active_index(cuts, self._datetime(date))
@@ -222,6 +229,11 @@ class DetermineStationTimingOffsets(object):
         Determine first and last date to include in determination of
         station offset around date
 
+        :param date: date around which the bounds are to be determined.
+        :param station: station number.
+        :param ref_station: reference station number.
+        :return: start and end date bounds.
+
         """
         date = self._datetime(date)
         cuts = self._get_cuts(station, ref_station)
@@ -231,17 +243,20 @@ class DetermineStationTimingOffsets(object):
         return self._get_left_and_right_bounds(cuts, date, interval)
 
     def _datetime(self, date):
-        """ Ensure date is a datetime object with h, m, s, ms = 0 """
+        """Ensure date is a datetime object
 
+        :return: a datetime object with h, m, s, ms = 0.
+
+        """
         return datetime(date.year, date.month, date.day)
 
     def determine_station_timing_offset(self, date, station, ref_station):
         """Determine the timing offset between a station pair at certain date
 
-        :param date: datetime.date
-        :param station: station number
-        :param ref_station: reference station number
-        :return: list of station offsets: tuple (timestamp, offset, rchi2)
+        :param date: date for which to determine offset as datetime.date.
+        :param station: station number.
+        :param ref_station: reference station number.
+        :return: station offset and reduced chi squared.
 
         """
         date = self._datetime(date)
@@ -260,11 +275,11 @@ class DetermineStationTimingOffsets(object):
                                          start=None, end=None):
         """Determine the timing offsets between a station pair
 
-        :param station: station number
-        :param ref_station: reference station number
-        :param start: datetime.date object
-        :param end: datetime.date object
-        :return: list of station offsets: tuple (timestamp, offset, rchi2)
+        :param station: station number.
+        :param ref_station: reference station number.
+        :param start: datetime.date object.
+        :param end: datetime.date object.
+        :return: list of station offsets as tuple (timestamp, offset, rchi2).
 
         """
         if start is None:
