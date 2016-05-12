@@ -92,6 +92,10 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
     def tearDown(self):
         self.corsika_data.close()
 
+    @unittest.skip("WIP")
+    def test_simulate_detector_response(self):
+        pass
+
     def test_get_particles(self):
         self.groundparticles = self.corsika_data.root.groundparticles
         self.simulation.groundparticles = self.groundparticles
@@ -107,10 +111,13 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
                 self.assertEqual(len(lep), n_lep)
                 self.assertEqual(len(gamma), n_gam)
 
-# TODO:
-# add test for simulate detctor response.
-# add test for mean free path compton/pair for various energy
-#
+    @unittest.skip("WIP")
+    def test_simulate_detector_mips_for_gammas(self):
+        pass
+
+    @unittest.skip("WIP")
+    def test_simulate_detector_mips_gammas(self):
+        pass
 
 
 class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
