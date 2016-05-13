@@ -71,8 +71,11 @@ class ProcessTimeDeltas(object):
                 self.store_time_deltas(ets, dt, pair)
 
     def find_station_pairs(self):
-        """Find all unique station pairs which are in a coincidence together"""
+        """Find all unique station pairs which are in a coincidence together
 
+        Assumes the stations in the s_index are sorted by station number.
+
+        """
         s_index = self.cq.s_index
         re_number = re.compile('[0-9]+$')
         s_numbers = [int(re_number.search(s_path).group())
