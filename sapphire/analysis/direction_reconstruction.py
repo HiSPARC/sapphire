@@ -984,6 +984,8 @@ class RegressionAlgorithm3D(object):
 
     """
 
+    MAX_ITERATIONS = 1000
+
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 or more detections
@@ -1026,7 +1028,11 @@ class RegressionAlgorithm3D(object):
 
         c = .3
         dtheta = 1.
+        iteration = 0
         while (dtheta > .001):
+            iteration += 1
+            if iteration > cls.MAX_ITERATIONS:
+                return nan, nan
             tantheta = tan(theta)
             dxnew = [xi - zi * tantheta * cos(phi) for xi, zi in zip(dx, dz)]
             dynew = [yi - zi * tantheta * sin(phi) for yi, zi in zip(dy, dz)]
