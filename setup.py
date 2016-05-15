@@ -7,7 +7,7 @@ if sys.version_info[:2] != (2, 7):
 
 
 setup(name='hisparc-sapphire',
-      version='0.14.0',
+      version='0.14.1',
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
