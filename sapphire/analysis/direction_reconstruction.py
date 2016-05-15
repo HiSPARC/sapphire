@@ -1029,7 +1029,7 @@ class RegressionAlgorithm3D(object):
         c = .3
         dtheta = 1.
         iteration = 0
-        while (dtheta > .001):
+        while dtheta > 0.001:
             iteration += 1
             if iteration > cls.MAX_ITERATIONS:
                 return nan, nan
