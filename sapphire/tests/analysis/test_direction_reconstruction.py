@@ -519,7 +519,7 @@ class MultiAltitudeAlgorithm(MultiAlgorithm, AltitudeAlgorithm):
 
         x = (-5., 5., 10., 5., -5., -10.)
         y = (-5. * sqrt(3), -5. * sqrt(3), 0., 5. * sqrt(3), 5. * sqrt(3), 0.)
-        z = (0., -3., -5., -3., 0., 4,)
+        z = (0., -3., -5., -3., 0., 4.)
 
         zenith = 0.38333
         azimuth = 0.00000

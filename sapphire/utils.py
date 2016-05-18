@@ -136,6 +136,12 @@ def distance_between(x1, y1, x2, y2):
     return d
 
 
+def make_relative(x):
+    """Make first element the origin and make rest relative to it."""
+
+    return [xi - x[0] for xi in x]
+
+
 def which(program):
     """Check if a command line program is available
 

@@ -24,7 +24,7 @@ from scipy.optimize import minimize
 
 from .event_utils import (station_arrival_time, detector_arrival_time,
                           relative_detector_arrival_times)
-from ..utils import pbar, norm_angle, c
+from ..utils import pbar, norm_angle, c, make_relative
 from ..api import Station
 
 
@@ -303,16 +303,17 @@ class DirectAlgorithm(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
 
-        r1 = sqrt((x[1] - x[0]) ** 2 + (y[1] - y[0]) ** 2)
-        r2 = sqrt((x[2] - x[0]) ** 2 + (y[2] - y[0]) ** 2)
+        r1 = sqrt(dx[1] ** 2 + dy[1] ** 2)
+        r2 = sqrt(dx[2] ** 2 + dy[2] ** 2)
 
-        phi1 = arctan2((y[1] - y[0]), (x[1] - x[0]))
-        phi2 = arctan2((y[2] - y[0]), (x[2] - x[0]))
+        phi1 = arctan2(dy[1], dx[1])
+        phi2 = arctan2(dy[2], dx[2])
 
-        return cls.reconstruct(dt1, dt2, r1, r2, phi1, phi2)
+        return cls.reconstruct(dt[1], dt[2], r1, r2, phi1, phi2)
 
     @classmethod
     def reconstruct(cls, dt1, dt2, r1, r2, phi1, phi2):
@@ -779,12 +780,12 @@ class FitAlgorithm(object):
         if not logic_checks(t, x, y, z):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
-        dz = cls.make_relative(z)
+        dt = make_relative(t)[1:]
+        dx = make_relative(x)[1:]
+        dy = make_relative(y)[1:]
+        dz = make_relative(z)[1:]
 
-        cons = ({'type': 'eq', 'fun': cls.constraint_normal_vector})
+        cons = {'type': 'eq', 'fun': cls.constraint_normal_vector}
 
         fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
@@ -827,12 +828,6 @@ class FitAlgorithm(object):
             phi = nan
 
         return theta, phi
-
-    @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
-
-        return [xi - x[0] for xi in x[1:]]
 
     @staticmethod
     def constraint_normal_vector(n):
@@ -897,9 +892,9 @@ class RegressionAlgorithm(object):
         if not logic_checks(t, x, y, [0] * len(t)):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
 
         xx = 0.
         xy = 0.
@@ -909,7 +904,7 @@ class RegressionAlgorithm(object):
         x = 0.
         y = 0.
         t = 0.
-        k = 1
+        k = 0
 
         for i, j, l in zip(dx, dy, dt):
             xx += i * i
@@ -939,19 +934,12 @@ class RegressionAlgorithm(object):
         if horiz > 1.:
             theta = nan
             phi = nan
-
         else:
             nz = sqrt(1 - nx * nx - ny * ny)
             phi = arctan2(ny, nx)
             theta = arccos(nz)
 
         return theta, phi
-
-    @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
-
-        return [xi - x[0] for xi in x[1:]]
 
 
 class RegressionAlgorithm3D(object):
@@ -998,10 +986,10 @@ class RegressionAlgorithm3D(object):
         if not logic_checks(t, x, y, z):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
-        dz = cls.make_relative(z)
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
+        dz = make_relative(z)
 
         regress2d = RegressionAlgorithm()
         theta, phi = regress2d.reconstruct_common(dt, dx, dy)
@@ -1021,12 +1009,6 @@ class RegressionAlgorithm3D(object):
             dtheta = abs(theta - thetaold)
 
         return theta, phi
-
-    @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
-
-        return [xi - x[0] for xi in x]
 
 
 def logic_checks(t, x, y, z):
