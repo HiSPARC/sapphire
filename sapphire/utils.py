@@ -15,6 +15,8 @@ from progressbar import ProgressBar, ETA, Bar, Percentage
 
 # Error values used to indicate missing or bad data.
 ERR = [-1, -999]
+# Speed of light in vaccuum in [m / ns]
+c = 0.299792458
 
 
 def pbar(iterable, length=None, show=True, **kwargs):

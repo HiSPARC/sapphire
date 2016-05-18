@@ -351,7 +351,7 @@ class BaseAlgorithm(object):
     def test_showers_at_various_angles(self):
         """Simple shower from specific zenith angles."""
 
-        c = .3
+        c = 0.299792458
 
         x = (0., -5., 5.)
         y = (sqrt(100 - 25), 0., 0.)
@@ -458,7 +458,7 @@ class MultiAlgorithm(BaseAlgorithm):
     def test_diamond_stations(self):
         """Simple shower from specific zenith angles."""
 
-        c = .3
+        c = 0.299792458
 
         x = (0., -5., 5., 10.)
         y = (sqrt(100 - 25), 0., 0., sqrt(100 - 25))
@@ -483,7 +483,7 @@ class MultiAlgorithm(BaseAlgorithm):
     def test_square_stations(self):
         """Simple shower from specific zenith angles."""
 
-        c = .3
+        c = 0.299792458
 
         x = (0., 5., 5., 0.)
         y = (0, 0., 5., 5.)
