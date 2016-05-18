@@ -495,16 +495,11 @@ class DirectAlgorithmCartesian2D(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
 
-        dx1 = x[1] - x[0]
-        dx2 = x[2] - x[0]
-
-        dy1 = y[1] - y[0]
-        dy2 = y[2] - y[0]
-
-        return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2)
+        return cls.reconstruct(dt[1], dt[2], dx[1], dx[2], dy[1], dy[2])
 
     @staticmethod
     def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2):
@@ -569,19 +564,13 @@ class DirectAlgorithmCartesian3D(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3 or len(z) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
+        dz = make_relative(z)
 
-        dx1 = x[1] - x[0]
-        dx2 = x[2] - x[0]
-
-        dy1 = y[1] - y[0]
-        dy2 = y[2] - y[0]
-
-        dz1 = z[1] - z[0]
-        dz2 = z[2] - z[0]
-
-        return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1, dz2)
+        return cls.reconstruct(dt[1], dt[2], dx[1], dx[2], dy[1], dy[2], dz[1],
+                               dz[2])
 
     @staticmethod
     def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1=0, dz2=0):
