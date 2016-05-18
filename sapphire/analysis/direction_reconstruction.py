@@ -989,15 +989,157 @@ class RegressionAlgorithm3D(object):
             iteration += 1
             if iteration > cls.MAX_ITERATIONS:
                 return nan, nan
-            tantheta = tan(theta)
-            dxnew = [xi - zi * tantheta * cos(phi) for xi, zi in zip(dx, dz)]
-            dynew = [yi - zi * tantheta * sin(phi) for yi, zi in zip(dy, dz)]
-            dtnew = [ti + zi / (c * cos(theta)) for ti, zi in zip(dt, dz)]
+            nxnz = tan(theta) * cos(phi)
+            nynz = tan(theta) * sin(phi)
+            nz = cos(theta)
+            dxnew = [xi - zi * nxnz for xi, zi in zip(dx, dz)]
+            dynew = [yi - zi * nynz for yi, zi in zip(dy, dz)]
+            dtnew = [ti + zi / (c * nz) for ti, zi in zip(dt, dz)]
             thetaold = theta
             theta, phi = regress2d.reconstruct_common(dtnew, dxnew, dynew)
             dtheta = abs(theta - thetaold)
 
         return theta, phi
+
+
+class CurvedRegressionAlgorithm(object):
+
+    """Reconstruct angles taking the shower front curvature into account.
+
+    Take the shower front curvature into account. Assumes knowledge about the
+    shower core position.
+
+    """
+
+    MAX_ITERATIONS = 1000
+
+    @classmethod
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+        """Reconstruct angles from 3 or more detections
+
+        This function converts the arguments to be suitable for the
+        algorithm.
+
+        :param t: arrival times of the detectors in ns.
+        :param x,y,z: positions of the detectors in m.  The height
+                      is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions, including core position.
+
+        """
+        core_x = initial.get('core_x', nan)
+        core_y = initial.get('core_y', nan)
+        if isnan(core_y) or isnan(core_y):
+            return nan, nan
+
+        return cls.reconstruct(t, x, y, core_x, core_y)
+
+    @classmethod
+    def reconstruct(cls, t, x, y, core_x, core_y):
+        """Reconstruct angles for many detections
+
+        :param t: arrival times in the detectors in ns.
+        :param x,y: positions of the detectors in m.
+        :param core_x,core_y: core position at z = 0 in m.
+        :return: theta as derived by Montanus2014,
+                 phi as derived by Montanus2014.
+
+        """
+        if not logic_checks(t, x, y):
+            return nan, nan
+
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
+
+        regress2d = RegressionAlgorithm()
+        theta, phi = regress2d.reconstruct_common(dt, dx, dy)
+
+        dtheta = 1.
+        iteration = 0
+        while dtheta > 0.001:
+            iteration += 1
+            if iteration > cls.MAX_ITERATIONS:
+                return nan, nan
+            dtnew = [ti + cls.time_delay for ti in dt]
+            theta_prev = theta
+            theta, phi = regress2d.reconstruct_common(dtnew, dx, dy)
+            dtheta = abs(theta - theta_prev)
+
+        return theta, phi
+
+    @classmethod
+    def time_delay(cls, x, y, core_x, core_y, theta, phi):
+        r = cls.core_distance(x, y, core_x, core_y, theta, phi)
+        return cls.front_shape(r)
+
+    @classmethod
+    def core_distance(cls, x, y, core_x, core_y, theta, phi):
+        dx = core_x - x
+        dy = core_y - y
+        ny = sin(theta) * sin(phi)
+        nx = sin(theta) * cos(phi)
+        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
+                    2 * dx * dy * nx * ny)
+
+    @classmethod
+    def front_shape(cls, r):
+        """Delay of the showerfront relative to flat as function of distance
+
+        :param r: distance to the shower core in shower frame in m.
+        :return: delay time of shower front in ns.
+
+        """
+        return r * .2
+
+
+class CurvedRegressionAlgorithm3D(object):
+
+    """Reconstruct angles accounting for front curvature and detector altitudes
+
+    Take the shower front curvature and different detector heights into
+    account. Assumes knowledge about the shower core position.
+
+    """
+
+    MAX_ITERATIONS = 1000
+
+    @classmethod
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+        """Reconstruct angles from 3 or more detections
+
+        This function converts the arguments to be suitable for the
+        algorithm.
+
+        :param t: arrival times of the detectors in ns.
+        :param x,y,z: positions of the detectors in m. The height
+                      for all detectors will be set to 0 if not given.
+        :param initial: dictionary containing values from previous
+                        reconstructions, including core position.
+
+        """
+        core_x = initial.get('core_x', nan)
+        core_y = initial.get('core_y', nan)
+        if isnan(core_y) or isnan(core_y):
+            return nan, nan
+
+        if z is None:
+            z = [0] * len(x)
+
+        return cls.reconstruct(t, x, y, z, core_x, core_y)
+
+    @classmethod
+    def reconstruct(cls, t, x, y, z, core_x, core_y):
+        """Reconstruct angles for many detections
+
+        :param t: arrival times in the detectors in ns.
+        :param x,y,z: positions of the detectors in m.
+        :param core_x,core_y: core position at z = 0 in m.
+        :return: theta as derived by Montanus2014,
+                 phi as derived by Montanus2014.
+
+        """
+        pass
 
 
 def logic_checks(t, x, y, z):
