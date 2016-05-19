@@ -1142,7 +1142,62 @@ class CurvedRegressionAlgorithm3D(object):
                  phi as derived by Montanus2014.
 
         """
-        pass
+        if not logic_checks(t, x, y, z):
+            return nan, nan
+
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
+        dz = make_relative(z)
+        dcore_x = core_x - x[0]
+        dcore_y = core_y - y[0]
+
+        regress2d = RegressionAlgorithm()
+        theta, phi = regress2d.reconstruct_common(dt, dx, dy)
+
+        dtheta = 1.
+        iteration = 0
+        while dtheta > 0.001:
+            iteration += 1
+            if iteration > cls.MAX_ITERATIONS:
+                return nan, nan
+            nxnz = tan(theta) * cos(phi)
+            nynz = tan(theta) * sin(phi)
+            nz = cos(theta)
+            dxnew = [xi - zi * nxnz for xi, zi in zip(dx, dz)]
+            dynew = [yi - zi * nynz for yi, zi in zip(dy, dz)]
+            dtnew = [ti + zi / (c * nz) -
+                     cls.time_delay(xi, yi, dcore_x, dcore_y, theta, phi)
+                     for ti, xi, yi, zi in zip(dt, dx, dy, dz)]
+            thetaold = theta
+            theta, phi = regress2d.reconstruct_common(dtnew, dxnew, dynew)
+            dtheta = abs(theta - thetaold)
+
+        return theta, phi
+
+    @classmethod
+    def time_delay(cls, x, y, core_x, core_y, theta, phi):
+        r = cls.core_distance(x, y, core_x, core_y, theta, phi)
+        return cls.front_shape(r)
+
+    @classmethod
+    def core_distance(cls, x, y, core_x, core_y, theta, phi):
+        dx = core_x - x
+        dy = core_y - y
+        nx = sin(theta) * cos(phi)
+        ny = sin(theta) * sin(phi)
+        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
+                    2 * dx * dy * nx * ny)
+
+    @classmethod
+    def front_shape(cls, r):
+        """Delay of the showerfront relative to flat as function of distance
+
+        :param r: distance to the shower core in shower frame in m.
+        :return: delay time of shower front in ns.
+
+        """
+        return r * .2
 
 
 def logic_checks(t, x, y, z):
