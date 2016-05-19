@@ -13,9 +13,13 @@ from numpy import floor, ceil, round, arcsin, sin, pi, sqrt
 from scipy.stats import norm
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
-# Error values used to indicate missing or bad data.
+
+#: Error values used to indicate missing or bad data.
+#: Code -999 is used if the reconstruction of a quantity failed.
+#: Code -1 is used if that detector/sensor is not present.
 ERR = [-1, -999]
-# Speed of light in vaccuum in [m / ns]
+
+#: Speed of light in vacuum in m / ns.
 c = 0.299792458
 
 

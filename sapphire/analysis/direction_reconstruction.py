@@ -282,8 +282,6 @@ class DirectAlgorithm(object):
 
     Note! The detectors are 0-based.
 
-    Speed of light is in [m / ns]
-
     """
 
     @classmethod
