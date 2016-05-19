@@ -27,6 +27,7 @@ import calendar
 from . import base, angles
 
 
+#: Dates of leap second introductions.
 LEAP_SECONDS = (('July 1, 2015', 17),
                 ('July 1, 2012', 16),
                 ('January 1, 2009', 15),
