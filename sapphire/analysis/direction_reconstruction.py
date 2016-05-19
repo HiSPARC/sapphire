@@ -1045,12 +1045,14 @@ class CurvedRegressionAlgorithm(object):
                  phi as derived by Montanus2014.
 
         """
-        if not logic_checks(t, x, y):
+        if not logic_checks(t, x, y, [0] * len(t)):
             return nan, nan
 
         dt = make_relative(t)
         dx = make_relative(x)
         dy = make_relative(y)
+        dcore_x = core_x - x[0]
+        dcore_y = core_y - y[0]
 
         regress2d = RegressionAlgorithm()
         theta, phi = regress2d.reconstruct_common(dt, dx, dy)
@@ -1061,7 +1063,8 @@ class CurvedRegressionAlgorithm(object):
             iteration += 1
             if iteration > cls.MAX_ITERATIONS:
                 return nan, nan
-            dtnew = [ti + cls.time_delay for ti in dt]
+            dtnew = [ti - cls.time_delay(xi, yi, dcore_x, dcore_y, theta, phi)
+                     for ti, xi, yi in zip(dt, dx, dy)]
             theta_prev = theta
             theta, phi = regress2d.reconstruct_common(dtnew, dx, dy)
             dtheta = abs(theta - theta_prev)
@@ -1077,8 +1080,8 @@ class CurvedRegressionAlgorithm(object):
     def core_distance(cls, x, y, core_x, core_y, theta, phi):
         dx = core_x - x
         dy = core_y - y
-        ny = sin(theta) * sin(phi)
         nx = sin(theta) * cos(phi)
+        ny = sin(theta) * sin(phi)
         return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
                     2 * dx * dy * nx * ny)
 
