@@ -7,6 +7,7 @@ from datetime import datetime, date
 import sapphire
 from sapphire.analysis import calibration
 from sapphire.transformations.clock import datetime_to_gps
+from sapphire.utils import c
 
 
 class DetectorTimingTests(unittest.TestCase):
@@ -18,30 +19,31 @@ class DetectorTimingTests(unittest.TestCase):
         self.assertTrue(all(isnan(offset)))
 
         dt = array([-10, 0, 10])
+        dz = 0.6
+        dzc = dz / c
 
         # Good result
         mock_fit.return_value = (1., 2.)
         offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, 1.)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
-        self.assertEqual(offset, 3.)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
+        self.assertEqual(offset, 1. + dzc)
 
         mock_fit.return_value = (-1.5, 5.)
         offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, -1.5)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
-
-        self.assertEqual(offset, 0.5)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
+        self.assertEqual(offset, -1.5 + dzc)
 
         mock_fit.return_value = (250., 100.)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertTrue(isnan(offset))
         mock_fit.return_value = (-150., 100.)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertTrue(isnan(offset))
 
         mock_fit.return_value = (nan, nan)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertTrue(isnan(offset))
 
 
@@ -51,6 +53,8 @@ class StationTimingTests(unittest.TestCase):
     @patch.object(calibration, 'fit_timing_offset')
     def test_determine_station_timing_offset(self, mock_fit, mock_percentile):
         mock_percentile.return_value = (-50., 50.)
+        dz = 0.6
+        dzc = dz / c
 
         # Empty list
         offset = calibration.determine_station_timing_offset([])
@@ -62,15 +66,15 @@ class StationTimingTests(unittest.TestCase):
         self.assertEqual(offset, 1.)
         mock_percentile.assert_called_once_with([sentinel.dt], [0.5, 99.5])
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt],
-                                                                dz=.6)
-        self.assertEqual(offset, 3.)
+                                                                dz=dz)
+        self.assertEqual(offset, 1. + dzc)
 
         mock_fit.return_value = (-1.5, 5.)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertEqual(offset, -1.5)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt],
-                                                                dz=.6)
-        self.assertEqual(offset, 0.5)
+                                                                dz=dz)
+        self.assertEqual(offset, -1.5 + dzc)
 
         mock_fit.return_value = (2500., 100.)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
