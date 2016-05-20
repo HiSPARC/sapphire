@@ -881,42 +881,38 @@ class RegressionAlgorithm(object):
         if not logic_checks(t, x, y, [0] * len(t)):
             return nan, nan
 
-        dt = make_relative(t)
-        dx = make_relative(x)
-        dy = make_relative(y)
-
         xx = 0.
         xy = 0.
         tx = 0.
         yy = 0.
         ty = 0.
-        x = 0.
-        y = 0.
-        t = 0.
+        xs = 0.
+        ys = 0.
+        ts = 0.
         k = 0
 
-        for i, j, l in zip(dx, dy, dt):
-            xx += i * i
-            xy += i * j
-            tx += i * l
-            yy += j * j
-            ty += j * l
-            x += i
-            y += j
-            t += l
+        for ti, xi, yi in zip(t, x, y):
+            xx += xi * xi
+            xy += xi * yi
+            tx += xi * ti
+            yy += yi * yi
+            ty += yi * ti
+            xs += xi
+            ys += yi
+            ts += ti
             k += 1
 
-        denom = (k * xy * xy + x * x * yy + y * y * xx - k * xx * yy -
-                 2 * x * y * xy)
+        denom = (k * xy * xy + xs * xs * yy + ys * ys * xx - k * xx * yy -
+                 2 * xs * ys * xy)
         if denom == 0:
             denom = nan
 
-        numer = (tx * (k * yy - y * y) + xy * (t * y - k * ty) + x * y * ty -
-                 t * x * yy)
+        numer = (tx * (k * yy - ys * ys) + xy * (ts * ys - k * ty) +
+                 xs * ys * ty - ts * xs * yy)
         nx = c * numer / denom
 
-        numer = (ty * (k * xx - x * x) + xy * (t * x - k * tx) + x * y * tx -
-                 t * y * xx)
+        numer = (ty * (k * xx - xs * xs) + xy * (ts * xs - k * tx) +
+                 xs * ys * tx - ts * ys * xx)
         ny = c * numer / denom
 
         horiz = nx * nx + ny * ny
@@ -975,13 +971,8 @@ class RegressionAlgorithm3D(object):
         if not logic_checks(t, x, y, z):
             return nan, nan
 
-        dt = make_relative(t)
-        dx = make_relative(x)
-        dy = make_relative(y)
-        dz = make_relative(z)
-
         regress2d = RegressionAlgorithm()
-        theta, phi = regress2d.reconstruct_common(dt, dx, dy)
+        theta, phi = regress2d.reconstruct_common(t, x, y)
 
         dtheta = 1.
         iteration = 0
@@ -992,9 +983,9 @@ class RegressionAlgorithm3D(object):
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
             nz = cos(theta)
-            dxproj = [xi - zi * nxnz for xi, zi in zip(dx, dz)]
-            dyproj = [yi - zi * nynz for yi, zi in zip(dy, dz)]
-            dtproj = [ti + zi / (c * nz) for ti, zi in zip(dt, dz)]
+            dxproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
+            dyproj = [yi - zi * nynz for yi, zi in zip(y, z)]
+            dtproj = [ti + zi / (c * nz) for ti, zi in zip(t, z)]
             theta_prev = theta
             theta, phi = regress2d.reconstruct_common(dtproj, dxproj, dyproj)
             dtheta = abs(theta - theta_prev)
@@ -1048,14 +1039,8 @@ class CurvedRegressionAlgorithm(object):
         if not logic_checks(t, x, y, [0] * len(t)):
             return nan, nan
 
-        dt = make_relative(t)
-        dx = make_relative(x)
-        dy = make_relative(y)
-        dcore_x = core_x - x[0]
-        dcore_y = core_y - y[0]
-
         regress2d = RegressionAlgorithm()
-        theta, phi = regress2d.reconstruct_common(dt, dx, dy)
+        theta, phi = regress2d.reconstruct_common(t, x, y)
 
         dtheta = 1.
         iteration = 0
@@ -1063,10 +1048,10 @@ class CurvedRegressionAlgorithm(object):
             iteration += 1
             if iteration > cls.MAX_ITERATIONS:
                 return nan, nan
-            dtproj = [ti - cls.time_delay(xi, yi, dcore_x, dcore_y, theta, phi)
-                      for ti, xi, yi in zip(dt, dx, dy)]
+            tproj = [ti - cls.time_delay(xi, yi, core_x, core_y, theta, phi)
+                     for ti, xi, yi in zip(t, x, y)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(dtproj, dx, dy)
+            theta, phi = regress2d.reconstruct_common(tproj, x, y)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
@@ -1145,15 +1130,8 @@ class CurvedRegressionAlgorithm3D(object):
         if not logic_checks(t, x, y, z):
             return nan, nan
 
-        dt = make_relative(t)
-        dx = make_relative(x)
-        dy = make_relative(y)
-        dz = make_relative(z)
-        dcore_x = core_x - x[0]
-        dcore_y = core_y - y[0]
-
         regress2d = RegressionAlgorithm()
-        theta, phi = regress2d.reconstruct_common(dt, dx, dy)
+        theta, phi = regress2d.reconstruct_common(t, x, y)
 
         dtheta = 1.
         iteration = 0
@@ -1164,13 +1142,13 @@ class CurvedRegressionAlgorithm3D(object):
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
             nz = cos(theta)
-            dxproj = [xi - zi * nxnz for xi, zi in zip(dx, dz)]
-            dyproj = [yi - zi * nynz for yi, zi in zip(dy, dz)]
-            dtproj = [ti + zi / (c * nz) -
-                      cls.time_delay(xi, yi, dcore_x, dcore_y, theta, phi)
-                      for ti, xi, yi, zi in zip(dt, dx, dy, dz)]
+            xproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
+            yproj = [yi - zi * nynz for yi, zi in zip(y, z)]
+            tproj = [ti + zi / (c * nz) -
+                     cls.time_delay(xpi, ypi, core_x, core_y, theta, phi)
+                     for ti, xpi, ypi, zi in zip(t, xproj, yproj, z)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(dtproj, dxproj, dyproj)
+            theta, phi = regress2d.reconstruct_common(tproj, xproj, yproj)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
@@ -1221,7 +1199,8 @@ def logic_checks(t, x, y, z):
     """
     # Check for identical positions
     if len(t) == 3:
-        if not len(zip(x, y, z)) == len(set(zip(x, y, z))):
+        xyz = zip(x, y, z)
+        if not len(xyz) == len(set(xyz)):
             return False
 
     txyz = zip(t, x, y, z)
@@ -1270,8 +1249,7 @@ def logic_checks(t, x, y, z):
                                          smallest_angle)
 
     # discard reconstruction if the largest of the smallest angles of each
-    # triangle is smaller than 0.1 rad  (5.73 degrees)
-
+    # triangle is smaller than 0.1 rad (5.73 degrees)
     if largest_of_smallest_angles < 0.1:
         return False
 
