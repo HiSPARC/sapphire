@@ -1073,11 +1073,11 @@ class CurvedRegressionAlgorithm(object):
 
     @classmethod
     def time_delay(cls, x, y, core_x, core_y, theta, phi):
-        r = cls.core_distance(x, y, core_x, core_y, theta, phi)
+        r = cls.radial_core_distance(x, y, core_x, core_y, theta, phi)
         return cls.front_shape(r)
 
     @classmethod
-    def core_distance(cls, x, y, core_x, core_y, theta, phi):
+    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
         dx = core_x - x
         dy = core_y - y
         nx = sin(theta) * cos(phi)
@@ -1177,11 +1177,11 @@ class CurvedRegressionAlgorithm3D(object):
 
     @classmethod
     def time_delay(cls, x, y, core_x, core_y, theta, phi):
-        r = cls.core_distance(x, y, core_x, core_y, theta, phi)
+        r = cls.radial_core_distance(x, y, core_x, core_y, theta, phi)
         return cls.front_shape(r)
 
     @classmethod
-    def core_distance(cls, x, y, core_x, core_y, theta, phi):
+    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
         dx = core_x - x
         dy = core_y - y
         nx = sin(theta) * cos(phi)
