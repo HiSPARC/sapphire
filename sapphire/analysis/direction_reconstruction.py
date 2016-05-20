@@ -992,12 +992,12 @@ class RegressionAlgorithm3D(object):
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
             nz = cos(theta)
-            dxnew = [xi - zi * nxnz for xi, zi in zip(dx, dz)]
-            dynew = [yi - zi * nynz for yi, zi in zip(dy, dz)]
-            dtnew = [ti + zi / (c * nz) for ti, zi in zip(dt, dz)]
-            thetaold = theta
-            theta, phi = regress2d.reconstruct_common(dtnew, dxnew, dynew)
-            dtheta = abs(theta - thetaold)
+            dxproj = [xi - zi * nxnz for xi, zi in zip(dx, dz)]
+            dyproj = [yi - zi * nynz for yi, zi in zip(dy, dz)]
+            dtproj = [ti + zi / (c * nz) for ti, zi in zip(dt, dz)]
+            theta_prev = theta
+            theta, phi = regress2d.reconstruct_common(dtproj, dxproj, dyproj)
+            dtheta = abs(theta - theta_prev)
 
         return theta, phi
 
@@ -1063,10 +1063,10 @@ class CurvedRegressionAlgorithm(object):
             iteration += 1
             if iteration > cls.MAX_ITERATIONS:
                 return nan, nan
-            dtnew = [ti - cls.time_delay(xi, yi, dcore_x, dcore_y, theta, phi)
-                     for ti, xi, yi in zip(dt, dx, dy)]
+            dtproj = [ti - cls.time_delay(xi, yi, dcore_x, dcore_y, theta, phi)
+                      for ti, xi, yi in zip(dt, dx, dy)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(dtnew, dx, dy)
+            theta, phi = regress2d.reconstruct_common(dtproj, dx, dy)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
@@ -1164,14 +1164,14 @@ class CurvedRegressionAlgorithm3D(object):
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
             nz = cos(theta)
-            dxnew = [xi - zi * nxnz for xi, zi in zip(dx, dz)]
-            dynew = [yi - zi * nynz for yi, zi in zip(dy, dz)]
-            dtnew = [ti + zi / (c * nz) -
-                     cls.time_delay(xi, yi, dcore_x, dcore_y, theta, phi)
-                     for ti, xi, yi, zi in zip(dt, dx, dy, dz)]
-            thetaold = theta
-            theta, phi = regress2d.reconstruct_common(dtnew, dxnew, dynew)
-            dtheta = abs(theta - thetaold)
+            dxproj = [xi - zi * nxnz for xi, zi in zip(dx, dz)]
+            dyproj = [yi - zi * nynz for yi, zi in zip(dy, dz)]
+            dtproj = [ti + zi / (c * nz) -
+                      cls.time_delay(xi, yi, dcore_x, dcore_y, theta, phi)
+                      for ti, xi, yi, zi in zip(dt, dx, dy, dz)]
+            theta_prev = theta
+            theta, phi = regress2d.reconstruct_common(dtproj, dxproj, dyproj)
+            dtheta = abs(theta - theta_prev)
 
         return theta, phi
 
