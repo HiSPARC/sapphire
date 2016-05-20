@@ -260,13 +260,22 @@ class BaseAlgorithm(object):
 
     """Use this class to check the different algorithms
 
-    They should give similar results and errors in some cases.
-    Theses tests use three detections at same height.
+    This provides a shortcut to call the reconstruct_common method.
 
     """
 
-    def call_reconstruct(self, t, x, y, z):
-        return self.algorithm.reconstruct_common(t, x, y, z)
+    def call_reconstruct(self, t, x, y, z, initial={}):
+        return self.algorithm.reconstruct_common(t, x, y, z, initial)
+
+
+class FlatAlgorithm(BaseAlgorithm):
+
+    """Use this class to test algorithms for flat shower fronts.
+
+    They should give similar results and errors in some cases.
+    These tests use three detections at same height.
+
+    """
 
     def test_stations_in_line(self):
         """Three detection points on a line do not provide a solution."""
@@ -333,7 +342,7 @@ class BaseAlgorithm(object):
         theta, phi = self.call_reconstruct(t, x, y, z)
         self.assertAlmostEqual(theta, 0., 4)
         # azimuth can be any value between -pi and pi
-        self.assertTrue(-pi <= phi <= pi)
+        self.assertTrue(-pi <= phi < pi)
 
     def test_to_large_dt(self):
         """Time difference larger than expected by speed of light."""
@@ -387,7 +396,7 @@ class BaseAlgorithm(object):
                 self.assertEqual((theta, phi), (theta_no_z, phi_no_z))
 
 
-class DirectAlgorithm(BaseAlgorithm):
+class DirectAlgorithm(FlatAlgorithm):
 
     """Use this class to check algorithms that only support three detections
 
@@ -412,10 +421,10 @@ class DirectAlgorithm(BaseAlgorithm):
             theta, phi = self.call_reconstruct(t, x, y, z)
             self.assertTrue(issubclass(w[0].category, UserWarning))
             self.assertAlmostEqual(theta, 0., 4)
-            self.assertTrue(-pi <= phi <= pi)
+            self.assertTrue(-pi <= phi < pi)
 
 
-class AltitudeAlgorithm(BaseAlgorithm):
+class AltitudeAlgorithm(FlatAlgorithm):
 
     """Use this class to check the altitude support
 
@@ -447,7 +456,7 @@ class DirectAltitudeAlgorithm(DirectAlgorithm, AltitudeAlgorithm):
     pass
 
 
-class MultiAlgorithm(BaseAlgorithm):
+class MultiAlgorithm(FlatAlgorithm):
 
     """Use this class to check the different algorithms for more stations
 
@@ -531,6 +540,54 @@ class MultiAltitudeAlgorithm(MultiAlgorithm, AltitudeAlgorithm):
         self.assertAlmostEqual(theta, zenith, 4)
 
 
+class CurvedAlgorithm(BaseAlgorithm):
+
+    """Check some algorithms supporting a curved shower front.
+
+    They should give similar results and errors in some cases.
+
+    """
+
+    def test_curved_shower(self):
+        """Simple curved shower on three detectors."""
+
+        t = (0., 0., 10.)
+        x = (0., 100., 50.)
+        y = (0., 0., 100.)
+        z = (0., 0., 0.)
+        init = {'core_x': 50, 'core_y': 0}
+
+        theta, phi = self.call_reconstruct(t, x, y, z, initial=init)
+
+        self.assertAlmostEqual(theta, 0., 4)
+        self.assertTrue(-pi <= phi < pi)
+
+
+class CurvedAltitudeAlgorithm(CurvedAlgorithm):
+
+    """Check algorithms for curved fronts and stations at different altitudes.
+
+    They should give similar results and errors in some cases.
+
+    """
+
+    def test_curved_shower_on_stations_with_altitude(self):
+        """Simple curved shower on three stations at different altitudes."""
+
+        c = 0.299792458
+
+        z = (10, 0., 40.)
+        t = (-z[0] / c, 0., 10. - z[2] / c)
+        x = (0., 100., 50.)
+        y = (0., 0., 100.)
+        init = {'core_x': 50, 'core_y': 0}
+
+        theta, phi = self.call_reconstruct(t, x, y, z, initial=init)
+
+        self.assertAlmostEqual(theta, 0., 4)
+        self.assertTrue(-pi <= phi < pi)
+
+
 class DirectAlgorithmTest(unittest.TestCase, DirectAlgorithm):
 
     def setUp(self):
@@ -566,6 +623,19 @@ class RegressionAlgorithm3DTest(unittest.TestCase, MultiAltitudeAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.RegressionAlgorithm3D()
+
+
+class CurvedRegressionAlgorithmTest(unittest.TestCase, CurvedAlgorithm):
+
+    def setUp(self):
+        self.algorithm = direction_reconstruction.CurvedRegressionAlgorithm()
+
+
+class CurvedRegressionAlgorithm3DTest(unittest.TestCase,
+                                      CurvedAltitudeAlgorithm):
+
+    def setUp(self):
+        self.algorithm = direction_reconstruction.CurvedRegressionAlgorithm3D()
 
 
 if __name__ == '__main__':
