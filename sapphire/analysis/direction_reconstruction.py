@@ -24,7 +24,7 @@ from scipy.optimize import minimize
 
 from .event_utils import (station_arrival_time, detector_arrival_time,
                           relative_detector_arrival_times)
-from ..utils import pbar, norm_angle
+from ..utils import pbar, norm_angle, c, make_relative
 from ..api import Station
 
 
@@ -329,8 +329,6 @@ class DirectAlgorithm(object):
 
     Note! The detectors are 0-based.
 
-    Speed of light is in [m / ns]
-
     """
 
     @classmethod
@@ -350,16 +348,17 @@ class DirectAlgorithm(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
 
-        r1 = sqrt((x[1] - x[0]) ** 2 + (y[1] - y[0]) ** 2)
-        r2 = sqrt((x[2] - x[0]) ** 2 + (y[2] - y[0]) ** 2)
+        r1 = sqrt(dx[1] ** 2 + dy[1] ** 2)
+        r2 = sqrt(dx[2] ** 2 + dy[2] ** 2)
 
-        phi1 = arctan2((y[1] - y[0]), (x[1] - x[0]))
-        phi2 = arctan2((y[2] - y[0]), (x[2] - x[0]))
+        phi1 = arctan2(dy[1], dx[1])
+        phi2 = arctan2(dy[2], dx[2])
 
-        return cls.reconstruct(dt1, dt2, r1, r2, phi1, phi2)
+        return cls.reconstruct(dt[1], dt[2], r1, r2, phi1, phi2)
 
     @classmethod
     def reconstruct(cls, dt1, dt2, r1, r2, phi1, phi2):
@@ -376,8 +375,6 @@ class DirectAlgorithm(object):
         if dt1 == 0 and dt2 == 0:
             # No time difference means shower came from zenith.
             return 0, 0
-
-        c = .3
 
         phi = arctan2(-(r1 * dt2 * cos(phi1) - r2 * dt1 * cos(phi2)),
                       (r1 * dt2 * sin(phi1) - r2 * dt1 * sin(phi2)))
@@ -411,8 +408,6 @@ class DirectAlgorithm(object):
     def rel_theta1_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.23"""
 
-        c = .3
-
         sintheta = sin(theta)
         sinphiphi1 = sin(phi - phi1)
 
@@ -433,8 +428,6 @@ class DirectAlgorithm(object):
     def rel_theta2_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.23"""
 
-        c = .3
-
         sintheta = sin(theta)
         sinphiphi2 = sin(phi - phi2)
 
@@ -454,8 +447,6 @@ class DirectAlgorithm(object):
     @staticmethod
     def rel_phi_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.22"""
-
-        c = .3
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
@@ -490,8 +481,6 @@ class DirectAlgorithm(object):
     def dphi_dt1(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.20"""
 
-        c = .3
-
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
         sinphi2 = sin(phi2)
@@ -507,8 +496,6 @@ class DirectAlgorithm(object):
     @staticmethod
     def dphi_dt2(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.21"""
-
-        c = .3
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
@@ -553,16 +540,11 @@ class DirectAlgorithmCartesian2D(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
 
-        dx1 = x[1] - x[0]
-        dx2 = x[2] - x[0]
-
-        dy1 = y[1] - y[0]
-        dy2 = y[2] - y[0]
-
-        return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2)
+        return cls.reconstruct(dt[1], dt[2], dx[1], dx[2], dy[1], dy[2])
 
     @staticmethod
     def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2):
@@ -576,8 +558,6 @@ class DirectAlgorithmCartesian2D(object):
                  phi as given by Montanus2014 eq 26.
 
         """
-        c = .3
-
         ux = c * (dt2 * dx1 - dt1 * dx2)
         uy = c * (dt2 * dy1 - dt1 * dy2)
 
@@ -629,19 +609,13 @@ class DirectAlgorithmCartesian3D(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3 or len(z) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
+        dz = make_relative(z)
 
-        dx1 = x[1] - x[0]
-        dx2 = x[2] - x[0]
-
-        dy1 = y[1] - y[0]
-        dy2 = y[2] - y[0]
-
-        dz1 = z[1] - z[0]
-        dz2 = z[2] - z[0]
-
-        return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1, dz2)
+        return cls.reconstruct(dt[1], dt[2], dx[1], dx[2], dy[1], dy[2], dz[1],
+                               dz[2])
 
     @staticmethod
     def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1=0, dz2=0):
@@ -655,7 +629,6 @@ class DirectAlgorithmCartesian3D(object):
                  phi as given by Montanus2014 eq 22.
 
         """
-        c = .3
         d1 = array([dx1, dy1, dz1])
         d2 = array([dx2, dy2, dz2])
         u = c * (dt2 * d1 - dt1 * d2)
@@ -747,8 +720,6 @@ class SphereAlgorithm(object):
         :return: parameters x_int, y_int, z_int
 
         """
-        c = .299792458
-
         x01 = x[0] - x[1]
         x02 = x[0] - x[2]
         y01 = y[0] - y[1]
@@ -843,12 +814,12 @@ class FitAlgorithm(object):
         if not logic_checks(t, x, y, z):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
-        dz = cls.make_relative(z)
+        dt = make_relative(t)[1:]
+        dx = make_relative(x)[1:]
+        dy = make_relative(y)[1:]
+        dz = make_relative(z)[1:]
 
-        cons = ({'type': 'eq', 'fun': cls.constraint_normal_vector})
+        cons = {'type': 'eq', 'fun': cls.constraint_normal_vector}
 
         fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
@@ -893,12 +864,6 @@ class FitAlgorithm(object):
         return theta, phi
 
     @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
-
-        return [xi - x[0] for xi in x[1:]]
-
-    @staticmethod
     def constraint_normal_vector(n):
         """This should be equal to zero"""
 
@@ -914,7 +879,6 @@ class FitAlgorithm(object):
         :return: least sum of squares as in Montanus2014, eq 36
 
         """
-        c = .3
         nx, ny, nz, m = n_xyz
 
         slq = sum([(nx * xi + ny * yi + zi * nz + c * ti + m) ** 2
@@ -962,11 +926,9 @@ class RegressionAlgorithm(object):
         if not logic_checks(t, x, y, [0] * len(t)):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
-
-        c = .3
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
 
         xx = 0.
         xy = 0.
@@ -976,7 +938,7 @@ class RegressionAlgorithm(object):
         x = 0.
         y = 0.
         t = 0.
-        k = 1
+        k = 0
 
         for i, j, l in zip(dx, dy, dt):
             xx += i * i
@@ -1006,19 +968,12 @@ class RegressionAlgorithm(object):
         if horiz > 1.:
             theta = nan
             phi = nan
-
         else:
             nz = sqrt(1 - nx * nx - ny * ny)
             phi = arctan2(ny, nx)
             theta = arccos(nz)
 
         return theta, phi
-
-    @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
-
-        return [xi - x[0] for xi in x[1:]]
 
 
 class RegressionAlgorithm3D(object):
@@ -1030,6 +985,8 @@ class RegressionAlgorithm3D(object):
     three or more detectorstations at arbitrary altitudes"
 
     """
+
+    MAX_ITERATIONS = 1000
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
@@ -1063,17 +1020,20 @@ class RegressionAlgorithm3D(object):
         if not logic_checks(t, x, y, z):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
-        dz = cls.make_relative(z)
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
+        dz = make_relative(z)
 
         regress2d = RegressionAlgorithm()
         theta, phi = regress2d.reconstruct_common(dt, dx, dy)
 
-        c = .3
         dtheta = 1.
-        while (dtheta > .001):
+        iteration = 0
+        while dtheta > 0.001:
+            iteration += 1
+            if iteration > cls.MAX_ITERATIONS:
+                return nan, nan
             tantheta = tan(theta)
             dxnew = [xi - zi * tantheta * cos(phi) for xi, zi in zip(dx, dz)]
             dynew = [yi - zi * tantheta * sin(phi) for yi, zi in zip(dy, dz)]
@@ -1083,12 +1043,6 @@ class RegressionAlgorithm3D(object):
             dtheta = abs(theta - thetaold)
 
         return theta, phi
-
-    @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
-
-        return [xi - x[0] for xi in x]
 
 
 def logic_checks(t, x, y, z):
@@ -1119,7 +1073,6 @@ def logic_checks(t, x, y, z):
 
     # Check if the time difference it larger than expected by c
     if len(t) == 3:
-        c = .3
         for txyz0, txyz1 in itertools.combinations(txyz, 2):
             dt = abs(txyz0[0] - txyz1[0])
             dx = txyz0[1] - txyz1[1]

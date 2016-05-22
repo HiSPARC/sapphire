@@ -66,18 +66,7 @@ class Detector(object):
         :param timestamp: timestamp in seconds.
 
         """
-        # Most often the timestamp will be later then the previous,
-        # and often less than the next.
-        ci = self.index
-        if self.timestamps[ci] <= timestamp:
-            try:
-                if timestamp < self.timestamps[ci + 1]:
-                    return
-            except IndexError:
-                pass
-            self.index = get_active_index(self.timestamps[ci:], timestamp) + ci
-        else:
-            self.index = get_active_index(self.timestamps, timestamp)
+        self.index = get_active_index(self.timestamps, timestamp)
 
     @property
     def detector_size(self):
@@ -236,18 +225,7 @@ class Station(object):
         """
         for detector in self.detectors:
             detector._update_timestamp(timestamp)
-        # Most often the timestamp will be later then the previous,
-        # and often less than the next.
-        ci = self.index
-        if self.timestamps[ci] <= timestamp:
-            try:
-                if timestamp < self.timestamps[ci + 1]:
-                    return
-            except IndexError:
-                pass
-            self.index = get_active_index(self.timestamps[ci:], timestamp) + ci
-        else:
-            self.index = get_active_index(self.timestamps, timestamp)
+        self.index = get_active_index(self.timestamps, timestamp)
 
     def _add_detector(self, position, orientation, detector_timestamps):
         """Add detector to station
@@ -373,9 +351,9 @@ class Station(object):
         x, y, z = zip(*[detector.get_coordinates()
                       for detector in self.detectors])
 
-        x0 = np.mean(x)
-        y0 = np.mean(y)
-        z0 = np.mean(z)
+        x0 = np.nanmean(x)
+        y0 = np.nanmean(y)
+        z0 = np.nanmean(z)
 
         return x0, y0, z0
 

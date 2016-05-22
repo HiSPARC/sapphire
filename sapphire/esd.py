@@ -83,8 +83,8 @@ def load_data(file, group, tsv_file, type='events'):
 
     If you've previously downloaded event summary data from
     http://data.hisparc.nl/ in TSV format, you can load them into a PyTables
-    file using this method. The data is then indistinguishable from data
-    downloaded using :func:`download_data`.
+    file using this method. The result is equal to directly downloading data
+    using :func:`download_data`.
 
     :param file: the PyTables datafile handler
     :param group: the PyTables destination group, which need not exist
@@ -217,6 +217,69 @@ def download_data(file, group, station_number, start=None, end=None,
                         'from: %s %s.' % tuple(line[:2]))
 
 
+def load_coincidences(file, tsv_file, group=''):
+    """Load downloaded event summary data into PyTables file.
+
+    If you've previously downloaded coincidence data from
+    http://data.hisparc.nl/ in TSV format, you can load them into a PyTables
+    file using this method. The result is equal to directly downloading data
+    using :func:`download_coincidences`.
+
+    :param file: the PyTables datafile handler.
+    :param tsv_file: path to the tsv file downloaded from the HiSPARC
+                     Public Database containing coincidences.
+    :param group: the PyTables destination group, which need not exist.
+
+    Example::
+
+        >>> import tables
+        >>> import sapphire.esd
+        >>> data = tables.open_file('coincidences.h5', 'w')
+        >>> sapphire.esd.load_coincidences(data, 'coincidences-20151130.tsv')
+
+    """
+    station_groups = _read_or_get_station_groups(file, group)
+    c_group = _get_or_create_coincidences_tables(file, group, station_groups)
+
+    with open(tsv_file, 'rb') as data:
+        # loop over lines in tsv as they come streaming in, keep temporary
+        # lists until a full coincidence is in.
+        reader = csv.reader(data, delimiter='\t')
+        current_coincidence = 0
+        coincidence = []
+        for line in reader:
+            if line[0][0] == '#':
+                continue
+            elif int(line[0]) == current_coincidence:
+                coincidence.append(line)
+            else:
+                # Full coincidence has been received, store it.
+                _read_lines_and_store_coincidence(file, c_group,
+                                                  coincidence, station_groups)
+                coincidence = [line]
+                current_coincidence = int(line[0])
+                file.flush()
+
+        if len(coincidence):
+            # Store last coincidence
+            _read_lines_and_store_coincidence(file, c_group, coincidence,
+                                              station_groups)
+
+        if line[0][0] == '#':
+            if len(line[0]) == 1:
+                # No events to load, and no success line
+                raise Exception('No data to load, source contains no data.')
+            else:
+                # Successful download because last line is a non-empty comment
+                pass
+        else:
+            # Last line is data, report possible fail and last date/time
+            raise Exception('Source file seems incomplete, last received data '
+                            'from: %s %s.' % tuple(line[2:4]))
+
+        file.flush()
+
+
 def download_coincidences(file, group='', cluster=None, stations=None,
                           start=None, end=None, n=2, progress=True):
     """Download event summary data coincidences
@@ -287,7 +350,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
                            widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in tsv as they come streaming in, keep temporary
-    # lists untill a full coincidence is in.
+    # lists until a full coincidence is in.
     prev_update = time.time()
     reader = csv.reader(data, delimiter='\t')
     current_coincidence = 0
@@ -324,7 +387,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
             raise Exception('Failed to download data, no data recieved.')
         else:
             # Successful download because last line is a non-empty comment
-            return
+            pass
     else:
         # Last line is data, report failed download and date/time of last line
         raise Exception('Failed to complete download, last received data '

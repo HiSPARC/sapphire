@@ -15,7 +15,7 @@ from .core_reconstruction import (EventCoreReconstruction,
 from .coincidence_queries import CoincidenceQuery
 from .calibration import determine_detector_timing_offsets
 from .event_utils import station_arrival_time
-from ..utils import pbar, gauss
+from ..utils import pbar, gauss, c
 
 
 class ReconstructESDEvents(object):
@@ -363,8 +363,6 @@ class ReconstructESDCoincidences(object):
         to choose a different reference station per (sub)cluster.
 
         """
-        c = .3
-
         # First determine detector offsets for each station
         for s_path in self.coincidences_group.s_index:
             try:

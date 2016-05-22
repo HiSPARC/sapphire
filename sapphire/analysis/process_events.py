@@ -20,12 +20,11 @@
         if __name__ == '__main__':
             station_groups = ['/s%d' % u for u in STATIONS]
 
-            data = tables.open_file('data.h5', 'w')
-            for station, group in zip(STATIONS, station_groups):
-                download_data(data, group, station, START, END, get_blobs=True)
-                proc = ProcessEvents(data, group)
-                proc.process_and_store_results()
-            data.close()
+            with tables.open_file('data.h5', 'w') as data:
+                for station, group in zip(STATIONS, station_groups):
+                    download_data(data, group, station, START, END, True)
+                    proc = ProcessEvents(data, group)
+                    proc.process_and_store_results()
 
 """
 import zlib
@@ -40,15 +39,18 @@ import numpy as np
 from ..api import Station
 from ..utils import pbar, ERR
 from .find_mpv import FindMostProbableValueInSpectrum
+from .process_traces import (ADC_TIME_PER_SAMPLE, ADC_LOW_THRESHOLD,
+                             ADC_HIGH_THRESHOLD)
 
-
-ADC_THRESHOLD = 20  # This one is relative to the baseline
-ADC_LOW_THRESHOLD = 253
-ADC_HIGH_THRESHOLD = 323
-ADC_TIME_PER_SAMPLE = 2.5  # in ns
+ADC_THRESHOLD = 20  #: Threshold for arrival times, relative to the baseline
 ADC_LIMIT = 2 ** 12
-TRIGGER_2 = (2, 0, False, 0)  # 2 low and no high, no external
-TRIGGER_4 = (3, 2, True, 0)  # 3 low or 2 high, no external
+
+#: Default trigger for 2-detector station
+#: 2 low and no high, no external
+TRIGGER_2 = (2, 0, False, 0)
+#: Default trigger for 4-detector station
+#: 3 low or 2 high, no external
+TRIGGER_4 = (3, 2, True, 0)
 
 
 class ProcessEvents(object):
@@ -100,6 +102,7 @@ class ProcessEvents(object):
         self.group = data.get_node(group)
         self.source = self._get_source(source)
         self.progress = progress
+        self.limit = None
 
     def process_and_store_results(self, destination=None, overwrite=False,
                                   limit=None):
@@ -290,13 +293,10 @@ class ProcessEvents(object):
             table.modify_column(column=timings[:, idx], colname=col)
         table.flush()
 
-    def process_traces(self, limit=None):
+    def process_traces(self):
         """Process traces to yield pulse timing information."""
 
-        if limit:
-            self.limit = limit
-
-        if self.limit:
+        if self.limit is not None:
             events = self.source.iterrows(stop=self.limit)
         else:
             events = self.source
@@ -844,6 +844,7 @@ class ProcessEventsFromSource(ProcessEvents):
         self.source = self._get_source()
 
         self.progress = progress
+        self.limit = None
 
     def _get_or_create_group(self, file, group):
         """Get or create a group in the datafile"""
@@ -946,6 +947,7 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
         self.source = self._get_source()
 
         self.progress = progress
+        self.limit = None
 
         if station is None:
             self.station = None

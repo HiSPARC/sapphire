@@ -4,7 +4,6 @@ from urllib import urlretrieve
 
 import tables
 import datetime
-from mock import patch
 
 from sapphire import esd
 
@@ -15,6 +14,8 @@ test_data_coincidences_path = os.path.join(self_path,
                                            'test_data/esd_coincidence_data.h5')
 events_source = os.path.join(self_path, 'test_data/events-s501-20120101.tsv')
 weather_source = os.path.join(self_path, 'test_data/weather-s501-20120101.tsv')
+coincidences_source = os.path.join(self_path,
+                                   'test_data/coincidences-20160310.tsv')
 
 
 def create_tempfile_path():
@@ -48,18 +49,23 @@ def perform_esd_download_data(filename):
                           progress=False)
 
 
-@patch.object(esd.api.Network, 'station_numbers')
-def perform_download_coincidences(filename, mock_esd):
-    """Load data from esd/api to h5 (filename)"""
-
-    mock_esd.return_value = range(501, 512)
+def perform_load_coincidences(filename):
+    """Load coincidence data from tsv (source) to h5 (filename)"""
 
     filters = tables.Filters(complevel=1)
-    start = datetime.datetime(2012, 1, 1, 0, 0, 0)
-    eind = datetime.datetime(2012, 1, 1, 0, 2, 0)
+    with tables.open_file(filename, 'w', filters=filters) as datafile:
+        esd.load_coincidences(datafile, coincidences_source)
+
+
+def perform_download_coincidences(filename):
+    """Load data from esd/api to h5 (filename)"""
+
+    filters = tables.Filters(complevel=1)
+    start = datetime.datetime(2016, 3, 10, 0, 0, 0)
+    eind = datetime.datetime(2016, 3, 10, 0, 1, 0)
 
     with tables.open_file(filename, 'w', filters=filters) as datafile:
-        esd.download_coincidences(datafile, cluster='Science Park',
+        esd.download_coincidences(datafile, stations=[501, 510],
                                   start=start, end=eind, n=2, progress=False)
 
 
@@ -69,11 +75,15 @@ def create_and_store_test_data():
     perform_esd_download_data(test_data_path)
     perform_download_coincidences(test_data_coincidences_path)
     urlretrieve('http://data.hisparc.nl/data/501/weather/'
-                '?download=True&start=2012-01-01&end=2012-01-01+00%3A01%3A00',
+                '?download=True&start=2012-01-01&end=2012-01-01+00:01:00',
                 weather_source)
     urlretrieve('http://data.hisparc.nl/data/501/events/'
-                '?download=True&start=2012-01-01&end=2012-01-01+00%3A01%3A00',
+                '?download=True&start=2012-01-01&end=2012-01-01+00:01:00',
                 events_source)
+    urlretrieve('http://data.hisparc.nl/data/network/coincidences/'
+                '?download=True&start=2016-03-10&end=2016-03-10+00:01:00'
+                '&stations=501,+510&n=2',
+                coincidences_source)
 
 
 if __name__ == '__main__':

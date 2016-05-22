@@ -88,13 +88,15 @@ class API(object):
         'zenith': 'zenith/{station_number}/{year}/{month}/{day}/',
         'barometer': 'barometer/{station_number}/{year}/{month}/{day}/',
         'temperature': 'temperature/{station_number}/{year}/{month}/{day}/',
+        'electronics': 'electronics/{station_number}/',
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
         'gps': 'gps/{station_number}/',
         'trigger': 'trigger/{station_number}/',
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/',
-        'station_timing_offsets': 'station_timing_offsets/{station_1}/{station_2}/'}
+        'station_timing_offsets': 'station_timing_offsets/{station_1}/'
+                                  '{station_2}/'}
 
     def __init__(self, force_fresh=False, force_stale=False):
         """Initialize API class
@@ -134,7 +136,8 @@ class API(object):
                     raise Exception('Couldn\'t find requested data locally.')
                 raise Exception('Couldn\'t get requested data from server '
                                 'nor find it locally.')
-            warnings.warn('Using local data. Possibly outdated.')
+            if not self.force_stale:
+                warnings.warn('Using local data. Possibly outdated.')
 
         return data
 
@@ -167,7 +170,8 @@ class API(object):
                     raise Exception('Couldn\'t find requested data locally.')
                 raise Exception('Couldn\'t get requested data from server '
                                 'nor find it locally.')
-            warnings.warn('Using local data. Possibly outdated.')
+            if not self.force_stale:
+                warnings.warn('Using local data. Possibly outdated.')
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
@@ -433,7 +437,8 @@ class Network(API):
 
         """
         columns = ('n', 'counts')
-        path = self.src_urls['coincidencenumber'].format(year=year, month=month,
+        path = self.src_urls['coincidencenumber'].format(year=year,
+                                                         month=month,
                                                          day=day)
         return self._get_tsv(path, names=columns)
 
@@ -449,7 +454,7 @@ class Network(API):
             raise Exception('Invalid subcluster number, '
                             'must be multiple of 100.')
 
-    def uptime(self, stations=None, start=None, end=None):
+    def uptime(self, stations, start=None, end=None):
         """Get number of hours which stations have been simultaneously active
 
         Using hourly eventrate data the number of hours in which the given
@@ -463,15 +468,12 @@ class Network(API):
         """
         data = {}
 
-        if stations is None:
-            assert False
-            return 0
-
         if not hasattr(stations, '__len__'):
             stations = [stations]
 
         for sn in stations:
-            data[sn] = Station(sn).event_time()
+            data[sn] = Station(sn, force_fresh=self.force_fresh,
+                               force_stale=self.force_stale).event_time()
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
@@ -521,7 +523,7 @@ class Station(API):
             raise Exception('Can not force fresh and stale simultaneously.')
         if station not in Network(force_fresh=force_fresh,
                                   force_stale=force_stale).station_numbers():
-            raise Exception('Station number not valid.')
+            warnings.warn('Possibly invalid station, or without config.')
         self.force_fresh = force_fresh
         self.force_stale = force_stale
         self.station = station
@@ -562,7 +564,8 @@ class Station(API):
         if date is None:
             return self.info['scintillators']
         else:
-            station = Station(self.station, date)
+            station = Station(self.station, date, self.force_fresh,
+                              self.force_stale)
             return station.detectors()
 
     def location(self, date=None):
@@ -761,6 +764,30 @@ class Station(API):
         return self._get_tsv(path, names=columns)
 
     @lazy
+    def electronics(self):
+        """Get the electronics version data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'master', 'slave', 'master_fpga', 'slave_fpga')
+        path = self.src_urls['electronics'].format(station_number=self.station)
+        return self._get_tsv(path, names=columns)
+
+    def electronic(self, timestamp):
+        """Get electronics version data for specific timestamp
+
+        :param timestamp: timestamp for which the values are valid.
+        :return: list of values for given timestamp.
+
+        """
+        electronics = self.electronics
+        idx = get_active_index(electronics['timestamp'], timestamp)
+        electronic = [electronics[idx][field] for field in
+                      ('master', 'slave', 'master_fpga', 'slave_fpga')]
+        return electronic
+
+    @lazy
     def voltages(self):
         """Get the PMT voltage data
 
@@ -772,9 +799,9 @@ class Station(API):
         return self._get_tsv(path, names=columns)
 
     def voltage(self, timestamp):
-        """Get PMT coltage data for specific timestamp
+        """Get PMT voltage data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
@@ -797,7 +824,7 @@ class Station(API):
     def current(self, timestamp):
         """Get PMT current data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
@@ -821,7 +848,7 @@ class Station(API):
         """Get GPS location for specific timestamp
 
         :param timestamp: optional timestamp or datetime object for which
-            the value is valid.
+            the values are valid.
         :return: dictionary with the values for given timestamp.
 
         """
@@ -853,7 +880,7 @@ class Station(API):
     def trigger(self, timestamp):
         """Get trigger config for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: thresholds and trigger values for given timestamp.
 
         """
@@ -885,7 +912,7 @@ class Station(API):
     def station_layout(self, timestamp):
         """Get station layout data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of coordinates for given timestamp.
 
         """
@@ -911,7 +938,7 @@ class Station(API):
     def detector_timing_offset(self, timestamp):
         """Get detector timing offset data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
@@ -940,7 +967,7 @@ class Station(API):
             station_2, station_1 = self.station, reference_station
             toggle_sign = False
 
-        columns = ('timestamp', 'offset')
+        columns = ('timestamp', 'offset', 'rchi2')
         base = self.src_urls['station_timing_offsets']
         path = base.format(station_1=station_1, station_2=station_2)
         data = self._get_tsv(path, names=columns)
@@ -959,6 +986,7 @@ class Station(API):
         station_timing_offsets = self.station_timing_offsets(reference_station)
         idx = get_active_index(station_timing_offsets['timestamp'],
                                timestamp)
-        station_timing_offset = station_timing_offsets[idx]['offset']
+        station_timing_offset = (station_timing_offsets[idx]['offset'],
+                                 station_timing_offsets[idx]['rchi2'])
 
         return station_timing_offset

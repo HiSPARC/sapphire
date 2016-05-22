@@ -26,5 +26,9 @@
     {
         "name": "Leidschendam-Voorburg", 
         "number": 3600
+    }, 
+    {
+        "name": "Den Haag", 
+        "number": 3700
     }
 ]

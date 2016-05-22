@@ -72,6 +72,7 @@ from .analysis.process_events import (ProcessEvents, ProcessEventsFromSource,
 from .analysis.reconstructions import (ReconstructESDEvents,
                                        ReconstructESDEventsFromSource,
                                        ReconstructESDCoincidences)
+from .analysis.time_deltas import ProcessTimeDeltas
 from .api import Network, Station
 from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
 from .corsika.corsika_queries import CorsikaQuery
@@ -82,7 +83,7 @@ from .simulations.groundparticles import (GroundParticlesSimulation,
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
 from .transformations.celestial import zenithazimuth_to_equatorial
-
+from .transformations.clock import gps_to_datetime, datetime_to_gps
 
 __all__ = ['analysis',
            'api',
@@ -106,6 +107,7 @@ __all__ = ['analysis',
            'ProcessWeather', 'ProcessWeatherFromSource',
            'ReconstructESDEvents', 'ReconstructESDEventsFromSource',
            'ReconstructESDCoincidences',
+           'ProcessTimeDeltas',
            'Network', 'Station',
            'HiSPARCStations', 'HiSPARCNetwork', 'ScienceParkCluster',
            'CorsikaQuery',
@@ -114,5 +116,6 @@ __all__ = ['analysis',
            'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
-           'zenithazimuth_to_equatorial'
+           'zenithazimuth_to_equatorial',
+           'gps_to_datetime', 'datetime_to_gps'
            ]

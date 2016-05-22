@@ -19,3 +19,4 @@ Data analysis
    analysis/process_events
    analysis/process_traces
    analysis/reconstructions
+   analysis/time_deltas

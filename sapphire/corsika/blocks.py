@@ -14,6 +14,11 @@ import numpy
 
 import units
 import particles
+try:
+    from numba import jit
+except ImportError:
+    def jit(func):
+        return func
 
 
 # All sizes are in bytes
@@ -46,9 +51,15 @@ class Format(object):
         # number of particle records
         # With the unthinned option, each of these is 7 fields long
         # for a total of 39 records per sub block
-        self.particle_format = '7f'
+        self.fields_per_particle = 7
+        self.particle_format = '%df' % self.fields_per_particle
         self.particle_size = struct.calcsize(self.particle_format)
         self.particles_per_subblock = 39
+
+        # Full particle sub block
+        self.particles_format = (self.particle_format *
+                                 self.particles_per_subblock)
+        self.particles_size = self.particle_size * self.particles_per_subblock
 
 
 # From here on, things should not depend on the field size as everything is
@@ -381,6 +392,7 @@ class EventEnd(object):
         self.n_preshower_EM_particles = subblock[266]
 
 
+@jit
 def particle_data(subblock):
     """Get particle data.
 
