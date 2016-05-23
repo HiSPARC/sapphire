@@ -262,11 +262,11 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
                 datetime(2015, 1, 1),
                 datetime(2015, 1, 5),
                 datetime(2015, 1, 10))
-        combinations = [(datetime(2015, 1, 1), 7, datetime(2015, 1, 2), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 3), 7, datetime(2015, 1, 2), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 3).date(), 7, datetime(2015, 1, 2), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 5), 7, datetime(2015, 1, 6), datetime(2015, 1, 9)),
-                        (datetime(2015, 1, 10), 7, datetime(2015, 1, 6), datetime(2015, 1, 10))]
+        combinations = [(datetime(2015, 1, 1), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+                        (datetime(2015, 1, 3), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+                        (datetime(2015, 1, 3).date(), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+                        (datetime(2015, 1, 5), 7, datetime(2015, 1, 5), datetime(2015, 1, 9)),
+                        (datetime(2015, 1, 10), 7, datetime(2015, 1, 5), datetime(2015, 1, 10))]
         for d, days, ref_left, ref_right in combinations:
             left, right = self.off._get_left_and_right_bounds(cuts, d, days)
             self.assertEqual(left, ref_left)
