@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from itertools import tee, izip, combinations, chain
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
-                   sqrt, abs, sum, power, concatenate)
+                   sqrt, abs, sum, power)
 from scipy.optimize import curve_fit
 
 from ..clusters import HiSPARCStations, HiSPARCNetwork
