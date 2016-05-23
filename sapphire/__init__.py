@@ -83,7 +83,7 @@ from .simulations.groundparticles import (GroundParticlesSimulation,
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
 from .transformations.celestial import zenithazimuth_to_equatorial
-
+from .transformations.clock import gps_to_datetime, datetime_to_gps
 
 __all__ = ['analysis',
            'api',
@@ -116,5 +116,6 @@ __all__ = ['analysis',
            'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
-           'zenithazimuth_to_equatorial'
+           'zenithazimuth_to_equatorial',
+           'gps_to_datetime', 'datetime_to_gps'
            ]
