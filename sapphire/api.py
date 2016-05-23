@@ -853,7 +853,7 @@ class Station(API):
 
         """
         if timestamp is None:
-            timestamp = process_time(self.date)
+            timestamp = process_time(datetime.date.today())
         else:
             timestamp = process_time(timestamp)
         locations = self.gps_locations
