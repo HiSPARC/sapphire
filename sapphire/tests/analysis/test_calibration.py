@@ -233,14 +233,14 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
             self.assertEqual(self.off._determine_interval(r), ref_int)
 
     def test_get_cuts(self):
-        gps_station = (datetime_to_gps(datetime(2014, 1, 1)),
-                       datetime_to_gps(datetime(2014, 3, 1)))
-        gps_ref_station = (datetime_to_gps(datetime(2014, 1, 5)),
-                           datetime_to_gps(datetime(2014, 3, 5)))
-        elec_station = (datetime_to_gps(datetime(2014, 1, 3)),
-                        datetime_to_gps(datetime(2014, 3, 5)))
-        elec_ref_station = (datetime_to_gps(datetime(2014, 1, 9)),
-                            datetime_to_gps(datetime(2014, 3, 15)))
+        gps_station = (datetime_to_gps(datetime(2014, 1, 1, 10, 3)),
+                       datetime_to_gps(datetime(2014, 3, 1, 11, 32)))
+        gps_ref_station = (datetime_to_gps(datetime(2014, 1, 5, 0, 1, 1)),
+                           datetime_to_gps(datetime(2014, 3, 5, 3, 34, 4)))
+        elec_station = (datetime_to_gps(datetime(2014, 1, 3, 3, 34, 3)),
+                        datetime_to_gps(datetime(2014, 3, 5, 23, 59, 59)))
+        elec_ref_station = (datetime_to_gps(datetime(2014, 1, 9, 0, 0, 0)),
+                            datetime_to_gps(datetime(2014, 3, 15, 1, 2, 3)))
         gps_mock = Mock()
         elec_mock = Mock()
 
@@ -264,7 +264,6 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
     def test_get_left_and_right_bounds(self):
         cuts = (datetime(2014, 1, 1),
                 datetime(2015, 1, 1),
-
                 datetime(2015, 1, 5),
                 datetime(2015, 1, 10))
         combinations = [(datetime(2015, 1, 1), 7, datetime(2015, 1, 2), datetime(2015, 1, 4)),

@@ -158,6 +158,7 @@ class DetermineStationTimingOffsets(object):
                             self._get_electronics_timestamps(ref_station)))
         cuts.sort()
         cuts = map(gps_to_datetime, cuts)
+        cuts = map(self._datetime, cuts)
         today = self._datetime(datetime.now())
         cuts = concatenate((cuts, [today]))
         return cuts
