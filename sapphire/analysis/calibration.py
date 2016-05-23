@@ -9,7 +9,7 @@ Determine the PMT response curve to correct the detected number of MIPs.
 from __future__ import division
 
 from datetime import datetime, timedelta
-from itertools import tee, izip, combinations
+from itertools import tee, izip, combinations, chain
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
                    sqrt, abs, sum, power, concatenate)
@@ -152,15 +152,13 @@ class DetermineStationTimingOffsets(object):
         :return: list of datetime objects
 
         """
-        cuts = concatenate((self._get_gps_timestamps(station),
-                            self._get_gps_timestamps(ref_station),
-                            self._get_electronics_timestamps(station),
-                            self._get_electronics_timestamps(ref_station)))
-        cuts.sort()
-        cuts = map(gps_to_datetime, cuts)
-        cuts = map(self._datetime, cuts)
+        cuts = {self._datetime(gps_to_datetime(ts))
+                for ts in chain(self._get_gps_timestamps(station),
+                                self._get_gps_timestamps(ref_station),
+                                self._get_electronics_timestamps(station),
+                                self._get_electronics_timestamps(ref_station))}
         today = self._datetime(datetime.now())
-        cuts = concatenate((cuts, [today]))
+        cuts = sorted(list(cuts) + [today])
         return cuts
 
     @memoize

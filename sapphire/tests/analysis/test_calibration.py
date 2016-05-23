@@ -255,7 +255,7 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         elec_mock.assert_has_calls([call(sentinel.ref_station), call(sentinel.station)], any_order=True)
         gps_mock.assert_has_calls([call(sentinel.ref_station), call(sentinel.station)], any_order=True)
 
-        self.assertEqual(len(cuts), 9)
+        self.assertEqual(len(cuts), 8)
         self.assertItemsEqual(sorted(cuts), cuts)
         self.assertEqual(cuts[0], datetime(2014, 1, 1))
         today = datetime.now()
