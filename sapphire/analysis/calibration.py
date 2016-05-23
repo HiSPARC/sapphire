@@ -158,6 +158,7 @@ class DetermineStationTimingOffsets(object):
                             self._get_electronics_timestamps(ref_station)))
         cuts.sort()
         cuts = map(gps_to_datetime, cuts)
+        cuts = map(self._datetime, cuts)
         today = self._datetime(datetime.now())
         cuts = concatenate((cuts, [today]))
         return cuts
@@ -206,11 +207,11 @@ class DetermineStationTimingOffsets(object):
         left = get_active_index(cuts, self._datetime(date))
 
         if left == len(cuts) - 1:
-            lower_bound = cuts[left - 1] + timedelta(1)
+            lower_bound = cuts[left - 1]
             upper_bound = cuts[-1]  # include last day (today) in interval
         else:
             right = min(left + 1, len(cuts) - 1)
-            lower_bound = cuts[left] + timedelta(1)
+            lower_bound = cuts[left]
             upper_bound = cuts[right] - timedelta(1)
 
         step = timedelta(round(days / 2))
