@@ -531,13 +531,13 @@ class StationTests(unittest.TestCase):
         names = ('timestamp', 'offset', 'rchi2')
         self.assertRaises(Exception, self.station.station_timing_offsets, STATION)
         data = self.station.station_timing_offsets(STATION - 1)
-        self.assertAlmostEqual(data[0]['offset'], 7.)
+        self.assertEqual(data[0]['offset'], 7.)
         self.assertEqual(data.dtype.names, names)
         self.assertEqual(len(data), 4)
         self.assertEqual(len(data[0]), 3)
         # check for automatic sorting of station numbers
         data = self.station.station_timing_offsets(STATION + 1)
-        self.assertAlmostEqual(data[0]['offset'], -7.)
+        self.assertEqual(data[0]['offset'], -7.)
 
     @patch.object(api, 'urlopen')
     def test_laziness_station_timing_offsets(self, mock_urlopen):
