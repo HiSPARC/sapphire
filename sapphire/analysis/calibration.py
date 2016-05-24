@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from itertools import tee, izip, combinations, chain
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
-                   sqrt, abs, sum, power)
+                   sqrt, abs, sum)
 from scipy.optimize import curve_fit
 
 from ..clusters import HiSPARCStations, HiSPARCNetwork
@@ -78,18 +78,19 @@ def determine_detector_timing_offset(dt, dz=0):
 
     :param dt: a list of time differences between detectors (t - t_ref).
     :param dz: height difference between the detector (z - z_ref).
-    :return: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data corrected for height, and
+             the error of the mean.
 
     """
     if not len(dt):
         return nan, nan
     p = round_in_base(percentile(dt.compress(abs(dt) < 100), [0.5, 99.5]), 2.5)
     bins = arange(p[0] + 1.25, p[1], 2.5)
-    detector_offset, rchi2 = fit_timing_offset(dt, bins)
+    detector_offset, detector_offset_error = fit_timing_offset(dt, bins)
     detector_offset += dz / c
     if abs(detector_offset) > 100:
         detector_offset = nan
-    return detector_offset, rchi2
+    return detector_offset, detector_offset_error
 
 
 class DetermineStationTimingOffsets(object):
@@ -332,18 +333,21 @@ def determine_station_timing_offset(dt, dz=0):
 
     :param dt: a list of time differences between stations (t - t_ref).
     :param dz: height difference between the stations (z - z_ref).
-    :return: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data corrected for height, and
+             the error of the mean.
 
     """
     if not len(dt):
         return nan, nan
     p = percentile(dt, [0.5, 99.5])
-    bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
-    station_offset, rchi2 = fit_timing_offset(dt, bins)
+    # Bins should at least be 1 ns wide, on average at least 4 counts per bin
+    # and at most 200 bins.
+    bins = linspace(p[0], p[1], min(int(p[1] - p[0]), len(dt) / 4, 200))
+    station_offset, station_offset_error = fit_timing_offset(dt, bins)
     station_offset += dz / c
     if abs(station_offset) > 1000:
         return nan, nan
-    return station_offset, rchi2
+    return station_offset, station_offset_error
 
 
 def fit_timing_offset(dt, bins):
@@ -351,7 +355,7 @@ def fit_timing_offset(dt, bins):
 
     :param dt: a list of time differences between stations (t - t_ref).
     :param bins: bins edges to use for the histogram.
-    :return: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data and the error of the mean.
 
     """
     y, bins = histogram(dt, bins=bins)
@@ -361,12 +365,11 @@ def fit_timing_offset(dt, bins):
         popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)),
                                sigma=sigma, absolute_sigma=False)
         offset = popt[1]
-        y_fit = gauss(x, *popt)
-        n_dof = len(x) - len(popt)
-        rchi2 = sum(power((y - y_fit) / sigma, 2)) / n_dof
+        width = popt[2]
+        offset_error = width / sqrt(sum(y))
     except RuntimeError:
-        offset, rchi2 = nan, nan
-    return offset, rchi2
+        offset, offset_error = nan, nan
+    return offset, offset_error
 
 
 def determine_best_reference(filters):
