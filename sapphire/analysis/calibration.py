@@ -78,18 +78,19 @@ def determine_detector_timing_offset(dt, dz=0):
 
     :param dt: a list of time differences between detectors (t - t_ref).
     :param dz: height difference between the detector (z - z_ref).
-    :return: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data corrected for height, and
+             the error of the mean.
 
     """
     if not len(dt):
         return nan, nan
     p = round_in_base(percentile(dt.compress(abs(dt) < 100), [0.5, 99.5]), 2.5)
     bins = arange(p[0] + 1.25, p[1], 2.5)
-    detector_offset, rchi2 = fit_timing_offset(dt, bins)
+    detector_offset, detector_offset_error = fit_timing_offset(dt, bins)
     detector_offset += dz / c
     if abs(detector_offset) > 100:
         detector_offset = nan
-    return detector_offset, rchi2
+    return detector_offset, detector_offset_error
 
 
 class DetermineStationTimingOffsets(object):
