@@ -340,7 +340,7 @@ def determine_station_timing_offset(dt, dz=0):
         return nan, nan
     p = percentile(dt, [0.5, 99.5])
     # Bins should at least be 1 ns wide, on average at least 4 counts per bin
-    # and at most 200 bins.
+    # and at most 200 bins.
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), len(dt) / 4, 200))
     station_offset, station_offset_error = fit_timing_offset(dt, bins)
     station_offset += dz / c
