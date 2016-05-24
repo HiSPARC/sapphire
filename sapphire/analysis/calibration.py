@@ -307,8 +307,8 @@ class DetermineStationTimingOffsets(object):
         station_pairs = self.get_station_pairs_within_max_distance(date)
         offsets = []
         for station, ref_station in station_pairs:
-            s_off, rchi2 = determine_station_timing_offset(date, station,
-                                                           ref_station)
+            s_off, rchi2 = self.determine_station_timing_offset(date, station,
+                                                                ref_station)
             offsets.append((station, ref_station, s_off, rchi2))
         return offsets
 
