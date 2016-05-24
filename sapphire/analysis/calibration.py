@@ -255,7 +255,7 @@ class DetermineStationTimingOffsets(object):
         :param date: date for which to determine offset as datetime.date.
         :param station: station number.
         :param ref_station: reference station number.
-        :return: station offset and reduced chi squared.
+        :return: station offset and error.
 
         """
         date = self._datetime(date)
@@ -264,11 +264,11 @@ class DetermineStationTimingOffsets(object):
         r, dz = self._get_r_dz(date, station, ref_station)
         dt = self.read_dt(station, ref_station, left, right)
         if len(dt) < self.MIN_LEN_DT:
-            s_off, rchi2 = nan, nan
+            s_off, error = nan, nan
         else:
-            s_off, rchi2 = determine_station_timing_offset(dt, dz)
+            s_off, error = determine_station_timing_offset(dt, dz)
 
-        return s_off, rchi2
+        return s_off, error
 
     def determine_station_timing_offsets(self, station, ref_station,
                                          start=None, end=None):
@@ -278,7 +278,7 @@ class DetermineStationTimingOffsets(object):
         :param ref_station: reference station number.
         :param start: datetime.date object.
         :param end: datetime.date object.
-        :return: list of station offsets as tuple (timestamp, offset, rchi2).
+        :return: list of station offsets as tuple (timestamp, offset, error).
 
         """
         if start is None:
@@ -292,9 +292,9 @@ class DetermineStationTimingOffsets(object):
         for date, _ in pbar(datetime_range(start, end), show=self.progress,
                             length=length):
             ts0 = datetime_to_gps(date)
-            s_off, rchi2 = self.determine_station_timing_offset(date, station,
+            s_off, error = self.determine_station_timing_offset(date, station,
                                                                 ref_station)
-            offsets.append((ts0, s_off, rchi2))
+            offsets.append((ts0, s_off, error))
         return offsets
 
     def determine_station_timing_offsets_for_date(self, date):
@@ -302,15 +302,15 @@ class DetermineStationTimingOffsets(object):
 
         :param date: date for which to determine offsets as datetime.date.
         :return: list of station offsets as tuple
-                 (station, ref_station, offset, rchi2).
+                 (station, ref_station, offset, error).
 
         """
         station_pairs = self.get_station_pairs_within_max_distance(date)
         offsets = []
         for station, ref_station in station_pairs:
-            s_off, rchi2 = self.determine_station_timing_offset(date, station,
+            s_off, error = self.determine_station_timing_offset(date, station,
                                                                 ref_station)
-            offsets.append((station, ref_station, s_off, rchi2))
+            offsets.append((station, ref_station, s_off, error))
         return offsets
 
     def get_station_pairs_within_max_distance(self, date=None):
