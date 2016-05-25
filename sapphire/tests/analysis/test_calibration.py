@@ -1,10 +1,11 @@
 import unittest
-
 from mock import patch, sentinel, MagicMock, Mock, call
-from numpy import isnan, nan, array, all
 from datetime import datetime, date
 
-import sapphire
+from numpy import isnan, nan, array, all, std
+from numpy.random import uniform, normal
+
+from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration
 from sapphire.transformations.clock import datetime_to_gps
 from sapphire.utils import c
@@ -169,6 +170,26 @@ class SplitDatetimeRangeTests(unittest.TestCase):
         self.assertEqual(result, [(1, 2), (2, 3), (3, 4)])
 
 
+class FitTimingOffsetTests(unittest.TestCase):
+
+    def test_fit_timing_offset(self):
+        deviations = []
+        for _ in xrange(40):
+            center = uniform(-40, 40)
+            sigma = uniform(10, 30)
+            N = 3e4
+            lower = center - 3 * sigma
+            upper = center + 3 * sigma
+            bins = range(int(lower), int(upper), 1)
+            dt = normal(center, sigma, N)
+            offset, error = calibration.fit_timing_offset(dt, bins)
+            deviations.append((center - offset) / error)
+            # Test if determined offset close to the actual center.
+            self.assertLess(abs(center - offset), 4 * error)
+        # Test if estimated error correctly represents the errors in offsets.
+        self.assertLess(abs(std(deviations) - 1), 0.3)
+
+
 class DetermineStationTimingOffsetsTests(unittest.TestCase):
 
     def setUp(self):
@@ -179,11 +200,11 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.off.progress, sentinel.progress)
         self.assertEqual(self.off.data, sentinel.data)
-        self.assertIsInstance(self.off.cluster, sapphire.clusters.HiSPARCStations)
+        self.assertIsInstance(self.off.cluster, HiSPARCStations)
 
     def test_init_network(self):
         off = calibration.DetermineStationTimingOffsets(force_stale=True)
-        self.assertIsInstance(off.cluster, sapphire.clusters.HiSPARCNetwork)
+        self.assertIsInstance(off.cluster, HiSPARCNetwork)
 
     def test_read_dt(self):
         self.off.data = MagicMock()
