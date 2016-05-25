@@ -159,6 +159,11 @@ class SplitDatetimeRangeTests(unittest.TestCase):
         self.assertEqual(begin, start)
         self.assertEqual(end, end_100days)
 
+        # number of steps == 0
+        result = list(calibration.datetime_range(start, start, 1))
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result, [(start, start)])
+
     def test_pairwise(self):
         result = list(calibration.pairwise([1, 2, 3, 4]))
         self.assertEqual(result, [(1, 2), (2, 3), (3, 4)])
