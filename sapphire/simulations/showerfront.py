@@ -235,7 +235,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
     def _prepare_cluster_for_shower(self, x, y, alpha):
         """Prepare the cluster object for the simulation of a shower.
 
-        Rotate and translate the cluster so that (0, 0) coincides with the
+        Rotate and translate the cluster so that (0, 0, 0) coincides with the
         shower core position and 'East' coincides with the shower azimuth
         direction.
 

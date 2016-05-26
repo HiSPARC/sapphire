@@ -29,6 +29,9 @@ from ..utils import pbar, norm_angle, c, make_relative, vector_length
 from ..api import Station
 
 
+NO_OFFSET = [0., 0., 0., 0.]
+
+
 class EventDirectionReconstruction(object):
 
     """Reconstruct direction for station events
@@ -47,8 +50,8 @@ class EventDirectionReconstruction(object):
         self.fit = RegressionAlgorithm3D
         self.station = station
 
-    def reconstruct_event(self, event, detector_ids=None,
-                          offsets=[0., 0., 0., 0.]):
+    def reconstruct_event(self, event, detector_ids=None, offsets=NO_OFFSET,
+                          initial={}):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -59,6 +62,7 @@ class EventDirectionReconstruction(object):
             column names in the esd data.
         :param offsets: time offsets for each detector or a
             :class:`~sapphire.api.Station` object.
+        :param intial: dictionary with already fitted shower parameters.
         :return: theta, phi, and detector ids.
 
         """
@@ -78,15 +82,15 @@ class EventDirectionReconstruction(object):
                 z.append(dz)
                 ids.append(id)
         if len(t) == 3:
-            theta, phi = self.direct.reconstruct_common(t, x, y, z)
+            theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
         elif len(t) > 3:
-            theta, phi = self.fit.reconstruct_common(t, x, y, z)
+            theta, phi = self.fit.reconstruct_common(t, x, y, z, initial)
         else:
             theta, phi = (nan, nan)
         return theta, phi, ids
 
-    def reconstruct_events(self, events, detector_ids=None,
-                           offsets=[0., 0., 0., 0.], progress=True):
+    def reconstruct_events(self, events, detector_ids=None, offsets=NO_OFFSET,
+                           progress=True, initials=[]):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
@@ -94,11 +98,16 @@ class EventDirectionReconstruction(object):
         :param detector_ids: detectors to use for the reconstructions.
         :param offsets: time offsets for each detector or a
             :class:`~sapphire.api.Station` object.
+        :param progress: if True shows a progress bar.
+        :param intials: list of dictionaries with already reconstructed shower
+                        parameters.
         :return: list of theta, phi, and detector ids.
 
         """
-        angles = [self.reconstruct_event(event, detector_ids, offsets)
-                  for event in pbar(events, show=progress)]
+        events = pbar(events, show=progress)
+        events_init = izip_longest(events, initials)
+        angles = [self.reconstruct_event(event, detector_ids, offsets, initial)
+                  for event, initial in events_init]
         if len(angles):
             theta, phi, ids = zip(*angles)
         else:
@@ -113,7 +122,7 @@ class CoincidenceDirectionReconstruction(object):
     This class is aware of 'coincidences' and 'clusters'.  Initialize
     this class with a 'cluster' and you can reconstruct a coincidence
     using :meth:`reconstruct_coincidence`. To use other algorithms
-    overwrite the ``direct`` and ``fit`` attributes.
+    overwrite the ``direct``,``fit``, and ``curved`` attributes.
 
     :param cluster: :class:`~sapphire.clusters.BaseCluster` object.
 
@@ -122,10 +131,11 @@ class CoincidenceDirectionReconstruction(object):
     def __init__(self, cluster):
         self.direct = DirectAlgorithmCartesian3D
         self.fit = RegressionAlgorithm3D
+        self.curved = CurvedRegressionAlgorithm3D()
         self.cluster = cluster
 
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
-                                offsets={}):
+                                offsets={}, initial={}):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of three
@@ -135,11 +145,10 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
+        :param intial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
         """
-        no_offset = [0., 0., 0., 0.]
-
         if len(coincidence_events) < 3:
             return nan, nan, []
 
@@ -158,7 +167,7 @@ class CoincidenceDirectionReconstruction(object):
             if station_numbers is not None:
                 if station_number not in station_numbers:
                     continue
-            t_off = offsets.get(station_number, no_offset)
+            t_off = offsets.get(station_number, NO_OFFSET)
             station = self.cluster.get_station(station_number)
             t_first = station_arrival_time(event, ets0, offsets=t_off,
                                            station=station)
@@ -170,17 +179,19 @@ class CoincidenceDirectionReconstruction(object):
                 z.append(sz)
                 nums.append(station_number)
 
-        if len(t) == 3:
-            theta, phi = self.direct.reconstruct_common(t, x, y, z)
+        if len(t) >= 3 and 'core_x' in intial and 'core_y' in initial:
+            theta, phi = self.curved.reconstruct_common(t, x, y, z, initial)
+        elif len(t) == 3:
+            theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
         elif len(t) > 3:
-            theta, phi = self.fit.reconstruct_common(t, x, y, z)
+            theta, phi = self.fit.reconstruct_common(t, x, y, z, initial)
         else:
             theta, phi = (nan, nan)
 
         return theta, phi, nums
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 offsets={}, progress=True):
+                                 offsets={}, progress=True, initials=[]):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidence events, each consisting
@@ -190,12 +201,17 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
+        :param progress: if True shows a progress bar.
+        :param intials: list of dictionaries with already reconstructed shower
+                        parameters.
         :return: list of theta, phi, and station numbers.
 
         """
+        coincidences = pbar(coincidences, show=progress)
+        coin_init = izip_longest(coincidences, initials)
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
                                                offsets)
-                  for coincidence in pbar(coincidences, show=progress)]
+                  for coincidence, initial in coin_init]
         if len(angles):
             theta, phi, nums = zip(*angles)
         else:
@@ -214,7 +230,7 @@ class CoincidenceDirectionReconstructionDetectors(
     """
 
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
-                                offsets={}):
+                                offsets={}, initial={}):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of three
@@ -224,11 +240,10 @@ class CoincidenceDirectionReconstructionDetectors(
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
+        :param intial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
         """
-        no_offset = [0., 0., 0., 0.]
-
         if len(coincidence_events) < 3:
             return nan, nan, []
 
@@ -247,7 +262,7 @@ class CoincidenceDirectionReconstructionDetectors(
             if station_numbers is not None:
                 if station_number not in station_numbers:
                     continue
-            t_off = offsets.get(station_number, no_offset)
+            t_off = offsets.get(station_number, NO_OFFSET)
             station = self.cluster.get_station(station_number)
             t_detectors = relative_detector_arrival_times(event, ets0,
                                                           offsets=t_off,
@@ -262,10 +277,12 @@ class CoincidenceDirectionReconstructionDetectors(
             if not all(isnan(t_detectors)):
                 nums.append(station_number)
 
-        if len(t) == 3:
-            theta, phi = self.direct.reconstruct_common(t, x, y, z)
+        if len(t) >= 3 and 'core_x' in intial and 'core_y' in initial:
+            theta, phi = self.curved.reconstruct_common(t, x, y, z, initial)
+        elif len(t) == 3:
+            theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
         elif len(t) > 3:
-            theta, phi = self.fit.reconstruct_common(t, x, y, z)
+            theta, phi = self.fit.reconstruct_common(t, x, y, z, initial)
         else:
             theta, phi = (nan, nan)
 

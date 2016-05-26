@@ -16,7 +16,7 @@
 
 """
 from __future__ import division
-import itertools
+from itertools import izip_longest, combinations
 import warnings
 
 from numpy import isnan, nan, cos, sqrt, mean, array
@@ -42,7 +42,7 @@ class EventCoreReconstruction(object):
         self.estimator = CenterMassAlgorithm
         self.station = station
 
-    def reconstruct_event(self, event, detector_ids=None):
+    def reconstruct_event(self, event, detector_ids=None, initial={}):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -51,6 +51,7 @@ class EventCoreReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
+        :param intial: dictionary with already reconstructed shower parameters.
         :return: (x, y) core position in m.
 
         """
@@ -67,22 +68,29 @@ class EventCoreReconstruction(object):
                 y.append(dy)
                 z.append(dz)
         if len(p) >= 3:
-            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z,
+                                                               initial)
         else:
             core_x, core_y = (nan, nan)
         return core_x, core_y
 
-    def reconstruct_events(self, events, detector_ids=None, progress=True):
+    def reconstruct_events(self, events, detector_ids=None, progress=True,
+                           initials=[]):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
+        :param progress: if True shows a progress bar.
+        :param intials: list of dictionaries with already reconstructed shower
+                        parameters.
         :return: (x, y) core positions in m.
 
         """
-        cores = [self.reconstruct_event(event, detector_ids)
-                 for event in pbar(events, show=progress)]
+        events = pbar(events, show=progress)
+        events_init = izip_longest(events, initials)
+        cores = [self.reconstruct_event(event, detector_ids, initial)
+                 for event, initial in events_init]
         if len(cores):
             core_x, core_y = zip(*cores)
         else:
@@ -106,13 +114,15 @@ class CoincidenceCoreReconstruction(object):
         self.estimator = CenterMassAlgorithm
         self.cluster = cluster
 
-    def reconstruct_coincidence(self, coincidence, station_numbers=None):
+    def reconstruct_coincidence(self, coincidence, station_numbers=None,
+                                initial={}):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
+        :param intial: dictionary with already reconstructed shower parameters.
         :return: (x, y) core position in m.
 
         """
@@ -137,24 +147,31 @@ class CoincidenceCoreReconstruction(object):
                 z.append(sz)
 
         if len(p) >= 3:
-            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z,
+                                                               initial)
         else:
             core_x, core_y = (nan, nan)
         return core_x, core_y
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 progress=True):
+                                 progress=True, initials=[]):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidences, each consisting of
                              multiple (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
+        :param progress: if True shows a progress bar.
+        :param intials: list of dictionaries with already reconstructed shower
+                        parameters.
         :return: (x, y) core positions in m.
 
         """
-        cores = [self.reconstruct_coincidence(coincidence, station_numbers)
-                 for coincidence in pbar(coincidences, show=progress)]
+        coincidences = pbar(coincidences, show=progress)
+        coin_init = izip_longest(coincidences, initials)
+        cores = [self.reconstruct_coincidence(coincidence, station_numbers,
+                                              initial)
+                 for coincidence, initial in coin_init]
         if len(cores):
             core_x, core_y = zip(*cores)
         else:
@@ -172,13 +189,15 @@ class CoincidenceCoreReconstructionDetectors(
 
     """
 
-    def reconstruct_coincidence(self, coincidence, station_numbers=None):
+    def reconstruct_coincidence(self, coincidence, station_numbers=None,
+                                initial={}):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
+        :param intial: dictionary with already reconstructed shower parameters.
         :return: (x, y) core position in m.
 
         """
@@ -204,7 +223,8 @@ class CoincidenceCoreReconstructionDetectors(
                     z.append(dz)
 
         if len(p) >= 3:
-            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z)
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z,
+                                                               initial)
         else:
             core_x, core_y = (nan, nan)
         return core_x, core_y
@@ -287,7 +307,7 @@ class AverageIntersectionAlgorithm(object):
                 yhit.append(y[i])
 
         statindex = range(len(phit))
-        subsets = itertools.combinations(statindex, 3)
+        subsets = combinations(statindex, 3)
         m = 3.0  # average value in powerlaw  r ^(-m)  for density
 
         linelist0 = []
@@ -323,7 +343,7 @@ class AverageIntersectionAlgorithm(object):
 
         newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
                                                             initial)
-        subsets = itertools.combinations(statindex, 2)
+        subsets = combinations(statindex, 2)
 
         xpointlist = []
         ypointlist = []
