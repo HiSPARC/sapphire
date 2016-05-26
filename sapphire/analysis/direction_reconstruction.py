@@ -282,8 +282,6 @@ class DirectAlgorithm(object):
 
     Note! The detectors are 0-based.
 
-    Speed of light is in [m / ns]
-
     """
 
     @classmethod
@@ -1228,9 +1226,9 @@ def logic_checks(t, x, y, z):
         dx3 = dx2 - dx1
         dy3 = dy2 - dy1
         dz3 = dz2 - dz1
-        lenvec01 = sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1)
-        lenvec02 = sqrt(dx2 * dx2 + dy2 * dy2 + dz2 * dz2)
-        lenvec12 = sqrt(dx3 * dx3 + dy3 * dy3 + dz3 * dz3)
+        lenvec01 = sqrt(dx1 ** 2 + dy1 ** 2 + dz1 ** 2)
+        lenvec02 = sqrt(dx2 ** 2 + dy2 ** 2 + dz2 ** 2)
+        lenvec12 = sqrt(dx3 ** 2 + dy3 ** 2 + dz3 ** 2)
 
         # area triangle is |cross product|
         area = abs(dx1 * dy2 - dx2 * dy1 + dy1 * dz2 - dy2 * dz1 +

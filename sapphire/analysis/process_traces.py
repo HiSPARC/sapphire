@@ -13,22 +13,22 @@ from lazy import lazy
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
 
 # Trigger windows in number of samples (default windows)
-PRE_TRIGGER = 400  # i.e. 1000 ns
-TRIGGER = 600  # i.e. 1500 ns
-POST_TRIGGER = 1400  # i.e. 3500 ns
+PRE_TRIGGER = 400  #: Default pre trigger window, i.e. 1000 ns
+TRIGGER = 600  #: Default trigger window, i.e. 1500 ns
+POST_TRIGGER = 1400  #: Default post trigger window, i.e. 3500 ns
 
 # Processing thresholds in relative ADC counts
-FILTER_THRESHOLD = 10  # default -6 mV
-BASELINE_THRESHOLD = 17  # default -10 mV
+ADC_FILTER_THRESHOLD = 10  #: Default Mean filter threshold of -6 mV
+ADC_BASELINE_THRESHOLD = 17  #: Default Baseline threshold of -10 mV
 
 # Trigger thresholds in absolute ADC counts (default thresholds)
 # HiSPARC II and III (DAQ <v4) with baseline at 200 ADC counts.
-LOW_THRESHOLD = 253
-HIGH_THRESHOLD = 323
+ADC_LOW_THRESHOLD = 253  #: Default low ADC threshold for HiSPARC II
+ADC_HIGH_THRESHOLD = 323  #: Default high ADC threshold for HiSPARC II
 
 # HiSPARC III with baseline at 30 ADC counts (DAQ v4).
-LOW_THRESHOLD_III = 82
-HIGH_THRESHOLD_III = 150
+ADC_LOW_THRESHOLD_III = 82  #: Default low ADC threshold for HiSPARC III
+ADC_HIGH_THRESHOLD_III = 150  #: Default high ADC threshold for HiSPARC III
 
 
 class TraceObservables(object):
@@ -41,10 +41,10 @@ class TraceObservables(object):
     on the station. Additionally, if data reduction was active the trace
     may be missing samples without a significant signal, this complicates
     the determination of the baseline. Moreover, data reduction uses the
-    BASELINE_THRESHOLD to determine what signals to keep, so tiny pulses
+    ADC_BASELINE_THRESHOLD to determine what signals to keep, so tiny pulses
     may be removed making it impossible to reconstruct tiny pulseheights.
 
-    The (default) value of BASELINE_THRESHOLD is different for the
+    The (default) value of ADC_BASELINE_THRESHOLD is different for the
     HiSPARC DAQ prior to v4 and also for PySPARC. Those use 25 ADC as
     threshold.
 
@@ -107,12 +107,12 @@ class TraceObservables(object):
     def integrals(self):
         """Integral of trace for all values over threshold
 
-        The threshold is defined by BASELINE_THRESHOLD
+        The threshold is defined by ADC_BASELINE_THRESHOLD
 
         :return: the pulse integral in ADC count * sample.
 
         """
-        threshold = BASELINE_THRESHOLD
+        threshold = ADC_BASELINE_THRESHOLD
         integrals = where(self.traces - self.baselines[:self.n] > threshold,
                           self.traces - self.baselines[:self.n], 0).sum(axis=0)
         return integrals.tolist() + self.missing
@@ -121,16 +121,16 @@ class TraceObservables(object):
     def n_peaks(self):
         """Number of peaks in the trace
 
-        The peak threshold is defined by LOW_THRESHOLD
+        The peak threshold is defined by ADC_LOW_THRESHOLD
 
         :return: the pulse integral in ADC count * sample.
 
         """
         # Make rough guess at the baseline/threshold to expect
         if all(b < 100 for b in self.baselines[:self.n]):
-            peak_threshold = LOW_THRESHOLD_III - 30
+            peak_threshold = ADC_LOW_THRESHOLD_III - 30
         else:
-            peak_threshold = LOW_THRESHOLD - 200
+            peak_threshold = ADC_LOW_THRESHOLD - 200
 
         traces = self.traces - self.baselines[:self.n]
 
@@ -178,7 +178,7 @@ class MeanFilter(object):
 
     """
 
-    def __init__(self, use_threshold=True, threshold=FILTER_THRESHOLD):
+    def __init__(self, use_threshold=True, threshold=ADC_FILTER_THRESHOLD):
         """Initialize the class.
 
         :param use_threshold: use a threshold when filtering traces.

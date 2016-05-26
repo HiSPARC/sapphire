@@ -62,7 +62,8 @@ from . import time_util
 from . import transformations
 from . import utils
 
-from .analysis.calibration import determine_detector_timing_offsets
+from .analysis.calibration import (determine_detector_timing_offsets,
+                                   DetermineStationTimingOffsets)
 from .analysis.coincidence_queries import CoincidenceQuery
 from .analysis.coincidences import Coincidences, CoincidencesESD
 from .analysis.find_mpv import FindMostProbableValueInSpectrum
@@ -83,7 +84,7 @@ from .simulations.groundparticles import (GroundParticlesSimulation,
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
 from .transformations.celestial import zenithazimuth_to_equatorial
-
+from .transformations.clock import gps_to_datetime, datetime_to_gps
 
 __all__ = ['analysis',
            'api',
@@ -99,6 +100,7 @@ __all__ = ['analysis',
            'transformations',
            'utils',
            'determine_detector_timing_offsets',
+           'DetermineStationTimingOffsets',
            'CoincidenceQuery',
            'Coincidences', 'CoincidencesESD',
            'FindMostProbableValueInSpectrum',
@@ -116,5 +118,6 @@ __all__ = ['analysis',
            'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
-           'zenithazimuth_to_equatorial'
+           'zenithazimuth_to_equatorial',
+           'gps_to_datetime', 'datetime_to_gps'
            ]
