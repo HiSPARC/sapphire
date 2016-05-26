@@ -24,6 +24,7 @@ from scipy.optimize import minimize
 
 from .event_utils import (station_arrival_time, detector_arrival_time,
                           relative_detector_arrival_times)
+from ..simulations.showerfront import CorsikaStationFront
 from ..utils import pbar, norm_angle, c, make_relative, vector_length
 from ..api import Station
 
@@ -1002,8 +1003,10 @@ class CurvedRegressionAlgorithm(object):
 
     MAX_ITERATIONS = 1000
 
-    @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def __init__(self):
+        self.front = CorsikaStationFront()
+
+    def reconstruct_common(self, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1021,10 +1024,9 @@ class CurvedRegressionAlgorithm(object):
         if isnan(core_y) or isnan(core_y):
             return nan, nan
 
-        return cls.reconstruct(t, x, y, core_x, core_y)
+        return self.reconstruct(t, x, y, core_x, core_y)
 
-    @classmethod
-    def reconstruct(cls, t, x, y, core_x, core_y):
+    def reconstruct(self, t, x, y, core_x, core_y):
         """Reconstruct angles for many detections
 
         :param t: arrival times in the detectors in ns.
@@ -1044,9 +1046,9 @@ class CurvedRegressionAlgorithm(object):
         iteration = 0
         while dtheta > 0.001:
             iteration += 1
-            if iteration > cls.MAX_ITERATIONS:
+            if iteration > self.MAX_ITERATIONS:
                 return nan, nan
-            tproj = [ti - cls.time_delay(xi, yi, core_x, core_y, theta, phi)
+            tproj = [ti - self.time_delay(xi, yi, core_x, core_y, theta, phi)
                      for ti, xi, yi in zip(t, x, y)]
             theta_prev = theta
             theta, phi = regress2d.reconstruct_common(tproj, x, y)
@@ -1054,10 +1056,9 @@ class CurvedRegressionAlgorithm(object):
 
         return theta, phi
 
-    @classmethod
-    def time_delay(cls, x, y, core_x, core_y, theta, phi):
-        r = cls.radial_core_distance(x, y, core_x, core_y, theta, phi)
-        return cls.front_shape(r)
+    def time_delay(self, x, y, core_x, core_y, theta, phi):
+        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
+        return self.front.delay_at_r(r)
 
     @classmethod
     def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
@@ -1067,16 +1068,6 @@ class CurvedRegressionAlgorithm(object):
         ny = sin(theta) * sin(phi)
         return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
                     2 * dx * dy * nx * ny)
-
-    @classmethod
-    def front_shape(cls, r):
-        """Delay of the showerfront relative to flat as function of distance
-
-        :param r: distance to the shower core in shower frame in m.
-        :return: delay time of shower front in ns.
-
-        """
-        return r * .2
 
 
 class CurvedRegressionAlgorithm3D(object):
@@ -1090,8 +1081,10 @@ class CurvedRegressionAlgorithm3D(object):
 
     MAX_ITERATIONS = 1000
 
-    @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def __init__(self):
+        self.front = CorsikaStationFront()
+
+    def reconstruct_common(self, t, x, y, z=None, initial={}):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1112,10 +1105,9 @@ class CurvedRegressionAlgorithm3D(object):
         if z is None:
             z = [0] * len(x)
 
-        return cls.reconstruct(t, x, y, z, core_x, core_y)
+        return self.reconstruct(t, x, y, z, core_x, core_y)
 
-    @classmethod
-    def reconstruct(cls, t, x, y, z, core_x, core_y):
+    def reconstruct(self, t, x, y, z, core_x, core_y):
         """Reconstruct angles for many detections
 
         :param t: arrival times in the detectors in ns.
@@ -1135,7 +1127,7 @@ class CurvedRegressionAlgorithm3D(object):
         iteration = 0
         while dtheta > 0.001:
             iteration += 1
-            if iteration > cls.MAX_ITERATIONS:
+            if iteration > self.MAX_ITERATIONS:
                 return nan, nan
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
@@ -1143,7 +1135,7 @@ class CurvedRegressionAlgorithm3D(object):
             xproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
             yproj = [yi - zi * nynz for yi, zi in zip(y, z)]
             tproj = [ti + zi / (c * nz) -
-                     cls.time_delay(xpi, ypi, core_x, core_y, theta, phi)
+                     self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
                      for ti, xpi, ypi, zi in zip(t, xproj, yproj, z)]
             theta_prev = theta
             theta, phi = regress2d.reconstruct_common(tproj, xproj, yproj)
@@ -1151,10 +1143,9 @@ class CurvedRegressionAlgorithm3D(object):
 
         return theta, phi
 
-    @classmethod
-    def time_delay(cls, x, y, core_x, core_y, theta, phi):
-        r = cls.radial_core_distance(x, y, core_x, core_y, theta, phi)
-        return cls.front_shape(r)
+    def time_delay(self, x, y, core_x, core_y, theta, phi):
+        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
+        return self.front.delay_at_r(r)
 
     @classmethod
     def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
@@ -1164,16 +1155,6 @@ class CurvedRegressionAlgorithm3D(object):
         ny = sin(theta) * sin(phi)
         return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
                     2 * dx * dy * nx * ny)
-
-    @classmethod
-    def front_shape(cls, r):
-        """Delay of the showerfront relative to flat as function of distance
-
-        :param r: distance to the shower core in shower frame in m.
-        :return: delay time of shower front in ns.
-
-        """
-        return r * .2
 
 
 def logic_checks(t, x, y, z):

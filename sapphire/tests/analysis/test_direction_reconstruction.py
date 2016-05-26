@@ -5,6 +5,7 @@ from mock import sentinel, patch, Mock, MagicMock
 from numpy import isnan, nan, pi, sqrt, arcsin, arctan
 
 from sapphire.analysis import direction_reconstruction
+from sapphire.simulations.showerfront import ConeFront
 
 
 class EventDirectionReconstructionTest(unittest.TestCase):
@@ -629,6 +630,7 @@ class CurvedRegressionAlgorithmTest(unittest.TestCase, CurvedAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.CurvedRegressionAlgorithm()
+        self.algorithm.front = ConeFront()
 
 
 class CurvedRegressionAlgorithm3DTest(unittest.TestCase,
@@ -636,6 +638,7 @@ class CurvedRegressionAlgorithm3DTest(unittest.TestCase,
 
     def setUp(self):
         self.algorithm = direction_reconstruction.CurvedRegressionAlgorithm3D()
+        self.algorithm.front = ConeFront()
 
 
 if __name__ == '__main__':
