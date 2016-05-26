@@ -24,7 +24,7 @@ from scipy.optimize import minimize
 
 from .event_utils import (station_arrival_time, detector_arrival_time,
                           relative_detector_arrival_times)
-from ..utils import pbar, norm_angle, c, make_relative
+from ..utils import pbar, norm_angle, c, make_relative, vector_length
 from ..api import Station
 
 
@@ -305,8 +305,8 @@ class DirectAlgorithm(object):
         dx = make_relative(x)
         dy = make_relative(y)
 
-        r1 = sqrt(dx[1] ** 2 + dy[1] ** 2)
-        r2 = sqrt(dx[2] ** 2 + dy[2] ** 2)
+        r1 = vector_length(dx[1], dy[1])
+        r2 = vector_length(dx[2], dy[2])
 
         phi1 = arctan2(dy[1], dx[1])
         phi2 = arctan2(dy[2], dx[2])
@@ -1210,7 +1210,7 @@ def logic_checks(t, x, y, z):
             dx = txyz0[1] - txyz1[1]
             dy = txyz0[2] - txyz1[2]
             dz = txyz0[3] - txyz1[3]
-            dt_max = sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
+            dt_max = vector_length(dx, dy, dz) / c
             if dt_max < dt:
                 return False
 
@@ -1226,9 +1226,9 @@ def logic_checks(t, x, y, z):
         dx3 = dx2 - dx1
         dy3 = dy2 - dy1
         dz3 = dz2 - dz1
-        lenvec01 = sqrt(dx1 ** 2 + dy1 ** 2 + dz1 ** 2)
-        lenvec02 = sqrt(dx2 ** 2 + dy2 ** 2 + dz2 ** 2)
-        lenvec12 = sqrt(dx3 ** 2 + dy3 ** 2 + dz3 ** 2)
+        lenvec01 = vector_length(dx1, dy1, dz1)
+        lenvec02 = vector_length(dx2, dy2, dz2)
+        lenvec12 = vector_length(dx3, dy3, dz3)
 
         # area triangle is |cross product|
         area = abs(dx1 * dy2 - dx2 * dy1 + dy1 * dz2 - dy2 * dz1 +

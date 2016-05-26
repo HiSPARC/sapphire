@@ -21,7 +21,7 @@ from math import pi, sin, cos, tan, atan2, sqrt
 import numpy as np
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
-from ..utils import pbar, c
+from ..utils import pbar, c, vector_length
 
 
 class FlatFrontSimulation(HiSPARCSimulation):
@@ -29,7 +29,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
     def __init__(self, *args, **kwargs):
         super(FlatFrontSimulation, self).__init__(*args, **kwargs)
 
-        # Since the cluster is not rotated detector positions can be stored.
+        # Since the cluster is not rotated detector positions can be cached.
         for station in self.cluster.stations:
             for detector in station.detectors:
                 detector.cylindrical_coordinates = \
@@ -83,7 +83,6 @@ class FlatFrontSimulation(HiSPARCSimulation):
         (DOI: 10.3990/1.9789036534383)
         The directional vector c * dt should be negative,
         not apparent in Fokkema2012 fig 4.4.
-
 
         :return: Shower front arrival time in ns.
 
@@ -250,7 +249,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
         """Calculate arrival time"""
 
         x, y, z = detector.get_coordinates()
-        r1 = sqrt(x ** 2 + y ** 2)
+        r1 = vector_length(x, y)
         phi1 = atan2(y, x)
 
         phi = shower_parameters['azimuth']
@@ -262,8 +261,8 @@ class ConeFrontSimulation(FlatFrontSimulation):
         ny = sin(theta) * sin(phi)
         nz = cos(theta)
 
-        r_core = sqrt(x * x + y * y + z * z - (x * nx + y * ny + z * nz) ** 2)
         t_shape = self.front_shape(r_core)
+        r_core = sqrt(vector_length(x, y, z) - (x * nx + y * ny + z * nz) ** 2)
         dt = t_shape + (cdt / c)
 
         return dt
@@ -275,4 +274,4 @@ class ConeFrontSimulation(FlatFrontSimulation):
         :return: delay time of shower front.
 
         """
-        return r * .2
+        return r * 0.2

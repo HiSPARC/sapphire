@@ -168,9 +168,8 @@ def which(program):
 
 
 def memoize(obj):
-    """ Memoisation cache decorator
+    """Memoisation cache decorator"""
 
-    """
     cache = obj.cache = {}
 
     @wraps(obj)

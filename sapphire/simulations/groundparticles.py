@@ -26,7 +26,7 @@ import tables
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
-from ..utils import pbar, norm_angle, closest_in_list
+from ..utils import pbar, norm_angle, closest_in_list, vector_length
 
 
 class GroundParticlesSimulation(HiSPARCSimulation):
@@ -146,9 +146,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """
         # determination of lepton angle of incidence
         theta = np.arccos(abs(particles['p_z']) /
-                          np.sqrt(particles['p_x'] ** 2 +
-                                  particles['p_y'] ** 2 +
-                                  particles['p_z'] ** 2))
+                          vector_length(particles['p_x'], particles['p_y'],
+                                        particles['p_z']))
         n = len(particles)
         mips = self.simulate_detector_mips(n, theta)
 
