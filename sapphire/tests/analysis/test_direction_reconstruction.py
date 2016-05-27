@@ -598,10 +598,10 @@ class DirectAlgorithmTest(unittest.TestCase, DirectAlgorithm):
         self.algorithm = direction_reconstruction.DirectAlgorithm()
 
 
-class DirectAlgorithmCartesian2DTest(unittest.TestCase, DirectAlgorithm):
+class DirectAlgorithmCartesianTest(unittest.TestCase, DirectAlgorithm):
 
     def setUp(self):
-        self.algorithm = direction_reconstruction.DirectAlgorithmCartesian2D()
+        self.algorithm = direction_reconstruction.DirectAlgorithmCartesian()
 
 
 class DirectAlgorithmCartesian3DTest(unittest.TestCase,
@@ -611,10 +611,10 @@ class DirectAlgorithmCartesian3DTest(unittest.TestCase,
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian3D()
 
 
-class FitAlgorithmTest(unittest.TestCase, MultiAltitudeAlgorithm):
+class FitAlgorithm3DTest(unittest.TestCase, MultiAltitudeAlgorithm):
 
     def setUp(self):
-        self.algorithm = direction_reconstruction.FitAlgorithm()
+        self.algorithm = direction_reconstruction.FitAlgorithm3D()
 
 
 class RegressionAlgorithmTest(unittest.TestCase, MultiAlgorithm):

@@ -481,7 +481,7 @@ class DirectAlgorithm(object):
         return num / den
 
 
-class DirectAlgorithmCartesian2D(object):
+class DirectAlgorithmCartesian(object):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -751,7 +751,7 @@ class SphereAlgorithm(object):
         return x_int, y_int, z_int, t_int
 
 
-class FitAlgorithm(object):
+class FitAlgorithm3D(object):
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
