@@ -51,7 +51,7 @@ class EventCoreReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :param intial: dictionary with already reconstructed shower parameters.
+        :param initial: dictionary with already reconstructed shower parameters.
         :return: (x, y) core position in m.
 
         """
@@ -82,8 +82,8 @@ class EventCoreReconstruction(object):
                        file.
         :param detector_ids: detectors which use for the reconstructions.
         :param progress: if True shows a progress bar.
-        :param intials: list of dictionaries with already reconstructed shower
-                        parameters.
+        :param initials: list of dictionaries with already reconstructed shower
+                         parameters.
         :return: (x, y) core positions in m.
 
         """
@@ -122,7 +122,7 @@ class CoincidenceCoreReconstruction(object):
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param intial: dictionary with already reconstructed shower parameters.
+        :param initial: dictionary with already reconstructed shower parameters.
         :return: (x, y) core position in m.
 
         """
@@ -162,8 +162,8 @@ class CoincidenceCoreReconstruction(object):
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
         :param progress: if True shows a progress bar.
-        :param intials: list of dictionaries with already reconstructed shower
-                        parameters.
+        :param initials: list of dictionaries with already reconstructed shower
+                         parameters.
         :return: (x, y) core positions in m.
 
         """
@@ -197,7 +197,7 @@ class CoincidenceCoreReconstructionDetectors(
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param intial: dictionary with already reconstructed shower parameters.
+        :param initial: dictionary with already reconstructed shower parameters.
         :return: (x, y) core position in m.
 
         """

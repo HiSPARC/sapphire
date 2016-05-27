@@ -62,7 +62,7 @@ class EventDirectionReconstruction(object):
             column names in the esd data.
         :param offsets: time offsets for each detector or a
             :class:`~sapphire.api.Station` object.
-        :param intial: dictionary with already fitted shower parameters.
+        :param initial: dictionary with already fitted shower parameters.
         :return: theta, phi, and detector ids.
 
         """
@@ -99,13 +99,13 @@ class EventDirectionReconstruction(object):
         :param offsets: time offsets for each detector or a
             :class:`~sapphire.api.Station` object.
         :param progress: if True shows a progress bar.
-        :param intials: list of dictionaries with already reconstructed shower
+        :param initials: list of dictionaries with already reconstructed shower
                         parameters.
         :return: list of theta, phi, and detector ids.
 
         """
         events = pbar(events, show=progress)
-        events_init = izip_longest(events, initials)
+        events_init = izip_longest(events, initials, fillvalue={})
         angles = [self.reconstruct_event(event, detector_ids, offsets, initial)
                   for event, initial in events_init]
         if len(angles):
@@ -145,7 +145,7 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
-        :param intial: dictionary with already fitted shower parameters.
+        :param initial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
         """
@@ -179,7 +179,7 @@ class CoincidenceDirectionReconstruction(object):
                 z.append(sz)
                 nums.append(station_number)
 
-        if len(t) >= 3 and 'core_x' in intial and 'core_y' in initial:
+        if len(t) >= 3 and 'core_x' in initial and 'core_y' in initial:
             theta, phi = self.curved.reconstruct_common(t, x, y, z, initial)
         elif len(t) == 3:
             theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
@@ -202,15 +202,15 @@ class CoincidenceDirectionReconstruction(object):
                         These detector offsets should be relative to one
                         detector from a specific station.
         :param progress: if True shows a progress bar.
-        :param intials: list of dictionaries with already reconstructed shower
+        :param initials: list of dictionaries with already reconstructed shower
                         parameters.
         :return: list of theta, phi, and station numbers.
 
         """
         coincidences = pbar(coincidences, show=progress)
-        coin_init = izip_longest(coincidences, initials)
+        coin_init = izip_longest(coincidences, initials, fillvalue={})
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
-                                               offsets)
+                                               offsets, initial)
                   for coincidence, initial in coin_init]
         if len(angles):
             theta, phi, nums = zip(*angles)
@@ -240,7 +240,7 @@ class CoincidenceDirectionReconstructionDetectors(
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
-        :param intial: dictionary with already fitted shower parameters.
+        :param initial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
         """
@@ -277,7 +277,7 @@ class CoincidenceDirectionReconstructionDetectors(
             if not all(isnan(t_detectors)):
                 nums.append(station_number)
 
-        if len(t) >= 3 and 'core_x' in intial and 'core_y' in initial:
+        if len(t) >= 3 and 'core_x' in initial and 'core_y' in initial:
             theta, phi = self.curved.reconstruct_common(t, x, y, z, initial)
         elif len(t) == 3:
             theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
