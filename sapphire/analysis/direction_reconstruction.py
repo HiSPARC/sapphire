@@ -16,7 +16,7 @@
 
 """
 import warnings
-import itertools
+from itertools import izip_longest, combinations
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, where, pi, inf, array, cross, dot)
@@ -1203,7 +1203,7 @@ def logic_checks(t, x, y, z):
 
     # Check if the time difference it larger than expected by c
     if len(t) == 3:
-        for txyz0, txyz1 in itertools.combinations(txyz, 2):
+        for txyz0, txyz1 in combinations(txyz, 2):
             dt = abs(txyz0[0] - txyz1[0])
             dx = txyz0[1] - txyz1[1]
             dy = txyz0[2] - txyz1[2]
@@ -1214,7 +1214,7 @@ def logic_checks(t, x, y, z):
 
     # Check if all the positions are (almost) on a single line
     largest_of_smallest_angles = 0
-    for txyz0, txyz1, txyz2 in itertools.combinations(txyz, 3):
+    for txyz0, txyz1, txyz2 in combinations(txyz, 3):
         dx1 = txyz0[1] - txyz1[1]
         dy1 = txyz0[2] - txyz1[2]
         dz1 = txyz0[3] - txyz1[3]
