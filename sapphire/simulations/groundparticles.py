@@ -26,7 +26,7 @@ import tables
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
-from ..utils import pbar, norm_angle, closest_in_list, vector_length
+from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
 
 
 class GroundParticlesSimulation(HiSPARCSimulation):
@@ -123,13 +123,15 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        particles = self.get_particles_in_detector(detector)
+        particles = self.get_particles_in_detector(detector, shower_parameters)
         n_detected = len(particles)
 
         if n_detected:
             mips = self.simulate_detector_mips_for_particles(particles)
             particles['t'] += self.simulate_signal_transport_time(n_detected)
-            first_signal = particles['t'].min() + detector.offset
+            nz = cos(shower_parameters['zenith'])
+            tproj = detector.get_coordinates()[-1] / (c * nz)
+            first_signal = particles['t'].min() + detector.offset + tproj
             observables = {'n': round(mips, 3),
                            't': self.simulate_adc_sampling(first_signal)}
         else:
@@ -211,7 +213,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         return station_observables
 
-    def get_particles_in_detector(self, detector):
+    def get_particles_in_detector(self, detector, shower_parameters):
         """Get particles that hit a detector.
 
         Particle ids 2, 3, 5, 6 are electrons and muons,
@@ -226,14 +228,23 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         :param detector: :class:`~sapphire.clusters.Detector` for which
                          to get particles.
+        :param shower_parameters: dictionary with the shower parameters.
 
         """
-        x, y = detector.get_xy_coordinates()
-        detector_boundary = sqrt(.5) / 2.
+        detector_boundary = sqrt(0.5) / 2.
+
+        x, y, z = detector.get_coordinates()
+        zenith = shower_parameters['zenith']
+        azimuth = shower_parameters['azimuth']
+        nxnz = tan(zenith) * cos(azimuth)
+        nynz = tan(zenith) * sin(azimuth)
+        xproj = x - z * nxnz
+        yproj = y - z * nynz
+
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
-                 (x - detector_boundary, x + detector_boundary,
-                  y - detector_boundary, y + detector_boundary))
+                 (xproj - detector_boundary, xproj + detector_boundary,
+                  yproj - detector_boundary, yproj + detector_boundary))
         return self.groundparticles.read_where(query)
 
 
@@ -247,7 +258,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
     """
 
-    def get_particles_in_detector(self, detector):
+    def get_particles_in_detector(self, detector, shower_parameters):
         """Simulate the detector detection area accurately.
 
         First particles are filtered to see which fall inside a
@@ -259,20 +270,30 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
         :param detector: :class:`~sapphire.clusters.Detector` for which
                          to get particles.
+        :param shower_parameters: dictionary with the shower parameters.
 
         """
         detector_boundary = 0.6
 
-        x, y = detector.get_xy_coordinates()
-        c = detector.get_corners()
+        x, y, z = detector.get_coordinates()
+        corners = detector.get_corners()
+        zenith = shower_parameters['zenith']
+        azimuth = shower_parameters['azimuth']
 
-        b11, line1, b12 = self.get_line_boundary_eqs(c[0], c[1], c[2])
-        b21, line2, b22 = self.get_line_boundary_eqs(c[1], c[2], c[3])
+        znxnz = z * tan(zenith) * cos(azimuth)
+        znynz = z * tan(zenith) * sin(azimuth)
+        xproj = x - znxnz
+        yproj = y - znynz
+
+        cproj = [(cx - znxnz, cy - znynz) for cx, cy in corners]
+
+        b11, line1, b12 = self.get_line_boundary_eqs(*cproj[0:3])
+        b21, line2, b22 = self.get_line_boundary_eqs(*cproj[1:4])
         query = ("(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & "
                  "(b11 < %s) & (%s < b12) & (b21 < %s) & (%s < b22) & "
                  "(particle_id >= 2) & (particle_id <= 6)" %
-                 (x - detector_boundary, x + detector_boundary,
-                  y - detector_boundary, y + detector_boundary,
+                 (xproj - detector_boundary, xproj + detector_boundary,
+                  yproj - detector_boundary, yproj + detector_boundary,
                   line1, line1, line2, line2))
 
         return self.groundparticles.read_where(query)
