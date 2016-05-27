@@ -125,11 +125,11 @@ class ReconstructESDEvents(object):
         """
         if len(self.theta) and len(self.phi):
             initials = ({'theta': theta, 'phi': phi}
-                        for theta, phi in zip(self.theta, self.phi))
+                        for theta, phi in izip(self.theta, self.phi))
         else:
             initials = []
         cores = self.core.reconstruct_events(self.events, detector_ids,
-                                             self.progress)
+                                             self.progress, initials)
         self.core_x, self.core_y = cores
 
     def prepare_output(self):
@@ -333,14 +333,14 @@ class ReconstructESDCoincidences(object):
         """
         if len(self.theta) and len(self.phi):
             initials = ({'theta': theta, 'phi': phi}
-                        for theta, phi in zip(self.theta, self.phi))
+                        for theta, phi in izip(self.theta, self.phi))
         else:
             initials = []
         coincidences = pbar(self.cq.all_coincidences(iterator=True),
                             length=self.coincidences.nrows, show=self.progress)
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
-            progress=False)
+            progress=False, initials=initials)
         self.core_x, self.core_y = cores
 
     def prepare_output(self):
