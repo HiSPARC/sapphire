@@ -18,7 +18,7 @@ Example usage::
     >>> sim.run()
 
 """
-from math import pi, sin, cos, sqrt, log10
+from math import pi, sin, cos, tan, sqrt, log10
 from time import time
 
 import numpy as np
