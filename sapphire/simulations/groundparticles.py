@@ -85,7 +85,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
 
-            # Subtract Corsika shower azimuth from desired shower azimuth
+            # Subtract CORSIKA shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
             alpha = shower_azimuth - event_header.azimuth
             alpha = norm_angle(alpha)
@@ -98,8 +98,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """Prepare the cluster object for the simulation of a shower.
 
         Rotate and translate the cluster so that (0, 0) coincides with the
-        shower core position and 'East' coincides with the shower azimuth
-        direction.
+        shower core position and that the angle between the rotated cluster
+        and the CORSIKA shower is the desired azimuth.
 
         :param x,y: position of shower core relative to cluster origin in m.
         :param alpha: angle the cluster needs to be rotated in radians.
@@ -224,7 +224,10 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         the simulation, the rotation of the detector is undefined.  This
         is faster than a more thorough implementation.
 
-        *Detector height is ignored!*
+        The CORSIKA simulation azimuth is used for the projection because the
+        cluster is rotated such that from the perspective of the rotated
+        detectors the CORSIKA showers come from the desired azimuth. In the
+        simulation frame the CORSIKA shower azimuth remains unchanged.
 
         :param detector: :class:`~sapphire.clusters.Detector` for which
                          to get particles.
@@ -235,7 +238,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         x, y, z = detector.get_coordinates()
         zenith = shower_parameters['zenith']
-        azimuth = shower_parameters['azimuth']
+        event_header = self.corsikafile.get_node_attr('/', 'event_header')
+        azimuth = event_header.azimuth
+
         nxnz = tan(zenith) * cos(azimuth)
         nynz = tan(zenith) * sin(azimuth)
         xproj = x - z * nxnz
@@ -278,7 +283,8 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         x, y, z = detector.get_coordinates()
         corners = detector.get_corners()
         zenith = shower_parameters['zenith']
-        azimuth = shower_parameters['azimuth']
+        event_header = self.corsikafile.get_node_attr('/', 'event_header')
+        azimuth = event_header.azimuth
 
         znxnz = z * tan(zenith) * cos(azimuth)
         znynz = z * tan(zenith) * sin(azimuth)
