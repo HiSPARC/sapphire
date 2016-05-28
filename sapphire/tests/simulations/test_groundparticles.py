@@ -45,7 +45,8 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.groundparticles = Mock()
 
         # Combinations of shower parameters and detector after transformations
-        shower_parameters = {'zenith': 0, 'azimuth': 0}
+        shower_parameters = {'zenith': 0}
+        self.simulation.corsika_azimuth = 0
         combinations = (((0, 0, 0), (-0, -0, -0)),
                         ((10, -60, 0), (-10, 60, -0)),
                         ((10, -60, pi / 2), (60, 10, -pi / 2)))
@@ -64,7 +65,8 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         self.groundparticles = self.corsika_data.root.groundparticles
         self.simulation.groundparticles = self.groundparticles
 
-        shower_parameters = {'zenith': 0, 'azimuth': 0}
+        shower_parameters = {'zenith': 0}
+        self.simulation.corsika_azimuth = 0
         combinations = (((0, 0, 0), (1, 0, 0, 0)),
                         ((1, -1, 0), (0, 1, 0, 3)),
                         ((1, -1, pi / 2), (1, 1, 0, 1)))
@@ -92,7 +94,8 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
         self.simulation.groundparticles = Mock()
 
         # Combinations of shower parameters and detector after transformations
-        shower_parameters = {'zenith': 0, 'azimuth': 0}
+        shower_parameters = {'zenith': 0}
+        self.simulation.corsika_azimuth = 0
         combinations = (((0, 0, 0), (-0, -0, -0)),
                         ((10, -60, 0), (-10, 60, -0)))
 
@@ -112,7 +115,8 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
         self.groundparticles = self.corsika_data.root.groundparticles
         self.simulation.groundparticles = self.groundparticles
 
-        shower_parameters = {'zenith': 0, 'azimuth': 0}
+        shower_parameters = {'zenith': 0}
+        self.simulation.corsika_azimuth = 0
         combinations = (((0, 0, 0), (1, 0, 1, 0)),
                         ((1, -1, 0), (0, 1, 1, 3)),
                         ((1, -1, pi / 2), (1, 1, 0, 1)))
