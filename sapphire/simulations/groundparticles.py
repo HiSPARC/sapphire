@@ -308,11 +308,10 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         is an equation and two boundaries which can be used to test if a
         point is between the two lines.
 
-        :param p0,p1: (x, y) tuples on the same line
-        :param p2: (x, y) tuple on the parallel line
-
+        :param p0,p1: (x, y) tuples on the same line.
+        :param p2: (x, y) tuple on the parallel line.
         :return: value1, equation, value2, such that points satisfying
-            value1 < equation < value2 are between the parallel lines
+            value1 < equation < value2 are between the parallel lines.
 
         Example::
 
@@ -323,7 +322,11 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         (x0, y0), (x1, y1), (x2, y2) = p0, p1, p2
 
         # Compute the general equation for the lines
-        if not (x0 == x1):
+        if x0 == x1:
+            # line is exactly vertical
+            line = "x"
+            b1, b2 = x0, x2
+        else:
             # First, compute the slope
             a = (y1 - y0) / (x1 - x0)
 
@@ -332,10 +335,6 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
             b2 = y2 - a * x2
 
             line = "y - %f * x" % a
-        else:
-            # line is exactly vertical
-            line = "x"
-            b1, b2 = x0, x2
 
         # And order the y-intercepts
         if b1 > b2:
