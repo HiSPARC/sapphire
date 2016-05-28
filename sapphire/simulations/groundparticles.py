@@ -75,6 +75,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'size': event_end.n_electrons_levels,
                               'energy': event_header.energy,
                               'particle': event_header.particle}
+        self.corsika_azimuth = event_header.azimuth
 
         for i in pbar(range(self.N), show=self.progress):
             ext_timestamp = (now + i) * int(1e9)
@@ -87,7 +88,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
             # Subtract CORSIKA shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
-            alpha = shower_azimuth - event_header.azimuth
+            alpha = shower_azimuth - self.corsika_azimuth
             alpha = norm_angle(alpha)
             self._prepare_cluster_for_shower(x, y, alpha)
 
@@ -238,8 +239,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         x, y, z = detector.get_coordinates()
         zenith = shower_parameters['zenith']
-        event_header = self.corsikafile.get_node_attr('/', 'event_header')
-        azimuth = event_header.azimuth
+        azimuth = self.corsika_azimuth
 
         nxnz = tan(zenith) * cos(azimuth)
         nynz = tan(zenith) * sin(azimuth)
@@ -283,8 +283,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         x, y, z = detector.get_coordinates()
         corners = detector.get_corners()
         zenith = shower_parameters['zenith']
-        event_header = self.corsikafile.get_node_attr('/', 'event_header')
-        azimuth = event_header.azimuth
+        azimuth = self.corsika_azimuth
 
         znxnz = z * tan(zenith) * cos(azimuth)
         znynz = z * tan(zenith) * sin(azimuth)
@@ -469,6 +468,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
                                   'size': sim['n_electron'],
                                   'energy': sim['energy'],
                                   'particle': sim['particle_id']}
+            self.corsika_azimuth = sim['azimuth']
 
             seeds = self.cq.seeds([sim])[0]
             with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
@@ -489,7 +489,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
 
                     # Subtract CORSIKA shower azimuth from desired shower
                     # azimuth to get rotation angle of the cluster.
-                    alpha = shower_azimuth - sim['azimuth']
+                    alpha = shower_azimuth - self.corsika_azimuth
                     alpha = norm_angle(alpha)
                     self._prepare_cluster_for_shower(x, y, alpha)
 
