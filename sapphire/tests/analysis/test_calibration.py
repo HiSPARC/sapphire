@@ -174,10 +174,10 @@ class FitTimingOffsetTests(unittest.TestCase):
 
     def test_fit_timing_offset(self):
         deviations = []
-        for _ in xrange(40):
+        for _ in xrange(50):
             center = uniform(-40, 40)
             sigma = uniform(10, 30)
-            N = 3e4
+            N = 4e4
             lower = center - 3 * sigma
             upper = center + 3 * sigma
             bins = range(int(lower), int(upper), 1)
@@ -187,7 +187,7 @@ class FitTimingOffsetTests(unittest.TestCase):
             # Test if determined offset close to the actual center.
             self.assertLess(abs(center - offset), 4 * error)
         # Test if estimated error correctly represents the errors in offsets.
-        self.assertLess(abs(std(deviations) - 1), 0.3)
+        self.assertLess(abs(std(deviations) - 1), 0.35)
 
 
 class DetermineStationTimingOffsetsTests(unittest.TestCase):
