@@ -132,7 +132,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             particles['t'] += self.simulate_signal_transport_time(n_detected)
             nz = cos(shower_parameters['zenith'])
             tproj = detector.get_coordinates()[-1] / (c * nz)
-            first_signal = particles['t'].min() + detector.offset + tproj
+            first_signal = particles['t'].min() + detector.offset - tproj
             observables = {'n': round(mips, 3),
                            't': self.simulate_adc_sampling(first_signal)}
         else:
