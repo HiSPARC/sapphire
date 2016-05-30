@@ -421,57 +421,48 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
             gamma = gamma_energy / electron_rest_mass_MeV
 
-            return E * 2 * gamma / (1 + 2 * gamma)
+            return gamma_energy * 2 * gamma / (1 + 2 * gamma)
 
         def _compton_energy_transfer(gamma_energy):
-            """Energy transfered to electron
+            """ Calculate the energy transfer from photon to electron"
 
-            From lio-project/photons/electron_energy_distribution.py
-
-            The energy transfered from photon to electron = T(E) *
-            compton_edge(), the transfer function T(E) is calculated from
-            dsigma / dT and represented as a lookup table.
-
-            numpy.searchsorted() is a binarysearch to find the correct row in
-            the lookup table.
-              => the polynomial coefficients corresponding to the energy (E)
-
-            :param gamma_energy: photon energy [MeV]
-            :return: energy transfered to electron [MeV]
-
+            From the differential cross section the cumulativevim
             """
-            energy_table = np.array([
-                0.100000, 0.127427, 0.162378, 0.206914, 0.263665, 0.335982,
-                0.428133, 0.545559, 0.695193, 0.885867, 1.128838, 1.438450,
-                1.832981, 2.335721, 2.976351, 3.792690, 4.832930, 6.158482,
-                7.847600, 10.00000])
 
-            transfer_function_table = [
-                [-0.095663, 0.998190, 0.042602],
-                [-0.104635, 1.008633, 0.040506],
-                [-0.109294, 1.015132, 0.038090],
-                [-0.107136, 1.015115, 0.035430],
-                [-0.095551, 1.005781, 0.032673],
-                [-0.072295, 0.984547, 0.030032],
-                [-0.036015, 0.949579, 0.027764],
-                [0.013328, 0.900254, 0.026124],
-                [0.074324, 0.837384, 0.025313],
-                [0.144294, 0.763123, 0.025434],
-                [0.219738, 0.680594, 0.026476],
-                [0.296884, 0.593392, 0.028324],
-                [0.372186, 0.505081, 0.030787],
-                [0.442678, 0.418822, 0.033635],
-                [0.506156, 0.337141, 0.036638],
-                [0.561214, 0.261844, 0.039593],
-                [0.607175, 0.194044, 0.042338],
-                [0.643960, 0.134252, 0.044755],
-                [0.671940, 0.082499, 0.046776],
-                [0.691794, 0.038463, 0.048368],
-                [0.691794, 0.038463, 0.048368]]  # extra item E > 10
+            def dsigma_dT(E, T):
+                """
+                W.R. Leo (1987) p 54
 
-            idx = energy_table.searchsorted(gamma_energy, side='left')
-            p = np.poly1d(transfer_function_table[idx])
-            return p(np.random.random()) * _compton_edge(gamma_energy)
+                :param E: photon energy [MeV]
+                :param T: electron recoil energy [MeV]
+
+                """
+                r_e = 2.82e-15  # classical electron radius [m]
+                electron_rest_mass_MeV = 0.5109989  # MeV
+
+                gamma = E / electron_rest_mass_MeV
+
+                s = T / E
+
+                return (np.pi * (r_e ** 2) / (electron_rest_mass_MeV *
+                                              gamma ** 2) *
+                        (2 + (s ** 2 / ((gamma ** 2) * ((1 - s) ** 2))) +
+                        (s / (1 - s)) * (s - 2 / gamma)))
+
+            edge = _compton_edge(gamma_energy)
+            T = np.linspace(0, edge, 1000)
+
+            # electron energy distribution
+            electron_energy = [dsigma_dT(gamma_energy, EE) for EE in T]
+
+            cumulative_energy = np.cumsum(electron_energy)
+
+            normalised_energy_distribution = (cumulative_energy /
+                                              cumulative_energy[-1])
+
+            r = np.random.random()
+            conversion_factor = normalised_energy_distribution.searchsorted(r)
+            return _compton_edge(gamma_energy) * conversion_factor
 
         def _compton_mean_free_path(gamma_energy):
             """Mean free path compton scattering
@@ -532,12 +523,25 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 idx = energy_table.searchsorted(gamma_energy, side='left')
                 return l[idx]
 
+        def _max_energy_deposit_in_MIPS(depth, scintilator_depth):
+            """
+            maximum energy transfer of electron to scinitlator
+            based on remaining scinitilator depth
+
+            Assumes scintilator depth is projected onto the direction
+            of the incident particle (divided by cos(theta))
+
+            """
+            return ((scintilator_depth - depth) /
+                    scintilator_depth) * max_E / MIP
+
         # p [eV] and E [MeV]
         E = p / 1e6
 
         mips = 0
         for energy, angle in zip(E, theta):
-            costheta = cos(angle)
+            # project depth onto direction of incident particle
+            scintilator_depth /= cos(angle)
 
             # Calculate interaction point in units of scinitlator depth.
             # If depth > 1 there is no interaction.
@@ -546,8 +550,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                 random.expovariate(1 / _compton_mean_free_path(energy))
             depth_pair = random.expovariate(1 / _pair_mean_free_path(energy))
 
-            if ((depth_pair > scintilator_depth / costheta) &
-                    (depth_compton > scintilator_depth / costheta)):
+            if ((depth_pair > scintilator_depth) &
+                    (depth_compton > scintilator_depth)):
                 # no interaction
                 continue
 
@@ -555,33 +559,23 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
             elif depth_compton < depth_pair:
                 # Compton scattering
 
-                # maximum energy transfer of electron to scinitlator
-                # based on remaining scinitilator depth
-                maximum_energy_deposit_in_MIPS = \
-                    ((scintilator_depth - depth_compton) / scintilator_depth) \
-                    * max_E / MIP / costheta
-
                 # kinetic energy transfered to electron by compton scattering
-                energy_deposit_in_MIPS = _compton_energy_transfer(energy) / MIP
+                energy_deposit = _compton_energy_transfer(energy) / MIP
 
-                mips += np.minimum(maximum_energy_deposit_in_MIPS,
-                                   energy_deposit_in_MIPS)
+                max_deposit = _max_energy_deposit_in_MIPS(depth_compton,
+                                                          scintilator_depth)
+                mips += min(max_deposit, energy_deposit)
 
             elif energy > 1.022:
                 # Pair production: Two "electrons"
 
-                # maximum energy transfer of electron to scinitlator
-                # based on remaining scinitilator depth
-                maximum_energy_deposit_in_MIPS = \
-                    ((scintilator_depth - depth_pair) / scintilator_depth) * \
-                    max_E / MIP / costheta
-
                 # 1.022 MeV used for creation of two particles
                 # all the rest is electron kinetic energy
-                energy_deposit_in_MIPS = (energy - 1.022) / MIP
+                energy_deposit = (energy - 1.022) / MIP
 
-                mips += np.minimum(maximum_energy_deposit_in_MIPS,
-                                   energy_deposit_in_MIPS)
+                max_deposit = _max_energy_deposit_in_MIPS(depth_pair,
+                                                          scintilator_depth)
+                mips += min(max_deposit, energy_deposit)
 
         return mips
 
