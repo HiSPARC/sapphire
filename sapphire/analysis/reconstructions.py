@@ -1,4 +1,4 @@
-from itertools import izip_longest
+from itertools import izip, izip_longest
 import os
 
 from numpy import isnan, histogram, linspace, percentile, std
@@ -107,8 +107,14 @@ class ReconstructESDEvents(object):
         :param detector_ids: list of detector ids to use for reconstructions.
 
         """
+        if len(self.core_x) and len(self.core_y):
+            initials = ({'core_x': x, 'core_y': y}
+                        for x, y in izip(self.core_x, self.core_y))
+        else:
+            initials = []
         angles = self.direction.reconstruct_events(self.events, detector_ids,
-                                                   self.offsets, self.progress)
+                                                   self.offsets, self.progress,
+                                                   initials)
         self.theta, self.phi, self.detector_ids = angles
 
     def reconstruct_cores(self, detector_ids=None):
@@ -117,8 +123,13 @@ class ReconstructESDEvents(object):
         :param detector_ids: list of detector ids to use for reconstructions.
 
         """
+        if len(self.theta) and len(self.phi):
+            initials = ({'theta': theta, 'phi': phi}
+                        for theta, phi in izip(self.theta, self.phi))
+        else:
+            initials = []
         cores = self.core.reconstruct_events(self.events, detector_ids,
-                                             self.progress)
+                                             self.progress, initials)
         self.core_x, self.core_y = cores
 
     def prepare_output(self):
@@ -302,11 +313,16 @@ class ReconstructESDCoincidences(object):
         :param detector_ids: list of detector ids to use for reconstructions.
 
         """
+        if len(self.core_x) and len(self.core_y):
+            initials = ({'core_x': x, 'core_y': y}
+                        for x, y in izip(self.core_x, self.core_y))
+        else:
+            initials = []
         coincidences = pbar(self.cq.all_coincidences(iterator=True),
                             length=self.coincidences.nrows, show=self.progress)
         angles = self.direction.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
-            self.offsets, progress=False)
+            self.offsets, progress=False, initials=initials)
         self.theta, self.phi, self.station_numbers = angles
 
     def reconstruct_cores(self, station_numbers=None):
@@ -315,11 +331,16 @@ class ReconstructESDCoincidences(object):
         :param detector_ids: list of detector ids to use for reconstructions.
 
         """
+        if len(self.theta) and len(self.phi):
+            initials = ({'theta': theta, 'phi': phi}
+                        for theta, phi in izip(self.theta, self.phi))
+        else:
+            initials = []
         coincidences = pbar(self.cq.all_coincidences(iterator=True),
                             length=self.coincidences.nrows, show=self.progress)
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
-            progress=False)
+            progress=False, initials=initials)
         self.core_x, self.core_y = cores
 
     def prepare_output(self):

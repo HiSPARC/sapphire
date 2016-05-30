@@ -9,10 +9,10 @@ Determine the PMT response curve to correct the detected number of MIPs.
 from __future__ import division
 
 from datetime import datetime, timedelta
-from itertools import tee, izip, combinations
+from itertools import tee, izip, combinations, chain
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
-                   sqrt, abs, sum, power, concatenate)
+                   sqrt, abs, sum)
 from scipy.optimize import curve_fit
 
 from ..clusters import HiSPARCStations, HiSPARCNetwork
@@ -78,18 +78,19 @@ def determine_detector_timing_offset(dt, dz=0):
 
     :param dt: a list of time differences between detectors (t - t_ref).
     :param dz: height difference between the detector (z - z_ref).
-    :return: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data corrected for height, and
+             the error of the mean.
 
     """
     if not len(dt):
         return nan, nan
     p = round_in_base(percentile(dt.compress(abs(dt) < 100), [0.5, 99.5]), 2.5)
     bins = arange(p[0] + 1.25, p[1], 2.5)
-    detector_offset, rchi2 = fit_timing_offset(dt, bins)
+    detector_offset, detector_offset_error = fit_timing_offset(dt, bins)
     detector_offset += dz / c
     if abs(detector_offset) > 100:
         detector_offset = nan
-    return detector_offset, rchi2
+    return detector_offset, detector_offset_error
 
 
 class DetermineStationTimingOffsets(object):
@@ -152,15 +153,13 @@ class DetermineStationTimingOffsets(object):
         :return: list of datetime objects
 
         """
-        cuts = concatenate((self._get_gps_timestamps(station),
-                            self._get_gps_timestamps(ref_station),
-                            self._get_electronics_timestamps(station),
-                            self._get_electronics_timestamps(ref_station)))
-        cuts.sort()
-        cuts = map(gps_to_datetime, cuts)
-        cuts = map(self._datetime, cuts)
+        cuts = {self._datetime(gps_to_datetime(ts))
+                for ts in chain(self._get_gps_timestamps(station),
+                                self._get_gps_timestamps(ref_station),
+                                self._get_electronics_timestamps(station),
+                                self._get_electronics_timestamps(ref_station))}
         today = self._datetime(datetime.now())
-        cuts = concatenate((cuts, [today]))
+        cuts = sorted(list(cuts) + [today])
         return cuts
 
     @memoize
@@ -207,11 +206,11 @@ class DetermineStationTimingOffsets(object):
         left = get_active_index(cuts, self._datetime(date))
 
         if left == len(cuts) - 1:
-            lower_bound = cuts[left - 1] + timedelta(1)
+            lower_bound = cuts[left - 1]
             upper_bound = cuts[-1]  # include last day (today) in interval
         else:
             right = min(left + 1, len(cuts) - 1)
-            lower_bound = cuts[left] + timedelta(1)
+            lower_bound = cuts[left]
             upper_bound = cuts[right] - timedelta(1)
 
         step = timedelta(round(days / 2))
@@ -256,7 +255,7 @@ class DetermineStationTimingOffsets(object):
         :param date: date for which to determine offset as datetime.date.
         :param station: station number.
         :param ref_station: reference station number.
-        :return: station offset and reduced chi squared.
+        :return: station offset and error.
 
         """
         date = self._datetime(date)
@@ -265,11 +264,11 @@ class DetermineStationTimingOffsets(object):
         r, dz = self._get_r_dz(date, station, ref_station)
         dt = self.read_dt(station, ref_station, left, right)
         if len(dt) < self.MIN_LEN_DT:
-            s_off, rchi2 = nan, nan
+            s_off, error = nan, nan
         else:
-            s_off, rchi2 = determine_station_timing_offset(dt, dz)
+            s_off, error = determine_station_timing_offset(dt, dz)
 
-        return s_off, rchi2
+        return s_off, error
 
     def determine_station_timing_offsets(self, station, ref_station,
                                          start=None, end=None):
@@ -279,7 +278,7 @@ class DetermineStationTimingOffsets(object):
         :param ref_station: reference station number.
         :param start: datetime.date object.
         :param end: datetime.date object.
-        :return: list of station offsets as tuple (timestamp, offset, rchi2).
+        :return: list of station offsets as tuple (timestamp, offset, error).
 
         """
         if start is None:
@@ -293,9 +292,9 @@ class DetermineStationTimingOffsets(object):
         for date, _ in pbar(datetime_range(start, end), show=self.progress,
                             length=length):
             ts0 = datetime_to_gps(date)
-            s_off, rchi2 = self.determine_station_timing_offset(date, station,
+            s_off, error = self.determine_station_timing_offset(date, station,
                                                                 ref_station)
-            offsets.append((ts0, s_off, rchi2))
+            offsets.append((ts0, s_off, error))
         return offsets
 
     def determine_station_timing_offsets_for_date(self, date):
@@ -303,15 +302,15 @@ class DetermineStationTimingOffsets(object):
 
         :param date: date for which to determine offsets as datetime.date.
         :return: list of station offsets as tuple
-                 (station, ref_station, offset, rchi2).
+                 (station, ref_station, offset, error).
 
         """
         station_pairs = self.get_station_pairs_within_max_distance(date)
         offsets = []
         for station, ref_station in station_pairs:
-            s_off, rchi2 = determine_station_timing_offset(date, station,
-                                                           ref_station)
-            offsets.append((station, ref_station, s_off, rchi2))
+            s_off, error = self.determine_station_timing_offset(date, station,
+                                                                ref_station)
+            offsets.append((station, ref_station, s_off, error))
         return offsets
 
     def get_station_pairs_within_max_distance(self, date=None):
@@ -334,18 +333,21 @@ def determine_station_timing_offset(dt, dz=0):
 
     :param dt: a list of time differences between stations (t - t_ref).
     :param dz: height difference between the stations (z - z_ref).
-    :return: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data corrected for height, and
+             the error of the mean.
 
     """
     if not len(dt):
         return nan, nan
     p = percentile(dt, [0.5, 99.5])
-    bins = linspace(p[0], p[1], min(int(p[1] - p[0]), 200))
-    station_offset, rchi2 = fit_timing_offset(dt, bins)
+    # Bins should at least be 1 ns wide, on average at least 4 counts per bin
+    # and at most 200 bins.
+    bins = linspace(p[0], p[1], min(int(p[1] - p[0]), len(dt) / 4, 200))
+    station_offset, station_offset_error = fit_timing_offset(dt, bins)
     station_offset += dz / c
     if abs(station_offset) > 1000:
         return nan, nan
-    return station_offset, rchi2
+    return station_offset, station_offset_error
 
 
 def fit_timing_offset(dt, bins):
@@ -353,7 +355,7 @@ def fit_timing_offset(dt, bins):
 
     :param dt: a list of time differences between stations (t - t_ref).
     :param bins: bins edges to use for the histogram.
-    :return: mean of a gaussian fit to the data corrected for height.
+    :return: mean of a gaussian fit to the data and the error of the mean.
 
     """
     y, bins = histogram(dt, bins=bins)
@@ -363,12 +365,11 @@ def fit_timing_offset(dt, bins):
         popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)),
                                sigma=sigma, absolute_sigma=False)
         offset = popt[1]
-        y_fit = gauss(x, *popt)
-        n_dof = len(x) - len(popt)
-        rchi2 = sum(power((y - y_fit) / sigma, 2)) / n_dof
+        width = popt[2]
+        offset_error = width / sqrt(sum(y))
     except RuntimeError:
-        offset, rchi2 = nan, nan
-    return offset, rchi2
+        offset, offset_error = nan, nan
+    return offset, offset_error
 
 
 def determine_best_reference(filters):

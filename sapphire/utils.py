@@ -127,6 +127,16 @@ def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     return angle
 
 
+def vector_length(x, y, z=0):
+    """Length of a vector given by (x, y, z) coordinates
+
+    :param x,y,z: vector components.
+    :return: length of vector.
+
+    """
+    return sqrt(x ** 2 + y ** 2 + z ** 2)
+
+
 def distance_between(x1, y1, x2, y2):
     """Calculate the distance between two (x, y) coordinates
 
@@ -135,9 +145,7 @@ def distance_between(x1, y1, x2, y2):
     :return: distance between the two coordinates.
 
     """
-    d = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-
-    return d
+    return vector_length(x1 - x2, y1 - y2)
 
 
 def make_relative(x):
@@ -160,9 +168,8 @@ def which(program):
 
 
 def memoize(obj):
-    """ Memoisation cache decorator
+    """Memoisation cache decorator"""
 
-    """
     cache = obj.cache = {}
 
     @wraps(obj)

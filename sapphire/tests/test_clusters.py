@@ -551,5 +551,33 @@ class SingleDiamondStationTests(unittest.TestCase):
         self.assertEqual(len(detectors), 4)
 
 
+class FlattenClusterTests(unittest.TestCase):
+
+    def test_flatten_cluster_mock(self):
+        cluster = Mock()
+        station = Mock()
+        station.z = [1.]
+        detector = Mock()
+        detector.z = [1.]
+        station.detectors = [detector]
+        cluster.stations = [station]
+        self.assertEqual(cluster.stations[0].z[0], 1.)
+        self.assertEqual(cluster.stations[0].detectors[0].z[0], 1.)
+        clusters.flatten_cluster(cluster)
+        self.assertEqual(cluster.stations[0].z[0], 0.)
+        self.assertEqual(cluster.stations[0].detectors[0].z[0], 0.)
+
+    def test_flatten_cluster(self):
+        cluster = clusters.CompassStations()
+        cluster._add_station((0, 20, 40), [(7, 0, 1, 90), (7, 90, -10, 0)], number=104)
+        station = cluster.get_station(104)
+        detector = station.detectors[0]
+        self.assertEqual(station.get_coordinates()[-2], 40)
+        self.assertEqual(detector.get_coordinates()[-1], 41)
+        clusters.flatten_cluster(cluster)
+        self.assertEqual(station.get_coordinates()[-2], 0)
+        self.assertEqual(detector.get_coordinates()[-1], 0)
+
+
 if __name__ == '__main__':
     unittest.main()

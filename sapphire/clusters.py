@@ -14,7 +14,7 @@ import numpy as np
 
 from .transformations import axes, geographic
 from . import api
-from .utils import get_active_index
+from .utils import get_active_index, distance_between
 
 
 class Detector(object):
@@ -331,7 +331,7 @@ class Station(object):
         x0, y0, z0 = self.detectors[d0].get_coordinates()
         x1, y1, z1 = self.detectors[d1].get_coordinates()
 
-        r = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+        r = distance_between(x0, y0, x1, y1)
         phi = atan2((y1 - y0), (x1 - x0))
         dz = z1 - z0
 
@@ -528,7 +528,7 @@ class BaseCluster(object):
         x0, y0, z0 = self.stations[s0].calc_center_of_mass_coordinates()
         x1, y1, z1 = self.stations[s1].calc_center_of_mass_coordinates()
 
-        r = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+        r = distance_between(x0, y0, x1, y1)
         phi = atan2((y1 - y0), (x1 - x0))
         z = z1 - z0
 
@@ -559,6 +559,12 @@ class BaseCluster(object):
 
     @staticmethod
     def _distance(c1, c2):
+        """Calculate distance between two coordinates
+
+        :param c1,c2: array of coordinates, i.e. array([x, y, z]).
+        :return: distance between the coordinates.
+
+        """
         return np.sqrt(sum((c1 - c2) ** 2))
 
     def calc_distance_between_stations(self, s1, s2):
@@ -845,3 +851,18 @@ class HiSPARCNetwork(HiSPARCStations):
         skip_missing = True  # Likely some station without GPS location
         super(HiSPARCNetwork, self).__init__(stations, skip_missing,
                                              force_fresh, force_stale)
+
+
+def flatten_cluster(cluster):
+    """Set the altitudes for all detectors in a cluster object to z=0
+
+    Modify the given cluster by setting the z coordinates of the stations
+    and detectors to 0.
+
+    :param cluster: :class:`BaseCluster` object.
+
+    """
+    for station in cluster.stations:
+        station.z = [0.] * len(station.z)
+        for detector in station.detectors:
+            detector.z = [0.] * len(detector.z)
