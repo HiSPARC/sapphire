@@ -134,23 +134,26 @@ class CoincidenceDirectionReconstruction(object):
         self.curved = CurvedRegressionAlgorithm3D()
         self.cluster = cluster
 
-    def _calculate_offsets(self, so, ts0, reference_station=501):
+    def _calculate_offsets(self, station, ts0, reference_station=501):
         """Calculate combined station and detector offsets
 
-        :param so: station object
+        :param station: station object.
         :param ts0: gps timestamp for which the offsets are valid.
+        :param reference_station: reference station number.
+        :return: combined detector and station offsets for given station,
+                 relative to the reference station.
 
         """
-        if not isinstance(so, Station):
+        if not isinstance(station, Station):
             raise Exception('An api.Station object was expected!')
 
-        detector_offset = so.detector_timing_offset(ts0)
-        if so.station == reference_station:
-            return detector_offset
+        detector_offsets = station.detector_timing_offset(ts0)
+        if station.station == reference_station:
+            return detector_offsets
 
-        station_offset = so.station_timing_offset(ts0, reference_station)
+        station_offset = station.station_timing_offset(ts0, reference_station)
 
-        return [station_offset + detector_offset[i] for i in range(4)]
+        return [station_offset + d_off for d_off in detector_offsets]
 
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
                                 offsets={}, initial={}):
@@ -184,8 +187,8 @@ class CoincidenceDirectionReconstruction(object):
         reference_stations = offsets.keys()
 
         # prepend stations in coincidence: try these first
-        for sn in station_numbers:
-            reference_stations.remove(sn)
+        for station_number in station_numbers:
+            reference_stations.remove(station_number)
         reference_stations = station_numbers + reference_stations
 
         # try each station as reference station. Minimize NaNs
@@ -193,11 +196,11 @@ class CoincidenceDirectionReconstruction(object):
         for ref_sn in reference_stations:
             offsets_ref = {}
             number_of_nans = 0
-            for sn, so in offsets.iteritems():
-                if sn not in station_numbers:
+            for station_number, station in offsets.iteritems():
+                if station_number not in station_numbers:
                     continue
-                station_offset = self._calculate_offsets(so, ts0, reference_station=ref_sn)
-                offsets_ref[sn] = station_offset
+                station_offset = self._calculate_offsets(station, ts0, ref_sn)
+                offsets_ref[station_number] = station_offset
                 number_of_nans += sum(isnan(station_offset))
             if number_of_nans == 0:
                 # found a solution without NaNs
