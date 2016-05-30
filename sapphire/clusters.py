@@ -851,3 +851,18 @@ class HiSPARCNetwork(HiSPARCStations):
         skip_missing = True  # Likely some station without GPS location
         super(HiSPARCNetwork, self).__init__(stations, skip_missing,
                                              force_fresh, force_stale)
+
+
+def flatten_cluster(cluster):
+    """Set the altitudes for all detectors in a cluster object to z=0
+
+    Modify the given cluster by setting the z coordinates of the stations
+    and detectors to 0.
+
+    :param cluster: :class:`BaseCluster` object.
+
+    """
+    for station in cluster.stations:
+        station.z = [0.] * len(station.z)
+        for detector in station.detectors:
+            detector.z = [0.] * len(detector.z)
