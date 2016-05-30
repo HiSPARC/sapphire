@@ -567,7 +567,7 @@ class FlattenClusterTests(unittest.TestCase):
         self.assertEqual(cluster.stations[0].z[0], 0.)
         self.assertEqual(cluster.stations[0].detectors[0].z[0], 0.)
 
-    def test_flatten_cluster_mock(self):
+    def test_flatten_cluster(self):
         cluster = clusters.CompassStations()
         cluster._add_station((0, 20, 40), [(7, 0, 1, 90), (7, 90, -10, 0)], number=104)
         station = cluster.get_station(104)
