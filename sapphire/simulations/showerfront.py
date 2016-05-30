@@ -141,7 +141,7 @@ class FlatFrontSimulationWithoutErrors(ErrorlessSimulation,
 
 class FlatFrontSimulation2D(FlatFrontSimulation):
 
-    """This simualtion ignores detector altitudes."""
+    """This simulation ignores detector altitudes."""
 
     def get_arrival_time(self, detector, shower_parameters):
         """Calculate arrival time
@@ -173,7 +173,6 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
     """This simulation uses a cone shaped shower front.
 
-    Ignore altitude of detectors.
     The opening angle of the cone is given in the init
 
     Example usage::
