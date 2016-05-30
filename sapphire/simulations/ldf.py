@@ -23,7 +23,7 @@ from scipy.special import gamma
 from numpy import pi, sin, cos, sqrt, random, arctan2, log10
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
-from ..utils import pbar
+from ..utils import pbar, vector_length
 
 
 class BaseLdfSimulation(HiSPARCSimulation):
@@ -517,4 +517,4 @@ class EllipsLdf(KascadeLdf):
         x = x - x0
         y = y - y0
 
-        return sqrt(x ** 2 + y ** 2), arctan2(y, x)
+        return vector_length(x, y), arctan2(y, x)
