@@ -734,7 +734,7 @@ class Station(API):
         path = self.src_urls['electronics'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def electronic(self, timestamp):
+    def electronic(self, timestamp=None):
         """Get electronics version data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -742,7 +742,10 @@ class Station(API):
 
         """
         electronics = self.electronics
-        idx = get_active_index(electronics['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(electronics['timestamp'], timestamp)
         electronic = [electronics[idx][field] for field in
                       ('master', 'slave', 'master_fpga', 'slave_fpga')]
         return electronic
@@ -758,7 +761,7 @@ class Station(API):
         path = self.src_urls['voltage'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def voltage(self, timestamp):
+    def voltage(self, timestamp=None):
         """Get PMT voltage data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -766,7 +769,10 @@ class Station(API):
 
         """
         voltages = self.voltages
-        idx = get_active_index(voltages['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(voltages['timestamp'], timestamp)
         voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
@@ -781,7 +787,7 @@ class Station(API):
         path = self.src_urls['current'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def current(self, timestamp):
+    def current(self, timestamp=None):
         """Get PMT current data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -789,7 +795,10 @@ class Station(API):
 
         """
         currents = self.currents
-        idx = get_active_index(currents['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(currents['timestamp'], timestamp)
         current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
@@ -837,7 +846,7 @@ class Station(API):
         path = self.src_urls['trigger'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def trigger(self, timestamp):
+    def trigger(self, timestamp=None):
         """Get trigger config for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -845,7 +854,10 @@ class Station(API):
 
         """
         triggers = self.triggers
-        idx = get_active_index(triggers['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(triggers['timestamp'], timestamp)
         thresholds = [[triggers[idx]['%s%d' % (t, i)]
                        for t in ('low', 'high')]
                       for i in range(1, 5)]
@@ -869,7 +881,7 @@ class Station(API):
         path = base.format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def station_layout(self, timestamp):
+    def station_layout(self, timestamp=None):
         """Get station layout data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -877,7 +889,10 @@ class Station(API):
 
         """
         station_layouts = self.station_layouts
-        idx = get_active_index(station_layouts['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(station_layouts['timestamp'], timestamp)
         station_layout = [[station_layouts[idx]['%s%d' % (c, i)]
                            for c in ('radius', 'alpha', 'height', 'beta')]
                           for i in range(1, 5)]
@@ -895,7 +910,7 @@ class Station(API):
         path = base.format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def detector_timing_offset(self, timestamp):
+    def detector_timing_offset(self, timestamp=None):
         """Get detector timing offset data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -903,8 +918,11 @@ class Station(API):
 
         """
         detector_timing_offsets = self.detector_timing_offsets
-        idx = get_active_index(detector_timing_offsets['timestamp'],
-                               timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(detector_timing_offsets['timestamp'],
+                                   timestamp)
         detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
                                   for i in range(1, 5)]
 
@@ -935,17 +953,20 @@ class Station(API):
             data['offset'] = negative(data['offset'])
         return data
 
-    def station_timing_offset(self, timestamp, reference_station):
+    def station_timing_offset(self, reference_station, timestamp=None):
         """Get station timing offset data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
         :param reference_station: reference station
+        :param timestamp: timestamp for which the value is valid.
         :return: list of values for given timestamp.
 
         """
         station_timing_offsets = self.station_timing_offsets(reference_station)
-        idx = get_active_index(station_timing_offsets['timestamp'],
-                               timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(station_timing_offsets['timestamp'],
+                                   timestamp)
         station_timing_offset = (station_timing_offsets[idx]['offset'],
                                  station_timing_offsets[idx]['rchi2'])
 

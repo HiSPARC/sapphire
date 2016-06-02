@@ -534,7 +534,7 @@ class StationTests(unittest.TestCase):
     @patch.object(api, 'urlopen')
     def test_station_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
-        offset, rchi2 = self.station.station_timing_offset(0, STATION - 1)
+        offset, rchi2 = self.station.station_timing_offset(STATION - 1, 0)
         self.assertAlmostEqual(offset, 7.0)
         self.assertAlmostEqual(rchi2, 1.0)
 
@@ -629,7 +629,7 @@ class StaleStationTests(StationTests):
     def test_station_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
         with self.assertRaises(Exception):
-            self.station.station_timing_offset(0, STATION - 1)
+            self.station.station_timing_offset(STATION - 1, 0)
 
 
 if __name__ == '__main__':
