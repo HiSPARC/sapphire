@@ -63,7 +63,7 @@ class API(object):
             "countries": 'countries/',
             "stations_with_data": 'stations/data/{year}/{month}/{day}/',
             "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
-            "station_info": 'station/{station_number}/{year}/{month}/{day}/',
+            "station_info": 'station/{station_number}/',
             "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
             "has_weather": 'station/{station_number}/weather/{year}/{month}/'
                            '{day}/',
@@ -530,8 +530,7 @@ class Station(API):
     def info(self):
         """Get general station info"""
 
-        path = (self.urls['station_info'].format(station_number=self.station)
-                .strip("/"))
+        path = self.urls['station_info'].format(station_number=self.station)
         return self._get_json(path)
 
     def country(self):
