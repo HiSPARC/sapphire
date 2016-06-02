@@ -507,12 +507,10 @@ class Station(API):
 
     """Access data about a single station"""
 
-    def __init__(self, station, date=None, force_fresh=False,
-                 force_stale=False):
+    def __init__(self, station, force_fresh=False, force_stale=False):
         """Initialize station
 
         :param station: station number.
-        :param date: date object for which to get the station information.
         :param force_fresh: set to True to require data to be fresh
                             from the server.
         :param force_stale: set to True to require data to be taken from local
@@ -527,18 +525,13 @@ class Station(API):
         self.force_fresh = force_fresh
         self.force_stale = force_stale
         self.station = station
-        if date is None:
-            self.year, self.month, self.day = ('', '', '')
-        else:
-            self.year, self.month, self.day = (date.year, date.month, date.day)
 
     @lazy
     def info(self):
         """Get general station info"""
 
-        path = (self.urls['station_info']
-                .format(station_number=self.station, year=self.year,
-                        month=self.month, day=self.day).strip("/"))
+        path = (self.urls['station_info'].format(station_number=self.station)
+                .strip("/"))
         return self._get_json(path)
 
     def country(self):
