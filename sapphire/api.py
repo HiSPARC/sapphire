@@ -554,38 +554,6 @@ class Station(API):
         """Get the number of detectors in this station"""
         return len(self.info['scintillators'])
 
-    def detectors(self, date=None):
-        """Get the locations of detectors
-
-        :param date: date object for which to get the detector information
-        :return: list with the locations of each detector
-
-        """
-        if date is None:
-            return self.info['scintillators']
-        else:
-            station = Station(self.station, date, self.force_fresh,
-                              self.force_stale)
-            return station.detectors()
-
-    def location(self, date=None):
-        """Get gps location of the station
-
-        :param date: date object for which to get the location
-        :return: the gps coordinates for the station
-
-        """
-        if date is None:
-            dict = self.info
-            return {'latitude': dict['latitude'],
-                    'longitude': dict['longitude'],
-                    'altitude': dict['altitude']}
-        else:
-            dict = self.config(date=date)
-            return {'latitude': dict['gps_latitude'],
-                    'longitude': dict['gps_longitude'],
-                    'altitude': dict['gps_altitude']}
-
     def config(self, date=None):
         """Get station config
 

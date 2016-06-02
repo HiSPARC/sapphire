@@ -329,19 +329,6 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.subcluster(), 'Science Park')
         self.assertEqual(self.station.n_detectors(), 4)
 
-    def test_detectors(self):
-        keys = ['alpha', 'beta', 'radius', 'height']
-        self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
-        self.assertEqual(self.station.detectors()[0].keys(), keys)
-        self.assertEqual(self.station.detectors(date(2011, 1, 1))[0].keys(), keys)
-        self.assertEqual(self.station.detectors(date(2011, 1, 1))[0]['alpha'], 225)
-
-    def test_location(self):
-        keys = ['latitude', 'altitude', 'longitude']
-        self.assertEqual(self.station.location().keys(), keys)
-        self.assertEqual(self.station.location(date(2004, 1, 1))['latitude'],
-                         52.3559179545407)
-
     def test_config(self):
         self.assertEqual(self.station.config()['detnum'], 501)
         self.assertEqual(self.station.config(date(2011, 1, 1))['mas_ch1_current'],
@@ -575,17 +562,6 @@ class StationTests(unittest.TestCase):
 class StaleStationTests(StationTests):
     def setUp(self):
         self.station = api.Station(STATION, force_stale=True)
-
-    def test_detectors(self):
-        keys = ['alpha', 'beta', 'radius', 'height']
-        self.assertEqual(self.station.detectors()[0].keys(), keys)
-        self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
-        self.assertRaises(Exception, self.station.detectors, date(2004, 1, 1))
-
-    def test_location(self):
-        keys = ['latitude', 'altitude', 'longitude']
-        self.assertEqual(self.station.location().keys(), keys)
-        self.assertRaises(Exception, self.station.location, date(2004, 1, 1))
 
     def test_config(self):
         self.assertRaises(Exception, self.station.config, 501)
