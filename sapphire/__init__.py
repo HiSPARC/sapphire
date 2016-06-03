@@ -62,7 +62,8 @@ from . import time_util
 from . import transformations
 from . import utils
 
-from .analysis.calibration import determine_detector_timing_offsets
+from .analysis.calibration import (determine_detector_timing_offsets,
+                                   DetermineStationTimingOffsets)
 from .analysis.coincidence_queries import CoincidenceQuery
 from .analysis.coincidences import Coincidences, CoincidencesESD
 from .analysis.find_mpv import FindMostProbableValueInSpectrum
@@ -99,6 +100,7 @@ __all__ = ['analysis',
            'transformations',
            'utils',
            'determine_detector_timing_offsets',
+           'DetermineStationTimingOffsets',
            'CoincidenceQuery',
            'Coincidences', 'CoincidencesESD',
            'FindMostProbableValueInSpectrum',

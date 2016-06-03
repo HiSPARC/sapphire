@@ -39,15 +39,18 @@ import numpy as np
 from ..api import Station
 from ..utils import pbar, ERR
 from .find_mpv import FindMostProbableValueInSpectrum
+from .process_traces import (ADC_TIME_PER_SAMPLE, ADC_LOW_THRESHOLD,
+                             ADC_HIGH_THRESHOLD)
 
-
-ADC_THRESHOLD = 20  # This one is relative to the baseline
-ADC_LOW_THRESHOLD = 253
-ADC_HIGH_THRESHOLD = 323
-ADC_TIME_PER_SAMPLE = 2.5  # in ns
+ADC_THRESHOLD = 20  #: Threshold for arrival times, relative to the baseline
 ADC_LIMIT = 2 ** 12
-TRIGGER_2 = (2, 0, False, 0)  # 2 low and no high, no external
-TRIGGER_4 = (3, 2, True, 0)  # 3 low or 2 high, no external
+
+#: Default trigger for 2-detector station
+#: 2 low and no high, no external
+TRIGGER_2 = (2, 0, False, 0)
+#: Default trigger for 4-detector station
+#: 3 low or 2 high, no external
+TRIGGER_4 = (3, 2, True, 0)
 
 
 class ProcessEvents(object):

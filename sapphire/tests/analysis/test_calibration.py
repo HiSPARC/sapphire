@@ -1,12 +1,14 @@
 import unittest
-
 from mock import patch, sentinel, MagicMock, Mock, call
-from numpy import isnan, nan, array, all
 from datetime import datetime, date
 
-import sapphire
+from numpy import isnan, nan, array, all, std
+from numpy.random import uniform, normal
+
+from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration
 from sapphire.transformations.clock import datetime_to_gps
+from sapphire.utils import c
 
 
 class DetectorTimingTests(unittest.TestCase):
@@ -18,30 +20,31 @@ class DetectorTimingTests(unittest.TestCase):
         self.assertTrue(all(isnan(offset)))
 
         dt = array([-10, 0, 10])
+        dz = 0.6
+        dzc = dz / c
 
         # Good result
         mock_fit.return_value = (1., 2.)
         offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, 1.)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
-        self.assertEqual(offset, 3.)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
+        self.assertEqual(offset, 1. + dzc)
 
         mock_fit.return_value = (-1.5, 5.)
         offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, -1.5)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
-
-        self.assertEqual(offset, 0.5)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
+        self.assertEqual(offset, -1.5 + dzc)
 
         mock_fit.return_value = (250., 100.)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertTrue(isnan(offset))
         mock_fit.return_value = (-150., 100.)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertTrue(isnan(offset))
 
         mock_fit.return_value = (nan, nan)
-        offset, _ = calibration.determine_detector_timing_offset(dt, dz=.6)
+        offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertTrue(isnan(offset))
 
 
@@ -51,6 +54,8 @@ class StationTimingTests(unittest.TestCase):
     @patch.object(calibration, 'fit_timing_offset')
     def test_determine_station_timing_offset(self, mock_fit, mock_percentile):
         mock_percentile.return_value = (-50., 50.)
+        dz = 0.6
+        dzc = dz / c
 
         # Empty list
         offset = calibration.determine_station_timing_offset([])
@@ -62,15 +67,15 @@ class StationTimingTests(unittest.TestCase):
         self.assertEqual(offset, 1.)
         mock_percentile.assert_called_once_with([sentinel.dt], [0.5, 99.5])
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt],
-                                                                dz=.6)
-        self.assertEqual(offset, 3.)
+                                                                dz=dz)
+        self.assertEqual(offset, 1. + dzc)
 
         mock_fit.return_value = (-1.5, 5.)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertEqual(offset, -1.5)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt],
-                                                                dz=.6)
-        self.assertEqual(offset, 0.5)
+                                                                dz=dz)
+        self.assertEqual(offset, -1.5 + dzc)
 
         mock_fit.return_value = (2500., 100.)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
@@ -155,9 +160,34 @@ class SplitDatetimeRangeTests(unittest.TestCase):
         self.assertEqual(begin, start)
         self.assertEqual(end, end_100days)
 
+        # number of steps == 0
+        result = list(calibration.datetime_range(start, start, 1))
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result, [(start, start)])
+
     def test_pairwise(self):
         result = list(calibration.pairwise([1, 2, 3, 4]))
         self.assertEqual(result, [(1, 2), (2, 3), (3, 4)])
+
+
+class FitTimingOffsetTests(unittest.TestCase):
+
+    def test_fit_timing_offset(self):
+        deviations = []
+        for _ in xrange(50):
+            center = uniform(-40, 40)
+            sigma = uniform(10, 30)
+            N = 4e4
+            lower = center - 3 * sigma
+            upper = center + 3 * sigma
+            bins = range(int(lower), int(upper), 1)
+            dt = normal(center, sigma, N)
+            offset, error = calibration.fit_timing_offset(dt, bins)
+            deviations.append((center - offset) / error)
+            # Test if determined offset close to the actual center.
+            self.assertLess(abs(center - offset), 4 * error)
+        # Test if estimated error correctly represents the errors in offsets.
+        self.assertLess(abs(std(deviations) - 1), 0.35)
 
 
 class DetermineStationTimingOffsetsTests(unittest.TestCase):
@@ -170,11 +200,11 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
     def test_init(self):
         self.assertEqual(self.off.progress, sentinel.progress)
         self.assertEqual(self.off.data, sentinel.data)
-        self.assertIsInstance(self.off.cluster, sapphire.clusters.HiSPARCStations)
+        self.assertIsInstance(self.off.cluster, HiSPARCStations)
 
     def test_init_network(self):
         off = calibration.DetermineStationTimingOffsets(force_stale=True)
-        self.assertIsInstance(off.cluster, sapphire.clusters.HiSPARCNetwork)
+        self.assertIsInstance(off.cluster, HiSPARCNetwork)
 
     def test_read_dt(self):
         self.off.data = MagicMock()
@@ -229,14 +259,14 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
             self.assertEqual(self.off._determine_interval(r), ref_int)
 
     def test_get_cuts(self):
-        gps_station = (datetime_to_gps(datetime(2014, 1, 1)),
-                       datetime_to_gps(datetime(2014, 3, 1)))
-        gps_ref_station = (datetime_to_gps(datetime(2014, 1, 5)),
-                           datetime_to_gps(datetime(2014, 3, 5)))
-        elec_station = (datetime_to_gps(datetime(2014, 1, 3)),
-                        datetime_to_gps(datetime(2014, 3, 5)))
-        elec_ref_station = (datetime_to_gps(datetime(2014, 1, 9)),
-                            datetime_to_gps(datetime(2014, 3, 15)))
+        gps_station = (datetime_to_gps(datetime(2014, 1, 1, 10, 3)),
+                       datetime_to_gps(datetime(2014, 3, 1, 11, 32)))
+        gps_ref_station = (datetime_to_gps(datetime(2014, 1, 5, 0, 1, 1)),
+                           datetime_to_gps(datetime(2014, 3, 5, 3, 34, 4)))
+        elec_station = (datetime_to_gps(datetime(2014, 1, 3, 3, 34, 3)),
+                        datetime_to_gps(datetime(2014, 3, 5, 23, 59, 59)))
+        elec_ref_station = (datetime_to_gps(datetime(2014, 1, 9, 0, 0, 0)),
+                            datetime_to_gps(datetime(2014, 3, 15, 1, 2, 3)))
         gps_mock = Mock()
         elec_mock = Mock()
 
@@ -251,7 +281,7 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         elec_mock.assert_has_calls([call(sentinel.ref_station), call(sentinel.station)], any_order=True)
         gps_mock.assert_has_calls([call(sentinel.ref_station), call(sentinel.station)], any_order=True)
 
-        self.assertEqual(len(cuts), 9)
+        self.assertEqual(len(cuts), 8)
         self.assertItemsEqual(sorted(cuts), cuts)
         self.assertEqual(cuts[0], datetime(2014, 1, 1))
         today = datetime.now()
@@ -260,14 +290,13 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
     def test_get_left_and_right_bounds(self):
         cuts = (datetime(2014, 1, 1),
                 datetime(2015, 1, 1),
-
                 datetime(2015, 1, 5),
                 datetime(2015, 1, 10))
-        combinations = [(datetime(2015, 1, 1), 7, datetime(2015, 1, 2), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 3), 7, datetime(2015, 1, 2), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 3).date(), 7, datetime(2015, 1, 2), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 5), 7, datetime(2015, 1, 6), datetime(2015, 1, 9)),
-                        (datetime(2015, 1, 10), 7, datetime(2015, 1, 6), datetime(2015, 1, 10))]
+        combinations = [(datetime(2015, 1, 1), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+                        (datetime(2015, 1, 3), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+                        (datetime(2015, 1, 3).date(), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+                        (datetime(2015, 1, 5), 7, datetime(2015, 1, 5), datetime(2015, 1, 9)),
+                        (datetime(2015, 1, 10), 7, datetime(2015, 1, 5), datetime(2015, 1, 10))]
         for d, days, ref_left, ref_right in combinations:
             left, right = self.off._get_left_and_right_bounds(cuts, d, days)
             self.assertEqual(left, ref_left)

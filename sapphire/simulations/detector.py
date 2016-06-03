@@ -35,6 +35,7 @@ class HiSPARCSimulation(BaseSimulation):
         """Get multiple detector offsets
 
         :param n_detectors: number of offsets to return.
+        :return: list of detector timing offsets in ns.
 
         """
         return [cls.simulate_detector_offset() for _ in range(n_detectors)]
@@ -44,6 +45,8 @@ class HiSPARCSimulation(BaseSimulation):
         """Simulate time offsets between detectors in one station
 
         This offset should be fixed for each detector for a simulation run.
+
+        :return: detector timing offset in ns.
 
         """
         return np.random.normal(0, 2.77)
@@ -55,6 +58,8 @@ class HiSPARCSimulation(BaseSimulation):
         This offset should be fixed for each station for a simulation run.
         The actual distribution is not yet very clear. We assume it is
         gaussian for convenience. Then the stddev is about 16 ns.
+
+        :return: station timing offset in ns.
 
         """
         return np.random.normal(0, 16)
@@ -128,6 +133,7 @@ class HiSPARCSimulation(BaseSimulation):
 
         :param n: number of particles.
         :param theta: angle of incidence of the particles, as float or array.
+        :return: signal strength in number of mips.
 
         """
         costheta = np.cos(theta)
@@ -235,6 +241,8 @@ class HiSPARCSimulation(BaseSimulation):
 
         Showers from each azimuth have equal probability
 
+        :return: shower azimuth angle, in radians.
+
         """
         return np.random.uniform(-pi, pi)
 
@@ -249,6 +257,7 @@ class HiSPARCSimulation(BaseSimulation):
 
         :param min_E,max_E: Energy bounds for the distribution (in eV).
         :param alpha: Steepness of the power law distribution.
+        :return: primary particle energy, in eV.
 
         """
         x = np.random.random()

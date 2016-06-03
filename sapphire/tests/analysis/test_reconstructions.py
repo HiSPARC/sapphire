@@ -44,26 +44,27 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.rec.direction.reconstruct_events.return_value = (sentinel.theta, sentinel.phi, sentinel.ids)
         self.rec.reconstruct_directions()
         self.rec.direction.reconstruct_events.assert_called_once_with(
-            self.rec.events, None, self.rec.offsets, self.rec.progress)
+            self.rec.events, None, self.rec.offsets, self.rec.progress, [])
         self.assertEqual(self.rec.theta, sentinel.theta)
         self.assertEqual(self.rec.phi, sentinel.phi)
         self.assertEqual(self.rec.detector_ids, sentinel.ids)
 
         self.rec.reconstruct_directions(sentinel.detector_ids)
         self.rec.direction.reconstruct_events.assert_called_with(
-            self.rec.events, sentinel.detector_ids, self.rec.offsets, self.rec.progress)
+            self.rec.events, sentinel.detector_ids, self.rec.offsets, self.rec.progress, [])
 
     def test_reconstruct_cores(self):
         self.rec.core = MagicMock()
         self.rec.core.reconstruct_events.return_value = (sentinel.core_x, sentinel.core_y)
         self.rec.reconstruct_cores()
-        self.rec.core.reconstruct_events.assert_called_once_with(self.rec.events, None, self.rec.progress)
+        self.rec.core.reconstruct_events.assert_called_once_with(
+            self.rec.events, None, self.rec.progress, [])
         self.assertEqual(self.rec.core_x, sentinel.core_x)
         self.assertEqual(self.rec.core_y, sentinel.core_y)
 
         self.rec.reconstruct_cores(sentinel.detector_ids)
         self.rec.core.reconstruct_events.assert_called_with(
-            self.rec.events, sentinel.detector_ids, self.rec.progress)
+            self.rec.events, sentinel.detector_ids, self.rec.progress, [])
 
     def test_prepare_output(self):
         self.rec.events = MagicMock()
@@ -169,14 +170,14 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.rec.direction.reconstruct_coincidences.return_value = (sentinel.theta, sentinel.phi, sentinel.nums)
         self.rec.reconstruct_directions()
         self.rec.direction.reconstruct_coincidences.assert_called_once_with(
-            self.rec.cq.all_events.return_value, None, self.rec.offsets, progress=False)
+            self.rec.cq.all_events.return_value, None, self.rec.offsets, progress=False, initials=[])
         self.assertEqual(self.rec.theta, sentinel.theta)
         self.assertEqual(self.rec.phi, sentinel.phi)
         self.assertEqual(self.rec.station_numbers, sentinel.nums)
 
         self.rec.reconstruct_directions(sentinel.nums)
         self.rec.direction.reconstruct_coincidences.assert_called_with(
-            self.rec.cq.all_events.return_value, sentinel.nums, self.rec.offsets, progress=False)
+            self.rec.cq.all_events.return_value, sentinel.nums, self.rec.offsets, progress=False, initials=[])
 
     def test_reconstruct_cores(self):
         self.rec.coincidences = MagicMock()
@@ -185,13 +186,13 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.rec.core.reconstruct_coincidences.return_value = (sentinel.core_x, sentinel.core_y)
         self.rec.reconstruct_cores()
         self.rec.core.reconstruct_coincidences.assert_called_once_with(
-            self.rec.cq.all_events.return_value, None, progress=False)
+            self.rec.cq.all_events.return_value, None, progress=False, initials=[])
         self.assertEqual(self.rec.core_x, sentinel.core_x)
         self.assertEqual(self.rec.core_y, sentinel.core_y)
 
         self.rec.reconstruct_cores(sentinel.nums)
         self.rec.core.reconstruct_coincidences.assert_called_with(
-            self.rec.cq.all_events.return_value, sentinel.nums, progress=False)
+            self.rec.cq.all_events.return_value, sentinel.nums, progress=False, initials=[])
 
     def test_prepare_output(self):
         self.rec.coincidences = MagicMock()

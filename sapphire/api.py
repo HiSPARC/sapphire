@@ -945,7 +945,7 @@ class Station(API):
             station_2, station_1 = self.station, reference_station
             toggle_sign = False
 
-        columns = ('timestamp', 'offset', 'rchi2')
+        columns = ('timestamp', 'offset', 'error')
         base = self.src_urls['station_timing_offsets']
         path = base.format(station_1=station_1, station_2=station_2)
         data = self._get_tsv(path, names=columns)
@@ -968,6 +968,6 @@ class Station(API):
             idx = get_active_index(station_timing_offsets['timestamp'],
                                    timestamp)
         station_timing_offset = (station_timing_offsets[idx]['offset'],
-                                 station_timing_offsets[idx]['rchi2'])
+                                 station_timing_offsets[idx]['error'])
 
         return station_timing_offset

@@ -18,7 +18,7 @@ Example usage::
     >>> sim.run()
 
 """
-from math import pi, sin, cos, sqrt, log10
+from math import pi, sin, cos, tan, sqrt, log10
 from time import time
 
 import numpy as np
@@ -26,7 +26,7 @@ import tables
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
-from ..utils import pbar, norm_angle, closest_in_list
+from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
 
 
 class GroundParticlesSimulation(HiSPARCSimulation):
@@ -75,6 +75,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'size': event_end.n_electrons_levels,
                               'energy': event_header.energy,
                               'particle': event_header.particle}
+        self.corsika_azimuth = event_header.azimuth
 
         for i in pbar(range(self.N), show=self.progress):
             ext_timestamp = (now + i) * int(1e9)
@@ -85,9 +86,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                                  'core_pos': (x, y),
                                  'azimuth': shower_azimuth}
 
-            # Subtract Corsika shower azimuth from desired shower azimuth
+            # Subtract CORSIKA shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
-            alpha = shower_azimuth - event_header.azimuth
+            alpha = shower_azimuth - self.corsika_azimuth
             alpha = norm_angle(alpha)
             self._prepare_cluster_for_shower(x, y, alpha)
 
@@ -98,8 +99,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """Prepare the cluster object for the simulation of a shower.
 
         Rotate and translate the cluster so that (0, 0) coincides with the
-        shower core position and 'East' coincides with the shower azimuth
-        direction.
+        shower core position and that the angle between the rotated cluster
+        and the CORSIKA shower is the desired azimuth.
 
         :param x,y: position of shower core relative to cluster origin in m.
         :param alpha: angle the cluster needs to be rotated in radians.
@@ -123,13 +124,15 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        particles = self.get_particles_in_detector(detector)
+        particles = self.get_particles_in_detector(detector, shower_parameters)
         n_detected = len(particles)
 
         if n_detected:
             mips = self.simulate_detector_mips_for_particles(particles)
             particles['t'] += self.simulate_signal_transport_time(n_detected)
-            first_signal = particles['t'].min() + detector.offset
+            nz = cos(shower_parameters['zenith'])
+            tproj = detector.get_coordinates()[-1] / (c * nz)
+            first_signal = particles['t'].min() + detector.offset - tproj
             observables = {'n': round(mips, 3),
                            't': self.simulate_adc_sampling(first_signal)}
         else:
@@ -146,9 +149,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         """
         # determination of lepton angle of incidence
         theta = np.arccos(abs(particles['p_z']) /
-                          np.sqrt(particles['p_x'] ** 2 +
-                                  particles['p_y'] ** 2 +
-                                  particles['p_z'] ** 2))
+                          vector_length(particles['p_x'], particles['p_y'],
+                                        particles['p_z']))
         n = len(particles)
         mips = self.simulate_detector_mips(n, theta)
 
@@ -212,7 +214,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         return station_observables
 
-    def get_particles_in_detector(self, detector):
+    def get_particles_in_detector(self, detector, shower_parameters):
         """Get particles that hit a detector.
 
         Particle ids 2, 3, 5, 6 are electrons and muons,
@@ -223,18 +225,31 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         the simulation, the rotation of the detector is undefined.  This
         is faster than a more thorough implementation.
 
-        *Detector height is ignored!*
+        The CORSIKA simulation azimuth is used for the projection because the
+        cluster is rotated such that from the perspective of the rotated
+        detectors the CORSIKA showers come from the desired azimuth. In the
+        simulation frame the CORSIKA shower azimuth remains unchanged.
 
         :param detector: :class:`~sapphire.clusters.Detector` for which
                          to get particles.
+        :param shower_parameters: dictionary with the shower parameters.
 
         """
-        x, y = detector.get_xy_coordinates()
-        detector_boundary = sqrt(.5) / 2.
+        detector_boundary = sqrt(0.5) / 2.
+
+        x, y, z = detector.get_coordinates()
+        zenith = shower_parameters['zenith']
+        azimuth = self.corsika_azimuth
+
+        nxnz = tan(zenith) * cos(azimuth)
+        nynz = tan(zenith) * sin(azimuth)
+        xproj = x - z * nxnz
+        yproj = y - z * nynz
+
         query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
                  ' & (particle_id >= 2) & (particle_id <= 6)' %
-                 (x - detector_boundary, x + detector_boundary,
-                  y - detector_boundary, y + detector_boundary))
+                 (xproj - detector_boundary, xproj + detector_boundary,
+                  yproj - detector_boundary, yproj + detector_boundary))
         return self.groundparticles.read_where(query)
 
 
@@ -248,7 +263,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
     """
 
-    def get_particles_in_detector(self, detector):
+    def get_particles_in_detector(self, detector, shower_parameters):
         """Simulate the detector detection area accurately.
 
         First particles are filtered to see which fall inside a
@@ -260,20 +275,30 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
         :param detector: :class:`~sapphire.clusters.Detector` for which
                          to get particles.
+        :param shower_parameters: dictionary with the shower parameters.
 
         """
         detector_boundary = 0.6
 
-        x, y = detector.get_xy_coordinates()
-        c = detector.get_corners()
+        x, y, z = detector.get_coordinates()
+        corners = detector.get_corners()
+        zenith = shower_parameters['zenith']
+        azimuth = self.corsika_azimuth
 
-        b11, line1, b12 = self.get_line_boundary_eqs(c[0], c[1], c[2])
-        b21, line2, b22 = self.get_line_boundary_eqs(c[1], c[2], c[3])
+        znxnz = z * tan(zenith) * cos(azimuth)
+        znynz = z * tan(zenith) * sin(azimuth)
+        xproj = x - znxnz
+        yproj = y - znynz
+
+        cproj = [(cx - znxnz, cy - znynz) for cx, cy in corners]
+
+        b11, line1, b12 = self.get_line_boundary_eqs(*cproj[0:3])
+        b21, line2, b22 = self.get_line_boundary_eqs(*cproj[1:4])
         query = ("(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & "
                  "(b11 < %s) & (%s < b12) & (b21 < %s) & (%s < b22) & "
                  "(particle_id >= 2) & (particle_id <= 6)" %
-                 (x - detector_boundary, x + detector_boundary,
-                  y - detector_boundary, y + detector_boundary,
+                 (xproj - detector_boundary, xproj + detector_boundary,
+                  yproj - detector_boundary, yproj + detector_boundary,
                   line1, line1, line2, line2))
 
         return self.groundparticles.read_where(query)
@@ -288,11 +313,10 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         is an equation and two boundaries which can be used to test if a
         point is between the two lines.
 
-        :param p0,p1: (x, y) tuples on the same line
-        :param p2: (x, y) tuple on the parallel line
-
+        :param p0,p1: (x, y) tuples on the same line.
+        :param p2: (x, y) tuple on the parallel line.
         :return: value1, equation, value2, such that points satisfying
-            value1 < equation < value2 are between the parallel lines
+            value1 < equation < value2 are between the parallel lines.
 
         Example::
 
@@ -303,7 +327,11 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         (x0, y0), (x1, y1), (x2, y2) = p0, p1, p2
 
         # Compute the general equation for the lines
-        if not (x0 == x1):
+        if x0 == x1:
+            # line is exactly vertical
+            line = "x"
+            b1, b2 = x0, x2
+        else:
             # First, compute the slope
             a = (y1 - y0) / (x1 - x0)
 
@@ -312,10 +340,6 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
             b2 = y2 - a * x2
 
             line = "y - %f * x" % a
-        else:
-            # line is exactly vertical
-            line = "x"
-            b1, b2 = x0, x2
 
         # And order the y-intercepts
         if b1 > b2:
@@ -444,6 +468,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
                                   'size': sim['n_electron'],
                                   'energy': sim['energy'],
                                   'particle': sim['particle_id']}
+            self.corsika_azimuth = sim['azimuth']
 
             seeds = self.cq.seeds([sim])[0]
             with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
@@ -464,7 +489,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
 
                     # Subtract CORSIKA shower azimuth from desired shower
                     # azimuth to get rotation angle of the cluster.
-                    alpha = shower_azimuth - sim['azimuth']
+                    alpha = shower_azimuth - self.corsika_azimuth
                     alpha = norm_angle(alpha)
                     self._prepare_cluster_for_shower(x, y, alpha)
 
