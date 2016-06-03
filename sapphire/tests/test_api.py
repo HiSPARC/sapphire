@@ -1,5 +1,6 @@
 import unittest
 from datetime import date, datetime
+from time import time
 from urllib2 import HTTPError, URLError
 import warnings
 from os import path, extsep
@@ -9,6 +10,7 @@ from mock import patch, sentinel
 from sapphire import api
 
 STATION = 501
+FUTURE = int(time()) + 86400 * 10
 
 
 def has_extended_local_data(urlpath):
@@ -428,14 +430,17 @@ class StationTests(unittest.TestCase):
         data = self.station.voltage(1378771200)  # 2013-9-10
         self.assertEqual(data, [954, 860, 714, 752])
 
-        data = self.station.voltage(0)  # 1970-1-1
         data2 = self.station.voltages[0]
+        data = self.station.voltage(0)  # 1970-1-1
         self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
                                 data2['voltage3'], data2['voltage4']])
-        data = self.station.voltage(2208988800)  # 2040-1-1
+
         data2 = self.station.voltages[-1]
-        self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
+        data1 = self.station.voltage(FUTURE)
+        data = self.station.voltage()
+        self.assertEqual(data1, [data2['voltage1'], data2['voltage2'],
                                 data2['voltage3'], data2['voltage4']])
+        self.assertEqual(data, data1)
 
     def test_laziness_currents(self):
         self.laziness_of_attribute('currents')
@@ -448,6 +453,9 @@ class StationTests(unittest.TestCase):
     def test_current(self):
         data = self.station.current(1378771200)  # 2013-9-10
         self.assertEqual(data, [7.84, 7.94, 10.49, 10.88])
+        data = self.station.current(FUTURE)
+        data2 = self.station.current()
+        self.assertEqual(data, data2)
 
     def test_laziness_gps_locations(self):
         self.laziness_of_attribute('gps_locations')
@@ -462,6 +470,9 @@ class StationTests(unittest.TestCase):
         data = self.station.gps_location(1378771200)  # 2013-9-10
         self.assertItemsEqual(data.keys(), keys)
         self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
+        data = self.station.gps_location(FUTURE)
+        data2 = self.station.gps_location()
+        self.assertEqual(data, data2)
 
     def test_laziness_station_layouts(self):
         self.laziness_of_attribute('station_layouts')
@@ -476,6 +487,9 @@ class StationTests(unittest.TestCase):
         thresholds, trigger = self.station.trigger(1378771200)  # 2013-9-10
         self.assertItemsEqual(thresholds, [[253, 323]] * 4)
         self.assertItemsEqual(trigger, [2, 3, 1, 0])
+        data = self.station.trigger(FUTURE)
+        data2 = self.station.trigger()
+        self.assertEqual(data, data2)
 
     def test_laziness_triggers(self):
         self.laziness_of_attribute('triggers')
@@ -493,6 +507,9 @@ class StationTests(unittest.TestCase):
         data = self.station.station_layout(0)
         self.assertEqual(len(data), 4)
         self.assertEqual(len(data[0]), 4)
+        data = self.station.station_layout(FUTURE)
+        data2 = self.station.station_layout()
+        self.assertEqual(data, data2)
 
     def test_laziness_detector_timing_offsets(self):
         self.laziness_of_attribute('detector_timing_offsets')
@@ -511,6 +528,9 @@ class StationTests(unittest.TestCase):
         mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
         offsets = self.station.detector_timing_offset(0)
         self.assertEqual(len(offsets), 4)
+        data = self.station.detector_timing_offset(FUTURE)
+        data2 = self.station.detector_timing_offset()
+        self.assertEqual(data, data2)
 
     @patch.object(api, 'urlopen')
     def test_station_timing_offsets(self, mock_urlopen):
@@ -537,6 +557,9 @@ class StationTests(unittest.TestCase):
         offset, rchi2 = self.station.station_timing_offset(STATION - 1, 0)
         self.assertAlmostEqual(offset, 7.0)
         self.assertAlmostEqual(rchi2, 1.0)
+        data = self.station.station_timing_offset(STATION - 1, FUTURE)
+        data2 = self.station.station_timing_offset(STATION - 1)
+        self.assertEqual(data, data2)
 
     def laziness_of_attribute(self, attribute):
         with patch.object(api.API, '_get_tsv') as mock_get_tsv:
