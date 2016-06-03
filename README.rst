@@ -43,7 +43,8 @@ miniconda, which includes the conda package manager.
 First, `install conda <http://conda.pydata.org/docs/install/quick.html>`_ 
 and optionally create a virtualenv::
 
-    $ conda create hisparc python=2.7 numpy scipy pytables
+    $ conda create --name hisparc python=2.7 numpy scipy pytables
+    $ source activate hisparc
 
 or alternatively just install the dependencies::
 
