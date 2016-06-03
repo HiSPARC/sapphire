@@ -57,6 +57,18 @@ To check if it worked start Python and load the package:
 You're done!
 
 
+Development
+-----------
+
+First, `install conda <http://conda.pydata.org/docs/install/quick.html>`_ and run
+
+    $ conda install numpy scipy pytables
+
+After this, SAPPHiRE should work out of the box:
+
+    $ git clone https://github.com/HiSPARC/sapphire.git && cd sapphire && python setup.py develop
+
+
 Version release
 ---------------
 
