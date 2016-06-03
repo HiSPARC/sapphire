@@ -439,7 +439,7 @@ class StationTests(unittest.TestCase):
         data1 = self.station.voltage(FUTURE)
         data = self.station.voltage()
         self.assertEqual(data1, [data2['voltage1'], data2['voltage2'],
-                                data2['voltage3'], data2['voltage4']])
+                                 data2['voltage3'], data2['voltage4']])
         self.assertEqual(data, data1)
 
     def test_laziness_currents(self):
