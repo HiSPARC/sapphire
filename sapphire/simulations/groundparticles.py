@@ -266,7 +266,8 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        leptons, gammas = self.get_particles_in_detector(detector)
+        leptons, gammas = self.get_particles_in_detector(detector,
+                                                         shower_parameters)
         n_leptons = len(leptons)
         n_gammas = len(gammas)
 
@@ -297,7 +298,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         return {'n': mips_lepton + mips_gamma,
                 't': self.simulate_adc_sampling(first_signal)}
 
-    def get_particles_in_detector(self, detector):
+    def get_particles_in_detector(self, detector, shower_parameters):
         """Get particles that hit a detector.
 
         Particle ids 2, 3, 5, 6 are electrons and muons,
@@ -312,20 +313,31 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
         :param detector: :class:`~sapphire.clusters.Detector` for which
                          to get particles.
+        :param shower_parameters: dictionary with the shower parameters.
 
         """
-        x, y = detector.get_xy_coordinates()
         detector_boundary = sqrt(.5) / 2.
 
-        query_leptons = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
-                         ' & (particle_id >= 2) & (particle_id <= 6)' %
-                         (x - detector_boundary, x + detector_boundary,
-                          y - detector_boundary, y + detector_boundary))
+        x, y, z = detector.get_coordinates()
+        zenith = shower_parameters['zenith']
+        azimuth = self.corsika_azimuth
 
-        query_gammas = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
-                        ' & (particle_id == 1)' %
-                        (x - detector_boundary, x + detector_boundary,
-                         y - detector_boundary, y + detector_boundary))
+        nxnz = tan(zenith) * cos(azimuth)
+        nynz = tan(zenith) * sin(azimuth)
+        xproj = x - z * nxnz
+        yproj = y - z * nynz
+
+        query_leptons = \
+            ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+             ' & (particle_id >= 2) & (particle_id <= 6)' %
+             (xproj - detector_boundary, xproj + detector_boundary,
+              yproj - detector_boundary, yproj + detector_boundary))
+
+        query_gammas = \
+            ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+             ' & (particle_id == 1)' %
+             (xproj - detector_boundary, xproj + detector_boundary,
+              yproj - detector_boundary, yproj + detector_boundary))
 
         return (self.groundparticles.read_where(query_leptons),
                 self.groundparticles.read_where(query_gammas))
