@@ -44,9 +44,9 @@ class Detector(object):
             self.x = [position[0]]
             self.y = [position[1]]
             self.z = [position[2]] if len(position) == 3 else [0.]
-        if orientation == 'UD':
+        if isinstance(orientation, basestring) and orientation == 'UD':
             self.orientation = [0] * len(self.x)
-        elif orientation == 'LR':
+        elif isinstance(orientation, basestring) and orientation == 'LR':
             self.orientation = [pi / 2] * len(self.x)
         else:
             if hasattr(orientation, "__len__"):
