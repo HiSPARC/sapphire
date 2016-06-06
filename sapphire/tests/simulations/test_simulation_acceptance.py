@@ -4,9 +4,10 @@ import unittest
 from sapphire.tests.validate_results import validate_results
 from perform_simulation import (create_tempfile_path,
                                 perform_groundparticlessimulation,
+                                perform_groundparticlesgammasimulation,
                                 perform_flatfrontsimulation,
                                 perform_nkgldfsimulation,
-                                test_data_path, test_data_flat, test_data_nkg)
+                                test_data_path, test_data_gamma, test_data_flat, test_data_nkg)
 
 
 class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
@@ -17,6 +18,17 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
         output_path = create_tempfile_path()
         perform_groundparticlessimulation(output_path)
         validate_results(self, test_data_path, output_path)
+        os.remove(output_path)
+
+
+class GroundparticlesGammaSimulationAcceptanceTest(unittest.TestCase):
+
+    def test_simulation_output(self):
+        """Perform a simulation and verify the output"""
+
+        output_path = create_tempfile_path()
+        perform_groundparticlesgammasimulation(output_path)
+        validate_results(self, test_data_gamma, output_path)
         os.remove(output_path)
 
 
