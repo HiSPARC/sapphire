@@ -1,5 +1,6 @@
 import unittest
 from datetime import date, datetime
+from time import time
 from urllib2 import HTTPError, URLError
 import warnings
 from os import path, extsep
@@ -9,6 +10,7 @@ from mock import patch, sentinel
 from sapphire import api
 
 STATION = 501
+FUTURE = int(time()) + 86400 * 10
 
 
 def has_extended_local_data(urlpath):
@@ -329,19 +331,6 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.subcluster(), 'Science Park')
         self.assertEqual(self.station.n_detectors(), 4)
 
-    def test_detectors(self):
-        keys = ['alpha', 'beta', 'radius', 'height']
-        self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
-        self.assertEqual(self.station.detectors()[0].keys(), keys)
-        self.assertEqual(self.station.detectors(date(2011, 1, 1))[0].keys(), keys)
-        self.assertEqual(self.station.detectors(date(2011, 1, 1))[0]['alpha'], 225)
-
-    def test_location(self):
-        keys = ['latitude', 'altitude', 'longitude']
-        self.assertEqual(self.station.location().keys(), keys)
-        self.assertEqual(self.station.location(date(2004, 1, 1))['latitude'],
-                         52.3559179545407)
-
     def test_config(self):
         self.assertEqual(self.station.config()['detnum'], 501)
         self.assertEqual(self.station.config(date(2011, 1, 1))['mas_ch1_current'],
@@ -441,14 +430,17 @@ class StationTests(unittest.TestCase):
         data = self.station.voltage(1378771200)  # 2013-9-10
         self.assertEqual(data, [954, 860, 714, 752])
 
-        data = self.station.voltage(0)  # 1970-1-1
         data2 = self.station.voltages[0]
+        data = self.station.voltage(0)  # 1970-1-1
         self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
                                 data2['voltage3'], data2['voltage4']])
-        data = self.station.voltage(2208988800)  # 2040-1-1
+
         data2 = self.station.voltages[-1]
-        self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
-                                data2['voltage3'], data2['voltage4']])
+        data1 = self.station.voltage(FUTURE)
+        data = self.station.voltage()
+        self.assertEqual(data1, [data2['voltage1'], data2['voltage2'],
+                                 data2['voltage3'], data2['voltage4']])
+        self.assertEqual(data, data1)
 
     def test_laziness_currents(self):
         self.laziness_of_attribute('currents')
@@ -461,6 +453,9 @@ class StationTests(unittest.TestCase):
     def test_current(self):
         data = self.station.current(1378771200)  # 2013-9-10
         self.assertEqual(data, [7.84, 7.94, 10.49, 10.88])
+        data = self.station.current(FUTURE)
+        data2 = self.station.current()
+        self.assertEqual(data, data2)
 
     def test_laziness_gps_locations(self):
         self.laziness_of_attribute('gps_locations')
@@ -475,6 +470,9 @@ class StationTests(unittest.TestCase):
         data = self.station.gps_location(1378771200)  # 2013-9-10
         self.assertItemsEqual(data.keys(), keys)
         self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
+        data = self.station.gps_location(FUTURE)
+        data2 = self.station.gps_location()
+        self.assertEqual(data, data2)
 
     def test_laziness_station_layouts(self):
         self.laziness_of_attribute('station_layouts')
@@ -489,6 +487,9 @@ class StationTests(unittest.TestCase):
         thresholds, trigger = self.station.trigger(1378771200)  # 2013-9-10
         self.assertItemsEqual(thresholds, [[253, 323]] * 4)
         self.assertItemsEqual(trigger, [2, 3, 1, 0])
+        data = self.station.trigger(FUTURE)
+        data2 = self.station.trigger()
+        self.assertEqual(data, data2)
 
     def test_laziness_triggers(self):
         self.laziness_of_attribute('triggers')
@@ -506,6 +507,9 @@ class StationTests(unittest.TestCase):
         data = self.station.station_layout(0)
         self.assertEqual(len(data), 4)
         self.assertEqual(len(data[0]), 4)
+        data = self.station.station_layout(FUTURE)
+        data2 = self.station.station_layout()
+        self.assertEqual(data, data2)
 
     def test_laziness_detector_timing_offsets(self):
         self.laziness_of_attribute('detector_timing_offsets')
@@ -524,11 +528,14 @@ class StationTests(unittest.TestCase):
         mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
         offsets = self.station.detector_timing_offset(0)
         self.assertEqual(len(offsets), 4)
+        data = self.station.detector_timing_offset(FUTURE)
+        data2 = self.station.detector_timing_offset()
+        self.assertEqual(data, data2)
 
     @patch.object(api, 'urlopen')
     def test_station_timing_offsets(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
-        names = ('timestamp', 'offset', 'rchi2')
+        names = ('timestamp', 'offset', 'error')
         self.assertRaises(Exception, self.station.station_timing_offsets, STATION)
         data = self.station.station_timing_offsets(STATION - 1)
         self.assertAlmostEqual(data[0]['offset'], 7.)
@@ -547,9 +554,12 @@ class StationTests(unittest.TestCase):
     @patch.object(api, 'urlopen')
     def test_station_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
-        offset, rchi2 = self.station.station_timing_offset(0, STATION - 1)
+        offset, error = self.station.station_timing_offset(STATION - 1, 0)
         self.assertAlmostEqual(offset, 7.0)
-        self.assertAlmostEqual(rchi2, 1.0)
+        self.assertAlmostEqual(error, 1.0)
+        data = self.station.station_timing_offset(STATION - 1, FUTURE)
+        data2 = self.station.station_timing_offset(STATION - 1)
+        self.assertEqual(data, data2)
 
     def laziness_of_attribute(self, attribute):
         with patch.object(api.API, '_get_tsv') as mock_get_tsv:
@@ -575,17 +585,6 @@ class StationTests(unittest.TestCase):
 class StaleStationTests(StationTests):
     def setUp(self):
         self.station = api.Station(STATION, force_stale=True)
-
-    def test_detectors(self):
-        keys = ['alpha', 'beta', 'radius', 'height']
-        self.assertEqual(self.station.detectors()[0].keys(), keys)
-        self.assertEqual(len(self.station.detectors()), self.station.n_detectors())
-        self.assertRaises(Exception, self.station.detectors, date(2004, 1, 1))
-
-    def test_location(self):
-        keys = ['latitude', 'altitude', 'longitude']
-        self.assertEqual(self.station.location().keys(), keys)
-        self.assertRaises(Exception, self.station.location, date(2004, 1, 1))
 
     def test_config(self):
         self.assertRaises(Exception, self.station.config, 501)
@@ -653,7 +652,7 @@ class StaleStationTests(StationTests):
     def test_station_timing_offset(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
         with self.assertRaises(Exception):
-            self.station.station_timing_offset(0, STATION - 1)
+            self.station.station_timing_offset(STATION - 1, 0)
 
 
 if __name__ == '__main__':

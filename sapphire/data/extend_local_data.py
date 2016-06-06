@@ -20,6 +20,7 @@ def update_additional_local_tsv():
     """Get location tsv data for all stations"""
 
     station_numbers = Network().station_numbers()
+
     for type in ['eventtime', 'detector_timing_offsets']:
         try:
             mkdir(path.join(LOCAL_BASE, type))
@@ -43,24 +44,25 @@ def update_additional_local_tsv():
 
     type = 'station_timing_offsets'
     network = HiSPARCNetwork()
-    station_numbers = Network().station_numbers()
+
     try:
         mkdir(path.join(LOCAL_BASE, type))
     except OSError:
         pass
     for number1, number2 in pbar(combinations(station_numbers, 2)):
-        if network.calc_distance_between_stations(number1, number2) > 1e3:
+        distance = network.calc_distance_between_stations(number1, number2)
+        if distance is None or distance > 1e3:
             continue
         try:
-            mkdir(path.join(LOCAL_BASE, type, number))
+            mkdir(path.join(LOCAL_BASE, type, str(number1)))
         except OSError:
             pass
         url = API.src_urls[type].format(station_1=number1, station_2=number2)
         try:
             data = API._retrieve_url(url.strip('/'), base=SRC_BASE)
         except:
-            print 'Failed to get %s data for station pair %d-%d' % (number1,
-                                                                    number2)
+            print ('Failed to get %s data for station pair %d-%d' %
+                   (type, number1, number2))
             continue
         data = '\n'.join(d for d in data.split('\n') if len(d) and d[0] != '#')
         if data:

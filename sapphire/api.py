@@ -63,7 +63,7 @@ class API(object):
             "countries": 'countries/',
             "stations_with_data": 'stations/data/{year}/{month}/{day}/',
             "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
-            "station_info": 'station/{station_number}/{year}/{month}/{day}/',
+            "station_info": 'station/{station_number}/',
             "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
             "has_weather": 'station/{station_number}/weather/{year}/{month}/'
                            '{day}/',
@@ -507,12 +507,10 @@ class Station(API):
 
     """Access data about a single station"""
 
-    def __init__(self, station, date=None, force_fresh=False,
-                 force_stale=False):
+    def __init__(self, station, force_fresh=False, force_stale=False):
         """Initialize station
 
         :param station: station number.
-        :param date: date object for which to get the station information.
         :param force_fresh: set to True to require data to be fresh
                             from the server.
         :param force_stale: set to True to require data to be taken from local
@@ -527,18 +525,12 @@ class Station(API):
         self.force_fresh = force_fresh
         self.force_stale = force_stale
         self.station = station
-        if date is None:
-            self.year, self.month, self.day = ('', '', '')
-        else:
-            self.year, self.month, self.day = (date.year, date.month, date.day)
 
     @lazy
     def info(self):
         """Get general station info"""
 
-        path = (self.urls['station_info']
-                .format(station_number=self.station, year=self.year,
-                        month=self.month, day=self.day).strip("/"))
+        path = self.urls['station_info'].format(station_number=self.station)
         return self._get_json(path)
 
     def country(self):
@@ -553,38 +545,6 @@ class Station(API):
     def n_detectors(self):
         """Get the number of detectors in this station"""
         return len(self.info['scintillators'])
-
-    def detectors(self, date=None):
-        """Get the locations of detectors
-
-        :param date: date object for which to get the detector information
-        :return: list with the locations of each detector
-
-        """
-        if date is None:
-            return self.info['scintillators']
-        else:
-            station = Station(self.station, date, self.force_fresh,
-                              self.force_stale)
-            return station.detectors()
-
-    def location(self, date=None):
-        """Get gps location of the station
-
-        :param date: date object for which to get the location
-        :return: the gps coordinates for the station
-
-        """
-        if date is None:
-            dict = self.info
-            return {'latitude': dict['latitude'],
-                    'longitude': dict['longitude'],
-                    'altitude': dict['altitude']}
-        else:
-            dict = self.config(date=date)
-            return {'latitude': dict['gps_latitude'],
-                    'longitude': dict['gps_longitude'],
-                    'altitude': dict['gps_altitude']}
 
     def config(self, date=None):
         """Get station config
@@ -774,7 +734,7 @@ class Station(API):
         path = self.src_urls['electronics'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def electronic(self, timestamp):
+    def electronic(self, timestamp=None):
         """Get electronics version data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -782,7 +742,10 @@ class Station(API):
 
         """
         electronics = self.electronics
-        idx = get_active_index(electronics['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(electronics['timestamp'], timestamp)
         electronic = [electronics[idx][field] for field in
                       ('master', 'slave', 'master_fpga', 'slave_fpga')]
         return electronic
@@ -798,7 +761,7 @@ class Station(API):
         path = self.src_urls['voltage'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def voltage(self, timestamp):
+    def voltage(self, timestamp=None):
         """Get PMT voltage data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -806,7 +769,10 @@ class Station(API):
 
         """
         voltages = self.voltages
-        idx = get_active_index(voltages['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(voltages['timestamp'], timestamp)
         voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
@@ -821,7 +787,7 @@ class Station(API):
         path = self.src_urls['current'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def current(self, timestamp):
+    def current(self, timestamp=None):
         """Get PMT current data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -829,7 +795,10 @@ class Station(API):
 
         """
         currents = self.currents
-        idx = get_active_index(currents['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(currents['timestamp'], timestamp)
         current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
@@ -853,7 +822,7 @@ class Station(API):
 
         """
         if timestamp is None:
-            timestamp = process_time(self.date)
+            timestamp = process_time(datetime.date.today())
         else:
             timestamp = process_time(timestamp)
         locations = self.gps_locations
@@ -877,7 +846,7 @@ class Station(API):
         path = self.src_urls['trigger'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def trigger(self, timestamp):
+    def trigger(self, timestamp=None):
         """Get trigger config for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -885,7 +854,10 @@ class Station(API):
 
         """
         triggers = self.triggers
-        idx = get_active_index(triggers['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(triggers['timestamp'], timestamp)
         thresholds = [[triggers[idx]['%s%d' % (t, i)]
                        for t in ('low', 'high')]
                       for i in range(1, 5)]
@@ -909,7 +881,7 @@ class Station(API):
         path = base.format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def station_layout(self, timestamp):
+    def station_layout(self, timestamp=None):
         """Get station layout data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -917,7 +889,10 @@ class Station(API):
 
         """
         station_layouts = self.station_layouts
-        idx = get_active_index(station_layouts['timestamp'], timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(station_layouts['timestamp'], timestamp)
         station_layout = [[station_layouts[idx]['%s%d' % (c, i)]
                            for c in ('radius', 'alpha', 'height', 'beta')]
                           for i in range(1, 5)]
@@ -935,7 +910,7 @@ class Station(API):
         path = base.format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
-    def detector_timing_offset(self, timestamp):
+    def detector_timing_offset(self, timestamp=None):
         """Get detector timing offset data for specific timestamp
 
         :param timestamp: timestamp for which the values are valid.
@@ -943,8 +918,11 @@ class Station(API):
 
         """
         detector_timing_offsets = self.detector_timing_offsets
-        idx = get_active_index(detector_timing_offsets['timestamp'],
-                               timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(detector_timing_offsets['timestamp'],
+                                   timestamp)
         detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
                                   for i in range(1, 5)]
 
@@ -967,7 +945,7 @@ class Station(API):
             station_2, station_1 = self.station, reference_station
             toggle_sign = False
 
-        columns = ('timestamp', 'offset', 'rchi2')
+        columns = ('timestamp', 'offset', 'error')
         base = self.src_urls['station_timing_offsets']
         path = base.format(station_1=station_1, station_2=station_2)
         data = self._get_tsv(path, names=columns)
@@ -975,18 +953,21 @@ class Station(API):
             data['offset'] = negative(data['offset'])
         return data
 
-    def station_timing_offset(self, timestamp, reference_station):
+    def station_timing_offset(self, reference_station, timestamp=None):
         """Get station timing offset data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
         :param reference_station: reference station
+        :param timestamp: timestamp for which the value is valid.
         :return: list of values for given timestamp.
 
         """
         station_timing_offsets = self.station_timing_offsets(reference_station)
-        idx = get_active_index(station_timing_offsets['timestamp'],
-                               timestamp)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(station_timing_offsets['timestamp'],
+                                   timestamp)
         station_timing_offset = (station_timing_offsets[idx]['offset'],
-                                 station_timing_offsets[idx]['rchi2'])
+                                 station_timing_offsets[idx]['error'])
 
         return station_timing_offset
