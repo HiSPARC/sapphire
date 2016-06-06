@@ -1,4 +1,5 @@
 import unittest
+import random
 
 import numpy as np
 from mock import patch
@@ -97,13 +98,31 @@ class GammasTest(unittest.TestCase):
         mock_l_pair.return_value = 1e-3
 
         mock_compton.return_value = 42.
-        p = np.array([10])
+        E = np.array([10., 7.])  # MeV
+        p = E * 1e6  # eV
         theta = np.array([0.])
 
         for _ in range(100):
             mips = gammas.simulate_detector_mips_gammas(p, theta)
             self.assertFalse(mock_compton.called)
             self.assertLessEqual(mips, gammas.max_E)
+
+        # not enough energy for pair production
+        E = np.array([0.5, 0.7])  # MeV
+        p = E * 1e6  # eV
+        theta = np.array([0., 0.])
+        for _ in range(100):
+            self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
+
+    @patch.object(random, 'expovariate')
+    def test_simulate_detector_mips_no_interaction(self, mock_expovariate):
+        p = np.array([10e6])
+        theta = np.array([0.])
+
+        # force no interaction
+        mock_expovariate.return_value = 1e3
+        self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
+
 
 if __name__ == '__main__':
     unittest.main()
