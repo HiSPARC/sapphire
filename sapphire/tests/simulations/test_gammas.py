@@ -120,7 +120,7 @@ class GammasTest(unittest.TestCase):
         theta = np.array([0.])
 
         # force no interaction
-        mock_expovariate.return_value = 1e3
+        mock_expovariate.side_effect = [1e6, 1e3]
         self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
 
 
