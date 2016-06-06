@@ -17,7 +17,6 @@ Example usage::
 """
 from math import pi, sin, cos, tan, sqrt, log10
 from time import time
-import random
 
 import numpy as np
 import tables
