@@ -9,8 +9,9 @@ from __future__ import division
 import numpy as np
 from random import expovariate
 
-
-max_E = 4.0  # 2 MeV per cm * 2cm scintillator depth
+scintillator_thickness = 2.0  # cm
+dEdx = 2.0  # 2 MeV per cm
+max_E = dEdx * scintillator_thickness
 MIP = 3.38  # MeV
 
 
@@ -53,7 +54,7 @@ def compton_energy_transfer(gamma_energy):
                                       cumulative_energy[-1])
 
     r = np.random.random()
-    conversion_factor = normalised_energy_distribution.searchsorted(r)
+    conversion_factor = normalised_energy_distribution.searchsorted(r) / 1000
     return compton_edge(gamma_energy) * conversion_factor
 
 
@@ -76,8 +77,7 @@ def dsigma_dT(E, T):
 
     s = T / E
 
-    return (np.pi * (r_e ** 2) / (electron_rest_mass_MeV *
-                                  gamma ** 2) *
+    return (np.pi * (r_e ** 2) / (electron_rest_mass_MeV * gamma ** 2) *
             (2 + (s ** 2 / ((gamma ** 2) * ((1 - s) ** 2))) +
             (s / (1 - s)) * (s - 2 / gamma)))
 
