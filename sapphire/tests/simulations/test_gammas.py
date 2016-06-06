@@ -114,7 +114,7 @@ class GammasTest(unittest.TestCase):
         for _ in range(100):
             self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
 
-    @patch.object(random, 'expovariate')
+    @patch('sapphire.simulations.gammas.expovariate')
     def test_simulate_detector_mips_no_interaction(self, mock_expovariate):
         p = np.array([10e6])
         theta = np.array([0.])
