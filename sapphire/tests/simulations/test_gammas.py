@@ -1,5 +1,4 @@
 import unittest
-import random
 
 import numpy as np
 from mock import patch
