@@ -76,9 +76,7 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         for input, expected in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             for d, e in zip(self.detectors, expected):
-<<<<<<< HEAD
-                n_particles = len(self.simulation.get_particles_in_detector(d))
-                self.assertEqual(n_particles, e)
+                self.assertEqual(len(self.simulation.get_particles_in_detector(d, shower_parameters)), e)
 
 
 class GroundParticlesGammaSimulationTest(unittest.TestCase):
@@ -97,14 +95,12 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
     def tearDown(self):
         self.corsika_data.close()
 
-    @unittest.skip("WIP")
-    def test_simulate_detector_response(self):
-        pass
-
     def test_get_particles(self):
         self.groundparticles = self.corsika_data.root.groundparticles
         self.simulation.groundparticles = self.groundparticles
 
+        shower_parameters = {'zenith': 0}
+        self.simulation.corsika_azimuth = 0
         combinations = (((0, 0, 0), (1, 0, 0, 0), (5, 0, 2, 4)),
                         ((1, -1, 0), (0, 1, 0, 3), (1, 1, 4, 8)),
                         ((1, -1, pi / 2), (1, 1, 0, 1), (1, 3, 6, 1)))
@@ -112,20 +108,9 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
         for input, n1, n2 in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             for d, n_lep, n_gam in zip(self.detectors, n1, n2):
-                lep, gamma = self.simulation.get_particles_in_detector(d)
+                lep, gamma = self.simulation.get_particles_in_detector(d, shower_parameters)
                 self.assertEqual(len(lep), n_lep)
                 self.assertEqual(len(gamma), n_gam)
-
-    @unittest.skip("WIP")
-    def test_simulate_detector_mips_for_gammas(self):
-        pass
-
-    @unittest.skip("WIP")
-    def test_simulate_detector_mips_gammas(self):
-        pass
-=======
-                self.assertEqual(len(self.simulation.get_particles_in_detector(d, shower_parameters)), e)
->>>>>>> b188e8014c93632342fdf0604b5c3e96e5493029
 
 
 class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
