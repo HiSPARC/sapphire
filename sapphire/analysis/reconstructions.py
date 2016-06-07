@@ -47,15 +47,16 @@ class ReconstructESDEvents(object):
 
     def __init__(self, data, station_group, station,
                  overwrite=False, progress=True,
-                 destination='reconstructions'):
+                 destination='reconstructions',
+                 force_fresh=False, force_stale=False):
         """Initialize the class.
 
         :param data: the PyTables datafile.
         :param station_group: the group containing the event table,
             the results will also be stored in this group.
         :param station: either a station number or
-            :class:`~sapphire.clusters.Station` object. If number the
-            positions and offsets are retrieved from the API. Otherwise
+            :class:`~sapphire.clusters.Station` object. If it is a number the
+            positions and offsets will be retrieved from the API. Otherwise
             the offsets will be determined with the available data.
         :param overwrite: if True, overwrite existing reconstruction table.
         :param progress: if True, show a progressbar while reconstructing.
@@ -74,9 +75,11 @@ class ReconstructESDEvents(object):
             self.station = station
             self.api_station = None
         else:
-            cluster = HiSPARCStations([station])
+            cluster = HiSPARCStations([station], force_fresh=force_fresh,
+                                      force_stale=force_stale)
             self.station = cluster.get_station(station)
-            self.api_station = api.Station(station)
+            self.api_station = api.Station(station, force_fresh=force_fresh,
+                                           force_stale=force_stale)
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
@@ -204,7 +207,8 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
 
     def __init__(self, source_data, dest_data, source_group, dest_group,
                  station, overwrite=False, progress=True,
-                 destination='reconstructions'):
+                 destination='reconstructions',
+                 force_fresh=False, force_stale=False):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -221,7 +225,7 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
         """
         super(ReconstructESDEventsFromSource, self).__init__(
             source_data, source_group, station, overwrite, progress,
-            destination)
+            destination, force_fresh, force_stale)
         self.dest_data = dest_data
         self.dest_group = dest_group
 
@@ -260,7 +264,8 @@ class ReconstructESDCoincidences(object):
 
     def __init__(self, data, coincidences_group='/coincidences',
                  overwrite=False, progress=True,
-                 destination='reconstructions', cluster=None):
+                 destination='reconstructions', cluster=None,
+                 force_fresh=False, force_stale=False):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -277,6 +282,8 @@ class ReconstructESDCoincidences(object):
         self.overwrite = overwrite
         self.progress = progress
         self.destination = destination
+        self.force_fresh = force_fresh
+        self.force_stale = force_stale
         self.offsets = {}
 
         self.cq = CoincidenceQuery(data, self.coincidences_group)
@@ -285,7 +292,9 @@ class ReconstructESDCoincidences(object):
                 self.cluster = self.coincidences_group._f_getattr('cluster')
             except AttributeError:
                 s_active = self._get_active_stations()
-                self.cluster = HiSPARCStations(s_active)
+                self.cluster = HiSPARCStations(s_active,
+                                               force_fresh=force_fresh,
+                                               force_stale=force_stale)
         else:
             self.cluster = cluster
 
@@ -370,7 +379,10 @@ class ReconstructESDCoincidences(object):
         Create a api.Station object for each station in the cluster.
 
         """
-        self.offsets = {station.number: api.Station(station.number)
+        self.offsets = {station.number:
+                        api.Station(station.number,
+                                    force_fresh=self.force_fresh,
+                                    force_stale=self.force_stale)
                         for station in self.cluster.stations}
 
     def store_reconstructions(self):
@@ -433,7 +445,8 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
 
     def __init__(self, source_data, dest_data, source_group, dest_group,
                  overwrite=False, progress=True,
-                 destination='reconstructions', cluster=None):
+                 destination='reconstructions', cluster=None,
+                 force_fresh=False, force_stale=False):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -450,7 +463,7 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
         """
         super(ReconstructESDCoincidencesFromSource, self).__init__(
             source_data, source_group, overwrite, progress, destination,
-            cluster)
+            cluster, force_fresh, force_stale)
         self.dest_data = dest_data
         self.dest_group = dest_group
 
