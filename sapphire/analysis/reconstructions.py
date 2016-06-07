@@ -367,14 +367,11 @@ class ReconstructESDCoincidences(object):
     def get_station_timing_offsets(self):
         """Construct a dict of api.Station objects
 
+        Create a api.Station object for each station in the cluster.
 
         """
-        self.offsets = {}
-        for station in self.cluster.stations:
-            try:
-                self.offsets[station.number] = api.Station(station.number)
-            except:
-                print "skipping...", station
+        self.offsets = {station.number: api.Station(station.number)
+                        for station in self.cluster.stations}
 
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
