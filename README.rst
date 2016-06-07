@@ -36,10 +36,21 @@ anguish and despair.  SAPPHiRE's ultimate goal: no more of that.
 Installation
 ------------
 
-Required: Python with pip, the HDF5 and ATLAS libraries and a
-Fortran compiler.
+Required: Python 2.7. pip will take care of dependencies, but installing 
+numpy, scipy and pytables from a python distribution is preferred. We use 
+miniconda, which includes the conda package manager.
 
-Then, using pip, simply open a Terminal and do::
+First, `install conda <http://conda.pydata.org/docs/install/quick.html>`_ 
+and optionally create a virtualenv::
+
+    $ conda create --name hisparc python=2.7 numpy scipy pytables
+    $ source activate hisparc
+
+or alternatively just install the dependencies::
+
+    $ conda install numpy scipy pytables
+   
+Then, using pip::
 
     $ pip install hisparc-sapphire
 
@@ -55,6 +66,17 @@ To check if it worked start Python and load the package:
     import sapphire
 
 You're done!
+
+
+Development
+-----------
+
+Install python 2.7 (preferably using conda) as described above but clone
+the sapphire repo instead of installing using pip:: 
+
+    $ git clone https://github.com/HiSPARC/sapphire.git
+    $ cd sapphire
+    $ python setup.py develop
 
 
 Version release
