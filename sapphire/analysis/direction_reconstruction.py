@@ -134,27 +134,6 @@ class CoincidenceDirectionReconstruction(object):
         self.curved = CurvedRegressionAlgorithm3D()
         self.cluster = cluster
 
-    def _calculate_offsets(self, station, ts0, reference_station=501):
-        """Calculate combined station and detector offsets
-
-        :param station: station object.
-        :param ts0: gps timestamp for which the offsets are valid.
-        :param reference_station: reference station number.
-        :return: combined detector and station offsets for given station,
-                 relative to the reference station.
-
-        """
-        if not isinstance(station, Station):
-            raise Exception('An api.Station object was expected!')
-
-        detector_offsets = station.detector_timing_offset(ts0)
-        if station.station == reference_station:
-            return detector_offsets
-
-        station_offset = station.station_timing_offset(ts0, reference_station)
-
-        return [station_offset + d_off for d_off in detector_offsets]
-
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
                                 offsets={}, initial={}):
         """Reconstruct a single coincidence
@@ -163,9 +142,9 @@ class CoincidenceDirectionReconstruction(object):
                                    or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param offsets: dictionary with detector offsets for each station.
-                        These detector offsets should be relative to one
-                        detector from a specific station.
+        :param offsets: a dictionary of either lists of detector timing
+                        offsets for each station or api.Station objects for
+                        each station.
         :param initial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
@@ -179,39 +158,9 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        if station_numbers is None:
-            # construct list of stations in event
-            station_numbers = [sn for sn, _ in coincidence_events]
-        station_numbers = list(set(station_numbers))
-
-        reference_stations = offsets.keys()
-
-        # prepend stations in coincidence: try these first
-        for station_number in station_numbers:
-            reference_stations.remove(station_number)
-        reference_stations = station_numbers + reference_stations
-
-        # try each station as reference station. Minimize NaNs
-        least_nans_so_far = int(1e9)
-        for ref_sn in reference_stations:
-            offsets_ref = {}
-            number_of_nans = 0
-            for station_number, station in offsets.iteritems():
-                if station_number not in station_numbers:
-                    continue
-                station_offset = self._calculate_offsets(station, ts0, ref_sn)
-                offsets_ref[station_number] = station_offset
-                number_of_nans += sum(isnan(station_offset))
-            if number_of_nans == 0:
-                # found a solution without NaNs
-                offsets = offsets_ref
-                break
-            if number_of_nans < least_nans_so_far:
-                best = offsets_ref
-
-        # use solution with minimum number of nans
-        if number_of_nans:
-            offsets = best
+        if isinstance(next(offsets.itervalues()), Station):
+            offsets = self.determine_best_offsets(coincidence_events,
+                                                  station_numbers, offsets)
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:
@@ -267,6 +216,86 @@ class CoincidenceDirectionReconstruction(object):
         else:
             theta, phi, nums = ((), (), ())
         return theta, phi, nums
+
+    def determine_best_offsets(self, coincidence_events, station_numbers,
+                               offsets):
+        """Determine best combined station and detector offsets
+
+        Check which station is best used as reference. Allow offsets via a
+        third station, to be used if it reduces the offset error.
+
+        :param coincidence_events: a coincidence list consisting of three
+                                   or more (station_number, event) tuples.
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :param offsets: a dictionary of api.Station objects for each station.
+        :return: combined detector and station offsets for given station,
+                 relative to the reference station.
+
+        """
+        if station_numbers is None:
+            # stations in the coincidence
+            station_numbers = list({sn for sn, _ in coincidence_events})
+
+        # prepend stations in coincidence, try those first
+        reference_stations = station_numbers + [sn for sn in offsets.keys()
+                                                if sn not in station_number]
+
+        # try each station as reference station. Minimize NaNs
+        least_nans_so_far = int(1e9)
+        for ref_sn in reference_stations:
+            offsets_ref = {}
+            number_of_nans = 0
+            for station_number, station in offsets.iteritems():
+                if station_number not in station_numbers:
+                    # Only interested in offsets for stations in coincidence
+                    continue
+                station_offset = self.determine_best_offset(station_number,
+                                                            ref_sn, ts0,
+                                                            offsets)
+                offsets_ref[station_number] = station_offset
+                number_of_nans += sum(isnan(station_offset))
+            if number_of_nans == 0:
+                # found a solution without NaNs
+                return offsets_ref
+            elif number_of_nans < least_nans_so_far:
+                offsets_best = offsets_ref
+                least_nans_so_far = number_of_nans
+
+        # use solution with minimum number of nans
+        return best
+
+    def determine_best_offset(self, station_number, ref_sn, ts0, offsets):
+        """Get offset between two stations, possibly via other station"""
+
+        if station_number == ref_sn:
+            return self._calculate_offsets(offsets[station_number], ts0, 0.)
+
+        offset, error = offsets[station_number].station_timing_offset(ts0,
+                                                                      ref_sn)
+        for via_sn in offsets.iterkeys():
+            if via_sn in [station_number, ref_sn]:
+                continue
+            o1, e1 = offsets[station_number].station_timing_offset(ts0, via_sn)
+            o2, e2 = offsets[via_sn].station_timing_offset(ts0, ref_sn)
+            via_error = sqrt(e1 ** 2 + e2 ** 2)
+            if isnan(error) and not isnan(via_error) or via_error < error:
+                offset = o1 + o2
+
+        return self._calculate_offsets(offsets[station_number], ts0, offset)
+
+    def _calculate_offsets(self, station, ts0, offset):
+        """Calculate combined station and detector offsets
+
+        :param station: api.Station object.
+        :param ts0: gps timestamp for which the offsets are valid.
+        :param offset: station offset to a reference station.
+        :return: combined detector and station offsets for given station,
+                 relative to the reference station.
+
+        """
+        detector_offsets = station.detector_timing_offset(ts0)
+        return [offset + d_off for d_off in detector_offsets]
 
 
 class CoincidenceDirectionReconstructionDetectors(
