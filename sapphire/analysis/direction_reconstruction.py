@@ -158,7 +158,7 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        if isinstance(next(offsets.itervalues()), Station):
+        if offsets and isinstance(next(offsets.itervalues()), Station):
             offsets = self.determine_best_offsets(coincidence_events,
                                                   station_numbers, ts0,
                                                   offsets)
