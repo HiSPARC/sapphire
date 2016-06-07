@@ -333,10 +333,10 @@ class CoincidenceDirectionReconstructionDetectors(
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        # Get relevant offsets. TODO: station offsets
-        offsets = {s: o if not isinstance(o, Station)
-                   else o.detector_timing_offset(ts0)
-                   for s, o in offsets.iteritems()}
+        if offsets and isinstance(next(offsets.itervalues()), Station):
+            offsets = self.determine_best_offsets(coincidence_events,
+                                                  station_numbers, ts0,
+                                                  offsets)
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:
