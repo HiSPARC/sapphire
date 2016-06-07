@@ -160,7 +160,8 @@ class CoincidenceDirectionReconstruction(object):
 
         if isinstance(next(offsets.itervalues()), Station):
             offsets = self.determine_best_offsets(coincidence_events,
-                                                  station_numbers, offsets)
+                                                  station_numbers, ts0,
+                                                  offsets)
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:
@@ -217,7 +218,7 @@ class CoincidenceDirectionReconstruction(object):
             theta, phi, nums = ((), (), ())
         return theta, phi, nums
 
-    def determine_best_offsets(self, coincidence_events, station_numbers,
+    def determine_best_offsets(self, coincidence_events, station_numbers, ts0,
                                offsets):
         """Determine best combined station and detector offsets
 
@@ -239,7 +240,7 @@ class CoincidenceDirectionReconstruction(object):
 
         # prepend stations in coincidence, try those first
         reference_stations = station_numbers + [sn for sn in offsets.keys()
-                                                if sn not in station_number]
+                                                if sn not in station_numbers]
 
         # try each station as reference station. Minimize NaNs
         least_nans_so_far = int(1e9)
@@ -263,7 +264,7 @@ class CoincidenceDirectionReconstruction(object):
                 least_nans_so_far = number_of_nans
 
         # use solution with minimum number of nans
-        return best
+        return offsets_best
 
     def determine_best_offset(self, station_number, ref_sn, ts0, offsets):
         """Get offset between two stations, possibly via other station"""

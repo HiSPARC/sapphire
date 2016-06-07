@@ -1,8 +1,6 @@
 from itertools import izip, izip_longest
 import os
 
-from numpy import isnan, histogram, linspace, percentile, std
-from scipy.optimize import curve_fit
 import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
@@ -14,8 +12,7 @@ from .core_reconstruction import (EventCoreReconstruction,
                                   CoincidenceCoreReconstruction)
 from .coincidence_queries import CoincidenceQuery
 from .calibration import determine_detector_timing_offsets
-from .event_utils import station_arrival_time
-from ..utils import pbar, gauss, c
+from ..utils import pbar
 
 
 class ReconstructESDEvents(object):
