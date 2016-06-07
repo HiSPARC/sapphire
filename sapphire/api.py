@@ -980,7 +980,7 @@ class Station(API):
 
         :param timestamp: timestamp for which the value is valid.
         :param reference_station: reference station
-        :return: list of values for given timestamp.
+        :return: the offset and error for given timestamp.
 
         """
         station_timing_offsets = self.station_timing_offsets(reference_station)
