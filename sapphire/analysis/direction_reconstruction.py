@@ -271,13 +271,13 @@ class CoincidenceDirectionReconstruction(object):
         if station_number == ref_sn:
             return self._calculate_offsets(offsets[station_number], ts0, 0.)
 
-        offset, error = offsets[station_number].station_timing_offset(ts0,
-                                                                      ref_sn)
+        offset, error = offsets[station_number].station_timing_offset(ref_sn,
+                                                                      ts0)
         for via_sn in offsets.iterkeys():
             if via_sn in [station_number, ref_sn]:
                 continue
-            o1, e1 = offsets[station_number].station_timing_offset(ts0, via_sn)
-            o2, e2 = offsets[via_sn].station_timing_offset(ts0, ref_sn)
+            o1, e1 = offsets[station_number].station_timing_offset(via_sn, ts0)
+            o2, e2 = offsets[via_sn].station_timing_offset(ref_sn, ts0)
             via_error = sqrt(e1 ** 2 + e2 ** 2)
             if isnan(error) and not isnan(via_error) or via_error < error:
                 offset = o1 + o2
