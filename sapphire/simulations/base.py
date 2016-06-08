@@ -273,7 +273,10 @@ class BaseSimulation(object):
         self.coincidence_group = self.data.create_group(self.output_path,
                                                         'coincidences',
                                                         createparents=True)
-        self.coincidence_group._v_attrs.cluster = self.cluster
+        try:
+            self.coincidence_group._v_attrs.cluster = self.cluster
+        except tables.HDF5ExtError:
+            warnings.warn('Unable to store cluster object, to large for HDF.')
 
         description = storage.Coincidence
         s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
