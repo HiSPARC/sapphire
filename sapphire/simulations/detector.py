@@ -7,6 +7,7 @@ from math import sqrt, acos, pi, cos, sin
 import warnings
 
 import numpy as np
+import tables
 
 from .base import BaseSimulation
 from ..utils import ceil_in_base
