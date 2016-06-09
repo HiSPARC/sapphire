@@ -19,8 +19,9 @@ import warnings
 from itertools import izip_longest, combinations
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, where, pi, inf, array, cross, dot, sum)
+                   sqrt, where, pi, inf, array, cross, dot, sum, zeros)
 from scipy.optimize import minimize
+from scipy.sparse.csgraph import shortest_path
 
 from .event_utils import (station_arrival_time, detector_arrival_time,
                           relative_detector_arrival_times)
@@ -238,52 +239,53 @@ class CoincidenceDirectionReconstruction(object):
             # stations in the coincidence
             station_numbers = list({sn for sn, _ in coincidence_events})
 
-        # prepend stations in coincidence, try those first
-        reference_stations = station_numbers + [sn for sn in offsets.keys()
-                                                if sn not in station_numbers]
+        offset_stations = station_numbers + [sn for sn in offsets.keys()
+                                             if sn not in station_numbers]
 
-        # try each station as reference station. Minimize NaNs
-        least_nans_so_far = int(1e9)
-        for ref_sn in reference_stations:
-            offsets_ref = {}
-            number_of_nans = 0
-            for station_number, station in offsets.iteritems():
-                if station_number not in station_numbers:
-                    # Only interested in offsets for stations in coincidence
-                    continue
-                station_offset = self.determine_best_offset(station_number,
-                                                            ref_sn, ts0,
-                                                            offsets)
-                offsets_ref[station_number] = station_offset
-                number_of_nans += sum(isnan(station_offset))
-            if number_of_nans == 0:
-                # found a solution without NaNs
-                return offsets_ref
-            elif number_of_nans < least_nans_so_far:
-                offsets_best = offsets_ref
-                least_nans_so_far = number_of_nans
+        offset_matrix = zeros((len(offset_stations), len(offset_stations)))
+        error_matrix = zeros((len(offset_stations), len(offset_stations)))
 
-        # use solution with minimum number of nans
-        return offsets_best
+        for i, sn in enumerate(offset_stations):
+            for j, ref_sn in enumerate(offset_stations):
+                o, e = offsets[sn].station_timing_offset(ref_sn, ts0)
+                offset_matrix[i, j] = -o
+                offset_matrix[j, i] = o
+                error_matrix[i, j] = e ** 2
+                error_matrix[j, i] = e ** 2
 
-    def determine_best_offset(self, station_number, ref_sn, ts0, offsets):
-        """Get offset between two stations, possibly via other station"""
+        ref_sn, predecessors = self.determine_best_reference(error_matrix,
+                                                             station_numbers)
 
-        if station_number == ref_sn:
-            return self._calculate_offsets(offsets[station_number], ts0, 0.)
+        best_offsets = {}
+        for sn in station_numbers:
+            best_offset = self._reconstruct_best_offset(
+                predecessors, sn, ref_sn, station_numbers, offset_matrix)
+            best_offsets[sn] = self._calculate_offsets(offsets[sn], ts0,
+                                                       best_offset)
+        return best_offsets
 
-        offset, error = offsets[station_number].station_timing_offset(ref_sn,
-                                                                      ts0)
-        for via_sn in offsets.iterkeys():
-            if via_sn in [station_number, ref_sn]:
-                continue
-            o1, e1 = offsets[station_number].station_timing_offset(via_sn, ts0)
-            o2, e2 = offsets[via_sn].station_timing_offset(ref_sn, ts0)
-            via_error = sqrt(e1 ** 2 + e2 ** 2)
-            if isnan(error) and not isnan(via_error) or via_error < error:
-                offset = o1 + o2
+    def determine_best_reference(self, error_matrix, station_numbers):
+        paths, predecessors = shortest_path(error_matrix, method='FW',
+                                            directed=False,
+                                            return_predecessors=True)
+        n = len(station_numbers)
+        # Only consider station in coincidence for reference
+        total_errors = paths[:n, :n].sum(axis=1)
+        best_reference = station_numbers[total_errors.argmin()]
 
-        return self._calculate_offsets(offsets[station_number], ts0, offset)
+        return best_reference, predecessors
+
+    def _reconstruct_best_offset(self, predecessors, sn, ref_sn,
+                                 station_numbers, offset_matrix):
+        offset = 0.
+        if sn != ref_sn:
+            i = station_numbers.index(sn)
+            j = station_numbers.index(ref_sn)
+            while j != i:
+                prev_j = j
+                j = predecessors[i, j]
+                offset += offset_matrix[prev_j, j]
+        return offset
 
     def _calculate_offsets(self, station, ts0, offset):
         """Calculate combined station and detector offsets
