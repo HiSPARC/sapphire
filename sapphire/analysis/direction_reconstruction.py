@@ -26,7 +26,8 @@ from scipy.sparse.csgraph import shortest_path
 from .event_utils import (station_arrival_time, detector_arrival_time,
                           relative_detector_arrival_times)
 from ..simulations.showerfront import CorsikaStationFront
-from ..utils import pbar, norm_angle, c, make_relative, vector_length
+from ..utils import (pbar, norm_angle, c, make_relative, vector_length,
+                     floor_in_base, memoize)
 from ..api import Station
 
 
@@ -160,8 +161,13 @@ class CoincidenceDirectionReconstruction(object):
         t, x, y, z, nums = ([], [], [], [], [])
 
         if offsets and isinstance(next(offsets.itervalues()), Station):
-            offsets = self.determine_best_offsets(coincidence_events,
-                                                  station_numbers, ts0,
+            if station_numbers is None:
+                # stations in the coincidence
+                stations = list({sn for sn, _ in coincidence_events})
+            else:
+                stations = station_numbers
+            midnight_ts = floor_in_base(ts0, 86400)
+            offsets = self.determine_best_offsets(stations, midnight_ts,
                                                   offsets)
 
         for station_number, event in coincidence_events:
@@ -219,26 +225,23 @@ class CoincidenceDirectionReconstruction(object):
             theta, phi, nums = ((), (), ())
         return theta, phi, nums
 
-    def determine_best_offsets(self, coincidence_events, station_numbers, ts0,
-                               offsets):
+    @memoize
+    def determine_best_offsets(self, station_numbers, midnight_ts, offsets):
         """Determine best combined station and detector offsets
 
-        Check which station is best used as reference. Allow offsets via a
-        third station, to be used if it reduces the offset error.
+        Check which station is best used as reference. Allow offsets via
+        other stations, intermediate stations are used if it reduces the
+        offset error.
 
-        :param coincidence_events: a coincidence list consisting of three
-                                   or more (station_number, event) tuples.
-        :param station_numbers: list of station numbers, to only use
-                                events from those stations.
+        :param station_numbers: list of stations in the coincidence or also
+                                other stations can are allow to be the
+                                reference station.
+        :param midnight_ts: timestamp of midnight before the coincidence.
         :param offsets: a dictionary of api.Station objects for each station.
         :return: combined detector and station offsets for given station,
                  relative to the reference station.
 
         """
-        if station_numbers is None:
-            # stations in the coincidence
-            station_numbers = list({sn for sn, _ in coincidence_events})
-
         offset_stations = station_numbers + [sn for sn in offsets.keys()
                                              if sn not in station_numbers]
 
@@ -247,7 +250,7 @@ class CoincidenceDirectionReconstruction(object):
 
         for i, sn in enumerate(offset_stations):
             for j, ref_sn in enumerate(offset_stations):
-                o, e = offsets[sn].station_timing_offset(ref_sn, ts0)
+                o, e = offsets[sn].station_timing_offset(ref_sn, midnight_ts)
                 offset_matrix[i, j] = -o
                 offset_matrix[j, i] = o
                 error_matrix[i, j] = e ** 2
@@ -260,7 +263,8 @@ class CoincidenceDirectionReconstruction(object):
         for sn in station_numbers:
             best_offset = self._reconstruct_best_offset(
                 predecessors, sn, ref_sn, station_numbers, offset_matrix)
-            best_offsets[sn] = self._calculate_offsets(offsets[sn], ts0,
+            best_offsets[sn] = self._calculate_offsets(offsets[sn],
+                                                       midnight_ts,
                                                        best_offset)
         return best_offsets
 
