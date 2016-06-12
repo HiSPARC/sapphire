@@ -24,7 +24,7 @@ class GammasTest(unittest.TestCase):
                         (0.662, 0.482),
                         (1.17, 0.96), (1.33, 1.12))
 
-        for (E, edge) in combinations:
+        for E, edge in combinations:
             self.assertAlmostEqual(gammas.compton_edge(E), edge, places=2)
 
     def test_compton_mean_free_path(self):
@@ -32,7 +32,7 @@ class GammasTest(unittest.TestCase):
         # Values checked with: Jos Steijer, Nikhef internal note, 16 juni 2010, figure 3
         combinations = ((1., 32.), (10., 60.))
 
-        for (E, edge) in combinations:
+        for E, edge in combinations:
             self.assertAlmostEqual(gammas.compton_mean_free_path(E), edge, places=0)
 
     def test_pair_mean_free_path(self):
@@ -40,7 +40,7 @@ class GammasTest(unittest.TestCase):
         # Values checked with: Jos Steijer, Nikhef internal note, 16 juni 2010, figure 5
         combinations = ((10, 249.), (1000., 62.))
 
-        for (E, edge) in combinations:
+        for E, edge in combinations:
             self.assertAlmostEqual(gammas.pair_mean_free_path(E), edge, places=0)
 
     @patch.object(np.random, 'random')
@@ -63,7 +63,7 @@ class GammasTest(unittest.TestCase):
         combinations = ((0.511, 1.6), (1.2, 0.52), (2.76, 0.22))
 
         barn = 1e-28  # m**2. Note that the figure in Evans is in centibarn!
-        for (E, cross_section) in combinations:
+        for E, cross_section in combinations:
             edge = gammas.compton_edge(E)
             self.assertAlmostEqual(gammas.dsigma_dT(E, edge) / barn, cross_section, places=1)
 
@@ -120,6 +120,25 @@ class GammasTest(unittest.TestCase):
 
         # force no interaction
         mock_expovariate.side_effect = [1e6, 1e3]
+        self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
+
+        # no interaction because after projected depth
+        mock_expovariate.side_effect = [4, 5]
+        theta = np.array([1])
+        self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
+
+        # interactions are to late because of max depth
+        mock_expovariate.side_effect = [120, 125]
+        theta = np.array([1.555])  # projected depth would be 126 cm
+        self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
+
+        # no interaction with multiple inclined gammas each with to long
+        # interaction depth.
+        # test mostly to prevent accidental growing of depth in loop
+        n = 30
+        mock_expovariate.side_effect = [4, 5] * n
+        p = np.array([10e6] * n)
+        theta = np.array([1.] * n)  # projected depth would be 126 cm
         self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
 
 
