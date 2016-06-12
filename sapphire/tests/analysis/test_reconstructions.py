@@ -163,6 +163,15 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.assertEqual(rec.core_x, [])
         self.assertEqual(rec.core_y, [])
 
+    @patch.object(reconstructions.api, 'Station')
+    def test_get_station_timing_offsets(self, mock_station):
+        mock_station.return_value = sentinel.station
+        station = MagicMock(number=sentinel.number)
+        self.rec.cluster.stations = [station]
+        self.rec.get_station_timing_offsets()
+        self.assertEqual(self.rec.offsets.keys(), [sentinel.number])
+        self.assertEqual(self.rec.offsets.values(), [sentinel.station])
+
     def test_reconstruct_directions(self):
         self.rec.coincidences = MagicMock()
         self.rec.coincidences.nrows = 1
