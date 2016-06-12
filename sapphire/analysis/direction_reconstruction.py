@@ -160,15 +160,8 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        if offsets and isinstance(next(offsets.itervalues()), Station):
-            if station_numbers is None:
-                # stations in the coincidence
-                stations = list({sn for sn, _ in coincidence_events})
-            else:
-                stations = station_numbers
-            midnight_ts = floor_in_base(ts0, 86400)
-            offsets = self.determine_best_offsets(stations, midnight_ts,
-                                                  offsets)
+        offsets = self.get_station_offsets(coincidence_events, station_numbers,
+                                           offsets, ts0)
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:
@@ -224,6 +217,19 @@ class CoincidenceDirectionReconstruction(object):
         else:
             theta, phi, nums = ((), (), ())
         return theta, phi, nums
+
+    def get_station_offsets(self, coincidence_events, station_numbers,
+                            offsets, ts0):
+        if offsets and isinstance(next(offsets.itervalues()), Station):
+            if station_numbers is None:
+                # stations in the coincidence
+                stations = list({sn for sn, _ in coincidence_events})
+            else:
+                stations = station_numbers
+            midnight_ts = floor_in_base(ts0, 86400)
+            offsets = self.determine_best_offsets(stations, midnight_ts,
+                                                  offsets)
+        return offsets
 
     @memoize
     def determine_best_offsets(self, station_numbers, midnight_ts, offsets):
@@ -339,10 +345,8 @@ class CoincidenceDirectionReconstructionDetectors(
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        if offsets and isinstance(next(offsets.itervalues()), Station):
-            offsets = self.determine_best_offsets(coincidence_events,
-                                                  station_numbers, ts0,
-                                                  offsets)
+        offsets = self.get_station_offsets(coincidence_events, station_numbers,
+                                           offsets, ts0)
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:
