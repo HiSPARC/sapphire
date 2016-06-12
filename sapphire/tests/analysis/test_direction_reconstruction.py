@@ -205,6 +205,22 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
                          ((), (), ()))
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
 
+    def test_determine_best_reference(self):
+        # last station would be best reference, but not in station_numbers
+        # second and third station are tied, so second is best reference
+        error_matrix = array([[0, 5, 2, 1],
+                              [5, 0, 1, 1],
+                              [2, 1, 0, 1],
+                              [1, 1, 1, 0]])
+        station_numbers = [1, 2, 3]
+        ref, pred = self.dirrec.determine_best_reference(error_matrix, station_numbers)
+        self.assertEqual(ref, 2)
+        predecessors = array([[-9999, 3, 0, 0],
+                              [3, -9999, 1, 1],
+                              [2, 2, -9999, 2],
+                              [3, 3, 3, -9999]])
+        self.assertEqual(pred.tolist(), predecessors.tolist())
+
     def test__reconstruct_best_offset(self):
         offset = self.dirrec._reconstruct_best_offset([], 1, 1, [], [])
         self.assertEqual(offset, 0)
