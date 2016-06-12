@@ -11,10 +11,12 @@ from random import expovariate
 import numpy as np
 
 SCINTILLATOR_THICKNESS = 2.0  # cm
-MAX_DEPTH = 112  # longest straight path in scintillator in cm
+MAX_DEPTH = 112.  # longest straight path in scintillator in cm
 dEdx = 2.0  # 2 MeV per cm
 max_E = dEdx * SCINTILLATOR_THICKNESS
 MIP = 3.38  # MeV
+
+ELECTRON_REST_MASS_MeV = 0.5109989  # MeV
 
 
 def compton_edge(gamma_energy):
@@ -26,9 +28,7 @@ def compton_edge(gamma_energy):
     :return: compton edge [MeV].
 
     """
-    electron_rest_mass_MeV = 0.5109989  # MeV
-
-    gamma = gamma_energy / electron_rest_mass_MeV
+    gamma = gamma_energy / ELECTRON_REST_MASS_MeV
 
     return gamma_energy * 2 * gamma / (1 + 2 * gamma)
 
@@ -73,13 +73,12 @@ def dsigma_dT(E, T):
 
     """
     r_e = 2.82e-15  # classical electron radius [m]
-    electron_rest_mass_MeV = 0.5109989  # MeV
 
-    gamma = E / electron_rest_mass_MeV
+    gamma = E / ELECTRON_REST_MASS_MeV
 
     s = T / E
 
-    return (np.pi * (r_e ** 2) / (electron_rest_mass_MeV * gamma ** 2) *
+    return (np.pi * (r_e ** 2) / (ELECTRON_REST_MASS_MeV * gamma ** 2) *
             (2 + (s ** 2 / ((gamma ** 2) * ((1 - s) ** 2))) +
             (s / (1 - s)) * (s - 2 / gamma)))
 
@@ -97,15 +96,14 @@ def max_energy_deposit_in_MIPS(depth, scintillator_depth):
     :param scintillator_depth: total depth of the scintillator [cm].
 
     """
-    return ((scintillator_depth - depth) /
-            scintillator_depth) * max_E / MIP
+    return (scintillator_depth - depth) * max_E / (scintillator_depth * MIP)
 
 
 def simulate_detector_mips_gammas(p, theta):
     """Simulate detection of gammas
 
-    :param p: the momentum of the gammas as array.
-    :param theta: angle of incidence of the gammas, as array.
+    :param p: the momenta of the gammas as array, in eV.
+    :param theta: angles of incidence of the gammas as array, in radians.
     :return: the simulated detector signal (in mips).
 
     """
@@ -134,7 +132,6 @@ def simulate_detector_mips_gammas(p, theta):
 
             # kinetic energy transfered to electron by compton scattering
             energy_deposit = compton_energy_transfer(energy) / MIP
-
             max_deposit = max_energy_deposit_in_MIPS(depth_compton,
                                                      scintillator_depth)
             mips += min(max_deposit, energy_deposit)
@@ -145,7 +142,6 @@ def simulate_detector_mips_gammas(p, theta):
             # 1.022 MeV used for creation of two particles
             # all the rest is electron kinetic energy
             energy_deposit = (energy - 1.022) / MIP
-
             max_deposit = max_energy_deposit_in_MIPS(depth_pair,
                                                      scintillator_depth)
             mips += min(max_deposit, energy_deposit)
