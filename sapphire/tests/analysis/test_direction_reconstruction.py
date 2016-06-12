@@ -2,7 +2,7 @@ import unittest
 import warnings
 
 from mock import sentinel, patch, Mock, MagicMock
-from numpy import isnan, nan, pi, sqrt, arcsin, arctan
+from numpy import isnan, nan, pi, sqrt, arcsin, arctan, array
 
 from sapphire.analysis import direction_reconstruction
 from sapphire.simulations.showerfront import ConeFront
@@ -205,6 +205,37 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
                          ((), (), ()))
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
 
+    def test__reconstruct_best_offset(self):
+        offset = self.dirrec._reconstruct_best_offset([], 1, 1, [], [])
+        self.assertEqual(offset, 0)
+
+        predecessors = array([[-9999,     0,     1],
+                              [    1, -9999,     1],
+                              [    1,     2, -9999]])
+        offset_matrix = array([[0, -1, -1],
+                               [1,  0, -1],
+                               [1,  1,  0]])
+        station_numbers = [1, 2, 3]
+
+        combinations = [(1, 1, 0),
+                        (1, 2, 1),
+                        (1, 3, 2),
+                        (2, 3, 1)]
+        for sn1, sn2, offset in combinations:
+            o12 = self.dirrec._reconstruct_best_offset(predecessors, sn1, sn2, station_numbers, offset_matrix)
+            o21 = self.dirrec._reconstruct_best_offset(predecessors, sn2, sn1, station_numbers, offset_matrix)
+            self.assertEqual(offset, o12)
+            self.assertEqual(o21, -o12)
+
+    def test__calculate_offsets(self):
+        mock_station = Mock()
+        mock_station.detector_timing_offset.return_value = [0., 1., 2., 3.]
+        offset = 1.
+        ts0 = sentinel.timestamp
+        offsets = self.dirrec._calculate_offsets(mock_station, ts0, offset)
+        mock_station.detector_timing_offset.assert_called_once_with(ts0)
+        self.assertEqual(offsets, [1., 2., 3., 4.])
+
 
 class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionReconstructionTest):
 
@@ -228,12 +259,19 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
         dirrec.direct.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
         dirrec.fit.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
         dirrec.curved.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
+        coincidence_0 = []
         coincidence_1 = [[sentinel.station_number, {'timestamp': 1}]]
         coincidence_2 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event]]
         coincidence_3 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
                          [2, sentinel.event]]
         coincidence_4 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
                          [2, sentinel.event], [3, sentinel.event]]
+
+        # To few detection points, no reconstruction
+        theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_0)
+        self.assertTrue(isnan(theta))
+        self.assertTrue(isnan(phi))
+        self.assertEqual(len(nums), 0)
 
         # To few detection points, no reconstruction
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_1)
