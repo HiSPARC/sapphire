@@ -47,12 +47,14 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         dirrec.fit.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
         event = {'timestamp': sentinel.timestamp}
 
+        # To few detectors
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1])
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 0)
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
         self.assertEqual(len(ids), 2)
 
+        # Three detections, direct reconstruction
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2])
         dirrec.direct.reconstruct_common.assert_called_once_with(
             [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3, {})
@@ -61,6 +63,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         self.assertEqual(phi, sentinel.phi)
         self.assertEqual(len(ids), 3)
 
+        # Four detections, fit reconstruction
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2, 3])
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
         dirrec.fit.reconstruct_common.assert_called_once_with(
@@ -72,6 +75,13 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         dirrec.fit.reconstruct_common.assert_called_with(
             [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, {})
         self.assertEqual(dirrec.fit.reconstruct_common.call_count, 2)
+
+        # Four detections, fit reconstruction with offsets
+        offsets = MagicMock(spec=direction_reconstruction.Station)
+        offsets.detector_timing_offset.return_value = [sentinel.offset] * 4
+        theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2, 3], offsets=offsets)
+        offsets.detector_timing_offset.assert_called_once_with(sentinel.timestamp)
+        mock_detector_arrival_time.assert_called_with(event, 3, offsets.detector_timing_offset.return_value)
 
     @patch.object(direction_reconstruction.EventDirectionReconstruction, 'reconstruct_event')
     def test_reconstruct_events(self, mock_reconstruct_event):
