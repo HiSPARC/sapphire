@@ -209,12 +209,12 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         offset = self.dirrec._reconstruct_best_offset([], 1, 1, [], [])
         self.assertEqual(offset, 0)
 
-        predecessors = array([[-9999,     0,     1],
-                              [    1, -9999,     1],
-                              [    1,     2, -9999]])
+        predecessors = array([[-9999, 0, 1],
+                              [1, -9999, 1],
+                              [1, 2, -9999]])
         offset_matrix = array([[0, -1, -1],
-                               [1,  0, -1],
-                               [1,  1,  0]])
+                               [1, 0, -1],
+                               [1, 1, 0]])
         station_numbers = [1, 2, 3]
 
         combinations = [(1, 1, 0),
