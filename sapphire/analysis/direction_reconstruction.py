@@ -662,7 +662,7 @@ class SphereAlgorithm(object):
         :param x,y,z: arrays with the ECEF locations of the
                       three detectors / stations in meters.
         :param timestamp: The UTC timestamp of the coincidence in s.
-        :return: the declination and right ascension of the source. The
+        :return: declination and right ascension of the source. The
                  apparent location of the cosmic ray source in the
                  Equatorial Coordinate System.
 
@@ -683,11 +683,10 @@ class SphereAlgorithm(object):
         based on location calculations used for LORAN, DECCA, RACAL, GPS
         as described by N.G. Schultheiss 2012
 
-        :param x,y,z: Arrays with the orthogonal coordinates of the three
-                      detectors / stations in m.
-        :param t: The arrival time of the shower in the detectors / stations
-                  in ns.
-        :param t_int: The interaction time in ns.
+        :param x,y,z: arrays with the orthogonal coordinates of the three
+                      detection points in m.
+        :param t: arrival times of the detectors in ns.
+        :param t_int: interaction time in ns.
         :return: parameters x_int, y_int, z_int
 
         """
@@ -731,8 +730,8 @@ class SphereAlgorithm(object):
         y_int = y[0] + y
         z_int = z[0] + z
 
-        int_length = x_int[0] ** 2 + y_int[0] ** 2 + z_int[0] ** 2
-        det_length = x[0] ** 2 + y[0] ** 2 + z[0] ** 2
+        int_length = vector_length(x_int[0], y_int[0], z_int[0])
+        det_length = vector_length(x[0], y[0], z[0])
 
         if det_length > int_length:
             # Select interaction above the earths surface.
