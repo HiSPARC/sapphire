@@ -319,7 +319,7 @@ class CoincidenceDirectionReconstructionDetectors(
                                 offsets={}, initial={}):
         """Reconstruct a single coincidence
 
-        :param coincidence_events: a coincidence list consisting of three
+        :param coincidence_events: a coincidence list consisting of one
                                    or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
@@ -330,7 +330,7 @@ class CoincidenceDirectionReconstructionDetectors(
         :return: list of theta, phi, and station numbers.
 
         """
-        if len(coincidence_events) < 3:
+        if len(coincidence_events) < 1:
             return nan, nan, []
 
         # Subtract base timestamp to prevent loss of precision
