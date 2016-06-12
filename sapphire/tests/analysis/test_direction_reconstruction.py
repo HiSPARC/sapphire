@@ -205,6 +205,25 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
                          ((), (), ()))
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
 
+    def test_get_station_offsets(self):
+        dirrec = self.dirrec
+        mock_offsets = Mock()
+        mock_offsets.return_value = sentinel.best_offset
+        dirrec.determine_best_offsets = mock_offsets
+        coincidence_events = [(sentinel.sn1, None), (sentinel.sn2, None)]
+        station_numbers = None
+        offsets = {}
+        ts0 = 86400
+        result = dirrec.get_station_offsets(coincidence_events, station_numbers,
+                                            offsets, ts0)
+        self.assertEqual(result, offsets)
+
+        offsets = {1: MagicMock(spec=direction_reconstruction.Station)}
+        result = dirrec.get_station_offsets(coincidence_events, station_numbers,
+                                            offsets, ts0)
+        self.assertEqual(result, sentinel.best_offset)
+        mock_offsets.assert_called_once_with([sentinel.sn2, sentinel.sn1], ts0, offsets)
+
     def test_determine_best_reference(self):
         # last station would be best reference, but not in station_numbers
         # second and third station are tied, so second is best reference
