@@ -561,6 +561,10 @@ class StationTests(unittest.TestCase):
         data2 = self.station.station_timing_offset(STATION - 1)
         self.assertEqual(data, data2)
 
+        # Station itself as reference
+        data = self.station.station_timing_offset(STATION)
+        self.assertEqual(data, (0., 0.))
+
     def laziness_of_attribute(self, attribute):
         with patch.object(api.API, '_get_tsv') as mock_get_tsv:
             self.assertFalse(mock_get_tsv.called)
