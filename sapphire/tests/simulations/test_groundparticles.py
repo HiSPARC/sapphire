@@ -6,6 +6,7 @@ import tables
 from numpy import pi, sqrt, random, testing, arange
 
 from sapphire.clusters import SingleDiamondStation
+
 from sapphire.simulations import groundparticles
 
 
@@ -15,6 +16,7 @@ self_path = os.path.dirname(__file__)
 class GroundParticlesSimulationTest(unittest.TestCase):
 
     def setUp(self):
+
         self.simulation = groundparticles.GroundParticlesSimulation.__new__(
             groundparticles.GroundParticlesSimulation)
 
@@ -77,6 +79,40 @@ class GroundParticlesSimulationTest(unittest.TestCase):
                 self.assertEqual(len(self.simulation.get_particles_in_detector(d, shower_parameters)), e)
 
 
+class GroundParticlesGammaSimulationTest(unittest.TestCase):
+
+    def setUp(self):
+        self.simulation = groundparticles.GroundParticlesGammaSimulation.__new__(
+            groundparticles.GroundParticlesGammaSimulation)
+
+        corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
+        self.corsika_data = tables.open_file(corsika_data_path, 'r')
+        self.simulation.corsikafile = self.corsika_data
+
+        self.simulation.cluster = SingleDiamondStation()
+        self.detectors = self.simulation.cluster.stations[0].detectors
+
+    def tearDown(self):
+        self.corsika_data.close()
+
+    def test_get_particles(self):
+        self.groundparticles = self.corsika_data.root.groundparticles
+        self.simulation.groundparticles = self.groundparticles
+
+        shower_parameters = {'zenith': 0}
+        self.simulation.corsika_azimuth = 0
+        combinations = (((0, 0, 0), (1, 0, 0, 0), (5, 0, 2, 4)),
+                        ((1, -1, 0), (0, 1, 0, 3), (1, 1, 4, 8)),
+                        ((1, -1, pi / 2), (1, 1, 0, 1), (1, 3, 6, 1)))
+
+        for input, n1, n2 in combinations:
+            self.simulation._prepare_cluster_for_shower(*input)
+            for d, n_lep, n_gam in zip(self.detectors, n1, n2):
+                lep, gamma = self.simulation.get_particles_in_detector(d, shower_parameters)
+                self.assertEqual(len(lep), n_lep)
+                self.assertEqual(len(gamma), n_gam)
+
+
 class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
 
     def setUp(self):
@@ -127,10 +163,10 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
                 self.assertEqual(len(self.simulation.get_particles_in_detector(d, shower_parameters)), e)
 
     def test_get_line_boundary_eqs(self):
-        combinations = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)),
-                        (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
+        combos = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)),
+                  (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
 
-        for input, expected in combinations:
+        for input, expected in combos:
             result = self.simulation.get_line_boundary_eqs(*input)
             self.assertEqual(result, expected)
 

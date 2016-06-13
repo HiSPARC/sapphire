@@ -7,12 +7,9 @@ with random core positions and azimuth angles.
 Example usage::
 
     >>> import tables
-
     >>> from sapphire import GroundParticlesSimulation, ScienceParkCluster
-
     >>> data = tables.open_file('/tmp/test_groundparticle_simulation.h5', 'w')
     >>> cluster = ScienceParkCluster()
-
     >>> sim = GroundParticlesSimulation('corsika.h5', 500, cluster, data,
     ...                                 '/', 10)
     >>> sim.run()
@@ -24,6 +21,7 @@ from time import time
 import numpy as np
 import tables
 
+from .gammas import simulate_detector_mips_gammas
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
 from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
@@ -251,6 +249,116 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                  (xproj - detector_boundary, xproj + detector_boundary,
                   yproj - detector_boundary, yproj + detector_boundary))
         return self.groundparticles.read_where(query)
+
+
+class GroundParticlesGammaSimulation(GroundParticlesSimulation):
+    """Simulation which includes signals from gamma particles in the shower"""
+
+    def simulate_detector_response(self, detector, shower_parameters):
+        """Simulate detector response to a shower.
+
+        Checks if particles have passed a detector. If so, it returns the
+        number of particles in the detector and the arrival time of the first
+        particle passing the detector.
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         the observables will be determined.
+        :param shower_parameters: dictionary with the shower parameters.
+
+        """
+        leptons, gammas = self.get_particles_in_detector(detector,
+                                                         shower_parameters)
+        n_leptons = len(leptons)
+        n_gammas = len(gammas)
+
+        if not n_leptons + n_gammas:
+            return {'n': 0, 't': -999}
+
+        if n_leptons:
+            mips_lepton = self.simulate_detector_mips_for_particles(leptons)
+            leptons['t'] += self.simulate_signal_transport_time(n_leptons)
+            first_lepton = leptons['t'].min()
+        else:
+            mips_lepton = 0
+
+        if n_gammas:
+            mips_gamma = self.simulate_detector_mips_for_gammas(gammas)
+            gammas['t'] += self.simulate_signal_transport_time(n_gammas)
+            first_gamma = gammas['t'].min()
+        else:
+            mips_gamma = 0
+
+        if n_leptons and n_gammas:
+            first_signal = min(first_lepton, first_gamma) + detector.offset
+        elif n_leptons:
+            first_signal = first_lepton + detector.offset
+        elif n_gammas:
+            first_signal = first_gamma + detector.offset
+
+        return {'n': mips_lepton + mips_gamma,
+                't': self.simulate_adc_sampling(first_signal)}
+
+    def get_particles_in_detector(self, detector, shower_parameters):
+        """Get particles that hit a detector.
+
+        Particle ids 2, 3, 5, 6 are electrons and muons,
+        id 4 is no longer used (were neutrino's).
+
+        The detector is approximated by a square with a surface of 0.5
+        square meter which is *not* correctly rotated.  In fact, during
+        the simulation, the rotation of the detector is undefined.  This
+        is faster than a more thorough implementation.
+
+        *Detector height is ignored!*
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
+        :param shower_parameters: dictionary with the shower parameters.
+
+        """
+        detector_boundary = sqrt(.5) / 2.
+
+        x, y, z = detector.get_coordinates()
+        zenith = shower_parameters['zenith']
+        azimuth = self.corsika_azimuth
+
+        nxnz = tan(zenith) * cos(azimuth)
+        nynz = tan(zenith) * sin(azimuth)
+        xproj = x - z * nxnz
+        yproj = y - z * nynz
+
+        query_leptons = \
+            ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+             ' & (particle_id >= 2) & (particle_id <= 6)' %
+             (xproj - detector_boundary, xproj + detector_boundary,
+              yproj - detector_boundary, yproj + detector_boundary))
+
+        query_gammas = \
+            ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
+             ' & (particle_id == 1)' %
+             (xproj - detector_boundary, xproj + detector_boundary,
+              yproj - detector_boundary, yproj + detector_boundary))
+
+        return (self.groundparticles.read_where(query_leptons),
+                self.groundparticles.read_where(query_gammas))
+
+    def simulate_detector_mips_for_gammas(self, particles):
+        """Simulate the detector signal for gammas
+
+        :param particles: particle rows with the p_[x, y, z]
+                          components of the particle momenta.
+
+        """
+        p_gamma = np.sqrt(particles['p_x'] ** 2 + particles['p_y'] ** 2 +
+                          particles['p_z'] ** 2)
+
+        # determination of lepton angle of incidence
+        theta = np.arccos(abs(particles['p_z']) /
+                          p_gamma)
+
+        mips = simulate_detector_mips_gammas(p_gamma, theta)
+
+        return mips
 
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):

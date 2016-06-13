@@ -27,3 +27,4 @@ coincidence stores the parameters of the shower.
    simulations/groundparticles
    simulations/ldf
    simulations/showerfront
+   simulations/gammas
