@@ -383,25 +383,22 @@ class ReconstructESDCoincidences(object):
     def get_station_timing_offsets(self):
         """Construct a dict of api.Station objects
 
-        Create a api.Station object for each station in the cluster.
+        Simulations store the offsets in the cluster object, try to extract
+        that into a dictionary, to be used by the reconstructions.
+        If the data is not from simulations create an api.Station object
+        for each station in the cluster.
 
         """
-        self.offsets = {station.number:
-                        api.Station(station.number,
-                                    force_fresh=self.force_fresh,
-                                    force_stale=self.force_stale)
-                        for station in self.cluster.stations}
-
-    def get_station_timing_offsets_from_cluster(self):
-        """Construct a dict of offsets extracted from cluster object
-
-        Simulations store the offsets in the cluster object, this extracts
-        it into a form that can be used by the reconstructions.
-
-        """
-        self.offsets = {station.number: [station.gps_offset + detector.offset
-                                         for detector in station.detectors]
-                        for station in self.cluster.stations}
+        try:
+            self.offsets = {station.number: [station.gps_offset + d.offset
+                                             for d in station.detectors]
+                            for station in self.cluster.stations}
+        except AttributeError:
+            self.offsets = {station.number:
+                            api.Station(station.number,
+                                        force_fresh=self.force_fresh,
+                                        force_stale=self.force_stale)
+                            for station in self.cluster.stations}
 
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
