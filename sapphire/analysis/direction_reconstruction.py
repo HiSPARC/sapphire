@@ -34,6 +34,7 @@ from ..api import Station
 NO_OFFSET = [0., 0., 0., 0.]
 NO_STATION_OFFSET = (0., 100.)
 
+
 class EventDirectionReconstruction(object):
 
     """Reconstruct direction for station events
