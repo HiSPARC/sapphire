@@ -230,6 +230,19 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         self.assertEqual(result, sentinel.best_offset)
         mock_offsets.assert_called_with([sentinel.sn1], 864000, offsets)
 
+    def test_determine_best_offsets(self):
+        dirrec = self.dirrec
+        mock_offsets = Mock()
+        mock_offsets.station_timing_offset.return_value = (1, 2)
+        mock_offsets.detector_timing_offset.return_value = [1, 0, 2, 3]
+        offsets = {sn: mock_offsets for sn in [1, 2, 3]}
+        station_numbers = [1, 2]
+        midnight_ts = sentinel.midnight_ts
+        best_offsets = dirrec.determine_best_offsets(station_numbers, midnight_ts, offsets)
+        self.assertEqual(best_offsets.keys(), station_numbers)
+        self.assertEqual(best_offsets.values(), [[1.0, 0.0, 2.0, 3.0],
+                                                 [2.0, 1.0, 3.0, 4.0]])
+
     def test_determine_best_reference(self):
         # last station would be best reference, but not in station_numbers
         # second and third station are tied, so second is best reference
