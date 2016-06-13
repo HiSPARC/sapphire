@@ -101,7 +101,7 @@ class DetermineStationTimingOffsets(object):
     # Maximum distance between station pairs that are included in analysis
     MAX_DISTANCE = 1000  # m
     # Minimum number of timedeltas required to attempt a fit
-    MIN_LEN_DT = 100
+    MIN_LEN_DT = 200
 
     def __init__(self, stations=None, data=None, progress=False,
                  force_stale=False):
@@ -186,8 +186,7 @@ class DetermineStationTimingOffsets(object):
         :return: number of days in interval.
 
         """
-        # TODO: determine sensible number of days
-        return max(int(r ** 1.12 / 10), 7)
+        return max(int(r ** 1.2 / 10), 7)
 
     def _get_left_and_right_bounds(self, cuts, date, days):
         """Determine left and right bounds between cuts
