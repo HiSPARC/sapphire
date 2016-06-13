@@ -51,7 +51,8 @@ class EventCoreReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :param initial: dictionary with already reconstructed shower parameters.
+        :param initial: dictionary with already reconstructed shower
+                        parameters.
         :return: (x, y) core position in m.
 
         """
@@ -122,7 +123,8 @@ class CoincidenceCoreReconstruction(object):
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param initial: dictionary with already reconstructed shower parameters.
+        :param initial: dictionary with already reconstructed shower
+                        parameters.
         :return: (x, y) core position in m.
 
         """
@@ -197,7 +199,8 @@ class CoincidenceCoreReconstructionDetectors(
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param initial: dictionary with already reconstructed shower parameters.
+        :param initial: dictionary with already reconstructed shower
+                        parameters.
         :return: (x, y) core position in m.
 
         """

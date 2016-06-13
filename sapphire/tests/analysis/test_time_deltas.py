@@ -46,7 +46,7 @@ class ProcessTimeDeltasTests(unittest.TestCase):
 
     def test_store_time_deltas(self):
         pair = (501, 502)
-        node_path = '/time_deltas/station_%d/station_%d' % pair
+        node_path = '/coincidences/time_deltas/station_%d/station_%d' % pair
         self.assertRaises(Exception, self.data.get_node, node_path, 'time_deltas')
         self.td.store_time_deltas([12345678987654321], [2.5], pair)
         stored_data = self.data.get_node(node_path, 'time_deltas')

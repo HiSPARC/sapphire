@@ -215,8 +215,8 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         start = datetime(2014, 1, 1)
         end = datetime(2016, 12, 31)
         self.off.read_dt(station, ref_station, start, end)
-        table_path = '/time_deltas/station_%d/station_%d' % (ref_station,
-                                                             station)
+        table_path = ('/coincidences/time_deltas/station_%d/station_%d' %
+                      (ref_station, station))
         table_name = 'time_deltas'
         self.off.data.get_node.assert_called_once_with(table_path, table_name)
         self.assertTrue(table_mock.read_where.called)

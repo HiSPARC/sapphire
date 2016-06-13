@@ -104,18 +104,21 @@ class DetermineStationTimingOffsets(object):
     MIN_LEN_DT = 200
 
     def __init__(self, stations=None, data=None, progress=False,
-                 force_stale=False):
+                 force_stale=False,
+                 time_deltas_group='/coincidences/time_deltas'):
         """Initialize the class
 
         :param stations: list of stations for which to determine offsets.
         :param data: the PyTables datafile with timedelta tables.
         :param progress: if true: show progressbar if true.
         :param force_stale: if true: do not get network information from API.
+        :param time_deltas_group: path to the time deltas group.
 
         """
         self.data = data
         self.progress = progress
         self.force_stale = force_stale
+        self.time_deltas_group = time_deltas_group
         if stations is not None:
             self.cluster = HiSPARCStations(stations, skip_missing=True,
                                            force_stale=self.force_stale)
@@ -125,8 +128,8 @@ class DetermineStationTimingOffsets(object):
     def read_dt(self, station, ref_station, start, end):
         """Read timedeltas from HDF5 file"""
 
-        table_path = '/time_deltas/station_%d/station_%d' % (ref_station,
-                                                             station)
+        pair = (ref_station, station)
+        table_path = self.time_deltas_group + '/station_%d/station_%d' % pair
         table = self.data.get_node(table_path, 'time_deltas')
         ts0 = datetime_to_gps(start)  # noqa
         ts1 = datetime_to_gps(end)  # noqa

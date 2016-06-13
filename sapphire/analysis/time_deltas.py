@@ -23,6 +23,7 @@
 """
 import re
 from itertools import combinations
+import os
 
 import tables
 from numpy import isnan
@@ -43,17 +44,21 @@ class ProcessTimeDeltas(object):
 
     """
 
-    def __init__(self, data, coincidence_group='/coincidences', progress=True):
+    def __init__(self, data, coincidence_group='/coincidences', progress=True,
+                 destination='time_deltas'):
         """Initialize the class.
 
         :param data: the PyTables datafile.
         :param coincidence_group: path to the coincidences group.
         :param progress: show progressbar.
+        :param destination: group name for the time_deltas, as subgroup of
+                            the coincidence_group.
 
         """
         self.data = data
         self.cq = CoincidenceQuery(self.data, coincidence_group)
         self.progress = progress
+        self.destination = os.path.join(coincidence_group, destination)
 
     def determine_and_store_time_deltas(self):
         """Find station pairs, determine time deltas, and store the results."""
@@ -151,7 +156,7 @@ class ProcessTimeDeltas(object):
     def store_time_deltas(self, ext_timestamps, time_deltas, pair):
         """Store determined dt values"""
 
-        table_path = '/time_deltas/station_%d/station_%d' % pair
+        table_path = self.destination + '/station_%d/station_%d' % pair
         try:
             dt_table = self.data.get_node(table_path, 'time_deltas')
             dt_table.remove()
