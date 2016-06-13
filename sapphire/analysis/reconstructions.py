@@ -1,5 +1,6 @@
 from itertools import izip, izip_longest
 import os
+import warnings
 
 import tables
 
