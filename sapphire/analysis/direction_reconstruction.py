@@ -32,7 +32,7 @@ from ..api import Station
 
 
 NO_OFFSET = [0., 0., 0., 0.]
-
+NO_STATION_OFFSET = (0., 100.)
 
 class EventDirectionReconstruction(object):
 
@@ -256,7 +256,14 @@ class CoincidenceDirectionReconstruction(object):
 
         for i, sn in enumerate(offset_stations):
             for j, ref_sn in enumerate(offset_stations):
-                o, e = offsets[sn].station_timing_offset(ref_sn, midnight_ts)
+                try:
+                    o, e = offsets[sn].station_timing_offset(ref_sn,
+                                                             midnight_ts)
+                except:
+                    o, e = NO_STATION_OFFSET
+                else:
+                    if isnan(o) and isnan(e):
+                        o, e = NO_STATION_OFFSET
                 offset_matrix[i, j] = -o
                 offset_matrix[j, i] = o
                 error_matrix[i, j] = e ** 2
