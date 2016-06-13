@@ -77,7 +77,7 @@ def determine_detector_timing_offset(dt, dz=0):
     """Determine the timing offset between station detectors.
 
     :param dt: a list of time differences between detectors (t - t_ref).
-    :param dz: height difference between the detector (z - z_ref).
+    :param dz: height difference between the detectors (z - z_ref).
     :return: mean of a gaussian fit to the data corrected for height, and
              the error of the mean.
 
