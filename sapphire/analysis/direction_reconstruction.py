@@ -19,17 +19,20 @@ import warnings
 from itertools import izip_longest, combinations
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, where, pi, inf, array, cross, dot)
+                   sqrt, where, pi, inf, array, cross, dot, sum, zeros)
 from scipy.optimize import minimize
+from scipy.sparse.csgraph import shortest_path
 
 from .event_utils import (station_arrival_time, detector_arrival_time,
                           relative_detector_arrival_times)
 from ..simulations.showerfront import CorsikaStationFront
-from ..utils import pbar, norm_angle, c, make_relative, vector_length
+from ..utils import (pbar, norm_angle, c, make_relative, vector_length,
+                     floor_in_base, memoize)
 from ..api import Station
 
 
 NO_OFFSET = [0., 0., 0., 0.]
+NO_STATION_OFFSET = (0., 100.)
 
 
 class EventDirectionReconstruction(object):
@@ -142,9 +145,9 @@ class CoincidenceDirectionReconstruction(object):
                                    or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param offsets: dictionary with detector offsets for each station.
-                        These detector offsets should be relative to one
-                        detector from a specific station.
+        :param offsets: a dictionary of either lists of detector timing
+                        offsets for each station or api.Station objects for
+                        each station.
         :param initial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
@@ -158,10 +161,8 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        # Get relevant offsets. TODO: station offsets
-        offsets = {s: o if not isinstance(o, Station)
-                   else o.detector_timing_offset(ts0)
-                   for s, o in offsets.iteritems()}
+        offsets = self.get_station_offsets(coincidence_events, station_numbers,
+                                           offsets, ts0)
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:
@@ -218,6 +219,105 @@ class CoincidenceDirectionReconstruction(object):
             theta, phi, nums = ((), (), ())
         return theta, phi, nums
 
+    def get_station_offsets(self, coincidence_events, station_numbers,
+                            offsets, ts0):
+        if offsets and isinstance(next(offsets.itervalues()), Station):
+            if station_numbers is None:
+                # stations in the coincidence
+                stations = list({sn for sn, _ in coincidence_events})
+            else:
+                stations = station_numbers
+            midnight_ts = floor_in_base(ts0, 86400)
+            offsets = self.determine_best_offsets(stations, midnight_ts,
+                                                  offsets)
+        return offsets
+
+    @memoize
+    def determine_best_offsets(self, station_numbers, midnight_ts, offsets):
+        """Determine best combined station and detector offsets
+
+        Check which station is best used as reference. Allow offsets via
+        other stations, intermediate stations are used if it reduces the
+        offset error.
+
+        :param station_numbers: list of stations in the coincidence or also
+                                other stations can are allow to be the
+                                reference station.
+        :param midnight_ts: timestamp of midnight before the coincidence.
+        :param offsets: a dictionary of api.Station objects for each station.
+        :return: combined detector and station offsets for given station,
+                 relative to the reference station.
+
+        """
+        offset_stations = station_numbers + [sn for sn in offsets.keys()
+                                             if sn not in station_numbers]
+
+        offset_matrix = zeros((len(offset_stations), len(offset_stations)))
+        error_matrix = zeros((len(offset_stations), len(offset_stations)))
+
+        for i, sn in enumerate(offset_stations):
+            for j, ref_sn in enumerate(offset_stations):
+                try:
+                    o, e = offsets[sn].station_timing_offset(ref_sn,
+                                                             midnight_ts)
+                except:
+                    o, e = NO_STATION_OFFSET
+                else:
+                    if isnan(o) and isnan(e):
+                        o, e = NO_STATION_OFFSET
+                offset_matrix[i, j] = -o
+                offset_matrix[j, i] = o
+                error_matrix[i, j] = e ** 2
+                error_matrix[j, i] = e ** 2
+
+        ref_sn, predecessors = self.determine_best_reference(error_matrix,
+                                                             station_numbers)
+
+        best_offsets = {}
+        for sn in station_numbers:
+            best_offset = self._reconstruct_best_offset(
+                predecessors, sn, ref_sn, station_numbers, offset_matrix)
+            best_offsets[sn] = self._calculate_offsets(offsets[sn],
+                                                       midnight_ts,
+                                                       best_offset)
+        return best_offsets
+
+    def determine_best_reference(self, error_matrix, station_numbers):
+        paths, predecessors = shortest_path(error_matrix, method='FW',
+                                            directed=False,
+                                            return_predecessors=True)
+        n = len(station_numbers)
+        # Only consider station in coincidence for reference
+        total_errors = paths[:n, :n].sum(axis=1)
+        best_reference = station_numbers[total_errors.argmin()]
+
+        return best_reference, predecessors
+
+    def _reconstruct_best_offset(self, predecessors, sn, ref_sn,
+                                 station_numbers, offset_matrix):
+        offset = 0.
+        if sn != ref_sn:
+            i = station_numbers.index(sn)
+            j = station_numbers.index(ref_sn)
+            while j != i:
+                prev_j = j
+                j = predecessors[i, j]
+                offset += offset_matrix[prev_j, j]
+        return offset
+
+    def _calculate_offsets(self, station, ts0, offset):
+        """Calculate combined station and detector offsets
+
+        :param station: api.Station object.
+        :param ts0: gps timestamp for which the offsets are valid.
+        :param offset: station offset to a reference station.
+        :return: combined detector and station offsets for given station,
+                 relative to the reference station.
+
+        """
+        detector_offsets = station.detector_timing_offset(ts0)
+        return [offset + d_off for d_off in detector_offsets]
+
 
 class CoincidenceDirectionReconstructionDetectors(
         CoincidenceDirectionReconstruction):
@@ -233,7 +333,7 @@ class CoincidenceDirectionReconstructionDetectors(
                                 offsets={}, initial={}):
         """Reconstruct a single coincidence
 
-        :param coincidence_events: a coincidence list consisting of three
+        :param coincidence_events: a coincidence list consisting of one
                                    or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
@@ -244,7 +344,7 @@ class CoincidenceDirectionReconstructionDetectors(
         :return: list of theta, phi, and station numbers.
 
         """
-        if len(coincidence_events) < 3:
+        if len(coincidence_events) < 1:
             return nan, nan, []
 
         # Subtract base timestamp to prevent loss of precision
@@ -253,10 +353,8 @@ class CoincidenceDirectionReconstructionDetectors(
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
-        # Get relevant offsets. TODO: station offsets
-        offsets = {s: o if not isinstance(o, Station)
-                   else o.detector_timing_offset(ts0)
-                   for s, o in offsets.iteritems()}
+        offsets = self.get_station_offsets(coincidence_events, station_numbers,
+                                           offsets, ts0)
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:

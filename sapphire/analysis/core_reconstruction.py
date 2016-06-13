@@ -273,7 +273,7 @@ class AverageIntersectionAlgorithm(object):
     """Core estimator
 
     To the densities in 3 stations correspond 2 possible cores. The line
-    through these points is quit stable for the lateral distribution function.
+    through these points is quite stable for the lateral distribution function.
     To each combination of 3 stations out of a set of at least 4
     stations hit corresponds a line. To each combinations of 2 lines out of
     the set of lines corresponds a point of intersection (if the 2 lines are

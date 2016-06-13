@@ -252,9 +252,9 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
 
     def test_determine_interval(self):
         combinations = ((0., 7),
-                        (50., 7),
-                        (200., 37),
-                        (1000., 229))
+                        (50., 10),
+                        (200., 57),
+                        (1000., 398))
         for r, ref_int in combinations:
             self.assertEqual(self.off._determine_interval(r), ref_int)
 

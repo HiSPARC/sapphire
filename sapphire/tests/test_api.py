@@ -538,13 +538,13 @@ class StationTests(unittest.TestCase):
         names = ('timestamp', 'offset', 'error')
         self.assertRaises(Exception, self.station.station_timing_offsets, STATION)
         data = self.station.station_timing_offsets(STATION - 1)
-        self.assertAlmostEqual(data[0]['offset'], 7.)
+        self.assertEqual(data[0]['offset'], 7.)
         self.assertEqual(data.dtype.names, names)
         self.assertEqual(len(data), 4)
         self.assertEqual(len(data[0]), 3)
         # check for automatic sorting of station numbers
         data = self.station.station_timing_offsets(STATION + 1)
-        self.assertAlmostEqual(data[0]['offset'], -7.)
+        self.assertEqual(data[0]['offset'], -7.)
 
     @patch.object(api, 'urlopen')
     def test_laziness_station_timing_offsets(self, mock_urlopen):
@@ -560,6 +560,10 @@ class StationTests(unittest.TestCase):
         data = self.station.station_timing_offset(STATION - 1, FUTURE)
         data2 = self.station.station_timing_offset(STATION - 1)
         self.assertEqual(data, data2)
+
+        # Station itself as reference
+        data = self.station.station_timing_offset(STATION)
+        self.assertEqual(data, (0., 0.))
 
     def laziness_of_attribute(self, attribute):
         with patch.object(api.API, '_get_tsv') as mock_get_tsv:

@@ -7,6 +7,7 @@ from math import sqrt, acos, pi, cos, sin
 import warnings
 
 import numpy as np
+import tables
 
 from .base import BaseSimulation
 from ..utils import ceil_in_base
@@ -28,7 +29,10 @@ class HiSPARCSimulation(BaseSimulation):
                 detector.offset = self.simulate_detector_offset()
 
         # Store updated version of the cluster
-        self.coincidence_group._v_attrs.cluster = self.cluster
+        try:
+            self.coincidence_group._v_attrs.cluster = self.cluster
+        except tables.HDF5ExtError:
+            warnings.warn('Unable to store cluster object, to large for HDF.')
 
     @classmethod
     def simulate_detector_offsets(cls, n_detectors):

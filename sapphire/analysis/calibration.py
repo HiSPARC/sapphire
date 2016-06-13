@@ -77,7 +77,7 @@ def determine_detector_timing_offset(dt, dz=0):
     """Determine the timing offset between station detectors.
 
     :param dt: a list of time differences between detectors (t - t_ref).
-    :param dz: height difference between the detector (z - z_ref).
+    :param dz: height difference between the detectors (z - z_ref).
     :return: mean of a gaussian fit to the data corrected for height, and
              the error of the mean.
 
@@ -101,7 +101,7 @@ class DetermineStationTimingOffsets(object):
     # Maximum distance between station pairs that are included in analysis
     MAX_DISTANCE = 1000  # m
     # Minimum number of timedeltas required to attempt a fit
-    MIN_LEN_DT = 100
+    MIN_LEN_DT = 200
 
     def __init__(self, stations=None, data=None, progress=False,
                  force_stale=False):
@@ -186,8 +186,7 @@ class DetermineStationTimingOffsets(object):
         :return: number of days in interval.
 
         """
-        # TODO: determine sensible number of days
-        return max(int(r ** 1.12 / 10), 7)
+        return max(int(r ** 1.2 / 10), 7)
 
     def _get_left_and_right_bounds(self, cuts, date, days):
         """Determine left and right bounds between cuts

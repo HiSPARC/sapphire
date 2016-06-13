@@ -958,9 +958,12 @@ class Station(API):
 
         :param reference_station: reference station
         :param timestamp: timestamp for which the value is valid.
-        :return: list of values for given timestamp.
+        :return: the offset and error for given timestamp.
 
         """
+        if self.station == reference_station:
+            return (0., 0.)
+
         station_timing_offsets = self.station_timing_offsets(reference_station)
         if timestamp is None:
             idx = -1
