@@ -82,16 +82,17 @@ def determine_detector_timing_offset(dt, dz=0):
              the error of the mean.
 
     """
-    if not len(dt):
+    dt_filter = abs(dt) < 100
+    if not sum(dt_filter):
         return nan, nan
-    p = round_in_base(percentile(dt.compress(abs(dt) < 100), [0.5, 99.5]), 2.5)
+    p = round_in_base(percentile(dt.compress(dt_filter), [0.5, 99.5]), 2.5)
     bins = arange(p[0] + 1.25, p[1], 2.5)
     if not len(bins):
         return nan, nan
     detector_offset, detector_offset_error = fit_timing_offset(dt, bins)
     detector_offset += dz / c
     if abs(detector_offset) > 100:
-        detector_offset = nan
+        return nan, nan
     return detector_offset, detector_offset_error
 
 
