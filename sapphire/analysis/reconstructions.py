@@ -146,7 +146,10 @@ class ReconstructESDEvents(object):
         self.reconstructions = self.data.create_table(
             self.station_group, self.destination, ReconstructedEvent,
             expectedrows=self.events.nrows)
-        self.reconstructions._v_attrs.station = self.station
+        try:
+            self.reconstructions._v_attrs.station = self.station
+        except tables.HDF5ExtError:
+            warnings.warn('Unable to store station object, to large for HDF.')
 
     def store_offsets(self):
         """Store the determined offset in a table."""
@@ -241,7 +244,10 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
         self.reconstructions = self.dest_data.create_table(
             self.dest_group, self.destination, ReconstructedEvent,
             expectedrows=self.events.nrows, createparents=True)
-        self.reconstructions._v_attrs.station = self.station
+        try:
+            self.reconstructions._v_attrs.station = self.station
+        except tables.HDF5ExtError:
+            warnings.warn('Unable to store station object, to large for HDF.')
 
 
 class ReconstructESDCoincidences(object):
@@ -368,7 +374,10 @@ class ReconstructESDCoincidences(object):
         self.reconstructions = self.data.create_table(
             self.coincidences_group, self.destination, description,
             expectedrows=self.coincidences.nrows)
-        self.reconstructions._v_attrs.cluster = self.cluster
+        try:
+            self.reconstructions._v_attrs.cluster = self.cluster
+        except tables.HDF5ExtError:
+            warnings.warn('Unable to store cluster object, to large for HDF.')
 
     def get_station_timing_offsets(self):
         """Construct a dict of api.Station objects
@@ -380,6 +389,17 @@ class ReconstructESDCoincidences(object):
                         api.Station(station.number,
                                     force_fresh=self.force_fresh,
                                     force_stale=self.force_stale)
+                        for station in self.cluster.stations}
+
+    def get_station_timing_offsets_from_cluster(self):
+        """Construct a dict of offsets extracted from cluster object
+
+        Simulations store the offsets in the cluster object, this extracts
+        it into a form that can be used by the reconstructions.
+
+        """
+        self.offsets = {station.number: [station.gps_offset + detector.offset
+                                         for detector in station.detectors]
                         for station in self.cluster.stations}
 
     def store_reconstructions(self):
@@ -484,4 +504,7 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
         self.reconstructions = self.dest_data.create_table(
             self.dest_group, self.destination, description,
             expectedrows=self.coincidences.nrows, createparents=True)
-        self.reconstructions._v_attrs.cluster = self.cluster
+        try:
+            self.reconstructions._v_attrs.cluster = self.cluster
+        except tables.HDF5ExtError:
+            warnings.warn('Unable to store cluster object, to large for HDF.')
