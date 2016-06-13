@@ -230,6 +230,13 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         self.assertEqual(result, sentinel.best_offset)
         mock_offsets.assert_called_with([sentinel.sn1], 864000, offsets)
 
+        station_numbers = sentinel.station_numbers
+        result = dirrec.get_station_offsets(coincidence_events, station_numbers,
+                                            offsets, ts0)
+        self.assertEqual(result, sentinel.best_offset)
+        mock_offsets.assert_called_with(sentinel.station_numbers, 864000, offsets)
+
+
     def test_determine_best_offsets(self):
         dirrec = self.dirrec
         mock_offsets = Mock()
