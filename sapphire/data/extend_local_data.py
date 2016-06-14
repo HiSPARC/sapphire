@@ -9,9 +9,7 @@ become to large. By running this script the data is added after installation.
 
 """
 from os import path, extsep, mkdir
-from itertools import combinations
 
-from .. import HiSPARCNetwork
 from ..api import API, Network, LOCAL_BASE, SRC_BASE
 from ..utils import pbar
 
