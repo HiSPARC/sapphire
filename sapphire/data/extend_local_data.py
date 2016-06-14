@@ -9,6 +9,7 @@ become to large. By running this script the data is added after installation.
 
 """
 from os import path, extsep, mkdir
+import argparse
 
 from ..api import API, Network, LOCAL_BASE, SRC_BASE
 from ..utils import pbar
@@ -41,5 +42,12 @@ def update_additional_local_tsv():
                     tsvfile.write(data)
 
 
-if __name__ == '__main__':
+def main():
+    descr = """Add additional data to local data, or update already downloaded
+             data. Making data available locally can greatly speed up a
+             program which uses this data. Approximately 100 MB of data will
+             be downloaded. The data contains the eventtime data, i.e. hourly
+             number of events for all stations."""
+    parser = argparse.ArgumentParser(description=descr)
+    parser.parse_args()
     update_additional_local_tsv()

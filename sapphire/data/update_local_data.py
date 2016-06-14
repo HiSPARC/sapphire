@@ -12,6 +12,7 @@ would become to large. It is possible to add those files after installation.
 from json import dump, loads
 from os import path, extsep, mkdir
 from itertools import combinations
+import argparse
 
 from .. import HiSPARCNetwork
 from ..api import API, Network, LOCAL_BASE, SRC_BASE
@@ -124,6 +125,13 @@ def get_and_store_tsv(url):
             tsvfile.write(data)
 
 
-if __name__ == '__main__':
+def main():
+    descr = """Update commonly used local data. This allows the usage of
+               api and cluster objects without an internet connection. Or with
+               internet the usage of local data can be forced to speed up the
+               retrieval of data. This data is already included in SAPPHiRE,
+               but this script makes the data up to date."""
+    parser = argparse.ArgumentParser(description=descr)
+    parser.parse_args()
     update_local_json()
     update_local_tsv()
