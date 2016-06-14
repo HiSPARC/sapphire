@@ -12,8 +12,8 @@ would become to large. It is possible to add those files after installation.
 from json import dump, loads
 from os import path, extsep, mkdir
 
-from sapphire.api import API, Network, LOCAL_BASE, SRC_BASE
-from sapphire.utils import pbar
+from ..api import API, Network, LOCAL_BASE, SRC_BASE
+from ..utils import pbar
 
 
 def update_local_json():
@@ -66,7 +66,7 @@ def update_local_tsv():
     station_numbers = Network().station_numbers()
 
     for type in ['gps', 'trigger', 'layout', 'voltage', 'current',
-                 'electronics']:
+                 'electronics', 'detector_timing_offsets']:
         subdir = API.src_urls[type].split('/')[0]
         try:
             mkdir(path.join(LOCAL_BASE, subdir))
@@ -81,6 +81,28 @@ def update_local_tsv():
                 if type != 'layout':
                     print 'Failed to get %s for station %d' % (type, number)
                 continue
+
+    type = 'station_timing_offsets'
+    network = HiSPARCNetwork()
+
+    try:
+        mkdir(path.join(LOCAL_BASE, type))
+    except OSError:
+        pass
+    for number1, number2 in pbar(combinations(station_numbers, 2)):
+        distance = network.calc_distance_between_stations(number1, number2)
+        if distance is None or distance > 1e3:
+            continue
+        try:
+            mkdir(path.join(LOCAL_BASE, type, str(number1)))
+        except OSError:
+            pass
+        url = API.src_urls[type].format(station_1=number1, station_2=number2)
+        try:
+            get_and_store_tsv(url)
+        except:
+            print ('Failed to get %s data for station pair %d-%d' %
+                   (type, number1, number2))
 
 
 def get_and_store_json(url):
