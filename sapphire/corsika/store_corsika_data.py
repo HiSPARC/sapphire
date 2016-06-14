@@ -198,7 +198,7 @@ def create_tempfile_path(temp_dir=None):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Store CORSIKA data as HDF5.')
     parser.add_argument('source', help="path of the CORSIKA source file")
     parser.add_argument('destination',
                         help="path of the HDF5 destination file")

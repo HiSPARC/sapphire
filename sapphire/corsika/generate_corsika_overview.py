@@ -1,4 +1,4 @@
-""" Generate and overview table of the CORSIKA simulations
+""" Generate an overview table of the CORSIKA simulations
 
     This script will look for all completed and converted CORSIKA
     simulations in the given data path. Information about each
@@ -156,7 +156,8 @@ def generate_corsika_overview(source, destination, progress=False):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Generate an overview of '
+                                                 'CORSIKA simulations.')
     parser.add_argument('source', nargs='?', default=DATA_PATH,
                         help="directory path containing CORSIKA simulations")
     parser.add_argument('destination', nargs='?', default=OUTPUT_PATH,
