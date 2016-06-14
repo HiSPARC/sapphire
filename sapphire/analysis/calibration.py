@@ -372,7 +372,7 @@ def fit_timing_offset(dt, bins):
         offset = popt[1]
         width = popt[2]
         offset_error = width / sqrt(sum(y))
-    except RuntimeError:
+    except (RuntimeError, TypeError):
         offset, offset_error = nan, nan
     return offset, offset_error
 
