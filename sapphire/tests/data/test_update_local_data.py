@@ -1,6 +1,6 @@
 import unittest
 
-from mock import patch, sentinel
+from mock import patch
 
 from sapphire.data import update_local_data
 

@@ -17,12 +17,10 @@ To make the script show information about what it will do add the help flag::
     $ extend_local_data --help
 
 """
-from os import path, extsep, mkdir
 import argparse
 
 from .update_local_data import update_sublevel_tsv
-from ..api import API, Network, LOCAL_BASE, SRC_BASE
-from ..utils import pbar
+from ..api import Network
 
 
 def update_additional_local_tsv(progress=True):
