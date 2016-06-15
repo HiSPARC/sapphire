@@ -140,7 +140,8 @@ class HiSPARCSimulation(BaseSimulation):
         :return: signal strength in number of mips.
 
         """
-        costheta = np.cos(theta)
+        # Limit cos theta to maximum length though the detector.
+        costheta = max(np.cos(theta), 2. / 112.)
         y = np.random.random(n)
 
         # Prevent warning from the square root of negative values.
