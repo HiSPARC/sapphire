@@ -178,7 +178,7 @@ class FitTimingOffsetTests(unittest.TestCase):
         for _ in xrange(50):
             center = uniform(-40, 40)
             sigma = uniform(10, 30)
-            N = 4e4
+            N = int(4e4)
             lower = center - 3 * sigma
             upper = center + 3 * sigma
             bins = range(int(lower), int(upper), 1)
