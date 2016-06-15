@@ -1,4 +1,5 @@
 import unittest
+import warnings
 from mock import patch, sentinel, MagicMock, Mock, call
 from datetime import datetime, date
 
@@ -193,9 +194,13 @@ class FitTimingOffsetTests(unittest.TestCase):
 class DetermineStationTimingOffsetsTests(unittest.TestCase):
 
     def setUp(self):
+        warnings.filterwarnings('ignore')
         stations = [501, 102, 105, 8001]
         self.off = calibration.DetermineStationTimingOffsets(stations=stations, data=sentinel.data,
                                                              progress=sentinel.progress, force_stale=True)
+
+    def tearDown(self):
+        warnings.resetwarnings()
 
     def test_init(self):
         self.assertEqual(self.off.progress, sentinel.progress)
