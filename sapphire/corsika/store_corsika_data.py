@@ -131,7 +131,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
             else:
                 raise
         if progress:
-            pbar = ProgressBar(maxval=n_particles - 1,
+            pbar = ProgressBar(max_value=n_particles - 1,
                                widgets=[Percentage(), Bar(), ETA()]).start()
 
         particle_row = table.row
