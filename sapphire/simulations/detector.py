@@ -136,12 +136,20 @@ class HiSPARCSimulation(BaseSimulation):
         the single and vectorized part.
 
         :param n: number of particles.
-        :param theta: angle of incidence of the particles, as float or array.
+        :param theta: angle of incidence of the particles. Either a single
+                      value valid for all particles, or an array with an angle
+                      for each particle.
         :return: signal strength in number of mips.
 
         """
         # Limit cos theta to maximum length though the detector.
-        costheta = max(np.cos(theta), 2. / 112.)
+        min_costheta = 2. / 112.
+        costheta = np.cos(theta)
+        if isinstance(costheta, float):
+            costheta = max(costheta, min_costheta)
+        else:
+            costheta[costheta < min_costheta] = min_costheta
+
         y = np.random.random(n)
 
         # Prevent warning from the square root of negative values.
@@ -155,6 +163,8 @@ class HiSPARCSimulation(BaseSimulation):
                 mips = (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta
             else:
                 mips = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
+            if not isinstance(costheta, float):
+                mips = sum(mips)
         else:
             mips = np.where(y < 0.3394,
                             (0.48 + 0.8583 * np.sqrt(y)) / costheta,
