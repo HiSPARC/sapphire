@@ -20,6 +20,9 @@ The following packages and modules are included:
 :mod:`~sapphire.corsika`
     package containing CORSIKA simulation related modules
 
+:mod:`~sapphire.data`
+    scripts for updating local data
+
 :mod:`~sapphire.esd`
     event summary data access
 
@@ -52,6 +55,7 @@ from . import analysis
 from . import api
 from . import clusters
 from . import corsika
+from . import data
 from . import esd
 from . import kascade
 from . import publicdb
@@ -90,6 +94,7 @@ __all__ = ['analysis',
            'api',
            'clusters',
            'corsika',
+           'data',
            'esd',
            'kascade',
            'publicdb',

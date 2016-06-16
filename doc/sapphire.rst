@@ -10,6 +10,7 @@ SAPPHiRE Reference
    api
    clusters
    corsika
+   data
    esd
    kascade
    publicdb

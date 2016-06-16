@@ -17,7 +17,7 @@ class StationDensityTests(unittest.TestCase):
         self.assertEqual(event_utils.station_density(sentinel.event, range(4), sentinel.station), 1.5)
         mock_detector_densities.return_value = [1, 1, nan, nan]
         self.assertEqual(event_utils.station_density(sentinel.event, range(4), sentinel.station), 1)
-        self.assertEqual(mock_detector_ids.call_count, 0)
+        mock_detector_ids.assert_not_called()
         self.assertEqual(event_utils.station_density(sentinel.event), 1)
         mock_detector_ids.assert_called_once_with(None, sentinel.event)
         self.assertEqual(event_utils.station_density(sentinel.event, station=sentinel.station), 1)
@@ -35,7 +35,7 @@ class DetectorDensitiesTests(unittest.TestCase):
                          [sentinel.density] * 4)
         self.assertEqual(event_utils.detector_densities(sentinel.event, range(2)),
                          [sentinel.density] * 2)
-        self.assertEqual(mock_detector_ids.call_count, 0)
+        mock_detector_ids.assert_not_called()
         self.assertEqual(event_utils.detector_densities(sentinel.event),
                          [sentinel.density] * 4)
         mock_detector_ids.assert_called_once_with(None, sentinel.event)
@@ -76,7 +76,7 @@ class StationArrivalTimeTests(unittest.TestCase):
 
         self.assertEqual(event_utils.station_arrival_time(event, ref_ets, range(4), sentinel.offsets, sentinel.station),
                          rel_arrival_time + 2.5)
-        self.assertEqual(mock_detector_ids.call_count, 0)
+        mock_detector_ids.assert_not_called()
         self.assertEqual(event_utils.station_arrival_time(event, ref_ets, None, sentinel.offsets),
                          rel_arrival_time + 2.5)
         mock_detector_ids.assert_called_once_with(None, event)
@@ -123,7 +123,7 @@ class RelativeDetectorArrivalTimesTests(unittest.TestCase):
 
         self.assertEqual(event_utils.relative_detector_arrival_times(event, 500, range(4), sentinel.offsets, sentinel.station),
                          [rel_arrival_time + t for t in mock_detector_arrival_times()])
-        self.assertEqual(mock_detector_ids.call_count, 0)
+        mock_detector_ids.assert_not_called()
         self.assertEqual(event_utils.relative_detector_arrival_times(event, 500, None, sentinel.offsets),
                          [rel_arrival_time + t for t in mock_detector_arrival_times()])
         mock_detector_ids.assert_called_once_with(None, event)
@@ -166,7 +166,7 @@ class DetectorArrivalTimesTests(unittest.TestCase):
                          [sentinel.time] * 4)
         self.assertEqual(event_utils.detector_arrival_times(sentinel.event, range(2)),
                          [sentinel.time] * 2)
-        self.assertEqual(mock_detector_ids.call_count, 0)
+        mock_detector_ids.assert_not_called()
         self.assertEqual(event_utils.detector_arrival_times(sentinel.event),
                          [sentinel.time] * 4)
         mock_detector_ids.assert_called_once_with(None, sentinel.event)

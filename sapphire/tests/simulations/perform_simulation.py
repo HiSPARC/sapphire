@@ -46,7 +46,7 @@ def perform_groundparticlesgammasimulation(filename, mock_time):
     filters = tables.Filters(complevel=1)
     with tables.open_file(filename, 'w', filters=filters) as data:
         sim = GroundParticlesGammaSimulation(corsika_data_path, 70, cluster,
-                                             data, N=10, seed=1, progress=False)
+                                             data, N=10, seed=42, progress=False)
         sim.run()
 
 

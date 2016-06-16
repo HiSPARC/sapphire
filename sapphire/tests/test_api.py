@@ -6,10 +6,12 @@ import warnings
 from os import path, extsep
 
 from mock import patch, sentinel
+from numpy.testing import assert_allclose
 
 from sapphire import api
 
 STATION = 501
+ALT_STATION = 502
 FUTURE = int(time()) + 86400 * 10
 
 
@@ -274,6 +276,13 @@ class NetworkTests(unittest.TestCase):
 
 
 class StaleNetworkTests(NetworkTests):
+
+    """Tests using local data
+
+    Overwrite tests using data not available locally.
+
+    """
+
     def setUp(self):
         self.network = api.Network(force_fresh=False, force_stale=True)
         self.keys = ['name', 'number']
@@ -308,6 +317,7 @@ class StaleNetworkTests(NetworkTests):
 class StationTests(unittest.TestCase):
     def setUp(self):
         self.station = api.Station(STATION, force_fresh=True, force_stale=False)
+        self.alt_station = api.Station(ALT_STATION, force_fresh=True, force_stale=False)
 
     @patch.object(api.API, '_retrieve_url')
     def test_no_stale_station(self, mock_retrieve_url):
@@ -514,54 +524,53 @@ class StationTests(unittest.TestCase):
     def test_laziness_detector_timing_offsets(self):
         self.laziness_of_attribute('detector_timing_offsets')
 
-    @patch.object(api, 'urlopen')
-    def test_detector_timing_offsets(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
+    def test_detector_timing_offsets(self):
         names = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
         data = self.station.detector_timing_offsets
         self.assertEqual(data.dtype.names, names)
-        self.assertEqual(len(data), 4)
         self.assertEqual(len(data[0]), 5)
 
-    @patch.object(api, 'urlopen')
-    def test_detector_timing_offset(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
+    def test_detector_timing_offset(self):
         offsets = self.station.detector_timing_offset(0)
         self.assertEqual(len(offsets), 4)
         data = self.station.detector_timing_offset(FUTURE)
         data2 = self.station.detector_timing_offset()
         self.assertEqual(data, data2)
 
-    @patch.object(api, 'urlopen')
-    def test_station_timing_offsets(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
+    def test_station_timing_offsets(self):
         names = ('timestamp', 'offset', 'error')
-        self.assertRaises(Exception, self.station.station_timing_offsets, STATION)
-        data = self.station.station_timing_offsets(STATION - 1)
-        self.assertEqual(data[0]['offset'], 7.)
+        data = self.station.station_timing_offsets(ALT_STATION)
         self.assertEqual(data.dtype.names, names)
-        self.assertEqual(len(data), 4)
-        self.assertEqual(len(data[0]), 3)
-        # check for automatic sorting of station numbers
-        data = self.station.station_timing_offsets(STATION + 1)
-        self.assertEqual(data[0]['offset'], -7.)
+        self.assertEqual(data[0]['offset'], 2.1)
+        self.assertEqual(data[0]['error'], 0.52)
 
-    @patch.object(api, 'urlopen')
-    def test_laziness_station_timing_offsets(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
-        self.laziness_of_method('station_timing_offsets', STATION + 1)
+        # Test reverse offset by swapping station and reference
+        alt_data = self.alt_station.station_timing_offsets(STATION)
+        assert_allclose(data['offset'], -alt_data['offset'])
+        assert_allclose(data['error'], alt_data['error'])
 
-    @patch.object(api, 'urlopen')
-    def test_station_timing_offset(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\t1.0\n' * 4
-        offset, error = self.station.station_timing_offset(STATION - 1, 0)
-        self.assertAlmostEqual(offset, 7.0)
-        self.assertAlmostEqual(error, 1.0)
-        data = self.station.station_timing_offset(STATION - 1, FUTURE)
-        data2 = self.station.station_timing_offset(STATION - 1)
+        # Exception using self as reference
+        self.assertRaises(Exception, self.station.station_timing_offsets, STATION)
+
+    def test_laziness_station_timing_offsets(self):
+        self.laziness_of_method('station_timing_offsets', ALT_STATION)
+
+    def test_station_timing_offset(self):
+        offset, error = self.station.station_timing_offset(ALT_STATION, 0)
+        self.assertAlmostEqual(offset, 2.1)
+        self.assertAlmostEqual(error, 0.52)
+
+        # Test reverse offset by swapping station and reference
+        alt_offset, alt_error = self.alt_station.station_timing_offset(STATION, 0)
+        self.assertAlmostEqual(offset, -alt_offset)
+        self.assertAlmostEqual(error, alt_error)
+
+        # Test omitting timestamp results in lastest offset
+        data = self.station.station_timing_offset(ALT_STATION, FUTURE)
+        data2 = self.station.station_timing_offset(ALT_STATION)
         self.assertEqual(data, data2)
 
-        # Station itself as reference
+        # Zero offset to self
         data = self.station.station_timing_offset(STATION)
         self.assertEqual(data, (0., 0.))
 
@@ -587,8 +596,16 @@ class StationTests(unittest.TestCase):
 
 
 class StaleStationTests(StationTests):
+
+    """Tests using local data
+
+    Overwrite tests using data not available locally.
+
+    """
+
     def setUp(self):
         self.station = api.Station(STATION, force_stale=True)
+        self.alt_station = api.Station(ALT_STATION, force_stale=True)
 
     def test_config(self):
         self.assertRaises(Exception, self.station.config, 501)
@@ -630,33 +647,6 @@ class StaleStationTests(StationTests):
 
     def test_temperature(self):
         self.assertRaises(Exception, self.station.temperature, 2013, 1, 1)
-
-    @unittest.skipIf(has_extended_local_data('detector_timing_offsets/%d/' % STATION),
-                     "Local data is extended")
-    @patch.object(api, 'urlopen')
-    def test_detector_timing_offsets(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
-        with self.assertRaises(Exception):
-            self.station.detector_timing_offsets
-
-    @unittest.skipIf(has_extended_local_data('detector_timing_offsets/%d/' % STATION),
-                     "Local data is extended")
-    @patch.object(api, 'urlopen')
-    def test_detector_timing_offset(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t0.0\t2.5\t-2.5\t0.25\n' * 4
-        self.assertRaises(Exception, self.station.detector_timing_offset, 0)
-
-    @patch.object(api, 'urlopen')
-    def test_station_timing_offsets(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
-        with self.assertRaises(Exception):
-            self.station.station_timing_offsets(STATION - 1)
-
-    @patch.object(api, 'urlopen')
-    def test_station_timing_offset(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1234567980\t7.0\n' * 4
-        with self.assertRaises(Exception):
-            self.station.station_timing_offset(STATION - 1, 0)
 
 
 if __name__ == '__main__':

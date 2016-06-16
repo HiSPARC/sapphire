@@ -137,7 +137,8 @@ def run(queue):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Submit jobs to Stoomboot to '
+                                                 'store CORSIKA data as HDF5.')
     parser.add_argument('-q', '--queue', metavar='name',
                         help="name of the Stoomboot queue to use, choose from "
                              "express, short, generic, and long (default)",

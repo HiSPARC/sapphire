@@ -42,5 +42,13 @@
     {
         "name": "AMOLF", 
         "number": 511
+    }, 
+    {
+        "name": "Nikhef (501-alt)", 
+        "number": 521
+    }, 
+    {
+        "name": "Nikhef 2 (510-alt)", 
+        "number": 522
     }
 ]

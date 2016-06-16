@@ -287,7 +287,8 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Submit CORSIKA jobs to '
+                                                 'Stoomboot, only at Nikhef.')
     parser.add_argument('n', type=int, help="number of jobs to submit")
     parser.add_argument('energy', metavar='energy', type=float,
                         help="energy of the primary particle in range 11..17, "

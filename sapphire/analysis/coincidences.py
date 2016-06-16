@@ -433,7 +433,7 @@ class Coincidences(object):
         prev_coincidence = []
 
         if self.progress and len(timestamps):
-            pbar = ProgressBar(maxval=len(timestamps),
+            pbar = ProgressBar(max_value=len(timestamps),
                                widgets=[Percentage(), Bar(), ETA()]).start()
 
         for i in xrange(len(timestamps)):

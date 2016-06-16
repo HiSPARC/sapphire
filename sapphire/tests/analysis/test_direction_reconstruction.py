@@ -49,7 +49,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
 
         # To few detectors
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1])
-        self.assertEqual(dirrec.direct.reconstruct_common.call_count, 0)
+        dirrec.direct.reconstruct_common.assert_not_called()
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
         self.assertEqual(len(ids), 2)
@@ -58,7 +58,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2])
         dirrec.direct.reconstruct_common.assert_called_once_with(
             [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3, {})
-        self.assertEqual(dirrec.fit.reconstruct_common.call_count, 0)
+        dirrec.fit.reconstruct_common.assert_not_called()
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
         self.assertEqual(len(ids), 3)
@@ -147,7 +147,7 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
 
         # To few eligible events
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_3, station_numbers=[1, 2])
-        self.assertEqual(dirrec.direct.reconstruct_common.call_count, 0)
+        dirrec.direct.reconstruct_common.assert_not_called()
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
         self.assertEqual(len(nums), 2)
@@ -157,7 +157,7 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         cluster.set_timestamp.assert_called_with(1)
         dirrec.direct.reconstruct_common.assert_called_once_with(
             [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3, {})
-        self.assertEqual(dirrec.fit.reconstruct_common.call_count, 0)
+        dirrec.fit.reconstruct_common.assert_not_called()
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
         self.assertEqual(len(nums), 3)
@@ -168,7 +168,7 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         dirrec.fit.reconstruct_common.assert_called_once_with(
             [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, {})
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
-        self.assertEqual(dirrec.curved.reconstruct_common.call_count, 0)
+        dirrec.curved.reconstruct_common.assert_not_called()
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
         self.assertEqual(len(nums), 4)
@@ -341,7 +341,7 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
 
         # To few eligible detection points, no reconstruction
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_2, station_numbers=[1])
-        self.assertEqual(dirrec.fit.reconstruct_common.call_count, 0)
+        dirrec.fit.reconstruct_common.assert_not_called()
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
         self.assertEqual(len(nums), 1)

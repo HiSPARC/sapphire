@@ -131,7 +131,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
             else:
                 raise
         if progress:
-            pbar = ProgressBar(maxval=n_particles - 1,
+            pbar = ProgressBar(max_value=n_particles - 1,
                                widgets=[Percentage(), Bar(), ETA()]).start()
 
         particle_row = table.row
@@ -198,7 +198,7 @@ def create_tempfile_path(temp_dir=None):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Store CORSIKA data as HDF5.')
     parser.add_argument('source', help="path of the CORSIKA source file")
     parser.add_argument('destination',
                         help="path of the HDF5 destination file")

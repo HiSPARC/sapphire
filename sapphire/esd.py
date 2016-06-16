@@ -187,7 +187,7 @@ def download_data(file, group, station_number, start=None, end=None,
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
     if progress:
-        pbar = ProgressBar(maxval=1.,
+        pbar = ProgressBar(max_value=1.,
                            widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in tsv as they come streaming in
@@ -346,7 +346,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
     if progress:
-        pbar = ProgressBar(maxval=1.,
+        pbar = ProgressBar(max_value=1.,
                            widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in tsv as they come streaming in, keep temporary
