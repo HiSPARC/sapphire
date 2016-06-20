@@ -1,7 +1,8 @@
 import unittest
 from datetime import date, datetime
 from time import time
-from urllib2 import HTTPError, URLError
+import six
+from six.moves.urllib.error import HTTPError, URLError
 import warnings
 from os import path, extsep
 
@@ -41,7 +42,7 @@ class APITests(unittest.TestCase):
 
     @patch.object(api, 'urlopen')
     def test__get_tsv(self, mock_urlopen):
-        mock_urlopen.return_value.read.return_value = '1297956608\t52.3414237\t4.8807081\t43.32'
+        mock_urlopen.return_value.read.return_value = b'1297956608\t52.3414237\t4.8807081\t43.32'
         self.api.force_fresh = True
         self.assertEqual(self.api._get_tsv('gps/2/').tolist(),
                          [(1297956608, 52.3414237, 4.8807081, 43.32)])
@@ -54,6 +55,20 @@ class APITests(unittest.TestCase):
             self.assertEqual(self.api._get_tsv('gps/2/').tolist()[0],
                              (1297953008, 52.3414237, 4.8807081, 43.32))
         self.assertEqual(len(warned), 1)
+
+
+@unittest.skipUnless(api.API.check_connection(), "Internet connection required")
+class APITestsLive(unittest.TestCase):
+    def setUp(self):
+        self.api = api.API()
+
+    def test__retrieve_url(self):
+        result = self.api._retrieve_url('')
+        self.assertIsInstance(result, six.string_types)
+
+    def test__get_json(self):
+        json = self.api._get_json('')
+        self.assertIsInstance(json, dict)
 
 
 @unittest.skipUnless(api.API.check_connection(), "Internet connection required")
@@ -96,7 +111,7 @@ class NetworkTests(unittest.TestCase):
     def test_countries(self):
         self.network.countries()
         self.assertEqual(self.network._all_countries, self.network.countries())
-        self.assertEqual(self.network.countries()[0].keys(), self.keys)
+        self.assertEqual(sorted(self.network.countries()[0].keys()), self.keys)
 
     def test_lazy_clusters(self):
         self.laziness_of_method('clusters')
@@ -104,7 +119,7 @@ class NetworkTests(unittest.TestCase):
     def test_clusters(self):
         self.network.clusters()
         self.assertEqual(self.network._all_clusters, self.network.clusters())
-        self.assertEqual(self.network.clusters()[0].keys(), self.keys)
+        self.assertEqual(sorted(self.network.clusters()[0].keys()), self.keys)
         self.assertEqual(self.network.clusters(country=70000)[0]['number'], 70000)
 
     def test_bad_clusters(self):
@@ -117,7 +132,7 @@ class NetworkTests(unittest.TestCase):
     def test_subcluster(self):
         self.network.subclusters()
         self.assertEqual(self.network._all_subclusters, self.network.subclusters())
-        self.assertEqual(self.network.subclusters()[0].keys(), self.keys)
+        self.assertEqual(sorted(self.network.subclusters()[0].keys()), self.keys)
         self.assertEqual(self.network.subclusters(country=70000)[0]['number'], 70000)
         self.assertEqual(self.network.subclusters(cluster=70000)[0]['number'], 70000)
 
@@ -185,7 +200,7 @@ class NetworkTests(unittest.TestCase):
     def test_stations(self):
         self.network.stations()
         self.assertEqual(self.network._all_stations, self.network.stations())
-        self.assertEqual(self.network.stations()[0].keys(), self.keys)
+        self.assertEqual(sorted(self.network.stations()[0].keys()), self.keys)
         self.assertEqual(self.network.stations(country=20000)[0]['number'], 20001)
         self.assertEqual(self.network.stations(cluster=20000)[0]['number'], 20001)
         self.assertEqual(self.network.stations(subcluster=20000)[0]['number'], 20001)
@@ -198,7 +213,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_stations_with_data(self):
         stations_with_data = self.network.stations_with_data(2004, 1, 9)
-        self.assertEqual(stations_with_data[0].keys(), self.keys)
+        self.assertEqual(sorted(stations_with_data[0].keys()), self.keys)
         self.assertEqual(stations_with_data[0]['number'], 2)
         self.assertEqual(len(self.network.stations_with_data(2004, 1, 1)), 0)
         self.assertRaises(Exception, self.network.stations_with_data, year=2004, day=1)
@@ -208,7 +223,7 @@ class NetworkTests(unittest.TestCase):
 
     def test_stations_with_weather(self):
         stations_with_weather = self.network.stations_with_weather(2013, 1, 1)
-        self.assertEqual(stations_with_weather[0].keys(), self.keys)
+        self.assertEqual(sorted(stations_with_weather[0].keys()), self.keys)
         self.assertEqual(stations_with_weather[0]['number'], 3)
         self.assertEqual(len(self.network.stations_with_weather(2004, 10, 1)), 0)
         self.assertRaises(Exception, self.network.stations_with_weather, year=2004, day=1)
@@ -220,31 +235,31 @@ class NetworkTests(unittest.TestCase):
         names = ('hour', 'counts')
         data = self.network.coincidence_time(2013, 1, 1)
         self.assertEqual(data.dtype.names, names)
-        self.assertTrue((data['hour'] == range(24)).all())
+        self.assertTrue((data['hour'] == list(range(24))).all())
         self.assertEqual(data['counts'][0], 451)
 
     def test_coincidence_number(self):
         names = ('n', 'counts')
         data = self.network.coincidence_number(2013, 1, 1)
         self.assertEqual(data.dtype.names, names)
-        self.assertTrue((data['n'] == range(2, 100)).all())
+        self.assertTrue((data['n'] == list(range(2, 100))).all())
         self.assertEqual(data['counts'][0], 9479)
 
     @patch.object(api, 'urlopen')
     def test_uptime(self, mock_urlopen):
         # datetime(2014,1,1) 2 days on, 2 days off, 1 day on
-        sn = '[{"name": "foo", "number": 501}, {"name": "bar", "number": 502}]'
-        event_time_1 = ('1388534400\t2000.\n'
-                        '1388538000\t2000.\n'
-                        '1388541600\t12.\n'
-                        '1388545200\t125.\n'
-                        '1388548800\t3000.\n')
+        sn = b'[{"name": "foo", "number": 501}, {"name": "bar", "number": 502}]'
+        event_time_1 = str.encode('1388534400\t2000.\n'
+                                  '1388538000\t2000.\n'
+                                  '1388541600\t12.\n'
+                                  '1388545200\t125.\n'
+                                  '1388548800\t3000.\n')
         # datetime(2014,1,1) 2 days off, 3 days on
-        event_time_2 = ('1388534400\t50.\n'
-                        '1388538000\t20.\n'
-                        '1388541600\t2000.\n'
-                        '1388545200\t2000.\n'
-                        '1388548800\t3000.\n')
+        event_time_2 = str.encode('1388534400\t50.\n'
+                                  '1388538000\t20.\n'
+                                  '1388541600\t2000.\n'
+                                  '1388545200\t2000.\n'
+                                  '1388548800\t3000.\n')
         # station 1
         mock_urlopen.return_value.read.side_effect = [sn, event_time_1] * 3
         self.assertEqual(self.network.uptime([501]), 3)
@@ -393,30 +408,33 @@ class StationTests(unittest.TestCase):
 
     @patch.object(api, 'urlopen')
     def test_event_trace(self, mock_urlopen):
-        trace = '[%s]' % ', '.join(str(v) for v in range(0, 11))
-        mock_urlopen.return_value.read.return_value = '[%s]' % ', '.join(4 * [trace])
+        def make_trace(start, end):
+            """ return a trace (type bytes) to mock urlopen """
+            trace = '[%s]' % ', '.join(str(v) for v in range(start, end))
+            return_value = '[%s]' % ', '.join(4 * [trace])
+            return return_value.encode()
+        mock_urlopen.return_value.read.return_value = make_trace(0, 11)
         self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 9)
-        trace = '[%s]' % ', '.join(str(v) for v in range(200, 211))
-        mock_urlopen.return_value.read.return_value = '[%s]' % ', '.join(4 * [trace])
+        mock_urlopen.return_value.read.return_value = make_trace(200, 211)
         self.assertEqual(self.station.event_trace(1378771205, 571920029, raw=True)[3][9], 209)
 
     def test_event_time(self):
         names = ('timestamp', 'counts')
         data = self.station.event_time(2013, 1, 1)
         self.assertEqual(data.dtype.names, names)
-        self.assertTrue((data['timestamp'] == range(24)).all())
+        self.assertTrue((data['timestamp'] == list(range(24))).all())
 
     def test_pulse_height(self):
         names = ('pulseheight', 'ph1', 'ph2', 'ph3', 'ph4')
         data = self.station.pulse_height(2013, 1, 1)
         self.assertEqual(data.dtype.names, names)
-        self.assertTrue((data['pulseheight'] == range(0, 2500, 10)).all())
+        self.assertTrue((data['pulseheight'] == list(range(0, 2500, 10))).all())
 
     def test_pulse_integral(self):
         names = ('pulseintegral', 'pi1', 'pi2', 'pi3', 'pi4')
         data = self.station.pulse_integral(2013, 1, 1)
         self.assertEqual(data.dtype.names, names)
-        self.assertTrue((data['pulseintegral'] == range(0, 62500, 250)).all())
+        self.assertTrue((data['pulseintegral'] == list(range(0, 62500, 250))).all())
 
     def test_barometer(self):
         names = ('timestamp', 'air_pressure')
@@ -478,8 +496,8 @@ class StationTests(unittest.TestCase):
     def test_gps_location(self):
         keys = ['latitude', 'longitude', 'altitude']
         data = self.station.gps_location(1378771200)  # 2013-9-10
-        self.assertItemsEqual(data.keys(), keys)
-        self.assertItemsEqual(data.values(), [52.3559286, 4.9511443, 54.97])
+        six.assertCountEqual(self, sorted(data.keys()), keys)
+        six.assertCountEqual(self, list(data.values()), [52.3559286, 4.9511443, 54.97])
         data = self.station.gps_location(FUTURE)
         data2 = self.station.gps_location()
         self.assertEqual(data, data2)
@@ -495,8 +513,8 @@ class StationTests(unittest.TestCase):
 
     def test_trigger(self):
         thresholds, trigger = self.station.trigger(1378771200)  # 2013-9-10
-        self.assertItemsEqual(thresholds, [[253, 323]] * 4)
-        self.assertItemsEqual(trigger, [2, 3, 1, 0])
+        six.assertCountEqual(self, thresholds, [[253, 323]] * 4)
+        six.assertCountEqual(self, trigger, [2, 3, 1, 0])
         data = self.station.trigger(FUTURE)
         data2 = self.station.trigger()
         self.assertEqual(data, data2)

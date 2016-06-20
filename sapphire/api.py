@@ -26,8 +26,9 @@ import datetime
 import json
 import warnings
 from os import path, extsep
-from urllib2 import urlopen, HTTPError, URLError
-from StringIO import StringIO
+from six.moves.urllib.request import urlopen
+from six.moves.urllib.error import HTTPError, URLError
+from six import BytesIO
 
 from lazy import lazy
 from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
@@ -175,7 +176,7 @@ class API(object):
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
-                data = genfromtxt(StringIO(tsv_data), delimiter='\t',
+                data = genfromtxt(BytesIO(tsv_data.encode()), delimiter='\t',
                                   dtype=None, names=names)
 
         return atleast_1d(data)
@@ -192,8 +193,8 @@ class API(object):
         url = base + urlpath
         logging.debug('Getting: ' + url)
         try:
-            result = urlopen(url).read()
-        except HTTPError, e:
+            result = urlopen(url).read().decode('utf-8')
+        except HTTPError as e:
             raise Exception('A HTTP %d error occured for the url: %s' %
                             (e.code, url))
         except URLError:
@@ -475,15 +476,15 @@ class Network(API):
             data[sn] = Station(sn, force_fresh=self.force_fresh,
                                force_stale=self.force_stale).event_time()
 
-        first = min(values['timestamp'][0] for values in data.values())
-        last = max(values['timestamp'][-1] for values in data.values())
+        first = min(values['timestamp'][0] for values in list(data.values()))
+        last = max(values['timestamp'][-1] for values in list(data.values()))
 
-        len_array = (last - first) / 3600 + 1
+        len_array = (last - first) // 3600 + 1
         all_active = ones(len_array)
 
-        for sn in data.keys():
+        for sn in list(data.keys()):
             is_active = zeros(len_array)
-            start_i = (data[sn]['timestamp'][0] - first) / 3600
+            start_i = (data[sn]['timestamp'][0] - first) // 3600
             end_i = start_i + len(data[sn])
             is_active[start_i:end_i] = (data[sn]['counts'] > 500) &\
                                        (data[sn]['counts'] < 5000)
@@ -491,12 +492,12 @@ class Network(API):
 
         # filter start, end
         if start is not None:
-            start_index = max(0, process_time(start) - first) / 3600
+            start_index = max(0, process_time(start) - first) // 3600
         else:
             start_index = 0
 
         if end is not None:
-            end_index = min(last, process_time(end) - first) / 3600
+            end_index = min(last, process_time(end) - first) // 3600
         else:
             end_index = len(all_active)
 
@@ -862,7 +863,7 @@ class Station(API):
                        for t in ('low', 'high')]
                       for i in range(1, 5)]
         trigger = [triggers[idx][t]
-                   for t in 'n_low', 'n_high', 'and_or', 'external']
+                   for t in ('n_low', 'n_high', 'and_or', 'external')]
         return thresholds, trigger
 
     @lazy
