@@ -16,7 +16,7 @@
 
 """
 from __future__ import division
-from itertools import izip, izip_longest, combinations
+from itertools import izip_longest, combinations
 import warnings
 
 from numpy import isnan, nan, cos, sqrt, log10, mean, array, linspace
