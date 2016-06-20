@@ -1,0 +1,166 @@
+[
+    {
+        "name": "Amsterdam", 
+        "number": 0
+    }, 
+    {
+        "name": "Zaanstad", 
+        "number": 100
+    }, 
+    {
+        "name": "Haarlem", 
+        "number": 200
+    }, 
+    {
+        "name": "Kennemerland", 
+        "number": 300
+    }, 
+    {
+        "name": "Alkmaar", 
+        "number": 400
+    }, 
+    {
+        "name": "Science Park", 
+        "number": 500
+    }, 
+    {
+        "name": "Hoorn", 
+        "number": 600
+    }, 
+    {
+        "name": "Utrecht", 
+        "number": 1000
+    }, 
+    {
+        "name": "Hilversum", 
+        "number": 1100
+    }, 
+    {
+        "name": "Nijmegen", 
+        "number": 2000
+    }, 
+    {
+        "name": "Venray", 
+        "number": 2100
+    }, 
+    {
+        "name": "Harderwijk", 
+        "number": 2200
+    }, 
+    {
+        "name": "Leiden", 
+        "number": 3000
+    }, 
+    {
+        "name": "Zwijndrecht", 
+        "number": 3100
+    }, 
+    {
+        "name": "Middelharnis", 
+        "number": 3200
+    }, 
+    {
+        "name": "Alphen aan de Rijn", 
+        "number": 3300
+    }, 
+    {
+        "name": "Terneuzen", 
+        "number": 3400
+    }, 
+    {
+        "name": "Delft", 
+        "number": 3500
+    }, 
+    {
+        "name": "Leidschendam-Voorburg", 
+        "number": 3600
+    }, 
+    {
+        "name": "Den Haag", 
+        "number": 3700
+    }, 
+    {
+        "name": "Groningen", 
+        "number": 4000
+    }, 
+    {
+        "name": "Enschede", 
+        "number": 7000
+    }, 
+    {
+        "name": "Hengelo", 
+        "number": 7100
+    }, 
+    {
+        "name": "Almelo", 
+        "number": 7200
+    }, 
+    {
+        "name": "Deventer", 
+        "number": 7300
+    }, 
+    {
+        "name": "Haaksbergen", 
+        "number": 7400
+    }, 
+    {
+        "name": "Eindhoven", 
+        "number": 8000
+    }, 
+    {
+        "name": "Tilburg", 
+        "number": 8100
+    }, 
+    {
+        "name": "Panningen", 
+        "number": 8200
+    }, 
+    {
+        "name": "Weert", 
+        "number": 8300
+    }, 
+    {
+        "name": "Cambridge", 
+        "number": 11000
+    }, 
+    {
+        "name": "Durham", 
+        "number": 12000
+    }, 
+    {
+        "name": "Bristol", 
+        "number": 13000
+    }, 
+    {
+        "name": "Bath", 
+        "number": 13100
+    }, 
+    {
+        "name": "Swindon", 
+        "number": 13200
+    }, 
+    {
+        "name": "Chippenham", 
+        "number": 13300
+    }, 
+    {
+        "name": "Okehampton", 
+        "number": 13400
+    }, 
+    {
+        "name": "Torquay", 
+        "number": 13500
+    }, 
+    {
+        "name": "Birmingham", 
+        "number": 14000
+    }, 
+    {
+        "name": "Aarhus", 
+        "number": 20000
+    }, 
+    {
+        "name": "Karlsruhe", 
+        "number": 70000
+    }
+]

@@ -4,7 +4,7 @@ import warnings
 
 import tables
 
-from sapphire import api
+from .. import api
 
 
 class CoincidenceQuery(object):
@@ -26,22 +26,21 @@ class CoincidenceQuery(object):
 
     Example usage::
 
-        from sapphire.analysis.coincidence_queries import CoincidenceQuery
-
-        cq = CoincidenceQuery('2013_8_1.h5')
-        coincidences = cq.all([501, 502, 503, 504], iterator=True)
-        events = cq.all_events(coincidences)
-        specific_events = cq.events_from_stations(coincidences,
-                                                  [501, 502, 503, 504])
-        cq.data.close()
+        >>> from sapphire import CoincidenceQuery
+        >>> cq = CoincidenceQuery('2013_8_1.h5')
+        >>> coincidences = cq.all([501, 502, 503, 504], iterator=True)
+        >>> events = cq.all_events(coincidences)
+        >>> specific_events = cq.events_from_stations(coincidences,
+        ...                                          [501, 502, 503, 504])
+        >>> cq.finish()
 
     """
 
     def __init__(self, data, coincidence_group='/coincidences'):
         """Setup variables to point to the tables
 
-        :param data: either a PyTables file or path to a HDF5 file
-        :param coincidence_group: path to the coincidences group
+        :param data: either a PyTables file or path to a HDF5 file.
+        :param coincidence_group: path to the coincidences group.
 
         """
         if not isinstance(data, tables.File):
@@ -57,7 +56,8 @@ class CoincidenceQuery(object):
             try:
                 self.s_nodes.append(self.data.get_node(s_path))
             except tables.NoSuchNodeError:
-                warnings.warn('Missing some station groups')
+                warnings.warn('Missing some station groups. This is no '
+                              'problem if those are not in coincidences.')
                 self.s_nodes.append(None)
         re_number = re.compile('[0-9]+$')
         self.s_numbers = [int(re_number.search(s_path).group())
@@ -222,7 +222,12 @@ class CoincidenceQuery(object):
         c_idx = self.c_index[coincidence['id']]
         for s_idx, e_idx in c_idx:
             station_number = self.s_numbers[s_idx]
-            events.append((station_number, self.s_nodes[s_idx].events[e_idx]))
+            s_node = self.s_nodes[s_idx]
+            if s_node is None:
+                warnings.warn('Missing station group for station id %d. '
+                              'Events from it are excluded.' % s_idx)
+                continue
+            events.append((station_number, s_node.events[e_idx]))
         return events
 
     def _get_reconstructions(self, coincidence):
@@ -237,7 +242,12 @@ class CoincidenceQuery(object):
         c_idx = self.c_index[coincidence['id']]
         for s_idx, e_idx in c_idx:
             station_number = self.s_numbers[s_idx]
-            rec_table = self.s_nodes[s_idx].reconstructions
+            s_node = self.s_nodes[s_idx]
+            if s_node is None:
+                warnings.warn('Missing station group for station id %d.'
+                              'Reconstructions from it are excluded.' % s_idx)
+                continue
+            rec_table = s_node.reconstructions
             reconstructions.append((station_number, rec_table[e_idx]))
         return reconstructions
 
@@ -268,6 +278,18 @@ class CoincidenceQuery(object):
                               for coincidence in coincidences)
         return self.minimum_events_for_coincidence(coincidence_events, n)
 
+    def all_reconstructions(self, coincidences, n=0):
+        """Get all reconstructed events for the given coincidences.
+
+        :param coincidences: list of coincidence rows.
+        :param n: minimum number of events per coincidence.
+        :return: list of reconstructed events for each coincidence.
+
+        """
+        coincidence_recs = (self._get_reconstructions(coincidence)
+                            for coincidence in coincidences)
+        return self.minimum_events_for_coincidence(coincidence_recs, n)
+
     def minimum_events_for_coincidence(self, coincidences_events, n=2):
         """Filter coincidences to only include those with at least n events.
 
@@ -293,6 +315,20 @@ class CoincidenceQuery(object):
         coincidences_events = (self._events_from_stations(events, stations)
                                for events in events_iterator)
         return self.minimum_events_for_coincidence(coincidences_events, n)
+
+    def reconstructions_from_stations(self, coincidences, stations, n=2):
+        """Only get reconstructions for specific stations for coincidences.
+
+        :param coincidences: list of coincidence rows.
+        :param stations: list of station numbers to filter events for.
+        :return: list of filtered reconstructed events for each coincidence.
+
+        """
+        reconstructions_iterator = (self._get_reconstructions(coincidence)
+                                    for coincidence in coincidences)
+        coincidences_recs = (self._events_from_stations(recs, stations)
+                             for recs in reconstructions_iterator)
+        return self.minimum_events_for_coincidence(coincidences_recs, n)
 
     def _events_from_stations(self, events, stations):
         """Get only events from the chosen stations

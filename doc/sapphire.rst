@@ -2,21 +2,19 @@ SAPPHiRE Reference
 ==================
 
 .. automodule:: sapphire
-   :members:
-   :undoc-members:
-
-
-Contents:
 
 .. toctree::
+   :hidden:
 
    analysis
    api
    clusters
    corsika
+   data
    esd
    kascade
    publicdb
+   qsub
    simulations
    storage
    time_util

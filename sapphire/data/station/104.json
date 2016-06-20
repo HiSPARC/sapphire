@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 50.24, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.4490787, 
+    "longitude": 4.8141573, 
+    "name": "Zaanlands Lyceum 3", 
+    "number": 104, 
+    "scintillators": [
+        {
+            "alpha": -13.7, 
+            "beta": -13.7, 
+            "height": 0.0, 
+            "radius": 0.5
+        }, 
+        {
+            "alpha": -13.7, 
+            "beta": -13.7, 
+            "height": 0.0, 
+            "radius": 10.5
+        }
+    ], 
+    "subcluster": "Zaanstad"
+}

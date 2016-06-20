@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 45.81, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3474622, 
+    "longitude": 4.632369, 
+    "name": "College Hageveld", 
+    "number": 203, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Haarlem"
+}

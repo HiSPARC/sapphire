@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 122.83, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.4428315, 
+    "longitude": -2.5183221, 
+    "name": "Hanham Woods Academy", 
+    "number": 13006, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Bristol"
+}

@@ -1,6 +1,7 @@
 *.swp
 
 # Specific
+sapphire/data/eventtime/
 _build/
 build/
 dist/

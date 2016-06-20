@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 57.65, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3558991, 
+    "longitude": 4.950988, 
+    "name": "Nikhef", 
+    "number": 501, 
+    "scintillators": [
+        {
+            "alpha": -158.07, 
+            "beta": 45.0, 
+            "height": 0.0, 
+            "radius": 6.09
+        }, 
+        {
+            "alpha": 73.49, 
+            "beta": 45.0, 
+            "height": 0.0, 
+            "radius": 5.0
+        }, 
+        {
+            "alpha": 95.63, 
+            "beta": 315.0, 
+            "height": 0.0, 
+            "radius": 14.51
+        }, 
+        {
+            "alpha": 138.13, 
+            "beta": 315.0, 
+            "height": 0.0, 
+            "radius": 11.06
+        }
+    ], 
+    "subcluster": "Science Park"
+}

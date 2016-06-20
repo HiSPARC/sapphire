@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 53.86, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3951311, 
+    "longitude": 4.9267332, 
+    "name": "Bern. Nieuwetijt Coll. (Damstede)", 
+    "number": 6, 
+    "scintillators": [
+        {
+            "alpha": 290.0, 
+            "beta": 20.0, 
+            "height": 0.0, 
+            "radius": 4.0
+        }, 
+        {
+            "alpha": 110.0, 
+            "beta": 20.0, 
+            "height": 0.0, 
+            "radius": 4.0
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

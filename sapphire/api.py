@@ -1,4 +1,4 @@
-""" HiSPARC api interface
+""" Access the HiSPARC public database API.
 
     This provides easy classes and functions to access the HiSPARC
     publicdb API. This takes care of the url retrieval and conversion
@@ -8,39 +8,39 @@
 
     .. code-block:: python
 
-        >>> from sapphire.api import Station
-        >>> stations = [5, 301, 3102, 504, 7101, 8008, 13005]
-        >>> clusters = [Station(station).cluster.lower()
-        ...             for station in stations]
-        >>> station_groups = ['/hisparc/cluster_%s/station_%d' % (c, s)
-        ...                   for c, s in zip(clusters, stations)]
-        >>> station_groups
-        [u'/hisparc/cluster_amsterdam/station_5',
-         u'/hisparc/cluster_amsterdam/station_301',
-         u'/hisparc/cluster_leiden/station_3102',
-         u'/hisparc/cluster_amsterdam/station_504',
-         u'/hisparc/cluster_enschede/station_7101',
-         u'/hisparc/cluster_eindhoven/station_8008',
-         u'/hisparc/cluster_bristol/station_13005']
+        >>> from sapphire import Station
+        >>> stations = [5, 3102, 504, 7101, 8008, 13005]
+        >>> clusters = [Station(station).cluster for station in stations]
+        >>> for station, cluster in zip(stations, clusters):
+        ...     print 'Station %d is in cluster %s.' % (station, cluster)
+        Station 5 is in cluster Amsterdam.
+        Station 3102 is in cluster Leiden.
+        Station 504 is in cluster Amsterdam.
+        Station 7101 is in cluster Enschede.
+        Station 8008 is in cluster Eindhoven.
+        Station 13005 is in cluster Bristol.
 
 """
 import logging
 import datetime
 import json
 import warnings
-from os import path
+from os import path, extsep
 from urllib2 import urlopen, HTTPError, URLError
 from StringIO import StringIO
-from bisect import bisect_right
 
 from lazy import lazy
-from numpy import genfromtxt, atleast_1d
+from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
+                   count_nonzero, negative)
+
+from .utils import get_active_index, memoize
+from .transformations.clock import process_time
 
 logger = logging.getLogger('api')
 
 API_BASE = 'http://data.hisparc.nl/api/'
 SRC_BASE = 'http://data.hisparc.nl/show/source/'
-JSON_FILE = path.join(path.dirname(__file__), 'data/hisparc_stations.json')
+LOCAL_BASE = path.join(path.dirname(__file__), 'data')
 
 
 class API(object):
@@ -49,7 +49,7 @@ class API(object):
 
     This provided the methods to retrieve data from the API. The results
     are converted from JSON data to Python objects (dict/list/etc).
-    Support is also provided for the retrieval of Source CSV data, which
+    Support is also provided for the retrieval of Source TSV data, which
     is returned as NumPy arrays.
 
     """
@@ -63,7 +63,7 @@ class API(object):
             "countries": 'countries/',
             "stations_with_data": 'stations/data/{year}/{month}/{day}/',
             "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
-            "station_info": 'station/{station_number}/{year}/{month}/{day}/',
+            "station_info": 'station/{station_number}/',
             "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
             "has_weather": 'station/{station_number}/weather/{year}/{month}/'
                            '{day}/',
@@ -84,38 +84,99 @@ class API(object):
         'eventtime': 'eventtime/{station_number}/{year}/{month}/{day}/',
         'pulseheight': 'pulseheight/{station_number}/{year}/{month}/{day}/',
         'integral': 'pulseintegral/{station_number}/{year}/{month}/{day}/',
+        'azimuth': 'azimuth/{station_number}/{year}/{month}/{day}/',
+        'zenith': 'zenith/{station_number}/{year}/{month}/{day}/',
         'barometer': 'barometer/{station_number}/{year}/{month}/{day}/',
         'temperature': 'temperature/{station_number}/{year}/{month}/{day}/',
+        'electronics': 'electronics/{station_number}/',
         'voltage': 'voltage/{station_number}/',
         'current': 'current/{station_number}/',
-        'gps': 'gps/{station_number}/'}
+        'gps': 'gps/{station_number}/',
+        'trigger': 'trigger/{station_number}/',
+        'layout': 'layout/{station_number}/',
+        'detector_timing_offsets': 'detector_timing_offsets/{station_number}/',
+        'station_timing_offsets': 'station_timing_offsets/{station_1}/'
+                                  '{station_2}/'}
 
-    @classmethod
-    def _get_json(cls, urlpath):
+    def __init__(self, force_fresh=False, force_stale=False):
+        """Initialize API class
+
+        :param force_fresh,force_stale: if either of these is set to True the
+            data must either loaded from server or from local data. Be default
+            fresh data is prefered, but falls back to local data.
+
+        """
+        self.force_fresh = force_fresh
+        self.force_stale = force_stale
+
+    def _get_json(self, urlpath):
         """Retrieve a JSON from the HiSPARC API
 
-        :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
-            to retrieve.
+        :param urlpath: api urlpath to retrieve (i.e. after API_BASE).
         :return: the data returned by the api as dictionary or integer.
 
         """
-        json_data = cls._retrieve_url(urlpath)
-        data = json.loads(json_data)
+        if self.force_fresh and self.force_stale:
+            raise Exception('Can not force fresh and stale simultaneously.')
+        try:
+            if self.force_stale:
+                raise Exception
+            json_data = self._retrieve_url(urlpath)
+            data = json.loads(json_data)
+        except Exception:
+            if self.force_fresh:
+                raise Exception('Couldn\'t get requested data from server.')
+            localpath = path.join(LOCAL_BASE,
+                                  urlpath.strip('/') + extsep + 'json')
+            try:
+                with open(localpath) as localdata:
+                    data = json.load(localdata)
+            except:
+                if self.force_stale:
+                    raise Exception('Couldn\'t find requested data locally.')
+                raise Exception('Couldn\'t get requested data from server '
+                                'nor find it locally.')
+            if not self.force_stale:
+                warnings.warn('Using local data. Possibly outdated.')
 
         return data
 
-    @classmethod
-    def _get_csv(cls, urlpath, names=None):
-        """Retrieve a Source CSV from the HiSPARC Public Database
+    def _get_tsv(self, urlpath, names=None):
+        """Retrieve a Source TSV from the HiSPARC Public Database
 
-        :param urlpath: the csv urlpath to retrieve
-            (after http://data.hisparc.nl/show/source/).
+        :param urlpath: tsv urlpath to retrieve (i.e. path after SRC_BASE).
+        :param names: data column names.
         :return: the data returned as array.
 
         """
-        csv_data = cls._retrieve_url(urlpath, base=SRC_BASE)
-        data = genfromtxt(StringIO(csv_data), delimiter='\t', dtype=None,
-                          names=names)
+        if self.force_fresh and self.force_stale:
+            raise Exception('Can not force fresh and stale simultaneously.')
+        try:
+            if self.force_stale:
+                raise Exception
+            tsv_data = self._retrieve_url(urlpath, base=SRC_BASE)
+        except Exception:
+            if self.force_fresh:
+                raise Exception('Couldn\'t get requested data from server.')
+            localpath = path.join(LOCAL_BASE,
+                                  urlpath.strip('/') + extsep + 'tsv')
+            try:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore')
+                    data = genfromtxt(localpath, delimiter='\t', dtype=None,
+                                      names=names)
+            except:
+                if self.force_stale:
+                    raise Exception('Couldn\'t find requested data locally.')
+                raise Exception('Couldn\'t get requested data from server '
+                                'nor find it locally.')
+            if not self.force_stale:
+                warnings.warn('Using local data. Possibly outdated.')
+        else:
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore')
+                data = genfromtxt(StringIO(tsv_data), delimiter='\t',
+                                  dtype=None, names=names)
 
         return atleast_1d(data)
 
@@ -154,33 +215,25 @@ class API(object):
         return True
 
     @staticmethod
-    def get_active_index(timestamps, timestamp):
-        """Get the index where the timestamp fits.
-
-        :param timestamps: list of timestamps.
-        :param timestamp: timestamp for which to find the position.
-        :return: index into the timestamps list.
-
-        """
-        idx = bisect_right(timestamps, timestamp, lo=0)
-        if idx == 0:
-            idx = 1
-        return idx - 1
+    def validate_partial_date(year='', month='', day='', hour=''):
+        if year == '' and (month != '' or day != '' or hour != ''):
+            raise Exception('You must also specify the year')
+        elif month == '' and (day != '' or hour != ''):
+            raise Exception('You must also specify the month')
+        elif day == '' and hour != '':
+            raise Exception('You must also specify the day')
 
 
 class Network(API):
+
     """Get info about the network (countries/clusters/subclusters/stations)"""
 
-    _all_countries = None
-    _all_clusters = None
-    _all_subclusters = None
-    _all_stations = None
+    @lazy
+    def _all_countries(self):
+        """All countries data"""
 
-    def __init__(self):
-        """Initialize network
-
-        """
-        pass
+        path = self.urls['countries']
+        return self._get_json(path)
 
     def countries(self):
         """Get a list of countries
@@ -188,9 +241,6 @@ class Network(API):
         :return: all countries in the region
 
         """
-        if not self._all_countries:
-            path = self.urls['countries']
-            self._all_countries = self._get_json(path)
         return self._all_countries
 
     def country_numbers(self):
@@ -198,6 +248,13 @@ class Network(API):
 
         countries = self.countries()
         return [country['number'] for country in countries]
+
+    @lazy
+    def _all_clusters(self):
+        """All countries data"""
+
+        path = self.urls['clusters']
+        return self._get_json(path)
 
     def clusters(self, country=None):
         """Get a list of clusters
@@ -209,9 +266,6 @@ class Network(API):
         """
         self.validate_numbers(country)
         if country is None:
-            if not self._all_clusters:
-                path = self.urls['clusters']
-                self._all_clusters = self._get_json(path)
             clusters = self._all_clusters
         else:
             path = (self.urls['clusters_in_country']
@@ -226,6 +280,13 @@ class Network(API):
         clusters = self.clusters(country=country)
         return [cluster['number'] for cluster in clusters]
 
+    @lazy
+    def _all_subclusters(self):
+        """All countries data"""
+
+        path = self.urls['subclusters']
+        return self._get_json(path)
+
     def subclusters(self, country=None, cluster=None):
         """Get a list of subclusters
 
@@ -237,9 +298,6 @@ class Network(API):
         """
         self.validate_numbers(country, cluster)
         if country is None and cluster is None:
-            if not self._all_subclusters:
-                path = self.urls['subclusters']
-                self._all_subclusters = self._get_json(path)
             subclusters = self._all_subclusters
         elif country is not None:
             subclusters = []
@@ -263,6 +321,13 @@ class Network(API):
         subclusters = self.subclusters(country=country, cluster=cluster)
         return [subcluster['number'] for subcluster in subclusters]
 
+    @lazy
+    def _all_stations(self):
+        """All stations data"""
+
+        path = self.urls['stations']
+        return self._get_json(path)
+
     def stations(self, country=None, cluster=None, subcluster=None):
         """Get a list of stations
 
@@ -274,9 +339,6 @@ class Network(API):
         """
         self.validate_numbers(country, cluster, subcluster)
         if country is None and cluster is None and subcluster is None:
-            if not self._all_stations:
-                path = self.urls['stations']
-                self._all_stations = self._get_json(path)
             stations = self._all_stations
         elif country is not None:
             stations = []
@@ -300,43 +362,18 @@ class Network(API):
                 path = (self.urls['stations_in_subcluster']
                         .format(subcluster_number=subcluster['number']))
                 stations.extend(self._get_json(path))
-        else:
+        elif subcluster is not None:
             path = (self.urls['stations_in_subcluster']
                     .format(subcluster_number=subcluster))
             stations = self._get_json(path)
         return stations
 
-    def station_numbers(self, country=None, cluster=None, subcluster=None,
-                        allow_stale=True):
+    def station_numbers(self, country=None, cluster=None, subcluster=None):
         """Same as stations but only retuns a list of station numbers"""
 
-        self.validate_numbers(country, cluster, subcluster)
-        try:
-            stations = self.stations(country=country, cluster=cluster,
-                                     subcluster=subcluster)
-            return [station['number'] for station in stations]
-        except Exception, e:
-            if not allow_stale:
-                raise
-            # Try getting the station info from the JSON.
-            try:
-                if country is None and cluster is None and subcluster is None:
-                    start, end = (0, 1e9)
-                elif country is not None:
-                    start, end = (country, country + 10000)
-                elif cluster is not None:
-                    start, end = (cluster, cluster + 1000)
-                else:
-                    start, end = (subcluster, subcluster + 100)
-                with open(JSON_FILE) as data:
-                    stations = [int(s) for s in json.load(data).keys()
-                                if s != '_info' and start <= int(s) < end]
-                warnings.warn('Couldnt get values from the server, using '
-                              'hard-coded values. Possibly outdated.',
-                              UserWarning)
-                return sorted(stations)
-            except:
-                raise e
+        stations = self.stations(country=country, cluster=cluster,
+                                 subcluster=subcluster)
+        return [station['number'] for station in stations]
 
     def nested_network(self):
         """Get a nested list of the full network"""
@@ -352,8 +389,7 @@ class Network(API):
             country.update({'clusters': clusters})
         return countries
 
-    @classmethod
-    def stations_with_data(cls, year='', month='', day=''):
+    def stations_with_data(self, year='', month='', day=''):
         """Get a list of stations with data on the specified date
 
         :param year,month,day: the date for which to check. It is
@@ -361,17 +397,13 @@ class Network(API):
         :return: all stations with data.
 
         """
-        if year == '' and (month != '' or day != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and day != '':
-            raise Exception('You must also specify the month')
+        self.validate_partial_date(year, month, day)
 
-        path = (cls.urls['stations_with_data']
+        path = (self.urls['stations_with_data']
                 .format(year=year, month=month, day=day).strip("/"))
-        return cls._get_json(path)
+        return self._get_json(path)
 
-    @classmethod
-    def stations_with_weather(cls, year='', month='', day=''):
+    def stations_with_weather(self, year='', month='', day=''):
         """Get a list of stations with weather data on the specified date
 
         :param year,month,day: the date for which to check. It is
@@ -379,17 +411,13 @@ class Network(API):
         :return: all stations with weather data.
 
         """
-        if year == '' and (month != '' or day != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and day != '':
-            raise Exception('You must also specify the month')
+        self.validate_partial_date(year, month, day)
 
-        path = (cls.urls['stations_with_weather']
+        path = (self.urls['stations_with_weather']
                 .format(year=year, month=month, day=day).strip("/"))
-        return cls._get_json(path)
+        return self._get_json(path)
 
-    @classmethod
-    def coincidence_time(cls, year, month, day):
+    def coincidence_time(self, year, month, day):
         """Get the coincidences per hour histogram
 
         :param year,month,day: the date for which to get the histogram.
@@ -397,12 +425,11 @@ class Network(API):
 
         """
         columns = ('hour', 'counts')
-        path = cls.src_urls['coincidencetime'].format(year=year, month=month,
-                                                      day=day)
-        return cls._get_csv(path, names=columns)
+        path = self.src_urls['coincidencetime'].format(year=year, month=month,
+                                                       day=day)
+        return self._get_tsv(path, names=columns)
 
-    @classmethod
-    def coincidence_number(cls, year, month, day):
+    def coincidence_number(self, year, month, day):
         """Get the number of stations in coincidence histogram
 
         :param year,month,day: the date for which to get the histogram.
@@ -410,9 +437,10 @@ class Network(API):
 
         """
         columns = ('n', 'counts')
-        path = cls.src_urls['coincidencenumber'].format(year=year, month=month,
-                                                        day=day)
-        return cls._get_csv(path, names=columns)
+        path = self.src_urls['coincidencenumber'].format(year=year,
+                                                         month=month,
+                                                         day=day)
+        return self._get_tsv(path, names=columns)
 
     @staticmethod
     def validate_numbers(country=None, cluster=None, subcluster=None):
@@ -426,40 +454,84 @@ class Network(API):
             raise Exception('Invalid subcluster number, '
                             'must be multiple of 100.')
 
+    def uptime(self, stations, start=None, end=None):
+        """Get number of hours which stations have been simultaneously active
+
+        Using hourly eventrate data the number of hours in which the given
+        stations all had data is determined. Only hours in which each station
+        had a reasonable eventrate are counted, to exclude bad data.
+
+        :param stations: station number or a list of station numbers.
+        :param start,end: start, end timestamp.
+        :returns: number of hours with simultaneous data.
+
+        """
+        data = {}
+
+        if not hasattr(stations, '__len__'):
+            stations = [stations]
+
+        for sn in stations:
+            data[sn] = Station(sn, force_fresh=self.force_fresh,
+                               force_stale=self.force_stale).event_time()
+
+        first = min(values['timestamp'][0] for values in data.values())
+        last = max(values['timestamp'][-1] for values in data.values())
+
+        len_array = (last - first) / 3600 + 1
+        all_active = ones(len_array)
+
+        for sn in data.keys():
+            is_active = zeros(len_array)
+            start_i = (data[sn]['timestamp'][0] - first) / 3600
+            end_i = start_i + len(data[sn])
+            is_active[start_i:end_i] = (data[sn]['counts'] > 500) &\
+                                       (data[sn]['counts'] < 5000)
+            all_active = logical_and(all_active, is_active)
+
+        # filter start, end
+        if start is not None:
+            start_index = max(0, process_time(start) - first) / 3600
+        else:
+            start_index = 0
+
+        if end is not None:
+            end_index = min(last, process_time(end) - first) / 3600
+        else:
+            end_index = len(all_active)
+
+        return count_nonzero(all_active[start_index:end_index])
+
 
 class Station(API):
+
     """Access data about a single station"""
 
-    def __init__(self, station, date=None, allow_stale=True):
+    def __init__(self, station, force_fresh=False, force_stale=False):
         """Initialize station
 
         :param station: station number.
-        :param date: date object for which to get the station information.
-        :param allow_stale: set to False to require data to be fresh
+        :param force_fresh: set to True to require data to be fresh
                             from the server.
+        :param force_stale: set to True to require data to be taken from local
+                            data, not valid for all methods.
 
         """
+        if force_fresh and force_stale:
+            raise Exception('Can not force fresh and stale simultaneously.')
+        if station not in Network(force_fresh=force_fresh,
+                                  force_stale=force_stale).station_numbers():
+            warnings.warn('Possibly invalid station, or without config.')
+        self.force_fresh = force_fresh
+        self.force_stale = force_stale
         self.station = station
-        if date is None:
-            date = datetime.date.today()
-        path = (self.urls['station_info']
-                .format(station_number=self.station, year=date.year,
-                        month=date.month, day=date.day))
-        try:
-            self.info = self._get_json(path)
-        except Exception, e:
-            if allow_stale:
-                # Try getting the station info from the JSON.
-                try:
-                    with open(JSON_FILE) as data:
-                        self.info = json.load(data)[str(station)]
-                    warnings.warn('Couldnt get values from the server, using '
-                                  'hard-coded values. Not all info available.',
-                                  UserWarning)
-                except:
-                    raise e
-            else:
-                raise
+
+    @lazy
+    def info(self):
+        """Get general station info"""
+
+        path = self.urls['station_info'].format(station_number=self.station)
+        return self._get_json(path)
 
     def country(self):
         return self.info['country']
@@ -473,37 +545,6 @@ class Station(API):
     def n_detectors(self):
         """Get the number of detectors in this station"""
         return len(self.info['scintillators'])
-
-    def detectors(self, date=None):
-        """Get the locations of detectors
-
-        :param date: date object for which to get the detector information
-        :return: list with the locations of each detector
-
-        """
-        if date is None:
-            return self.info['scintillators']
-        else:
-            station = Station(self.station, date)
-            return station.detectors()
-
-    def location(self, date=None):
-        """Get gps location of the station
-
-        :param date: date object for which to get the location
-        :return: the gps coordinates for the station
-
-        """
-        if date is None:
-            dict = self.info
-            return {'latitude': dict['latitude'],
-                    'longitude': dict['longitude'],
-                    'altitude': dict['altitude']}
-        else:
-            dict = self.config(date=date)
-            return {'latitude': dict['gps_latitude'],
-                    'longitude': dict['gps_longitude'],
-                    'altitude': dict['gps_altitude']}
 
     def config(self, date=None):
         """Get station config
@@ -534,12 +575,7 @@ class Station(API):
         :return: the number of events recorded by the station on date.
 
         """
-        if year == '' and (month != '' or day != '' or hour != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and (day != '' or hour != ''):
-            raise Exception('You must also specify the month')
-        elif day == '' and hour != '':
-            raise Exception('You must also specify the day')
+        self.validate_partial_date(year, month, day, hour)
 
         path = (self.urls['number_of_events']
                 .format(station_number=self.station, year=year, month=month,
@@ -555,10 +591,7 @@ class Station(API):
             data on the date.
 
         """
-        if year == '' and (month != '' or day != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and day != '':
-            raise Exception('You must also specify the month')
+        self.validate_partial_date(year, month, day)
 
         path = (self.urls['has_data'].format(station_number=self.station,
                                              year=year, month=month, day=day)
@@ -574,24 +607,22 @@ class Station(API):
             on the date.
 
         """
-        if year == '' and (month != '' or day != ''):
-            raise Exception('You must also specify the year')
-        elif month == '' and day != '':
-            raise Exception('You must also specify the month')
+        self.validate_partial_date(year, month, day)
 
         path = (self.urls['has_weather']
                 .format(station_number=self.station,
                         year=year, month=month, day=day).strip("/"))
         return self._get_json(path)
 
-    def event_trace(self, timestamp, nanoseconds):
+    def event_trace(self, timestamp, nanoseconds, raw=False):
         """Get the traces for a specific event
 
         The exact timestamp and nanoseconds for the event have to be
         given.
 
         :param timestamp,nanoseconds: the extended timestamp for which
-            to get the traces
+            to get the traces.
+        :param raw: get the raw trace, without the subtracted baselines.
         :return: an array with the traces for each detector in ADCcounts
 
         """
@@ -599,20 +630,22 @@ class Station(API):
         path = (self.urls['event_trace'].format(station_number=self.station,
                                                 ext_timestamp=ext_timestamp)
                 .strip("/"))
+        if raw is True:
+            path += '?raw'
         return self._get_json(path)
 
-    def event_time(self, year, month, day):
+    def event_time(self, year='', month='', day=''):
         """Get the number of events per hour histogram
 
         :param year,month,day: the date for which to get the histogram.
         :return: array of bins and counts.
 
         """
-        columns = ('hour', 'counts')
+        columns = ('timestamp', 'counts')
         path = self.src_urls['eventtime'].format(station_number=self.station,
                                                  year=year, month=month,
-                                                 day=day)
-        return self._get_csv(path, names=columns)
+                                                 day=day).strip("/")
+        return self._get_tsv(path, names=columns)
 
     def pulse_height(self, year, month, day):
         """Get the pulseheight histogram
@@ -625,7 +658,7 @@ class Station(API):
         path = self.src_urls['pulseheight'].format(station_number=self.station,
                                                    year=year, month=month,
                                                    day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def pulse_integral(self, year, month, day):
         """Get the pulseintegral histogram
@@ -638,7 +671,31 @@ class Station(API):
         path = self.src_urls['integral'].format(station_number=self.station,
                                                 year=year, month=month,
                                                 day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
+
+    def azimuth(self, year, month, day):
+        """Get the azimuth histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('angle', 'counts')
+        path = self.src_urls['azimuth'].format(station_number=self.station,
+                                               year=year, month=month, day=day)
+        return self._get_tsv(path, names=columns)
+
+    def zenith(self, year, month, day):
+        """Get the zenith histogram
+
+        :param year,month,day: the date for which to get the histogram.
+        :return: array of bins and counts.
+
+        """
+        columns = ('angle', 'counts')
+        path = self.src_urls['zenith'].format(station_number=self.station,
+                                              year=year, month=month, day=day)
+        return self._get_tsv(path, names=columns)
 
     def barometer(self, year, month, day):
         """Get the barometer dataset
@@ -651,7 +708,7 @@ class Station(API):
         path = self.src_urls['barometer'].format(station_number=self.station,
                                                  year=year, month=month,
                                                  day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
     def temperature(self, year, month, day):
         """Get the temperature dataset
@@ -664,7 +721,34 @@ class Station(API):
         path = self.src_urls['temperature'].format(station_number=self.station,
                                                    year=year, month=month,
                                                    day=day)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
+
+    @lazy
+    def electronics(self):
+        """Get the electronics version data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'master', 'slave', 'master_fpga', 'slave_fpga')
+        path = self.src_urls['electronics'].format(station_number=self.station)
+        return self._get_tsv(path, names=columns)
+
+    def electronic(self, timestamp=None):
+        """Get electronics version data for specific timestamp
+
+        :param timestamp: timestamp for which the values are valid.
+        :return: list of values for given timestamp.
+
+        """
+        electronics = self.electronics
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(electronics['timestamp'], timestamp)
+        electronic = [electronics[idx][field] for field in
+                      ('master', 'slave', 'master_fpga', 'slave_fpga')]
+        return electronic
 
     @lazy
     def voltages(self):
@@ -675,19 +759,21 @@ class Station(API):
         """
         columns = ('timestamp', 'voltage1', 'voltage2', 'voltage3', 'voltage4')
         path = self.src_urls['voltage'].format(station_number=self.station)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
-    def voltage(self, timestamp):
-        """Get PMT coltage data for specific timestamp
+    def voltage(self, timestamp=None):
+        """Get PMT voltage data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
         voltages = self.voltages
-        idx = self.get_active_index(voltages['timestamp'], timestamp)
-        voltage = (voltages[idx]['voltage1'], voltages[idx]['voltage2'],
-                   voltages[idx]['voltage3'], voltages[idx]['voltage4'])
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(voltages['timestamp'], timestamp)
+        voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
     @lazy
@@ -699,19 +785,21 @@ class Station(API):
         """
         columns = ('timestamp', 'current1', 'current2', 'current3', 'current4')
         path = self.src_urls['current'].format(station_number=self.station)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
-    def current(self, timestamp):
+    def current(self, timestamp=None):
         """Get PMT current data for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
+        :param timestamp: timestamp for which the values are valid.
         :return: list of values for given timestamp.
 
         """
         currents = self.currents
-        idx = self.get_active_index(currents['timestamp'], timestamp)
-        current = (currents[idx]['current1'], currents[idx]['current2'],
-                   currents[idx]['current3'], currents[idx]['current4'])
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(currents['timestamp'], timestamp)
+        current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
     @lazy
@@ -723,18 +811,166 @@ class Station(API):
         """
         columns = ('timestamp', 'latitude', 'longitude', 'altitude')
         path = self.src_urls['gps'].format(station_number=self.station)
-        return self._get_csv(path, names=columns)
+        return self._get_tsv(path, names=columns)
 
-    def gps_location(self, timestamp):
+    def gps_location(self, timestamp=None):
         """Get GPS location for specific timestamp
 
-        :param timestamp: timestamp for which the value is valid.
-        :return: list of values for given timestamp.
+        :param timestamp: optional timestamp or datetime object for which
+            the values are valid.
+        :return: dictionary with the values for given timestamp.
 
         """
+        if timestamp is None:
+            timestamp = process_time(datetime.date.today())
+        else:
+            timestamp = process_time(timestamp)
         locations = self.gps_locations
-        idx = self.get_active_index(locations['timestamp'], timestamp)
+        idx = get_active_index(locations['timestamp'], timestamp)
         location = {'latitude': locations[idx]['latitude'],
                     'longitude': locations[idx]['longitude'],
                     'altitude': locations[idx]['altitude']}
         return location
+
+    @lazy
+    def triggers(self):
+        """Get the trigger config data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp',
+                   'low1', 'low2', 'low3', 'low4',
+                   'high1', 'high2', 'high3', 'high4',
+                   'n_low', 'n_high', 'and_or', 'external')
+        path = self.src_urls['trigger'].format(station_number=self.station)
+        return self._get_tsv(path, names=columns)
+
+    def trigger(self, timestamp=None):
+        """Get trigger config for specific timestamp
+
+        :param timestamp: timestamp for which the values are valid.
+        :return: thresholds and trigger values for given timestamp.
+
+        """
+        triggers = self.triggers
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(triggers['timestamp'], timestamp)
+        thresholds = [[triggers[idx]['%s%d' % (t, i)]
+                       for t in ('low', 'high')]
+                      for i in range(1, 5)]
+        trigger = [triggers[idx][t]
+                   for t in 'n_low', 'n_high', 'and_or', 'external']
+        return thresholds, trigger
+
+    @lazy
+    def station_layouts(self):
+        """Get the station layout data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp',
+                   'radius1', 'alpha1', 'height1', 'beta1',
+                   'radius2', 'alpha2', 'height2', 'beta2',
+                   'radius3', 'alpha3', 'height3', 'beta3',
+                   'radius4', 'alpha4', 'height4', 'beta4')
+        base = self.src_urls['layout']
+        path = base.format(station_number=self.station)
+        return self._get_tsv(path, names=columns)
+
+    def station_layout(self, timestamp=None):
+        """Get station layout data for specific timestamp
+
+        :param timestamp: timestamp for which the values are valid.
+        :return: list of coordinates for given timestamp.
+
+        """
+        station_layouts = self.station_layouts
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(station_layouts['timestamp'], timestamp)
+        station_layout = [[station_layouts[idx]['%s%d' % (c, i)]
+                           for c in ('radius', 'alpha', 'height', 'beta')]
+                          for i in range(1, 5)]
+        return station_layout
+
+    @lazy
+    def detector_timing_offsets(self):
+        """Get the detector timing offsets data
+
+        :return: array of timestamps and values.
+
+        """
+        columns = ('timestamp', 'offset1', 'offset2', 'offset3', 'offset4')
+        base = self.src_urls['detector_timing_offsets']
+        path = base.format(station_number=self.station)
+        return self._get_tsv(path, names=columns)
+
+    def detector_timing_offset(self, timestamp=None):
+        """Get detector timing offset data for specific timestamp
+
+        :param timestamp: timestamp for which the values are valid.
+        :return: list of values for given timestamp.
+
+        """
+        detector_timing_offsets = self.detector_timing_offsets
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(detector_timing_offsets['timestamp'],
+                                   timestamp)
+        detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
+                                  for i in range(1, 5)]
+
+        return detector_timing_offset
+
+    @memoize
+    def station_timing_offsets(self, reference_station):
+        """Get the station timing offset relative to reference_station
+
+        :param reference_station: reference station
+        :return: array of timestamps and values.
+
+        """
+        if reference_station == self.station:
+            raise Exception('Reference station cannot be the same station')
+        if reference_station > self.station:
+            station_1, station_2 = self.station, reference_station
+            toggle_sign = True
+        else:
+            station_2, station_1 = self.station, reference_station
+            toggle_sign = False
+
+        columns = ('timestamp', 'offset', 'error')
+        base = self.src_urls['station_timing_offsets']
+        path = base.format(station_1=station_1, station_2=station_2)
+        data = self._get_tsv(path, names=columns)
+        if toggle_sign:
+            data['offset'] = negative(data['offset'])
+        return data
+
+    def station_timing_offset(self, reference_station, timestamp=None):
+        """Get station timing offset data for specific timestamp
+
+        :param reference_station: reference station
+        :param timestamp: timestamp for which the value is valid.
+        :return: the offset and error for given timestamp.
+
+        """
+        if self.station == reference_station:
+            return (0., 0.)
+
+        station_timing_offsets = self.station_timing_offsets(reference_station)
+        if timestamp is None:
+            idx = -1
+        else:
+            idx = get_active_index(station_timing_offsets['timestamp'],
+                                   timestamp)
+        station_timing_offset = (station_timing_offsets[idx]['offset'],
+                                 station_timing_offsets[idx]['error'])
+
+        return station_timing_offset

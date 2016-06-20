@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 74.69, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.4511197, 
+    "longitude": -2.60013, 
+    "name": "Bristol Cathedral Choir School", 
+    "number": 13008, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Bristol"
+}

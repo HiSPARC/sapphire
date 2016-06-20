@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 55.6, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3625079, 
+    "longitude": 4.8247887, 
+    "name": "Hervormd Lyceum West", 
+    "number": 13, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

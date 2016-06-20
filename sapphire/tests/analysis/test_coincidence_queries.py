@@ -1,5 +1,6 @@
-from mock import sentinel, patch, call
 import unittest
+
+from mock import sentinel, patch, call
 
 from sapphire.analysis import coincidence_queries
 
@@ -29,10 +30,18 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         self.assertEqual(self.cq.s_index, a_node)
         self.assertEqual(self.cq.c_index, a_node)
 
+    def test_finish(self):
+        self.cq.finish()
+        self.mock_open_file.return_value.close.assert_called_once_with()
+
     def test_all_coincidences(self):
         result = self.cq.all_coincidences()
         self.cq.coincidences.read.assert_called_once_with()
         self.assertEqual(result, self.cq.coincidences.read.return_value)
+
+        result = self.cq.all_coincidences(iterator=True)
+        self.cq.coincidences.iterrows.assert_called_once_with()
+        self.assertEqual(result, self.cq.coincidences.iterrows.return_value)
 
     @patch.object(coincidence_queries.CoincidenceQuery, 'perform_query')
     @patch.object(coincidence_queries.CoincidenceQuery, '_get_allowed_s_columns')
@@ -127,6 +136,18 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         mock_events_from.return_value = sentinel.coincidence_events
         coincidences = [sentinel.coincidence]
         self.cq.events_from_stations(coincidences, sentinel.stations)
+        # mock_get_events.assert_called_once_with(sentinel.coincidence)
+        # mock_events_from.assert_called_once_with(sentinel.events, sentinel.stations)
+        # mock_minimum.assert_called_once_with([sentinel.coincidence_events])
+
+    @patch.object(coincidence_queries.CoincidenceQuery, 'minimum_events_for_coincidence')
+    @patch.object(coincidence_queries.CoincidenceQuery, '_events_from_stations')
+    @patch.object(coincidence_queries.CoincidenceQuery, '_get_reconstructions')
+    def test_reconstructions_from_stations(self, mock_get_reconstructions, mock_events_from, mock_minimum):
+        mock_get_reconstructions.return_value = sentinel.reconstructions
+        mock_events_from.return_value = sentinel.coincidence_reconstructions
+        coincidences = [sentinel.coincidence]
+        self.cq.reconstructions_from_stations(coincidences, sentinel.stations)
         # mock_get_events.assert_called_once_with(sentinel.coincidence)
         # mock_events_from.assert_called_once_with(sentinel.events, sentinel.stations)
         # mock_minimum.assert_called_once_with([sentinel.coincidence_events])

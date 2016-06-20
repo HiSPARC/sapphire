@@ -9,6 +9,8 @@
     integral.  This should be extended by approximations when the need for
     doing serious work arises.
 
+    References are made to Fokkema2012, DOI: 10.3990/1.9789036534383.
+
 """
 import warnings
 
@@ -19,6 +21,11 @@ from scipy import integrate, stats
 
 @vectorize
 def pdf(lf):
+    """The Landau probability density function
+
+    Fokkema2012, eq 2.13.
+
+    """
     if lf < -10:
         return 0.
     elif lf < 0:
@@ -36,39 +43,84 @@ def pdf_kernel(y, sf):
 
 
 def pdf_kernel2(u, lf):
+    """The Landau kernel
+
+    Fokkema2012, eq 2.13.
+
+    """
     return exp(-lf * u) * u ** -u * sin(pi * u)
 
 
 class Scintillator(object):
     thickness = .02  # m
-    xi = 0.172018  # MeV
-    epsilon = 3.10756e-11
-    delta = 2.97663
-    Euler = 0.577215665
+    xi = 0.172018  # MeV, Fokkema2012, eq 2.12.
+    epsilon = 3.10756e-11  # Fokkema2012, eq 2.11.
+    delta = 2.97663  # Delta
+    Euler = 0.577215665  # Euler-Mascheroni constant
 
     mev_scale = 1
     gauss_scale = 1
 
+    # Fokkema2012, eq 2.10.
     _lf0 = log(xi) - log(epsilon) + 1 - Euler - delta
 
     full_domain = linspace(-100, 100, 1000)
     pdf_values = None
-    pdf_domain = full_domain.compress(-5 <= full_domain)
+    pdf_domain = full_domain.compress(full_domain >= -5)
 
     def landau_pdf(self, Delta):
-        lf = Delta / self.xi - self._lf0
+        """The Landau energy loss distribution function
+
+        Fokkema2012, eq 2.9, where lf is eq 2.10.
+
+        :param Delta: Energy loss in the scintillator.
+        :return: energy loss probability.
+
+        """
+        lf = self.lf(Delta)
         return self.pdf(lf) / self.xi
 
+    def lf(self, Delta):
+        """Calculate the lambda parameter
+
+        Fokkema2012, eq 2.10.
+        With additional shift by delta.
+
+        :param Delta: Energy loss in the scintillator.
+        :return: lambda parameter.
+
+        """
+        return Delta / self.xi - self._lf0
+
     def pdf(self, lf):
+        """The Landau probability density function
+
+        Fokkema2012, eq 2.13.
+
+        :param lf: lambda parameter.
+        :return: probability.
+
+        """
         if self.pdf_values is not None:
             return interp(lf, self.pdf_domain, self.pdf_values)
         else:
-            print "Generating pre-computed values for Landau PDF..."
+            # Generate pre-computed values for Landau PDF
             self.pdf_values = pdf(self.pdf_domain)
             return self.pdf(lf)
 
     def conv_landau_for_x(self, x, count_scale=1, mev_scale=None,
                           gauss_scale=None):
+        """Landau convolved with Gaussian
+
+        Fokkema2012, eq 5.4.
+
+        :param x: energy loss(es) for which to get the probability.
+        :param count_scale: total number of counts.
+        :param mev_scale: number of MeV per unit of x.
+        :param gauss_scale: width of the normal distribution.
+        :return: probability.
+
+        """
         if mev_scale is None:
             mev_scale = self.mev_scale
         if gauss_scale is None:
@@ -134,7 +186,15 @@ class Scintillator(object):
 
 
 def discrete_convolution(f, g, t):
-    if abs(-min(t) - max(t)) > 1e-6:
+    """Discrete convolution
+
+    :param f,g: two functions that take one argument (t).
+    :param t: values for which the functions will be evaluated, and the along
+              which the convolution will be performed.
+    :return: convolution of the two functions.
+
+    """
+    if abs(min(t) + max(t)) > 1e-6:
         raise RuntimeError("Range needs to be symmetrical around zero.")
 
     dt = t[1] - t[0]

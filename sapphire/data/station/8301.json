@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 86.29, 
+    "cluster": "Eindhoven", 
+    "country": "Netherlands", 
+    "latitude": 51.2560654, 
+    "longitude": 5.7177335, 
+    "name": "Philips van Horne 1", 
+    "number": 8301, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Weert"
+}

@@ -39,10 +39,10 @@ class AverageIntersectionAlgorithmTest(unittest.TestCase, BaseAlgorithm):
         self.algorithm = core_reconstruction.AverageIntersectionAlgorithm()
 
 
-class EllipsLdfAlgorithmTest(unittest.TestCase, BaseAlgorithm):
+class EllipseLdfAlgorithmTest(unittest.TestCase, BaseAlgorithm):
 
     def setUp(self):
-        self.algorithm = core_reconstruction.EllipsLdfAlgorithm()
+        self.algorithm = core_reconstruction.EllipseLdfAlgorithm()
 
 
 if __name__ == '__main__':

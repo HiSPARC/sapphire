@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 62.24, 
+    "cluster": "Utrecht", 
+    "country": "Netherlands", 
+    "latitude": 52.0883194, 
+    "longitude": 5.1649086, 
+    "name": "Ornstein Laboratory", 
+    "number": 1010, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Utrecht"
+}

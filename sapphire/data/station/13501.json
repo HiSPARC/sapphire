@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 126.26, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 50.4770618, 
+    "longitude": -3.5530822, 
+    "name": "Torquay Girls Grammar School", 
+    "number": 13501, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Torquay"
+}

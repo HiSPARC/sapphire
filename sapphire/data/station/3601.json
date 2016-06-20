@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 61.35, 
+    "cluster": "Leiden", 
+    "country": "Netherlands", 
+    "latitude": 52.073317, 
+    "longitude": 4.3567373, 
+    "name": "Sint Maartens College", 
+    "number": 3601, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Leidschendam-Voorburg"
+}

@@ -1,5 +1,5 @@
-Working with KASCADE data
-=========================
+KASCADE data
+============
 
 .. automodule:: sapphire.kascade
    :members:

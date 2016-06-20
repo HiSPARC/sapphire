@@ -6,8 +6,9 @@
 """
 import warnings
 
-from scipy.stats import norm
 from scipy.optimize import curve_fit
+
+from ..utils import gauss
 
 
 MPV_FIT_WIDTH_FACTOR = .4
@@ -82,7 +83,7 @@ class FindMostProbableValueInSpectrum(object):
            * Find the maximum *to the right* of this value.  We assume
              this to be the approximate location of the MIP peak.
 
-        :returns mpv: first guess of the most probable value
+        :return mpv: first guess of the most probable value
 
         """
         n, bins = self.n, self.bins
@@ -118,7 +119,7 @@ class FindMostProbableValueInSpectrum(object):
             width of the fit domain.  The domain is given by
             [(1. - width_factor) * first_guess, (1. + width_factor) *
             first_guess]
-        :returns mpv: mpv value obtained from the fit
+        :return mpv: mpv value obtained from the fit
 
         """
         n, bins = self.n, self.bins
@@ -139,9 +140,8 @@ class FindMostProbableValueInSpectrum(object):
             raise RuntimeError("Number of data points not sufficient")
 
         # fit to a normal distribution
-        f = lambda x, N, a, b: N * norm.pdf(x, loc=a, scale=b)
-        popt, pcov = curve_fit(f, x, y, p0=(y.max(), first_guess,
-                                            first_guess))
+        popt, pcov = curve_fit(gauss, x, y,
+                               p0=(y.max(), first_guess, first_guess))
         mpv = popt[1]
 
         # sanity check: if MPV is outside domain, the MIP peak was not

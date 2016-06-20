@@ -4,21 +4,25 @@ SAPPHiRE — A Framework for HiSPARC
 Introduction
 ------------
 
-.. image:: http://img.shields.io/pypi/v/hisparc-sapphire.png
+.. image:: http://img.shields.io/pypi/v/hisparc-sapphire.svg
    :target: https://pypi.python.org/pypi/hisparc-sapphire/
-.. image:: http://img.shields.io/badge/license-GPLv3-blue.png
+.. image:: http://img.shields.io/badge/license-GPLv3-blue.svg
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
-.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.png
+.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.svg
    :target: https://travis-ci.org/HiSPARC/sapphire
-.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.png
-   :target: https://coveralls.io/r/HiSPARC/sapphire?branch=master
+.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.svg?label=coveralls
+   :target: https://coveralls.io/r/HiSPARC/sapphire
+.. image:: http://img.shields.io/codecov/c/github/HiSPARC/sapphire/master.svg?label=codecov
+   :target: https://codecov.io/github/HiSPARC/sapphire
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 <http://www.hisparc.nl/>`_ Research and Education.  It was created in the
-process of completing the PhD research of David Fokkema.  The history of
-this repository contains the complete simulation, analysis and plot
-generation code that formed the basis for David's `thesis
+process of completing the PhD research of David Fokkema.  The history of this
+repository contains the complete simulation, analysis and plot generation code
+that formed the basis for David's `thesis
 <http://www.nikhef.nl/pub/services/biblio/theses_pdf/thesis_D_Fokkema.pdf>`_.
+Arne de Laat took over development of SAPPHiRE while working on his own PhD
+research.
 
 This repository is created with a sole purpose in mind: to enable HiSPARC
 students, teachers and researchers to easily gain access to the data and
@@ -28,22 +32,25 @@ elaborate installation instructions, heavy customizations to the software,
 countless hours going over opaque parts of code and a general feeling of
 anguish and despair.  SAPPHiRE's ultimate goal: no more of that.
 
-David has tried very hard to write clean code.  However, as is the nature
-of finishing a PhD, severe time constraints prevented him to actually
-write well-documented, clean code.  He feels, however, that the presently
-available code is a good start.  By releasing it now, it can be used,
-accessed, and cleaned up.
-
-In fact, it is probably being cleaned up at this very moment!
-
 
 Installation
 ------------
 
-Required: Python with pip, the HDF5 and ATLAS libraries and a
-Fortran compiler. 
+Required: Python 2.7. pip will take care of dependencies, but installing 
+numpy, scipy and pytables from a python distribution is preferred. We use 
+miniconda, which includes the conda package manager.
 
-Then, using pip, simply open a Terminal and do::
+First, `install conda <http://conda.pydata.org/docs/install/quick.html>`_ 
+and optionally create a virtualenv::
+
+    $ conda create --name hisparc python=2.7 numpy scipy pytables
+    $ source activate hisparc
+
+or alternatively just install the dependencies::
+
+    $ conda install numpy scipy pytables
+   
+Then, using pip::
 
     $ pip install hisparc-sapphire
 
@@ -59,3 +66,34 @@ To check if it worked start Python and load the package:
     import sapphire
 
 You're done!
+
+
+Development
+-----------
+
+Install python 2.7 (preferably using conda) as described above but clone
+the sapphire repo instead of installing using pip:: 
+
+    $ git clone https://github.com/HiSPARC/sapphire.git
+    $ cd sapphire
+    $ python setup.py develop
+
+
+Version release
+---------------
+
+Important: First check if the last commit passes the tests on Travis CI!
+
+To release a new version modify the version number in ``setup.py``. Then
+create a commit for the new release with a title like 'Bump version to vX.Y.Z'
+and a message that contains a summary of the most important changes since the
+last release. Then tag the commit and push it to GitHub::
+
+   $ git tag vX.Y.Z
+   $ git push --tags
+
+Then upload the new version to PyPI (this requires the ``wheel`` package)::
+
+   $ python setup.py sdist bdist_wheel upload
+
+The latest version is then available from PyPI.

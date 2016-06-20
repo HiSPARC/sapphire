@@ -1,4 +1,4 @@
-"""Time utility class
+"""Convert UTC/GPS/local time.
 
 The class in this module is intended to save you from typing trainwrecks
 just to convert GPS timestamps to GPS date/time and vice versa.

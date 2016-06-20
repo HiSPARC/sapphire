@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 51.77, 
+    "cluster": "Leiden", 
+    "country": "Netherlands", 
+    "latitude": 52.1690415, 
+    "longitude": 4.4585999, 
+    "name": "Universiteit Leiden", 
+    "number": 3001, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Leiden"
+}

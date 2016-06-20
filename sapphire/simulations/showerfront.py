@@ -5,16 +5,15 @@ Simulate just the arrival times.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire.simulations.showerfront import FlatFrontSimulation
-    from sapphire.clusters import ScienceParkCluster
+    >>> from sapphire import FlatFrontSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = FlatFrontSimulation(cluster, data, '/', 200)
-    sim.run()
+    >>> sim = FlatFrontSimulation(cluster, data, '/', 200)
+    >>> sim.run()
 
 """
 from math import pi, sin, cos, tan, atan2, sqrt
@@ -22,7 +21,7 @@ from math import pi, sin, cos, tan, atan2, sqrt
 import numpy as np
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
-from ..utils import pbar
+from ..utils import pbar, c, vector_length
 
 
 class FlatFrontSimulation(HiSPARCSimulation):
@@ -30,7 +29,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
     def __init__(self, *args, **kwargs):
         super(FlatFrontSimulation, self).__init__(*args, **kwargs)
 
-        # Since the cluster is not rotated detector positions can be stored.
+        # Since the cluster is not rotated detector positions can be cached.
         for station in self.cluster.stations:
             for detector in station.detectors:
                 detector.cylindrical_coordinates = \
@@ -48,10 +47,10 @@ class FlatFrontSimulation(HiSPARCSimulation):
                  (x, y-tuple) and azimuth.
 
         """
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'azimuth': self.generate_azimuth(),
-                                 'zenith': self.generate_zenith(),
+                                 'zenith': self.generate_attenuated_zenith(),
                                  'core_pos': (None, None),
                                  'size': None,
                                  'energy': None}
@@ -85,11 +84,9 @@ class FlatFrontSimulation(HiSPARCSimulation):
         The directional vector c * dt should be negative,
         not apparent in Fokkema2012 fig 4.4.
 
-
         :return: Shower front arrival time in ns.
 
         """
-        c = .3
         r1, phi1, z1 = detector.cylindrical_coordinates
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
@@ -144,7 +141,7 @@ class FlatFrontSimulationWithoutErrors(ErrorlessSimulation,
 
 class FlatFrontSimulation2D(FlatFrontSimulation):
 
-    """This simualtion ignores detector altitudes."""
+    """This simulation ignores detector altitudes."""
 
     def get_arrival_time(self, detector, shower_parameters):
         """Calculate arrival time
@@ -155,7 +152,6 @@ class FlatFrontSimulation2D(FlatFrontSimulation):
         (DOI: 10.3990/1.9789036534383)
 
         """
-        c = .3
         r1, phi1, _ = detector.cylindrical_coordinates
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
@@ -177,21 +173,19 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
     """This simulation uses a cone shaped shower front.
 
-    Ignore altitude of detectors.
     The opening angle of the cone is given in the init
 
     Example usage::
 
-        import tables
+        >>> import tables
 
-        from sapphire.simulations.showerfront import ConeFrontSimulation
-        from sapphire.clusters import ScienceParkCluster
+        >>> from sapphire import ConeFrontSimulation, ScienceParkCluster
 
-        data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
-        cluster = ScienceParkCluster()
+        >>> data = tables.open_file('/tmp/test_showerfront_simulation.h5', 'w')
+        >>> cluster = ScienceParkCluster()
 
-        sim = ConeFrontSimulation(100, cluster, data, '/', 200)
-        sim.run()
+        >>> sim = ConeFrontSimulation(100, cluster, data, '/', 200)
+        >>> sim.run()
 
     """
 
@@ -203,6 +197,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
         """
         super(ConeFrontSimulation, self).__init__(*args, **kwargs)
         self.max_core_distance = max_core_distance
+        self.front = ConeFront()
 
     def generate_shower_parameters(self):
         """Generate shower parameters
@@ -216,7 +211,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
         """
         R = self.max_core_distance
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             r = sqrt(np.random.uniform(0, R ** 2))
             phi = np.random.uniform(-pi, pi)
 
@@ -227,10 +222,10 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'azimuth': azimuth,
-                                 'zenith': self.generate_zenith(),
+                                 'zenith': self.generate_attenuated_zenith(),
                                  'core_pos': (x, y),
                                  'size': None,
-                                 'energy': None}
+                                 'energy': self.generate_energy(1e15, 1e17)}
 
             self._prepare_cluster_for_shower(x, y, azimuth)
 
@@ -239,7 +234,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
     def _prepare_cluster_for_shower(self, x, y, alpha):
         """Prepare the cluster object for the simulation of a shower.
 
-        Rotate and translate the cluster so that (0, 0) coincides with the
+        Rotate and translate the cluster so that (0, 0, 0) coincides with the
         shower core position and 'East' coincides with the shower azimuth
         direction.
 
@@ -253,9 +248,8 @@ class ConeFrontSimulation(FlatFrontSimulation):
     def get_arrival_time(self, detector, shower_parameters):
         """Calculate arrival time"""
 
-        c = .3
         x, y, z = detector.get_coordinates()
-        r1 = sqrt(x ** 2 + y ** 2)
+        r1 = vector_length(x, y)
         phi1 = atan2(y, x)
 
         phi = shower_parameters['azimuth']
@@ -267,11 +261,31 @@ class ConeFrontSimulation(FlatFrontSimulation):
         ny = sin(theta) * sin(phi)
         nz = cos(theta)
 
-        r_core = sqrt(x * x + y * y + z * z - (x * nx + y * ny + z * nz) ** 2)
-        t_shape = self.front_shape(r_core)
+        r_core = sqrt(x ** 2 + y ** 2 + z ** 2 -
+                      (x * nx + y * ny + z * nz) ** 2)
+        t_shape = self.delay_at_r(r_core)
         dt = t_shape + (cdt / c)
 
         return dt
+
+
+class FlatFront(object):
+
+    """Simple flat shower front"""
+
+    def delay_at_r(self, r):
+        return 0.
+
+    def front_shape(self, r):
+        return 0.
+
+
+class ConeFront(object):
+
+    """Simple cone shaped shower front"""
+
+    def delay_at_r(self, r):
+        return self.front_shape(r)
 
     def front_shape(self, r):
         """Delay of the showerfront relative to flat as function of distance
@@ -280,4 +294,45 @@ class ConeFrontSimulation(FlatFrontSimulation):
         :return: delay time of shower front.
 
         """
-        return r * .2
+        return r * 0.2
+
+
+class CorsikaStationFront(object):
+
+    """Shower front shape derrived from CORSIKA simulations on a station.
+
+    A set of CORSIKA generated showers were used to determine the median
+    detected arrival time in a 4-detector station as a function of core
+    distance.
+
+    At large core distances the detection probability decreases and the
+    arrival time becomes less accurate.
+
+    Currently only support for energies between 1e15 and 1e17 eV.
+
+    """
+
+    def delay_at_r(self, r, energy=1e16, particle='proton'):
+        return self.front_shape(r, energy, particle)
+
+    def front_shape(self, r, energy, particle='proton'):
+        if particle == 'proton':
+            energies = [15, 15.5, 16, 16.5, 17]
+            param_a = [0.0995, 0.0190, 0.0065, 0.0032, 0.00044]
+            param_b = [1.05, 1.38, 1.58, 1.69, 2.01]
+        elif particle == 'gamma':
+            energies = [15, 15.5, 16, 17]
+            param_a = [0.08466, 0.01277, 0.00433, 0.00067]
+            param_b = [1.13, 1.51, 1.70, 2.00]
+        elif particle == 'iron':
+            energies = [15, 16, 17]
+            param_a = [0.44666, 0.01301, 0.00039]
+            param_b = [0.69, 1.39, 1.98]
+
+        a = np.interp(np.log10(energy), energies, param_a)
+        b = np.interp(np.log10(energy), energies, param_b)
+
+        return self._front_shape(r, a, b)
+
+    def _front_shape(self, r, a, b):
+        return a * r ** b

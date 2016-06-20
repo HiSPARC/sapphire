@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 76.12, 
+    "cluster": "Nijmegen", 
+    "country": "Netherlands", 
+    "latitude": 51.816295, 
+    "longitude": 5.873016, 
+    "name": "Radboud Universiteit 2", 
+    "number": 2006, 
+    "scintillators": [
+        {
+            "alpha": 110.0, 
+            "beta": 45.0, 
+            "height": 0.0, 
+            "radius": 3.3
+        }, 
+        {
+            "alpha": 345.0, 
+            "beta": 45.0, 
+            "height": 0.0, 
+            "radius": 2.75
+        }
+    ], 
+    "subcluster": "Nijmegen"
+}

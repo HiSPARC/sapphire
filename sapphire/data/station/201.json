@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 53.34, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3624033, 
+    "longitude": 4.6130897, 
+    "name": "Coornhert Lyceum", 
+    "number": 201, 
+    "scintillators": [
+        {
+            "alpha": 20.0, 
+            "beta": 20.0, 
+            "height": 0.0, 
+            "radius": 2.73
+        }, 
+        {
+            "alpha": 20.0, 
+            "beta": 20.0, 
+            "height": 0.0, 
+            "radius": 8.96
+        }, 
+        {
+            "alpha": 110.0, 
+            "beta": 110.0, 
+            "height": 0.0, 
+            "radius": 5.15
+        }, 
+        {
+            "alpha": 290.0, 
+            "beta": 110.0, 
+            "height": 0.0, 
+            "radius": 4.78
+        }
+    ], 
+    "subcluster": "Haarlem"
+}

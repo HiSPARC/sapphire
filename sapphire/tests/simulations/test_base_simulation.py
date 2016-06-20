@@ -15,16 +15,17 @@ class BaseSimulationTest(unittest.TestCase):
     def setUp(self, mock_method):
         self.mock_prepare_output_tables = mock_method
         self.cluster = sentinel.cluster
-        self.datafile = sentinel.datafile
+        self.data = sentinel.data
         self.output_path = sentinel.output_path
         self.N = sentinel.N
 
-        self.simulation = BaseSimulation(self.cluster, self.datafile,
-                                         self.output_path, self.N)
+        self.simulation = BaseSimulation(self.cluster, self.data,
+                                         self.output_path, self.N,
+                                         progress=False)
 
     def test_init_sets_attributes(self):
         self.assertIs(self.simulation.cluster, self.cluster)
-        self.assertIs(self.simulation.datafile, self.datafile)
+        self.assertIs(self.simulation.data, self.data)
         self.assertIs(self.simulation.output_path, self.output_path)
         self.assertIs(self.simulation.N, self.N)
 
@@ -59,11 +60,7 @@ class BaseSimulationTest(unittest.TestCase):
         mock_store.assert_called_with(1, sentinel.params2,
                                       sentinel.events)
 
-    @patch('sapphire.utils.ProgressBar')
-    def test_generate_shower_parameters(self, mock_progress):
-        # disable progressbar
-        mock_progress.return_value.side_effect = lambda x: x
-
+    def test_generate_shower_parameters(self):
         self.simulation.N = 10
         output = self.simulation.generate_shower_parameters()
         self.assertIsInstance(output, types.GeneratorType)
@@ -239,21 +236,21 @@ class BaseSimulationTest(unittest.TestCase):
 
     @unittest.skip("Does not test this unit")
     def test_init_creates_coincidences_output_group(self):
-        self.datafile.create_group.assert_any_call(
+        self.data.create_group.assert_any_call(
             self.output_path, 'coincidences', createparents=True)
-        self.datafile.create_table.assert_called_with(
+        self.data.create_table.assert_called_with(
             self.simulation.coincidence_group, 'coincidences', storage.Coincidence)
-        self.assertEqual(self.datafile.create_vlarray.call_count, 2)
-        self.datafile.create_vlarray.assert_any_call(
+        self.assertEqual(self.data.create_vlarray.call_count, 2)
+        self.data.create_vlarray.assert_any_call(
             self.simulation.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
 
     @unittest.skip("Does not test this unit")
     def test_init_creates_cluster_output_group(self):
-        self.datafile.create_group.assert_any_call(
+        self.data.create_group.assert_any_call(
             self.output_path, 'cluster_simulations', createparents=True)
         # The following tests need a better mock of cluster in order to work.
-        # self.datafile.create_group.assert_any_call(self.simulation.cluster_group, 'station_0')
-        # self.datafile.create_table.assert_any_call(
+        # self.data.create_group.assert_any_call(self.simulation.cluster_group, 'station_0')
+        # self.data.create_table.assert_any_call(
         #     station_group, 'events', storage.ProcessedHisparcEvent, expectedrows=self.N)
 
     @unittest.skip("Does not test this unit")

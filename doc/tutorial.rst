@@ -3,9 +3,9 @@
 Tutorial
 ========
 
-SAPPHiRE simplifies data access, simulations and analysis for the `HiSPARC
+|sapphire| simplifies data access, simulations and analysis for the `HiSPARC
 <http://www.hisparc.nl>`_ experiment.  In this tutorial, we'll try to give
-you a feeling for the things you can *do* with |sapphire|.  How can you
+you a feeling for the things you can do with |sapphire|.  How can you
 download data?  How can you analyze this data?  How can you produce
 pulseheight histograms?  How can you calculate the direction of cosmic
 rays?  This tutorial will only give you an overview of what's possible
@@ -13,24 +13,30 @@ with |sapphire|.  For details on all available classes and methods, please
 see the :doc:`sapphire`.
 
 .. note::
-    We'll require you to know some basic Python.  If not, you can look at
-    the official `Python tutorial <http://docs.python.org/2/tutorial/>`_.
-    If you know how to start a Python interpreter, you can probably start
-    best with chapter 3 and ignore chapter 2.  Chapters 3 through 6 should
-    give you some working knowledge of Python.
+    We'll require you to know basic Python.  If you're unfamiliar with Python,
+    you can look at the official `Python tutorial
+    <http://docs.python.org/2/tutorial/>`_, the book `Think Python
+    <http://www.greenteapress.com/thinkpython/>`_, or `Getting started with
+    Python for science <http://scipy-lectures.github.io/intro/>`_.
 
 
 First steps
 -----------
 
-In a few examples, we will plot the data which we have produced.  We make
-use of pylab, which is included with matplotlib.  In OS X and Linux, you
-can start an IPython terminal with pylab using::
+In a few examples, we will plot the data which we have produced.  We make use
+of pylab, which is included with matplotlib. If you have Anaconda installed,
+you can use the Spyder environment. You can write a script in the main window,
+or type short commands in the command prompt in the bottom right. The first
+thing you have to do is import everything from pylab. That makes it
+ridiculously easy to plot things::
+
+    >>> from pylab import *
+
+You can also start an IPython terminal with pylab using::
 
     $ ipython --pylab
 
-On Windows, where you're probably using Python(x,y), this should be the
-default mode.
+In that case, you don't need to import pylab.
 
 Whenever you see something like::
 
@@ -41,12 +47,7 @@ it means we're typing in Python code.  The ``>>>`` is the Python *prompt*.
 It tells you that the Python interpreter is waiting for you to give it
 some instructions.  In the above example, we've typed in ``print 'Hello,
 world'``.  The interpreter subsequently executed the code and printed
-*Hello, world* on the screen.  Some further examples (try them, if you
-like!)::
-
-    >>> a = 2 + 2
-    >>> 3 * a
-    12
+*Hello, world* on the screen.
 
 The first thing we'll have to do to start using |sapphire| is to *import*
 the |sapphire| module::
@@ -68,19 +69,38 @@ All help text is also available in the :doc:`sapphire`.
 Downloading and accessing |hisparc| data
 ----------------------------------------
 
-The |sapphire| package comprises multiple modules and packages.  To access
-data from the public database, we'll have to import the :mod:`sapphire.esd`
-module.  Also, we need the ``tables`` module to actually store the data.
-`PyTables <pytables.org>`_ is based on the open HDF5 data format, which is
-used by `many (research) institutes
-<http://www.hdfgroup.org/HDF5/users5.html>`_.  For example, it is used by
-the KNMI and by NASA.  To specify the date and time for which to download
-the data, we need the ``datetime`` module.  Thus, we have::
+The |sapphire| package comprises multiple modules and packages. To access data
+from the public database, we'll have to import the :mod:`sapphire.esd` module.
+This module gives us access to the *event summary data*, which is the raw
+|hisparc| data with preliminary analysis already included. It is simple to
+quickly start playing with data::
+
+    >>> from sapphire import esd
+    >>> data = esd.quick_download(102)
+    100%|####################################|Time: 5.91
+    >>> print data
+    data8.h5 (File) ''
+    Last modif.: 'Thu Oct 22 16:02:05 2015'
+    Object Tree:
+    / (RootGroup) ''
+    /s102 (Group) ''
+    /s102/events (Table(46382,)) ''
+
+First, we import the :mod:`sapphire.esd` module. Then, we download data from
+station 102 using the :func:`sapphire.esd.quick_download` function. This
+function downloads yesterday's data, and creates a datafile on the fly. More on
+that later.
+
+If we want to exercise more control, we need to do some things manually. First,
+we need the ``tables`` module to actually store the data. `PyTables
+<pytables.org>`_ is based on the open HDF5 data format, which is used by `many
+(research) institutes <http://www.hdfgroup.org/HDF5/users5.html>`_.  For
+example, it is used by the KNMI and by NASA.  To specify the date and time for
+which to download the data, we need the ``datetime`` module.  Thus, we have::
 
     >>> import tables
     >>> import datetime
     >>> from sapphire import esd
-
 
 Creating an empty data file, with the name ``mydata.h5``, is done easily::
 
@@ -105,22 +125,24 @@ we can specify this by typing::
     >>> end = datetime.datetime(2012, 12, 3)
 
 Mind that if we do not specify the hour of day, it is taken to be 00:00
-hours.  Thus, there is no data included from December 3.  Alternatively,
+hours.  Thus, there is no data included for December 3.  Alternatively,
 we can download data from a two hour interval on October 17 by specifying
 the hour of day::
 
     >>> start = datetime.datetime(2012, 10, 17, 19)
     >>> end = datetime.datetime(2012, 10, 17, 21)
 
-which is from 19:00 to 21:00 hours.  It is important to realize that the
-we use a GPS clock, which equal to UTC (up to leap seconds).  So, if we
-download data for a station in the Netherlands, we have just said from
-20:00 to 22:00 local time.  You can specify the time up to the seconds.
+which is from 19:00 to 21:00 hours.  It is important to realize that we use a
+GPS clock, which is equal to UTC (up to some leap seconds).  So, if we download
+data for a station in the Netherlands, we have just said from 20:00 to 22:00
+local time (when it's not summer time).  You can specify the time up to the
+second.
 
 We have not actually done anything yet.  We have just stored our time
 window in two arbitrarily-named variables, ``start`` and ``end``.  To
 download data from station 501 and store it in a group with name ``/s501``,
-we can use the :func:`sapphire.esd.download_data` function::
+we can use the :func:`sapphire.esd.download_data` function. Since we've
+imported ``esd`` from ``sapphire``, we can drop the ``sapphire`` prefix::
 
     >>> esd.download_data(data, '/s501', 501, start, end)
     100%|####################################|Time: 0:00:16
@@ -146,7 +168,7 @@ names must start with a letter, hence the ``s`` for station.
 
 The *station_number* is simply the station number.  Here, we've chosen to
 download data for station 501, located at Nikhef.  The *start* and *end*
-parameters specify the date/time range. 
+parameters specify the date/time range.
 
 Finally, *type* selects whether to download event or weather data should
 be downloaded.  We've selected the default, which is *events*. We can also
@@ -156,9 +178,10 @@ download the weather data by changing the type to ``'weather'``::
     100%|####################################|Time: 0:00:10
 
 To access the raw data that includes the original detector traces the
-:func:`sapphire.publicdb.download_data` function can be used instead.
-However, downloading data will take much longer that way. If only some
-traces need to be accessed, the :mod:`sapphire.api` is a better choice.
+:func:`sapphire.publicdb.download_data` function can be used instead. However,
+downloading data will take much longer that way. If only some traces need to be
+accessed, the :mod:`sapphire.api` is a better choice. We'll use that module
+later in the tutorial.
 
 
 Looking around
@@ -187,6 +210,11 @@ the remaining path, with dots instead of slashes.  For example, to access
 the events table::
 
     >>> print data.root.s501.events
+    /s501/events (Table(137600,)) 'HiSPARC coincidences table'
+
+If you want, you can also access the object using its name as a string, by calling ``get_node`` on the file handler::
+
+    >>> print data.get_node('/s501/events')
     /s501/events (Table(137600,)) 'HiSPARC coincidences table'
 
 Of course, we'd like to get some more information.  You can drop the print
@@ -230,14 +258,14 @@ event has a Unix timestamp in GPS time, *not* UTC.  A `Unix timestamp
 <http://en.wikipedia.org/wiki/Unix_time>`_ is the number of seconds that
 have passed since January 1, 1970.  The sub-second part of the timestamp
 is given in ``nanoseconds``.  The ``ext_timestamp`` is the full
-timestamp in ns.  Since there cannot exist another event with the same
+timestamp in nanoseconds. Since there cannot exist another event with the same
 timestamp, this field in combination with the station number uniquely
 identifies the event. The ``pulseheights`` and ``integrals`` fields are
 values derived from the PMT traces by the HiSPARC DAQ.  The ``n#``
 columns are derived from the ``integrals`` and the ``t#`` and
 ``t_trigger`` fields are obtained after analyzing the event traces on
-the server. For some field there are four values, one for each detector.
-If a station only has two detectors, the values for the absent two
+the server. For some fields there are four values, one for each detector.
+If a station only has two detectors, the values for the missing two
 detectors are -1.  If the baseline of the trace could not be determined
 all these values are -999.
 
@@ -283,11 +311,9 @@ Now, we have stored a short-hand reference to the events table. Let's get
 the first event::
 
     >>> events[0]
-    (1L, 1354320004, 670634817L, 1354320004670634817L, True, 196608L,
-    [195, 197, 197, 197], [658, 763, 646, 771], [1, 0, 1, 0], [173, 3,
-    407, 3], [1603, 0, 4019, 0], [0, 1, 2, 3], 0.9111111164093018)
-
-.. Update the event to one from the esd, not raw data.
+    (0L, 1445385601, 613271528L, 1445385601613271528L, [3, 266, 400, 372],
+     [0, 3090, 5695, 5621], 0.0, 1.03120, 1.55130, 1.58820,
+     -999.0, 1002.5, 1000.0, 1022.5, 1030.0, -999.0, -999.0)
 
 That's the first event!  It is not, however, immediately clear what
 numbers correspond to which columns.  They are in order, however, so you
@@ -295,26 +321,27 @@ could find out.  It is often easier to specify the column you're
 interested in::
 
     >>> events[0]['pulseheights']
-    array([173,   3, 407,   3], dtype=int16)
+    array([  3, 266, 400, 372], dtype=int16)
 
-Which gives us the pulseheights of the first event.  The pulseheights are
-16-bit integers (that's the ``dtype=int16``) and are determined after
-digitizing the events using an analog-digital converter (ADC).  Each unit
-corresponds to about -0.57 mV.  You can tell that the first and third
-detectors had relatively large pulseheights, and that they were registered
-as a significant *peak* in the signal.
+Which gives us the pulseheights of the first event.  You can recognize the same
+numbers in the full event data above. The pulseheights are 16-bit integers
+(that's the ``dtype=int16``) and are determined after digitizing the events
+using an analog-digital converter (ADC).  Each unit corresponds to about -0.57
+mV.  You can tell that all but the first detector had relatively large
+pulseheights, and that they were registered as a significant *peak* in the
+signal.
 
 If you're interested in the pulseheights of *all* events, the fastest way
 to do it is to make use of the ``Table.col`` method of the table::
 
-    >>> events.col('pulseheights')
-    array([[173,   3, 407,   3],
-           [  1,   2, 313, 756],
-           [211,   2,   2, 268],
+    >> events.col('pulseheights')
+    array([[  3, 266, 400, 372],
+           [  4, 277, 887,   7],
+           [ 72, 256,   6, 330],
            ...,
-           [  2,   2, 529, 327],
-           [  7,   2, 318, 249],
-           [  3, 250,  14, 416]], dtype=int16)
+           [162,  78,   4, 299],
+           [ 10,   6, 618, 446],
+           [593, 621, 343,  13]], dtype=int16)
 
 It is also possible to select the data based on a query.  For example, to
 select all events between timestamps 1354320000 and 1354323600 (a one-hour
@@ -346,16 +373,16 @@ use the ``Table.col`` method.  For arrays, use this special notation.
 The :mod:`sapphire.time_util` module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-|sapphire| includes a handy module: :mod:`sapphire.time_util`.  This saves
-you from the hassle of converting timestamps and confusing local time and
-GPS (or UTC) time.  It is important to realize that the |hisparc| station
-uses a GPS clock, and thus saves all timestamps in GPS time, which is
-certainly not local time!  You can look up `GPS time
-<http://en.wikipedia.org/wiki/Global_Positioning_System#Timekeeping>`_,
-but suffice it to say that it is *almost* equal to UTC time.  The
-difference is the leap seconds introduced after 1980.  In January 2013,
-GPS time is ahead of UTC by 16 seconds.  We will not reference UTC or
-local time, but instead always reference GPS time!
+|sapphire| includes a handy module: :mod:`sapphire.time_util`.  This saves you
+from the hassle of converting timestamps and confusing local time and GPS (or
+UTC) time.  It is important to realize that the |hisparc| station uses a GPS
+clock, and thus saves all timestamps in GPS time, which is certainly not local
+time!  You can look up `GPS time
+<http://en.wikipedia.org/wiki/Global_Positioning_System#Timekeeping>`_, but
+suffice it to say that it is *almost* equal to UTC time.  The difference is the
+leap seconds introduced after 1980.  In January 2013, GPS time was ahead of UTC
+by 16 seconds.  Since July 2015, it is ahead by 17 seconds. We will not refer
+to UTC or local time, but instead always refer to GPS time!
 
 While you tell |sapphire| to download data using year, month, day, hour,
 minutes, seconds notation, the events table contains timestamps.  It is
@@ -370,13 +397,11 @@ inadvertently convert to local time.  For your benefit, we have included
 the :class:`sapphire.time_util.GPSTime` class.  You instantiate the class
 by giving it a GPS time to work with.  It can either be in date/time
 notation, or as a timestamp.  For example, the exact same result is
-obtained by these two lines of code::
+obtained by these two last lines of code::
 
     >>> import sapphire.time_util
     >>> sapphire.time_util.GPSTime(2012, 12, 1)
-    <sapphire.time_util.GPSTime instance at 0x10b8021b8>
     >>> sapphire.time_util.GPSTime(1354320000)
-    <sapphire.time_util.GPSTime instance at 0x10b802128>
 
 If you store the instance, you can then call several methods to convert
 the date/time to whatever you require::
@@ -462,17 +487,17 @@ documentation, see the `Matplotlib site <http://matplotlib.org>`_
 (`function reference
 <http://matplotlib.org/1.2.0/api/pyplot_summary.html>`_).  Try this::
 
-    >>> bins = arange(0, 2001, 20)
+    >>> bins = linspace(0, 2000, 101)
     >>> hist(ph, bins, histtype='step', log=True)
     >>> xlabel("Pulseheight [ADC]")
     >>> ylabel("Counts")
     >>> title("Pulseheight histogram (log scale)")
 
-The ``arange`` function returns an array with range from 0 to 2000 in
-steps of 20.  It is necessary to say 2001 (or 2002, 2000.1 or whatever)
-and not 2000, if you want the range to be inclusive.  The ``hist``
-function will then plot a *stepped* histogram with a log scale.  Finally,
-we add some labels and a title.  This is the result:
+The ``linspace`` function returns an array with range from 0 to 2000 with a
+total number of 101 values. The first value is 0, the last is 2000. These are
+the *edges* of the bins. So, 101 values means exactly 100 bins between 0 and
+2000. The ``hist`` function will then plot a *stepped* histogram with a log
+scale.  Finally, we add some labels and a title.  This is the result:
 
 .. image:: images/tutorial-hist-better.png
    :width: 500px
@@ -486,8 +511,8 @@ histogram, see `David's thesis
 page 44–45, and 49–51.
 
 
-Searching for coincidences
---------------------------
+Obtaining coincidences
+----------------------
 
 If you work with |hisparc| data, invariably you'll be interested in
 *coincidences* between |hisparc| stations.  That is, are there showers
@@ -499,36 +524,35 @@ Performing the search
 ^^^^^^^^^^^^^^^^^^^^^
 
 Consider the following script, which you can hopefully understand by now
-(note that the prompt (>>>) is absent, since this is a *script*::
+(note that the prompt (``>>>``) is absent, since this is a *script*::
 
-        import datetime
+     import datetime
 
-        import tables
+     import tables
 
-        from sapphire.esd import download_data
-        from sapphire.analysis.coincidences import CoincidencesESD
-
-
-        STATIONS = [501, 503, 506]
-        START = datetime.datetime(2013, 1, 1)
-        END = datetime.datetime(2013, 1, 2)
+     from sapphire import download_data, CoincidencesESD
 
 
-        if __name__ == '__main__':
-            station_groups = ['/s%d' % u for u in STATIONS]
+     STATIONS = [501, 503, 506]
+     START = datetime.datetime(2013, 1, 1)
+     END = datetime.datetime(2013, 1, 2)
 
-            data = tables.open_file('data.h5', 'w')
-            for station, group in zip(STATIONS, station_groups):
-                download_data(data, group, station, START, END)
+
+     if __name__ == '__main__':
+         station_groups = ['/s%d' % u for u in STATIONS]
+
+         data = tables.open_file('data.h5', 'w')
+         for station, group in zip(STATIONS, station_groups):
+             download_data(data, group, station, START, END)
 
 At this point, we have downloaded data for three stations. Note that we
-used the :mod:`sapphire.esd`. Thus, we have no traces and the download
-is quick. Let's see what the datafile now contains::
+used the :mod:`sapphire.esd` for downloading. Thus, we have no traces
+and the download is quick. Let's see what the datafile now contains::
 
     >>> print data
     data.h5 (File) ''
     Last modif.: 'Mon Jan 14 17:34:39 2013'
-    Object Tree: 
+    Object Tree:
     / (RootGroup) ''
     /s501 (Group) 'Data group'
     /s501/events (Table(70643,)) ''
@@ -550,7 +574,7 @@ containing the station data (``station_groups``).  Once that's done, there
 is an easy way to search for coincidences, process the events making up
 the coincidences, and store them in the destination group::
 
-    >>> coincidences.search_and_store_coincidences()
+    >>> coincidences.search_and_store_coincidences(station_numbers=STATIONS)
     100%|######################################|Time: 0:00:02
     100%|######################################|Time: 0:00:00
 
@@ -561,7 +585,7 @@ let us turn to the results::
     >>> print data
     data.h5 (File) ''
     Last modif.: 'Mon Jan 14 17:46:23 2013'
-    Object Tree: 
+    Object Tree:
     / (RootGroup) ''
     /coincidences (Group) u''
     /coincidences/c_index (VLArray(2184,)) ''
@@ -575,7 +599,7 @@ let us turn to the results::
     /s506/events (Table(65935,)) ''
 
 The new addition is the ``/coincidences`` group.  It contains three
-tables, which are ``c_index``, ``coincidences`` and ``observables``. 
+tables, which are ``c_index``, ``coincidences`` and ``s_index``.
 Information about the coincidences is stored in the ``coincidences``
 table.  Let's look at the columns:
 
@@ -593,9 +617,9 @@ azimuth         *compatibility reasons*
 zenith          *compatibility reasons*
 size            *compatibility reasons*
 energy          *compatibility reasons*
-s0              flag to indicate if the first station is in coincidence
-s1              as previous but for second station
-s2              as previous but for third station
+s501            flag to indicate if the first station is in coincidence
+s503            as previous but for second station
+s506            as previous but for third station
 =============== ===========
 
 The columns included for compatibility reasons are used by the event
@@ -607,21 +631,21 @@ not known for certain when working with |hisparc| data, but are included
 nonetheless.  These columns are all set to 0.0.
 
 The ``c_index`` array is used as an index to look up the tables and
-individual events making up a coincidence.  The fifth coincidence is
+individual events making up a coincidence.  The second coincidence is
 accessed by::
 
-    >>> data.root.coincidences.coincidences[2]
+    >>> data.root.coincidences.coincidences[1]
     (2L, 1356998460, 730384055L, 1356998460730384055L, 2, 0.0, 0.0, 0.0,
      0.0, 0.0, 0.0, True, False, True)
 
-Remember, the indexes are zero-based.  The coincidence id is also 4::
+Remember, the indexes are zero-based.  The coincidence id is also 2::
 
     >>> data.root.coincidences.coincidences[2]['id']
     2
 
 and the number of stations participating is 2::
 
-    >>> data.root.coincidences.coincidences[2]['N'] 
+    >>> data.root.coincidences.coincidences[2]['N']
     2
 
 To lookup the indexes of the events taking part in this coincidence,
@@ -639,10 +663,70 @@ station groups.::
 
     >>> data.root.coincidences.s_index[0]
     '/s501'
-    >>> data.root.s501.events[40]
+    >>> data.get_node('/s501', 'events')[40]
     (40L, 1356998460, 730384055L, 1356998460730384055L, [2, 227, 301, 2],
      [0, 1657, 3173, 0], 0.0, 0.5117999911308289, 0.9417999982833862,
      0.0, -999.0, 12.5, 57.5, -999.0, 62.5)
+
+
+Downloading coincidences
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Just like events or weather data for a single station the ESD provides
+coincidence data. This means that you can directly download coincidences from
+the server. In most cases this can save a lot of disc space, because only
+events in a coincidence will be stored.
+
+Downloading coincidences is very similar to downloading data. First import the
+required packages, open a PyTables file, and specify the date/time *range*.
+With coincidences two additional options are available, first you can select
+which stations you want to consider. This can be *all* stations in the
+network, by not specifying any. It can be a subset of stations by listing
+those stations (upto 30 stations), or a cluster of stations by giving the name
+of the cluster.
+
+So first import the packages::
+
+   >>> import datetime
+   >>> import tables
+   >>> from sapphire import esd
+
+Set the date/time range::
+
+   >>> start = datetime.datetime(2012, 12, 1)
+   >>> end = datetime.datetime(2012, 12, 3)
+
+Open (in this case create) a datafile::
+
+   >>> data = tables.open_file('data_coincidences.h5', 'w')
+
+Then download the coincidences. Here we specify the cluster 'Enschede' to
+select all stations in that cluster. By setting *n* to 3 we require that a
+coincidence has at least 3 events.
+
+   >>> esd.download_coincidences(data, cluster='Enschede',
+   ...                           start=start, end=end, n=3)
+
+If you now look in the data file it will contain event tables for all stations
+with at least one event in a coincidence, and a coincidence table for the
+coincidence data. Just like when coincidences were searched manually::
+
+   >>> print data
+   Object Tree: 
+   / (RootGroup) ''
+   /coincidences (Group) ''
+   /coincidences/c_index (VLArray(776,)) ''
+   /coincidences/coincidences (Table(776,)) ''
+   /coincidences/s_index (VLArray(124,)) ''
+   /hisparc (Group) ''
+   /hisparc/cluster_enschede (Group) ''
+   /hisparc/cluster_enschede/station_7001 (Group) ''
+   /hisparc/cluster_enschede/station_7001/events (Table(776,)) ''
+   /hisparc/cluster_enschede/station_7002 (Group) ''
+   /hisparc/cluster_enschede/station_7002/events (Table(776,)) ''
+   /hisparc/cluster_enschede/station_7003 (Group) ''
+   /hisparc/cluster_enschede/station_7003/events (Table(776,)) ''
+
 
 .. rubric:: Footnotes
 

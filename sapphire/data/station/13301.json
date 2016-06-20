@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 126.83, 
+    "cluster": "Bristol", 
+    "country": "United Kingdom", 
+    "latitude": 51.467354, 
+    "longitude": -2.1336214, 
+    "name": "Sheldon School", 
+    "number": 13301, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Chippenham"
+}

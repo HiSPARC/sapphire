@@ -1,10 +1,77 @@
+""" Read CORSIKA data files.
+
+    This provides functionality to read CORSIKA output
+    files with `Python <www.python.org>`_. It provides the following main
+    classes:
+
+    * :class:`~sapphire.corsika.reader.CorsikaFile`: The file class provides a
+      generator over all events in the file.
+    * :class:`~sapphire.corsika.reader.CorsikaEvent`: The event class that
+      provides a generator over all particles at ground.
+
+    and the following classes that correspond to the sub-blocks defined in
+    the CORSIKA manual:
+
+    * :class:`~sapphire.corsika.blocks.RunHeader`
+    * :class:`~sapphire.corsika.blocks.RunEnd`
+    * :class:`~sapphire.corsika.blocks.EventHeader`
+    * :class:`~sapphire.corsika.blocks.EventEnd`
+    * :class:`~sapphire.corsika.blocks.ParticleData`
+    * :class:`~sapphire.corsika.blocks.CherenkovData`
+
+    Additionally version for thinned showers are available:
+
+    * :class:`CorsikaFileThin`
+    * :class:`~sapphire.corsika.blocks.ParticleDataThin`
+    * :class:`~sapphire.corsika.blocks.CherenkovDataThin`
+
+
+    Issues
+    ======
+
+    This module does not handle platform dependent issues such as byte
+    ordering (endianness) and field size. This was the result of an
+    afternoon hack and has only been tested with files generated using
+    32 bit CORSIKA files on a linux system compiled with gfortran.
+
+    * **Field Size**: According to the CORSIKA user manual section 10.2
+      all quantities are written as single precision real numbers
+      independently of 32-bit or 64-bit, so each field in the file
+      should be 4 bytes long.
+    * **Endianness**: There is no check for byte ordering. It can be added
+      using Python's `struct module
+      <http://docs.python.org/library/struct.html#struct-alignment>`_.
+    * **Special Particles**: This module currently ignores all special
+      (book-keeping) particles like for muon additional information and
+      history.
+
+
+    More Info
+    =========
+
+    For short information on fortran unformatted binary files, take a look
+    at http://paulbourke.net/dataformats/reading/
+
+    For detailed information on the CORSIKA format, check the 'Outputs'
+    chapter in the CORSIKA user manual. In particular, check the 'Normal
+    Particle Output' section.
+
+
+    Authors
+    =======
+
+    - Javier Gonzalez <jgonzalez@ik.fzk.de>
+    - Arne de Laat <adelaat@nikhef.nl>
+
+"""
+
 from struct import unpack
 import warnings
 import os
 
-from blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
-                    ParticleData, Format, ParticleDataThin, FormatThin,
-                    particle_data)
+from .blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
+                     ParticleData, Format, ParticleDataThin, FormatThin,
+                     particle_data)
 
 
 class CorsikaEvent(object):
@@ -60,9 +127,7 @@ class CorsikaEvent(object):
         """
         for sub_block_index in self._raw_file._subblocks_indices(
                 self._header_index, self._end_index):
-            for p in range(self.format.particles_per_subblock):
-                pos = sub_block_index + p * self.format.particle_size
-                particle = self._raw_file._get_particle_record_tuple(pos)
+            for particle in self._raw_file._get_particles(sub_block_index):
                 type = particle[6]  # particle type
                 level = particle[9]  # observation level
 
@@ -71,13 +136,11 @@ class CorsikaEvent(object):
                     continue
                 # muon additional information
                 if type in [75, 76]:
-                    warnings.warn('Ignoring muon additional information.',
-                                  UserWarning)
+                    warnings.warn('Ignoring muon additional information.')
                     continue
                 # ignore all observation levels except for nr. 1
                 if level != 1:
-                    warnings.warn('Only observation level 1 will be read!',
-                                  UserWarning)
+                    warnings.warn('Only observation level 1 will be read!')
                     continue
 
                 yield particle
@@ -276,6 +339,14 @@ class CorsikaFile(object):
 
         return particle_data(self._unpack_particle(word))
 
+    def _get_particles(self, word):
+        """Get subblock of particles from the contents as tuples"""
+
+        unpacked_particles = self._unpack_particles(word)
+        particles = zip(*[iter(unpacked_particles)] *
+                        self.format.fields_per_particle)
+        return (particle_data(particle) for particle in particles)
+
     def _unpack_subblock(self, word):
         """Unpack a subblock block
 
@@ -295,6 +366,16 @@ class CorsikaFile(object):
         self._file.seek(word)
         return unpack(self.format.particle_format,
                       self._file.read(self.format.particle_size))
+
+    def _unpack_particles(self, word):
+        """Unpack a particles subblock
+
+        :param word: the index where the particle subblock starts
+
+        """
+        self._file.seek(word)
+        return unpack(self.format.particles_format,
+                      self._file.read(self.format.particles_size))
 
     def Blocks():
         pass

@@ -172,6 +172,15 @@ class GPSTimeTests(unittest.TestCase):
             dt = datetime.datetime.strptime(date, '%B %d, %Y')
             self.assertEqual(clock.datetime_to_gps(dt), timestamp)
 
+    def test_process_time(self):
+        for date, timestamp, _ in self.combinations:
+            dt = datetime.datetime.strptime(date, '%B %d, %Y')
+            self.assertEqual(clock.process_time(dt), timestamp)
+            self.assertEqual(clock.process_time(timestamp), timestamp)
+        self.assertEqual(clock.process_time('1435708800'), 1435708800)
+        with self.assertRaises(RuntimeError):
+            clock.process_time('July 1, 1995')
+
 
 if __name__ == '__main__':
     unittest.main()

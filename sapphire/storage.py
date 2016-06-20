@@ -7,54 +7,6 @@
 import tables
 
 
-class ShowerParticle(tables.IsDescription):
-    """Store information about shower particles reaching round level
-
-    This table stores particles from shower simulations.  For example, AIRES
-    simulations produce ``grdpcles`` files containing all particles which
-    reached ground level.  These files can be read and their contents can be
-    stored in this table.
-
-    .. attribute:: id
-
-        a unique identifier for the particle (unique in this table)
-
-    .. attribute:: pid
-
-        a particle identifier. Possible values are determined by the
-        simulation package.
-
-    .. attribute:: core_distance
-
-        distance from the particle position to the shower core
-
-    .. attribute:: polar_angle
-
-        angle of the particle position vector to a reference line
-
-    .. attribute:: x, y
-
-        particle position
-
-    .. attribute:: arrival_time
-
-        arrival time of the particle [ns]
-
-    .. attribute:: energy
-
-        particle energy [GeV]
-
-    """
-    id = tables.UInt32Col()
-    pid = tables.Int8Col()
-    core_distance = tables.Float32Col()
-    polar_angle = tables.Float32Col()
-    x = tables.Float32Col()
-    y = tables.Float32Col()
-    arrival_time = tables.Float32Col()
-    energy = tables.Float32Col()
-
-
 class EventObservables(tables.IsDescription):
 
     """Store information about the observables of an event.
@@ -119,7 +71,7 @@ class Coincidence(tables.IsDescription):
 
     This table assigns an :attr:`id` to a coincidence and provides some
     additional information.  The events making up the coincidence can be looked
-    up using the :class:`c_index` table.  Let ``coincidence`` be a row from
+    up using the ``c_index`` table.  Let ``coincidence`` be a row from
     this table, then you can do::
 
         >>> coincidence_id = coincidence['id']
@@ -134,9 +86,9 @@ class Coincidence(tables.IsDescription):
     measured the same shower, but simply measured other particles at the same
     time, by chance.
 
-    Simulations may set the :attr:`r`, :attr:`phi`, :attr:`x`, :attr:`y` and
-    :attr:`alpha` attributes to simulation parameters, like core position and
-    cluster rotation.
+    Simulations may set the :attr:`x`, :attr:`y`, :attr:`zenith`,
+    :attr:`azimuth`, :attr:`size`, and :attr:`energy` attributes to simulation
+    parameters, like core position and shower parameters.
 
     .. attribute:: id
 
@@ -146,13 +98,29 @@ class Coincidence(tables.IsDescription):
 
         the number of triggered stations
 
-    .. attribute:: x, y
+    .. attribute:: x
 
-        The coordinates of the shower core in a simulation.
+        The x coordinate of the shower core in a simulation.
 
-    .. attribute:: zenith, azimuth
+    .. attribute:: y
 
-        The direction of the (simulated) shower.
+        The y coordinate of the shower core in a simulation.
+
+    .. attribute:: zenith
+
+        The zenith direction of the (simulated) shower.
+
+    .. attribute:: azimuth
+
+        The azimuth direction of the (simulated) shower.
+
+    .. attribute:: size
+
+        The size (number of leptons) of the (simulated) shower.
+
+    .. attribute:: energy
+
+        The primary particle energy of the (simulated) shower.
 
     """
     id = tables.UInt32Col(pos=0)
@@ -167,6 +135,16 @@ class Coincidence(tables.IsDescription):
     azimuth = tables.Float32Col(pos=8)
     size = tables.Float32Col(pos=9)
     energy = tables.Float32Col(pos=10)
+
+
+class TimeDelta(tables.IsDescription):
+
+    """Store time differences"""
+
+    ext_timestamp = tables.UInt64Col(pos=0)
+    timestamp = tables.UInt32Col(pos=1)
+    nanoseconds = tables.UInt32Col(pos=2)
+    delta = tables.FloatCol(pos=3)
 
 
 class ReconstructedCoincidence(tables.IsDescription):
@@ -223,22 +201,22 @@ class KascadeEvent(tables.IsDescription):
 
     """Store events from KASCADE"""
 
-    run_id = tables.IntCol()
-    event_id = tables.Int64Col()
-    timestamp = tables.Time32Col()
-    nanoseconds = tables.UInt32Col()
-    ext_timestamp = tables.UInt64Col()
+    run_id = tables.IntCol(pos=0)
+    event_id = tables.Int64Col(pos=1)
+    timestamp = tables.Time32Col(pos=2)
+    nanoseconds = tables.UInt32Col(pos=3)
+    ext_timestamp = tables.UInt64Col(pos=4)
 
-    energy = tables.FloatCol()
-    core_pos = tables.FloatCol(shape=2)
-    zenith = tables.FloatCol()
-    azimuth = tables.FloatCol()
-    Num_e = tables.FloatCol()
-    Num_mu = tables.FloatCol()
-    dens_e = tables.FloatCol(shape=4)
-    dens_mu = tables.FloatCol(shape=4)
-    P200 = tables.FloatCol()
-    T200 = tables.FloatCol()
+    energy = tables.FloatCol(pos=5)
+    core_pos = tables.FloatCol(pos=6, shape=2)
+    zenith = tables.FloatCol(pos=7)
+    azimuth = tables.FloatCol(pos=8)
+    Num_e = tables.FloatCol(pos=9)
+    Num_mu = tables.FloatCol(pos=10)
+    dens_e = tables.FloatCol(pos=11, shape=4)
+    dens_mu = tables.FloatCol(pos=12, shape=4)
+    P200 = tables.FloatCol(pos=13)
+    T200 = tables.FloatCol(pos=14)
 
 
 class ReconstructedKascadeEvent(tables.IsDescription):

@@ -1,4 +1,4 @@
-.PHONY: gh-pages
+.PHONY: gh-pages test
 
 gh-pages:
 ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
@@ -16,3 +16,11 @@ ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
 else
 	$(error Working tree is not clean, please commit all changes.)
 endif
+
+test:
+	python setup.py test
+	flake8 --ignore=Z --exclude=sapphire/transformations/geographic.py,sapphire/tests/,sapphire/corsika/qsub_corsika.py sapphire
+	flake8 --ignore=E501 sapphire/tests/
+	flake8 --ignore=E501 sapphire/corsika/qsub_corsika.py
+	flake8 --exit-zero --ignore=Z sapphire/transformations/geographic.py
+	sphinx-build -anW doc doc/_build/html

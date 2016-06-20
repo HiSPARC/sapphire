@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 53.86, 
+    "cluster": "Leiden", 
+    "country": "Netherlands", 
+    "latitude": 52.1464609, 
+    "longitude": 4.6535385, 
+    "name": "Ashram College", 
+    "number": 3303, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Alphen aan de Rijn"
+}

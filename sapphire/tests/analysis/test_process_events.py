@@ -6,16 +6,15 @@ import warnings
 import operator
 
 import tables
+from mock import Mock
 
 from sapphire.analysis import process_events
 
 
-TEST_DATA_FILE = 'PE-testdata.h5'
+TEST_DATA_FILE = 'test_data/process_events.h5'
 DATA_GROUP = '/s501'
 
 
-@unittest.skipIf(not os.path.exists(os.path.join(os.path.dirname(__file__), TEST_DATA_FILE)),
-                 'Missing test datafile.')
 class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
         warnings.filterwarnings('ignore')
@@ -148,6 +147,14 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         self.assertEqual(times[2], -999)
         self.assertEqual(times[4], 165)
 
+    def test__reconstruct_time_from_traces_with_external(self):
+        self.proc.trigger = [0, 0, 0, 1]
+        event = self.proc.source[10]
+        times = self.proc._reconstruct_time_from_traces(event)
+        self.assertEqual(times[0], 162.5)
+        self.assertEqual(times[2], -999)
+        self.assertEqual(times[4], -999)
+
     def test__first_above_thresholds(self):
         # 2 detectors
         self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400], 900), [2, 2, -999])
@@ -168,28 +175,129 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         self.assertEqual(self.proc._first_value_above_threshold(trace, 500), (-999, 0))
 
     def test__reconstruct_trigger(self):
-        # 2 detectors
-        high_idx = []
-        low_idx = [-999, 3]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=2), -999)
-        low_idx = [0, 3]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=2), 3)
+        self.proc.trigger = (0, 0, False, 0)
+        low_idx = [-999, -999, -999, -999]
+        high_idx = [-999, -999, -999, -999]
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 0, True, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
 
-        # 4 detectors
-        high_idx = [-999, -999]
-        low_idx = [-999, 3]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), -999)
-        low_idx = [0, 3, 2]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
-        high_idx = [0, 3]
-        low_idx = [0, 2, 4]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
-        high_idx = [0, 5]
-        low_idx = [0, 2, 3]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 3)
-        high_idx = [0, 5]
-        low_idx = [0, 2]
-        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx, n_detectors=4), 5)
+        # Standard two detector trigger
+        self.proc.trigger = (2, 0, False, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        high_idx = [-999, -999, 10, -999]
+        low_idx = [-999, -999, 3, -999]
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [-999, 0, 3, 2]
+        result = 2
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [0, 2, 4, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [0, 2, 3, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [0, 2, -999, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        low_idx = [-999, -999, 3, 6]
+        result = 6
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+
+        # Standard four detector trigger
+        self.proc.trigger = (3, 2, True, 0)
+        low_idx = [-999, -999, -999, -999]
+        high_idx = [-999, -999, -999, -999]
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        # Trigger on low
+        low_idx = [7, 4, 1, -999]
+        high_idx = [-999, -999, -999, -999]
+        result = 7
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        high_idx = [8, 5, -999, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        high_idx = [8, 9, 2, -999]
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        # Trigger on high
+        high_idx = [-999, 5, 2, -999]
+        result = 5
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+
+        # Other triggers
+        self.proc.trigger = (1, 2, False, 0)
+        low_idx = [1, 3, 5, 7]
+        high_idx = [2, 4, -999, -999]
+        result = 5
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (3, 0, False, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 2, False, 0)
+        result = 4
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (0, 4, False, 0)
+        result = -999
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+        self.proc.trigger = (1, 3, False, 0)
+        self.assertEqual(self.proc._reconstruct_trigger(low_idx, high_idx), result)
+
+
+class ProcessEventsFromSourceTests(ProcessEventsTests):
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+        self.source_path = self.create_tempfile_from_testdata()
+        self.source_data = tables.open_file(self.source_path, 'r')
+        self.dest_path = self.create_tempfile_path()
+        self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.proc = process_events.ProcessEventsFromSource(
+            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
+
+    def tearDown(self):
+        warnings.resetwarnings()
+        self.source_data.close()
+        os.remove(self.source_path)
+        self.dest_data.close()
+        os.remove(self.dest_path)
+
+    def test_process_and_store_results(self):
+        self.proc.process_and_store_results()
+
+
+class ProcessEventsFromSourceWithTriggerOffsetTests(ProcessEventsFromSourceTests,
+                                                    ProcessEventsWithTriggerOffsetTests):
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+        self.source_path = self.create_tempfile_from_testdata()
+        self.source_data = tables.open_file(self.source_path, 'r')
+        self.dest_path = self.create_tempfile_path()
+        self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
+            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
+
+
+class ProcessEventsFromSourceWithTriggerOffsetStationTests(ProcessEventsFromSourceTests,
+                                                           ProcessEventsWithTriggerOffsetTests):
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+        self.source_path = self.create_tempfile_from_testdata()
+        self.source_data = tables.open_file(self.source_path, 'r')
+        self.dest_path = self.create_tempfile_path()
+        self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
+            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP,
+            station=501)
+
+    def test__reconstruct_time_from_traces_with_external(self):
+        mock_trigger = Mock()
+        mock_trigger.return_value = ([(process_events.ADC_LOW_THRESHOLD,
+                                       process_events.ADC_HIGH_THRESHOLD)] * 4,
+                                     [0, 0, 0, 1])
+        self.proc.station.trigger = mock_trigger
+
+        event = self.proc.source[10]
+        times = self.proc._reconstruct_time_from_traces(event)
+        self.assertEqual(times[0], 162.5)
+        self.assertEqual(times[2], -999)
+        self.assertEqual(times[4], -999)
 
 
 if __name__ == '__main__':

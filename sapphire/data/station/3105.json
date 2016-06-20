@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 56.8, 
+    "cluster": "Leiden", 
+    "country": "Netherlands", 
+    "latitude": 51.8182317, 
+    "longitude": 4.394633, 
+    "name": "CSG Willem van Oranje", 
+    "number": 3105, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Zwijndrecht"
+}

@@ -1,27 +1,37 @@
-"""Simulations
+"""Perform common simulation tasks.
 
 This package contains modules for performing simulations:
 
 :mod:`~sapphire.simulations.base`
-    Base simulations class that provides the framework for simulations
+    base simulations class that provides the framework for simulations
 
 :mod:`~sapphire.simulations.detector`
-    Simulate the response of the HiSPARC detectors
+    simulate the response of the HiSPARC detectors
 
 :mod:`~sapphire.simulations.groundparticles`
-    Perform simulations using CORSIKA ground particles as input
+    perform simulations using CORSIKA ground particles as input
+
+:mod:`~sapphire.simulations.ldf`
+    perform simulations using lateral distribution functions for particle
+    densities
 
 :mod:`~sapphire.simulations.showerfront`
-    Simple simulations of a shower front
+    simple simulations of a shower front
+
+:mod:`~sapphire.simulations.gammas`
+    simulation of detector response due to gammas
 
 """
 from . import base
 from . import detector
 from . import groundparticles
+from . import ldf
 from . import showerfront
-
+from . import gammas
 
 __all__ = ['base',
            'detector',
            'groundparticles',
-           'showerfront']
+           'ldf',
+           'showerfront',
+           'gammas']

@@ -5,10 +5,8 @@ Data analysis
    :members:
    :undoc-members:
 
-
-Contents:
-
 .. toctree::
+   :hidden:
 
    analysis/calibration
    analysis/coincidence_queries
@@ -19,4 +17,6 @@ Contents:
    analysis/find_mpv
    analysis/landau
    analysis/process_events
+   analysis/process_traces
    analysis/reconstructions
+   analysis/time_deltas

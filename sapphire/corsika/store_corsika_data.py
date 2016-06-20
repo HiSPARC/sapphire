@@ -4,6 +4,15 @@
     each particle individually in a HDF5 file, using PyTables.  This file
     can then be used as input for the detector simulation.
 
+    The syntax and options for calling this script can be seen with::
+
+        $ store_corsika_data --help
+
+    For example to convert a CORSIKA file in the current directory called
+    DAT000000 to a HDF5 called corsika.h5 with a progress bar run::
+
+        $ store_corsika_data --progress DAT000000 corsika.h5
+
 """
 import argparse
 import tempfile
@@ -12,7 +21,8 @@ import os
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
-from sapphire.corsika.reader import CorsikaFile
+from .reader import CorsikaFile
+from .mergesort import TableMergeSort
 
 
 class GroundParticles(tables.IsDescription):
@@ -55,24 +65,44 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
                                 progress=False):
     """First convert the data to HDF5 and create a sorted version"""
 
+    if os.path.exists(destination):
+        if not overwrite:
+            if progress:
+                raise Exception("Destination already exists, doing nothing")
+            return
+        else:
+            os.remove(destination)
+
     corsika_data = CorsikaFile(source)
-    if overwrite:
-        mode = 'w'
-    else:
-        mode = 'a'
 
     temp_dir = os.path.dirname(destination)
+    unsorted = create_tempfile_path(temp_dir)
     temp_path = create_tempfile_path(temp_dir)
 
-    with tables.open_file(temp_path, 'a') as hdf_temp:
+    with tables.open_file(unsorted, 'a') as hdf_temp:
         store_corsika_data(corsika_data, hdf_temp, progress=progress)
-    with tables.open_file(temp_path, 'a') as hdf_temp:
-        create_index(hdf_temp, progress=progress)
-    with tables.open_file(temp_path, 'r') as hdf_temp, \
-            tables.open_file(destination, mode) as hdf_data:
-        copy_and_sort_node(hdf_temp, hdf_data, progress=progress)
+    with tables.open_file(unsorted, 'r') as hdf_unsorted, \
+            tables.open_file(destination, 'w') as hdf_data, \
+            tables.open_file(temp_path, 'w') as hdf_temp:
 
+        with TableMergeSort('x', hdf_unsorted, hdf_data, hdf_temp,
+                            progress=progress) as mergesort:
+            mergesort.sort()
+
+            event_header = hdf_unsorted.get_node_attr('/', 'event_header')
+            run_header = hdf_unsorted.get_node_attr('/', 'run_header')
+            event_end = hdf_unsorted.get_node_attr('/', 'event_end')
+            run_end = hdf_unsorted.get_node_attr('/', 'run_end')
+            hdf_data.set_node_attr('/', 'event_header', event_header)
+            hdf_data.set_node_attr('/', 'run_header', run_header)
+            hdf_data.set_node_attr('/', 'event_end', event_end)
+            hdf_data.set_node_attr('/', 'run_end', run_end)
+
+    os.remove(unsorted)
     os.remove(temp_path)
+
+    with tables.open_file(destination, 'a') as hdf_data:
+        create_index(hdf_data, progress=progress)
 
 
 def store_corsika_data(source, destination, table_name='groundparticles',
@@ -101,7 +131,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
             else:
                 raise
         if progress:
-            pbar = ProgressBar(maxval=n_particles - 1,
+            pbar = ProgressBar(max_value=n_particles - 1,
                                widgets=[Percentage(), Bar(), ETA()]).start()
 
         particle_row = table.row
@@ -168,7 +198,7 @@ def create_tempfile_path(temp_dir=None):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Store CORSIKA data as HDF5.')
     parser.add_argument('source', help="path of the CORSIKA source file")
     parser.add_argument('destination',
                         help="path of the HDF5 destination file")

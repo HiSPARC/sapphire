@@ -21,8 +21,8 @@ class CorsikaFileTests(unittest.TestCase):
 
         self.assertTrue(self.file.check())
 
-    def test_run(self):
-        """Verify that the Run is properly read"""
+    def test_run_header(self):
+        """Verify that the Run header is properly read"""
 
         header = self.file.get_header()
         self.assertIsInstance(header, corsika.blocks.RunHeader)
@@ -31,6 +31,9 @@ class CorsikaFileTests(unittest.TestCase):
         for h in [10., 5000., 30000., 50000., 110000.]:
             t = header.height_to_thickness(h)
             self.assertAlmostEqual(header.thickness_to_height(t), h, 8)
+
+    def test_run_end(self):
+        """Verify that the Run end is properly read"""
 
         end = self.file.get_end()
         self.assertIsInstance(end, corsika.blocks.RunEnd)

@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 60.33, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.3520521, 
+    "longitude": 4.8769, 
+    "name": "Joke Smit College (ROC)", 
+    "number": 7, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Amsterdam"
+}

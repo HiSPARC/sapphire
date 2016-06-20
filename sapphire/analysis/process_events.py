@@ -10,8 +10,7 @@
         import tables
 
         from sapphire.publicdb import download_data
-        from sapphire.analysis import process_events
-
+        from sapphire import ProcessEvents
 
         STATIONS = [501, 503, 506]
         START = datetime.datetime(2013, 1, 1)
@@ -21,30 +20,37 @@
         if __name__ == '__main__':
             station_groups = ['/s%d' % u for u in STATIONS]
 
-            data = tables.open_file('data.h5', 'w')
-            for station, group in zip(STATIONS, station_groups):
-                download_data(data, group, station, START, END, get_blobs=True)
-                proc = process_events.ProcessEvents(data, group)
-                proc.process_and_store_results()
-            data.close()
+            with tables.open_file('data.h5', 'w') as data:
+                for station, group in zip(STATIONS, station_groups):
+                    download_data(data, group, station, START, END, True)
+                    proc = ProcessEvents(data, group)
+                    proc.process_and_store_results()
 
 """
 import zlib
 from itertools import izip
 import operator
+import os
+import warnings
 
 import tables
 import numpy as np
-from scipy.optimize import curve_fit
 
-from ..utils import pbar, gauss, ERR
+from ..api import Station
+from ..utils import pbar, ERR
 from .find_mpv import FindMostProbableValueInSpectrum
+from .process_traces import (ADC_TIME_PER_SAMPLE, ADC_LOW_THRESHOLD,
+                             ADC_HIGH_THRESHOLD)
 
+ADC_THRESHOLD = 20  #: Threshold for arrival times, relative to the baseline
+ADC_LIMIT = 2 ** 12
 
-ADC_THRESHOLD = 20  # This one is relative to the baseline
-ADC_LOW_THRESHOLD = 253
-ADC_HIGH_THRESHOLD = 323
-ADC_TIME_PER_SAMPLE = 2.5  # in ns
+#: Default trigger for 2-detector station
+#: 2 low and no high, no external
+TRIGGER_2 = (2, 0, False, 0)
+#: Default trigger for 4-detector station
+#: 3 low or 2 high, no external
+TRIGGER_4 = (3, 2, True, 0)
 
 
 class ProcessEvents(object):
@@ -96,6 +102,7 @@ class ProcessEvents(object):
         self.group = data.get_node(group)
         self.source = self._get_source(source)
         self.progress = progress
+        self.limit = None
 
     def process_and_store_results(self, destination=None, overwrite=False,
                                   limit=None):
@@ -271,8 +278,8 @@ class ProcessEvents(object):
         source = self.source
 
         for col in pbar(source.colnames, show=self.progress):
-            getattr(table.cols, col)[:self.limit] = getattr(source.cols,
-                                                            col)[:self.limit]
+            table.modify_column(stop=self.limit, colname=col,
+                                column=getattr(source.cols, col)[:self.limit])
         table.flush()
 
     def _store_results_from_traces(self):
@@ -283,16 +290,13 @@ class ProcessEvents(object):
         # Assign values to full table, column-wise.
         for idx in range(4):
             col = 't%d' % (idx + 1)
-            getattr(table.cols, col)[:] = timings[:, idx]
+            table.modify_column(column=timings[:, idx], colname=col)
         table.flush()
 
-    def process_traces(self, limit=None):
+    def process_traces(self):
         """Process traces to yield pulse timing information."""
 
-        if limit:
-            self.limit = limit
-
-        if self.limit:
+        if self.limit is not None:
             events = self.source.iterrows(stop=self.limit)
         else:
             events = self.source
@@ -406,7 +410,7 @@ class ProcessEvents(object):
         n_particles = self._process_pulseintegrals()
         for idx in range(4):
             col = 'n%d' % (idx + 1)
-            getattr(table.cols, col)[:] = n_particles[:, idx]
+            table.modify_column(column=n_particles[:, idx], colname=col)
         table.flush()
 
     def _process_pulseintegrals(self):
@@ -450,28 +454,6 @@ class ProcessEvents(object):
             self.data.remove_node(self.group, self.destination)
         self._tmp_events.rename(self.destination)
 
-    def determine_detector_timing_offsets(self, timings_table='events'):
-        """Determine the offsets between the station detectors."""
-
-        table = self.data.get_node(self.group, timings_table)
-        t2 = table.col('t2')
-
-        bins = np.arange(-100 + 1.25, 100, 2.5)
-
-        print "Determining offsets based on # events:",
-        offsets = []
-        for timings in 't1', 't3', 't4':
-            timings = table.col(timings)
-            dt = (timings - t2).compress((t2 >= 0) & (timings >= 0))
-            print len(dt),
-            y, bins = np.histogram(dt, bins=bins)
-            x = (bins[:-1] + bins[1:]) / 2
-            popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., 10.))
-            offsets.append(popt[1])
-        print
-
-        return [offsets[0]] + [0.] + offsets[1:]
-
 
 class ProcessIndexedEvents(ProcessEvents):
 
@@ -494,9 +476,9 @@ class ProcessIndexedEvents(ProcessEvents):
             meaning the default name 'events'.
 
         """
-        super(ProcessIndexedEvents, self).__init__(data, group, source)
+        super(ProcessIndexedEvents, self).__init__(data, group, source,
+                                                   progress)
         self.indexes = indexes
-        self.progress = progress
 
     def _store_results_from_traces(self):
         table = self._tmp_events
@@ -625,6 +607,33 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
     """
 
+    def __init__(self, data, group, source=None, progress=True, station=None):
+        """Initialize the class.
+
+        :param data: the PyTables datafile
+        :param group: the group containing the station data.  In normal
+            cases, this is simply the group containing the events table.
+        :param source: the name of the events table.  Default: None,
+            meaning the default name 'events'.
+        :param progress: boolean to indicate if a progress bar should be shown.
+        :param station: station number of station to which the data belongs.
+
+        """
+        super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
+                                                             source, progress)
+        if station is None:
+            self.station = None
+            self.thresholds = [(ADC_LOW_THRESHOLD, ADC_HIGH_THRESHOLD)] * 4
+            n = sum(1 for idx in self.source[0]['traces'] if idx != -1)
+            if n == 2:
+                self.trigger = TRIGGER_2
+            elif n == 4:
+                self.trigger = TRIGGER_4
+            else:
+                raise Exception('No trigger settings available')
+        else:
+            self.station = Station(station)
+
     def _store_results_from_traces(self):
         table = self._tmp_events
 
@@ -633,8 +642,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         # Assign values to full table, column-wise.
         for idx in range(4):
             col = 't%d' % (idx + 1)
-            getattr(table.cols, col)[:] = timings[:, idx]
-        getattr(table.cols, 't_trigger')[:] = timings[:, 4]
+            table.modify_column(column=timings[:, idx], colname=col)
+        table.modify_column(column=timings[:, 4], colname='t_trigger')
         table.flush()
 
     def _reconstruct_time_from_traces(self, event):
@@ -647,37 +656,56 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                  relative to start of trace in ns
 
         """
+        if self.station is not None:
+            timestamp = event['timestamp']
+            try:
+                self.thresholds, self.trigger = self.station.trigger(timestamp)
+            except:
+                warnings.warn('Unknown trigger settings, not reconstructing '
+                              'trigger offset.')
+                # Do not reconstruct t_trigger by pretending external trigger.
+                self.trigger = [0, 0, 0, 1]
+
+        n_low, n_high, and_or, external = self.trigger
+
+        if external:
+            # Do not reconstruct thresholds if external trigger is involved
+            self.thresholds = [(ADC_LIMIT, ADC_LIMIT)] * 4
+
         timings = []
         low_idx = []
         high_idx = []
-        n_detectors = sum(1 for idx in event['traces'] if idx != -1)
-        for baseline, pulseheight, trace_idx in zip(event['baseline'],
-                                                    event['pulseheights'],
-                                                    event['traces']):
+        for baseline, pulseheight, trace_idx, trig_thresholds in zip(
+                event['baseline'], event['pulseheights'], event['traces'],
+                self.thresholds):
             if pulseheight < 0:
-                # retain -1, -999 status flags in timing
+                # Retain -1 and -999 status flags in timing
                 timings.append(pulseheight)
+                low_idx.append(-999)
+                high_idx.append(-999)
+                continue
+            if pulseheight < ADC_THRESHOLD or baseline > trig_thresholds[0]:
+                # No significant pulse or bad baseline
+                timings.append(-999)
+                low_idx.append(-999)
+                high_idx.append(-999)
                 continue
 
             max_signal = baseline + pulseheight
             adc_threshold = baseline + ADC_THRESHOLD
 
-            if max_signal < adc_threshold and max_signal < ADC_LOW_THRESHOLD:
-                # No significant pulse
-                timings.append(-999)
-                continue
-            elif baseline > ADC_LOW_THRESHOLD:
-                # Bad baseline
-                timings.append(-999)
-                continue
+            thresholds = [adc_threshold]
+            # Only include if needed for trigger and large enough signal
+            if n_low and max_signal >= trig_thresholds[0]:
+                thresholds.append(trig_thresholds[0])
+            else:
+                thresholds.append(ADC_LIMIT)
+            if n_high and max_signal >= trig_thresholds[1]:
+                thresholds.append(trig_thresholds[1])
+            else:
+                thresholds.append(ADC_LIMIT)
 
             trace = self._get_trace(trace_idx)
-
-            if n_detectors == 2:
-                thresholds = (adc_threshold, ADC_LOW_THRESHOLD)
-            else:
-                thresholds = (adc_threshold, ADC_LOW_THRESHOLD,
-                              ADC_HIGH_THRESHOLD)
 
             t, l, h = self._first_above_thresholds(trace, thresholds,
                                                    max_signal)
@@ -685,7 +713,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             low_idx.append(l)
             high_idx.append(h)
 
-        t_trigger = self._reconstruct_trigger(low_idx, high_idx, n_detectors)
+        t_trigger = self._reconstruct_trigger(low_idx, high_idx)
         timings.append(t_trigger)
 
         timings = [time * ADC_TIME_PER_SAMPLE if time not in ERR else time
@@ -740,33 +768,50 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         return next(((i, x) for i, x in enumerate(trace, t) if x >= threshold),
                     (-999, 0))
 
-    def _reconstruct_trigger(self, low_idx, high_idx, n_detectors=None):
+    def _reconstruct_trigger(self, low_idx, high_idx):
         """Reconstruct the moment of trigger from the threshold info
 
-        :param low_idx, high_idx: list of trace indexes when a detector
-                                   crossed a given threshold.
-        :param n_detectors: number of detectors (2 or 4).
+        :param low_idx,high_idx: list of trace indexes when a detector
+                                 crossed a given threshold.
         :return: index in trace where the trigger happened.
 
         """
+        n_low, n_high, and_or, external = self.trigger
+
+        # External trigger not supported
+        if external:
+            return -999
+
         low_idx = [idx for idx in low_idx if not idx == -999]
         high_idx = [idx for idx in high_idx if not idx == -999]
         low_idx.sort()
         high_idx.sort()
 
-        if n_detectors == 2 and len(low_idx) > 1:
-            # Two low
-            return low_idx[1]
-        elif n_detectors == 4 and (len(low_idx) >= 3 or len(high_idx) >= 2):
-            # Two high or three low
-            if len(low_idx) < 3 and len(high_idx) >= 2:
-                return high_idx[1]
-            elif len(low_idx) >= 3 and len(high_idx) < 2:
-                return low_idx[2]
-            elif len(low_idx) >= 3 and len(high_idx) >= 2:
-                return min([low_idx[2], high_idx[1]])
+        if and_or:
+            # low or high, which ever is first
+            if (n_low and n_high and
+                    len(low_idx) >= n_low and len(high_idx) >= n_high):
+                return min(low_idx[n_low - 1], high_idx[n_high - 1])
+            elif n_high and len(high_idx) >= n_high:
+                return high_idx[n_high - 1]
+            elif n_low and len(low_idx) >= n_low:
+                return low_idx[n_low - 1]
         else:
-            return -999
+            if n_low and n_high:
+                # low and high
+                if len(low_idx) >= n_low + n_high and len(high_idx) >= n_high:
+                    return max(low_idx[n_low + n_high - 1],
+                               high_idx[n_high - 1])
+            elif n_high:
+                # 0 low and high
+                if len(high_idx) >= n_high:
+                    return high_idx[n_high - 1]
+            elif n_low:
+                # low and 0 high
+                if len(low_idx) >= n_low:
+                    return low_idx[n_low - 1]
+
+        return -999
 
 
 class ProcessEventsFromSource(ProcessEvents):
@@ -780,7 +825,8 @@ class ProcessEventsFromSource(ProcessEvents):
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group):
+    def __init__(self, source_file, dest_file, source_group, dest_group,
+                 progress=False):
         """Initialize the class.
 
         :param source_file: the PyTables source file
@@ -793,11 +839,22 @@ class ProcessEventsFromSource(ProcessEvents):
         self.dest_file = dest_file
 
         self.source_group = self.source_file.get_node(source_group)
-        self.dest_group = self.dest_file.get_node(dest_group)
+        self.dest_group = self._get_or_create_group(dest_file, dest_group)
 
         self.source = self._get_source()
 
-        self.progress = False
+        self.progress = progress
+        self.limit = None
+
+    def _get_or_create_group(self, file, group):
+        """Get or create a group in the datafile"""
+
+        try:
+            group = file.get_node(group)
+        except tables.NoSuchNodeError:
+            parent, newgroup = os.path.split(group)
+            group = file.create_group(parent, newgroup, createparents=True)
+        return group
 
     def _get_source(self):
         """Return the table containing the events.
@@ -866,11 +923,44 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
     This is a subclass of :class:`ProcessEventsFromSource` and
     :class:`ProcessEventsWithTriggerOffset`.  Processing events and
     finding the trigger time in the traces. And storing the results in a
-    different file that the source.
+    different file than the source.
 
     """
 
-    pass
+    def __init__(self, source_file, dest_file, source_group, dest_group,
+                 station=None, progress=False):
+        """Initialize the class.
+
+        :param source_file: the PyTables source file
+        :param dest_file: the PyTables dest file
+        :param group_path: the pathname of the source (and destination)
+            group
+        :param station: station number of station to which the data belongs.
+
+        """
+        self.source_file = source_file
+        self.dest_file = dest_file
+
+        self.source_group = self.source_file.get_node(source_group)
+        self.dest_group = self._get_or_create_group(dest_file, dest_group)
+
+        self.source = self._get_source()
+
+        self.progress = progress
+        self.limit = None
+
+        if station is None:
+            self.station = None
+            self.thresholds = [(ADC_LOW_THRESHOLD, ADC_HIGH_THRESHOLD)] * 4
+            n = sum(1 for idx in self.source[0]['traces'] if idx != -1)
+            if n == 2:
+                self.trigger = TRIGGER_2
+            elif n == 4:
+                self.trigger = TRIGGER_4
+            else:
+                raise Exception('No trigger settings available')
+        else:
+            self.station = Station(station)
 
 
 class ProcessWeather(ProcessEvents):
@@ -977,7 +1067,8 @@ class ProcessWeatherFromSource(ProcessWeather):
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group):
+    def __init__(self, source_file, dest_file, source_group, dest_group,
+                 progress=False):
         """Initialize the class.
 
         :param source_file,dest_file: the PyTables source and destination file
@@ -993,7 +1084,7 @@ class ProcessWeatherFromSource(ProcessWeather):
 
         self.source = self._get_source()
 
-        self.progress = False
+        self.progress = progress
 
     def _get_source(self):
         """Return the table containing the events.

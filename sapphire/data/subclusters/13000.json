@@ -1,0 +1,34 @@
+[
+    {
+        "name": "Bristol University", 
+        "number": 13001
+    }, 
+    {
+        "name": "Red Maids", 
+        "number": 13002
+    }, 
+    {
+        "name": "Bristol Grammar School", 
+        "number": 13003
+    }, 
+    {
+        "name": "Clifton High School", 
+        "number": 13004
+    }, 
+    {
+        "name": "Filton College", 
+        "number": 13005
+    }, 
+    {
+        "name": "Hanham Woods Academy", 
+        "number": 13006
+    }, 
+    {
+        "name": "BernardLovell", 
+        "number": 13007
+    }, 
+    {
+        "name": "Bristol Cathedral Choir School", 
+        "number": 13008
+    }
+]

@@ -16,10 +16,10 @@
 
 """
 from __future__ import division
-import itertools
+from itertools import izip, izip_longest, combinations
 import warnings
 
-from numpy import isnan, nan, cos, sqrt, log10, mean, array
+from numpy import isnan, nan, cos, sqrt, log10, mean, array, linspace
 
 from .event_utils import station_density, detector_density
 from ..utils import pbar
@@ -41,11 +41,8 @@ class EventCoreReconstruction(object):
     def __init__(self, station):
         self.estimator = CenterMassAlgorithm
         self.station = station
-        detectors = [d.get_coordinates() for d in self.station.detectors]
-        self.area = [d.get_area() for d in self.station.detectors]
-        self.x, self.y, self.z = zip(*detectors)
 
-    def reconstruct_event(self, event, detector_ids=None):
+    def reconstruct_event(self, event, detector_ids=None, initial={}):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -54,38 +51,51 @@ class EventCoreReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :return: (x, y) core position in m, shower size, and energy.
+        :param initial: dictionary with already reconstructed shower
+                        parameters.
+        :return: (x, y) core position in m, shower size, and energy in eV.
 
         """
         p, x, y, z = ([], [], [], [])
         if detector_ids is None:
             detector_ids = range(4)
+        self.station.cluster.set_timestamp(event['timestamp'])
         for id in detector_ids:
             p_detector = detector_density(event, id, self.station)
             if not isnan(p_detector):
+                dx, dy, dz = self.station.detectors[id].get_coordinates()
                 p.append(p_detector)
-                x.append(self.x[id])
-                y.append(self.y[id])
-                z.append(self.z[id])
+                x.append(dx)
+                y.append(dy)
+                z.append(dz)
         if len(p) >= 3:
             core_x, core_y, size, energy = \
-                self.estimator.reconstruct_common(p, x, y, z)
+                self.estimator.reconstruct_common(p, x, y, z, initial)
         else:
             core_x, core_y, size, energy = (nan, nan, nan, nan)
         return core_x, core_y, size, energy
 
-    def reconstruct_events(self, events, detector_ids=None, progress=True):
+    def reconstruct_events(self, events, detector_ids=None, progress=True,
+                           initials=[]):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
-        :return: (x, y) core positions in m, shower sizes, and energies.
+        :param progress: if True shows a progress bar.
+        :param initials: list of dictionaries with already reconstructed shower
+                         parameters.
+        :return: (x, y) core positions in m, shower sizes, and energies in eV.
 
         """
-        cores = [self.reconstruct_event(event, detector_ids)
-                 for event in pbar(events, show=progress)]
-        core_x, core_y, size, energy = zip(*cores)
+        events = pbar(events, show=progress)
+        events_init = izip_longest(events, initials)
+        cores = [self.reconstruct_event(event, detector_ids, initial)
+                 for event, initial in events_init]
+        if len(cores):
+            core_x, core_y, size, energy = zip(*cores)
+        else:
+            core_x, core_y, size, energy = ((), (), (), ())
         return core_x, core_y, size, energy
 
 
@@ -102,28 +112,29 @@ class CoincidenceCoreReconstruction(object):
     """
 
     def __init__(self, cluster):
-        self.estimator = EllipsLdfAlgorithm
+        self.estimator = EllipseLdfAlgorithm
         self.cluster = cluster
 
-        # Store locations that do not change
-        for station in cluster.stations:
-            station.center_of_mass_coordinates = \
-                station.calc_center_of_mass_coordinates()
-            station.area = station.get_area()
-
     def reconstruct_coincidence(self, coincidence, station_numbers=None,
-                                initial=None):
+                                initial={}):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
                             multiple (station_number, event) tuples
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
+        :param initial: dictionary with already reconstructed shower
+                        parameters.
         :param initial: dictionary with initial data.
-        :return: (x, y) core position in m, shower size, and energy.
+        :return: (x, y) core position in m, shower size, and energy in eV.
 
         """
         p, x, y, z = ([], [], [], [])
+
+        try:
+            self.cluster.set_timestamp(coincidence[0][1]['timestamp'])
+        except IndexError:
+            return (nan, nan)
 
         for station_number, event in coincidence:
             if station_numbers is not None:
@@ -132,7 +143,7 @@ class CoincidenceCoreReconstruction(object):
             station = self.cluster.get_station(station_number)
             p_station = station_density(event, range(4), station)
             if not isnan(p_station):
-                sx, sy, sz = station.center_of_mass_coordinates
+                sx, sy, sz = station.calc_center_of_mass_coordinates()
                 p.append(p_station)
                 x.append(sx)
                 y.append(sy)
@@ -140,34 +151,92 @@ class CoincidenceCoreReconstruction(object):
 
         if len(p) >= 3:
             core_x, core_y, size, energy = \
-                self.estimator.reconstruct_common(p, x, y, z, initial=initial)
+                self.estimator.reconstruct_common(p, x, y, z, initial)
         else:
             core_x, core_y, size, energy = (nan, nan, nan, nan)
         return core_x, core_y, size, energy
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 initial=None, progress=True):
+                                 progress=True, initials=[]):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidences, each consisting of
                              multiple (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param initial: list of dictionaries with initial data.
-        :return: (x, y) core positions in m, shower sizes, and energies.
+        :param progress: if True shows a progress bar.
+        :param initials: list of dictionaries with already reconstructed shower
+                         parameters.
+        :return: (x, y) core positions in m, shower sizes, and energies in eV.
 
         """
+        coincidences = pbar(coincidences, show=progress)
+        coin_init = izip_longest(coincidences, initials)
         cores = [self.reconstruct_coincidence(coincidence, station_numbers,
-                                              initial=ini)
-                 for coincidence, ini
-                 in pbar(itertools.izip(coincidences, initial), show=progress)]
-        core_x, core_y, size, energy = zip(*cores)
+                                              initial)
+                 for coincidence, initial in coin_init]
+        if len(cores):
+            core_x, core_y, size, energy = zip(*cores)
+        else:
+            core_x, core_y, size, energy = ((), (), (), ())
         return core_x, core_y, size, energy
+
+
+class CoincidenceCoreReconstructionDetectors(
+        CoincidenceCoreReconstruction):
+
+    """Reconstruct core for coincidences using each detector
+
+    Instead of using the average station particle density this class
+    uses the particle density in each detector for the reconstruction.
+
+    """
+
+    def reconstruct_coincidence(self, coincidence, station_numbers=None,
+                                initial={}):
+        """Reconstruct a single coincidence
+
+        :param coincidence: a coincidence list consisting of
+                            multiple (station_number, event) tuples
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :param initial: dictionary with already reconstructed shower
+                        parameters.
+        :return: (x, y) core position in m.
+
+        """
+        p, x, y, z = ([], [], [], [])
+
+        try:
+            self.cluster.set_timestamp(coincidence[0][1]['timestamp'])
+        except IndexError:
+            return (nan, nan)
+
+        for station_number, event in coincidence:
+            if station_numbers is not None:
+                if station_number not in station_numbers:
+                    continue
+            station = self.cluster.get_station(station_number)
+            for id in range(4):
+                p_detector = detector_density(event, id, station)
+                if not isnan(p_detector):
+                    dx, dy, dz = station.detectors[id].get_coordinates()
+                    p.append(p_detector)
+                    x.append(dx)
+                    y.append(dy)
+                    z.append(dz)
+
+        if len(p) >= 3:
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z,
+                                                               initial)
+        else:
+            core_x, core_y = (nan, nan)
+        return core_x, core_y
 
 
 class CenterMassAlgorithm(object):
 
-    """ Simple core estimator
+    """Simple core estimator
 
     Estimates the core by center of mass of the measurements.
 
@@ -185,6 +254,10 @@ class CenterMassAlgorithm(object):
         :return: (x, y) core position in m. Shower size and energy are nan.
 
         """
+        theta = initial.get('theta', nan)
+        if not isnan(theta):
+            p = [density * cos(theta) for density in p]
+
         return cls.reconstruct(p, x, y)
 
     @staticmethod
@@ -203,10 +276,10 @@ class CenterMassAlgorithm(object):
 
 class AverageIntersectionAlgorithm(object):
 
-    """ Core estimator
+    """Core estimator
 
     To the densities in 3 stations correspond 2 possible cores. The line
-    through these points is quit stable for the lateral distribution function.
+    through these points is quite stable for the lateral distribution function.
     To each combination of 3 stations out of a set of at least 4
     stations hit corresponds a line. To each combinations of 2 lines out of
     the set of lines corresponds a point of intersection (if the 2 lines are
@@ -232,6 +305,11 @@ class AverageIntersectionAlgorithm(object):
             warnings.warn('This algorithm requires at least 4 detections.',
                           UserWarning)
             return nan, nan, nan, nan
+
+        theta = initial.get('theta', nan)
+        if not isnan(theta):
+            p = [density * cos(theta) for density in p]
+
         return cls.reconstruct(p, x, y)
 
     @classmethod
@@ -247,48 +325,44 @@ class AverageIntersectionAlgorithm(object):
         xhit = []
         yhit = []
         for i in range(len(p)):
-            if p[i] > .00001:
+            if p[i] > 0.001:
                 phit.append(p[i])
                 xhit.append(x[i])
                 yhit.append(y[i])
 
         statindex = range(len(phit))
 
-        # select triples of stations
-        subsets = itertools.combinations(statindex, 3)
-
         linelist0 = []
         linelist1 = []
-        for zero, one, two in subsets:
+        # select triples of stations
+        for zero, one, two in combinations(statindex, 3):
             a, b, rsquare = cls.calculate(phit, xhit, yhit, zero, one)
             c, d, ssquare = cls.calculate(phit, xhit, yhit, zero, two)
             e = c - a
-            f = d - b
             if d == b:
                 f = 0.000000001
-            g = sqrt(e * e + f * f)
+            else:
+                f = d - b
+            g = sqrt(e ** 2 + f ** 2)
             k = 0.5 * (g * g + rsquare - ssquare) / g
             # coefficients of radical axis
             linelist0.append(-e / f)
             linelist1.append((a * e + b * f + g * k) / f)
 
-        # select pairs of radical axes
-        subsets = itertools.combinations(statindex, 2)
-
         xpointlist = []
         ypointlist = []
-        for zero, one in subsets:
+        # select pairs of radical axes
+        for zero, one in combinations(statindex, 2):
             a = linelist0[zero]
             b = linelist1[zero]
             c = linelist0[one]
             d = linelist1[one]
-            aminc = a - c
             if a == c:
-                # to avoid singularity
                 aminc = 0.000000001
-            # x coordinate of intersection of pair of radical axes
+            else:
+                aminc = a - c
+            # x and y coordinates of intersection of pair of radical axes
             xint = (d - b) / aminc
-            # y coordinate of intersection of pair of radical axes
             yint = (a * d - b * c) / aminc
             # accept intersection point if not to far away
             if abs(xint) < 600. and abs(yint) < 600.:
@@ -316,18 +390,18 @@ class AverageIntersectionAlgorithm(object):
             pp = 1.000001
         a = (x[j] - pp * x[i]) / (1 - pp)
         b = (y[j] - pp * y[i]) / (1 - pp)
-        square = (pp * ((x[j] - x[i]) ** 2 +
-                  (y[j] - y[i]) ** 2) / ((1 - pp) ** 2))
+        square = (pp * ((x[j] - x[i]) ** 2 + (y[j] - y[i]) ** 2) /
+                  ((1 - pp) ** 2))
         return a, b, square
 
 
-class EllipsLdfAlgorithm(object):
+class EllipseLdfAlgorithm(object):
 
-    """ Special core and size estimator
+    """Core and size estimator using an LDF
 
     Estimates the core and shower size (electrons + muons) by a brute force
     inspection in a limited region, in combination with regression, with
-    elliptic lateral densities in the neighborhood of cores found with both
+    elliptic lateral densities in the neighbourhood of cores found with both
     the CenterMassAlgorithm and AverageIntersectionAlgorithm.
 
     """
@@ -350,8 +424,7 @@ class EllipsLdfAlgorithm(object):
 
     @classmethod
     def reconstruct(cls, p, x, y, theta, phi):
-        """Reconstruct core position that performs best.
-        Reconstruct shower size (electrons + muons
+        """Reconstruct best fitting shower core position, size, and energy
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
@@ -359,45 +432,35 @@ class EllipsLdfAlgorithm(object):
         :return: (x, y) core position in m, shower size, and energy.
 
         """
-        xcmass, ycmass, _, _ = CenterMassAlgorithm.reconstruct_common(p, x, y)
-        chi2best = 10 ** 99
-        factorbest = 1.
+        xcm, ycm, _, _ = CenterMassAlgorithm.reconstruct_common(p, x, y)
+        chi2cm = 10 ** 99
+        factorcm = 1.
 
-        gridsize = 20.
-        xbest, ybest, chi2best, factorbest = cls.selectbest(
-            p, x, y, xcmass, ycmass, factorbest, chi2best, gridsize, theta, phi)
+        for gridsize in [20., 5.]:
+            xcm, ycm, chi2cm, factorcm = cls.selectbest(
+                p, x, y, xcm, ycm, factorcm, chi2cm, gridsize, theta, phi)
 
-        gridsize = 5.
-        xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(
-            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
-
-        xlines, ylines, _, _ = \
+        xai, yai, _, _ = \
             AverageIntersectionAlgorithm.reconstruct_common(p, x, y)
-        chi2best = 10 ** 99
-        factorbest = 1.
+        chi2ai = 10 ** 99
+        factorai = 1.
 
-        gridsize = 50.
-        xbest, ybest, chi2best, factorbest = cls.selectbest(
-            p, x, y, xlines, ylines, factorbest, chi2best, gridsize, theta, phi)
+        for gridsize in [50., 10.]:
+            xai, yai, chi2ai, factorai = cls.selectbest(
+                p, x, y, xai, yai, factorai, chi2ai, gridsize, theta, phi)
 
-        gridsize = 10.
-        xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(
-            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
-
-        if chi2best1 < chi2best2:
-            xbest, ybest, chi2best, factorbest = \
-                xbest1, ybest1, chi2best1, factorbest1
+        if chi2cm < chi2ai:
+            xbest, ybest, chi2best, factorbest = xcm, ycm, chi2cm, factorcm
         else:
-            xbest, ybest, chi2best, factorbest = \
-                xbest2, ybest2, chi2best2, factorbest2
+            xbest, ybest, chi2best, factorbest = xai, yai, chi2ai, factorai
 
         # determine within a grid around the best estimation the position
         # with minimum chi square
         gridsize = 4.
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
-        # estimated shower size : number of electrons and muons!
-        size = factorbest * ldf.EllipsLdf._Ne
+        # estimated shower size, number of electrons and muons
+        size = factorbest * ldf.EllipseLdf._Ne
         coefa = 0.524 * cos(theta) + 0.681
         coefb = 7.844 + 5.30 * cos(theta)
         # estimated energy based on relation between shower size and energy
@@ -409,8 +472,7 @@ class EllipsLdfAlgorithm(object):
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
                    theta, phi):
-        """selects the best core position in grid around (xstart, ystart) by
-            optimizing the shower size (electr + muon) by means of regression.
+        """Select best core position in grid around (xstart, ystart)
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
@@ -422,20 +484,21 @@ class EllipsLdfAlgorithm(object):
         :return: core position, chi2 and shower scale.
 
         """
+        xstations = array(x)
+        ystations = array(y)
+
         xbest = xstart
         ybest = ystart
 
-        a = ldf.EllipsLdf(zenith=theta, azimuth=phi)
+        elldf = ldf.EllipseLdf(zenith=theta, azimuth=phi)
         gridparam = 4
-        for i in range(2 * gridparam + 1):
-            xtry = xstart + (i - gridparam) * gridsize
-            for j in range(2 * gridparam + 1):
-                ytry = ystart + (j - gridparam) * gridsize
-                xstations = array(x)
-                ystations = array(y)
-                r, angle = a.calculate_core_distance_and_angle(
+        gridedge = gridparam * gridsize
+        gridpoints = linspace(-gridedge, gridedge, gridparam * 2 + 1)
+        for xtry in gridpoints + xstart:
+            for ytry in gridpoints + ystart:
+                r, angle = elldf.calculate_core_distance_and_angle(
                     xstations, ystations, xtry, ytry)
-                rho = a.calculate_ldf_value(r, angle)
+                rho = elldf.calculate_ldf_value(r, angle)
 
                 mmdivl = 0.
                 m = 0.
@@ -447,7 +510,8 @@ class EllipsLdfAlgorithm(object):
                     l += kj
 
                 sizefactor = sqrt(mmdivl / l)
-                chi2 = 2. * (sizefactor * l - m)
+                with warnings.catch_warnings(record=True):
+                    chi2 = 2. * (sizefactor * l - m)
 
                 if chi2 < chi2best:
                     factorbest = sizefactor
@@ -467,7 +531,8 @@ class BruteForceAlgorithm(object):
     densities in the neighborhood of cores found with both the
     CenterMassAlgorithm and AverageIntersectionAlgorithm.
 
-    NOT RECOMMENDED TO USE since it is extremely slow
+    .. warning::
+        NOT RECOMMENDED TO USE since it is extremely slow
 
     """
 
@@ -488,12 +553,12 @@ class BruteForceAlgorithm(object):
 
     @classmethod
     def reconstruct(cls, p, x, y, theta, phi):
-        """Reconstruct core position that performs best.
-        Reconstruct showers size (electrons + muons) that fits best.
+        """Reconstruct best fitting shower core position, size, and energy
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
         :param theta,phi: zenith and azimuth angle in rad.
+        :return: (x, y) core position in m, shower size, and energy.
 
         """
         chi2best = 10 ** 99
@@ -505,7 +570,7 @@ class BruteForceAlgorithm(object):
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        size = factorbest * ldf.EllipsLdf._Ne
+        size = factorbest * ldf.EllipseLdf._Ne
         coefa = 0.519 * cos(theta) + 0.684
         coefb = 7.84 + 5.30 * cos(theta)
         enerpow = (log10(size) + coefb) / coefa
@@ -516,7 +581,7 @@ class BruteForceAlgorithm(object):
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
                    theta, phi):
-        """selects the best core position in grid around (xstart, ystart).
+        """Select the best core position in grid around (xstart, ystart).
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
@@ -528,33 +593,34 @@ class BruteForceAlgorithm(object):
         :return: core position, chi2 and shower scale.
 
         """
+        xstations = array(x)
+        ystations = array(y)
+
         xbest = xstart
         ybest = ystart
 
-        a = ldf.EllipsLdf(zenith=theta, azimuth=phi)
+        elldf = ldf.EllipseLdf(zenith=theta, azimuth=phi)
         gridparam = 75
-        for i in range(2 * gridparam + 1):
-            xtry = xstart + (i - gridparam) * gridsize
-            for j in range(2 * gridparam + 1):
-                ytry = ystart + (j - gridparam) * gridsize
-                xstations = array(x)
-                ystations = array(y)
-                r, angle = a.calculate_core_distance_and_angle(
+        gridedge = gridparam * gridsize
+        gridpoints = linspace(-gridedge, gridedge, gridparam * 2 + 1)
+        for xtry in gridpoints + xstart:
+            for ytry in gridpoints + ystart:
+                r, angle = elldf.calculate_core_distance_and_angle(
                     xstations, ystations, xtry, ytry)
-                rho = a.calculate_ldf_value(r, angle)
+                rho = elldf.calculate_ldf_value(r, angle)
 
                 mmdivl = 0.
                 m = 0.
                 l = 0.
 
                 for ki, kj in zip(p, rho):
-                    mmdivl += 1. * ki * ki / kj
+                    mmdivl += ki ** 2 / kj
                     m += ki
                     l += kj
 
                 sizefactor = sqrt(mmdivl / l)
-                chi2 = 2. * (sizefactor * l - m)
-
+                with warnings.catch_warnings(record=True):
+                    chi2 = 2. * (sizefactor * l - m)
                 if chi2 < chi2best:
                     factorbest = sizefactor
                     xbest = xtry

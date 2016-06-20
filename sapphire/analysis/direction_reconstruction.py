@@ -16,14 +16,23 @@
 
 """
 import warnings
-import itertools
+from itertools import izip_longest, combinations
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, where, pi, inf, array)
+                   sqrt, where, pi, inf, array, cross, dot, sum, zeros)
 from scipy.optimize import minimize
+from scipy.sparse.csgraph import shortest_path
 
-from .event_utils import station_arrival_time, detector_arrival_time
-from ..utils import pbar, norm_angle
+from .event_utils import (station_arrival_time, detector_arrival_time,
+                          relative_detector_arrival_times)
+from ..simulations.showerfront import CorsikaStationFront
+from ..utils import (pbar, norm_angle, c, make_relative, vector_length,
+                     floor_in_base, memoize)
+from ..api import Station
+
+
+NO_OFFSET = [0., 0., 0., 0.]
+NO_STATION_OFFSET = (0., 100.)
 
 
 class EventDirectionReconstruction(object):
@@ -43,11 +52,9 @@ class EventDirectionReconstruction(object):
         self.direct = DirectAlgorithmCartesian3D
         self.fit = RegressionAlgorithm3D
         self.station = station
-        detectors = [d.get_coordinates() for d in self.station.detectors]
-        self.x, self.y, self.z = zip(*detectors)
 
-    def reconstruct_event(self, event, detector_ids=None,
-                          offsets=[0., 0., 0., 0.]):
+    def reconstruct_event(self, event, detector_ids=None, offsets=NO_OFFSET,
+                          initial={}):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -56,43 +63,58 @@ class EventDirectionReconstruction(object):
         :param detector_ids: list of the detectors to use for
             reconstruction. The detector ids are 0-based, unlike the
             column names in the esd data.
-        :param offsets: time offsets for each detector.
+        :param offsets: time offsets for each detector or a
+            :class:`~sapphire.api.Station` object.
+        :param initial: dictionary with already fitted shower parameters.
         :return: theta, phi, and detector ids.
 
         """
         t, x, y, z, ids = ([], [], [], [], [])
         if detector_ids is None:
             detector_ids = range(4)
+        self.station.cluster.set_timestamp(event['timestamp'])
+        if isinstance(offsets, Station):
+            offsets = offsets.detector_timing_offset(event['timestamp'])
         for id in detector_ids:
             t_detector = detector_arrival_time(event, id, offsets)
             if not isnan(t_detector):
+                dx, dy, dz = self.station.detectors[id].get_coordinates()
                 t.append(t_detector)
-                x.append(self.x[id])
-                y.append(self.y[id])
-                z.append(self.z[id])
+                x.append(dx)
+                y.append(dy)
+                z.append(dz)
                 ids.append(id)
         if len(t) == 3:
-            theta, phi = self.direct.reconstruct_common(t, x, y, z)
+            theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
         elif len(t) > 3:
-            theta, phi = self.fit.reconstruct_common(t, x, y, z)
+            theta, phi = self.fit.reconstruct_common(t, x, y, z, initial)
         else:
             theta, phi = (nan, nan)
         return theta, phi, ids
 
-    def reconstruct_events(self, events, detector_ids=None,
-                           offsets=[0., 0., 0., 0.], progress=True):
+    def reconstruct_events(self, events, detector_ids=None, offsets=NO_OFFSET,
+                           progress=True, initials=[]):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors to use for the reconstructions.
-        :param offsets: time offsets for each detector.
+        :param offsets: time offsets for each detector or a
+            :class:`~sapphire.api.Station` object.
+        :param progress: if True shows a progress bar.
+        :param initials: list of dictionaries with already reconstructed shower
+                        parameters.
         :return: list of theta, phi, and detector ids.
 
         """
-        angles = [self.reconstruct_event(event, detector_ids, offsets)
-                  for event in pbar(events, show=progress)]
-        theta, phi, ids = zip(*angles)
+        events = pbar(events, show=progress)
+        events_init = izip_longest(events, initials, fillvalue={})
+        angles = [self.reconstruct_event(event, detector_ids, offsets, initial)
+                  for event, initial in events_init]
+        if len(angles):
+            theta, phi, ids = zip(*angles)
+        else:
+            theta, phi, ids = ((), (), ())
         return theta, phi, ids
 
 
@@ -103,7 +125,7 @@ class CoincidenceDirectionReconstruction(object):
     This class is aware of 'coincidences' and 'clusters'.  Initialize
     this class with a 'cluster' and you can reconstruct a coincidence
     using :meth:`reconstruct_coincidence`. To use other algorithms
-    overwrite the ``direct`` and ``fit`` attributes.
+    overwrite the ``direct``,``fit``, and ``curved`` attributes.
 
     :param cluster: :class:`~sapphire.clusters.BaseCluster` object.
 
@@ -112,62 +134,65 @@ class CoincidenceDirectionReconstruction(object):
     def __init__(self, cluster):
         self.direct = DirectAlgorithmCartesian3D
         self.fit = RegressionAlgorithm3D
+        self.curved = CurvedRegressionAlgorithm3D()
         self.cluster = cluster
 
-        for station in self.cluster.stations:
-            station.center_of_mass_coordinates = \
-                station.calc_center_of_mass_coordinates()
-
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
-                                offsets={}):
+                                offsets={}, initial={}):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of three
                                    or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param offsets: dictionary with detector offsets for each station.
-                        These detector offsets should be relative to one
-                        detector from a specific station.
+        :param offsets: a dictionary of either lists of detector timing
+                        offsets for each station or api.Station objects for
+                        each station.
+        :param initial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
         """
-        no_offset = [0., 0., 0., 0.]
-
         if len(coincidence_events) < 3:
             return nan, nan, []
 
         # Subtract base timestamp to prevent loss of precision
-        ts0 = int(coincidence_events[0][1]['timestamp']) * int(1e9)
+        ts0 = int(coincidence_events[0][1]['timestamp'])
+        ets0 = ts0 * int(1e9)
+        self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
+
+        offsets = self.get_station_offsets(coincidence_events, station_numbers,
+                                           offsets, ts0)
 
         for station_number, event in coincidence_events:
             if station_numbers is not None:
                 if station_number not in station_numbers:
                     continue
-            t_off = offsets.get(station_number, no_offset)
+            t_off = offsets.get(station_number, NO_OFFSET)
             station = self.cluster.get_station(station_number)
-            t_first = station_arrival_time(event, ts0, offsets=t_off,
+            t_first = station_arrival_time(event, ets0, offsets=t_off,
                                            station=station)
             if not isnan(t_first):
-                sx, sy, sz = station.center_of_mass_coordinates
+                sx, sy, sz = station.calc_center_of_mass_coordinates()
                 t.append(t_first)
                 x.append(sx)
                 y.append(sy)
                 z.append(sz)
                 nums.append(station_number)
 
-        if len(t) == 3:
-            theta, phi = self.direct.reconstruct_common(t, x, y, z)
+        if len(t) >= 3 and 'core_x' in initial and 'core_y' in initial:
+            theta, phi = self.curved.reconstruct_common(t, x, y, z, initial)
+        elif len(t) == 3:
+            theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
         elif len(t) > 3:
-            theta, phi = self.fit.reconstruct_common(t, x, y, z)
+            theta, phi = self.fit.reconstruct_common(t, x, y, z, initial)
         else:
             theta, phi = (nan, nan)
 
         return theta, phi, nums
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 offsets={}, progress=True):
+                                 offsets={}, progress=True, initials=[]):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidence events, each consisting
@@ -177,13 +202,188 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
+        :param progress: if True shows a progress bar.
+        :param initials: list of dictionaries with already reconstructed shower
+                        parameters.
         :return: list of theta, phi, and station numbers.
 
         """
+        coincidences = pbar(coincidences, show=progress)
+        coin_init = izip_longest(coincidences, initials, fillvalue={})
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
-                                               offsets)
-                  for coincidence in pbar(coincidences, show=progress)]
-        theta, phi, nums = zip(*angles)
+                                               offsets, initial)
+                  for coincidence, initial in coin_init]
+        if len(angles):
+            theta, phi, nums = zip(*angles)
+        else:
+            theta, phi, nums = ((), (), ())
+        return theta, phi, nums
+
+    def get_station_offsets(self, coincidence_events, station_numbers,
+                            offsets, ts0):
+        if offsets and isinstance(next(offsets.itervalues()), Station):
+            if station_numbers is None:
+                # stations in the coincidence
+                stations = list({sn for sn, _ in coincidence_events})
+            else:
+                stations = station_numbers
+            midnight_ts = floor_in_base(ts0, 86400)
+            offsets = self.determine_best_offsets(stations, midnight_ts,
+                                                  offsets)
+        return offsets
+
+    @memoize
+    def determine_best_offsets(self, station_numbers, midnight_ts, offsets):
+        """Determine best combined station and detector offsets
+
+        Check which station is best used as reference. Allow offsets via
+        other stations, intermediate stations are used if it reduces the
+        offset error.
+
+        :param station_numbers: list of stations in the coincidence or also
+                                other stations can are allow to be the
+                                reference station.
+        :param midnight_ts: timestamp of midnight before the coincidence.
+        :param offsets: a dictionary of api.Station objects for each station.
+        :return: combined detector and station offsets for given station,
+                 relative to the reference station.
+
+        """
+        offset_stations = station_numbers + [sn for sn in offsets.keys()
+                                             if sn not in station_numbers]
+
+        offset_matrix = zeros((len(offset_stations), len(offset_stations)))
+        error_matrix = zeros((len(offset_stations), len(offset_stations)))
+
+        for i, sn in enumerate(offset_stations):
+            for j, ref_sn in enumerate(offset_stations):
+                try:
+                    o, e = offsets[sn].station_timing_offset(ref_sn,
+                                                             midnight_ts)
+                except:
+                    o, e = NO_STATION_OFFSET
+                else:
+                    if isnan(o) and isnan(e):
+                        o, e = NO_STATION_OFFSET
+                offset_matrix[i, j] = -o
+                offset_matrix[j, i] = o
+                error_matrix[i, j] = e ** 2
+                error_matrix[j, i] = e ** 2
+
+        ref_sn, predecessors = self.determine_best_reference(error_matrix,
+                                                             station_numbers)
+
+        best_offsets = {}
+        for sn in station_numbers:
+            best_offset = self._reconstruct_best_offset(
+                predecessors, sn, ref_sn, station_numbers, offset_matrix)
+            best_offsets[sn] = self._calculate_offsets(offsets[sn],
+                                                       midnight_ts,
+                                                       best_offset)
+        return best_offsets
+
+    def determine_best_reference(self, error_matrix, station_numbers):
+        paths, predecessors = shortest_path(error_matrix, method='FW',
+                                            directed=False,
+                                            return_predecessors=True)
+        n = len(station_numbers)
+        # Only consider station in coincidence for reference
+        total_errors = paths[:n, :n].sum(axis=1)
+        best_reference = station_numbers[total_errors.argmin()]
+
+        return best_reference, predecessors
+
+    def _reconstruct_best_offset(self, predecessors, sn, ref_sn,
+                                 station_numbers, offset_matrix):
+        offset = 0.
+        if sn != ref_sn:
+            i = station_numbers.index(sn)
+            j = station_numbers.index(ref_sn)
+            while j != i:
+                prev_j = j
+                j = predecessors[i, j]
+                offset += offset_matrix[prev_j, j]
+        return offset
+
+    def _calculate_offsets(self, station, ts0, offset):
+        """Calculate combined station and detector offsets
+
+        :param station: api.Station object.
+        :param ts0: gps timestamp for which the offsets are valid.
+        :param offset: station offset to a reference station.
+        :return: combined detector and station offsets for given station,
+                 relative to the reference station.
+
+        """
+        detector_offsets = station.detector_timing_offset(ts0)
+        return [offset + d_off for d_off in detector_offsets]
+
+
+class CoincidenceDirectionReconstructionDetectors(
+        CoincidenceDirectionReconstruction):
+
+    """Reconstruct direction for coincidences using each detector
+
+    Instead of only the first arrival time per station this class
+    uses the arrival time in each detector for the reconstruction.
+
+    """
+
+    def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
+                                offsets={}, initial={}):
+        """Reconstruct a single coincidence
+
+        :param coincidence_events: a coincidence list consisting of one
+                                   or more (station_number, event) tuples.
+        :param station_numbers: list of station numbers, to only use
+                                events from those stations.
+        :param offsets: dictionary with detector offsets for each station.
+                        These detector offsets should be relative to one
+                        detector from a specific station.
+        :param initial: dictionary with already fitted shower parameters.
+        :return: list of theta, phi, and station numbers.
+
+        """
+        if len(coincidence_events) < 1:
+            return nan, nan, []
+
+        # Subtract base timestamp to prevent loss of precision
+        ts0 = int(coincidence_events[0][1]['timestamp'])
+        ets0 = ts0 * int(1e9)
+        self.cluster.set_timestamp(ts0)
+        t, x, y, z, nums = ([], [], [], [], [])
+
+        offsets = self.get_station_offsets(coincidence_events, station_numbers,
+                                           offsets, ts0)
+
+        for station_number, event in coincidence_events:
+            if station_numbers is not None:
+                if station_number not in station_numbers:
+                    continue
+            t_off = offsets.get(station_number, NO_OFFSET)
+            station = self.cluster.get_station(station_number)
+            t_detectors = relative_detector_arrival_times(event, ets0,
+                                                          offsets=t_off,
+                                                          station=station)
+            for t_detector, detector in zip(t_detectors, station.detectors):
+                if not isnan(t_detector):
+                    dx, dy, dz = detector.get_coordinates()
+                    t.append(t_detector)
+                    x.append(dx)
+                    y.append(dy)
+                    z.append(dz)
+            if not all(isnan(t_detectors)):
+                nums.append(station_number)
+
+        if len(t) >= 3 and 'core_x' in initial and 'core_y' in initial:
+            theta, phi = self.curved.reconstruct_common(t, x, y, z, initial)
+        elif len(t) == 3:
+            theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
+        elif len(t) > 3:
+            theta, phi = self.fit.reconstruct_common(t, x, y, z, initial)
+        else:
+            theta, phi = (nan, nan)
+
         return theta, phi, nums
 
 
@@ -197,8 +397,6 @@ class DirectAlgorithm(object):
     This algorithm assumes each detector is at the same altitude.
 
     Note! The detectors are 0-based.
-
-    Speed of light is in [m / ns]
 
     """
 
@@ -219,16 +417,17 @@ class DirectAlgorithm(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
 
-        r1 = sqrt((x[1] - x[0]) ** 2 + (y[1] - y[0]) ** 2)
-        r2 = sqrt((x[2] - x[0]) ** 2 + (y[2] - y[0]) ** 2)
+        r1 = vector_length(dx[1], dy[1])
+        r2 = vector_length(dx[2], dy[2])
 
-        phi1 = arctan2((y[1] - y[0]), (x[1] - x[0]))
-        phi2 = arctan2((y[2] - y[0]), (x[2] - x[0]))
+        phi1 = arctan2(dy[1], dx[1])
+        phi2 = arctan2(dy[2], dx[2])
 
-        return cls.reconstruct(dt1, dt2, r1, r2, phi1, phi2)
+        return cls.reconstruct(dt[1], dt[2], r1, r2, phi1, phi2)
 
     @classmethod
     def reconstruct(cls, dt1, dt2, r1, r2, phi1, phi2):
@@ -245,8 +444,6 @@ class DirectAlgorithm(object):
         if dt1 == 0 and dt2 == 0:
             # No time difference means shower came from zenith.
             return 0, 0
-
-        c = .3
 
         phi = arctan2(-(r1 * dt2 * cos(phi1) - r2 * dt1 * cos(phi2)),
                       (r1 * dt2 * sin(phi1) - r2 * dt1 * sin(phi2)))
@@ -280,8 +477,6 @@ class DirectAlgorithm(object):
     def rel_theta1_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.23"""
 
-        c = .3
-
         sintheta = sin(theta)
         sinphiphi1 = sin(phi - phi1)
 
@@ -302,8 +497,6 @@ class DirectAlgorithm(object):
     def rel_theta2_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.23"""
 
-        c = .3
-
         sintheta = sin(theta)
         sinphiphi2 = sin(phi - phi2)
 
@@ -323,8 +516,6 @@ class DirectAlgorithm(object):
     @staticmethod
     def rel_phi_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.22"""
-
-        c = .3
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
@@ -359,8 +550,6 @@ class DirectAlgorithm(object):
     def dphi_dt1(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.20"""
 
-        c = .3
-
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
         sinphi2 = sin(phi2)
@@ -377,8 +566,6 @@ class DirectAlgorithm(object):
     def dphi_dt2(theta, phi, phi1, phi2, r1=10, r2=10):
         """Fokkema2012, eq 4.21"""
 
-        c = .3
-
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
         cosphi1 = cos(phi1)
@@ -392,7 +579,7 @@ class DirectAlgorithm(object):
         return num / den
 
 
-class DirectAlgorithmCartesian2D(object):
+class DirectAlgorithmCartesian(object):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -422,16 +609,11 @@ class DirectAlgorithmCartesian2D(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
 
-        dx1 = x[1] - x[0]
-        dx2 = x[2] - x[0]
-
-        dy1 = y[1] - y[0]
-        dy2 = y[2] - y[0]
-
-        return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2)
+        return cls.reconstruct(dt[1], dt[2], dx[1], dx[2], dy[1], dy[2])
 
     @staticmethod
     def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2):
@@ -445,8 +627,6 @@ class DirectAlgorithmCartesian2D(object):
                  phi as given by Montanus2014 eq 26.
 
         """
-        c = .3
-
         ux = c * (dt2 * dx1 - dt1 * dx2)
         uy = c * (dt2 * dy1 - dt1 * dy2)
 
@@ -498,19 +678,13 @@ class DirectAlgorithmCartesian3D(object):
         if len(t) > 3 or len(x) > 3 or len(y) > 3 or len(z) > 3:
             warning_only_three()
 
-        dt1 = t[1] - t[0]
-        dt2 = t[2] - t[0]
+        dt = make_relative(t)
+        dx = make_relative(x)
+        dy = make_relative(y)
+        dz = make_relative(z)
 
-        dx1 = x[1] - x[0]
-        dx2 = x[2] - x[0]
-
-        dy1 = y[1] - y[0]
-        dy2 = y[2] - y[0]
-
-        dz1 = z[1] - z[0]
-        dz2 = z[2] - z[0]
-
-        return cls.reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1, dz2)
+        return cls.reconstruct(dt[1], dt[2], dx[1], dx[2], dy[1], dy[2], dz[1],
+                               dz[2])
 
     @staticmethod
     def reconstruct(dt1, dt2, dx1, dx2, dy1, dy2, dz1=0, dz2=0):
@@ -524,45 +698,29 @@ class DirectAlgorithmCartesian3D(object):
                  phi as given by Montanus2014 eq 22.
 
         """
-        c = .3
+        d1 = array([dx1, dy1, dz1])
+        d2 = array([dx2, dy2, dz2])
+        u = c * (dt2 * d1 - dt1 * d2)
+        v = cross(d1, d2)
+        uxv = cross(u, v)
 
-        ux = c * (dt2 * dx1 - dt1 * dx2)
-        uy = c * (dt2 * dy1 - dt1 * dy2)
-        uz = c * (dt2 * dz1 - dt1 * dz2)
-
-        vx = dy1 * dz2 - dz1 * dy2
-        vy = dz1 * dx2 - dx1 * dz2
-        vz = dx1 * dy2 - dy1 * dx2
-
-        ucrossvx = uy * vz - uz * vy
-        ucrossvy = uz * vx - ux * vz
-        ucrossvz = ux * vy - uy * vx
-
-        usquared = ux * ux + uy * uy + uz * uz
-        vsquared = vx * vx + vy * vy + vz * vz
+        usquared = dot(u, u)
+        vsquared = dot(v, v)
         underroot = vsquared - usquared
 
         theta = nan
         phi = nan
 
         if underroot > 0 and not vsquared == 0:
-            termx = vx * sqrt(underroot)
-            termy = vy * sqrt(underroot)
-            termz = vz * sqrt(underroot)
+            term = v * sqrt(underroot)
+            nplus = (uxv + term) / vsquared
+            nmin = (uxv - term) / vsquared
 
-            nxplus = (ucrossvx + termx) / vsquared
-            nyplus = (ucrossvy + termy) / vsquared
-            nzplus = (ucrossvz + termz) / vsquared
+            phiplus = arctan2(nplus[1], nplus[0])
+            thetaplus = arccos(nplus[2])
 
-            nxmin = (ucrossvx - termx) / vsquared
-            nymin = (ucrossvy - termy) / vsquared
-            nzmin = (ucrossvz - termz) / vsquared
-
-            phiplus = arctan2(nyplus, nxplus)
-            thetaplus = arccos(nzplus)
-
-            phimin = arctan2(nymin, nxmin)
-            thetamin = arccos(nzmin)
+            phimin = arctan2(nmin[1], nmin[0])
+            thetamin = arccos(nmin[2])
 
             if isnan(thetaplus):
                 thetaplus = pi
@@ -602,7 +760,7 @@ class SphereAlgorithm(object):
         :param x,y,z: arrays with the ECEF locations of the
                       three detectors / stations in meters.
         :param timestamp: The UTC timestamp of the coincidence in s.
-        :return: the declination and right ascension of the source. The
+        :return: declination and right ascension of the source. The
                  apparent location of the cosmic ray source in the
                  Equatorial Coordinate System.
 
@@ -623,16 +781,13 @@ class SphereAlgorithm(object):
         based on location calculations used for LORAN, DECCA, RACAL, GPS
         as described by N.G. Schultheiss 2012
 
-        :param x,y,z: Arrays with the orthogonal coordinates of the three
-                      detectors / stations in m.
-        :param t: The arrival time of the shower in the detectors / stations
-                  in ns.
-        :param t_int: The interaction time in ns.
+        :param x,y,z: arrays with the orthogonal coordinates of the three
+                      detection points in m.
+        :param t: arrival times of the detectors in ns.
+        :param t_int: interaction time in ns.
         :return: parameters x_int, y_int, z_int
 
         """
-        c = .299792458
-
         x01 = x[0] - x[1]
         x02 = x[0] - x[2]
         y01 = y[0] - y[1]
@@ -673,8 +828,8 @@ class SphereAlgorithm(object):
         y_int = y[0] + y
         z_int = z[0] + z
 
-        int_length = x_int[0] ** 2 + y_int[0] ** 2 + z_int[0] ** 2
-        det_length = x[0] ** 2 + y[0] ** 2 + z[0] ** 2
+        int_length = vector_length(x_int[0], y_int[0], z_int[0])
+        det_length = vector_length(x[0], y[0], z[0])
 
         if det_length > int_length:
             # Select interaction above the earths surface.
@@ -693,7 +848,7 @@ class SphereAlgorithm(object):
         return x_int, y_int, z_int, t_int
 
 
-class FitAlgorithm(object):
+class FitAlgorithm3D(object):
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
@@ -727,12 +882,12 @@ class FitAlgorithm(object):
         if not logic_checks(t, x, y, z):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
-        dz = cls.make_relative(z)
+        dt = make_relative(t)[1:]
+        dx = make_relative(x)[1:]
+        dy = make_relative(y)[1:]
+        dz = make_relative(z)[1:]
 
-        cons = ({'type': 'eq', 'fun': cls.constraint_normal_vector})
+        cons = {'type': 'eq', 'fun': cls.constraint_normal_vector}
 
         fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
@@ -777,12 +932,6 @@ class FitAlgorithm(object):
         return theta, phi
 
     @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
-
-        return [xi - x[0] for xi in x[1:]]
-
-    @staticmethod
     def constraint_normal_vector(n):
         """This should be equal to zero"""
 
@@ -798,7 +947,6 @@ class FitAlgorithm(object):
         :return: least sum of squares as in Montanus2014, eq 36
 
         """
-        c = .3
         nx, ny, nz, m = n_xyz
 
         slq = sum([(nx * xi + ny * yi + zi * nz + c * ti + m) ** 2
@@ -846,63 +994,50 @@ class RegressionAlgorithm(object):
         if not logic_checks(t, x, y, [0] * len(t)):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
-
-        c = .3
-
         xx = 0.
         xy = 0.
         tx = 0.
         yy = 0.
         ty = 0.
-        x = 0.
-        y = 0.
-        t = 0.
-        k = 1
+        xs = 0.
+        ys = 0.
+        ts = 0.
+        k = 0
 
-        for i, j, l in zip(dx, dy, dt):
-            xx += i * i
-            xy += i * j
-            tx += i * l
-            yy += j * j
-            ty += j * l
-            x += i
-            y += j
-            t += l
+        for ti, xi, yi in zip(t, x, y):
+            xx += xi * xi
+            xy += xi * yi
+            tx += xi * ti
+            yy += yi * yi
+            ty += yi * ti
+            xs += xi
+            ys += yi
+            ts += ti
             k += 1
 
-        denom = (k * xy * xy + x * x * yy + y * y * xx - k * xx * yy -
-                 2 * x * y * xy)
+        denom = (k * xy * xy + xs * xs * yy + ys * ys * xx - k * xx * yy -
+                 2 * xs * ys * xy)
         if denom == 0:
             denom = nan
 
-        numer = (tx * (k * yy - y * y) + xy * (t * y - k * ty) + x * y * ty -
-                 t * x * yy)
+        numer = (tx * (k * yy - ys * ys) + xy * (ts * ys - k * ty) +
+                 xs * ys * ty - ts * xs * yy)
         nx = c * numer / denom
 
-        numer = (ty * (k * xx - x * x) + xy * (t * x - k * tx) + x * y * tx -
-                 t * y * xx)
+        numer = (ty * (k * xx - xs * xs) + xy * (ts * xs - k * tx) +
+                 xs * ys * tx - ts * ys * xx)
         ny = c * numer / denom
 
         horiz = nx * nx + ny * ny
         if horiz > 1.:
             theta = nan
             phi = nan
-
         else:
             nz = sqrt(1 - nx * nx - ny * ny)
             phi = arctan2(ny, nx)
             theta = arccos(nz)
 
         return theta, phi
-
-    @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
-
-        return [xi - x[0] for xi in x[1:]]
 
 
 class RegressionAlgorithm3D(object):
@@ -914,6 +1049,8 @@ class RegressionAlgorithm3D(object):
     three or more detectorstations at arbitrary altitudes"
 
     """
+
+    MAX_ITERATIONS = 1000
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
@@ -947,32 +1084,191 @@ class RegressionAlgorithm3D(object):
         if not logic_checks(t, x, y, z):
             return nan, nan
 
-        dt = cls.make_relative(t)
-        dx = cls.make_relative(x)
-        dy = cls.make_relative(y)
-        dz = cls.make_relative(z)
-
         regress2d = RegressionAlgorithm()
-        theta, phi = regress2d.reconstruct_common(dt, dx, dy)
+        theta, phi = regress2d.reconstruct_common(t, x, y)
 
-        c = .3
         dtheta = 1.
-        while (dtheta > .001):
-            tantheta = tan(theta)
-            dxnew = [xi - zi * tantheta * cos(phi) for xi, zi in zip(dx, dz)]
-            dynew = [yi - zi * tantheta * sin(phi) for yi, zi in zip(dy, dz)]
-            dtnew = [ti + zi / (c * cos(theta)) for ti, zi in zip(dt, dz)]
-            thetaold = theta
-            theta, phi = regress2d.reconstruct_common(dtnew, dxnew, dynew)
-            dtheta = abs(theta - thetaold)
+        iteration = 0
+        while dtheta > 0.001:
+            iteration += 1
+            if iteration > cls.MAX_ITERATIONS:
+                return nan, nan
+            nxnz = tan(theta) * cos(phi)
+            nynz = tan(theta) * sin(phi)
+            nz = cos(theta)
+            dxproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
+            dyproj = [yi - zi * nynz for yi, zi in zip(y, z)]
+            dtproj = [ti + zi / (c * nz) for ti, zi in zip(t, z)]
+            theta_prev = theta
+            theta, phi = regress2d.reconstruct_common(dtproj, dxproj, dyproj)
+            dtheta = abs(theta - theta_prev)
 
         return theta, phi
 
-    @staticmethod
-    def make_relative(x):
-        """Make first element the origin and make rest relative to it."""
 
-        return [xi - x[0] for xi in x]
+class CurvedRegressionAlgorithm(object):
+
+    """Reconstruct angles taking the shower front curvature into account.
+
+    Take the shower front curvature into account. Assumes knowledge about the
+    shower core position.
+
+    """
+
+    MAX_ITERATIONS = 1000
+
+    def __init__(self):
+        self.front = CorsikaStationFront()
+
+    def reconstruct_common(self, t, x, y, z=None, initial={}):
+        """Reconstruct angles from 3 or more detections
+
+        This function converts the arguments to be suitable for the
+        algorithm.
+
+        :param t: arrival times of the detectors in ns.
+        :param x,y,z: positions of the detectors in m.  The height
+                      is ignored.
+        :param initial: dictionary containing values from previous
+                        reconstructions, including core position.
+
+        """
+        core_x = initial.get('core_x', nan)
+        core_y = initial.get('core_y', nan)
+        if isnan(core_y) or isnan(core_y):
+            return nan, nan
+
+        return self.reconstruct(t, x, y, core_x, core_y)
+
+    def reconstruct(self, t, x, y, core_x, core_y):
+        """Reconstruct angles for many detections
+
+        :param t: arrival times in the detectors in ns.
+        :param x,y: positions of the detectors in m.
+        :param core_x,core_y: core position at z = 0 in m.
+        :return: theta as derived by Montanus2014,
+                 phi as derived by Montanus2014.
+
+        """
+        if not logic_checks(t, x, y, [0] * len(t)):
+            return nan, nan
+
+        regress2d = RegressionAlgorithm()
+        theta, phi = regress2d.reconstruct_common(t, x, y)
+
+        dtheta = 1.
+        iteration = 0
+        while dtheta > 0.001:
+            iteration += 1
+            if iteration > self.MAX_ITERATIONS:
+                return nan, nan
+            tproj = [ti - self.time_delay(xi, yi, core_x, core_y, theta, phi)
+                     for ti, xi, yi in zip(t, x, y)]
+            theta_prev = theta
+            theta, phi = regress2d.reconstruct_common(tproj, x, y)
+            dtheta = abs(theta - theta_prev)
+
+        return theta, phi
+
+    def time_delay(self, x, y, core_x, core_y, theta, phi):
+        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
+        return self.front.delay_at_r(r)
+
+    @classmethod
+    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
+        dx = core_x - x
+        dy = core_y - y
+        nx = sin(theta) * cos(phi)
+        ny = sin(theta) * sin(phi)
+        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
+                    2 * dx * dy * nx * ny)
+
+
+class CurvedRegressionAlgorithm3D(object):
+
+    """Reconstruct angles accounting for front curvature and detector altitudes
+
+    Take the shower front curvature and different detector heights into
+    account. Assumes knowledge about the shower core position.
+
+    """
+
+    MAX_ITERATIONS = 1000
+
+    def __init__(self):
+        self.front = CorsikaStationFront()
+
+    def reconstruct_common(self, t, x, y, z=None, initial={}):
+        """Reconstruct angles from 3 or more detections
+
+        This function converts the arguments to be suitable for the
+        algorithm.
+
+        :param t: arrival times of the detectors in ns.
+        :param x,y,z: positions of the detectors in m. The height
+                      for all detectors will be set to 0 if not given.
+        :param initial: dictionary containing values from previous
+                        reconstructions, including core position.
+
+        """
+        core_x = initial.get('core_x', nan)
+        core_y = initial.get('core_y', nan)
+        if isnan(core_y) or isnan(core_y):
+            return nan, nan
+
+        if z is None:
+            z = [0] * len(x)
+
+        return self.reconstruct(t, x, y, z, core_x, core_y)
+
+    def reconstruct(self, t, x, y, z, core_x, core_y):
+        """Reconstruct angles for many detections
+
+        :param t: arrival times in the detectors in ns.
+        :param x,y,z: positions of the detectors in m.
+        :param core_x,core_y: core position at z = 0 in m.
+        :return: theta as derived by Montanus2014,
+                 phi as derived by Montanus2014.
+
+        """
+        if not logic_checks(t, x, y, z):
+            return nan, nan
+
+        regress2d = RegressionAlgorithm()
+        theta, phi = regress2d.reconstruct_common(t, x, y)
+
+        dtheta = 1.
+        iteration = 0
+        while dtheta > 0.001:
+            iteration += 1
+            if iteration > self.MAX_ITERATIONS:
+                return nan, nan
+            nxnz = tan(theta) * cos(phi)
+            nynz = tan(theta) * sin(phi)
+            nz = cos(theta)
+            xproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
+            yproj = [yi - zi * nynz for yi, zi in zip(y, z)]
+            tproj = [ti + zi / (c * nz) -
+                     self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
+                     for ti, xpi, ypi, zi in zip(t, xproj, yproj, z)]
+            theta_prev = theta
+            theta, phi = regress2d.reconstruct_common(tproj, xproj, yproj)
+            dtheta = abs(theta - theta_prev)
+
+        return theta, phi
+
+    def time_delay(self, x, y, core_x, core_y, theta, phi):
+        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
+        return self.front.delay_at_r(r)
+
+    @classmethod
+    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
+        dx = core_x - x
+        dy = core_y - y
+        nx = sin(theta) * cos(phi)
+        ny = sin(theta) * sin(phi)
+        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
+                    2 * dx * dy * nx * ny)
 
 
 def logic_checks(t, x, y, z):
@@ -995,25 +1291,27 @@ def logic_checks(t, x, y, z):
 
     """
     # Check for identical positions
-    if not len(zip(x, y, z)) == len(set(zip(x, y, z))):
-        return False
+    if len(t) == 3:
+        xyz = zip(x, y, z)
+        if not len(xyz) == len(set(xyz)):
+            return False
 
     txyz = zip(t, x, y, z)
 
     # Check if the time difference it larger than expected by c
-    c = .3
-    for txyz0, txyz1 in itertools.combinations(txyz, 2):
-        dt = abs(txyz0[0] - txyz1[0])
-        dx = txyz0[1] - txyz1[1]
-        dy = txyz0[2] - txyz1[2]
-        dz = txyz0[3] - txyz1[3]
-        dt_max = sqrt(dx ** 2 + dy ** 2 + dz ** 2) / c
-        if dt_max < dt:
-            return False
+    if len(t) == 3:
+        for txyz0, txyz1 in combinations(txyz, 2):
+            dt = abs(txyz0[0] - txyz1[0])
+            dx = txyz0[1] - txyz1[1]
+            dy = txyz0[2] - txyz1[2]
+            dz = txyz0[3] - txyz1[3]
+            dt_max = vector_length(dx, dy, dz) / c
+            if dt_max < dt:
+                return False
 
     # Check if all the positions are (almost) on a single line
-    memolssin = 0
-    for txyz0, txyz1, txyz2 in itertools.combinations(txyz, 3):
+    largest_of_smallest_angles = 0
+    for txyz0, txyz1, txyz2 in combinations(txyz, 3):
         dx1 = txyz0[1] - txyz1[1]
         dy1 = txyz0[2] - txyz1[2]
         dz1 = txyz0[3] - txyz1[3]
@@ -1023,9 +1321,9 @@ def logic_checks(t, x, y, z):
         dx3 = dx2 - dx1
         dy3 = dy2 - dy1
         dz3 = dz2 - dz1
-        lenvec01 = sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1)
-        lenvec02 = sqrt(dx2 * dx2 + dy2 * dy2 + dz2 * dz2)
-        lenvec12 = sqrt(dx3 * dx3 + dy3 * dy3 + dz3 * dz3)
+        lenvec01 = vector_length(dx1, dy1, dz1)
+        lenvec02 = vector_length(dx2, dy2, dz2)
+        lenvec12 = vector_length(dx3, dy3, dz3)
 
         # area triangle is |cross product|
         area = abs(dx1 * dy2 - dx2 * dy1 + dy1 * dz2 - dy2 * dz1 +
@@ -1037,19 +1335,19 @@ def logic_checks(t, x, y, z):
         sin3 = area / lenvec02 / lenvec12
 
         # smallest sine
-        ssin = min(sin1, sin2, sin3)
+        smallest_angle = min(sin1, sin2, sin3)
 
         # remember largest of smallest sines
-        memolssin = max(memolssin, ssin)
+        largest_of_smallest_angles = max(largest_of_smallest_angles,
+                                         smallest_angle)
 
     # discard reconstruction if the largest of the smallest angles of each
-    # triangle is smaller than 0.1 rad  (5.73 degrees)
-
-    if memolssin < 0.1:
+    # triangle is smaller than 0.1 rad (5.73 degrees)
+    if largest_of_smallest_angles < 0.1:
         return False
 
     return True
 
 
 def warning_only_three():
-    warnings.warn('Only the first three detections will be used', UserWarning)
+    warnings.warn('Only the first three detections will be used')

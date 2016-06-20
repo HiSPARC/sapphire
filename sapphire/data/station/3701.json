@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 48.66, 
+    "cluster": "Leiden", 
+    "country": "Netherlands", 
+    "latitude": 52.0732804, 
+    "longitude": 4.2570913, 
+    "name": "Segbroek College", 
+    "number": 3701, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Den Haag"
+}

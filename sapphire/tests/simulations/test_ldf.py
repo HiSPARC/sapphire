@@ -54,5 +54,31 @@ class BaseLdfTest(unittest.TestCase):
         self.assertEqual(self.ldf.calculate_core_distance(10., 3., 10., 3., 0., 0.), 0.)
 
 
+class NkgLdfTest(BaseLdfTest):
+
+    def setUp(self):
+        self.ldf = ldf.NkgLdf()
+
+    @unittest.skip('WIP')
+    def test_calculate_ldf_value(self):
+        pass
+
+    @unittest.skip('WIP')
+    def test_calculate_core_distance(self):
+        pass
+
+
+class KascadeLdfTest(NkgLdfTest):
+
+    def setUp(self):
+        self.ldf = ldf.KascadeLdf()
+
+
+class EllipseLdfTest(KascadeLdfTest):
+
+    def setUp(self):
+        self.ldf = ldf.EllipseLdf()
+
+
 if __name__ == '__main__':
     unittest.main()

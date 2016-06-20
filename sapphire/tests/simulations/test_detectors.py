@@ -39,7 +39,7 @@ class HiSPARCSimulationTest(unittest.TestCase):
 
     def test_simulate_adc_sampling(self):
         self.assertEqual(self.simulation.simulate_adc_sampling(0), 0)
-        self.assertEqual(self.simulation.simulate_adc_sampling(.1), 2.5)
+        self.assertEqual(self.simulation.simulate_adc_sampling(0.1), 2.5)
         self.assertEqual(self.simulation.simulate_adc_sampling(1.25), 2.5)
         self.assertEqual(self.simulation.simulate_adc_sampling(2.5), 2.5)
         self.assertEqual(self.simulation.simulate_adc_sampling(4), 5.)
@@ -58,10 +58,23 @@ class HiSPARCSimulationTest(unittest.TestCase):
                           3.0411502792684506])
 
     def test_simulate_detector_mips(self):
+        # Test with single angle
         self.assertAlmostEqual(self.simulation.simulate_detector_mips(1, 0.5),
                                1.1818585)
-        self.assertAlmostEqual(self.simulation.simulate_detector_mips(2, .2),
+        self.assertAlmostEqual(self.simulation.simulate_detector_mips(2, 0.2),
                                1.8313342374)
+
+        # Test with multiple angles
+        self.assertAlmostEqual(self.simulation.simulate_detector_mips(2, np.array([0.5, 1])),
+                               2.58167027)
+        self.assertAlmostEqual(self.simulation.simulate_detector_mips(1, np.array([0.5, 1])),
+                               2.21526297)
+
+        # Test limiting detector length
+        self.assertAlmostEqual(self.simulation.simulate_detector_mips(1, np.radians(90)),
+                               47.6237460)
+        self.assertAlmostEqual(self.simulation.simulate_detector_mips(2, np.array([np.radians(90), np.radians(87)])),
+                               74.6668728)
 
     def test_generate_core_position(self):
         x, y = self.simulation.generate_core_position(500)

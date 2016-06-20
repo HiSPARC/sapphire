@@ -4,25 +4,26 @@ densities and for fitting to data.
 
 Example usage::
 
-    import tables
+    >>> import tables
 
-    from sapphire.simulations.ldf import NkgLdfSimulation
-    from sapphire.clusters import ScienceParkCluster
+    >>> from sapphire import NkgLdfSimulation, ScienceParkCluster
 
-    data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
-    cluster = ScienceParkCluster()
+    >>> data = tables.open_file('/tmp/test_ldf_simulation.h5', 'w')
+    >>> cluster = ScienceParkCluster()
 
-    sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
-                           max_energy=1e21, cluster=cluster,
-                           datafile=data, N=200)
-    sim.run()
+    >>> sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
+    ...                        max_energy=1e21, cluster=cluster,
+    ...                        datafile=data, N=200)
+    >>> sim.run()
 
 """
+import warnings
+
 from scipy.special import gamma
 from numpy import pi, sin, cos, sqrt, random, arctan2, log10
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
-from ..utils import pbar
+from ..utils import pbar, vector_length, memoize
 
 
 class BaseLdfSimulation(HiSPARCSimulation):
@@ -56,13 +57,13 @@ class BaseLdfSimulation(HiSPARCSimulation):
         assumes the shower to come from the Zenith.
 
         :return: dictionary with shower parameters: core_pos
-                  (x, y-tuple).
+                 (x, y-tuple).
 
         """
         r = self.max_core_distance
         giga = int(1e9)
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             energy = self.generate_energy(self.min_energy, self.max_energy)
             size = 10 ** (log10(energy) - 15 + 4.8)
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
@@ -181,19 +182,19 @@ class KascadeLdfSimulationWithoutErrors(KascadeLdfSimulation,
     pass
 
 
-class EllipsLdfSimulation(BaseLdfSimulation):
+class EllipseLdfSimulation(BaseLdfSimulation):
 
-    """Same as BaseLdfSimulation but uses the EllipsLdF as LDF"""
+    """Same as BaseLdfSimulation but uses the EllipseLdF as LDF"""
 
     def __init__(self, *args, **kwargs):
-        super(EllipsLdfSimulation, self).__init__(*args, **kwargs)
+        super(EllipseLdfSimulation, self).__init__(*args, **kwargs)
 
-        self.ldf = EllipsLdf()
+        self.ldf = EllipseLdf()
 
     def generate_shower_parameters(self):
         """Generate shower parameters, i.e. core position
 
-        For the elliptic LDF  both the core position and the zenith angle
+        For the elliptic LDF both the core position and the zenith angle
         are relevant.
 
         :return: dictionary with shower parameters: core_pos
@@ -203,7 +204,7 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         r = self.max_core_distance
         giga = int(1e9)
 
-        for i in pbar(range(self.N)):
+        for i in pbar(range(self.N), show=self.progress):
             energy = self.generate_energy(self.min_energy, self.max_energy)
             size = 10 ** (log10(energy) - 15 + 4.8)
             shower_parameters = {'ext_timestamp': (giga + i) * giga,
@@ -286,23 +287,13 @@ class NkgLdf(BaseLdf):
         if s is not None:
             self._s = s
 
-        self._cache_c_s_value()
-
-    def _cache_c_s_value(self):
-        """Store the c_s value
-
-        The c_s value does not change if s and r0 are fixed.
-
-        """
-        self._c_s = self._c(self._s)
-
     def calculate_ldf_value(self, r, Ne=None, s=None):
         """Calculate the LDF value
 
         :param r: core distance in m.
         :param Ne: number of electrons in the shower.
         :param s: shower age parameter.
-        :return: particle density in m ** -2.
+        :return: particle density in m^-2.
 
         """
         if Ne is None:
@@ -320,27 +311,24 @@ class NkgLdf(BaseLdf):
         :param r: core distance in m.
         :param Ne: number of electrons in the shower.
         :param s: shower age parameter.
-        :return: particle density in m ** -2.
+        :return: particle density in m^-2.
 
         """
-        if s == self._s:
-            c_s = self._c_s
-        else:
-            c_s = self._c(s)
         r0 = self._r0
-
+        c_s = self._c(s, r0)
         return Ne * c_s * (r / r0) ** (s - 2) * (1 + r / r0) ** (s - 4.5)
 
-    def _c(self, s):
+    @memoize
+    def _c(self, s, r0):
         """Part of the LDF
 
         As given in Fokkema2012 eq 7.3.
 
         :param s: shower age parameter.
+        :param r0: Moliere radius.
         :return: c(s)
 
         """
-        r0 = self._r0
         return (gamma(4.5 - s) /
                 (2 * pi * r0 ** 2 * gamma(s) * gamma(4.5 - 2 * s)))
 
@@ -352,7 +340,7 @@ class KascadeLdf(NkgLdf):
     # shower parameters
     # Values from Fokkema2012 sec 7.1.
     _Ne = 10 ** 4.8
-    _s = .94  # Shape parameter
+    _s = 0.94  # Shape parameter
     _r0 = 40.
     _alpha = 1.5
     _beta = 3.6
@@ -366,44 +354,42 @@ class KascadeLdf(NkgLdf):
         :param r: core distance in m.
         :param Ne: number of electrons in the shower.
         :param s: shower shape parameter.
-        :return: particle density in m ** -2.
+        :return: particle density in m^-2.
 
         """
-        if s == self._s:
-            c_s = self._c_s
-        else:
-            c_s = self._c(s)
         r0 = self._r0
         alpha = self._alpha
         beta = self._beta
+        c_s = self._c(s, r0, alpha, beta)
 
         return Ne * c_s * (r / r0) ** (s - alpha) * (1 + r / r0) ** (s - beta)
 
-    def _c(self, s):
+    @memoize
+    def _c(self, s, r0, alpha, beta):
         """Part of the LDF
 
         As given in Fokkema2012 eq 7.5.
 
         :param s: shower shape parameter.
+        :param r0: Moliere radius.
+        :param alpha: shape.
+        :param beta: shape.
         :return: c(s)
 
         """
-        r0 = self._r0
-        beta = self._beta
-        alpha = self._alpha
         return (gamma(beta - s) /
                 (2 * pi * r0 ** 2 * gamma(s - alpha + 2) *
                  gamma(alpha + beta - 2 * s - 2)))
 
 
-class EllipsLdf(KascadeLdf):
+class EllipseLdf(KascadeLdf):
 
-    """NKG function modified for electrons + muons and azimuthal asymmetry"""
+    """NKG function modified for electrons and muons and azimuthal asymmetry"""
 
     # shower parameters
     # Values from Montanus, paper to follow.
-    _Ne = 10 ** 6.0   # Ne is number of electrons and muons !!!!
-    _s1 = -.592  # Shape parameter
+    _Ne = 10 ** 6.0   # Ne is number of electrons and muons
+    _s1 = -0.592  # Shape parameter
     _s2 = -3.157  # Shape parameter
     _r0 = 30.
     _zenith = 0.
@@ -416,30 +402,18 @@ class EllipsLdf(KascadeLdf):
             self._zenith = zenith
         if azimuth is not None:
             self._azimuth = azimuth
-        self._s1 = self._s1 + 0.229 * self._zenith
-        self._s2 = self._s2 + 0.222 * self._zenith
         if s1 is not None:
             self._s1 = s1
         if s2 is not None:
             self._s2 = s2
-        self._cache_c_s_value()
-
-    def _cache_c_s_value(self):
-        """Store the c_s value
-
-        The c_s value does not change if s1, s2 and r0 are fixed.
-
-        """
-        self._c_s = self._c(self._s1, self._s2)
 
     def calculate_ldf_value(self, r, phi, Ne=None, zenith=None, azimuth=None):
-        """Calculate the LDF value for a given distance and polar angle
-        w.r.t. the core.
+        """Calculate LDF value for given distance and polar angle
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
         :param Ne: number of electrons and muons in the shower.
-        :return: particle density in m ** -2.
+        :return: particle density in m^-2.
 
         """
         if Ne is None:
@@ -451,9 +425,9 @@ class EllipsLdf(KascadeLdf):
         return self.ldf_value(r, phi, Ne, zenith, azimuth, self._s1, self._s2)
 
     def ldf_value(self, r, phi, Ne, zenith, azimuth, s1, s2):
-        """Calculate the LDF value for a given a distance, polar angle,
-        zenith angle, azimuth angle, shower size and three shape parameters
-        (r0, s1, s2) . Method as given by Montanus, paper to follow.
+        """Calculate the LDF value for a given parameters
+
+        Method as given by Montanus, paper to follow.
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
@@ -462,51 +436,50 @@ class EllipsLdf(KascadeLdf):
         :param azimuth: azimuth angle in rad.
         :param s1: shower shape parameter.
         :param s2: shower shape parameter.
-        :return: particle density in m ** -2.
+        :return: particle density in m^-2.
 
         """
-        if s1 == self._s1 and s2 == self._s2:
-            c_s = self._c_s
-        else:
-            c_s = self._c(s1, s2)
-
+        s1 = s1 + 0.229 * zenith
+        s2 = s2 + 0.222 * zenith
         r0 = self._r0
+        c_s = self._c(s1, s2, r0)
+
         # zenith = self._zenith
         # azimuth = self._azimuth
         # relative polar angle
-        relcos = cos(phi - azimuth)
+        relpolar = cos(phi - azimuth)
+
         # elliptic iso-density contours
-        ell = sqrt(1. - sin(zenith) * sin(zenith) * relcos * relcos)
+        ell = sqrt(1. - sin(zenith) ** 2 * relpolar ** 2)
         # shift of the center of elliptic iso-density contours
-        shift = -0.058 * sin(2. * zenith) * relcos
-        # ell = 1.
-        # shift = 0.
-        k = r * shift + r * ell
+        shift = -0.058 * sin(2. * zenith) * relpolar
+
+        k = r * (shift + ell)
         term1 = 1. * k / r0
         term2 = 1. + term1
         # empirical modification
-        greis = 11.4 * cos(zenith) * cos(zenith)
-        # c(s)*normcorr = normalization
+        greis = 11.4 * cos(zenith) ** 2
+        # c(s) * normcorr = normalization
         normcorr = greis / (2. + s1 - greis * (3 + s1 + s2))
         # Greisen modification of NKG LDF
         term3 = 1. + term1 / greis
 
-        dens = (Ne * cos(zenith) * c_s * term1 ** s1 * term2 ** s2 *
-                normcorr * term3)
+        with warnings.catch_warnings(record=True):
+            density = (Ne * cos(zenith) * c_s * term1 ** s1 * term2 ** s2 *
+                       normcorr * term3)
+        return density
 
-        return dens
-
-    def _c(self, s1, s2):
+    @memoize
+    def _c(self, s1, s2, r0):
         """Normalization of the LDF
 
         As given in Montanus, paper to follow.
 
         :param s1: shower shape parameter.
         :param s2: shower shape parameter.
-        :return: c(s1,s2)
+        :return: c(s1,s2).
 
         """
-        r0 = self._r0
         return (gamma(-s2) /
                 (2 * pi * r0 ** 2 * gamma(s1 + 2) * gamma(-s1 - s2 - 3)))
 
@@ -518,11 +491,11 @@ class EllipsLdf(KascadeLdf):
 
         :param x,y: detector position in m.
         :param x0,y0: shower core position in m.
-        :return: distance and polar angle from shower core to detector in
-                 horizontal observation plane in m resp. rad.
+        :return: distance in m, and polar angle in radians from shower core
+                 to detector in horizontal observation plane.
 
         """
         dx = x - x0
         dy = y - y0
 
-        return sqrt(dx ** 2 + dy ** 2), arctan2(dy, dx)
+        return vector_length(dx, dy), arctan2(dy, dx)

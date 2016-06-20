@@ -1,4 +1,4 @@
-""" Generate and overview table of the CORSIKA simulations
+""" Generate an overview table of the CORSIKA simulations
 
     This script will look for all completed and converted CORSIKA
     simulations in the given data path. Information about each
@@ -12,6 +12,7 @@
 
 """
 import os
+import glob
 import tables
 import logging
 import shutil
@@ -85,9 +86,12 @@ def read_seeds(simulations_table, source, seeds):
     :param seeds: directory name of a simulation, format: '{seed1}_{seed2}'.
 
     """
+    path = os.path.join(source, seeds, 'corsika.h5')
+    if not os.path.exists(path):
+        logger.info('%19s: No corsika.h5 available.' % seeds)
+        return
     try:
-        with tables.open_file(os.path.join(source, seeds, 'corsika.h5'),
-                              'r') as corsika_data:
+        with tables.open_file(path, 'r') as corsika_data:
             try:
                 header = corsika_data.get_node_attr('/', 'event_header')
                 end = corsika_data.get_node_attr('/', 'event_end')
@@ -102,8 +106,7 @@ def get_simulations(source, simulations, overview, progress=False):
     """Get the information of the simulations and create a table."""
 
     simulations_table = overview.get_node('/simulations')
-    simulations = pbar(simulations, show=progress)
-    for seeds in simulations:
+    for seeds in pbar(simulations, show=progress):
         read_seeds(simulations_table, source, seeds)
     simulations_table.flush()
 
@@ -133,10 +136,18 @@ def move_tempfile_to_destination(tmp_path, destination):
     shutil.move(tmp_path, destination)
 
 
+def all_seeds(source):
+    """Get set of all seeds in the corsika data directory"""
+
+    dirs = glob.glob(os.path.join(source, '*_*'))
+    seeds = [os.path.basename(dir) for dir in dirs]
+    return set(seeds)
+
+
 def generate_corsika_overview(source, destination, progress=False):
     logger.info('Getting simulation list.')
     # Get names of all subdirectories
-    simulations = os.walk(source).next()[1]
+    simulations = all_seeds(source)
     tmp_path, overview = prepare_output(len(simulations))
     get_simulations(source, simulations, overview, progress=progress)
     overview.close()
@@ -145,7 +156,8 @@ def generate_corsika_overview(source, destination, progress=False):
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description='Generate an overview of '
+                                                 'CORSIKA simulations.')
     parser.add_argument('source', nargs='?', default=DATA_PATH,
                         help="directory path containing CORSIKA simulations")
     parser.add_argument('destination', nargs='?', default=OUTPUT_PATH,
@@ -153,13 +165,22 @@ def main():
     parser.add_argument('--progress', action='store_true',
                         help='show progressbar during generation')
     parser.add_argument('--log', action='store_true',
-                        help='write logs to file, only for use on server.')
+                        help='write logs to file, only for use on server')
+    parser.add_argument('--lazy', action='store_true',
+                        help='only run if the overview is outdated')
     args = parser.parse_args()
     if args.log:
         logging.basicConfig(filename=LOGFILE, filemode='a',
                             format='%(asctime)s %(name)s %(levelname)s: '
                                    '%(message)s',
                             datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+    if args.lazy:
+        last_store = os.path.getmtime(args.source)
+        last_overview = os.path.getmtime(args.destination)
+        if last_overview > last_store:
+            logger.info('Overview up to date.')
+            return
+
     generate_corsika_overview(source=args.source,
                               destination=args.destination,
                               progress=args.progress)

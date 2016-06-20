@@ -1,0 +1,52 @@
+# Event Summary Data - Weather
+#
+# Station: (501) Nikhef
+#
+# Data taken from 2012-01-01 00:00:00 to 2012-01-01 00:01:00
+#
+# HiSPARC data is licensed under Creative Commons Attribution-ShareAlike 4.0.
+#
+#
+# This data contains the following columns:
+#
+# date:                 time of event [GPS calendar date]
+# time:                 time of event [GPS time of day]
+# timestamp:            time of event [UNIX timestamp]
+# temperature_inside:   temperature inside [deg C]
+# temperature_outside:  temperature outside [deg C]
+# humidity_inside:      relative humidity of the air inside [%]
+# humidity_outside:     relative humidity of the air [%]
+# atmospheric_pressure: barometer data [hPa]
+# wind_direction:       wind direction [deg]
+# wind_speed:           wind speed [m/s]
+# solar_radiation:      intensity of solar radiation [W/m/m]
+# uv_index:             measurement for UV intensity [0-16]
+# evapotranspiration:   amount of evaporated and transpirated water [mm]
+# rain_rate:            amount of rainfall [mm/h]
+# heat_index:           perceived temperature taking humidity into account [deg C]
+# dew_point:            water vapor below this temperature will start to condensate [deg C]
+# wind_chill:           perceived temperature taking wind into account [deg C]
+#
+# Values of -1 or -999 indicate a problem in that measurement or
+# the absence of that sensor.
+#
+#
+2012-01-01	00:00:00	1325376000	19.444	10.611	38	90	1007	176	2	0	0	-999	0	10	9.0382	9.7278
+2012-01-01	00:00:03	1325376003	19.444	10.611	38	90	1007	182	3	0	0	-999	0	10	9.0382	9.175
+2012-01-01	00:00:06	1325376006	19.444	10.611	38	90	1007	182	1	0	0	-999	0	10	9.0382	10.512
+2012-01-01	00:00:10	1325376010	19.444	10.611	38	90	1007	182	0	0	0	-999	0	10	9.0382	11.091
+2012-01-01	00:00:13	1325376013	19.444	10.611	38	90	1007	222	2	0	0	-999	0	10	9.0382	9.7278
+2012-01-01	00:00:17	1325376017	19.444	10.611	38	90	1007	173	3	0	0	-999	0	10	9.0382	8.9473
+2012-01-01	00:00:20	1325376020	19.444	10.611	38	90	1007	173	1	0	0	-999	0	10	9.0382	10.078
+2012-01-01	00:00:23	1325376023	19.444	10.611	38	90	1007	207	2	0	0	-999	0	10	9.0382	9.7278
+2012-01-01	00:00:27	1325376027	19.444	10.611	38	90	1007	205	4	0	0	-999	0	10	9.0382	8.7423
+2012-01-01	00:00:31	1325376031	19.444	10.611	38	90	1007	203	2	0	0	-999	0	10	9.0382	9.432
+2012-01-01	00:00:34	1325376034	19.444	10.611	38	90	1007	204	1	0	0	-999	0	10	9.0382	10.512
+2012-01-01	00:00:38	1325376038	19.444	10.611	38	90	1007	204	1	0	0	-999	0	10	9.0382	10.078
+2012-01-01	00:00:41	1325376041	19.444	10.611	38	90	1007	203	1	0	0	-999	0	10	9.0382	10.512
+2012-01-01	00:00:44	1325376044	19.444	10.611	38	90	1007	204	0	0	0	-999	0	10	9.0382	11.997
+2012-01-01	00:00:48	1325376048	19.444	10.611	38	90	1007	204	0	0	0	-999	0	10	9.0382	11.091
+2012-01-01	00:00:51	1325376051	19.444	10.611	38	90	1007	203	0	0	0	-999	0	10	9.0382	11.997
+2012-01-01	00:00:55	1325376055	19.444	10.611	38	90	1007	204	0	0	0	-999	0	10	9.0382	11.091
+2012-01-01	00:00:58	1325376058	19.444	10.611	38	90	1007	204	0	0	0	-999	0	10	9.0382	11.091
+# Finished downloading.

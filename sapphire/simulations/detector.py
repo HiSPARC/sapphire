@@ -4,8 +4,10 @@ These are some common simulations for HiSPARC detectors.
 
 """
 from math import sqrt, acos, pi, cos, sin
+import warnings
 
 import numpy as np
+import tables
 
 from .base import BaseSimulation
 from ..utils import ceil_in_base
@@ -27,13 +29,17 @@ class HiSPARCSimulation(BaseSimulation):
                 detector.offset = self.simulate_detector_offset()
 
         # Store updated version of the cluster
-        self.coincidence_group._v_attrs.cluster = self.cluster
+        try:
+            self.coincidence_group._v_attrs.cluster = self.cluster
+        except tables.HDF5ExtError:
+            warnings.warn('Unable to store cluster object, to large for HDF.')
 
     @classmethod
     def simulate_detector_offsets(cls, n_detectors):
         """Get multiple detector offsets
 
         :param n_detectors: number of offsets to return.
+        :return: list of detector timing offsets in ns.
 
         """
         return [cls.simulate_detector_offset() for _ in range(n_detectors)]
@@ -43,6 +49,8 @@ class HiSPARCSimulation(BaseSimulation):
         """Simulate time offsets between detectors in one station
 
         This offset should be fixed for each detector for a simulation run.
+
+        :return: detector timing offset in ns.
 
         """
         return np.random.normal(0, 2.77)
@@ -54,6 +62,8 @@ class HiSPARCSimulation(BaseSimulation):
         This offset should be fixed for each station for a simulation run.
         The actual distribution is not yet very clear. We assume it is
         gaussian for convenience. Then the stddev is about 16 ns.
+
+        :return: station timing offset in ns.
 
         """
         return np.random.normal(0, 16)
@@ -76,7 +86,7 @@ class HiSPARCSimulation(BaseSimulation):
 
     @classmethod
     def simulate_signal_transport_time(cls, n=1):
-        """ Simulate transport times of scintillation light to the PMT
+        """Simulate transport times of scintillation light to the PMT
 
         Generates random transit times within a given distribution and
         adds it to the times the particles passed the detector.
@@ -126,12 +136,24 @@ class HiSPARCSimulation(BaseSimulation):
         the single and vectorized part.
 
         :param n: number of particles.
-        :param theta: angle of incidence of the particles, as float or array.
+        :param theta: angle of incidence of the particles. Either a single
+                      value valid for all particles, or an array with an angle
+                      for each particle.
+        :return: signal strength in number of mips.
 
         """
+        # Limit cos theta to maximum length though the detector.
+        min_costheta = 2. / 112.
         costheta = np.cos(theta)
+        if isinstance(costheta, float):
+            costheta = max(costheta, min_costheta)
+        else:
+            costheta[costheta < min_costheta] = min_costheta
+
         y = np.random.random(n)
 
+        # Prevent warning from the square root of negative values.
+        warnings.filterwarnings('ignore')
         if n == 1:
             if y < 0.3394:
                 mips = (0.48 + 0.8583 * sqrt(y)) / costheta
@@ -141,6 +163,8 @@ class HiSPARCSimulation(BaseSimulation):
                 mips = (1.7752 - 1.0336 * sqrt(0.9267 - y)) / costheta
             else:
                 mips = (2.28 - 2.1316 * sqrt(1 - y)) / costheta
+            if not isinstance(costheta, float):
+                mips = sum(mips)
         else:
             mips = np.where(y < 0.3394,
                             (0.48 + 0.8583 * np.sqrt(y)) / costheta,
@@ -150,6 +174,7 @@ class HiSPARCSimulation(BaseSimulation):
             mips = np.where(y < 0.9041, mips,
                             (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
             mips = sum(mips)
+        warnings.resetwarnings()
         return mips
 
     @classmethod
@@ -174,15 +199,39 @@ class HiSPARCSimulation(BaseSimulation):
         return x, y
 
     @classmethod
-    def generate_zenith(cls):
+    def generate_zenith(cls, min=0, max=pi / 3.):
+        """Generate a random zenith
+
+        Generate a random zenith for a uniform distribution on a sphere.
+        For a random position on a sphere the zenith should not be chosen
+        from a uniform [0, pi/2] distribution.
+
+        Source: http://mathworld.wolfram.com/SpherePointPicking.html
+
+        This fuction does not account for attenuation due to the extra path
+        length, nor for the reduced effective surface of the detectors due to
+        the angle. CORSIKA simulated showers already contain the atmospheric
+        attenuation and precise positions for each particle.
+
+        :param min,max: minimum and maximum zenith angles, in radians.
+        :return: random zenith position on a sphere, in radians.
+
+        """
+        p = np.random.uniform(cos(max), cos(min))
+        return acos(p)
+
+    @classmethod
+    def generate_attenuated_zenith(cls):
         """Generate a random zenith
 
         Pick from the expected zenith distribution.
 
-        TODO: There is a difference between expected shower zeniths
-        detected on the ground and at the top of the atmosphere. So
-        simulations that use CORSIKA generated showers need to take that
-        into account.
+        There is a difference between expected shower zeniths detected on the
+        ground and at the top of the atmosphere. This distribution takes the
+        attenuation of air showers due to the extra path length in the
+        atmosphere into account.
+
+        :return: random zenith angle, in radians.
 
         """
         p = np.random.random()
@@ -196,7 +245,7 @@ class HiSPARCSimulation(BaseSimulation):
         (internal note), eq 2.4 from Rossi.
 
         :param p: probability value between 0 and 1.
-        :return: zenith with corresponding cumulative probability.
+        :return: zenith with corresponding cumulative probability, in radians.
 
         """
         return acos((1 - p) ** (1 / 8.))
@@ -206,6 +255,8 @@ class HiSPARCSimulation(BaseSimulation):
         """Generate a random azimuth
 
         Showers from each azimuth have equal probability
+
+        :return: shower azimuth angle, in radians.
 
         """
         return np.random.uniform(-pi, pi)
@@ -221,6 +272,7 @@ class HiSPARCSimulation(BaseSimulation):
 
         :param min_E,max_E: Energy bounds for the distribution (in eV).
         :param alpha: Steepness of the power law distribution.
+        :return: primary particle energy, in eV.
 
         """
         x = np.random.random()

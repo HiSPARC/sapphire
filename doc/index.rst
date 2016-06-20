@@ -14,10 +14,11 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :numbered:
+   :includehidden:
 
    installation
    tutorial
+   examples
    sapphire
    README
 
@@ -28,4 +29,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

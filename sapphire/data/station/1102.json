@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 51.15, 
+    "cluster": "Utrecht", 
+    "country": "Netherlands", 
+    "latitude": 52.355826, 
+    "longitude": 4.9511793, 
+    "name": "Gemeentelijk Gymnasium Hilversum", 
+    "number": 1102, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Hilversum"
+}

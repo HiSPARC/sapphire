@@ -1,0 +1,25 @@
+{
+    "active": true, 
+    "altitude": 43.77, 
+    "cluster": "Amsterdam", 
+    "country": "Netherlands", 
+    "latitude": 52.6474195, 
+    "longitude": 5.0691192, 
+    "name": "Werenfridus", 
+    "number": 601, 
+    "scintillators": [
+        {
+            "alpha": 291.0, 
+            "beta": 70.0, 
+            "height": 0.0, 
+            "radius": 1.45
+        }, 
+        {
+            "alpha": 331.0, 
+            "beta": 70.0, 
+            "height": 0.0, 
+            "radius": 8.15
+        }
+    ], 
+    "subcluster": "Hoorn"
+}

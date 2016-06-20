@@ -27,6 +27,7 @@ import calendar
 from . import base, angles
 
 
+#: Dates of leap second introductions.
 LEAP_SECONDS = (('July 1, 2015', 17),
                 ('July 1, 2012', 16),
                 ('January 1, 2009', 15),
@@ -388,3 +389,19 @@ def datetime_to_gps(dt):
     """
     timestamp = calendar.timegm(dt.timetuple())
     return timestamp
+
+
+def process_time(time):
+    """Convert timestamp or datetime to timestamp
+
+    :param time: GPS datetime object or GPS timestamp
+    :return: GPS timestamp
+
+    """
+    try:
+        return int(time)
+    except (TypeError, ValueError):
+        try:
+            return datetime_to_gps(time)
+        except:
+            raise RuntimeError('Unable to parse time: ', time)
