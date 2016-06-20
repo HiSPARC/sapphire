@@ -5,7 +5,7 @@
     consisting of one or more Detectors.
 
 """
-
+from __future__ import division
 
 from math import sqrt, pi, sin, cos, atan2
 import warnings
