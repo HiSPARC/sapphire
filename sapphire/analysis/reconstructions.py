@@ -323,7 +323,7 @@ class ReconstructESDCoincidences(object):
     def reconstruct_directions(self, station_numbers=None):
         """Reconstruct direction for all events
 
-        :param detector_ids: list of detector ids to use for reconstructions.
+        :param station_numbers: list of stations to use for reconstructions.
 
         """
         if len(self.core_x) and len(self.core_y):
@@ -341,7 +341,7 @@ class ReconstructESDCoincidences(object):
     def reconstruct_cores(self, station_numbers=None):
         """Reconstruct core for all events
 
-        :param detector_ids: list of detector ids to use for reconstructions.
+        :param station_numbers: list of stations to use for reconstructions.
 
         """
         if len(self.theta) and len(self.phi):
