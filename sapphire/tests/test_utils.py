@@ -1,6 +1,6 @@
 import unittest
 import types
-from StringIO import StringIO
+from io import StringIO
 
 from numpy import pi, random, exp, sqrt
 import progressbar
@@ -11,7 +11,7 @@ from sapphire import utils
 class PbarTests(unittest.TestCase):
 
     def setUp(self):
-        self.iterable = range(10)
+        self.iterable = list(range(10))
         self.output = StringIO()
 
     def test_pbar_iterable(self):
