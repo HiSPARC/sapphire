@@ -5,7 +5,7 @@
     consisting of one or more Detectors.
 
 """
-from __future__ import division
+
 
 from math import sqrt, pi, sin, cos, atan2
 import warnings
@@ -44,9 +44,9 @@ class Detector(object):
             self.x = [position[0]]
             self.y = [position[1]]
             self.z = [position[2]] if len(position) == 3 else [0.]
-        if isinstance(orientation, basestring) and orientation == 'UD':
+        if isinstance(orientation, str) and orientation == 'UD':
             self.orientation = [0] * len(self.x)
-        elif isinstance(orientation, basestring) and orientation == 'LR':
+        elif isinstance(orientation, str) and orientation == 'LR':
             self.orientation = [pi / 2] * len(self.x)
         else:
             if hasattr(orientation, "__len__"):
@@ -348,8 +348,8 @@ class Station(object):
             absolute coordinate system
 
         """
-        x, y, z = zip(*[detector.get_coordinates()
-                      for detector in self.detectors])
+        x, y, z = list(zip(*[detector.get_coordinates()
+                           for detector in self.detectors]))
 
         x0 = np.nanmean(x)
         y0 = np.nanmean(y)
@@ -547,9 +547,9 @@ class BaseCluster(object):
             absolute coordinate system
 
         """
-        x, y, z = zip(*[detector.get_coordinates()
-                      for station in self.stations
-                      for detector in station.detectors])
+        x, y, z = list(zip(*[detector.get_coordinates()
+                           for station in self.stations
+                           for detector in station.detectors]))
 
         x0 = np.mean(x)
         y0 = np.mean(y)
