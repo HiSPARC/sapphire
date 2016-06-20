@@ -48,7 +48,7 @@ and optionally create a virtualenv::
 
 or alternatively just install the dependencies::
 
-    $ conda install numpy scipy pytables
+    $ conda install numpy scipy pytables sphinx
    
 Then, using pip::
 
