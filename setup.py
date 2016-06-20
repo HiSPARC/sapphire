@@ -48,5 +48,5 @@ setup(name='hisparc-sapphire',
                                  'tests/corsika/test_data/1_2/*.h5',
                                  'tests/simulations/test_data/*.h5']},
       install_requires=['numpy', 'scipy', 'tables>=3.2.0',
-                        'progressbar2>=3.7.0', 'lazy', 'mock'],
+                        'progressbar2>=3.7.0', 'lazy', 'mock', 'six'],
       test_suite="sapphire.tests",)
