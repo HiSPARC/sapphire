@@ -1015,25 +1015,25 @@ class RegressionAlgorithm(object):
             ts += ti
             k += 1
 
-        denom = (k * xy * xy + xs * xs * yy + ys * ys * xx - k * xx * yy -
+        denom = (k * xy ** 2 + xs ** 2 * yy + ys ** 2 * xx - k * xx * yy -
                  2 * xs * ys * xy)
         if denom == 0:
             denom = nan
 
-        numer = (tx * (k * yy - ys * ys) + xy * (ts * ys - k * ty) +
+        numer = (tx * (k * yy - ys ** 2) + xy * (ts * ys - k * ty) +
                  xs * ys * ty - ts * xs * yy)
         nx = c * numer / denom
 
-        numer = (ty * (k * xx - xs * xs) + xy * (ts * xs - k * tx) +
+        numer = (ty * (k * xx - xs ** 2) + xy * (ts * xs - k * tx) +
                  xs * ys * tx - ts * ys * xx)
         ny = c * numer / denom
 
-        horiz = nx * nx + ny * ny
+        horiz = nx ** 2 + ny ** 2
         if horiz > 1.:
             theta = nan
             phi = nan
         else:
-            nz = sqrt(1 - nx * nx - ny * ny)
+            nz = sqrt(1 - nx ** 2 - ny ** 2)
             phi = arctan2(ny, nx)
             theta = arccos(nz)
 
