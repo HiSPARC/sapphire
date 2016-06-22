@@ -55,12 +55,14 @@ class ReconstructESDEventsTest(unittest.TestCase):
 
     def test_reconstruct_cores(self):
         self.rec.core = MagicMock()
-        self.rec.core.reconstruct_events.return_value = (sentinel.core_x, sentinel.core_y)
+        self.rec.core.reconstruct_events.return_value = (sentinel.core_x, sentinel.core_y, sentinel.size, sentinel.energy)
         self.rec.reconstruct_cores()
         self.rec.core.reconstruct_events.assert_called_once_with(
             self.rec.events, None, self.rec.progress, [])
         self.assertEqual(self.rec.core_x, sentinel.core_x)
         self.assertEqual(self.rec.core_y, sentinel.core_y)
+        self.assertEqual(self.rec.size, sentinel.size)
+        self.assertEqual(self.rec.energy, sentinel.energy)
 
         self.rec.reconstruct_cores(sentinel.detector_ids)
         self.rec.core.reconstruct_events.assert_called_with(
@@ -100,7 +102,8 @@ class ReconstructESDEventsTest(unittest.TestCase):
         event = MagicMock()
         self.rec.reconstructions = MagicMock()
         self.rec._store_reconstruction(event, sentinel.core_x, sentinel.core_y,
-                                       sentinel.theta, sentinel.phi, [1, 3, 4])
+                                       sentinel.theta, sentinel.phi,
+                                       sentinel.size, sentinel.energy, [1, 3, 4])
         self.rec.reconstructions.row.append.assert_called_once_with()
 
 
@@ -200,12 +203,14 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.rec.coincidences = MagicMock()
         self.rec.coincidences.nrows = 1
         self.rec.core = MagicMock()
-        self.rec.core.reconstruct_coincidences.return_value = (sentinel.core_x, sentinel.core_y)
+        self.rec.core.reconstruct_coincidences.return_value = (sentinel.core_x, sentinel.core_y, sentinel.size, sentinel.energy)
         self.rec.reconstruct_cores()
         self.rec.core.reconstruct_coincidences.assert_called_once_with(
             self.rec.cq.all_events.return_value, None, progress=False, initials=[])
         self.assertEqual(self.rec.core_x, sentinel.core_x)
         self.assertEqual(self.rec.core_y, sentinel.core_y)
+        self.assertEqual(self.rec.size, sentinel.size)
+        self.assertEqual(self.rec.energy, sentinel.energy)
 
         self.rec.reconstruct_cores(sentinel.nums)
         self.rec.core.reconstruct_coincidences.assert_called_with(
@@ -262,7 +267,8 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         coin = MagicMock()
         self.rec.reconstructions = MagicMock()
         self.rec._store_reconstruction(coin, sentinel.core_x, sentinel.core_y,
-                                       sentinel.theta, sentinel.phi, [2, 3, 4])
+                                       sentinel.theta, sentinel.phi,
+                                       sentinel.size, sentinel.energy, [2, 3, 4])
         self.rec.reconstructions.row.append.assert_called_once_with()
 
 

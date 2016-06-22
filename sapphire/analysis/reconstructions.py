@@ -87,6 +87,8 @@ class ReconstructESDEvents(object):
         self.detector_ids = []
         self.core_x = []
         self.core_y = []
+        self.size = []
+        self.energy = []
 
     def reconstruct_and_store(self, detector_ids=None):
         """Shorthand function to reconstruct event and store the results"""
@@ -131,7 +133,7 @@ class ReconstructESDEvents(object):
             initials = []
         cores = self.core.reconstruct_events(self.events, detector_ids,
                                              self.progress, initials)
-        self.core_x, self.core_y = cores
+        self.core_x, self.core_y, self.size, self.energy = cores
 
     def prepare_output(self):
         """Prepare output table"""
@@ -174,15 +176,16 @@ class ReconstructESDEvents(object):
         NaN as reconstructed value.
 
         """
-        for event, core_x, core_y, theta, phi, detector_ids in izip_longest(
-                self.events, self.core_x, self.core_y,
-                self.theta, self.phi, self.detector_ids):
+        for event, core_x, core_y, theta, phi, size, energy, detector_ids in \
+                izip_longest(self.events, self.core_x, self.core_y, self.theta,
+                             self.phi, self.size, self.energy,
+                             self.detector_ids):
             self._store_reconstruction(event, core_x, core_y, theta, phi,
-                                       detector_ids)
+                                       size, energy, detector_ids)
         self.reconstructions.flush()
 
-    def _store_reconstruction(self, event, core_x, core_y, theta, phi,
-                              detector_ids):
+    def _store_reconstruction(self, event, core_x, core_y, theta, phi, size,
+                              energy, detector_ids):
         """Store single reconstruction"""
 
         row = self.reconstructions.row
@@ -199,6 +202,8 @@ class ReconstructESDEvents(object):
         row['y'] = core_y
         row['zenith'] = theta
         row['azimuth'] = phi
+        row['size'] = size
+        row['energy'] = energy
         for id in detector_ids:
             row['d%d' % (id + 1)] = True
         row.append()
@@ -310,6 +315,8 @@ class ReconstructESDCoincidences(object):
         self.station_numbers = []
         self.core_x = []
         self.core_y = []
+        self.size = []
+        self.energy = []
 
     def reconstruct_and_store(self, station_numbers=None):
         """Shorthand function to reconstruct coincidences and store results"""
@@ -354,7 +361,7 @@ class ReconstructESDCoincidences(object):
         cores = self.core.reconstruct_coincidences(
             self.cq.all_events(coincidences, n=0), station_numbers,
             progress=False, initials=initials)
-        self.core_x, self.core_y = cores
+        self.core_x, self.core_y, self.size, self.energy = cores
 
     def prepare_output(self):
         """Prepare output table"""
@@ -407,15 +414,16 @@ class ReconstructESDCoincidences(object):
         NaN as reconstructed value.
 
         """
-        for coincidence, x, y, theta, phi, station_numbers in izip_longest(
-                self.coincidences, self.core_x, self.core_y,
-                self.theta, self.phi, self.station_numbers):
-            self._store_reconstruction(coincidence, x, y, theta, phi,
-                                       station_numbers)
+        for coincidence, x, y, theta, phi, size, energy, station_numbers in \
+                izip_longest(self.coincidences, self.core_x, self.core_y,
+                             self.theta, self.phi, self.size, self.energy,
+                             self.station_numbers):
+            self._store_reconstruction(coincidence, x, y, theta, phi, size,
+                                       energy, station_numbers)
         self.reconstructions.flush()
 
     def _store_reconstruction(self, coincidence, core_x, core_y, theta, phi,
-                              station_numbers):
+                              size, energy, station_numbers):
         """Store single reconstruction"""
 
         row = self.reconstructions.row
@@ -426,6 +434,8 @@ class ReconstructESDCoincidences(object):
         row['y'] = core_y
         row['zenith'] = theta
         row['azimuth'] = phi
+        row['size'] = size
+        row['energy'] = energy
 
         row['reference_x'] = coincidence['x']
         row['reference_y'] = coincidence['y']
