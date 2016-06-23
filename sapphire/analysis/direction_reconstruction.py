@@ -1329,6 +1329,10 @@ def logic_checks(t, x, y, z):
         area = abs(dx1 * dy2 - dx2 * dy1 + dy1 * dz2 - dy2 * dz1 +
                    dz1 * dx2 - dz2 * dx1)
 
+        # prevent floating point errors
+        if area < 1e-7:
+            return False
+
         # sine of angle is area divided by two sides
         sin1 = area / lenvec01 / lenvec02
         sin2 = area / lenvec01 / lenvec12
