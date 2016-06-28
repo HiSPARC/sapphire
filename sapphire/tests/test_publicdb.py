@@ -27,8 +27,8 @@ class DownloadDataTest(unittest.TestCase):
         logging.disable(logging.NOTSET)
 
     @patch.object(publicdb, '_store_data')
-    @patch.object(publicdb.urllib, 'urlretrieve')
-    @patch.object(publicdb.xmlrpclib, 'ServerProxy')
+    @patch.object(publicdb, 'urlretrieve')
+    @patch.object(publicdb, 'ServerProxy')
     def test_download_data(self, mock_server, mock_retrieve, mock_store):
         start = datetime(2010, 1, 1, 11)
         end = datetime(2010, 1, 1, 13)
