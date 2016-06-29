@@ -10,6 +10,7 @@ from __future__ import division
 
 from datetime import datetime, timedelta
 from itertools import tee, combinations, chain
+from six.moves import zip
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
                    sqrt, abs, sum)

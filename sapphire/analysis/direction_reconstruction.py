@@ -16,7 +16,8 @@
 
 """
 import warnings
-from itertools import zip_longest, combinations
+from itertools import combinations
+from six.moves import zip_longest
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, where, pi, inf, array, cross, dot, sum, zeros)

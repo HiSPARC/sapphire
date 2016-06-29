@@ -16,8 +16,9 @@
 
 """
 
-from itertools import zip_longest, combinations
 import warnings
+from itertools import combinations
+from six.moves import zip_longest
 
 from numpy import isnan, nan, cos, sqrt, mean, array
 

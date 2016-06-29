@@ -1,7 +1,7 @@
-from itertools import zip_longest
 import os
 import warnings
 
+from six.moves import zip_longest
 import tables
 
 from ..storage import ReconstructedEvent, ReconstructedCoincidence
