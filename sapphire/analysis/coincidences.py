@@ -30,6 +30,8 @@
             coin.search_and_store_coincidences()
 
 """
+from __future__ import print_function
+
 import os.path
 
 import tables
