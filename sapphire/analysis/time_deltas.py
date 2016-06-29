@@ -83,7 +83,7 @@ class ProcessTimeDeltas(object):
         """
         s_index = self.cq.s_index
         re_number = re.compile('[0-9]+$')
-        s_numbers = [int(re_number.search(s_path).group())
+        s_numbers = [int(re_number.search(s_path.decode()).group())
                      for s_path in s_index]
 
         c_index = self.cq.c_index

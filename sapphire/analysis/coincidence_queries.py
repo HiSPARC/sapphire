@@ -54,13 +54,13 @@ class CoincidenceQuery(object):
         self.s_nodes = []
         for s_path in self.s_index:
             try:
-                self.s_nodes.append(self.data.get_node(s_path))
+                self.s_nodes.append(self.data.get_node(s_path.decode()))
             except tables.NoSuchNodeError:
                 warnings.warn('Missing some station groups. This is no '
                               'problem if those are not in coincidences.')
                 self.s_nodes.append(None)
         re_number = re.compile('[0-9]+$')
-        self.s_numbers = [int(re_number.search(s_path).group())
+        self.s_numbers = [int(re_number.search(s_path.decode()).group())
                           for s_path in self.s_index]
 
         try:

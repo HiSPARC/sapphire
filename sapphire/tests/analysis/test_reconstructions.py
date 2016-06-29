@@ -169,16 +169,16 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         station = MagicMock(number=sentinel.number, spec=['number'])
         self.rec.cluster.stations = [station]
         self.rec.get_station_timing_offsets()
-        self.assertEqual(self.rec.offsets.keys(), [sentinel.number])
-        self.assertEqual(self.rec.offsets.values(), [sentinel.station])
+        self.assertEqual(list(self.rec.offsets.keys()), [sentinel.number])
+        self.assertEqual(list(self.rec.offsets.values()), [sentinel.station])
 
         detector = MagicMock(offset=1.)
         station = MagicMock(number=sentinel.number, gps_offset=2., detectors=[detector],
                             spec=['gps_offset', 'number'])
         self.rec.cluster.stations = [station]
         self.rec.get_station_timing_offsets()
-        self.assertEqual(self.rec.offsets.keys(), [sentinel.number])
-        self.assertEqual(self.rec.offsets.values(), [[3.]])
+        self.assertEqual(list(self.rec.offsets.keys()), [sentinel.number])
+        self.assertEqual(list(self.rec.offsets.values()), [[3.]])
 
     def test_reconstruct_directions(self):
         self.rec.coincidences = MagicMock()

@@ -182,10 +182,10 @@ def get_detector_ids(station=None, event=None):
 
     """
     if station is not None:
-        detector_ids = range(len(station.detectors))
+        detector_ids = list(range(len(station.detectors)))
     elif event is not None:
         detector_ids = [i for i, ph in enumerate(event['pulseheights'])
                         if ph != -1]
     else:
-        detector_ids = range(4)
+        detector_ids = list(range(4))
     return detector_ids

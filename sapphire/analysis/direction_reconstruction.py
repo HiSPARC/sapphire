@@ -16,7 +16,7 @@
 
 """
 import warnings
-from itertools import izip_longest, combinations
+from itertools import zip_longest, combinations
 
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, where, pi, inf, array, cross, dot, sum, zeros)
@@ -71,7 +71,7 @@ class EventDirectionReconstruction(object):
         """
         t, x, y, z, ids = ([], [], [], [], [])
         if detector_ids is None:
-            detector_ids = range(4)
+            detector_ids = list(range(4))
         self.station.cluster.set_timestamp(event['timestamp'])
         if isinstance(offsets, Station):
             offsets = offsets.detector_timing_offset(event['timestamp'])
@@ -108,11 +108,11 @@ class EventDirectionReconstruction(object):
 
         """
         events = pbar(events, show=progress)
-        events_init = izip_longest(events, initials, fillvalue={})
+        events_init = zip_longest(events, initials, fillvalue={})
         angles = [self.reconstruct_event(event, detector_ids, offsets, initial)
                   for event, initial in events_init]
         if len(angles):
-            theta, phi, ids = zip(*angles)
+            theta, phi, ids = list(zip(*angles))
         else:
             theta, phi, ids = ((), (), ())
         return theta, phi, ids
@@ -209,19 +209,19 @@ class CoincidenceDirectionReconstruction(object):
 
         """
         coincidences = pbar(coincidences, show=progress)
-        coin_init = izip_longest(coincidences, initials, fillvalue={})
+        coin_init = zip_longest(coincidences, initials, fillvalue={})
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
                                                offsets, initial)
                   for coincidence, initial in coin_init]
         if len(angles):
-            theta, phi, nums = zip(*angles)
+            theta, phi, nums = list(zip(*angles))
         else:
             theta, phi, nums = ((), (), ())
         return theta, phi, nums
 
     def get_station_offsets(self, coincidence_events, station_numbers,
                             offsets, ts0):
-        if offsets and isinstance(next(offsets.itervalues()), Station):
+        if offsets and isinstance(next(iter(offsets.values())), Station):
             if station_numbers is None:
                 # stations in the coincidence
                 stations = list({sn for sn, _ in coincidence_events})
@@ -249,7 +249,7 @@ class CoincidenceDirectionReconstruction(object):
                  relative to the reference station.
 
         """
-        offset_stations = station_numbers + [sn for sn in offsets.keys()
+        offset_stations = station_numbers + [sn for sn in list(offsets.keys())
                                              if sn not in station_numbers]
 
         offset_matrix = zeros((len(offset_stations), len(offset_stations)))
@@ -1292,11 +1292,11 @@ def logic_checks(t, x, y, z):
     """
     # Check for identical positions
     if len(t) == 3:
-        xyz = zip(x, y, z)
+        xyz = list(zip(x, y, z))
         if not len(xyz) == len(set(xyz)):
             return False
 
-    txyz = zip(t, x, y, z)
+    txyz = list(zip(t, x, y, z))
 
     # Check if the time difference it larger than expected by c
     if len(t) == 3:

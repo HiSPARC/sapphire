@@ -3,6 +3,7 @@ import warnings
 from mock import patch, sentinel, MagicMock, Mock, call
 from datetime import datetime, date
 
+import six
 from numpy import isnan, nan, array, all, std
 from numpy.random import uniform, normal
 
@@ -175,13 +176,13 @@ class FitTimingOffsetTests(unittest.TestCase):
 
     def test_fit_timing_offset(self):
         deviations = []
-        for _ in xrange(50):
+        for _ in range(50):
             center = uniform(-40, 40)
             sigma = uniform(10, 30)
             N = int(4e4)
             lower = center - 3 * sigma
             upper = center + 3 * sigma
-            bins = range(int(lower), int(upper), 1)
+            bins = list(range(int(lower), int(upper), 1))
             dt = normal(center, sigma, N)
             offset, error = calibration.fit_timing_offset(dt, bins)
             deviations.append((center - offset) / error)
@@ -287,7 +288,7 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         gps_mock.assert_has_calls([call(sentinel.ref_station), call(sentinel.station)], any_order=True)
 
         self.assertEqual(len(cuts), 8)
-        self.assertItemsEqual(sorted(cuts), cuts)
+        six.assertCountEqual(self, sorted(cuts), cuts)
         self.assertEqual(cuts[0], datetime(2014, 1, 1))
         today = datetime.now()
         self.assertEqual(cuts[-1], datetime(today.year, today.month, today.day))

@@ -9,7 +9,7 @@ Determine the PMT response curve to correct the detected number of MIPs.
 from __future__ import division
 
 from datetime import datetime, timedelta
-from itertools import tee, izip, combinations, chain
+from itertools import tee, combinations, chain
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
                    sqrt, abs, sum)
@@ -387,7 +387,7 @@ def determine_best_reference(filters):
 
     """
     lengths = []
-    ids = range(len(filters))
+    ids = list(range(len(filters)))
 
     for id in ids:
         idx = [j for j in ids if j != id]
@@ -430,4 +430,4 @@ def pairwise(iterable):
 
     a, b = tee(iterable)
     next(b, None)
-    return izip(a, b)
+    return zip(a, b)

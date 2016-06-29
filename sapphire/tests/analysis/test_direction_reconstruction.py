@@ -245,8 +245,8 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         station_numbers = [1, 2]
         midnight_ts = sentinel.midnight_ts
         best_offsets = dirrec.determine_best_offsets(station_numbers, midnight_ts, offsets)
-        self.assertEqual(best_offsets.keys(), station_numbers)
-        self.assertEqual(best_offsets.values(), [[1.0, 0.0, 2.0, 3.0],
+        self.assertEqual(list(best_offsets.keys()), station_numbers)
+        self.assertEqual(list(best_offsets.values()), [[1.0, 0.0, 2.0, 3.0],
                                                  [2.0, 1.0, 3.0, 4.0]])
 
     def test_determine_best_reference(self):

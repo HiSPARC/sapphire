@@ -228,7 +228,7 @@ class MeanFilter(object):
         else:
             filtered_trace.extend(trace[:4])
 
-        for i in xrange(4, len(trace)):
+        for i in range(4, len(trace)):
             local_mean = moving_average[i]
             if abs(trace[i] - trace[i - 1]) > 2 * self.threshold:
                 filtered_trace.append(trace[i])
@@ -249,7 +249,7 @@ class MeanFilter(object):
         local_mean = moving_average[3]
         filtered_trace = [int(around(local_mean))] * 4
 
-        for i in xrange(4, len(trace)):
+        for i in range(4, len(trace)):
             local_mean = moving_average[i]
             if (trace[i] > local_mean) == (trace[i - 1] > local_mean):
                 # Both values on same side of the local_mean

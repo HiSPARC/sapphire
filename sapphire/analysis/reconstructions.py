@@ -1,4 +1,4 @@
-from itertools import izip, izip_longest
+from itertools import zip_longest
 import os
 import warnings
 
@@ -110,7 +110,7 @@ class ReconstructESDEvents(object):
         """
         if len(self.core_x) and len(self.core_y):
             initials = ({'core_x': x, 'core_y': y}
-                        for x, y in izip(self.core_x, self.core_y))
+                        for x, y in zip(self.core_x, self.core_y))
         else:
             initials = []
         angles = self.direction.reconstruct_events(self.events, detector_ids,
@@ -126,7 +126,7 @@ class ReconstructESDEvents(object):
         """
         if len(self.theta) and len(self.phi):
             initials = ({'theta': theta, 'phi': phi}
-                        for theta, phi in izip(self.theta, self.phi))
+                        for theta, phi in zip(self.theta, self.phi))
         else:
             initials = []
         cores = self.core.reconstruct_events(self.events, detector_ids,
@@ -174,7 +174,7 @@ class ReconstructESDEvents(object):
         NaN as reconstructed value.
 
         """
-        for event, core_x, core_y, theta, phi, detector_ids in izip_longest(
+        for event, core_x, core_y, theta, phi, detector_ids in zip_longest(
                 self.events, self.core_x, self.core_y,
                 self.theta, self.phi, self.detector_ids):
             self._store_reconstruction(event, core_x, core_y, theta, phi,
@@ -328,7 +328,7 @@ class ReconstructESDCoincidences(object):
         """
         if len(self.core_x) and len(self.core_y):
             initials = ({'core_x': x, 'core_y': y}
-                        for x, y in izip(self.core_x, self.core_y))
+                        for x, y in zip(self.core_x, self.core_y))
         else:
             initials = []
         coincidences = pbar(self.cq.all_coincidences(iterator=True),
@@ -346,7 +346,7 @@ class ReconstructESDCoincidences(object):
         """
         if len(self.theta) and len(self.phi):
             initials = ({'theta': theta, 'phi': phi}
-                        for theta, phi in izip(self.theta, self.phi))
+                        for theta, phi in zip(self.theta, self.phi))
         else:
             initials = []
         coincidences = pbar(self.cq.all_coincidences(iterator=True),
@@ -407,7 +407,7 @@ class ReconstructESDCoincidences(object):
         NaN as reconstructed value.
 
         """
-        for coincidence, x, y, theta, phi, station_numbers in izip_longest(
+        for coincidence, x, y, theta, phi, station_numbers in zip_longest(
                 self.coincidences, self.core_x, self.core_y,
                 self.theta, self.phi, self.station_numbers):
             self._store_reconstruction(coincidence, x, y, theta, phi,
