@@ -30,17 +30,15 @@
             coin.search_and_store_coincidences()
 
 """
-from __future__ import print_function
-
 import os.path
 
 import tables
 import numpy as np
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
-from sapphire.analysis import process_events
-from sapphire import storage
-from sapphire.utils import pbar
+from . import process_events
+from .. import storage
+from ..utils import pbar
 
 
 class Coincidences(object):
