@@ -19,6 +19,7 @@ import warnings
 from itertools import combinations
 from six.moves import zip_longest
 
+import six
 from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
                    sqrt, where, pi, inf, array, cross, dot, sum, zeros)
 from scipy.optimize import minimize
@@ -222,7 +223,7 @@ class CoincidenceDirectionReconstruction(object):
 
     def get_station_offsets(self, coincidence_events, station_numbers,
                             offsets, ts0):
-        if offsets and isinstance(next(iter(offsets.values())), Station):
+        if offsets and isinstance(next(six.itervalues(offsets)), Station):
             if station_numbers is None:
                 # stations in the coincidence
                 stations = list({sn for sn, _ in coincidence_events})
