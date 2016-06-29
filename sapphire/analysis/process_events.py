@@ -363,9 +363,10 @@ class ProcessEvents(object):
         blobs = self._get_blobs()
 
         try:
-            trace = zlib.decompress(blobs[idx]).decode().split(',')
+            trace = zlib.decompress(blobs[idx]).decode('utf-8').split(',')
         except zlib.error:
-            trace = zlib.decompress(blobs[idx][1:-1]).decode().split(',')
+            trace = (zlib.decompress(blobs[idx][1:-1])
+                     .decode('utf-8').split(','))
         if trace[-1] == '':
             del trace[-1]
         trace = (int(x) for x in trace)
@@ -486,7 +487,7 @@ class ProcessIndexedEvents(ProcessEvents):
         timings = self.process_traces()
 
         for event, (t1, t2, t3, t4) in zip(table.itersequence(self.indexes),
-                                            timings):
+                                           timings):
             event['t1'] = t1
             event['t2'] = t2
             event['t3'] = t3
