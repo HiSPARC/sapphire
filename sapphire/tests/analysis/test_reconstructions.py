@@ -194,7 +194,7 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
             self.rec.cq.all_events.return_value, None, self.rec.offsets, progress=False, initials=[])
         self.assertEqual(self.rec.theta, sentinel.theta)
         self.assertEqual(self.rec.phi, sentinel.phi)
-        #self.assertEqual(self.rec.station_numbers, sentinel.nums)
+        self.assertEqual(self.rec.station_numbers, sentinel.nums)
 
         self.rec.reconstruct_directions(sentinel.nums)
         self.rec.direction.reconstruct_coincidences.assert_called_with(
