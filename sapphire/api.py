@@ -637,6 +637,13 @@ class Station(API):
     def event_time(self, year='', month='', day=''):
         """Get the number of events per hour histogram
 
+        If no date is given the full event time histogram for this station
+        will be returned. That means for the entire time this station has
+        collected data.
+
+        This data (the full histogram) can made available locally using
+        the `extend_local_data` command.
+
         :param year,month,day: the date for which to get the histogram.
         :return: array of bins and counts.
 
