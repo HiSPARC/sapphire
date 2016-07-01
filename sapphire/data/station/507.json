@@ -1,10 +1,10 @@
 {
     "active": true, 
-    "altitude": 56.77, 
+    "altitude": 59.76, 
     "cluster": "Amsterdam", 
     "country": "Netherlands", 
-    "latitude": 52.3560055, 
-    "longitude": 4.9514788, 
+    "latitude": 52.3559919, 
+    "longitude": 4.9514708, 
     "name": "Nikhef (receptie)", 
     "number": 507, 
     "scintillators": [

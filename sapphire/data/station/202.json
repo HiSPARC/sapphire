@@ -1,10 +1,10 @@
 {
     "active": true, 
-    "altitude": 50.21, 
+    "altitude": 49.37, 
     "cluster": "Amsterdam", 
     "country": "Netherlands", 
-    "latitude": 52.3102193, 
-    "longitude": 4.6816268, 
+    "latitude": 52.3102186, 
+    "longitude": 4.6816198, 
     "name": "Kaj Munk College", 
     "number": 202, 
     "scintillators": [
