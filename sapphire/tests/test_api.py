@@ -535,7 +535,7 @@ class StationTests(unittest.TestCase):
         self.assertEqual(len(offsets), 4)
         data = self.station.detector_timing_offset(FUTURE)
         data2 = self.station.detector_timing_offset()
-        self.assertEqual(data, data2)
+        assert_equal(data, data2)
 
     def test_station_timing_offsets(self):
         names = ('timestamp', 'offset', 'error')
