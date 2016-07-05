@@ -7,7 +7,6 @@ from os import path, extsep
 
 from mock import patch, sentinel
 from numpy.testing import assert_allclose
-from numpy import nan_to_num
 
 from sapphire import api
 
@@ -569,7 +568,7 @@ class StationTests(unittest.TestCase):
         # Test omitting timestamp results in lastest offset
         data = self.station.station_timing_offset(ALT_STATION, FUTURE)
         data2 = self.station.station_timing_offset(ALT_STATION)
-        self.assertEqual(list(nan_to_num(data)), list(nan_to_num(data2)))
+        self.assertEqual(data, data2)
 
         # Zero offset to self
         data = self.station.station_timing_offset(STATION)
