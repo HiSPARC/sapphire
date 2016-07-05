@@ -6,7 +6,7 @@ import warnings
 from os import path, extsep
 
 from mock import patch, sentinel
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_equal
 
 from sapphire import api
 
@@ -568,7 +568,7 @@ class StationTests(unittest.TestCase):
         # Test omitting timestamp results in lastest offset
         data = self.station.station_timing_offset(ALT_STATION, FUTURE)
         data2 = self.station.station_timing_offset(ALT_STATION)
-        self.assertEqual(data, data2)
+        assert_equal(data, data2)
 
         # Zero offset to self
         data = self.station.station_timing_offset(STATION)
