@@ -2,10 +2,15 @@ import unittest
 import warnings
 import random
 
-from six.moves import builtins
+from six import PY2
 from mock import patch, sentinel, mock_open
 
 from sapphire.corsika import qsub_corsika
+
+if PY2:
+    open_obj = '__builtin__.open'
+else:
+    open_obj = 'builtins.open'
 
 
 class CorsikaBatchTest(unittest.TestCase):
@@ -71,15 +76,17 @@ class CorsikaBatchTest(unittest.TestCase):
         mock_listdir.assert_any_call(qsub_corsika.DATADIR)
         mock_listdir.assert_called_with(qsub_corsika.TEMPDIR)
 
-    def test_generate_random_seeds(self):
-        random.seed(0)
+    @patch.object(qsub_corsika.random, 'randint')
+    def test_generate_random_seeds(self, mock_randint):
+        mock_randint.side_effect = [759979667, 682158963]
         self.cb.generate_random_seeds(['68764531_6546560', '32716_687164'])
         self.assertEqual(self.cb.seed1, 759979667)
         self.assertEqual(self.cb.seed2, 682158963)
         self.assertEqual(self.cb.rundir, '759979667_682158963/')
 
-    def test_generated_random_seeds_taken(self):
-        random.seed(0)
+    @patch.object(qsub_corsika.random, 'randint')
+    def test_generated_random_seeds_taken(self, mock_randint):
+        mock_randint.side_effect = [759979667, 682158963, 378514423, 233025076]
         self.cb.generate_random_seeds(['759979667_682158963', '32716_687164'])
         self.assertEqual(self.cb.seed1, 378514423)
         self.assertEqual(self.cb.seed2, 233025076)
@@ -108,7 +115,7 @@ class CorsikaBatchTest(unittest.TestCase):
     def test_create_input(self, mock_rundir):
         mock_rundir.return_value = '/data/123_456'
         mock_file = mock_open()
-        with patch.object(builtins.open, mock_file):
+        with patch(open_obj, mock_file):
             self.cb.create_input()
         mock_rundir.assert_called_once_with()
         mock_file.assert_called_once_with('/data/123_456/input-hisparc', 'w')
