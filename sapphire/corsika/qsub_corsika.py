@@ -256,7 +256,8 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
     :param azimuth: Azimuth angle in degrees of the primary particle
     :param queue: Stoomboot queue to submit to
     :param corsika: Name of the CORSIKA executable to use
-    :param progress: Toggle printing of overview.
+    :param progress: if True print an overview of the chosen paramters and
+                     show a progressbar of the job submission progress.
 
     """
     if progress:

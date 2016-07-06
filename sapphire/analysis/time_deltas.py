@@ -50,7 +50,8 @@ class ProcessTimeDeltas(object):
 
         :param data: the PyTables datafile.
         :param coincidence_group: path to the coincidences group.
-        :param progress: show progressbar.
+        :param progress: if True show a progressbar while determining and
+                         storing offsets.
         :param destination: group name for the time_deltas, as subgroup of
                             the coincidence_group.
 

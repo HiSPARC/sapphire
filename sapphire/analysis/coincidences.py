@@ -115,12 +115,9 @@ class Coincidences(object):
 
         :param data: the PyTables datafile.
         :param coincidence_group: the destination group.
-        :param station_groups: a list of groups containing the station
-            data.
-        :param overwrite: if True, overwrite a previous coincidences
-            group.
-        :param progress: if True, show a progressbar while storing
-            coincidences.
+        :param station_groups: a list of groups containing the station data.
+        :param overwrite: if True overwrite a previous coincidences group.
+        :param progress: if True show a progressbar while storing coincidences.
 
         """
         self.data = data

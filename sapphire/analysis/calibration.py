@@ -111,7 +111,7 @@ class DetermineStationTimingOffsets(object):
 
         :param stations: list of stations for which to determine offsets.
         :param data: the PyTables datafile with timedelta tables.
-        :param progress: if true: show progressbar if true.
+        :param progress: if True show progressbar when determining offsets.
         :param force_stale: if true: do not get network information from API.
         :param time_deltas_group: path to the time deltas group.
 

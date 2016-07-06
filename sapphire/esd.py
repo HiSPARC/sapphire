@@ -128,7 +128,7 @@ def download_data(file, group, station_number, start=None, end=None,
     :param end: a datetime instance defining the end of the search
         interval
     :param type: the datatype to download, either 'events' or 'weather'.
-    :param progress: if True, show a progressbar while downloading.
+    :param progress: if True show a progressbar while downloading.
 
     If group is None, use '/s<station_number>' as a default.
 

@@ -95,7 +95,8 @@ class ProcessEvents(object):
             cases, this is simply the group containing the events table.
         :param source: the name of the events table.  Default: None,
             meaning the default name 'events'.
-        :param progress: show progressbar.
+        :param progress: if True show a progressbar while copying and
+                         processing events.
 
         """
         self.data = data
@@ -474,6 +475,8 @@ class ProcessIndexedEvents(ProcessEvents):
         :param indexes: a list of indexes into the events table.
         :param source: the name of the events table.  Default: None,
             meaning the default name 'events'.
+        :param progress: if True show a progressbar while copying and
+                         processing events.
 
         """
         super(ProcessIndexedEvents, self).__init__(data, group, source,
@@ -615,7 +618,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             cases, this is simply the group containing the events table.
         :param source: the name of the events table.  Default: None,
             meaning the default name 'events'.
-        :param progress: boolean to indicate if a progress bar should be shown.
+        :param progress: if True show a progressbar while copying and
+                         processing events.
         :param station: station number of station to which the data belongs.
 
         """
@@ -829,10 +833,11 @@ class ProcessEventsFromSource(ProcessEvents):
                  progress=False):
         """Initialize the class.
 
-        :param source_file: the PyTables source file
-        :param dest_file: the PyTables dest file
-        :param group_path: the pathname of the source (and destination)
-            group
+        :param source_file,dest_file: PyTables source and destination files.
+        :param source_group,dest_group: the pathname of the source and
+                                        destination group.
+        :param progress: if True show a progressbar while copying and
+                         processing events.
 
         """
         self.source_file = source_file
@@ -931,11 +936,12 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
                  station=None, progress=False):
         """Initialize the class.
 
-        :param source_file: the PyTables source file
-        :param dest_file: the PyTables dest file
-        :param group_path: the pathname of the source (and destination)
-            group
+        :param source_file,dest_file: PyTables source and destination files.
+        :param source_group,dest_group: the pathname of the source and
+                                        destination group.
         :param station: station number of station to which the data belongs.
+        :param progress: if True show a progressbar while copying and
+                         processing events.
 
         """
         self.source_file = source_file
@@ -1071,9 +1077,11 @@ class ProcessWeatherFromSource(ProcessWeather):
                  progress=False):
         """Initialize the class.
 
-        :param source_file,dest_file: the PyTables source and destination file
+        :param source_file,dest_file: PyTables source and destination files.
         :param source_group,dest_group: the pathname of the source and
-                                        destination group
+                                        destination group.
+        :param progress: if True show a progressbar while copying and
+                         processing events.
 
         """
         self.source_file = source_file

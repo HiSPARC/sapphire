@@ -82,7 +82,7 @@ class EventCoreReconstruction(object):
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                          parameters.
         :return: (x, y) core positions in m.
@@ -163,7 +163,7 @@ class CoincidenceCoreReconstruction(object):
                              multiple (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                          parameters.
         :return: (x, y) core positions in m.

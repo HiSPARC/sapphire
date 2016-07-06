@@ -56,8 +56,8 @@ class ReconstructESDEvents(object):
             :class:`~sapphire.clusters.Station` object. If it is a number the
             positions and offsets will be retrieved from the API. Otherwise
             the offsets will be determined with the available data.
-        :param overwrite: if True, overwrite existing reconstruction table.
-        :param progress: if True, show a progressbar while reconstructing.
+        :param overwrite: if True overwrite existing reconstruction table.
+        :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
 
         """
@@ -219,8 +219,8 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
             :class:`~sapphire.clusters.Station` object. If number the
             positions and offsets are retrieved from the API. Otherwise
             the offsets will be determined with the available data.
-        :param overwrite: if True, overwrite existing reconstruction table.
-        :param progress: if True, show a progressbar while reconstructing.
+        :param overwrite: if True overwrite existing reconstruction table.
+        :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
 
         """
@@ -274,8 +274,8 @@ class ReconstructESDCoincidences(object):
 
         :param data: the PyTables datafile.
         :param coincidences_group: the destination group.
-        :param overwrite: if True, overwrite existing reconstruction table.
-        :param progress: if True, show a progressbar while reconstructing.
+        :param overwrite: if True overwrite existing reconstruction table.
+        :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
         :param cluster: a Cluster object to use for the reconstructions.
 
@@ -471,8 +471,8 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
             :class:`~sapphire.clusters.Station` object. If number the
             positions and offsets are retrieved from the API. Otherwise
             the offsets will be determined with the available data.
-        :param overwrite: if True, overwrite existing reconstruction table.
-        :param progress: if True, show a progressbar while reconstructing.
+        :param overwrite: if True overwrite existing reconstruction table.
+        :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
 
         """

@@ -41,7 +41,7 @@ class BaseSimulation(object):
                         exist) in which the result tables will be created.
     :param N: number of simulations to perform.
     :param seed: seed for the pseudo-random number generators.
-    :param progress: if True, show a progressbar while simulating.
+    :param progress: if True show a progressbar while simulating.
 
     """
 
