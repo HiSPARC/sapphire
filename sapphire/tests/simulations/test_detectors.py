@@ -3,6 +3,7 @@ import os
 import random
 
 import numpy as np
+from numpy.testing import assert_almost_equal
 
 from sapphire.simulations.detector import (HiSPARCSimulation,
                                            ErrorlessSimulation)
@@ -22,8 +23,8 @@ class HiSPARCSimulationTest(unittest.TestCase):
         self.assertEqual(self.simulation.simulate_detector_offsets(1),
                          [4.49943665734718])
         offsets = self.simulation.simulate_detector_offsets(10000)
-        self.assertAlmostEqual(np.mean(offsets), 0., 1)
-        self.assertAlmostEqual(np.std(offsets), 2.77, 2)
+        assert_almost_equal(np.mean(offsets), 0., 1)
+        assert_almost_equal(np.std(offsets), 2.77, 2)
 
     def test_simulate_detector_offset(self):
         self.assertEqual(self.simulation.simulate_detector_offset(),
@@ -59,27 +60,27 @@ class HiSPARCSimulationTest(unittest.TestCase):
 
     def test_simulate_detector_mips(self):
         # Test with single angle
-        self.assertAlmostEqual(self.simulation.simulate_detector_mips(1, 0.5),
+        assert_almost_equal(float(self.simulation.simulate_detector_mips(1, 0.5)),
                                1.1818585)
-        self.assertAlmostEqual(self.simulation.simulate_detector_mips(2, 0.2),
+        assert_almost_equal(self.simulation.simulate_detector_mips(2, 0.2),
                                1.8313342374)
 
         # Test with multiple angles
-        self.assertAlmostEqual(self.simulation.simulate_detector_mips(2, np.array([0.5, 1])),
+        assert_almost_equal(self.simulation.simulate_detector_mips(2, np.array([0.5, 1])),
                                2.58167027)
-        self.assertAlmostEqual(self.simulation.simulate_detector_mips(1, np.array([0.5, 1])),
+        assert_almost_equal(self.simulation.simulate_detector_mips(1, np.array([0.5, 1])),
                                2.21526297)
 
         # Test limiting detector length
-        self.assertAlmostEqual(self.simulation.simulate_detector_mips(1, np.radians(90)),
+        assert_almost_equal(self.simulation.simulate_detector_mips(1, np.radians(90)),
                                47.6237460)
-        self.assertAlmostEqual(self.simulation.simulate_detector_mips(2, np.array([np.radians(90), np.radians(87)])),
+        assert_almost_equal(self.simulation.simulate_detector_mips(2, np.array([np.radians(90), np.radians(87)])),
                                74.6668728)
 
     def test_generate_core_position(self):
         x, y = self.simulation.generate_core_position(500)
-        self.assertAlmostEqual(x, 59.85605947801825)
-        self.assertAlmostEqual(y, 317.2896993591305)
+        assert_almost_equal(x, 59.85605947801825)
+        assert_almost_equal(y, 317.2896993591305)
 
     def test_generate_azimuth(self):
         self.assertEqual(self.simulation.generate_azimuth(),
@@ -88,7 +89,7 @@ class HiSPARCSimulationTest(unittest.TestCase):
     def test_generate_energy(self):
         self.assertEqual(self.simulation.generate_energy(), 136117213526167.64)
         io = 1e17
-        self.assertAlmostEqual(self.simulation.generate_energy(io, io) / io, 1.)
+        assert_almost_equal(self.simulation.generate_energy(io, io) / io, 1.)
         self.assertEqual(self.simulation.generate_energy(alpha=-3), 100005719231473.97)
 
 

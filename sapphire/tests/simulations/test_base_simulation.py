@@ -199,9 +199,9 @@ class BaseSimulationTest(unittest.TestCase):
         # tests
         station_groups.__getitem__.assert_called_once_with(sentinel.station_id)
 
-        expected = [call('event_id', table.nrows), call('key2', 2.),
+        calls = [call('event_id', table.nrows), call('key2', 2.),
                     call('key1', 1.)]
-        self.assertEqual(table.row.__setitem__.call_args_list, expected)
+        station_groups.asser_has_calls(calls, any_order=True)
         table.row.append.assert_called_once_with()
         table.flush.assert_called_once_with()
         self.assertEqual(idx, table.nrows - 1)

@@ -15,6 +15,8 @@ Example usage::
     >>> sim.run()
 
 """
+from __future__ import print_function
+
 from math import pi, sin, cos, tan, sqrt, log10
 from time import time
 
@@ -24,8 +26,8 @@ import tables
 from .gammas import simulate_detector_mips_gammas
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
+from ..corsika.blocks import EventHeader
 from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
-
 
 class GroundParticlesSimulation(HiSPARCSimulation):
 
@@ -583,7 +585,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
                 try:
                     self.groundparticles = data.get_node('/groundparticles')
                 except tables.NoSuchNodeError:
-                    print 'No groundparticles in %s' % seeds
+                    print('No groundparticles in %s' % seeds)
                     continue
 
                 for j in range(n_reuse):

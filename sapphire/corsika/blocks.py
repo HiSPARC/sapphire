@@ -12,8 +12,8 @@ import math
 
 import numpy
 
-import units
-import particles
+from sapphire.corsika import units
+from sapphire.corsika import particles
 try:
     from numba import jit
 except ImportError:
@@ -209,9 +209,9 @@ class EventHeader(object):
             self.azimuth = azimuth
 
         self.n_seeds = subblock[12]
-        self.seeds = numpy.array(zip(subblock[13:41:3],
+        self.seeds = numpy.array(list(zip(subblock[13:41:3],
                                      subblock[14:42:3],
-                                     subblock[15:43:3]))
+                                     subblock[15:43:3])))
 
         self.run_number = subblock[43]
         self.date_start = subblock[44]

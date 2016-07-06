@@ -2,6 +2,7 @@ import unittest
 import os
 
 from mock import Mock, sentinel
+import six
 import tables
 from numpy import pi, sqrt, random, testing, arange
 
@@ -200,7 +201,10 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.select_simulation = Mock()
         self.simulation.select_simulation.return_value = None
         shower_parameters = self.simulation.generate_shower_parameters()
-        self.assertRaises(StopIteration, shower_parameters.next)
+        if six.PY2:
+            self.assertRaises(StopIteration, shower_parameters.next)
+        else:
+            self.assertRaises(StopIteration, shower_parameters.__next__)
         self.assertEqual(self.simulation.select_simulation.call_count,
                          self.simulation.N)
 
