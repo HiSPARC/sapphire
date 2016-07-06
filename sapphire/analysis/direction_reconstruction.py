@@ -387,7 +387,29 @@ class CoincidenceDirectionReconstructionDetectors(
         return theta, phi, nums
 
 
-class DirectAlgorithm(object):
+class BaseDirectionAlgorithm(object):
+
+    """No actual direction reconstruction algorithm
+
+    Simply returns (nan, nan) as direction.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+        """Reconstruct core position
+
+        :param t: detector arrival time in ns.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors in m.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
+
+        """
+        return (nan, nan)
+
+
+class DirectAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -579,7 +601,7 @@ class DirectAlgorithm(object):
         return num / den
 
 
-class DirectAlgorithmCartesian(object):
+class DirectAlgorithmCartesian(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -646,7 +668,7 @@ class DirectAlgorithmCartesian(object):
         return theta, phi
 
 
-class DirectAlgorithmCartesian3D(object):
+class DirectAlgorithmCartesian3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -848,7 +870,7 @@ class SphereAlgorithm(object):
         return x_int, y_int, z_int, t_int
 
 
-class FitAlgorithm3D(object):
+class FitAlgorithm3D(BaseDirectionAlgorithm):
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
@@ -954,7 +976,7 @@ class FitAlgorithm3D(object):
         return slq + m * m
 
 
-class RegressionAlgorithm(object):
+class RegressionAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles using an analytical regression formula.
 
@@ -1040,7 +1062,7 @@ class RegressionAlgorithm(object):
         return theta, phi
 
 
-class RegressionAlgorithm3D(object):
+class RegressionAlgorithm3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles by iteratively applying a regression formula.
 
@@ -1106,7 +1128,7 @@ class RegressionAlgorithm3D(object):
         return theta, phi
 
 
-class CurvedRegressionAlgorithm(object):
+class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles taking the shower front curvature into account.
 
@@ -1184,7 +1206,7 @@ class CurvedRegressionAlgorithm(object):
                     2 * dx * dy * nx * ny)
 
 
-class CurvedRegressionAlgorithm3D(object):
+class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles accounting for front curvature and detector altitudes
 

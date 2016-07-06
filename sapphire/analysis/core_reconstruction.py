@@ -233,7 +233,29 @@ class CoincidenceCoreReconstructionDetectors(
         return core_x, core_y
 
 
-class CenterMassAlgorithm(object):
+class BaseCoreAlgorithm(object):
+
+    """No actual core reconstruction algorithm
+
+    Simply returns (nan, nan) as core.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core position
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors in m.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
+
+        """
+        return (nan, nan)
+
+
+class CenterMassAlgorithm(BaseCoreAlgorithm):
 
     """Simple core estimator
 
@@ -271,7 +293,7 @@ class CenterMassAlgorithm(object):
         return core_x, core_y
 
 
-class AverageIntersectionAlgorithm(object):
+class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
 
     """Core estimator
 
@@ -391,7 +413,7 @@ class AverageIntersectionAlgorithm(object):
         return newxlist, newylist
 
 
-class EllipsLdfAlgorithm(object):
+class EllipsLdfAlgorithm(BaseCoreAlgorithm):
 
     """Simple core estimator
 
