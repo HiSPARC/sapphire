@@ -1,8 +1,19 @@
 """ Define HiSPARC detectors, stations and clusters.
 
-    The BaseCluster class defines a HiSPARC cluster consisting of one or
-    more stations.  The Station class defines a HiSPARC station,
-    consisting of one or more Detectors.
+    The :class:`BaseCluster` defines a HiSPARC cluster consisting of one or
+    more stations.  The :class:`Station` defines a HiSPARC station,
+    consisting of one or more :class:`Detectors`.
+
+    To easily create a cluster object for a specific set of real HiSPARC
+    stations the :class:`HiSPARCStations` can be used, for example::
+
+    >>> from sapphire import HiSPARCStations
+    >>> cluster = HiSPARCStations([102, 104, 105], force_stale=True)
+
+    The use of ``force_stale`` forces the use of local data, which
+    is much faster to load than data from the server.
+
+    These cluster objects are mainly used by simulations and reconstructions.
 
 """
 from __future__ import division
