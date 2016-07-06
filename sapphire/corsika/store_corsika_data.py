@@ -14,6 +14,8 @@
         $ store_corsika_data --progress DAT000000 corsika.h5
 
 """
+from __future__ import print_function
+
 import argparse
 import tempfile
 import os
@@ -114,7 +116,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
 
     """
     if progress:
-        print "Converting CORSIKA data (%s) to HDF5 format" % source._filename
+        print("Converting CORSIKA data (%s) to HDF5 format" % source._filename)
     source.check()
 
     for event in source.get_events():
@@ -126,7 +128,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
                                              expectedrows=n_particles)
         except tables.NodeError:
             if progress:
-                print '%s already exists, doing nothing' % table_name
+                print('%s already exists, doing nothing' % table_name)
                 return
             else:
                 raise
@@ -167,7 +169,7 @@ def create_index(hdf_data, table_name='groundparticles', progress=False):
     """
     table = hdf_data.get_node('/', table_name)
     if progress:
-        print 'Ensuring the x column for table %s is indexed.' % table_name
+        print('Ensuring the x column for table %s is indexed.' % table_name)
     try:
         table.cols.x.create_csindex()
     except ValueError:
@@ -184,7 +186,7 @@ def copy_and_sort_node(hdf_temp, hdf_data, table_name='groundparticles',
     target_root = hdf_data.get_node('/')
     source_table = hdf_temp.get_node('/', table_name)
     if progress:
-        print 'Creating the sorted HDF5 file.'
+        print('Creating the sorted HDF5 file.')
     source_table.copy(newparent=target_root, sortby='x', propindexes=True)
     hdf_temp.copy_node_attrs('/', target_root)
 

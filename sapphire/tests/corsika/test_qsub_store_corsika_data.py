@@ -83,7 +83,7 @@ class SeedsTest(unittest.TestCase):
     def test_run(self, mock_template, mock_append, mock_submit, mock_store,
                  mock_check, mock_get_seeds, mock_umask, mock_size):
         seeds = set(['123_456', '234_567'])
-        mock_size.return_value = 12355L
+        mock_size.return_value = 12355
         mock_get_seeds.return_value = seeds.copy()
         mock_check.return_value = 6
         mock_template.format.return_value = sentinel.script
@@ -94,7 +94,7 @@ class SeedsTest(unittest.TestCase):
             mock_append.assert_any_call([seed])
         mock_template.format.assert_called_with(command=sentinel.command,
                                                 datadir=qsub_store_corsika_data.DATADIR)
-        mock_umask.assert_called_once_with(002)
+        mock_umask.assert_called_once_with(0o02)
 
 
 if __name__ == '__main__':

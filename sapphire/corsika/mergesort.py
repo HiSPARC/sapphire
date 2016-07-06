@@ -1,5 +1,6 @@
 # coding: utf-8
-from __future__ import division
+from __future__ import print_function
+
 import os
 import tables
 import tempfile
@@ -78,10 +79,10 @@ class TableMergeSort(object):
                 self.hdf5_temp = tempfile
             if self.progress:
                 parts = int(len(self.table) / self.nrows_in_chunk) + 1
-                print "On disk mergesort in %d parts." % parts
+                print("On disk mergesort in %d parts." % parts)
         else:
             if self.progress:
-                print "Table can be sorted in memory."
+                print("Table can be sorted in memory.")
 
     def __enter__(self):
         return self
@@ -103,11 +104,11 @@ class TableMergeSort(object):
         parts = int(nrows / chunk) + 1
         if parts == 1:
             if self.progress:
-                print "Sorting table in memory and writing to disk."
+                print("Sorting table in memory and writing to disk.")
             self._sort_chunk(self.outtable, 0, nrows)
         else:
             if self.progress:
-                print "Sorting in %d chunks of %d rows:" % (parts, chunk)
+                print("Sorting in %d chunks of %d rows:" % (parts, chunk))
 
             for idx, start in pbar(enumerate(range(0, nrows, chunk)),
                                    length=parts, show=self.progress):
@@ -122,7 +123,7 @@ class TableMergeSort(object):
             idx = 0
 
             if self.progress:
-                print "Merging:"
+                print("Merging:")
 
             for keyedrow in pbar(merge(*self._iterators), length=nrows,
                                  show=self.progress):

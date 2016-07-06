@@ -6,7 +6,7 @@ The classes in this module correspond one-to-one with the sub-blocks
 
 Author: Javier Gonzalez <jgonzalez@ik.fzk.de>
 """
-
+from __future__ import division
 import struct
 import math
 
@@ -420,8 +420,8 @@ def particle_data(subblock):
     y = x_corsika
     t = subblock[6] * units.ns  # or z for additional muon info
 
-    id = description / 1000
-    hadron_generation = description / 10 % 100
+    id = description // 1000
+    hadron_generation = description // 10 % 100
     observation_level = description % 10
 
     r = math.sqrt(x ** 2 + y ** 2)

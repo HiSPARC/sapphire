@@ -118,7 +118,7 @@ def prepare_output(n):
     :return: path to the temporary file and a PyTables handler for the file.
 
     """
-    os.umask(002)
+    os.umask(0o02)
     tmp_path = create_tempfile_path()
     overview = tables.open_file(tmp_path, 'w')
     overview.create_table('/', 'simulations', Simulations,

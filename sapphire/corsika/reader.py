@@ -64,6 +64,7 @@
     - Arne de Laat <adelaat@nikhef.nl>
 
 """
+from __future__ import division
 
 from struct import unpack
 import warnings
@@ -128,14 +129,14 @@ class CorsikaEvent(object):
         for sub_block_index in self._raw_file._subblocks_indices(
                 self._header_index, self._end_index):
             for particle in self._raw_file._get_particles(sub_block_index):
-                type = particle[6]  # particle type
+                type_ = particle[6]  # particle type
                 level = particle[9]  # observation level
 
                 # skip padding, used to fill a subblock
-                if type == 0:
+                if type_ == 0:
                     continue
                 # muon additional information
-                if type in [75, 76]:
+                if type_ in [75, 76]:
                     warnings.warn('Ignoring muon additional information.')
                     continue
                 # ignore all observation levels except for nr. 1
@@ -192,7 +193,7 @@ class CorsikaFile(object):
                             'of blocks!'.format(name=self._filename))
         block_size = self.format.block_size
         padding = self.format.block_padding_size
-        n_blocks = self._size / block_size
+        n_blocks = self._size // block_size
         for block in range(n_blocks):
             self._file.seek(block * block_size)
             a = unpack('i', self._file.read(padding))[0]

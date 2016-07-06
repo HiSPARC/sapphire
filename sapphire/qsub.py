@@ -93,7 +93,7 @@ def create_script(script, name):
 
     with open(script_path, 'w') as script_file:
         script_file.write(script)
-    os.chmod(script_path, 0774)
+    os.chmod(script_path, 0o774)
 
     return script_path, script_name
 

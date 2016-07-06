@@ -2,6 +2,7 @@ import unittest
 import warnings
 import random
 
+from six.moves import builtins
 from mock import patch, sentinel, mock_open
 
 from sapphire.corsika import qsub_corsika
@@ -107,7 +108,7 @@ class CorsikaBatchTest(unittest.TestCase):
     def test_create_input(self, mock_rundir):
         mock_rundir.return_value = '/data/123_456'
         mock_file = mock_open()
-        with patch('__builtin__.open', mock_file):
+        with patch.object(builtins.open, mock_file):
             self.cb.create_input()
         mock_rundir.assert_called_once_with()
         mock_file.assert_called_once_with('/data/123_456/input-hisparc', 'w')
