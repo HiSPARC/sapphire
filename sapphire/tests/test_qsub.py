@@ -1,9 +1,16 @@
 import unittest
 from itertools import cycle
 
+from six import PY2
 from mock import patch, sentinel, mock_open
 
 from sapphire import qsub
+
+
+if PY2:
+    open_obj = '__builtin__.open'
+else:
+    open_obj = 'builtins.open'
 
 
 @patch.object(qsub.utils, 'which')
@@ -82,13 +89,13 @@ class CreateScriptTest(unittest.TestCase):
     @patch.object(qsub.os, 'chmod')
     def test_create_script(self, mock_chmod):
         mock_file = mock_open()
-        with patch('__builtin__.open', mock_file):
+        with patch(open_obj, mock_file):
             res_path, res_name = qsub.create_script(sentinel.script, 'hoi')
         self.assertEqual(res_path, '/tmp/his_hoi.sh')
         self.assertEqual(res_name, 'his_hoi.sh')
         mock_file.assert_called_once_with(res_path, 'w')
         mock_file().write.called_once_with(sentinel.script)
-        mock_chmod.assert_called_once_with(res_path, 0774)
+        mock_chmod.assert_called_once_with(res_path, 0o774)
 
 
 class DeleteScriptTest(unittest.TestCase):
