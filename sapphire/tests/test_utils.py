@@ -1,6 +1,7 @@
+from __future__ import print_function
 import unittest
 import types
-from io import StringIO
+from six import StringIO
 
 from numpy import pi, random, exp, sqrt
 import progressbar
