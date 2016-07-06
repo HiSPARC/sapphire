@@ -76,7 +76,7 @@ from .blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
 
 class CorsikaEvent(object):
     def __init__(self, raw_file, header_index, end_index):
-        """CorsikaEvent constructor.
+        """CorsikaEvent constructor
 
         The user never calls this. The CorsikaFile does.
 

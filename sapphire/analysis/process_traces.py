@@ -54,7 +54,7 @@ class TraceObservables(object):
     """
 
     def __init__(self, traces):
-        """Initialize the class.
+        """Initialize the class
 
         :param traces: a NumPy array of traces, ordered such that the first
                        element is the first sample of each trace.
@@ -179,7 +179,7 @@ class MeanFilter(object):
     """
 
     def __init__(self, use_threshold=True, threshold=ADC_FILTER_THRESHOLD):
-        """Initialize the class.
+        """Initialize the class
 
         :param use_threshold: use a threshold when filtering traces.
         :param threshold: value of the threshold to use.

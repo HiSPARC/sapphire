@@ -15,7 +15,7 @@ class GPSTime(object):
     """Date/time utility class."""
 
     def __init__(self, *args):
-        """Instantiate the class.
+        """Initialize the class
 
         The arguments to the __init__ method can take different forms.
         First, it can take year, month, day, hour, minutes, seconds
