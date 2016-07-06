@@ -1,9 +1,15 @@
 import unittest
 
+import six
+
 from mock import patch, sentinel, mock_open
 
 from sapphire.corsika import qsub_store_corsika_data
 
+if six.PY2:
+    open_obj = '__builtin__.open'
+else:
+    open_obj = 'builtins.open'
 
 class SeedsTest(unittest.TestCase):
 
@@ -23,7 +29,7 @@ class SeedsTest(unittest.TestCase):
 
     def test_seeds_in_queue(self):
         mock_file = mock_open(read_data='123_456\n234_567')
-        with patch('__builtin__.open', mock_file):
+        with patch(open_obj, mock_file):
             seeds = qsub_store_corsika_data.seeds_in_queue()
         mock_file.assert_called_once_with(qsub_store_corsika_data.QUEUED_SEEDS, 'r')
         self.assertEqual(seeds, set(['123_456', '234_567']))
@@ -31,7 +37,7 @@ class SeedsTest(unittest.TestCase):
 
         # Empty set if log not available
         mock_file.side_effect = IOError('no log!')
-        with patch('__builtin__.open', mock_file):
+        with patch(open_obj, mock_file):
             seeds = qsub_store_corsika_data.seeds_in_queue()
         mock_file.assert_called_with(qsub_store_corsika_data.QUEUED_SEEDS, 'r')
         self.assertEqual(seeds, set([]))
@@ -39,7 +45,7 @@ class SeedsTest(unittest.TestCase):
     def test_write_queued_seeds(self):
         mock_file = mock_open()
         seeds = set(['123_456', '234_567'])
-        with patch('__builtin__.open', mock_file):
+        with patch(open_obj, mock_file):
             qsub_store_corsika_data.write_queued_seeds(seeds)
         mock_file.assert_called_once_with(qsub_store_corsika_data.QUEUED_SEEDS, 'w')
         mock_file().write.assert_called_once_with('\n'.join(seeds))
