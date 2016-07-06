@@ -182,3 +182,6 @@ class FromWGS84ToENUTransformation(object):
         x, y, z = (transformation * matrix(coordinates).T).A1
 
         return x + Xr, y + Yr, z + Zr
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, self.ref_lla)

@@ -369,3 +369,10 @@ class CoincidenceQuery(object):
         filtered_events = self.events_from_stations(coincidences, stations, n)
 
         return filtered_events
+
+    def __repr__(self):
+        try:
+            return "%s(%r, %r)" % (self.__class__.__name__, self.data.filename,
+                                   self.coincidences._v_parent._v_pathname)
+        except AttributeError:
+            return "<finished %s>" % self.__class__.__name__

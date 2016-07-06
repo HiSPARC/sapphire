@@ -455,6 +455,15 @@ class ProcessEvents(object):
             self.data.remove_node(self.group, self.destination)
         self._tmp_events.rename(self.destination)
 
+    def __repr__(self):
+        if not self.data.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        else:
+            return ("%s(%r, %r, source=%r, progress=%r)" %
+                    (self.__class__.__name__, self.data.filename,
+                     self.group._v_pathname, self.source._v_pathname,
+                     self.progress))
+
 
 class ProcessIndexedEvents(ProcessEvents):
 
@@ -817,6 +826,20 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
         return -999
 
+    def __repr__(self):
+        if not self.data.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        elif self.station is None:
+            return ("%s(%r, %r, source=%r, progress=%r, Station=%r)" %
+                    (self.__class__.__name__, self.data.filename,
+                     self.group._v_pathname, self.source._v_pathname,
+                     self.progress, None))
+        else:
+            return ("%s(%r, %r, source=%r, progress=%r, station=%d)" %
+                    (self.__class__.__name__, self.data.filename,
+                     self.group._v_pathname, self.source._v_pathname,
+                     self.progress, self.station.number))
+
 
 class ProcessEventsFromSource(ProcessEvents):
 
@@ -919,6 +942,15 @@ class ProcessEventsFromSource(ProcessEvents):
 
         return self.source_group.blobs
 
+    def __repr__(self):
+        if not self.source_file.isopen or not self.dest_file.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        else:
+            return ("%s(%r, %r, %r, %r, progress=%r)" %
+                    (self.__class__.__name__, self.source_file.filename,
+                     self.dest_file.filename, self.source_group._v_pathname,
+                     self.dest_group._v_pathname, self.progress))
+
 
 class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
                                                ProcessEventsWithTriggerOffset):
@@ -967,6 +999,21 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
                 raise Exception('No trigger settings available')
         else:
             self.station = Station(station)
+
+    def __repr__(self):
+        if not self.source_file.isopen or not self.dest_file.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        elif self.station is None:
+            return ("%s(%r, %r, %r, %r, progress=%r)" %
+                    (self.__class__.__name__, self.source_file.filename,
+                     self.dest_file.filename, self.source_group._v_pathname,
+                     self.dest_group._v_pathname, self.progress))
+        else:
+            return ("%s(%r, %r, %r, %r, station=%d, progress=%r)" %
+                    (self.__class__.__name__, self.source_file.filename,
+                     self.dest_file.filename, self.source_group._v_pathname,
+                     self.dest_group._v_pathname, self.station.number,
+                     self.progress))
 
 
 class ProcessWeather(ProcessEvents):
@@ -1121,3 +1168,12 @@ class ProcessWeatherFromSource(ProcessWeather):
         new_table.append(selected_rows)
         new_table.flush()
         return new_table
+
+    def __repr__(self):
+        if not self.source_file.isopen or not self.dest_file.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        else:
+            return ("%s(%r, %r, %r, %r, progress=%r)" %
+                    (self.__class__.__name__, self.source_file.filename,
+                     self.dest_file.filename, self.source_group._v_pathname,
+                     self.dest_group._v_pathname, self.progress))

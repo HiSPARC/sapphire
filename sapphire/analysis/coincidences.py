@@ -490,6 +490,19 @@ class Coincidences(object):
 
         return coincidences
 
+    def __repr__(self):
+        if not self.data.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        try:
+            return ("%s(%r, %r, %r, overwrite=%r, progress=%r)" %
+                    (self.__class__.__name__, self.data.filename,
+                     self.coincidences._v_parent._v_pathname,
+                     self.station_groups, self.overwrite, self.progress))
+        except AttributeError:
+            return ("%s(%r, %r, %r, overwrite=%r, progress=%r)" %
+                    (self.__class__.__name__, self.data.filename,
+                     None, self.station_groups, self.overwrite, self.progress))
+
 
 class CoincidencesESD(Coincidences):
     """Store coincidences specifically using the ESD

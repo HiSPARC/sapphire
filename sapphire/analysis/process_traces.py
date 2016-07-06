@@ -258,3 +258,10 @@ class MeanFilter(object):
                 filtered_trace.append(int(around(local_mean)))
 
         return filtered_trace
+
+    def __repr__(self):
+        try:
+            return ("%s(use_threshold=%s, threshold=%r)" %
+                    (self.__class__.__name__, True, self.threshold))
+        except AttributeError:
+            return "%s(use_threshold=%s)" % (self.__class__.__name__, False)

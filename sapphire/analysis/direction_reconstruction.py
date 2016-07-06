@@ -117,6 +117,10 @@ class EventDirectionReconstruction(object):
             theta, phi, ids = ((), (), ())
         return theta, phi, ids
 
+    def __repr__(self):
+        return ("<%s, station: %r, direct: %r, fit: %r>" %
+                (self.__class__.__name__, self.station, self.direct, self.fit))
+
 
 class CoincidenceDirectionReconstruction(object):
 
@@ -317,6 +321,11 @@ class CoincidenceDirectionReconstruction(object):
         """
         detector_offsets = station.detector_timing_offset(ts0)
         return [offset + d_off for d_off in detector_offsets]
+
+    def __repr__(self):
+        return ("<%s, cluster: %r, direct: %r, fit: %r, curved: %r>" %
+                (self.__class__.__name__, self.cluster, self.direct, self.fit,
+                 self.curved))
 
 
 class CoincidenceDirectionReconstructionDetectors(

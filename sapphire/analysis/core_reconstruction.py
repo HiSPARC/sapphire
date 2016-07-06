@@ -98,6 +98,10 @@ class EventCoreReconstruction(object):
             core_x, core_y = ((), ())
         return core_x, core_y
 
+    def __repr__(self):
+        return ("<%s, station: %r, estimator: %r>" %
+                (self.__class__.__name__, self.station, self.estimator))
+
 
 class CoincidenceCoreReconstruction(object):
 
@@ -179,6 +183,10 @@ class CoincidenceCoreReconstruction(object):
         else:
             core_x, core_y = ((), ())
         return core_x, core_y
+
+    def __repr__(self):
+        return ("<%s, cluster: %r, estimator: %r>" %
+                (self.__class__.__name__, self.cluster, self.estimator))
 
 
 class CoincidenceCoreReconstructionDetectors(
