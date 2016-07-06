@@ -247,7 +247,7 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         best_offsets = dirrec.determine_best_offsets(station_numbers, midnight_ts, offsets)
         self.assertEqual(list(best_offsets.keys()), station_numbers)
         self.assertEqual(list(best_offsets.values()), [[1.0, 0.0, 2.0, 3.0],
-                                                 [2.0, 1.0, 3.0, 4.0]])
+                                                       [2.0, 1.0, 3.0, 4.0]])
 
     def test_determine_best_reference(self):
         # last station would be best reference, but not in station_numbers

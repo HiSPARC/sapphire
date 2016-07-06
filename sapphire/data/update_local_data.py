@@ -17,6 +17,8 @@ To make the script show information about what it will do add the help flag::
     $ update_local_data --help
 
 """
+from __future__ import print_function
+
 from json import dump, loads
 from os import path, extsep, mkdir, makedirs
 from itertools import combinations
@@ -62,7 +64,7 @@ def update_toplevel_json(type):
     try:
         get_and_store_json(url)
     except:
-        print 'Failed to get %s data' % type
+        print('Failed to get %s data' % type)
 
 
 def update_sublevel_json(arg_type, type, progress=True):
@@ -77,7 +79,7 @@ def update_sublevel_json(arg_type, type, progress=True):
         numbers = [x['number'] for x in loads(API._retrieve_url(url))]
     except:
         if progress:
-            print 'Failed to get %s data' % type
+            print('Failed to get %s data' % type)
         return
 
     kwarg = API.urls[type].split('/')[1].strip('{}')
@@ -88,8 +90,8 @@ def update_sublevel_json(arg_type, type, progress=True):
             get_and_store_json(url.strip('/'))
         except:
             if progress:
-                print ('Failed to get %s data for %s %d' %
-                       (type, arg_type, number))
+                print(('Failed to get %s data for %s %d' %
+                       (type, arg_type, number)))
             return
 
 
@@ -108,7 +110,7 @@ def update_sublevel_tsv(type, station_numbers, progress=True):
             get_and_store_tsv(url)
         except:
             if progress and type != 'layout':
-                print 'Failed to get %s for station %d' % (type, number)
+                print('Failed to get %s for station %d' % (type, number))
             continue
 
 
@@ -128,8 +130,8 @@ def update_subsublevel_tsv(type, station_numbers, network, progress=True):
             get_and_store_tsv(url)
         except:
             if progress:
-                print ('Failed to get %s data for station pair %d-%d' %
-                       (type, number1, number2))
+                print(('Failed to get %s data for station pair %d-%d' %
+                       (type, number1, number2)))
 
 
 def get_and_store_json(url):

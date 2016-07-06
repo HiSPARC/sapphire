@@ -345,7 +345,7 @@ class CorsikaFile(object):
 
         unpacked_particles = self._unpack_particles(word)
         particles = list(zip(*[iter(unpacked_particles)] *
-                        self.format.fields_per_particle))
+                             self.format.fields_per_particle))
         return (particle_data(particle) for particle in particles)
 
     def _unpack_subblock(self, word):

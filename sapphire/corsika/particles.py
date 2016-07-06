@@ -28,6 +28,7 @@ So to find e+/e-:
 import re
 from six import iteritems
 
+
 def name(particle_id):
     """Get the name for a CORSIKA particle code
 
@@ -39,7 +40,8 @@ def name(particle_id):
     try:
         return ID[particle_id]
     except KeyError:
-        return ATOMIC_NUMBER[int(particle_id) % 100] + str(int(particle_id // 100))
+        return (ATOMIC_NUMBER[int(particle_id) % 100] +
+                str(int(particle_id // 100)))
 
 
 def particle_id(name):

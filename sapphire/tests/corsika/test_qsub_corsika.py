@@ -1,6 +1,5 @@
 import unittest
 import warnings
-import random
 
 from six import PY2
 from mock import patch, sentinel, mock_open

@@ -11,6 +11,7 @@ if six.PY2:
 else:
     open_obj = 'builtins.open'
 
+
 class SeedsTest(unittest.TestCase):
 
     @patch.object(qsub_store_corsika_data.glob, 'glob')

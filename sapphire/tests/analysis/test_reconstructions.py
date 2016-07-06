@@ -98,8 +98,8 @@ class ReconstructESDEventsTest(unittest.TestCase):
 
     def test__store_reconstruction(self):
         event = MagicMock()
-        # _store_reconstruction calls  min(event['n1'], ...).  
-        # but MagicMock is unordered in python 3! 
+        # _store_reconstruction calls  min(event['n1'], ...).
+        # but MagicMock is unordered in python 3!
         # Mock a dict that always returns 42.
         event.__getitem__.side_effect = lambda x: 42.
         self.rec.reconstructions = MagicMock()

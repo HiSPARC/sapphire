@@ -26,8 +26,8 @@ import tables
 from .gammas import simulate_detector_mips_gammas
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
-from ..corsika.blocks import EventHeader
 from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
+
 
 class GroundParticlesSimulation(HiSPARCSimulation):
 

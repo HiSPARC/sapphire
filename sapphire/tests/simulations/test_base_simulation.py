@@ -200,7 +200,7 @@ class BaseSimulationTest(unittest.TestCase):
         station_groups.__getitem__.assert_called_once_with(sentinel.station_id)
 
         calls = [call('event_id', table.nrows), call('key2', 2.),
-                    call('key1', 1.)]
+                 call('key1', 1.)]
         station_groups.asser_has_calls(calls, any_order=True)
         table.row.append.assert_called_once_with()
         table.flush.assert_called_once_with()
