@@ -2,7 +2,7 @@
 
     The :class:`BaseCluster` defines a HiSPARC cluster consisting of one or
     more stations.  The :class:`Station` defines a HiSPARC station,
-    consisting of one or more :class:`Detectors`.
+    consisting of one or more :class:`Detector` objects.
 
     To easily create a cluster object for a specific set of real HiSPARC
     stations the :class:`HiSPARCStations` can be used, for example::
