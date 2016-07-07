@@ -296,7 +296,7 @@ class BaseSimulation(object):
         """Create the groups and events table to store the observables
 
         :param id: the station number, used for the group name
-        :param station: a :class:`~sapphire.clusters.Station` object
+        :param station: a :class:`sapphire.clusters.Station` object
 
         """
         self.cluster_group = self.data.create_group(self.output_path,

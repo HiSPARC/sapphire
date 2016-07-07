@@ -25,7 +25,7 @@ def determine_detector_timing_offsets(events, station=None):
     """Determine the timing offsets between station detectors.
 
     :param events: events table of processed events.
-    :param station: :class:`~sapphire.clusters.Station` object, to determine
+    :param station: :class:`sapphire.clusters.Station` object, to determine
         number of detectors and relative altitudes.
     :return: list of detector offsets.
 

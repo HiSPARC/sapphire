@@ -53,7 +53,7 @@ class ReconstructESDEvents(object):
         :param station_group: the group containing the event table,
             the results will also be stored in this group.
         :param station: either a station number or
-            :class:`~sapphire.clusters.Station` object. If it is a number the
+            :class:`sapphire.clusters.Station` object. If it is a number the
             positions and offsets will be retrieved from the API. Otherwise
             the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
@@ -216,7 +216,7 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
         :param station_group: the group containing the event table,
             the results will also be stored in this group.
         :param station: either a station number or
-            :class:`~sapphire.clusters.Station` object. If number the
+            :class:`sapphire.clusters.Station` object. If number the
             positions and offsets are retrieved from the API. Otherwise
             the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
@@ -468,7 +468,7 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
         :param station_group: the group containing the event table,
             the results will also be stored in this group.
         :param station: either a station number or
-            :class:`~sapphire.clusters.Station` object. If number the
+            :class:`sapphire.clusters.Station` object. If number the
             positions and offsets are retrieved from the API. Otherwise
             the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.

@@ -44,7 +44,7 @@ class EventDirectionReconstruction(object):
     :meth:`reconstruct_event`. To use other algorithms overwrite the
     ``direct`` and ``fit`` attributes.
 
-    :param station: :class:`~sapphire.clusters.Station` object.
+    :param station: :class:`sapphire.clusters.Station` object.
 
     """
 
