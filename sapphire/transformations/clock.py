@@ -6,6 +6,10 @@ Supported systems: GPS, UTC, GMST, LST, JD and MJD.
 
 Formulae from:
 
+IETF list of leap seconds
+'Leap seconds announced by the IERS'
+https://www.ietf.org/timezones/data/leap-seconds.list
+
 Duffett-Smith1990
 'Astronomy with your personal computer'
 ISBN 0-521-38995-X
@@ -28,7 +32,8 @@ from . import base, angles
 
 
 #: Dates of leap second introductions.
-LEAP_SECONDS = (('July 1, 2015', 17),
+LEAP_SECONDS = (('January 1, 2017', 18),
+                ('July 1, 2015', 17),
                 ('July 1, 2012', 16),
                 ('January 1, 2009', 15),
                 ('January 1, 2006', 14),
