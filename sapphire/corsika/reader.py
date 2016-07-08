@@ -80,6 +80,10 @@ class CorsikaEvent(object):
 
         The user never calls this. The CorsikaFile does.
 
+        :param raw_file: :class:`CorsikaFile` object.
+        :param header_index: index where the event header starts.
+        :param end_index: index where the event end starts.
+
         """
         self._raw_file = raw_file
         self._header_index = header_index
@@ -144,6 +148,10 @@ class CorsikaEvent(object):
                     continue
 
                 yield particle
+
+    def __repr__(self):
+        return "%s(%r, %r, %r)" % (self.__class__.__name__, self._raw_file,
+                                   self._header_index, self._end_index)
 
 
 class CorsikaFile(object):
@@ -379,6 +387,9 @@ class CorsikaFile(object):
 
     def Blocks():
         pass
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, self._filename)
 
 
 class CorsikaFileThin(CorsikaFile):

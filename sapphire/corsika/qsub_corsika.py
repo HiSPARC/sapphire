@@ -29,7 +29,7 @@ import textwrap
 import subprocess
 import argparse
 import warnings
-from math import modf
+from math import modf, log10
 
 from . import particles
 from ..utils import pbar
@@ -251,6 +251,14 @@ class CorsikaBatch(object):
         source = os.path.join(CORSIKADIR, self.corsika + '.log')
         destination = self.get_rundir()
         subprocess.check_output(['cp', source, destination])
+
+    def __repr__(self):
+        energy = round(log10(self.energy_pre * 10 ** self.energy_pow) + 9, 1)
+        particle = particles.name(self.particle)
+        azimuth = self.phi - 90
+        return ('%s(energy=%r, particle=%r, zenith=%r, azimuth=%r, queue=%r, '
+                'corsika=%r)' % (self.__class__.__name__, energy, particle,
+                                 self.theta, azimuth, self.queue, self.corsika))
 
 
 def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,

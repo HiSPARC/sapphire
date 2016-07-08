@@ -318,3 +318,10 @@ class BaseSimulation(object):
         for station_group in self.station_groups:
             self.s_index.append(station_group._v_pathname)
         self.s_index.flush()
+
+    def __repr__(self):
+        if not self.data.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        return ('<%s, cluster: %r, data: %r, output_path: %r>' %
+                (self.__class__.__name__, self.cluster, self.data.filename,
+                 self.output_path))
