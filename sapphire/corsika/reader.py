@@ -292,10 +292,10 @@ class CorsikaFile(object):
         tails = []
         for block in self._subblocks_indices():
             self._file.seek(block)
-            type_ = unpack('4s', self._file.read(self.format.field_size))[0]
-            if type_ == b'EVTH':
+            tag = unpack('4s', self._file.read(self.format.field_size))[0]
+            if tag == b'EVTH':
                 heads.append(block)
-            elif type_ == b'EVTE':
+            elif tag == b'EVTE':
                 tails.append(block)
         return (heads, tails)
 
@@ -313,10 +313,10 @@ class CorsikaFile(object):
         """Get the indices for the start of the run header and end"""
         for block in self._subblocks_indices():
             self._file.seek(block)
-            type_ = unpack('4s', self._file.read(self.format.field_size))[0]
-            if type_ == b'RUNH':
+            tag = unpack('4s', self._file.read(self.format.field_size))[0]
+            if tag == b'RUNH':
                 head = block
-            elif type_ == b'RUNE':
+            elif tag == b'RUNE':
                 tail = block
         return head, tail
 
