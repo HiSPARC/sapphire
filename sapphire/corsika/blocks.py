@@ -12,8 +12,8 @@ import math
 
 import numpy
 
-from sapphire.corsika import units
-from sapphire.corsika import particles
+from . import units
+from . import particles
 try:
     from numba import jit
 except ImportError:
