@@ -46,7 +46,7 @@ def determine_detector_timing_offsets(events, station=None):
 
     for id in range(n_detectors):
         t.append(events.col('t%d' % (id + 1)))
-        filters.append((events.col('n%d' % (id + 1)) > .3) & (t[id] >= 0.))
+        filters.append((events.col('n%d' % (id + 1)) > 0.3) & (t[id] >= 0.))
 
     if n_detectors == 2:
         ref_id = 1
@@ -426,7 +426,7 @@ def datetime_range(start, end, step=1):
 
 
 def pairwise(iterable):
-    """s -> (s0,s1), (s1,s2), (s2, s3), ..."""
+    """s -> (s0, s1), (s1, s2), (s2, s3), ..."""
 
     a, b = tee(iterable)
     next(b, None)

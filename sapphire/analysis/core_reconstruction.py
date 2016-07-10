@@ -7,7 +7,7 @@
     defined here. The algorithms require positions and particle densties to
     do the reconstruction.
 
-    Each algorithm has a :meth:`~CenterMassAlgorithm.reconstruct_common`
+    Each algorithm has a :meth:`~BaseCoreAlgorithm.reconstruct_common`
     method which always requires particle denisties, x, and y positions
     and optionally z positions and previous reconstruction results. The
     data is then prepared for the algorithm and passed to
@@ -258,6 +258,16 @@ class BaseCoreAlgorithm(object):
         :param z: height of detectors in m.
         :param initial: dictionary containing values from previous
                         reconstructions.
+        :return: reconstructed core position.
+
+        """
+        return cls.reconstruct()
+
+    @staticmethod
+    def reconstruct():
+        """Reconstruct core position
+
+        :return: reconstructed core position.
 
         """
         return (nan, nan)
@@ -280,6 +290,7 @@ class CenterMassAlgorithm(BaseCoreAlgorithm):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions.
+        :return: reconstructed core position.
 
         """
         theta = initial.get('theta', nan)
@@ -294,6 +305,7 @@ class CenterMassAlgorithm(BaseCoreAlgorithm):
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
+        :return: reconstructed core position.
 
         """
         core_x = sum(density * xi for density, xi in zip(p, x)) / sum(p)
@@ -325,6 +337,7 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions.
+        :return: reconstructed core position.
 
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
@@ -334,7 +347,7 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
         xhit = []
         yhit = []
         for i in range(len(p)):
-            if p[i] > .01:
+            if p[i] > 0.01:
                 phit.append(p[i])
                 xhit.append(x[i])
                 yhit.append(y[i])
@@ -410,6 +423,7 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
     @staticmethod
     def select_newlist(newx, newy, xpointlist, ypointlist, distance):
         """Select intersection points in square around the mean of old list."""
+
         newxlist = []
         newylist = []
         for xpoint, ypoint in zip(xpointlist, ypointlist):
@@ -438,6 +452,7 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions: zenith and azimuth.
+        :return: reconstructed core position.
 
         """
         theta = initial.get('theta', 0.)
@@ -451,6 +466,7 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
         :param theta,phi: zenith and azimuth angle in rad.
+        :return: reconstructed core position, chi square, and shower size.
 
         """
         xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)

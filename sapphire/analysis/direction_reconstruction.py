@@ -7,11 +7,11 @@
     defined here. The algorithms require positions and arrival times to
     do the reconstruction.
 
-    Each algorithm has a :meth:`~DirectAlgorithm.reconstruct_common`
+    Each algorithm has a :meth:`~BaseDirectionAlgorithm.reconstruct_common`
     method which always requires arrival times, x, and y positions and
     optionally z positions and previous reconstruction results. The data
     is then prepared for the algorithm and passed to
-    the :meth:`~DirectAlgorithm.reconstruct` method which returns the
+    the :meth:`~BaseDirectionAlgorithm.reconstruct` method which returns the
     reconstructed theta and phi coordinates.
 
 """
@@ -146,12 +146,11 @@ class CoincidenceDirectionReconstruction(object):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of three
-                                   or more (station_number, event) tuples.
+            or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
-                                events from those stations.
+            events from those stations.
         :param offsets: a dictionary of either lists of detector timing
-                        offsets for each station or api.Station objects for
-                        each station.
+            offsets or :class:`~sapphire.api.Station` objects for each station.
         :param initial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
@@ -248,7 +247,8 @@ class CoincidenceDirectionReconstruction(object):
                                 other stations can are allow to be the
                                 reference station.
         :param midnight_ts: timestamp of midnight before the coincidence.
-        :param offsets: a dictionary of api.Station objects for each station.
+        :param offsets: a dictionary of :class:`~sapphire.api.Station` objects
+                        for each station.
         :return: combined detector and station offsets for given station,
                  relative to the reference station.
 
@@ -312,7 +312,7 @@ class CoincidenceDirectionReconstruction(object):
     def _calculate_offsets(self, station, ts0, offset):
         """Calculate combined station and detector offsets
 
-        :param station: api.Station object.
+        :param station: :class:`~sapphire.api.Station` object.
         :param ts0: gps timestamp for which the offsets are valid.
         :param offset: station offset to a reference station.
         :return: combined detector and station offsets for given station,
@@ -406,13 +406,23 @@ class BaseDirectionAlgorithm(object):
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
-        """Reconstruct core position
+        """Reconstruct shower angles
 
         :param t: detector arrival time in ns.
         :param x,y: positions of detectors in m.
         :param z: height of detectors in m.
         :param initial: dictionary containing values from previous
                         reconstructions.
+        :return: reconstructed theta and phi angles.
+
+        """
+        return cls.reconstruct()
+
+    @staticmethod
+    def reconstruct():
+        """Reconstruct shower angles
+
+        :return: reconstructed theta and phi angles.
 
         """
         return (nan, nan)
@@ -920,7 +930,7 @@ class FitAlgorithm3D(BaseDirectionAlgorithm):
 
         cons = {'type': 'eq', 'fun': cls.constraint_normal_vector}
 
-        fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989, 0.),
+        fit = minimize(cls.best_fit, x0=(0.1, 0.1, 0.989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
                        bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)),
                        constraints=cons,
@@ -932,7 +942,7 @@ class FitAlgorithm3D(BaseDirectionAlgorithm):
             phi1 = nan
             theta1 = nan
 
-        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989, 0.),
+        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -0.989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
                        bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)),
                        constraints=cons,
@@ -1025,26 +1035,23 @@ class RegressionAlgorithm(BaseDirectionAlgorithm):
         if not logic_checks(t, x, y, [0] * len(t)):
             return nan, nan
 
+        k = len(t)
+        xs = sum(x)
+        ys = sum(y)
+        ts = sum(t)
+
         xx = 0.
-        xy = 0.
-        tx = 0.
         yy = 0.
+        tx = 0.
         ty = 0.
-        xs = 0.
-        ys = 0.
-        ts = 0.
-        k = 0
+        xy = 0.
 
         for ti, xi, yi in zip(t, x, y):
-            xx += xi * xi
+            xx += xi ** 2
+            yy += yi ** 2
+            tx += ti * xi
+            ty += ti * yi
             xy += xi * yi
-            tx += xi * ti
-            yy += yi * yi
-            ty += yi * ti
-            xs += xi
-            ys += yi
-            ts += ti
-            k += 1
 
         denom = (k * xy ** 2 + xs ** 2 * yy + ys ** 2 * xx - k * xx * yy -
                  2 * xs * ys * xy)

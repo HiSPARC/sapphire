@@ -44,7 +44,7 @@ class DetectorTests(unittest.TestCase):
         self.assertEqual(self.detector_s.detector_size, (.5, 1.))
 
     def test_get_area(self):
-        self.assertEqual(self.detector_1.get_area(), .5)
+        self.assertEqual(self.detector_1.get_area(), 0.5)
 
     def test_attributes(self):
         self.assertIs(self.detector_1.station, self.mock_station)
@@ -90,15 +90,15 @@ class DetectorTests(unittest.TestCase):
     def test_LR_get_corners_rotated(self):
         self.mock_station.get_coordinates.return_value = (0, 0, 0, pi / 2)
         corners = self.detector_1.get_corners()
-        expected_corners = [(-.25, .5), (.25, .5), (.25, 1.5), (-.25, 1.5)]
+        expected_corners = [(-0.25, 0.5), (0.25, 0.5), (0.25, 1.5), (-0.25, 1.5)]
         for (x, y), (expected_x, expected_y) in zip(corners, expected_corners):
             self.assertAlmostEqual(x, expected_x)
             self.assertAlmostEqual(y, expected_y)
 
     def test_UD_get_corners(self):
-        self.mock_station.get_coordinates.return_value = (.25, 3, 0, 0)
+        self.mock_station.get_coordinates.return_value = (0.25, 3, 0, 0)
         corners = self.detector_2.get_corners()
-        self.assertEqual(corners, [(-1, 4.5), (-.5, 4.5), (-.5, 5.5), (-1, 5.5)])
+        self.assertEqual(corners, [(-1, 4.5), (-0.5, 4.5), (-0.5, 5.5), (-1, 5.5)])
 
     def test_unknown_rotation_get_corners(self):
         self.mock_station.get_coordinates.return_value = (0, 0, 0, 0)
@@ -140,10 +140,10 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station_4d.get_coordinates(), (0, 0, 0, 0))
 
     def test_get_area(self):
-        self.station_1.detectors[0].get_area.return_value = .5
-        self.assertEqual(self.station_1.get_area(), .5)
+        self.station_1.detectors[0].get_area.return_value = 0.5
+        self.assertEqual(self.station_1.get_area(), 0.5)
         for d in self.station_4d.detectors:
-            d.get_area.return_value = .5
+            d.get_area.return_value = 0.5
         self.assertEqual(self.station_4d.get_area([0, 1, 2]), 1.5)
 
     def test_detector_called(self):

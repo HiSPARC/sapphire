@@ -381,12 +381,12 @@ class ReconstructESDCoincidences(object):
             warnings.warn('Unable to store cluster object, to large for HDF.')
 
     def get_station_timing_offsets(self):
-        """Construct a dict of api.Station objects
+        """Construct a dict of :class:`~sapphire.api.Station` objects
 
         Simulations store the offsets in the cluster object, try to extract
         that into a dictionary, to be used by the reconstructions.
-        If the data is not from simulations create an api.Station object
-        for each station in the cluster.
+        If the data is not from simulations create an
+        :class:`~sapphire.api.Station` object for each station in the cluster.
 
         """
         try:
