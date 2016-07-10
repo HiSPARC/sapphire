@@ -213,11 +213,11 @@ class BaseSimulationTest(unittest.TestCase):
         observables = {'key1': 1., 'key2': 2.}
         table.colnames = ['key1']
 
-        with warnings.catch_warnings():
-            warnings.simplefilter('error')
-            self.assertRaises(UserWarning,
-                              self.simulation.store_station_observables,
-                              sentinel.station_id, observables)
+        with warnings.catch_warnings(record=True) as warned:
+            warnings.simplefilter('always')
+            self.simulation.store_station_observables(sentinel.station_id,
+                                                      observables)
+        self.assertEqual(len(warned), 1)
 
     @unittest.skip("WIP")
     def test_store_coincidence(self, shower_id, shower_parameters, station_events):
