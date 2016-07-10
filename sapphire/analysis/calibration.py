@@ -26,7 +26,7 @@ def determine_detector_timing_offsets(events, station=None):
     """Determine the timing offsets between station detectors.
 
     :param events: events table of processed events.
-    :param station: :class:`~sapphire.clusters.Station` object, to determine
+    :param station: :class:`sapphire.clusters.Station` object, to determine
         number of detectors and relative altitudes.
     :return: list of detector offsets.
 
@@ -112,7 +112,7 @@ class DetermineStationTimingOffsets(object):
 
         :param stations: list of stations for which to determine offsets.
         :param data: the PyTables datafile with timedelta tables.
-        :param progress: if true: show progressbar if true.
+        :param progress: if True show progressbar when determining offsets.
         :param force_stale: if true: do not get network information from API.
         :param time_deltas_group: path to the time deltas group.
 

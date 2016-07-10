@@ -46,7 +46,7 @@ class EventDirectionReconstruction(object):
     :meth:`reconstruct_event`. To use other algorithms overwrite the
     ``direct`` and ``fit`` attributes.
 
-    :param station: :class:`~sapphire.clusters.Station` object.
+    :param station: :class:`sapphire.clusters.Station` object.
 
     """
 
@@ -103,7 +103,7 @@ class EventDirectionReconstruction(object):
         :param detector_ids: detectors to use for the reconstructions.
         :param offsets: time offsets for each detector or a
             :class:`~sapphire.api.Station` object.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                         parameters.
         :return: list of theta, phi, and detector ids.
@@ -118,6 +118,10 @@ class EventDirectionReconstruction(object):
         else:
             theta, phi, ids = ((), (), ())
         return theta, phi, ids
+
+    def __repr__(self):
+        return ("<%s, station: %r, direct: %r, fit: %r>" %
+                (self.__class__.__name__, self.station, self.direct, self.fit))
 
 
 class CoincidenceDirectionReconstruction(object):
@@ -204,7 +208,7 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                         parameters.
         :return: list of theta, phi, and station numbers.
@@ -320,6 +324,11 @@ class CoincidenceDirectionReconstruction(object):
         detector_offsets = station.detector_timing_offset(ts0)
         return [offset + d_off for d_off in detector_offsets]
 
+    def __repr__(self):
+        return ("<%s, cluster: %r, direct: %r, fit: %r, curved: %r>" %
+                (self.__class__.__name__, self.cluster, self.direct, self.fit,
+                 self.curved))
+
 
 class CoincidenceDirectionReconstructionDetectors(
         CoincidenceDirectionReconstruction):
@@ -389,7 +398,29 @@ class CoincidenceDirectionReconstructionDetectors(
         return theta, phi, nums
 
 
-class DirectAlgorithm(object):
+class BaseDirectionAlgorithm(object):
+
+    """No actual direction reconstruction algorithm
+
+    Simply returns (nan, nan) as direction.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+        """Reconstruct core position
+
+        :param t: detector arrival time in ns.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors in m.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
+
+        """
+        return (nan, nan)
+
+
+class DirectAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -581,7 +612,7 @@ class DirectAlgorithm(object):
         return num / den
 
 
-class DirectAlgorithmCartesian(object):
+class DirectAlgorithmCartesian(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -648,7 +679,7 @@ class DirectAlgorithmCartesian(object):
         return theta, phi
 
 
-class DirectAlgorithmCartesian3D(object):
+class DirectAlgorithmCartesian3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -850,7 +881,7 @@ class SphereAlgorithm(object):
         return x_int, y_int, z_int, t_int
 
 
-class FitAlgorithm3D(object):
+class FitAlgorithm3D(BaseDirectionAlgorithm):
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
@@ -956,7 +987,7 @@ class FitAlgorithm3D(object):
         return slq + m * m
 
 
-class RegressionAlgorithm(object):
+class RegressionAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles using an analytical regression formula.
 
@@ -1017,32 +1048,32 @@ class RegressionAlgorithm(object):
             ts += ti
             k += 1
 
-        denom = (k * xy * xy + xs * xs * yy + ys * ys * xx - k * xx * yy -
+        denom = (k * xy ** 2 + xs ** 2 * yy + ys ** 2 * xx - k * xx * yy -
                  2 * xs * ys * xy)
         if denom == 0:
             denom = nan
 
-        numer = (tx * (k * yy - ys * ys) + xy * (ts * ys - k * ty) +
+        numer = (tx * (k * yy - ys ** 2) + xy * (ts * ys - k * ty) +
                  xs * ys * ty - ts * xs * yy)
         nx = c * numer / denom
 
-        numer = (ty * (k * xx - xs * xs) + xy * (ts * xs - k * tx) +
+        numer = (ty * (k * xx - xs ** 2) + xy * (ts * xs - k * tx) +
                  xs * ys * tx - ts * ys * xx)
         ny = c * numer / denom
 
-        horiz = nx * nx + ny * ny
+        horiz = nx ** 2 + ny ** 2
         if horiz > 1.:
             theta = nan
             phi = nan
         else:
-            nz = sqrt(1 - nx * nx - ny * ny)
+            nz = sqrt(1 - nx ** 2 - ny ** 2)
             phi = arctan2(ny, nx)
             theta = arccos(nz)
 
         return theta, phi
 
 
-class RegressionAlgorithm3D(object):
+class RegressionAlgorithm3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles by iteratively applying a regression formula.
 
@@ -1108,7 +1139,7 @@ class RegressionAlgorithm3D(object):
         return theta, phi
 
 
-class CurvedRegressionAlgorithm(object):
+class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles taking the shower front curvature into account.
 
@@ -1186,7 +1217,7 @@ class CurvedRegressionAlgorithm(object):
                     2 * dx * dy * nx * ny)
 
 
-class CurvedRegressionAlgorithm3D(object):
+class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles accounting for front curvature and detector altitudes
 

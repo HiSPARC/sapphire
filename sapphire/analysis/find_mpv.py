@@ -41,7 +41,7 @@ class FindMostProbableValueInSpectrum(object):
     """
 
     def __init__(self, n, bins):
-        """Initialize the class instance.
+        """Initialize the class instance
 
         :param n,bins: histogram counts and bins, as obtained using
             ``numpy.histogram``.

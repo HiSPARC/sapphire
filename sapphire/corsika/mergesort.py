@@ -30,8 +30,8 @@ class TableMergeSort(object):
              a temp file will be created and removed when finished.
         :param tablename: the name of the table to sort.
         :param destination: optional name of the sorted table.
-        :param overwrite: if True, overwrite destination table.
-        :param progress: if True, show verbose output and progress.
+        :param overwrite: if True overwrite existing destination table.
+        :param progress: if True show verbose output and progress.
 
         """
         self.key = key

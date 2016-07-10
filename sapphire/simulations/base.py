@@ -41,7 +41,7 @@ class BaseSimulation(object):
                         exist) in which the result tables will be created.
     :param N: number of simulations to perform.
     :param seed: seed for the pseudo-random number generators.
-    :param progress: if True, show a progressbar while simulating.
+    :param progress: if True show a progressbar while simulating.
 
     """
 
@@ -296,7 +296,7 @@ class BaseSimulation(object):
         """Create the groups and events table to store the observables
 
         :param id: the station number, used for the group name
-        :param station: a :class:`~sapphire.clusters.Station` object
+        :param station: a :class:`sapphire.clusters.Station` object
 
         """
         self.cluster_group = self.data.create_group(self.output_path,
@@ -318,3 +318,10 @@ class BaseSimulation(object):
         for station_group in self.station_groups:
             self.s_index.append(station_group._v_pathname)
         self.s_index.flush()
+
+    def __repr__(self):
+        if not self.data.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        return ('<%s, cluster: %r, data: %r, output_path: %r>' %
+                (self.__class__.__name__, self.cluster, self.data.filename,
+                 self.output_path))

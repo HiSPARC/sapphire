@@ -187,7 +187,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param station_observables: dictionary containing the observables
                                     of the station.
         :param shower_parameters: dictionary with the shower parameters.
-        :param station: :class:`~sapphire.clusters.Station` for which
+        :param station: :class:`sapphire.clusters.Station` for which
                          to simulate the gps timestamp.
         :return: station_observables updated with gps timestamp and
                  trigger time.

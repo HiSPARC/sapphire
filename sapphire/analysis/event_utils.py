@@ -23,7 +23,7 @@ def station_density(event, detector_ids=None, station=None):
     :param event: Processed event row.
     :param detector_ids: list of detectors ids to consider. If None, the
         detectors in the station object will be used.
-    :param station: :class:`~sapphire.clusters.Station` object.
+    :param station: :class:`sapphire.clusters.Station` object.
     :return: average density over the chosen detectors.
 
     """
@@ -40,7 +40,7 @@ def detector_densities(event, detector_ids=None, station=None):
     :param event: Processed event row.
     :param detector_ids: list of detectors ids for which to get particle
         densities.
-    :param station: :class:`~sapphire.clusters.Station` object.
+    :param station: :class:`sapphire.clusters.Station` object.
     :return: density in each chosen detector.
 
     """
@@ -55,7 +55,7 @@ def detector_density(event, detector_id, station=None):
 
     :param event: Processed event row.
     :param detector_id: detector id for which to get particle density.
-    :param station: :class:`~sapphire.clusters.Station` object, used to
+    :param station: :class:`sapphire.clusters.Station` object, used to
         determine the detector size.
     :return: density in the chosen detector.
 
@@ -86,7 +86,7 @@ def station_arrival_time(event, reference_ext_timestamp,
         Often best to use the timestamp of the first event in a coincidence.
     :param detector_ids: list of detectors ids for which to consider.
     :param offsets: list of detector time offsets.
-    :param station: :class:`~sapphire.clusters.Station` object, used to
+    :param station: :class:`sapphire.clusters.Station` object, used to
         determine the number of detectors.
     :return: shower arrival time of the station relative to the
              reference timestamp.
@@ -115,7 +115,7 @@ def relative_detector_arrival_times(event, reference_ext_timestamp,
         Often best to use the timestamp of the first event in a coincidence.
     :param detector_ids: list of detectors ids for which to get arrival times.
     :param offsets: list of detector time offsets.
-    :param station: :class:`~sapphire.clusters.Station` object, used to
+    :param station: :class:`sapphire.clusters.Station` object, used to
         determine the number of detectors.
     :return: list of shower arrival times relative to the given reference.
 
@@ -140,7 +140,7 @@ def detector_arrival_times(event, detector_ids=None, offsets=NO_OFFSET,
     :param event: Processed event row.
     :param detector_ids: list of detectors ids for which to get arrival times.
     :param offsets: list of detector time offsets.
-    :param station: :class:`~sapphire.clusters.Station` object, used to
+    :param station: :class:`sapphire.clusters.Station` object, used to
         determine the number of detectors.
     :return: list of shower arrival times relative to the start of the trace.
 
@@ -177,7 +177,7 @@ def get_detector_ids(station=None, event=None):
     since it currently does not simulate pulseheights.
 
     :param event: Event row.
-    :param station: :class:`~sapphire.clusters.Station` object.
+    :param station: :class:`sapphire.clusters.Station` object.
     :return: list of detector_ids.
 
     """

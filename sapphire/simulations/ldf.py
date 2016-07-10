@@ -242,6 +242,12 @@ class EllipsLdfSimulation(BaseLdfSimulation):
 
 class BaseLdf(object):
 
+    """Base LDF class
+
+    No particles! Always returns a particle density of 0.
+
+    """
+
     def calculate_ldf_value(self, r, Ne=None, s=None):
         return 0.
 

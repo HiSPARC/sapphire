@@ -404,7 +404,7 @@ def particle_data(subblock):
     CORSIKA coordinate conventions are mentioned in Figure 1 and Table 10.
 
     :return: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
-             observation_level, phi data.
+             observation_level, phi (, weight) data.
 
     """
     # These three are subject to coordinate transformations
@@ -427,8 +427,14 @@ def particle_data(subblock):
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
 
-    return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
-            observation_level, phi)
+    if len(subblock) == 7:
+        # no thinning
+        return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+                observation_level, phi)
+    else:
+        # append the thinning weight
+        return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+                observation_level, phi, subblock[7])
 
 
 class ParticleData(object):
@@ -535,8 +541,14 @@ class FormatThin(Format):
         # number of particle records
         # With the thinned option, each of these is 8 fields long
         # for a total of 39 records per sub block
-        self.particle_format = '8f'
+        self.fields_per_particle = 8
+        self.particle_format = '%df' % self.fields_per_particle
         self.particle_size = struct.calcsize(self.particle_format)
+
+        # Full particle sub block
+        self.particles_format = (self.particle_format *
+                                 self.particles_per_subblock)
+        self.particles_size = self.particle_size * self.particles_per_subblock
 
 
 class ParticleDataThin(ParticleData):

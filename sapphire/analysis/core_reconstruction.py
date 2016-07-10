@@ -83,7 +83,7 @@ class EventCoreReconstruction(object):
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                          parameters.
         :return: (x, y) core positions in m.
@@ -98,6 +98,10 @@ class EventCoreReconstruction(object):
         else:
             core_x, core_y = ((), ())
         return core_x, core_y
+
+    def __repr__(self):
+        return ("<%s, station: %r, estimator: %r>" %
+                (self.__class__.__name__, self.station, self.estimator))
 
 
 class CoincidenceCoreReconstruction(object):
@@ -164,7 +168,7 @@ class CoincidenceCoreReconstruction(object):
                              multiple (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                          parameters.
         :return: (x, y) core positions in m.
@@ -180,6 +184,10 @@ class CoincidenceCoreReconstruction(object):
         else:
             core_x, core_y = ((), ())
         return core_x, core_y
+
+    def __repr__(self):
+        return ("<%s, cluster: %r, estimator: %r>" %
+                (self.__class__.__name__, self.cluster, self.estimator))
 
 
 class CoincidenceCoreReconstructionDetectors(
@@ -234,7 +242,29 @@ class CoincidenceCoreReconstructionDetectors(
         return core_x, core_y
 
 
-class CenterMassAlgorithm(object):
+class BaseCoreAlgorithm(object):
+
+    """No actual core reconstruction algorithm
+
+    Simply returns (nan, nan) as core.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core position
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors in m.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
+
+        """
+        return (nan, nan)
+
+
+class CenterMassAlgorithm(BaseCoreAlgorithm):
 
     """Simple core estimator
 
@@ -272,7 +302,7 @@ class CenterMassAlgorithm(object):
         return core_x, core_y
 
 
-class AverageIntersectionAlgorithm(object):
+class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
 
     """Core estimator
 
@@ -392,7 +422,7 @@ class AverageIntersectionAlgorithm(object):
         return newxlist, newylist
 
 
-class EllipsLdfAlgorithm(object):
+class EllipsLdfAlgorithm(BaseCoreAlgorithm):
 
     """Simple core estimator
 

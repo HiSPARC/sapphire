@@ -56,17 +56,19 @@ class Coincidences(object):
     Suppose you want to search for coincidences between stations 501 and
     503.  First, download the data for these stations (with, or without
     traces, depending on your intentions).  Suppose you stored the data in
-    the '/s501' and '/s503' groups in the 'data' file.  Then::
+    the '/s501' and '/s503' groups in the 'data.h5' file.  Then::
 
-        >>> station_groups = ['/s501', '/s503']
-        >>> coin = Coincidences(data, '/coincidences', station_groups)
-        >>> coin.search_and_store_coincidences()
+        >>> groups = ['/s501', '/s503']
+        >>> with Coincidences('data.h5', '/coincidences', groups) as coin:
+        ...     coin.search_and_store_coincidences()
 
-    If you want a more manual method, replace the last line with::
+    If you want a more manual method, replace the last line the separate
+    methods which it calls::
 
-        >>> coin.search_coincidences(window=50000)
-        >>> coin.process_events()
-        >>> coin.store_coincidences()
+        >>> with Coincidences('data.h5', '/coincidences', groups) as coin:
+        ...     coin.search_coincidences(window=50000)
+        ...     coin.process_events()
+        ...     coin.store_coincidences()
 
     You can then provide different parameters to the individual methods.
     See the corresponding docstrings.
@@ -115,17 +117,24 @@ class Coincidences(object):
                  overwrite=False, progress=True):
         """Initialize the class.
 
-        :param data: the PyTables datafile.
-        :param coincidence_group: the destination group.
-        :param station_groups: a list of groups containing the station
-            data.
-        :param overwrite: if True, overwrite a previous coincidences
-            group.
-        :param progress: if True, show a progressbar while storing
-            coincidences.
+        :param data: either a PyTables file or path to a HDF5 file.
+        :param coincidence_group: the destination group. If None the results
+            can not be stored, but coincidences can still be searched for.
+        :param station_groups: a list of groups containing the station data.
+        :param overwrite: if True overwrite a previous coincidences group.
+        :param progress: if True show a progressbar while storing coincidences.
 
         """
-        self.data = data
+        if not isinstance(data, tables.File):
+            if coincidence_group is not None:
+                self.data = tables.open_file(data, 'a')
+            else:
+                # No destination coincidence_group, no need to open writable
+                self.data = tables.open_file(data, 'r')
+            self.opened = True
+        else:
+            self.data = data
+            self.opened = False
         if coincidence_group is not None:
             if coincidence_group in self.data:
                 if overwrite:
@@ -135,13 +144,25 @@ class Coincidences(object):
                                        "and overwrite is False" %
                                        coincidence_group)
             head, tail = os.path.split(coincidence_group)
-            self.coincidence_group = data.create_group(head, tail,
-                                                       createparents=True)
+            self.coincidence_group = self.data.create_group(head, tail,
+                                                            createparents=True)
         self.station_groups = station_groups
 
-        self.trig_threshold = .5
+        self.trig_threshold = 0.5
         self.overwrite = overwrite
         self.progress = progress
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Clean-up when done
+
+        Only close PyTables file if it was opened in the init.
+
+        """
+        if self.opened:
+            self.data.close()
 
     def search_and_store_coincidences(self, window=10000):
         """Search, process and store coincidences.
@@ -471,6 +492,19 @@ class Coincidences(object):
 
         return coincidences
 
+    def __repr__(self):
+        if not self.data.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        try:
+            return ("%s(%r, %r, %r, overwrite=%r, progress=%r)" %
+                    (self.__class__.__name__, self.data.filename,
+                     self.coincidences._v_parent._v_pathname,
+                     self.station_groups, self.overwrite, self.progress))
+        except AttributeError:
+            return ("%s(%r, %r, %r, overwrite=%r, progress=%r)" %
+                    (self.__class__.__name__, self.data.filename,
+                     None, self.station_groups, self.overwrite, self.progress))
+
 
 class CoincidencesESD(Coincidences):
     """Store coincidences specifically using the ESD
@@ -482,21 +516,21 @@ class CoincidencesESD(Coincidences):
 
     Suppose you want to search for coincidences between stations 501 and 503.
     First, download the data for these stations from the ESD. Suppose you
-    stored the data in the '/s501' and '/s503' groups in the file 'data'.
+    stored the data in the '/s501' and '/s503' groups in the file 'data.h5'.
     Then::
 
-        >>> station_groups = ['/s501', '/s503']
-        >>> coin = CoincidencesESD(data, '/coincidences', station_groups)
-        >>> coin.search_and_store_coincidences()
+        >>> groups = ['/s501', '/s503']
+        >>> with CoincidencesESD('data.h5', '/coincidences', groups) as coin:
+        ...     coin.search_and_store_coincidences(station_numbers=[501, 503])
 
-    If you want a more manual method, replace the last line with::
+    If you want a more manual method, replace the last line with, for example::
 
-        >>> coin.search_coincidences(window=5000)
-        >>> coin.process_events()
-        >>> coin.store_coincidences()
+        >>> with CoincidencesESD('data.h5', '/coincidences', groups) as coin:
+        ...     coin.search_coincidences(5000, shifts=[None, 10], limit=100)
+        ...     coin.store_coincidences(station_numbers=[501, 503])
 
     You can then provide different parameters to the individual methods.
-    See the corresponding docstrings.
+    See the corresponding docstrings for more details.
 
     Once the coincidences are stored, there will be a `coincidences` table in
     the group. This table has multiple columns used for storing simulation
@@ -512,7 +546,7 @@ class CoincidencesESD(Coincidences):
         * ``ext_timestamp``: the timestamp of the event in nanoseconds (equal
           to timestamp * 1000000000 + nanoseconds)
         * ``N``: the number of stations participating in this coincidence
-        * ``s0``, ``s1``, ...: for each station indicate whether it
+        * ``s501``, ``s503``, ...: for each station indicate whether it
           participated in the coincidence.
 
     The coincidences group furthermore contains the tables ``s_index`` and
@@ -539,7 +573,11 @@ class CoincidencesESD(Coincidences):
 
     The ``event`` is one of the events in the coincidence.
 
+    Coincidences stored by this class can easily be searched by using
+    a :class:`~sapphire.analysis.coincidence_queries.CoincidenceQuery` object.
+
     """
+
     def search_and_store_coincidences(self, window=10000,
                                       station_numbers=None):
         """Search and store coincidences.

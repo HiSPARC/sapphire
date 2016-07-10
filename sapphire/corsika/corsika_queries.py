@@ -215,3 +215,10 @@ class CorsikaQuery(object):
             filtered_simulations = self.all_simulations(iterator)
 
         return filtered_simulations
+
+    def __repr__(self):
+        if not self.data.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        return ("%s(%r, simulations_group=%r)" %
+                (self.__class__.__name__, self.data.filename,
+                 self.sims._v_pathname))

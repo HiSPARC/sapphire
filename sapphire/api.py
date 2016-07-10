@@ -224,6 +224,11 @@ class API(object):
         elif day == '' and hour != '':
             raise Exception('You must also specify the day')
 
+    def __repr__(self):
+        return "%s(force_fresh=%s, force_stale=%s)" % (self.__class__.__name__,
+                                                       self.force_fresh,
+                                                       self.force_stale)
+
 
 class Network(API):
 
@@ -638,6 +643,13 @@ class Station(API):
     def event_time(self, year='', month='', day=''):
         """Get the number of events per hour histogram
 
+        If no date is given the full event time histogram for this station
+        will be returned. That means for the entire time this station has
+        collected data.
+
+        This data (the full histogram) can made available locally using
+        the `extend_local_data` command.
+
         :param year,month,day: the date for which to get the histogram.
         :return: array of bins and counts.
 
@@ -975,3 +987,8 @@ class Station(API):
                                  station_timing_offsets[idx]['error'])
 
         return station_timing_offset
+
+    def __repr__(self):
+        return ("%s(%d, force_fresh=%s, force_stale=%s)" %
+                (self.__class__.__name__, self.station,
+                 self.force_fresh, self.force_stale))

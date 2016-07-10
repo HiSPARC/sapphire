@@ -31,7 +31,7 @@ import textwrap
 import subprocess
 import argparse
 import warnings
-from math import modf
+from math import modf, log10
 
 from . import particles
 from ..utils import pbar
@@ -124,15 +124,7 @@ class CorsikaBatch(object):
 
     def __init__(self, energy=16, particle='proton', zenith=22.5, azimuth=180,
                  queue='generic', corsika='corsika74000Linux_QGSII_gheisha'):
-        # Energy is stored as log10(E[GeV]) for CORSIKA
-        if modf(energy)[0] == 0.:
-            self.energy_pre = 1.
-            self.energy_pow = int(energy - 9)
-        elif modf(energy)[0] == 0.5:
-            self.energy_pre = 3.16228
-            self.energy_pow = int(modf(energy)[1] - 9)
-        else:
-            raise ValueError('Energy must either be an integer or end in .5.')
+        self.energy_pre, self.energy_pow = self.corsika_energy(energy)
         self.particle = particles.particle_id(particle)  # Store as particle id
         self.theta = zenith
         self.phi = (azimuth + 90) % 360  # Stored as Phi defined by CORSIKA
@@ -141,6 +133,23 @@ class CorsikaBatch(object):
         self.seed1 = None
         self.seed2 = None
         self.rundir = None
+
+    def corsika_energy(self, energy):
+        """Convert energy to format for CORSIKA input
+
+        Convert from log10(E/eV) to E[GeV] and split value to multiplier
+        and power.
+
+        :param energy: primary particle energy as log10(E/eV).
+        :return: separate multiplier and power
+
+        """
+        if modf(energy)[0] == 0.:
+            return (1., int(energy - 9))
+        elif modf(energy)[0] == 0.5:
+            return (3.16228, int(modf(energy)[1] - 9))
+        else:
+            raise ValueError('Energy must either be an integer or end in .5.')
 
     def run(self):
         self.prepare_env()
@@ -245,6 +254,14 @@ class CorsikaBatch(object):
         destination = self.get_rundir()
         subprocess.check_output(['cp', source, destination])
 
+    def __repr__(self):
+        energy = round(log10(self.energy_pre * 10 ** self.energy_pow) + 9, 1)
+        particle = particles.name(self.particle)
+        azimuth = self.phi - 90
+        return ('%s(energy=%r, particle=%r, zenith=%r, azimuth=%r, queue=%r, '
+                'corsika=%r)' % (self.__class__.__name__, energy, particle,
+                                 self.theta, azimuth, self.queue, self.corsika))
+
 
 def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
                   progress=True):
@@ -258,7 +275,8 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
     :param azimuth: Azimuth angle in degrees of the primary particle
     :param queue: Stoomboot queue to submit to
     :param corsika: Name of the CORSIKA executable to use
-    :param progress: Toggle printing of overview.
+    :param progress: if True print an overview of the chosen paramters and
+                     show a progressbar of the job submission progress.
 
     """
     if progress:
