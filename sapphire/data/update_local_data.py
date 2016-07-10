@@ -35,7 +35,7 @@ def update_local_json(progress=True):
 
     toplevel_types = ['stations', 'subclusters', 'clusters', 'countries']
     if progress:
-        print 'Downloading JSONs: %s' % '/'.join(toplevel_types)
+        print('Downloading JSONs: %s' % '/'.join(toplevel_types))
     for type in pbar(toplevel_types, show=progress):
         update_toplevel_json(type)
 
@@ -44,7 +44,7 @@ def update_local_json(progress=True):
                            ('clusters', 'subclusters_in_cluster'),
                            ('countries', 'clusters_in_country')]:
         if progress:
-            print 'Downloading JSONs: %s' % type
+            print('Downloading JSONs: %s' % type)
         update_sublevel_json(arg_type, type, progress)
 
 
@@ -56,7 +56,7 @@ def update_local_tsv(progress=True):
     for type in ['gps', 'trigger', 'layout', 'voltage', 'current',
                  'electronics', 'detector_timing_offsets']:
         if progress:
-            print 'Downloading TSVs: %s' % type
+            print('Downloading TSVs: %s' % type)
         update_sublevel_tsv(type, station_numbers)
 
     # GPS and layout data should now be up to date, local data can be used
@@ -65,7 +65,7 @@ def update_local_tsv(progress=True):
 
     for type in ['station_timing_offsets']:
         if progress:
-            print 'Downloading TSVs: %s' % type
+            print('Downloading TSVs: %s' % type)
         update_subsublevel_tsv(type, station_numbers, network)
 
 
@@ -100,8 +100,8 @@ def update_sublevel_json(arg_type, type, progress=True):
             get_and_store_json(url.strip('/'))
         except:
             if progress:
-                print(('Failed to get %s data for %s %d' %
-                       (type, arg_type, number)))
+                print('Failed to get %s data for %s %d' %
+                      (type, arg_type, number))
             return
 
 
@@ -140,8 +140,8 @@ def update_subsublevel_tsv(type, station_numbers, network, progress=True):
             get_and_store_tsv(url)
         except:
             if progress:
-                print(('Failed to get %s data for station pair %d-%d' %
-                       (type, number1, number2)))
+                print('Failed to get %s data for station pair %d-%d' %
+                      (type, number1, number2))
 
 
 def get_and_store_json(url):
