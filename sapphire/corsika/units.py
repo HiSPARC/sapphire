@@ -7,24 +7,23 @@ Do:
 
 .. code-block:: python
 
-    >>> s = 1.5 * km
+    >>> distance = 1.5 * km
 
 Don't:
 
 .. code-block:: python
 
-    >>> s = 1.5  # don't forget this is in km!
+    >>> distance = 1.5  # don't forget this is in km!
 
-The conversion factors defined in this file
-convert your data into HiSPARC base units, so that
-all dimensional quantities in the code are in a
-single system of units!  You can also
-use the conversions defined here to, for example,
-display data with the unit of your choice.  For example:
+The conversion factors defined in this file convert your data into
+HiSPARC base units, so that all dimensional quantities in the code are
+in a single system of units!  You can also use the conversions defined
+here to, for example, display data with the unit of your choice.  For
+example:
 
 .. code-block:: python
 
-    >>> print "s = %f mm" %  s / mm
+    >>> print "distance = %f mm" %  distance / mm
     1500000 mm
 
 The base units are:
@@ -247,7 +246,7 @@ weber = volt * second  # weber = 1000 * megavolt * ns
 tesla = volt * second / meter2  # tesla = 0.001 * megavolt * ns / mm2
 
 gauss = 1e-4 * tesla
-kilogauss = deci * tesla
+kilogauss = kilo * gauss
 
 # Inductance [T^2][E][Q^-2]
 henry = weber / ampere  # henry = 1.60217e-7 * MeV * (ns / eplus) ** 2
