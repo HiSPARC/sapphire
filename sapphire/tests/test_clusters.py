@@ -1,7 +1,7 @@
 from __future__ import division
 
 from math import pi, sqrt, atan2
-from numpy import array
+from numpy import array, nan
 
 import unittest
 
@@ -280,7 +280,8 @@ class StationTests(unittest.TestCase):
         cluster = Mock()
         cluster.get_coordinates.return_value = (0, 0, 0, 0)
         station = clusters.Station(cluster, 1, position=(0, 0), angle=0,
-                                   detectors=[((0, 0, 0), 'LR'), ((10, 9, 1), 'LR')])
+                                   detectors=[((0, 0, 0), 'LR'), ((10, 9, 1), 'LR'),
+                                              ((nan, nan, nan), 'LR'), ((nan, nan, nan), 'LR')])
         center = station.calc_xy_center_of_mass_coordinates()
         self.assertTupleAlmostEqual(center, (5, 4.5))
         center = station.calc_center_of_mass_coordinates()
@@ -402,10 +403,20 @@ class BaseClusterTests(unittest.TestCase):
                                          ((0, 5 * sqrt(3) / 3), 'UD'),
                                          ((-10, 0), 'LR'),
                                          ((10, 0), 'LR')])
-
         x, y = cluster.calc_xy_center_of_mass_coordinates()
         self.assertAlmostEqual(x, 0)
         self.assertAlmostEqual(y, 5 * sqrt(3) / 3)
+
+    def test_calc_xy_center_of_mass_coordinates_nan_detectors(self):
+        # detector locations can be nan, esp two detector stations
+        cluster = clusters.BaseCluster()
+        cluster._add_station((0, 0), 0, [((-10, 0), 'LR'),
+                                         ((10, 0), 'LR'),
+                                         ((nan, nan), 'LR'),
+                                         ((nan, nan), 'LR')])
+        x, y = cluster.calc_xy_center_of_mass_coordinates()
+        self.assertAlmostEqual(x, 0)
+        self.assertAlmostEqual(y, 0)
 
     def test__distance(self):
         x = array([-5., 4., 3.])
