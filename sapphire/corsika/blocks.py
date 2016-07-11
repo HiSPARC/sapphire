@@ -404,7 +404,7 @@ def particle_data(subblock):
     CORSIKA coordinate conventions are mentioned in Figure 1 and Table 10.
 
     :return: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
-             observation_level, phi (, weight) data.
+             observation_level, phi data.
 
     """
     # These three are subject to coordinate transformations
@@ -427,14 +427,21 @@ def particle_data(subblock):
     r = math.sqrt(x ** 2 + y ** 2)
     phi = math.atan2(y, x)
 
-    if len(subblock) == 7:
-        # no thinning
-        return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
-                observation_level, phi)
-    else:
-        # append the thinning weight
-        return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
-                observation_level, phi, subblock[7])
+    return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+            observation_level, phi)
+
+
+@jit
+def particle_data_thin(subblock):
+    """Get thinned particle data.
+
+    Similar to :func:`particle_data`, but includes particle weight.
+
+    :return: tuple with p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
+             observation_level, phi, weight data.
+
+    """
+    return particle_data(subblock[:7]) + (subblock[7],)
 
 
 class ParticleData(object):
@@ -560,8 +567,9 @@ class ParticleDataThin(ParticleData):
     """
 
     def __init__(self, subblock):
-        self.weight = subblock[7]
-        super(ParticleDataThin, self).__init__(subblock)
+        self.p_x, self.p_y, self.p_z, self.x, self.y, self.t, self.id, \
+            self.r, self.hadron_generation, self.observation_level, \
+            self.phi, self.weight = particle_data_thin(subblock)
 
 
 class CherenkovDataThin(CherenkovData):
