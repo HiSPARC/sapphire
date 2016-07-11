@@ -572,9 +572,9 @@ class BaseCluster(object):
                       for station in self.stations
                       for detector in station.detectors])
 
-        x0 = np.mean(x)
-        y0 = np.mean(y)
-        z0 = np.mean(z)
+        x0 = np.nanmean(x)
+        y0 = np.nanmean(y)
+        z0 = np.nanmean(z)
 
         return x0, y0, z0
 
