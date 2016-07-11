@@ -1,15 +1,10 @@
 import unittest
 import warnings
 
-from six import PY2
+from six.moves import builtins
 from mock import patch, sentinel, mock_open
 
 from sapphire.corsika import qsub_corsika
-
-if PY2:
-    open_obj = '__builtin__.open'
-else:
-    open_obj = 'builtins.open'
 
 
 class CorsikaBatchTest(unittest.TestCase):
@@ -113,8 +108,7 @@ class CorsikaBatchTest(unittest.TestCase):
     @patch.object(qsub_corsika.CorsikaBatch, 'get_rundir')
     def test_create_input(self, mock_rundir):
         mock_rundir.return_value = '/data/123_456'
-        mock_file = mock_open()
-        with patch(open_obj, mock_file):
+        with patch.object(builtins, 'open', mock_open()) as mock_file:
             self.cb.create_input()
         mock_rundir.assert_called_once_with()
         mock_file.assert_called_once_with('/data/123_456/input-hisparc', 'w')
