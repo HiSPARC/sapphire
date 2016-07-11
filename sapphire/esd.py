@@ -199,7 +199,7 @@ def download_data(file, group, station_number, start=None, end=None,
         for line in reader:
             timestamp = writer.store_line(line)
             # update progressbar every .5 seconds
-            if (progress and time.time() - prev_update > .5 and
+            if (progress and time.time() - prev_update > 0.5 and
                     not timestamp == 0.):
                 pbar.update((1. * timestamp - t_start) / t_delta)
                 prev_update = time.time()
@@ -368,7 +368,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
                                                           coincidence,
                                                           station_groups)
             # update progressbar every .5 seconds
-            if (progress and time.time() - prev_update > .5 and
+            if (progress and time.time() - prev_update > 0.5 and
                     not timestamp == 0.):
                 pbar.update((1. * timestamp - t_start) / t_delta)
                 prev_update = time.time()

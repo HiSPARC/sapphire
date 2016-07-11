@@ -359,7 +359,7 @@ class KascadeLdf(NkgLdf):
     # shower parameters
     # Values from Fokkema2012 sec 7.1.
     _Ne = 10 ** 4.8
-    _s = .94  # Shape parameter
+    _s = 0.94  # Shape parameter
     _r0 = 40.
     _alpha = 1.5
     _beta = 3.6
