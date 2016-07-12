@@ -2,8 +2,8 @@ How to create the test data
 ===========================
 
 
-Notes on recreating process_events.h5
-----------------------------------
+Notes on recreating `process_events.h5`
+---------------------------------------
 
 This test data is simply 5 minutes of real data from station 501
 downloaded from the raw data via the Public Database.
@@ -24,8 +24,8 @@ after downloading, and the file repacked otherwise you are left with
     $ rm process_events_temp.h5
 
 
-Notes on recreating coincidences.h5
----------------------------------------
+Notes on recreating `coincidences.h5`
+-------------------------------------
 
     >>> from mock import patch
     >>> import tables
@@ -42,8 +42,8 @@ Notes on recreating coincidences.h5
     ...         c.search_and_store_coincidences()
 
 
-Notes on recreating esd_coincidences.h5
----------------------------------------
+Notes on recreating `esd_coincidences.h5`
+-----------------------------------------
 
     >>> import tables
     >>> from sapphire import download_data, CoincidencesESD

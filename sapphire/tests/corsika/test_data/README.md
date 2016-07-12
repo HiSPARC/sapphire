@@ -2,8 +2,8 @@ How to create the test data
 ===========================
 
 
-Notes on recreating data in 1_2
--------------------------------
+Notes on recreating data in `1_2/`
+----------------------------------
 
 This test data is a CORSIKA simulation using the default HiSPARC CORSIKA
 configuration. The parameters used are listed in the following table:
@@ -23,8 +23,8 @@ SAPPHiRE. Run the following command to convert the CORSIKA data format to HDF5:
     $ store_corsika_data 1_2/DAT000000 1_2/corsika.h5 --overwrite
 
 
-Notes on recreating data in 3_4
--------------------------------
+Notes on recreating data in `3_4/`
+----------------------------------
 
 This test data is a CORSIKA simulation using mostly the default HiSPARC CORSIKA
 configuration, except that the thinning option is also enabled. The simulation
@@ -47,8 +47,8 @@ SAPPHiRE. Run the following command to convert the CORSIKA data format to HDF5:
     $ store_corsika_data 3_4/DAT000000 3_4/corsika.h5 --overwrite
 
 
-Notes on recreating corsika_overview.h5
----------------------------------------
+Notes on recreating `corsika_overview.h5`
+-----------------------------------------
 
 After creating the two simulations and converting them to HDF5 the overview can be created. Use the following command:
 
