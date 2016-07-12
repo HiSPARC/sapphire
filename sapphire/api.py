@@ -176,8 +176,9 @@ class API(object):
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
-                data = genfromtxt(BytesIO(tsv_data.encode()), delimiter='\t',
-                                  dtype=None, names=names)
+                data = genfromtxt(BytesIO(tsv_data.encode('utf-8')),
+                                          delimiter='\t', dtype=None,
+                                          names=names)
 
         return atleast_1d(data)
 

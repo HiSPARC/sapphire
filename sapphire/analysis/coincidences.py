@@ -670,7 +670,7 @@ class CoincidencesESD(Coincidences):
             self.coincidence_group, 's_index', tables.VLStringAtom(),
             expectedrows=len(self.station_groups))
         for station_group in self.station_groups:
-            s_index.append(station_group.encode())
+            s_index.append(station_group.encode('utf-8'))
         s_index.flush()
 
     def _store_coincidence(self, coincidence):

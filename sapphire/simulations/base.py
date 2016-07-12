@@ -316,7 +316,7 @@ class BaseSimulation(object):
         """Stores the references to the station groups for coincidences"""
 
         for station_group in self.station_groups:
-            self.s_index.append(station_group._v_pathname.encode())
+            self.s_index.append(station_group._v_pathname.encode('utf-8'))
         self.s_index.flush()
 
     def __repr__(self):

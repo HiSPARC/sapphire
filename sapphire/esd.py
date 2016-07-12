@@ -479,7 +479,7 @@ def _create_coincidences_tables(file, group, station_groups):
     # Create and fill s_index
     s_index = file.create_vlarray(coin_group, 's_index', tables.VLStringAtom())
     for station_group in itervalues(station_groups):
-        s_index.append(station_group['group'].encode())
+        s_index.append(station_group['group'].encode('utf-8'))
 
     return coincidences._v_parent
 
