@@ -6,7 +6,16 @@ Notes on recreating data in 1_2
 -------------------------------
 
 This test data is a CORSIKA simulation using the default HiSPARC CORSIKA
-configuration.
+configuration. The parameters used are listed in the following table:
+
+Option | Value
+-------|-------
+SEED   | 1
+SEED   | 2
+PRMPAR | 14
+ERANGE | 1E5  1E5
+THETAP | 0  0
+PHIP   | 0  0
 
 The result from the simulation `DAT000000` is converted to `corsika.h5` using
 SAPPHiRE. Run the following command to convert the CORSIKA data format to HDF5:
