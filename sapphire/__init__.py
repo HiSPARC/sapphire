@@ -41,6 +41,9 @@ The following packages and modules are included:
 :mod:`~sapphire.storage`
     storage-related definitions
 
+:mod:`~sapphire.tests`
+    code tests
+
 :mod:`~sapphire.time_util`
     GPS date/time utility functions
 
@@ -87,6 +90,7 @@ from .simulations.groundparticles import (GroundParticlesSimulation,
                                           MultipleGroundParticlesSimulation)
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
+from .tests import run_tests
 from .transformations.celestial import zenithazimuth_to_equatorial
 from .transformations.clock import gps_to_datetime, datetime_to_gps
 
@@ -123,6 +127,7 @@ __all__ = ['analysis',
            'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
+           'run_tests',
            'zenithazimuth_to_equatorial',
            'gps_to_datetime', 'datetime_to_gps'
            ]
