@@ -61,6 +61,9 @@ class Format(object):
                                  self.particles_per_subblock)
         self.particles_size = self.particle_size * self.particles_per_subblock
 
+    def __repr__(self):
+        return '%s()' % self.__class__.__name__
+
 
 # From here on, things should not depend on the field size as everything is
 
@@ -326,6 +329,13 @@ class EventHeader(object):
         computers = {3: 'UNIX', 4: 'Macintosh'}
         return computers.get(self.flag_computer, 'unknown')
 
+    def __repr__(self):
+        return ('<%s, particle: %r, energy: 10**%.1f eV, zenith: %r deg,'
+                ' azimuth: %r deg>' %
+                (self.__class__.__name__, self.particle,
+                 math.log10(self.energy), math.degrees(self.zenith),
+                 math.degrees(self.azimuth)))
+
 
 class RunEnd(object):
 
@@ -339,6 +349,10 @@ class RunEnd(object):
         self.id = subblock[0]
         self.run_number = subblock[1]
         self.n_events_processed = subblock[2]
+
+    def __repr__(self):
+        return '%s((%r, %r, %r))' % (self.__class__.__name__, self.id,
+                                     self.run_number, self.n_events_processed)
 
 
 class EventEnd(object):
@@ -498,6 +512,11 @@ class ParticleData(object):
             return particles.name(self.atomic_number)
         else:
             return None
+
+    def __repr__(self):
+        return ('<%s, particle: %r, x: %r m, y: %r m, t: %r ns>' %
+                (self.__class__.__name__, self.particle, self.x, self.y,
+                 self.t))
 
 
 class CherenkovData(object):
