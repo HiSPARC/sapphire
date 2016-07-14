@@ -35,6 +35,7 @@ import warnings
 
 import tables
 import numpy as np
+from six.moves import range, zip
 
 from ..api import Station
 from ..utils import pbar, ERR

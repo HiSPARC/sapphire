@@ -7,8 +7,10 @@
     It is reproduced here to make it easy to read the algorithm.
 
 """
+from six.moves import range
 from numpy import around, convolve, ones, where
 from lazy import lazy
+
 
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
 

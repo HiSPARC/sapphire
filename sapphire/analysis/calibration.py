@@ -388,7 +388,7 @@ def determine_best_reference(filters):
 
     """
     lengths = []
-    ids = list(range(len(filters)))
+    ids = range(len(filters))
 
     for id in ids:
         idx = [j for j in ids if j != id]

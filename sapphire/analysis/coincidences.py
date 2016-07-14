@@ -37,6 +37,7 @@ import os.path
 import tables
 import numpy as np
 from progressbar import ProgressBar, ETA, Bar, Percentage
+from six.moves import range
 
 from . import process_events
 from .. import storage

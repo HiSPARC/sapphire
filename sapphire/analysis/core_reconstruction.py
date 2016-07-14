@@ -59,7 +59,7 @@ class EventCoreReconstruction(object):
         """
         p, x, y, z = ([], [], [], [])
         if detector_ids is None:
-            detector_ids = list(range(4))
+            detector_ids = range(4)
         self.station.cluster.set_timestamp(event['timestamp'])
         for id in detector_ids:
             p_detector = detector_density(event, id, self.station)
@@ -94,7 +94,7 @@ class EventCoreReconstruction(object):
         cores = [self.reconstruct_event(event, detector_ids, initial)
                  for event, initial in events_init]
         if len(cores):
-            core_x, core_y = list(zip(*cores))
+            core_x, core_y = zip(*cores)
         else:
             core_x, core_y = ((), ())
         return core_x, core_y
@@ -353,7 +353,7 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
                 xhit.append(x[i])
                 yhit.append(y[i])
 
-        statindex = list(range(len(phit)))
+        statindex = range(len(phit))
         subsets = combinations(statindex, 3)
         m = 3.0  # average value in powerlaw  r ^(-m)  for density
 

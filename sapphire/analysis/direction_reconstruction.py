@@ -73,7 +73,7 @@ class EventDirectionReconstruction(object):
         """
         t, x, y, z, ids = ([], [], [], [], [])
         if detector_ids is None:
-            detector_ids = list(range(4))
+            detector_ids = range(4)
         self.station.cluster.set_timestamp(event['timestamp'])
         if isinstance(offsets, Station):
             offsets = offsets.detector_timing_offset(event['timestamp'])
@@ -114,7 +114,7 @@ class EventDirectionReconstruction(object):
         angles = [self.reconstruct_event(event, detector_ids, offsets, initial)
                   for event, initial in events_init]
         if len(angles):
-            theta, phi, ids = list(zip(*angles))
+            theta, phi, ids = zip(*angles)
         else:
             theta, phi, ids = ((), (), ())
         return theta, phi, ids
@@ -219,7 +219,7 @@ class CoincidenceDirectionReconstruction(object):
                                                offsets, initial)
                   for coincidence, initial in coin_init]
         if len(angles):
-            theta, phi, nums = list(zip(*angles))
+            theta, phi, nums = zip(*angles)
         else:
             theta, phi, nums = ((), (), ())
         return theta, phi, nums
