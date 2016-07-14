@@ -481,13 +481,13 @@ class Network(API):
             data[sn] = Station(sn, force_fresh=self.force_fresh,
                                force_stale=self.force_stale).event_time()
 
-        first = min(values['timestamp'][0] for values in list(data.values()))
-        last = max(values['timestamp'][-1] for values in list(data.values()))
+        first = min(values['timestamp'][0] for values in data.values())
+        last = max(values['timestamp'][-1] for values in data.values())
 
         len_array = (last - first) // 3600 + 1
         all_active = ones(len_array)
 
-        for sn in list(data.keys()):
+        for sn in data.keys():
             is_active = zeros(len_array)
             start_i = (data[sn]['timestamp'][0] - first) // 3600
             end_i = start_i + len(data[sn])

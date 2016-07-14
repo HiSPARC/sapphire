@@ -364,8 +364,8 @@ class Station(object):
             absolute coordinate system
 
         """
-        x, y, z = list(zip(*[detector.get_coordinates()
-                           for detector in self.detectors]))
+        x, y, z = zip(*[detector.get_coordinates()
+                      for detector in self.detectors])
 
         x0 = np.nanmean(x)
         y0 = np.nanmean(y)
@@ -568,9 +568,9 @@ class BaseCluster(object):
             absolute coordinate system
 
         """
-        x, y, z = list(zip(*[detector.get_coordinates()
-                           for station in self.stations
-                           for detector in station.detectors]))
+        x, y, z = zip(*[detector.get_coordinates()
+                      for station in self.stations
+                      for detector in station.detectors])
 
         x0 = np.nanmean(x)
         y0 = np.nanmean(y)
