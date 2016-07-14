@@ -32,6 +32,7 @@ import subprocess
 import argparse
 import warnings
 from math import modf, log10
+from six.moves import range
 
 from . import particles
 from ..utils import pbar

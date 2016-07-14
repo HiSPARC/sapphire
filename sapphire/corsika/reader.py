@@ -69,6 +69,7 @@ from __future__ import division
 from struct import unpack
 import warnings
 import os
+from six.moves import range
 
 from .blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
                      ParticleData, Format, ParticleDataThin, FormatThin,
@@ -352,8 +353,8 @@ class CorsikaFile(object):
         """Get subblock of particles from the contents as tuples"""
 
         unpacked_particles = self._unpack_particles(word)
-        particles = list(zip(*[iter(unpacked_particles)] *
-                             self.format.fields_per_particle))
+        particles = zip(*[iter(unpacked_particles)] *
+                        self.format.fields_per_particle)
         return (particle_data(particle) for particle in particles)
 
     def _unpack_subblock(self, word):

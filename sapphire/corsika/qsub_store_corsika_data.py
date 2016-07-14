@@ -15,6 +15,7 @@ import glob
 import textwrap
 import logging
 import argparse
+from six.moves import range
 
 from .. import qsub
 
