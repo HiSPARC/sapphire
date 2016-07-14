@@ -18,10 +18,10 @@ class CorsikaQueryTest(unittest.TestCase):
 
     def test_seeds(self):
         result = self.cq.seeds(self.cq.all_simulations())
-        self.assertEqual(result, ['1_2'])
+        self.assertEqual(result, ['1_2', '3_4'])
 
         result = self.cq.seeds(self.cq.all_simulations(), iterator=True)
-        self.assertEqual(list(result), ['1_2'])
+        self.assertEqual(list(result), ['1_2', '3_4'])
 
     def test_get_info(self):
         result = self.cq.get_info('1_2')

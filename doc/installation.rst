@@ -204,5 +204,8 @@ In fact, we recommend using IPython for interactive use.  Then, try to import
 
     >>> import sapphire
 
-If this returns without an error message, all is well and |sapphire| is
-correctly installed.
+If this returns without an error message, all is well and |sapphire| should be
+correctly installed. As an additional assurance the |sapphire| code tests can
+be executed. To run the tests simply call the function to run the tests::
+
+   >>> sapphire.run_tests()

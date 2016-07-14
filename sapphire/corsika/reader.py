@@ -73,7 +73,7 @@ from six.moves import range
 
 from .blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
                      ParticleData, Format, ParticleDataThin, FormatThin,
-                     particle_data)
+                     particle_data, particle_data_thin)
 
 
 class CorsikaEvent(object):
@@ -417,3 +417,16 @@ class CorsikaFileThin(CorsikaFile):
         """Get a particle from the contents as a ParticleDataThin instance"""
 
         return ParticleDataThin(self._unpack_particle(word))
+
+    def _get_particle_record_tuple(self, word):
+        """Get a thinned particle from the contents as a tuple"""
+
+        return particle_data_thin(self._unpack_particle(word))
+
+    def _get_particles(self, word):
+        """Get subblock of thinned particles from the contents as tuples"""
+
+        unpacked_particles = self._unpack_particles(word)
+        particles = zip(*[iter(unpacked_particles)] *
+                        self.format.fields_per_particle)
+        return (particle_data_thin(particle) for particle in particles)

@@ -9,6 +9,9 @@ from sapphire.tests.validate_results import validate_results
 TEST_DATA_FILE = 'test_data/1_2/DAT000000'
 TEST_EXPECTED_FILE = 'test_data/1_2/corsika.h5'
 STORE_CMD = 'store_corsika_data {source} {destination}'
+TEST_DATA_FILE_THIN = TEST_DATA_FILE.replace('1_2', '3_4')
+TEST_EXPECTED_FILE_THIN = TEST_EXPECTED_FILE.replace('1_2', '3_4')
+STORE_CMD_THIN = STORE_CMD + ' --thin'
 
 
 class StoreCorsikaDataTests(unittest.TestCase):
@@ -19,6 +22,7 @@ class StoreCorsikaDataTests(unittest.TestCase):
         self.source_path = self.get_testdata_path()
         self.expected_path = self.get_expected_path()
         self.destination_path = self.create_tempfile_path()
+        self.thin = False
 
     def tearDown(self):
         os.remove(self.destination_path)
@@ -27,10 +31,10 @@ class StoreCorsikaDataTests(unittest.TestCase):
         # First with overwrite false
         self.assertRaises(Exception, store_and_sort_corsika_data,
                           self.source_path, self.destination_path,
-                          progress=True)
+                          progress=True, thin=self.thin)
         # Now with overwrite true
         store_and_sort_corsika_data(self.source_path, self.destination_path,
-                                    overwrite=True)
+                                    overwrite=True, thin=self.thin)
         validate_results(self, self.expected_path, self.destination_path)
 
     def create_tempfile_path(self):
@@ -45,6 +49,23 @@ class StoreCorsikaDataTests(unittest.TestCase):
     def get_expected_path(self):
         dir_path = os.path.dirname(__file__)
         return os.path.join(dir_path, TEST_EXPECTED_FILE)
+
+
+class StoreThinCorsikaDataTests(StoreCorsikaDataTests):
+
+    """Store thinned CORSIKA test using the function directly"""
+
+    def setUp(self):
+        super(StoreThinCorsikaDataTests, self).setUp()
+        self.thin = True
+
+    def get_testdata_path(self):
+        dir_path = os.path.dirname(__file__)
+        return os.path.join(dir_path, TEST_DATA_FILE_THIN)
+
+    def get_expected_path(self):
+        dir_path = os.path.dirname(__file__)
+        return os.path.join(dir_path, TEST_EXPECTED_FILE_THIN)
 
 
 class StoreCorsikaDataCommandTests(StoreCorsikaDataTests):
@@ -72,6 +93,17 @@ class StoreCorsikaDataCommandTests(StoreCorsikaDataTests):
         self.assertEqual(result, b'')
 
         validate_results(self, self.expected_path, self.destination_path)
+
+
+class StoreThinCorsikaDataCommandTests(StoreCorsikaDataCommandTests,
+                                       StoreThinCorsikaDataTests):
+
+    """Store thinned CORSIKA test calling store command"""
+
+    def setUp(self):
+        super(StoreThinCorsikaDataCommandTests, self).setUp()
+        self.command = STORE_CMD_THIN.format(source=self.source_path,
+                                             destination=self.destination_path)
 
 
 if __name__ == '__main__':
