@@ -141,7 +141,7 @@ def all_seeds(source):
 
     dirs = glob.glob(os.path.join(source, '*_*'))
     seeds = [os.path.basename(dir) for dir in dirs]
-    return sorted(list(set(seeds)))
+    return sorted(set(seeds))
 
 
 def generate_corsika_overview(source, destination, progress=False):
