@@ -84,7 +84,7 @@ from .analysis.time_deltas import ProcessTimeDeltas
 from .api import Network, Station
 from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
 from .corsika.corsika_queries import CorsikaQuery
-from .esd import (quick_download, load_data, download_data,
+from .esd import (quick_download, load_data, download_data, download_lightning,
                   download_coincidences)
 from .simulations.groundparticles import (GroundParticlesSimulation,
                                           MultipleGroundParticlesSimulation)
@@ -123,7 +123,7 @@ __all__ = ['analysis',
            'HiSPARCStations', 'HiSPARCNetwork', 'ScienceParkCluster',
            'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
-           'download_coincidences',
+           'download_lightning', 'download_coincidences',
            'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
