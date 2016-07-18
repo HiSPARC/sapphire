@@ -1,0 +1,32 @@
+# Event Summary Data - Lightning
+#
+# Showing only lightning of type 4: Cloud-ground
+#
+# Data taken from 2015-07-17 00:00:00 to 2015-07-17 00:10:00
+#
+# Data from: Royal Netherlands Meteorological Institute (KNMI)
+#
+#
+# This data contains the following columns:
+#
+# date:                time of event [GPS calendar date]
+# time:                time of event [GPS time of day]
+# timestamp:           time of event [UNIX timestamp]
+# nanoseconds:         time of event upto microsecond accuracy [number of nanoseconds after timestamp]
+# latitude:            latitude of discharge [degrees]
+# longitude:           longitude of discharge [degrees]
+# current:             discharge in amps [Ampere]
+#
+# Values of -1 or -999 indicate a problem in that measurement or
+# the absence of that sensor.
+#
+#
+2015-07-17	00:01:07	1437091267	887600000	52.654999	0.3129	36120
+2015-07-17	00:01:14	1437091274	833700000	52.5201	0.3014	53940
+2015-07-17	00:02:03	1437091323	213500000	52.381901	1.7162	9560
+2015-07-17	00:05:37	1437091537	979900000	48.9515	3.1185	-15210
+2015-07-17	00:06:43	1437091603	165000000	52.5783	1.173	-56050
+2015-07-17	00:08:17	1437091697	143500000	52.762501	1.7115	14980
+2015-07-17	00:08:22	1437091702	567600000	52.564899	1.3002	-17540
+2015-07-17	00:09:24	1437091764	765000000	53.443298	1.5618	-51320
+# Finished downloading.
