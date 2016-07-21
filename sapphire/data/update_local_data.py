@@ -36,16 +36,16 @@ def update_local_json(progress=True):
     toplevel_types = ['stations', 'subclusters', 'clusters', 'countries']
     if progress:
         print('Downloading JSONs: %s' % '/'.join(toplevel_types))
-    for type in pbar(toplevel_types, show=progress):
-        update_toplevel_json(type)
+    for data_type in pbar(toplevel_types, show=progress):
+        update_toplevel_json(data_type)
 
-    for arg_type, type in [('stations', 'station_info'),
-                           ('subclusters', 'stations_in_subcluster'),
-                           ('clusters', 'subclusters_in_cluster'),
-                           ('countries', 'clusters_in_country')]:
+    for arg_type, data_type in [('stations', 'station_info'),
+                                ('subclusters', 'stations_in_subcluster'),
+                                ('clusters', 'subclusters_in_cluster'),
+                                ('countries', 'clusters_in_country')]:
         if progress:
-            print('Downloading JSONs: %s' % type)
-        update_sublevel_json(arg_type, type, progress)
+            print('Downloading JSONs: %s' % data_type)
+        update_sublevel_json(arg_type, data_type, progress)
 
 
 def update_local_tsv(progress=True):
@@ -53,32 +53,32 @@ def update_local_tsv(progress=True):
 
     station_numbers = Network().station_numbers()
 
-    for type in ['gps', 'trigger', 'layout', 'voltage', 'current',
-                 'electronics', 'detector_timing_offsets']:
+    for data_type in ['gps', 'trigger', 'layout', 'voltage', 'current',
+                      'electronics', 'detector_timing_offsets']:
         if progress:
-            print('Downloading TSVs: %s' % type)
-        update_sublevel_tsv(type, station_numbers)
+            print('Downloading TSVs: %s' % data_type)
+        update_sublevel_tsv(data_type, station_numbers)
 
     # GPS and layout data should now be up to date, local data can be used
     with warnings.catch_warnings(record=True):
         network = HiSPARCNetwork(force_stale=True)
 
-    for type in ['station_timing_offsets']:
+    for data_type in ['station_timing_offsets']:
         if progress:
-            print('Downloading TSVs: %s' % type)
-        update_subsublevel_tsv(type, station_numbers, network)
+            print('Downloading TSVs: %s' % data_type)
+        update_subsublevel_tsv(data_type, station_numbers, network)
 
 
-def update_toplevel_json(type):
-    url = API.urls[type]
+def update_toplevel_json(data_type):
+    url = API.urls[data_type]
     try:
         get_and_store_json(url)
     except:
-        print('Failed to get %s data' % type)
+        print('Failed to get %s data' % data_type)
 
 
-def update_sublevel_json(arg_type, type, progress=True):
-    subdir = API.urls[type].split('/')[0]
+def update_sublevel_json(arg_type, data_type, progress=True):
+    subdir = API.urls[data_type].split('/')[0]
     try:
         mkdir(path.join(LOCAL_BASE, subdir))
     except OSError:
@@ -89,43 +89,43 @@ def update_sublevel_json(arg_type, type, progress=True):
         numbers = [x['number'] for x in loads(API._retrieve_url(url))]
     except:
         if progress:
-            print('Failed to get %s data' % type)
+            print('Failed to get %s data' % data_type)
         return
 
-    kwarg = API.urls[type].split('/')[1].strip('{}')
+    kwarg = API.urls[data_type].split('/')[1].strip('{}')
     for number in pbar(numbers, show=progress):
-        url = API.urls[type].format(**{kwarg: number,
-                                       'year': '', 'month': '', 'day': ''})
+        url = API.urls[data_type].format(**{kwarg: number, 'year': '',
+                                            'month': '', 'day': ''})
         try:
             get_and_store_json(url.strip('/'))
         except:
             if progress:
                 print('Failed to get %s data for %s %d' %
-                      (type, arg_type, number))
+                      (data_type, arg_type, number))
             return
 
 
-def update_sublevel_tsv(type, station_numbers, progress=True):
-    subdir = API.src_urls[type].split('/')[0]
+def update_sublevel_tsv(data_type, station_numbers, progress=True):
+    subdir = API.src_urls[data_type].split('/')[0]
     try:
         mkdir(path.join(LOCAL_BASE, subdir))
     except OSError:
         pass
 
     for number in pbar(station_numbers, show=progress):
-        url = API.src_urls[type].format(station_number=number,
-                                        year='', month='', day='')
+        url = API.src_urls[data_type].format(station_number=number,
+                                             year='', month='', day='')
         url = url.strip('/') + '/'
         try:
             get_and_store_tsv(url)
         except:
-            if progress and type != 'layout':
-                print('Failed to get %s for station %d' % (type, number))
+            if progress and data_type != 'layout':
+                print('Failed to get %s for station %d' % (data_type, number))
             continue
 
 
-def update_subsublevel_tsv(type, station_numbers, network, progress=True):
-    subdir = API.src_urls[type].split('/')[0]
+def update_subsublevel_tsv(data_type, station_numbers, network, progress=True):
+    subdir = API.src_urls[data_type].split('/')[0]
     for number1, number2 in pbar(list(combinations(station_numbers, 2)),
                                  show=progress):
         distance = network.calc_distance_between_stations(number1, number2)
@@ -135,13 +135,14 @@ def update_subsublevel_tsv(type, station_numbers, network, progress=True):
             makedirs(path.join(LOCAL_BASE, subdir, str(number1)))
         except OSError:
             pass
-        url = API.src_urls[type].format(station_1=number1, station_2=number2)
+        url = API.src_urls[data_type].format(station_1=number1,
+                                             station_2=number2)
         try:
             get_and_store_tsv(url)
         except:
             if progress:
                 print('Failed to get %s data for station pair %d-%d' %
-                      (type, number1, number2))
+                      (data_type, number1, number2))
 
 
 def get_and_store_json(url):

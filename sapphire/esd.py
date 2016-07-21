@@ -661,7 +661,7 @@ class _read_line_and_store_weather_class(object):
 
         return int(timestamp)
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         self.table.flush()
 
 
@@ -713,5 +713,5 @@ class _read_line_and_store_event_class(object):
 
         return int(timestamp)
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         self.table.flush()

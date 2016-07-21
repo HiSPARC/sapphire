@@ -87,7 +87,7 @@ class TableMergeSort(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, exc_traceback):
         try:
             self.tempfile_path
         except AttributeError:

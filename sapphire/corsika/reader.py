@@ -134,18 +134,18 @@ class CorsikaEvent(object):
         for sub_block_index in self._raw_file._subblocks_indices(
                 self._header_index, self._end_index):
             for particle in self._raw_file._get_particles(sub_block_index):
-                type_ = particle[6]  # particle type
-                level = particle[9]  # observation level
+                particle_type = particle[6]
+                observation_level = particle[9]
 
                 # skip padding, used to fill a subblock
-                if type_ == 0:
+                if particle_type == 0:
                     continue
                 # muon additional information
-                if type_ in [75, 76]:
+                if particle_type in [75, 76]:
                     warnings.warn('Ignoring muon additional information.')
                     continue
                 # ignore all observation levels except for nr. 1
-                if level != 1:
+                if observation_level != 1:
                     warnings.warn('Only observation level 1 will be read!')
                     continue
 
