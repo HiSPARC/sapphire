@@ -750,7 +750,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
         First the thresholds are sorted to make sure they are looked for
         in the correct order, because the trace is a generator you can
-        not go back.
+        not go back. The results will match the original order.
 
         :param trace: generator over the trace.
         :param thresholds: list of three thresholds.
