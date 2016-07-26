@@ -219,12 +219,14 @@ class MeanFilter(object):
         """The mean filter in case use_threshold is True"""
 
         moving_average = convolve(trace, ones(4) / 4)
+        rounded_average = around(moving_average).astype(int)
 
         filtered_trace = []
         local_mean = moving_average[3]
+        local_mean_rounded = rounded_average[3]
 
         if all([abs(v - local_mean) <= self.threshold for v in trace[:4]]):
-            filtered_trace.extend([int(around(local_mean))] * 4)
+            filtered_trace.extend([local_mean_rounded] * 4)
         else:
             filtered_trace.extend(trace[:4])
 
@@ -238,7 +240,7 @@ class MeanFilter(object):
             elif abs(trace[i] - local_mean) > self.threshold:
                 filtered_trace.append(trace[i])
             else:
-                filtered_trace.append(int(around(local_mean)))
+                filtered_trace.append(rounded_average[i])
 
         return filtered_trace
 
@@ -246,8 +248,12 @@ class MeanFilter(object):
         """The mean filter in case use_threshold is False"""
 
         moving_average = convolve(trace, ones(4) / 4)
+        rounded_average = around(moving_average).astype(int)
+
         local_mean = moving_average[3]
-        filtered_trace = [int(around(local_mean))] * 4
+        local_mean_rounded = rounded_average[3]
+
+        filtered_trace = [local_mean_rounded] * 4
 
         for i in xrange(4, len(trace)):
             local_mean = moving_average[i]
@@ -255,7 +261,7 @@ class MeanFilter(object):
                 # Both values on same side of the local_mean
                 filtered_trace.append(trace[i])
             else:
-                filtered_trace.append(int(around(local_mean)))
+                filtered_trace.append(rounded_average[i])
 
         return filtered_trace
 

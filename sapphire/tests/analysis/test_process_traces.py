@@ -121,10 +121,28 @@ class MeanFilterTests(unittest.TestCase):
         filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
         self.assertEqual(filtered_trace, exp_trace)
 
+        # Check proper rounding of mean values ending in .5 to nearest even
+        # (200 + 201 + 200 + 201) / 4. = 200.5 -> 200
+        # (201 + 200 + 201 + 204) / 4. = 201.5 -> 202
+        raw_trace = [200, 201, 200, 201, 204]
+        exp_trace = [200, 200, 200, 200, 202]
+        # mean/trace  m    m    m    m    m
+        filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
     def test_mean_filter_without_threshold(self):
         raw_trace = [199, 201, 199, 201, 216, 220, 219, 205, 200, 201]
         exp_trace = [200, 200, 200, 200, 204, 220, 219, 215, 200, 201]
         # mean/trace  m    m    m    m    m    t    t    m    t    t
+        filtered_trace = self.mf.mean_filter_without_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
+        # Check proper rounding of mean values ending in .5 to nearest even
+        # (200 + 201 + 200 + 201) / 4. = 200.5 -> 200
+        # (201 + 200 + 201 + 204) / 4. = 201.5 -> 202
+        raw_trace = [200, 201, 200, 201, 204]
+        exp_trace = [200, 200, 200, 200, 202]
+        # mean/trace  m    m    m    m
         filtered_trace = self.mf.mean_filter_without_threshold(raw_trace)
         self.assertEqual(filtered_trace, exp_trace)
 
