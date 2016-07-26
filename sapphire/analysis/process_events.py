@@ -396,13 +396,18 @@ class ProcessEvents(object):
 
         If no element matches the condition -999 will be returned.
 
+        :param trace: iterable trace.
+        :param threshold: value the trace has to be greater or equal to.
+        :return: index in trace where a value is greater or equal to
+                 threshold.
+
         """
         return next((i for i, x in enumerate(trace) if x >= threshold), -999)
 
     def _store_number_of_particles(self):
         """Store number of particles in the detectors.
 
-        Process all pulseheights from the events and estimate the number
+        Process all pulseintegrals from the events and estimate the number
         of particles in each detector.
 
         """
@@ -415,6 +420,12 @@ class ProcessEvents(object):
         table.flush()
 
     def _process_pulseintegrals(self):
+        """Find MPVs using pulseintegrals to estimate number of particles
+
+        :return: array with estimated number of particles per detector per
+                 event.
+
+        """
         n_particles = []
 
         integrals = self.source.col('integrals')
