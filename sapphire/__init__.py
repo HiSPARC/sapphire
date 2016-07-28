@@ -77,6 +77,8 @@ from .analysis.find_mpv import FindMostProbableValueInSpectrum
 from .analysis.process_events import (ProcessEvents, ProcessEventsFromSource,
                                       ProcessEventsFromSourceWithTriggerOffset,
                                       ProcessWeather, ProcessWeatherFromSource)
+from .analysis.process_traces import (TraceObservables, MeanFilter,
+                                      DataReduction)
 from .analysis.reconstructions import (ReconstructESDEvents,
                                        ReconstructESDEventsFromSource,
                                        ReconstructESDCoincidences)
@@ -116,6 +118,7 @@ __all__ = ['analysis',
            'ProcessEvents', 'ProcessEventsFromSource',
            'ProcessEventsFromSourceWithTriggerOffset',
            'ProcessWeather', 'ProcessWeatherFromSource',
+           'TraceObservables', 'MeanFilter', 'DataReduction',
            'ReconstructESDEvents', 'ReconstructESDEventsFromSource',
            'ReconstructESDCoincidences',
            'ProcessTimeDeltas',
