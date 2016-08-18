@@ -56,8 +56,6 @@ class CoincidenceQuery(object):
             try:
                 self.s_nodes.append(self.data.get_node(s_path))
             except tables.NoSuchNodeError:
-                warnings.warn('Missing some station groups. This is no '
-                              'problem if those are not in coincidences.')
                 self.s_nodes.append(None)
         re_number = re.compile('[0-9]+$')
         self.s_numbers = [int(re_number.search(s_path).group())
