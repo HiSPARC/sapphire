@@ -8,8 +8,8 @@ from sapphire.analysis import coincidence_queries
 class BaseCoincidenceQueryTest(unittest.TestCase):
 
     @patch.object(coincidence_queries.tables, 'open_file')
-    def setUp(self, mock_method):
-        self.mock_open_file = mock_method
+    def setUp(self, mock_open_file):
+        self.mock_open_file = mock_open_file
         self.data_path = sentinel.data_path
         self.coincidences_group = sentinel.coincidences_group
 

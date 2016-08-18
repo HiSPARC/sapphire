@@ -28,7 +28,7 @@ from numpy import sqrt, arctan2, arccos, sin, cos, matrix, radians, degrees
 def cartesian_to_spherical(x, y, z):
     """Converts Cartesian coordinates into spherical coordinates
 
-    :param x,y,z: Cartesian coordinates
+    :param x,y,z: Cartesian coordinates.
     :return: tuple of spherical coordinates (r, theta, phi),
              with theta and phi in radians.
 
@@ -44,7 +44,7 @@ def cartesian_to_spherical(x, y, z):
 def cartesian_to_cylindrical(x, y, z):
     """Converts Cartesian coordinates into cylindrical coordinates
 
-    :param x,y,z: Cartesian coordinates
+    :param x,y,z: Cartesian coordinates.
     :return: tuple of cylindrical coordinates (r, phi, z), with
              phi in radians.
 
@@ -57,7 +57,7 @@ def cartesian_to_cylindrical(x, y, z):
 def cartesian_to_polar(x, y):
     """Converts Cartesian coordinates into polar coordinates
 
-    :param x,y: Cartesian coordinates
+    :param x,y: Cartesian coordinates.
     :return: tuple of polar coordinates (r, phi), with phi in radians.
 
     """
@@ -68,7 +68,7 @@ def cartesian_to_polar(x, y):
 def cartesian_to_compass(x, y, z):
     """Converts Cartesian coordinates into compass coordinates
 
-    :param x,y,z: Cartesian coordinates
+    :param x,y,z: Cartesian coordinates.
     :return: tuple of compass coordinates (r, alpha, z),
              with alpha in degrees.
 
@@ -82,7 +82,7 @@ def spherical_to_cartesian(r, theta, phi):
     """Convert spherical coordinates into Cartesian coordinates
 
     :param r,theta,phi: spherical coordinates, with theta and phi in radians.
-    :return: tuple of Cartesian coordinates (x, y, z)
+    :return: tuple of Cartesian coordinates (x, y, z).
 
     """
     x = r * sin(theta) * cos(phi)
@@ -95,7 +95,7 @@ def cylindrical_to_cartesian(r, phi, z):
     """Convert cylindrical coordinates into Cartesian coordinates
 
     :param r,phi,z: cylindrical coordinates, with phi in radians.
-    :return: tuple of Cartesian coordinates (x, y, z)
+    :return: tuple of Cartesian coordinates (x, y, z).
 
     """
     x = r * cos(phi)
@@ -107,7 +107,7 @@ def polar_to_cartesian(r, phi):
     """Convert polar coordinates into Cartesian coordinates
 
     :param r,phi: polar coordinates, with phi in radians.
-    :return: tuple of Cartesian coordinates (x, y)
+    :return: tuple of Cartesian coordinates (x, y).
 
     """
     x, y, _ = cylindrical_to_cartesian(r, phi, 0)

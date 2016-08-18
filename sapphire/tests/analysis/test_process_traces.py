@@ -12,23 +12,26 @@ class TraceObservablesTests(unittest.TestCase):
     def setUp(self):
         trace = ([200] * 400 + [500] + [510] + [400] * 10 + [200] * 600 +
                  [400] * 10 + [200])
-        self.traces = array([trace, [0] * len(trace)]).T
+        trace2 = ([203, 199] * 200 + [500] + [510] + [398, 402] * 5 +
+                  [203, 199] * 300 + [400] * 10 + [200])
+        self.traces = array([trace, trace2]).T
         self.to = process_traces.TraceObservables(self.traces)
 
     def test_baselines(self):
-        self.assertEqual(self.to.baselines, [200, 0, -1, -1])
+        self.assertEqual(self.to.baselines, [200, 201, -1, -1])
 
     def test_std_dev(self):
-        self.assertEqual(self.to.std_dev, [0, 0, -1, -1])
+        self.assertEqual(self.to.std_dev, [0, 2000, -1, -1])
 
     def test_pulseheights(self):
-        self.assertEqual(self.to.pulseheights, [310, 0, -1, -1])
+        self.assertEqual(self.to.pulseheights, [310, 309, -1, -1])
 
     def test_integrals(self):
-        self.assertEqual(self.to.integrals, [300 + 310 + 200 * 20, 0, -1, -1])
+        self.assertEqual(self.to.integrals, [300 + 310 + 200 * 20,
+                                             299 + 309 + 199 * 20, -1, -1])
 
     def test_n_peaks(self):
-        self.assertEqual(self.to.n_peaks, [2, 0, -1, -1])
+        self.assertEqual(self.to.n_peaks, [2, 2, -1, -1])
 
 
 class MeanFilterTests(unittest.TestCase):
@@ -121,6 +124,15 @@ class MeanFilterTests(unittest.TestCase):
         filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
         self.assertEqual(filtered_trace, exp_trace)
 
+        # Check proper rounding of mean values ending in .5 to nearest even
+        # (200 + 201 + 200 + 201) / 4. = 200.5 -> 200
+        # (201 + 200 + 201 + 204) / 4. = 201.5 -> 202
+        raw_trace = [200, 201, 200, 201, 204]
+        exp_trace = [200, 200, 200, 200, 202]
+        # mean/trace  m    m    m    m    m
+        filtered_trace = self.mf.mean_filter_with_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
     def test_mean_filter_without_threshold(self):
         raw_trace = [199, 201, 199, 201, 216, 220, 219, 205, 200, 201]
         exp_trace = [200, 200, 200, 200, 204, 220, 219, 215, 200, 201]
@@ -128,6 +140,84 @@ class MeanFilterTests(unittest.TestCase):
         filtered_trace = self.mf.mean_filter_without_threshold(raw_trace)
         self.assertEqual(filtered_trace, exp_trace)
 
+        # Check proper rounding of mean values ending in .5 to nearest even
+        # (200 + 201 + 200 + 201) / 4. = 200.5 -> 200
+        # (201 + 200 + 201 + 204) / 4. = 201.5 -> 202
+        raw_trace = [200, 201, 200, 201, 204]
+        exp_trace = [200, 200, 200, 200, 202]
+        # mean/trace  m    m    m    m
+        filtered_trace = self.mf.mean_filter_without_threshold(raw_trace)
+        self.assertEqual(filtered_trace, exp_trace)
+
+
+class DataReductionTests(unittest.TestCase):
+
+    def setUp(self):
+        self.dr = process_traces.DataReduction()
+
+    def test_init(self):
+        dr = process_traces.DataReduction(sentinel.threshold, sentinel.padding)
+        self.assertEqual(dr.threshold, sentinel.threshold)
+        self.assertEqual(dr.padding, sentinel.padding)
+
+    def test_reduce_traces(self):
+        pre = 400
+        post = 300
+        baseline = 200
+        trace = ([baseline] * pre + [baseline + 50] + [baseline + 60] * 4 +
+                 [baseline] * 600 + [baseline + 90] * 5 + [baseline] * post)
+        traces = array([trace, [baseline] * len(trace)]).T
+        reduced_traces = self.dr.reduce_traces(traces, [baseline] * 2)
+        r_traces, left = self.dr.reduce_traces(traces, [baseline] * 2, True)
+        r_traces_no_baseline = self.dr.reduce_traces(traces)
+        self.assertTrue((reduced_traces == r_traces).all())
+        self.assertTrue((reduced_traces == r_traces_no_baseline).all())
+        self.assertEqual(len(reduced_traces),
+                         len(trace) - pre - post + self.dr.padding * 2)
+        self.assertEqual(left, pre - self.dr.padding)
+
+        pre = 10
+        post = 10
+        baseline = 200
+        trace = ([baseline] * pre + [baseline + 50] + [baseline + 60] * 4 +
+                 [baseline] * 600 + [baseline + 90] * 5 + [baseline] * post)
+        traces = array([trace, [baseline] * len(trace)]).T
+        reduced_traces = self.dr.reduce_traces(traces, [baseline] * 2)
+        r_traces, left = self.dr.reduce_traces(traces, [baseline] * 2, True)
+        self.assertTrue((reduced_traces == traces).all())
+        self.assertTrue((reduced_traces == r_traces).all())
+        self.assertEqual(len(reduced_traces), len(trace))
+        self.assertEqual(left, 0)
+
+    def test_determine_cuts(self):
+        pre = 400
+        post = 300
+        baseline = 200
+        trace = ([baseline] * pre + [baseline + 50] + [baseline + 60] * 4 +
+                 [baseline] * 600 + [baseline + 90] * 5 + [baseline] * post)
+        traces = array([trace, [baseline] * len(trace)]).T
+        left, right = self.dr.determine_cuts(traces, [baseline] * 2)
+        self.assertEqual(left, pre)
+        self.assertEqual(right, len(trace) - post)
+
+        # No signal, return entire trace
+        length = 400
+        baseline = 200
+        trace = [baseline] * length
+        traces = array([trace, trace]).T
+        left, right = self.dr.determine_cuts(traces, [baseline] * 2)
+        self.assertEqual(left, 0)
+        self.assertEqual(right, length)
+
+    def test_add_padding(self):
+        combinations = (((0, 20), (0, 46)),  # left at limit
+                        ((4, 20), (0, 46)),  # left close to limit
+                        ((50, 2400), (24, 2426)),  # left far from limit
+                        ((50, 2400, 2400), (24, 2400)),  # right at limit
+                        ((50, 2400, 2410), (24, 2410)),  # right close to limit
+                        ((0, 200, 2400), (0, 226)),)  # right far from limit
+        for input, expected in combinations:
+            self.assertEqual(self.dr.add_padding(*input), expected)
 
 if __name__ == '__main__':
     unittest.main()

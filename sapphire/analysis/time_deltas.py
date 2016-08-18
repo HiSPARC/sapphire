@@ -50,7 +50,8 @@ class ProcessTimeDeltas(object):
 
         :param data: the PyTables datafile.
         :param coincidence_group: path to the coincidences group.
-        :param progress: show progressbar.
+        :param progress: if True show a progressbar while determining and
+                         storing offsets.
         :param destination: group name for the time_deltas, as subgroup of
                             the coincidence_group.
 
@@ -170,3 +171,12 @@ class ProcessTimeDeltas(object):
                                        expectedrows=len(delta_data))
         table.append(delta_data)
         table.flush()
+
+    def __repr__(self):
+        if not self.data.isopen:
+            return "<finished %s>" % self.__class__.__name__
+        coincidence_group = self.cq.coincidences._v_parent._v_pathname
+        return ("<%s, data: %r, coincidence_group: %r, progress: %r, "
+                "destination: %r>" %
+                (self.__class__.__name__, self.data.filename,
+                 coincidence_group, self.progress, self.destination))

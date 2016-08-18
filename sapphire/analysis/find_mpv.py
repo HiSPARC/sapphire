@@ -11,7 +11,7 @@ from scipy.optimize import curve_fit
 from ..utils import gauss
 
 
-MPV_FIT_WIDTH_FACTOR = .4
+MPV_FIT_WIDTH_FACTOR = 0.4
 
 
 class FindMostProbableValueInSpectrum(object):
@@ -41,7 +41,7 @@ class FindMostProbableValueInSpectrum(object):
     """
 
     def __init__(self, n, bins):
-        """Initialize the class instance.
+        """Initialize the class instance
 
         :param n,bins: histogram counts and bins, as obtained using
             ``numpy.histogram``.
@@ -55,7 +55,7 @@ class FindMostProbableValueInSpectrum(object):
         First perform a first guess, then use that value to fit the MIP
         peak.
 
-        :return mpv: best guess of the most probable value
+        :return mpv: best guess of the most probable value.
         :return boolean is_fitted: indicates if the fit was successful.
 
         """
@@ -83,7 +83,7 @@ class FindMostProbableValueInSpectrum(object):
            * Find the maximum *to the right* of this value.  We assume
              this to be the approximate location of the MIP peak.
 
-        :return mpv: first guess of the most probable value
+        :return mpv: first guess of the most probable value.
 
         """
         n, bins = self.n, self.bins
@@ -114,12 +114,12 @@ class FindMostProbableValueInSpectrum(object):
         be adjusted by the width_factor parameter.
 
         :param first_guess: approximate location of the most probable
-            value
+            value.
         :param width_factor: float in the range [0., 1.] to indicate the
             width of the fit domain.  The domain is given by
-            [(1. - width_factor) * first_guess, (1. + width_factor) *
-            first_guess]
-        :return mpv: mpv value obtained from the fit
+            ``[(1. - width_factor) * first_guess, (1. + width_factor) *
+            first_guess]``.
+        :return mpv: mpv value obtained from the fit.
 
         """
         n, bins = self.n, self.bins

@@ -21,6 +21,7 @@ from json import dump, loads
 from os import path, extsep, mkdir, makedirs
 from itertools import combinations
 import argparse
+import warnings
 
 from ..clusters import HiSPARCNetwork
 from ..api import API, Network, LOCAL_BASE, SRC_BASE
@@ -31,6 +32,8 @@ def update_local_json(progress=True):
     """Get cluster organisation and basic station JSON data"""
 
     toplevel_types = ['stations', 'subclusters', 'clusters', 'countries']
+    if progress:
+        print 'Downloading JSONs: %s' % '/'.join(toplevel_types)
     for type in pbar(toplevel_types, show=progress):
         update_toplevel_json(type)
 
@@ -38,6 +41,8 @@ def update_local_json(progress=True):
                            ('subclusters', 'stations_in_subcluster'),
                            ('clusters', 'subclusters_in_cluster'),
                            ('countries', 'clusters_in_country')]:
+        if progress:
+            print 'Downloading JSONs: %s' % type
         update_sublevel_json(arg_type, type, progress)
 
 
@@ -48,12 +53,17 @@ def update_local_tsv(progress=True):
 
     for type in ['gps', 'trigger', 'layout', 'voltage', 'current',
                  'electronics', 'detector_timing_offsets']:
+        if progress:
+            print 'Downloading TSVs: %s' % type
         update_sublevel_tsv(type, station_numbers)
 
     # GPS and layout data should now be up to date, local data can be used
-    network = HiSPARCNetwork(force_stale=True)
+    with warnings.catch_warnings(record=True):
+        network = HiSPARCNetwork(force_stale=True)
 
     for type in ['station_timing_offsets']:
+        if progress:
+            print 'Downloading TSVs: %s' % type
         update_subsublevel_tsv(type, station_numbers, network)
 
 
@@ -143,6 +153,8 @@ def get_and_store_tsv(url):
     data = API._retrieve_url(url, base=SRC_BASE)
     # Strip empty and comment lines
     data = '\n'.join(d for d in data.split('\n') if len(d) and d[0] != '#')
+    # End with empty newline
+    data += '\n'
     if data:
         tsv_path = path.join(LOCAL_BASE, url.strip('/') + extsep + 'tsv')
         with open(tsv_path, 'w') as tsvfile:

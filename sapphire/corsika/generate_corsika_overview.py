@@ -145,6 +145,13 @@ def all_seeds(source):
 
 
 def generate_corsika_overview(source, destination, progress=False):
+    """Create an overview of CORSIKA simulations for use by CorsikaQuery
+
+    :param source: directory containing the CORSIKA simulations.
+    :param destination: path of the HDF5 output file.
+    :param progress: if True show a progressbar while processing simulations.
+
+    """
     logger.info('Getting simulation list.')
     # Get names of all subdirectories
     simulations = all_seeds(source)

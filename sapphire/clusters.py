@@ -1,8 +1,19 @@
 """ Define HiSPARC detectors, stations and clusters.
 
-    The BaseCluster class defines a HiSPARC cluster consisting of one or
-    more stations.  The Station class defines a HiSPARC station,
-    consisting of one or more Detectors.
+    The :class:`BaseCluster` defines a HiSPARC cluster consisting of one or
+    more stations.  The :class:`Station` defines a HiSPARC station,
+    consisting of one or more :class:`Detector` objects.
+
+    To easily create a cluster object for a specific set of real HiSPARC
+    stations the :class:`HiSPARCStations` can be used, for example::
+
+    >>> from sapphire import HiSPARCStations
+    >>> cluster = HiSPARCStations([102, 104, 105], force_stale=True)
+
+    The use of ``force_stale`` forces the use of local data, which
+    is much faster to load than data from the server.
+
+    These cluster objects are mainly used by simulations and reconstructions.
 
 """
 from __future__ import division
@@ -152,6 +163,11 @@ class Detector(object):
                    for xc, yc in corners]
 
         return corners
+
+    def __repr__(self):
+        id = next(i for i, d in enumerate(self.station.detectors) if self is d)
+        return ("<%s, id: %d, station: %r>" %
+                (self.__class__.__name__, id, self.station))
 
 
 class Station(object):
@@ -357,6 +373,11 @@ class Station(object):
 
         return x0, y0, z0
 
+    def __repr__(self):
+        return ("<%s, id: %d, number: %d, cluster: %r>" %
+                (self.__class__.__name__, self.station_id, self.number,
+                 self.cluster))
+
 
 class BaseCluster(object):
     """Base class for HiSPARC clusters"""
@@ -551,9 +572,9 @@ class BaseCluster(object):
                       for station in self.stations
                       for detector in station.detectors])
 
-        x0 = np.mean(x)
-        y0 = np.mean(y)
-        z0 = np.mean(z)
+        x0 = np.nanmean(x)
+        y0 = np.nanmean(y)
+        z0 = np.nanmean(z)
 
         return x0, y0, z0
 
@@ -601,6 +622,9 @@ class BaseCluster(object):
         xy = [np.array(s.calc_center_of_mass_coordinates()[:-1]) for s in pair]
 
         return self._distance(*xy)
+
+    def __repr__(self):
+        return "<%s>" % self.__class__.__name__
 
 
 class CompassStations(BaseCluster):
@@ -818,6 +842,10 @@ class HiSPARCStations(CompassStations):
             warnings.warn('Could not get detector layout for stations %s, '
                           'defaults will be used!' % str(missing_detectors))
 
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__,
+                           [s.number for s in self.stations])
+
 
 class ScienceParkCluster(HiSPARCStations):
 
@@ -851,6 +879,9 @@ class HiSPARCNetwork(HiSPARCStations):
         skip_missing = True  # Likely some station without GPS location
         super(HiSPARCNetwork, self).__init__(stations, skip_missing,
                                              force_fresh, force_stale)
+
+    def __repr__(self):
+        return "<%s>" % self.__class__.__name__
 
 
 def flatten_cluster(cluster):

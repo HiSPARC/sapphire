@@ -32,7 +32,7 @@ class StoreKascadeData(object):
         :param kascade_path: path of group where KASCADE data wil be stored.
         :param kascade_filename: filename of the KASCADE data source.
         :param force: overwrite existing KASCADE group if it already exists.
-        :param progress: if True, show a progress info will be shown.
+        :param progress: if True progress info will be shown.
 
         """
         self.data = data

@@ -6,6 +6,10 @@ Supported systems: GPS, UTC, GMST, LST, JD and MJD.
 
 Formulae from:
 
+IETF list of leap seconds
+'Leap seconds announced by the IERS'
+https://www.ietf.org/timezones/data/leap-seconds.list
+
 Duffett-Smith1990
 'Astronomy with your personal computer'
 ISBN 0-521-38995-X
@@ -28,7 +32,8 @@ from . import base, angles
 
 
 #: Dates of leap second introductions.
-LEAP_SECONDS = (('July 1, 2015', 17),
+LEAP_SECONDS = (('January 1, 2017', 18),
+                ('July 1, 2015', 17),
                 ('July 1, 2012', 16),
                 ('January 1, 2009', 15),
                 ('January 1, 2006', 14),
@@ -50,8 +55,8 @@ LEAP_SECONDS = (('July 1, 2015', 17),
 def time_to_decimal(time):
     """Converts a time or datetime object into decimal time
 
-    :param time: datetime.time or datetime.datetime object
-    :return: decimal number representing the input time
+    :param time: datetime.time or datetime.datetime object.
+    :return: decimal number representing the input time.
 
     """
     return (time.hour + time.minute / 60. + time.second / 3600. +
@@ -61,8 +66,8 @@ def time_to_decimal(time):
 def decimal_to_time(hours):
     """Converts decimal time to a time object
 
-    :param hours: datetime.time or datetime.datetime object
-    :return: decimal number representing the input time
+    :param hours: datetime.time or datetime.datetime object.
+    :return: decimal number representing the input time.
 
     """
     hours, minutes, seconds = base.decimal_to_sexagesimal(hours)
@@ -79,10 +84,10 @@ def date_to_juliandate(year, month, day):
     Julian Date is the number of days since noon on January 1, 4713 B.C.
     So the returned date will end in .5 because the date refers to midnight.
 
-    :param year: A Gregorian year (B.C. years are negative)
-    :param month: A Gregorian month (1-12)
-    :param day: A Gregorian day (1-31)
-    :return: The Julian Date for the given year, month, and day
+    :param year: a Gregorian year (B.C. years are negative).
+    :param month: a Gregorian month (1-12).
+    :param day: a Gregorian day (1-31).
+    :return: the Julian Date for the given year, month, and day.
 
     """
     year1 = year
@@ -113,8 +118,8 @@ def date_to_juliandate(year, month, day):
 def datetime_to_juliandate(dt):
     """Convert a datetime object in UTC to a Julian Date
 
-    :param dt: datetime object
-    :return: The Julian Date for the given datetime object
+    :param dt: datetime object.
+    :return: The Julian Date for the given datetime object.
 
     """
     A = date_to_juliandate(dt.year, dt.month, dt.day)
@@ -125,8 +130,8 @@ def datetime_to_juliandate(dt):
 def juliandate_to_modifiedjd(juliandate):
     """Convert a Julian Date to a Modified Julian Date
 
-    :param juliandate: a Julian Date
-    :return: the Modified Julian Date
+    :param juliandate: a Julian Date.
+    :return: the Modified Julian Date.
 
     """
     return juliandate - 2400000.5
@@ -135,8 +140,8 @@ def juliandate_to_modifiedjd(juliandate):
 def modifiedjd_to_juliandate(modifiedjd):
     """Convert a Modified Julian Date to Julian Date
 
-    :param modifiedjf: a Modified Julian Date
-    :return: Julian Date
+    :param modifiedjf: a Modified Julian Date.
+    :return: Julian Date.
 
     """
     return modifiedjd + 2400000.5
@@ -145,8 +150,8 @@ def modifiedjd_to_juliandate(modifiedjd):
 def datetime_to_modifiedjd(dt):
     """Convert a datetime object in UTC to a Modified Julian Date
 
-    :param dt: datetime object
-    :return: the Modified Julian Date
+    :param dt: datetime object.
+    :return: the Modified Julian Date.
 
     """
     jd = datetime_to_juliandate(dt)
@@ -156,11 +161,11 @@ def datetime_to_modifiedjd(dt):
 def juliandate_to_gmst(juliandate):
     """Convert a Julian Date to Greenwich Mean Sidereal Time
 
-    :param juliandate: Julian Date
-    :return: decimal hours in GMST
+    :param juliandate: Julian Date.
+    :return: decimal hours in GMST.
 
     """
-    jd0 = int(juliandate - .5) + .5  # Julian Date of previous midnight
+    jd0 = int(juliandate - 0.5) + 0.5  # Julian Date of previous midnight
     h = (juliandate - jd0) * 24.  # Hours since mightnight
     # Days since J2000 (Julian Date 2451545.)
     d0 = jd0 - 2451545.
@@ -176,8 +181,8 @@ def juliandate_to_gmst(juliandate):
 def utc_to_gmst(dt):
     """Convert a datetime object in UTC time to Greenwich Mean Sidereal Time
 
-    :param dt: datetime object in UTC time
-    :return: decimal hours in GMST
+    :param dt: datetime object in UTC time.
+    :return: decimal hours in GMST.
 
     """
     jd = datetime_to_juliandate(dt)
@@ -190,8 +195,8 @@ def gmst_to_utc(dt):
 
     Note: this requires a datetime object, not just the decimal hours.
 
-    :param dt: datetime object in GMST time
-    :return: datetime object in UTC
+    :param dt: datetime object in GMST time.
+    :return: datetime object in UTC.
 
     """
     jd = date_to_juliandate(dt.year, dt.month, dt.day)
@@ -213,11 +218,11 @@ def gmst_to_utc(dt):
 def juliandate_to_utc(juliandate):
     """Convert Julian Date to datetime object in UTC
 
-    :param juliandate: a Julian Date
-    :return: datetime object in UTC time
+    :param juliandate: a Julian Date.
+    :return: datetime object in UTC time.
 
     """
-    juliandate += .5
+    juliandate += 0.5
     jd_frac, jd_int = math.modf(juliandate)
 
     if jd_int > 2299160:
@@ -259,8 +264,8 @@ def juliandate_to_utc(juliandate):
 def modifiedjd_to_utc(modifiedjd):
     """Convert a Modified Julian Date to datetime object in UTC
 
-    :param juliandate: a Modified Julian Date
-    :return: datetime object in UTC time
+    :param juliandate: a Modified Julian Date.
+    :return: datetime object in UTC time.
 
     """
     juliandate = modifiedjd_to_juliandate(modifiedjd)
@@ -270,9 +275,9 @@ def modifiedjd_to_utc(modifiedjd):
 def gmst_to_lst(hours, longitude):
     """Convert Greenwich Mean Sidereal Time to Local Sidereal Time
 
-    :param hours: decimal hours in GMST
-    :param longitude: location in degrees, E positive
-    :return: decimal hours in LST
+    :param hours: decimal hours in GMST.
+    :param longitude: location in degrees, east positive.
+    :return: decimal hours in LST.
 
     """
     longitude_time = angles.degrees_to_hours(longitude)
@@ -285,9 +290,9 @@ def gmst_to_lst(hours, longitude):
 def lst_to_gmst(hours, longitude):
     """Convert Local Sidereal Time to Greenwich Mean Sidereal Time
 
-    :param hours: decimal hours in LST
-    :param longitude: location in degrees, E positive
-    :return: decimal hours in GMST
+    :param hours: decimal hours in LST.
+    :param longitude: location in degrees, east positive.
+    :return: decimal hours in GMST.
 
     """
     longitude_time = angles.degrees_to_hours(longitude)
@@ -300,9 +305,9 @@ def lst_to_gmst(hours, longitude):
 def utc_to_lst(dt, longitude):
     """Convert UTC to Local Sidereal Time
 
-    :param dt: datetime object in UTC
-    :param longitude: location in degrees, E positive
-    :return: decimal hours in LST
+    :param dt: datetime object in UTC.
+    :param longitude: location in degrees, east positive.
+    :return: decimal hours in LST.
 
     """
     gmst = utc_to_gmst(dt)
@@ -360,7 +365,7 @@ def gps_to_lst(timestamp, longitude):
     """Convert a GPS timestamp to lst
 
     :param timestamp: GPS timestamp in seconds.
-    :param longitude: location in degrees, E positive.
+    :param longitude: location in degrees, east positive.
     :return: decimal hours in LST.
 
     """
@@ -394,8 +399,8 @@ def datetime_to_gps(dt):
 def process_time(time):
     """Convert timestamp or datetime to timestamp
 
-    :param time: GPS datetime object or GPS timestamp
-    :return: GPS timestamp
+    :param time: GPS datetime object or GPS timestamp.
+    :return: GPS timestamp.
 
     """
     try:

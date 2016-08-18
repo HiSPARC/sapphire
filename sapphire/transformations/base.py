@@ -12,7 +12,7 @@ def decimal_to_sexagesimal(decimal):
 
     :param decimal: decimal number to be converted to sexagismal.
     :return: tuple of either (hours, minutes, seconds) or
-             (degrees, arcminutes, arcseconds)
+             (degrees, arcminutes, arcseconds).
 
     """
     fractional, integral = modf(decimal)

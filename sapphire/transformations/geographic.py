@@ -28,9 +28,22 @@ class WGS84Datum(object):
 
 
 class FromWGS84ToENUTransformation(object):
+
+    """Convert between various gerographic coordinate systems
+
+    This class converts coordinates between LLA, ENU, and ECEF.
+
+    """
+
     geode = WGS84Datum()
 
     def __init__(self, ref_llacoordinates):
+        """Initialize the transformation object.
+
+        :param ref_llacoordinates: reference latitude, longitude, and altitude
+            coordinates. These are used as origin for ENU coordinates.
+
+        """
         self.ref_lla = ref_llacoordinates
         self.ref_XYZ = self.lla_to_ecef(ref_llacoordinates)
 
@@ -169,3 +182,6 @@ class FromWGS84ToENUTransformation(object):
         x, y, z = (transformation * matrix(coordinates).T).A1
 
         return x + Xr, y + Yr, z + Zr
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, self.ref_lla)

@@ -7,11 +7,11 @@
     defined here. The algorithms require positions and arrival times to
     do the reconstruction.
 
-    Each algorithm has a :meth:`~DirectAlgorithm.reconstruct_common`
+    Each algorithm has a :meth:`~BaseDirectionAlgorithm.reconstruct_common`
     method which always requires arrival times, x, and y positions and
     optionally z positions and previous reconstruction results. The data
     is then prepared for the algorithm and passed to
-    the :meth:`~DirectAlgorithm.reconstruct` method which returns the
+    the :meth:`~BaseDirectionAlgorithm.reconstruct` method which returns the
     reconstructed theta and phi coordinates.
 
 """
@@ -44,7 +44,7 @@ class EventDirectionReconstruction(object):
     :meth:`reconstruct_event`. To use other algorithms overwrite the
     ``direct`` and ``fit`` attributes.
 
-    :param station: :class:`~sapphire.clusters.Station` object.
+    :param station: :class:`sapphire.clusters.Station` object.
 
     """
 
@@ -101,7 +101,7 @@ class EventDirectionReconstruction(object):
         :param detector_ids: detectors to use for the reconstructions.
         :param offsets: time offsets for each detector or a
             :class:`~sapphire.api.Station` object.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                         parameters.
         :return: list of theta, phi, and detector ids.
@@ -116,6 +116,10 @@ class EventDirectionReconstruction(object):
         else:
             theta, phi, ids = ((), (), ())
         return theta, phi, ids
+
+    def __repr__(self):
+        return ("<%s, station: %r, direct: %r, fit: %r>" %
+                (self.__class__.__name__, self.station, self.direct, self.fit))
 
 
 class CoincidenceDirectionReconstruction(object):
@@ -142,12 +146,11 @@ class CoincidenceDirectionReconstruction(object):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of three
-                                   or more (station_number, event) tuples.
+            or more (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
-                                events from those stations.
+            events from those stations.
         :param offsets: a dictionary of either lists of detector timing
-                        offsets for each station or api.Station objects for
-                        each station.
+            offsets or :class:`~sapphire.api.Station` objects for each station.
         :param initial: dictionary with already fitted shower parameters.
         :return: list of theta, phi, and station numbers.
 
@@ -202,7 +205,7 @@ class CoincidenceDirectionReconstruction(object):
         :param offsets: dictionary with detector offsets for each station.
                         These detector offsets should be relative to one
                         detector from a specific station.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                         parameters.
         :return: list of theta, phi, and station numbers.
@@ -244,7 +247,8 @@ class CoincidenceDirectionReconstruction(object):
                                 other stations can are allow to be the
                                 reference station.
         :param midnight_ts: timestamp of midnight before the coincidence.
-        :param offsets: a dictionary of api.Station objects for each station.
+        :param offsets: a dictionary of :class:`~sapphire.api.Station` objects
+                        for each station.
         :return: combined detector and station offsets for given station,
                  relative to the reference station.
 
@@ -308,7 +312,7 @@ class CoincidenceDirectionReconstruction(object):
     def _calculate_offsets(self, station, ts0, offset):
         """Calculate combined station and detector offsets
 
-        :param station: api.Station object.
+        :param station: :class:`~sapphire.api.Station` object.
         :param ts0: gps timestamp for which the offsets are valid.
         :param offset: station offset to a reference station.
         :return: combined detector and station offsets for given station,
@@ -317,6 +321,11 @@ class CoincidenceDirectionReconstruction(object):
         """
         detector_offsets = station.detector_timing_offset(ts0)
         return [offset + d_off for d_off in detector_offsets]
+
+    def __repr__(self):
+        return ("<%s, cluster: %r, direct: %r, fit: %r, curved: %r>" %
+                (self.__class__.__name__, self.cluster, self.direct, self.fit,
+                 self.curved))
 
 
 class CoincidenceDirectionReconstructionDetectors(
@@ -387,7 +396,39 @@ class CoincidenceDirectionReconstructionDetectors(
         return theta, phi, nums
 
 
-class DirectAlgorithm(object):
+class BaseDirectionAlgorithm(object):
+
+    """No actual direction reconstruction algorithm
+
+    Simply returns (nan, nan) as direction.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+        """Reconstruct shower angles
+
+        :param t: detector arrival time in ns.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors in m.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
+        :return: reconstructed theta and phi angles.
+
+        """
+        return cls.reconstruct()
+
+    @staticmethod
+    def reconstruct():
+        """Reconstruct shower angles
+
+        :return: reconstructed theta and phi angles.
+
+        """
+        return (nan, nan)
+
+
+class DirectAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -579,7 +620,7 @@ class DirectAlgorithm(object):
         return num / den
 
 
-class DirectAlgorithmCartesian(object):
+class DirectAlgorithmCartesian(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -646,7 +687,7 @@ class DirectAlgorithmCartesian(object):
         return theta, phi
 
 
-class DirectAlgorithmCartesian3D(object):
+class DirectAlgorithmCartesian3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles using direct analytical formula.
 
@@ -848,7 +889,7 @@ class SphereAlgorithm(object):
         return x_int, y_int, z_int, t_int
 
 
-class FitAlgorithm3D(object):
+class FitAlgorithm3D(BaseDirectionAlgorithm):
 
     @classmethod
     def reconstruct_common(cls, t, x, y, z=None, initial={}):
@@ -889,7 +930,7 @@ class FitAlgorithm3D(object):
 
         cons = {'type': 'eq', 'fun': cls.constraint_normal_vector}
 
-        fit = minimize(cls.best_fit, x0=(0.1, 0.1, .989, 0.),
+        fit = minimize(cls.best_fit, x0=(0.1, 0.1, 0.989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
                        bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)),
                        constraints=cons,
@@ -901,7 +942,7 @@ class FitAlgorithm3D(object):
             phi1 = nan
             theta1 = nan
 
-        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -.989, 0.),
+        fit = minimize(cls.best_fit, x0=(-0.1, -0.1, -0.989, 0.),
                        args=(dt, dx, dy, dz), method="SLSQP",
                        bounds=((-1, 1), (-1, 1), (-1, 1), (None, None)),
                        constraints=cons,
@@ -954,7 +995,7 @@ class FitAlgorithm3D(object):
         return slq + m * m
 
 
-class RegressionAlgorithm(object):
+class RegressionAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles using an analytical regression formula.
 
@@ -994,26 +1035,23 @@ class RegressionAlgorithm(object):
         if not logic_checks(t, x, y, [0] * len(t)):
             return nan, nan
 
+        k = len(t)
+        xs = sum(x)
+        ys = sum(y)
+        ts = sum(t)
+
         xx = 0.
-        xy = 0.
-        tx = 0.
         yy = 0.
+        tx = 0.
         ty = 0.
-        xs = 0.
-        ys = 0.
-        ts = 0.
-        k = 0
+        xy = 0.
 
         for ti, xi, yi in zip(t, x, y):
-            xx += xi * xi
+            xx += xi ** 2
+            yy += yi ** 2
+            tx += ti * xi
+            ty += ti * yi
             xy += xi * yi
-            tx += xi * ti
-            yy += yi * yi
-            ty += yi * ti
-            xs += xi
-            ys += yi
-            ts += ti
-            k += 1
 
         denom = (k * xy ** 2 + xs ** 2 * yy + ys ** 2 * xx - k * xx * yy -
                  2 * xs * ys * xy)
@@ -1040,7 +1078,7 @@ class RegressionAlgorithm(object):
         return theta, phi
 
 
-class RegressionAlgorithm3D(object):
+class RegressionAlgorithm3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles by iteratively applying a regression formula.
 
@@ -1106,7 +1144,7 @@ class RegressionAlgorithm3D(object):
         return theta, phi
 
 
-class CurvedRegressionAlgorithm(object):
+class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
 
     """Reconstruct angles taking the shower front curvature into account.
 
@@ -1184,7 +1222,7 @@ class CurvedRegressionAlgorithm(object):
                     2 * dx * dy * nx * ny)
 
 
-class CurvedRegressionAlgorithm3D(object):
+class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
 
     """Reconstruct angles accounting for front curvature and detector altitudes
 
