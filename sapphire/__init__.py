@@ -77,6 +77,8 @@ from .analysis.find_mpv import FindMostProbableValueInSpectrum
 from .analysis.process_events import (ProcessEvents, ProcessEventsFromSource,
                                       ProcessEventsFromSourceWithTriggerOffset,
                                       ProcessWeather, ProcessWeatherFromSource)
+from .analysis.process_traces import (TraceObservables, MeanFilter,
+                                      DataReduction)
 from .analysis.reconstructions import (ReconstructESDEvents,
                                        ReconstructESDEventsFromSource,
                                        ReconstructESDCoincidences)
@@ -84,7 +86,7 @@ from .analysis.time_deltas import ProcessTimeDeltas
 from .api import Network, Station
 from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
 from .corsika.corsika_queries import CorsikaQuery
-from .esd import (quick_download, load_data, download_data,
+from .esd import (quick_download, load_data, download_data, download_lightning,
                   download_coincidences)
 from .simulations.groundparticles import (GroundParticlesSimulation,
                                           MultipleGroundParticlesSimulation)
@@ -116,6 +118,7 @@ __all__ = ['analysis',
            'ProcessEvents', 'ProcessEventsFromSource',
            'ProcessEventsFromSourceWithTriggerOffset',
            'ProcessWeather', 'ProcessWeatherFromSource',
+           'TraceObservables', 'MeanFilter', 'DataReduction',
            'ReconstructESDEvents', 'ReconstructESDEventsFromSource',
            'ReconstructESDCoincidences',
            'ProcessTimeDeltas',
@@ -123,7 +126,7 @@ __all__ = ['analysis',
            'HiSPARCStations', 'HiSPARCNetwork', 'ScienceParkCluster',
            'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
-           'download_coincidences',
+           'download_lightning', 'download_coincidences',
            'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',

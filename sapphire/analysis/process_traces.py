@@ -32,6 +32,8 @@ ADC_HIGH_THRESHOLD = 323  #: Default high ADC threshold for HiSPARC II
 ADC_LOW_THRESHOLD_III = 82  #: Default low ADC threshold for HiSPARC III
 ADC_HIGH_THRESHOLD_III = 150  #: Default high ADC threshold for HiSPARC III
 
+DATA_REDUCTION_PADDING = 26  #: Padding to still allow baseline determination
+
 
 class TraceObservables(object):
 
@@ -70,7 +72,7 @@ class TraceObservables(object):
 
     @lazy
     def baselines(self):
-        """Mean value of the first 50 samples of the trace
+        """Mean value of the first part of the trace
 
         This does not perfectly match the implementation in the DAQ which
         is more complicated, this does provide the correct value in most
@@ -82,18 +84,19 @@ class TraceObservables(object):
         :return: the baseline in ADC count.
 
         """
-        baselines = around(self.traces[:50].mean(axis=0)).astype('int')
-        return baselines.tolist() + self.missing
+        baselines = around(self.traces[:DATA_REDUCTION_PADDING].mean(axis=0))
+        return baselines.astype('int').tolist() + self.missing
 
     @lazy
     def std_dev(self):
-        """Standard deviation of the first 50 samples of the trace
+        """Standard deviation of the first part of the trace
 
         :return: the standard deviation in milli ADC count.
 
         """
-        std_dev = around(self.traces[:50].std(axis=0) * 1000).astype('int')
-        return std_dev.tolist() + self.missing
+        std_dev = around(self.traces[:DATA_REDUCTION_PADDING].std(axis=0) *
+                         1000)
+        return std_dev.astype('int').tolist() + self.missing
 
     @lazy
     def pulseheights(self):
@@ -194,8 +197,12 @@ class MeanFilter(object):
             self.filter = self.mean_filter_without_threshold
 
     def filter_traces(self, raw_traces):
-        """Apply the mean filter to multiple traces"""
+        """Apply the mean filter to multiple traces
 
+        :param raw_traces: list of raw event traces.
+        :return: filtered traces.
+
+        """
         return [self.filter_trace(raw_trace) for raw_trace in raw_traces]
 
     def filter_trace(self, raw_trace):
@@ -203,6 +210,9 @@ class MeanFilter(object):
 
         First separate the even and odd ADC traces, filter each separately.
         Then recombine them and pass the entire trace through the filter.
+
+        :param raw_trace: raw event trace.
+        :return: filtered trace.
 
         """
         even_trace = raw_trace[::2]
@@ -221,12 +231,14 @@ class MeanFilter(object):
         """The mean filter in case use_threshold is True"""
 
         moving_average = convolve(trace, ones(4) / 4)
+        rounded_average = around(moving_average).astype(int)
 
         filtered_trace = []
         local_mean = moving_average[3]
+        local_mean_rounded = rounded_average[3]
 
         if all([abs(v - local_mean) <= self.threshold for v in trace[:4]]):
-            filtered_trace.extend([int(around(local_mean))] * 4)
+            filtered_trace.extend([local_mean_rounded] * 4)
         else:
             filtered_trace.extend(trace[:4])
 
@@ -240,7 +252,7 @@ class MeanFilter(object):
             elif abs(trace[i] - local_mean) > self.threshold:
                 filtered_trace.append(trace[i])
             else:
-                filtered_trace.append(int(around(local_mean)))
+                filtered_trace.append(rounded_average[i])
 
         return filtered_trace
 
@@ -248,8 +260,12 @@ class MeanFilter(object):
         """The mean filter in case use_threshold is False"""
 
         moving_average = convolve(trace, ones(4) / 4)
+        rounded_average = around(moving_average).astype(int)
+
         local_mean = moving_average[3]
-        filtered_trace = [int(around(local_mean))] * 4
+        local_mean_rounded = rounded_average[3]
+
+        filtered_trace = [local_mean_rounded] * 4
 
         for i in range(4, len(trace)):
             local_mean = moving_average[i]
@@ -257,7 +273,7 @@ class MeanFilter(object):
                 # Both values on same side of the local_mean
                 filtered_trace.append(trace[i])
             else:
-                filtered_trace.append(int(around(local_mean)))
+                filtered_trace.append(rounded_average[i])
 
         return filtered_trace
 
@@ -267,3 +283,91 @@ class MeanFilter(object):
                     (self.__class__.__name__, True, self.threshold))
         except AttributeError:
             return "%s(use_threshold=%s)" % (self.__class__.__name__, False)
+
+
+class DataReduction(object):
+
+    """Data reduce traces
+
+    This class replicates the behavior also implemented in the HiSPARC DAQ.
+    The threshold and padding values used by the DAQ may be slightly
+    different, but these should closely match the defaults.
+
+    The default padding of 25 samples matches the number of samples used by
+    the :class:`TraceObservables` to determine the baseline.
+
+    """
+
+    def __init__(self, threshold=ADC_BASELINE_THRESHOLD,
+                 padding=DATA_REDUCTION_PADDING):
+        """Initialize the class
+
+        :param threshold: value of the threshold to use.
+        :param padding: number of samples around .
+
+        """
+        self.threshold = threshold
+        self.padding = padding
+
+    def reduce_traces(self, traces, baselines=None, return_offset=False):
+        """Apply data reduction to the given traces
+
+        :param traces: a NumPy array of traces, ordered such that the first
+                       element is the first sample of each trace.
+        :param baselines: list of baselines for the traces, if None the
+            baselines will be determined using :class:`TraceObservables`.
+        :param return_offset: if True the left cut will also be returned.
+        :return: data reduced traces, including the left cut if return_offset
+                 is True.
+
+        """
+        if baselines is None:
+            baselines = TraceObservables(traces).baselines[:len(traces[0])]
+        left, right = self.determine_cuts(traces, baselines)
+        left, right = self.add_padding(left, right, len(traces))
+        if return_offset:
+            return traces[left:right], left
+        else:
+            return traces[left:right]
+
+    def determine_cuts(self, traces, baselines):
+        """Determine the left and right cuts for an event
+
+        Note that this does not include the padding.
+
+        :param traces: a NumPy array of traces, ordered such that the first
+                       element is the first sample of each trace.
+        :param baselines: list of baselines for the traces.
+        :return: indices into traces where the first signals from left and
+                 right cross the threshold.
+
+        """
+        left = next((i for i, t in enumerate(traces)
+                     if max(t - baselines) > self.threshold), 0)
+        right = len(traces) - next((i for i, t in enumerate(reversed(traces))
+                                    if max(t - baselines) > self.threshold), 0)
+        return left, right
+
+    def add_padding(self, left, right, length=None):
+        """Add padding around the cuts to allow later baseline determination
+
+        The right value may be larger than the length of the traces if length
+        is not given. This is only an issues if the actual value is of
+        interest, because::
+
+            >>> [1, 2, 3][:6]
+            [1, 2, 3]
+
+        :param left,right: the left and right cuts from :meth:`determine_cuts`.
+        :param length: optionally the length of the list can be given to
+                       prevent the right cut to be larger than the maximum
+                       length of the trace, this is not required.
+        :return: indices into traces where to cut the trace.
+
+        """
+        left = left - self.padding
+        right = right + self.padding
+        left = left if left > 0 else 0
+        if length is not None:
+            right = right if right < length else length
+        return left, right

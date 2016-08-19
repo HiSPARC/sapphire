@@ -33,19 +33,21 @@ from . import api
 from . import storage
 
 
-EVENTS_URL = 'http://data.hisparc.nl/data/{station_number:d}/events/?{query}'
-WEATHER_URL = 'http://data.hisparc.nl/data/{station_number:d}/weather/?{query}'
-COINCIDENCES_URL = 'http://data.hisparc.nl/data/network/coincidences/?{query}'
+BASE = 'http://data.hisparc.nl/data/'
+EVENTS_URL = BASE + '{station_number:d}/events/?{query}'
+WEATHER_URL = BASE + '{station_number:d}/weather/?{query}'
+LIGHTNING_URL = BASE + 'knmi/lightning/{lightning_type:d}/?{query}'
+COINCIDENCES_URL = BASE + 'network/coincidences/?{query}'
 
 
 def quick_download(station_number, date=None):
     """Quickly download some data
 
-    :param station_number: The HiSPARC station number
+    :param station_number: The HiSPARC station number.
     :param date: the date for which to get data (datetime.datetime
         instance), passed unchanged to the :func:`download_data` as
         :param start:.
-    :return: handle to an open PyTables file
+    :return: handle to an open PyTables file.
 
     Everything is handled by this function, including file creation.
     Expect no frills: you just get yesterday's data.
@@ -88,11 +90,12 @@ def load_data(file, group, tsv_file, type='events'):
     file using this method. The result is equal to directly downloading data
     using :func:`download_data`.
 
-    :param file: the PyTables datafile handler
-    :param group: the PyTables destination group, which need not exist
+    :param file: the PyTables datafile handler.
+    :param group: the PyTables destination group, which need not exist.
     :param tsv_file: path to the tsv file downloaded from the HiSPARC
-                     Public Database
-    :param type: the datatype to load, either 'events' or 'weather'
+                     Public Database.
+    :param type: the datatype to load, either 'events', 'weather', or
+                 'lightning'.
 
     Example::
 
@@ -108,6 +111,9 @@ def load_data(file, group, tsv_file, type='events'):
     elif type == 'weather':
         table = _get_or_create_weather_table(file, group)
         read_and_store_class = _read_line_and_store_weather_class
+    elif type == 'lightning':
+        table = _get_or_create_lightning_table(file, group)
+        read_and_store_class = _read_line_and_store_lightning_class
     else:
         raise ValueError("Data type not recognized.")
 
@@ -122,13 +128,13 @@ def download_data(file, group, station_number, start=None, end=None,
                   type='events', progress=True):
     """Download event summary data
 
-    :param file: the PyTables datafile handler
-    :param group: the PyTables destination group, which need not exist
-    :param station_number: The HiSPARC station number for which to get data
+    :param file: the PyTables datafile handler.
+    :param group: the PyTables destination group, which need not exist.
+    :param station_number: The HiSPARC station number for which to get data.
     :param start: a datetime instance defining the start of the search
-        interval
+        interval.
     :param end: a datetime instance defining the end of the search
-        interval
+        interval.
     :param type: the datatype to download, either 'events' or 'weather'.
     :param progress: if True show a progressbar while downloading.
 
@@ -174,6 +180,10 @@ def download_data(file, group, station_number, start=None, end=None,
         url = WEATHER_URL.format(station_number=station_number, query=query)
         table = _get_or_create_weather_table(file, group)
         read_and_store = _read_line_and_store_weather_class
+    elif type == 'lightning':
+        url = LIGHTNING_URL.format(lightning_type=station_number, query=query)
+        table = _get_or_create_lightning_table(file, group)
+        read_and_store = _read_line_and_store_lightning_class
     else:
         raise ValueError("Data type not recognized.")
 
@@ -217,6 +227,41 @@ def download_data(file, group, station_number, start=None, end=None,
         # Last line is data, report failed download and date/time of last line
         raise Exception('Failed to complete download, last received data '
                         'from: %s %s.' % tuple(line[:2]))
+
+
+def download_lightning(file, group, lightning_type=4, start=None, end=None,
+                       progress=True):
+    """Download KNMI lightning data
+
+    :param file: the PyTables datafile handler.
+    :param group: the PyTables destination group, which need not exist.
+    :param lightning_type: type of lightning, see list below for the possible
+                           type codes.
+    :param start: a datetime instance defining the start of the search
+        interval.
+    :param end: a datetime instance defining the end of the search
+        interval.
+    :param progress: if True show a progressbar while downloading.
+
+    Lightning types:
+
+        0 - Single-point
+        1 - Cloud-cloud
+        2 - Cloud-cloud mid
+        3 - Cloud-cloud end
+        4 - Cloud-ground (default)
+        5 - Cloud-ground return
+
+    """
+    # sensible default for group name
+    if group is None:
+        group = '/l%d' % lightning_type
+
+    if lightning_type not in range(6):
+        raise ValueError("Invalid lightning type.")
+
+    download_data(file, group, lightning_type, start=start, end=end,
+                  type='lightning', progress=progress)
 
 
 def load_coincidences(file, tsv_file, group=''):
@@ -448,7 +493,7 @@ def _get_station_groups(group):
 def _get_or_create_coincidences_tables(file, group, station_groups):
     """Get or create event table in PyTables file
 
-    :return: the existing or created coincidences group
+    :return: the existing or created coincidences group.
 
     """
     try:
@@ -460,7 +505,7 @@ def _get_or_create_coincidences_tables(file, group, station_groups):
 def _create_coincidences_tables(file, group, station_groups):
     """Setup coincidence tables
 
-    :return: the created coincidences group
+    :return: the created coincidences group.
 
     """
     coin_group = group + '/coincidences'
@@ -499,9 +544,9 @@ def _create_events_table(file, group):
     Create an event table containing the ESD data columns which are
     available in the TSV download.
 
-    :param file: PyTables file
+    :param file: PyTables file.
     :param group: the group to contain the events table, which need not
-                  exist
+                  exist.
 
     """
     description = {'event_id': tables.UInt32Col(pos=0),
@@ -538,9 +583,9 @@ def _create_weather_table(file, group):
     Create a weather table containing the ESD weather columns which are
     available in the TSV download.
 
-    :param file: PyTables file
+    :param file: PyTables file.
     :param group: the group to contain the weather table, which need not
-                  exist
+                  exist.
 
     """
     description = {'event_id': tables.UInt32Col(pos=0),
@@ -563,6 +608,38 @@ def _create_weather_table(file, group):
     return file.create_table(group, 'weather', description, createparents=True)
 
 
+def _get_or_create_lightning_table(file, group):
+    """Get or create lightning table in PyTables file"""
+
+    try:
+        return file.get_node(group, 'lightning')
+    except tables.NoSuchNodeError:
+        return _create_lightning_table(file, group)
+
+
+def _create_lightning_table(file, group):
+    """Create lightning table in PyTables file
+
+    Create an lightning table containing the ESD data columns which are
+    available in the TSV download.
+
+    :param file: PyTables file.
+    :param group: the group to contain the lightning table, which need not
+                  exist.
+
+    """
+    description = {'event_id': tables.UInt32Col(pos=0),
+                   'timestamp': tables.Time32Col(pos=1),
+                   'nanoseconds': tables.UInt32Col(pos=2),
+                   'ext_timestamp': tables.UInt64Col(pos=3),
+                   'latitude': tables.Float32Col(pos=4),
+                   'longitude': tables.Float32Col(pos=5),
+                   'current': tables.Float32Col(pos=6)}
+
+    return file.create_table(group, 'lightning', description,
+                             createparents=True)
+
+
 def _read_lines_and_store_coincidence(file, c_group, coincidence,
                                       station_groups):
     """Read TSV lines and store coincidence
@@ -570,11 +647,11 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence,
     Read lines from the TSV download and store the coincidence and events.
     Return the coincidence timestamp to keep track of the progress.
 
-    :param file: PyTables file for storage
-    :param c_group: the coincidences group
-    :param coincidence: text lines from the TSV file for one coincidence
-    :param station_groups: dictionary to find the path to a station_group
-    :return: coincidence timestamp
+    :param file: PyTables file for storage.
+    :param c_group: the coincidences group.
+    :param coincidence: text lines from the TSV file for one coincidence.
+    :param station_groups: dictionary to find the path to a station_group.
+    :return: coincidence timestamp.
 
     """
     c_idx = []
@@ -610,7 +687,16 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence,
     return int(coincidence[0][4])
 
 
-class _read_line_and_store_weather_class(object):
+class _read_line_and_store_event_class(object):
+
+    """Store lines of event data from the ESD
+
+    Use this contextmanager to store events from a TSV file into a PyTables
+    table.
+
+    :param table: a PyTables Table object in which to store the data.
+
+    """
 
     def __init__(self, table):
         self.table = table
@@ -618,6 +704,61 @@ class _read_line_and_store_weather_class(object):
 
     def __enter__(self):
         return self
+
+    def store_line(self, line):
+        """Store a single line
+
+        :param line: the line to store as a tuple of strings (one element
+                     per column).
+        :return: timestamp of the stored event, or 0 if the given line was a
+                 comment line starting with a '#'.
+
+        """
+        # ignore comment lines
+        if line[0][0] == '#':
+            return 0.
+
+        # break up TSV line
+        (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
+         int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger, zenith,
+         azimuth) = line[:23]
+
+        row = self.table.row
+
+        # convert string values to correct data types or calculate values
+        row['event_id'] = self.event_counter
+        row['timestamp'] = int(timestamp)
+        row['nanoseconds'] = int(nanoseconds)
+        row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
+        row['pulseheights'] = [int(ph1), int(ph2), int(ph3), int(ph4)]
+        row['integrals'] = [int(int1), int(int2), int(int3), int(int4)]
+        row['n1'] = float(n1)
+        row['n2'] = float(n2)
+        row['n3'] = float(n3)
+        row['n4'] = float(n4)
+        row['t1'] = float(t1)
+        row['t2'] = float(t2)
+        row['t3'] = float(t3)
+        row['t4'] = float(t4)
+        row['t_trigger'] = float(t_trigger)
+
+        # store event
+        row.append()
+
+        self.event_counter += 1
+        # force flush every 1e6 rows to free buffers
+        if not self.event_counter % 1000000:
+            self.table.flush()
+
+        return int(timestamp)
+
+    def __exit__(self, type, value, traceback):
+        self.table.flush()
+
+
+class _read_line_and_store_weather_class(_read_line_and_store_event_class):
+
+    """Store lines of weather data from the ESD"""
 
     def store_line(self, line):
         # ignore comment lines
@@ -661,18 +802,10 @@ class _read_line_and_store_weather_class(object):
 
         return int(timestamp)
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        self.table.flush()
 
+class _read_line_and_store_lightning_class(_read_line_and_store_event_class):
 
-class _read_line_and_store_event_class(object):
-
-    def __init__(self, table):
-        self.table = table
-        self.event_counter = len(self.table)
-
-    def __enter__(self):
-        return self
+    """Store lines of lightning data from the ESD"""
 
     def store_line(self, line):
         # ignore comment lines
@@ -680,9 +813,8 @@ class _read_line_and_store_event_class(object):
             return 0.
 
         # break up TSV line
-        (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
-         int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger, zenith,
-         azimuth) = line[:23]
+        (date, time_str, timestamp, nanoseconds, latitude, longitude,
+         current) = line[:7]
 
         row = self.table.row
 
@@ -691,17 +823,9 @@ class _read_line_and_store_event_class(object):
         row['timestamp'] = int(timestamp)
         row['nanoseconds'] = int(nanoseconds)
         row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
-        row['pulseheights'] = [int(ph1), int(ph2), int(ph3), int(ph4)]
-        row['integrals'] = [int(int1), int(int2), int(int3), int(int4)]
-        row['n1'] = float(n1)
-        row['n2'] = float(n2)
-        row['n3'] = float(n3)
-        row['n4'] = float(n4)
-        row['t1'] = float(t1)
-        row['t2'] = float(t2)
-        row['t3'] = float(t3)
-        row['t4'] = float(t4)
-        row['t_trigger'] = float(t_trigger)
+        row['latitude'] = float(latitude)
+        row['longitude'] = float(longitude)
+        row['current'] = float(current)
 
         # store event
         row.append()
@@ -712,6 +836,3 @@ class _read_line_and_store_event_class(object):
             self.table.flush()
 
         return int(timestamp)
-
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        self.table.flush()
