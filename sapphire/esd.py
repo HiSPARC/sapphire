@@ -460,6 +460,7 @@ def _read_or_get_station_groups(file, group):
         re_number = re.compile('[0-9]+$')
         groups = collections.OrderedDict()
         for sid, station_group in enumerate(s_index):
+            station_group = station_group.decode()
             station = int(re_number.search(station_group).group())
             groups[station] = {'group': station_group,
                                's_index': sid}
