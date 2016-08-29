@@ -1,0 +1,37 @@
+{
+    "active": true, 
+    "altitude": 77.94, 
+    "cluster": "Utrecht", 
+    "country": "Netherlands", 
+    "latitude": 52.0872513, 
+    "longitude": 5.1675383, 
+    "name": "Utrecht University Educatorium", 
+    "number": 1005, 
+    "scintillators": [
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }, 
+        {
+            "alpha": null, 
+            "beta": null, 
+            "height": null, 
+            "radius": null
+        }
+    ], 
+    "subcluster": "Utrecht"
+}
