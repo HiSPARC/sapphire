@@ -17,10 +17,16 @@ TEST_DATA_ESD = 'test_data/esd_coincidences.h5'
 
 class CoincidencesTests(unittest.TestCase):
 
-    def setUp(self):
+    @patch.object(coincidences.tables, 'open_file')
+    def setUp(self, mock_open_file):
+        self.mock_open_file = mock_open_file
         self.c = coincidences.Coincidences(sentinel.data, None,
                                            sentinel.station_groups,
                                            progress=False)
+
+    def test_init(self):
+        self.mock_open_file.assert_called_once_with(sentinel.data, 'r')
+        self.assertFalse(self.c.data.create_group.called)
 
     @patch.object(coincidences.Coincidences, 'search_coincidences')
     @patch.object(coincidences.Coincidences, 'process_events')
@@ -103,7 +109,9 @@ class CoincidencesTests(unittest.TestCase):
 
 class CoincidencesESDTests(CoincidencesTests):
 
-    def setUp(self):
+    @patch.object(coincidences.tables, 'open_file')
+    def setUp(self, mock_open_file):
+        self.mock_open_file = mock_open_file
         self.c = coincidences.CoincidencesESD(sentinel.data, None,
                                               sentinel.station_groups,
                                               progress=False)

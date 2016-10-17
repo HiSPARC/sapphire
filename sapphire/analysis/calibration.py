@@ -25,7 +25,7 @@ def determine_detector_timing_offsets(events, station=None):
     """Determine the timing offsets between station detectors.
 
     :param events: events table of processed events.
-    :param station: :class:`~sapphire.clusters.Station` object, to determine
+    :param station: :class:`sapphire.clusters.Station` object, to determine
         number of detectors and relative altitudes.
     :return: list of detector offsets.
 
@@ -46,7 +46,7 @@ def determine_detector_timing_offsets(events, station=None):
 
     for id in range(n_detectors):
         t.append(events.col('t%d' % (id + 1)))
-        filters.append((events.col('n%d' % (id + 1)) > .3) & (t[id] >= 0.))
+        filters.append((events.col('n%d' % (id + 1)) > 0.3) & (t[id] >= 0.))
 
     if n_detectors == 2:
         ref_id = 1
@@ -111,7 +111,7 @@ class DetermineStationTimingOffsets(object):
 
         :param stations: list of stations for which to determine offsets.
         :param data: the PyTables datafile with timedelta tables.
-        :param progress: if true: show progressbar if true.
+        :param progress: if True show progressbar when determining offsets.
         :param force_stale: if true: do not get network information from API.
         :param time_deltas_group: path to the time deltas group.
 
@@ -426,7 +426,7 @@ def datetime_range(start, end, step=1):
 
 
 def pairwise(iterable):
-    """s -> (s0,s1), (s1,s2), (s2, s3), ..."""
+    """s -> (s0, s1), (s1, s2), (s2, s3), ..."""
 
     a, b = tee(iterable)
     next(b, None)

@@ -17,6 +17,7 @@ SAPPHiRE Reference
    qsub
    simulations
    storage
+   tests
    time_util
    transformations
    utils

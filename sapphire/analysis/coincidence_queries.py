@@ -56,8 +56,6 @@ class CoincidenceQuery(object):
             try:
                 self.s_nodes.append(self.data.get_node(s_path))
             except tables.NoSuchNodeError:
-                warnings.warn('Missing some station groups. This is no '
-                              'problem if those are not in coincidences.')
                 self.s_nodes.append(None)
         re_number = re.compile('[0-9]+$')
         self.s_numbers = [int(re_number.search(s_path).group())
@@ -369,3 +367,10 @@ class CoincidenceQuery(object):
         filtered_events = self.events_from_stations(coincidences, stations, n)
 
         return filtered_events
+
+    def __repr__(self):
+        try:
+            return "%s(%r, %r)" % (self.__class__.__name__, self.data.filename,
+                                   self.coincidences._v_parent._v_pathname)
+        except AttributeError:
+            return "<finished %s>" % self.__class__.__name__

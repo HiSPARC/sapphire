@@ -21,7 +21,7 @@ import os
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
 
-from .reader import CorsikaFile
+from .reader import CorsikaFile, CorsikaFileThin
 from .mergesort import TableMergeSort
 
 
@@ -39,6 +39,20 @@ class GroundParticles(tables.IsDescription):
     p_z = tables.Float32Col(pos=8)
     hadron_generation = tables.UInt8Col(pos=9)
     observation_level = tables.UInt8Col(pos=10)
+
+
+class ThinnedGroundParticles(GroundParticles):
+
+    """Store information about thinned shower particles
+
+    .. attribute:: weight
+
+        Weight of the particle, indicating the number of particles it
+        represents.
+
+    """
+
+    weight = tables.Float32Col(pos=11)
 
 
 def save_particle(row, p):
@@ -61,8 +75,16 @@ def save_particle(row, p):
     row.append()
 
 
+def save_thinned_particle(row, p):
+    """Write the information of a thinned particle into a row"""
+
+    row['weight'] = p[-1]
+
+    save_particle(row, p[:-1])
+
+
 def store_and_sort_corsika_data(source, destination, overwrite=False,
-                                progress=False):
+                                progress=False, thin=False):
     """First convert the data to HDF5 and create a sorted version"""
 
     if os.path.exists(destination):
@@ -73,14 +95,18 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
         else:
             os.remove(destination)
 
-    corsika_data = CorsikaFile(source)
+    if not thin:
+        corsika_data = CorsikaFile(source)
+    else:
+        corsika_data = CorsikaFileThin(source)
 
     temp_dir = os.path.dirname(destination)
     unsorted = create_tempfile_path(temp_dir)
     temp_path = create_tempfile_path(temp_dir)
 
     with tables.open_file(unsorted, 'a') as hdf_temp:
-        store_corsika_data(corsika_data, hdf_temp, progress=progress)
+        store_corsika_data(corsika_data, hdf_temp, progress=progress,
+                           thin=thin)
     with tables.open_file(unsorted, 'r') as hdf_unsorted, \
             tables.open_file(destination, 'w') as hdf_data, \
             tables.open_file(temp_path, 'w') as hdf_temp:
@@ -106,22 +132,32 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
 
 
 def store_corsika_data(source, destination, table_name='groundparticles',
-                       progress=False):
+                       progress=False, thin=False):
     """Store particles from a CORSIKA simulation in a HDF5 file
 
-    :param source: CorsikaFile instance of the source DAT file
-    :param destination: PyTables file instance of the destination file
+    :param source: CorsikaFile instance of the source DAT file.
+    :param destination: PyTables file instance of the destination file.
+    :param table_name: table name in which particles are stored.
+    :param progress: if True show progressbar when saving particles.
+    :param thin: if True assume the data contains thinned particles.
 
     """
     if progress:
         print "Converting CORSIKA data (%s) to HDF5 format" % source._filename
     source.check()
 
+    if not thin:
+        description = GroundParticles
+        save_particle_to_row = save_particle
+    else:
+        description = ThinnedGroundParticles
+        save_particle_to_row = save_thinned_particle
+
     for event in source.get_events():
         n_particles = event.get_end().n_particles_levels
         progress = progress and n_particles > 1
         try:
-            table = destination.create_table('/', table_name, GroundParticles,
+            table = destination.create_table('/', table_name, description,
                                              'All groundparticles',
                                              expectedrows=n_particles)
         except tables.NodeError:
@@ -136,7 +172,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
 
         particle_row = table.row
         for row, particle in enumerate(event.get_particles()):
-            save_particle(particle_row, particle)
+            save_particle_to_row(particle_row, particle)
             if progress and not row % 5000:
                 pbar.update(row)
             if not row % 1000000:
@@ -206,10 +242,12 @@ def main():
                         help='overwrite destination file it is already exists')
     parser.add_argument('--progress', action='store_true',
                         help='show progressbar during conversion')
+    parser.add_argument('--thin', action='store_true',
+                        help='indicate if thinning was active in CORSIKA')
     args = parser.parse_args()
 
     store_and_sort_corsika_data(args.source, args.destination, args.overwrite,
-                                args.progress)
+                                args.progress, args.thin)
 
 
 if __name__ == '__main__':

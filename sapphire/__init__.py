@@ -41,6 +41,9 @@ The following packages and modules are included:
 :mod:`~sapphire.storage`
     storage-related definitions
 
+:mod:`~sapphire.tests`
+    code tests
+
 :mod:`~sapphire.time_util`
     GPS date/time utility functions
 
@@ -74,6 +77,8 @@ from .analysis.find_mpv import FindMostProbableValueInSpectrum
 from .analysis.process_events import (ProcessEvents, ProcessEventsFromSource,
                                       ProcessEventsFromSourceWithTriggerOffset,
                                       ProcessWeather, ProcessWeatherFromSource)
+from .analysis.process_traces import (TraceObservables, MeanFilter,
+                                      DataReduction)
 from .analysis.reconstructions import (ReconstructESDEvents,
                                        ReconstructESDEventsFromSource,
                                        ReconstructESDCoincidences)
@@ -81,12 +86,13 @@ from .analysis.time_deltas import ProcessTimeDeltas
 from .api import Network, Station
 from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
 from .corsika.corsika_queries import CorsikaQuery
-from .esd import (quick_download, load_data, download_data,
+from .esd import (quick_download, load_data, download_data, download_lightning,
                   download_coincidences)
 from .simulations.groundparticles import (GroundParticlesSimulation,
                                           MultipleGroundParticlesSimulation)
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
+from .tests import run_tests
 from .transformations.celestial import zenithazimuth_to_equatorial
 from .transformations.clock import gps_to_datetime, datetime_to_gps
 
@@ -112,6 +118,7 @@ __all__ = ['analysis',
            'ProcessEvents', 'ProcessEventsFromSource',
            'ProcessEventsFromSourceWithTriggerOffset',
            'ProcessWeather', 'ProcessWeatherFromSource',
+           'TraceObservables', 'MeanFilter', 'DataReduction',
            'ReconstructESDEvents', 'ReconstructESDEventsFromSource',
            'ReconstructESDCoincidences',
            'ProcessTimeDeltas',
@@ -119,10 +126,11 @@ __all__ = ['analysis',
            'HiSPARCStations', 'HiSPARCNetwork', 'ScienceParkCluster',
            'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
-           'download_coincidences',
+           'download_lightning', 'download_coincidences',
            'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
+           'run_tests',
            'zenithazimuth_to_equatorial',
            'gps_to_datetime', 'datetime_to_gps'
            ]

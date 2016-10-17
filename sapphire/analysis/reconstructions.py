@@ -53,11 +53,11 @@ class ReconstructESDEvents(object):
         :param station_group: the group containing the event table,
             the results will also be stored in this group.
         :param station: either a station number or
-            :class:`~sapphire.clusters.Station` object. If it is a number the
+            :class:`sapphire.clusters.Station` object. If it is a number the
             positions and offsets will be retrieved from the API. Otherwise
             the offsets will be determined with the available data.
-        :param overwrite: if True, overwrite existing reconstruction table.
-        :param progress: if True, show a progressbar while reconstructing.
+        :param overwrite: if True overwrite existing reconstruction table.
+        :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
 
         """
@@ -216,11 +216,11 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
         :param station_group: the group containing the event table,
             the results will also be stored in this group.
         :param station: either a station number or
-            :class:`~sapphire.clusters.Station` object. If number the
+            :class:`sapphire.clusters.Station` object. If number the
             positions and offsets are retrieved from the API. Otherwise
             the offsets will be determined with the available data.
-        :param overwrite: if True, overwrite existing reconstruction table.
-        :param progress: if True, show a progressbar while reconstructing.
+        :param overwrite: if True overwrite existing reconstruction table.
+        :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
 
         """
@@ -274,8 +274,8 @@ class ReconstructESDCoincidences(object):
 
         :param data: the PyTables datafile.
         :param coincidences_group: the destination group.
-        :param overwrite: if True, overwrite existing reconstruction table.
-        :param progress: if True, show a progressbar while reconstructing.
+        :param overwrite: if True overwrite existing reconstruction table.
+        :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
         :param cluster: a Cluster object to use for the reconstructions.
 
@@ -323,7 +323,7 @@ class ReconstructESDCoincidences(object):
     def reconstruct_directions(self, station_numbers=None):
         """Reconstruct direction for all events
 
-        :param detector_ids: list of detector ids to use for reconstructions.
+        :param station_numbers: list of stations to use for reconstructions.
 
         """
         if len(self.core_x) and len(self.core_y):
@@ -341,7 +341,7 @@ class ReconstructESDCoincidences(object):
     def reconstruct_cores(self, station_numbers=None):
         """Reconstruct core for all events
 
-        :param detector_ids: list of detector ids to use for reconstructions.
+        :param station_numbers: list of stations to use for reconstructions.
 
         """
         if len(self.theta) and len(self.phi):
@@ -381,12 +381,12 @@ class ReconstructESDCoincidences(object):
             warnings.warn('Unable to store cluster object, to large for HDF.')
 
     def get_station_timing_offsets(self):
-        """Construct a dict of api.Station objects
+        """Construct a dict of :class:`~sapphire.api.Station` objects
 
         Simulations store the offsets in the cluster object, try to extract
         that into a dictionary, to be used by the reconstructions.
-        If the data is not from simulations create an api.Station object
-        for each station in the cluster.
+        If the data is not from simulations create an
+        :class:`~sapphire.api.Station` object for each station in the cluster.
 
         """
         try:
@@ -468,11 +468,11 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
         :param station_group: the group containing the event table,
             the results will also be stored in this group.
         :param station: either a station number or
-            :class:`~sapphire.clusters.Station` object. If number the
+            :class:`sapphire.clusters.Station` object. If number the
             positions and offsets are retrieved from the API. Otherwise
             the offsets will be determined with the available data.
-        :param overwrite: if True, overwrite existing reconstruction table.
-        :param progress: if True, show a progressbar while reconstructing.
+        :param overwrite: if True overwrite existing reconstruction table.
+        :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
 
         """

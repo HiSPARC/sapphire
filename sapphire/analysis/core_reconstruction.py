@@ -7,7 +7,7 @@
     defined here. The algorithms require positions and particle densties to
     do the reconstruction.
 
-    Each algorithm has a :meth:`~CenterMassAlgorithm.reconstruct_common`
+    Each algorithm has a :meth:`~BaseCoreAlgorithm.reconstruct_common`
     method which always requires particle denisties, x, and y positions
     and optionally z positions and previous reconstruction results. The
     data is then prepared for the algorithm and passed to
@@ -82,7 +82,7 @@ class EventCoreReconstruction(object):
         :param events: the events table for the station from an ESD data
                        file.
         :param detector_ids: detectors which use for the reconstructions.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                          parameters.
         :return: (x, y) core positions in m.
@@ -97,6 +97,10 @@ class EventCoreReconstruction(object):
         else:
             core_x, core_y = ((), ())
         return core_x, core_y
+
+    def __repr__(self):
+        return ("<%s, station: %r, estimator: %r>" %
+                (self.__class__.__name__, self.station, self.estimator))
 
 
 class CoincidenceCoreReconstruction(object):
@@ -163,7 +167,7 @@ class CoincidenceCoreReconstruction(object):
                              multiple (station_number, event) tuples.
         :param station_numbers: list of station numbers, to only use
                                 events from those stations.
-        :param progress: if True shows a progress bar.
+        :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
                          parameters.
         :return: (x, y) core positions in m.
@@ -179,6 +183,10 @@ class CoincidenceCoreReconstruction(object):
         else:
             core_x, core_y = ((), ())
         return core_x, core_y
+
+    def __repr__(self):
+        return ("<%s, cluster: %r, estimator: %r>" %
+                (self.__class__.__name__, self.cluster, self.estimator))
 
 
 class CoincidenceCoreReconstructionDetectors(
@@ -233,7 +241,39 @@ class CoincidenceCoreReconstructionDetectors(
         return core_x, core_y
 
 
-class CenterMassAlgorithm(object):
+class BaseCoreAlgorithm(object):
+
+    """No actual core reconstruction algorithm
+
+    Simply returns (nan, nan) as core.
+
+    """
+
+    @classmethod
+    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+        """Reconstruct core position
+
+        :param p: detector particle density in m^-2.
+        :param x,y: positions of detectors in m.
+        :param z: height of detectors in m.
+        :param initial: dictionary containing values from previous
+                        reconstructions.
+        :return: reconstructed core position.
+
+        """
+        return cls.reconstruct()
+
+    @staticmethod
+    def reconstruct():
+        """Reconstruct core position
+
+        :return: reconstructed core position.
+
+        """
+        return (nan, nan)
+
+
+class CenterMassAlgorithm(BaseCoreAlgorithm):
 
     """Simple core estimator
 
@@ -250,6 +290,7 @@ class CenterMassAlgorithm(object):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions.
+        :return: reconstructed core position.
 
         """
         theta = initial.get('theta', nan)
@@ -264,6 +305,7 @@ class CenterMassAlgorithm(object):
 
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
+        :return: reconstructed core position.
 
         """
         core_x = sum(density * xi for density, xi in zip(p, x)) / sum(p)
@@ -271,7 +313,7 @@ class CenterMassAlgorithm(object):
         return core_x, core_y
 
 
-class AverageIntersectionAlgorithm(object):
+class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
 
     """Core estimator
 
@@ -295,6 +337,7 @@ class AverageIntersectionAlgorithm(object):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions.
+        :return: reconstructed core position.
 
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
@@ -304,7 +347,7 @@ class AverageIntersectionAlgorithm(object):
         xhit = []
         yhit = []
         for i in range(len(p)):
-            if p[i] > .01:
+            if p[i] > 0.01:
                 phit.append(p[i])
                 xhit.append(x[i])
                 yhit.append(y[i])
@@ -380,6 +423,7 @@ class AverageIntersectionAlgorithm(object):
     @staticmethod
     def select_newlist(newx, newy, xpointlist, ypointlist, distance):
         """Select intersection points in square around the mean of old list."""
+
         newxlist = []
         newylist = []
         for xpoint, ypoint in zip(xpointlist, ypointlist):
@@ -391,7 +435,7 @@ class AverageIntersectionAlgorithm(object):
         return newxlist, newylist
 
 
-class EllipsLdfAlgorithm(object):
+class EllipsLdfAlgorithm(BaseCoreAlgorithm):
 
     """Simple core estimator
 
@@ -408,6 +452,7 @@ class EllipsLdfAlgorithm(object):
         :param z: height of detectors is ignored.
         :param initial: dictionary containing values from previous
                         reconstructions: zenith and azimuth.
+        :return: reconstructed core position.
 
         """
         theta = initial.get('theta', 0.)
@@ -421,6 +466,7 @@ class EllipsLdfAlgorithm(object):
         :param p: detector particle density in m^-2.
         :param x,y: positions of detectors in m.
         :param theta,phi: zenith and azimuth angle in rad.
+        :return: reconstructed core position, chi square, and shower size.
 
         """
         xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)

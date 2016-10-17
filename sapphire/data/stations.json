@@ -44,6 +44,10 @@
         "number": 23
     }, 
     {
+        "name": "Cygnus Gymnasium", 
+        "number": 24
+    }, 
+    {
         "name": "St. Michael College", 
         "number": 101
     }, 
@@ -162,6 +166,10 @@
     {
         "name": "Museum Sterrenwacht Sonnenborgh", 
         "number": 1003
+    }, 
+    {
+        "name": "Utrecht University Educatorium", 
+        "number": 1005
     }, 
     {
         "name": "University College Utrecht 1", 
@@ -498,6 +506,10 @@
     {
         "name": "King Edward VI High School for Girls", 
         "number": 14003
+    }, 
+    {
+        "name": "Marling", 
+        "number": 14004
     }, 
     {
         "name": "Aarhus University 1", 

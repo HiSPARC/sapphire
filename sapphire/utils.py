@@ -167,15 +167,27 @@ def which(program):
         raise Exception('The program %s is not available.' % program)
 
 
-def memoize(obj):
-    """Memoisation cache decorator"""
+def memoize(method):
+    """Memoisation cache decorator
 
-    cache = obj.cache = {}
+    Source: http://stackoverflow.com/a/29954160/1033535
 
-    @wraps(obj)
-    def memoizer(*args, **kwargs):
-        key = str(args) + str(kwargs)
-        if key not in cache:
-            cache[key] = obj(*args, **kwargs)
-        return cache[key]
+    """
+    @wraps(method)
+    def memoizer(self, *args, **kwargs):
+
+        # Prepare and get reference to cache
+        attr = "_memo_{name}".format(name=method.__name__)
+        if not hasattr(self, attr):
+            setattr(self, attr, {})
+        cache = getattr(self, attr)
+
+        # Actual caching
+        key = '{args}{kwargs}'.format(args=args, kwargs=sorted(kwargs.items()))
+        try:
+            return cache[key]
+        except KeyError:
+            cache[key] = method(self, *args, **kwargs)
+            return cache[key]
+
     return memoizer

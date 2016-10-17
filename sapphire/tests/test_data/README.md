@@ -2,8 +2,8 @@ How to create the test data
 ===========================
 
 
-Notes on recreating publicdb.h5 and publicdb_src.h5
----------------------------------------------------
+Notes on recreating `publicdb.h5` and `publicdb_src.h5`
+-------------------------------------------------------
 
 This test data is simply 5 minutes of real data from station 501 downloaded
 from the raw data via the Public Database. Data from 2016-4-21 is used because

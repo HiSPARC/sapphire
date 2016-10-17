@@ -72,36 +72,72 @@ class CorsikaBlocksThinTests(CorsikaBlocksTests):
 
 
 class ParticleDataTests(unittest.TestCase):
-    id = 1000
-    p_x = 2.   # GeV
-    p_y = 1.   # GeV
-    p_z = 10.  # GeV
-    x = 300.   # cm
-    y = 400.   # cm
-    t = 12345678.  # ns
 
-    subblock = (id, p_x, p_y, p_z, x, y, t)
+    def setUp(self):
+        # Input
+        id = 1000
+        p_x = 2.  # GeV
+        p_y = 1.  # GeV
+        p_z = 10.  # GeV
+        x = 300.  # cm
+        y = 400.  # cm
+        t = 12345678.  # ns
 
-    p_x *= 1e9  # eV
-    p_y *= 1e9
-    p_z *= 1e9
-    x *= 1e-2   # m
-    y *= 1e-2
+        self.subblock = (id, p_x, p_y, p_z, x, y, t)
 
-    result = (p_x, p_y, -p_z, -y, x, t, id / 1000, sqrt(x ** 2 + y ** 2),
-              id / 10 % 100, id % 10, atan2(x, -y))
+        # Output
+        p_x *= 1e9  # eV
+        p_y *= 1e9
+        p_z *= 1e9
+        x *= 1e-2  # m
+        y *= 1e-2
+        r = sqrt(x ** 2 + y ** 2)
+        phi = atan2(x, -y)
+
+        self.result = (p_x, p_y, -p_z, -y, x, t, id / 1000, r, id / 10 % 100,
+                       id % 10, phi)
 
     def test_particle_data(self):
-        """ verify conversion of particle information by particle_data() """
+        """Verify conversion of particle information by particle_data()"""
+
         self.assertAlmostEqual(blocks.particle_data(self.subblock), self.result)
 
     @unittest.skipUnless(numba_available, "Numba required")
     def test_numba_jit(self):
-        """ verify particle_data() with numba JIT disabled  """
+        """Verify particle_data() with numba JIT disabled"""
+
         self.assertTrue(hasattr(blocks.particle_data, '__numba__'))
         old_value = getattr(numba.config, 'DISABLE_JIT')
         setattr(numba.config, 'DISABLE_JIT', 1)
         self.assertAlmostEqual(blocks.particle_data(self.subblock), self.result)
+        setattr(numba.config, 'DISABLE_JIT', old_value)
+
+
+class ParticleDataThinTests(ParticleDataTests):
+
+    def setUp(self):
+        super(ParticleDataThinTests, self).setUp()
+
+        # Input
+        weight = 9.
+        self.subblock = self.subblock + (weight,)
+
+        # Output
+        self.result = self.result + (weight,)
+
+    def test_particle_data(self):
+        """Verify conversion of particle information by particle_data()"""
+
+        self.assertAlmostEqual(blocks.particle_data_thin(self.subblock), self.result)
+
+    @unittest.skipUnless(numba_available, "Numba required")
+    def test_numba_jit(self):
+        """Verify particle_data() with numba JIT disabled"""
+
+        self.assertTrue(hasattr(blocks.particle_data_thin, '__numba__'))
+        old_value = getattr(numba.config, 'DISABLE_JIT')
+        setattr(numba.config, 'DISABLE_JIT', 1)
+        self.assertAlmostEqual(blocks.particle_data_thin(self.subblock), self.result)
         setattr(numba.config, 'DISABLE_JIT', old_value)
 
 
