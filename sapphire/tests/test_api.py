@@ -261,12 +261,14 @@ class NetworkTests(unittest.TestCase):
                                   '1388545200\t2000.\n'
                                   '1388548800\t3000.\n')
         # station 1
-        mock_urlopen.return_value.read.side_effect = [sn, event_time_1] * 3
+        mock_urlopen.return_value.read.side_effect = [sn, event_time_1] * 4
         self.assertEqual(self.network.uptime([501]), 3)
         self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
                          end=datetime(2014, 1, 1, 2)), 2)
         self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
                          end=datetime(2014, 1, 2)), 3)
+        self.assertEqual(self.network.uptime([501], start=datetime(2013, 1, 1),
+                         end=datetime(2013, 1, 2)), 0)
         # station 2
         mock_urlopen.return_value.read.side_effect = [sn, event_time_2] * 3
         self.assertEqual(self.network.uptime([501]), 3)

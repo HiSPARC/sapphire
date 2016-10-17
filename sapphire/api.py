@@ -502,7 +502,7 @@ class Network(API):
             start_index = 0
 
         if end is not None:
-            end_index = min(last, process_time(end) - first) // 3600
+            end_index = min(last, max(0, process_time(end) - first) // 3600)
         else:
             end_index = len(all_active)
 
