@@ -109,6 +109,9 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
     with tables.open_file(unsorted, 'a') as hdf_temp:
         store_corsika_data(corsika_data, hdf_temp, progress=progress,
                            thin=thin)
+
+    corsika_data.finish()
+
     with tables.open_file(unsorted, 'r') as hdf_unsorted, \
             tables.open_file(destination, 'w') as hdf_data, \
             tables.open_file(temp_path, 'w') as hdf_temp:
