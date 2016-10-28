@@ -6,6 +6,10 @@ python:
 
 sudo: false
 
+addons:
+  apt_packages:
+    - libhdf5-serial-dev
+
 # Miniconda copied from
 # https://gist.github.com/dan-blanchard/7045057
 before_install:
@@ -17,7 +21,7 @@ before_install:
 
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy numba cython numexpr
-  - conda install --yes -c conda-forge pytables
+  - pip install -U https://github.com/tomkooij/PyTables/archive/3.3-rc0.tar.gz
   - pip install coverage coveralls codecov flake8 sphinx
   - python setup.py develop
 
