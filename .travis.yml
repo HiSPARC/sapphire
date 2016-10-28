@@ -21,7 +21,7 @@ before_install:
 
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy numba cython numexpr
-  - pip install -U https://github.com/tomkooij/PyTables/archive/3.3-rc0.tar.gz
+  - pip install -U https://github.com/tomkooij/PyTables/archive/v.3.2.4dev0.tar.gz
   - pip install coverage coveralls codecov flake8 sphinx
   - python setup.py develop
 
