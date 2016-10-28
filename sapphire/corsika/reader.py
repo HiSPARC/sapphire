@@ -186,6 +186,12 @@ class CorsikaFile(object):
 
         self._file.close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.finish()
+
     def check(self):
         """Check DAT file format
 
