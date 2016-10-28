@@ -98,19 +98,18 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
             os.remove(destination)
 
     if not thin:
-        corsika_data = CorsikaFile(source)
+        CorsikaReader = CorsikaFile
     else:
-        corsika_data = CorsikaFileThin(source)
+        CorsikaReader = CorsikaFileThin
 
     temp_dir = os.path.dirname(destination)
     unsorted = create_tempfile_path(temp_dir)
     temp_path = create_tempfile_path(temp_dir)
 
-    with tables.open_file(unsorted, 'a') as hdf_temp:
+    with CorsikaReader(source) as corsika_data, \
+            tables.open_file(unsorted, 'a') as hdf_temp:
         store_corsika_data(corsika_data, hdf_temp, progress=progress,
                            thin=thin)
-
-    corsika_data.finish()
 
     with tables.open_file(unsorted, 'r') as hdf_unsorted, \
             tables.open_file(destination, 'w') as hdf_data, \
