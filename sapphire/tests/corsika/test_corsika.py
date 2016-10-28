@@ -14,7 +14,7 @@ class CorsikaFileTests(unittest.TestCase):
         self.file = corsika.reader.CorsikaFile(DATA_FILE)
 
     def tearDown(self):
-        pass
+        self.file.close()
 
     def test_validate_file(self):
         """Verify that the data file is valid"""

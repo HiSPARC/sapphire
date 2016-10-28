@@ -181,6 +181,11 @@ class CorsikaFile(object):
         self._end = None
         self.format = Format()
 
+    def close(self):
+        """Close the opened CORSIKA data file"""
+
+        self._file.close()
+
     def check(self):
         """Check DAT file format
 
