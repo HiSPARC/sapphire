@@ -4,9 +4,10 @@ Classes corresponding to CORSIKA blocks and sub-blocks
 The classes in this module correspond one-to-one with the sub-blocks
 (and blocks) as specified in the CORSIKA users manual.
 
-Author: Javier Gonzalez <jgonzalez@ik.fzk.de>
+Author: Javier Gonzalez
 """
 from __future__ import division
+
 import struct
 import math
 

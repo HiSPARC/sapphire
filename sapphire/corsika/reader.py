@@ -60,7 +60,7 @@
     Authors
     =======
 
-    - Javier Gonzalez <jgonzalez@ik.fzk.de>
+    - Javier Gonzalez
     - Arne de Laat <adelaat@nikhef.nl>
 
 """
