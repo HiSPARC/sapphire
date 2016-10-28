@@ -11,7 +11,7 @@ before_install:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
       MINICONDA=Miniconda2-latest-Linux-x86_64.sh;
     else
-      MINICONDA=Miniconda3-latest-Linux-x86_64.sh
+      MINICONDA=Miniconda3-latest-Linux-x86_64.sh;
     fi
   - wget http://repo.continuum.io/miniconda/${MINICONDA} -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
