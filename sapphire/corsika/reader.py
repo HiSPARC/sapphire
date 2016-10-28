@@ -181,7 +181,7 @@ class CorsikaFile(object):
         self._end = None
         self.format = Format()
 
-    def close(self):
+    def finish(self):
         """Close the opened CORSIKA data file"""
 
         self._file.close()
