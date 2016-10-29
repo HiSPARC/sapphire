@@ -7,7 +7,7 @@ Python is a very versatile language. As such, it can be either installed with
 lots and lots of packages to create an environment for e.g. data analysis or
 game development, or it can be installed for a very specific task, taking up
 much less space. To install a complete environment without all the hassle, you
-can install a *Python distribution* which includes Python 2.7 and a long list
+can install a *Python distribution* which includes Python and a long list
 of packages. This is the recommended approach, certainly if you're new to
 Python. If you really want, you can install a much smaller set of packages for
 which we'll provide minimal instructions only.
@@ -22,13 +22,12 @@ Installing the prerequisites
 Python distributions
 --------------------
 
+|sapphire| supports both Python 2.7 and newer versions of Python, e.g. 3.5.
 If you don't mind to install a large package, use a distribution. This mostly
 includes everything you'll ever need. One such distribution is `Anaconda
 <https://www.continuum.io/downloads>`_. It includes many scientific python
 packages, as well as graphical environments for doing your work. Anaconda has
 packages available for the three major platforms: Windows, OS X and Linux.
-
-.. note:: Use the installer for **Python 2.7**. |sapphire| does **not** support Python 3.x.
 
 Anaconda includes a graphical programming environment (`Spyder
 <http://pythonhosted.org/spyder/>`_) which makes it easy to write analysis
