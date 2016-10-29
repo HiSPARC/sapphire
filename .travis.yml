@@ -20,8 +20,8 @@ before_install:
 
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba
-  - pip install coverage coveralls codecov flake8 sphinx
-  - python setup.py develop
+  - pip install coverage coveralls codecov
+  - pip install -e .[dev]
 
 script:
   - coverage run --branch --source=sapphire setup.py test
