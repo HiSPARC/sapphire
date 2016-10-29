@@ -77,13 +77,13 @@ def determine_detector_timing_offsets(events, station=None):
 def determine_detector_timing_offset(dt, dz=0):
     """Determine the timing offset between station detectors.
 
-    :param dt: a list of time differences between detectors (t - t_ref).
+    :param dt: array of time differences between detectors (t - t_ref).
     :param dz: height difference between the detectors (z - z_ref).
     :return: mean of a gaussian fit to the data corrected for height, and
              the error of the mean.
 
     """
-    dt_filter = abs(dt) < 100
+    dt_filter = abs(dt + dz / c) < 100
     if not sum(dt_filter):
         return nan, nan
     p = round_in_base(percentile(dt.compress(dt_filter), [0.5, 99.5]), 2.5)

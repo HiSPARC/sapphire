@@ -18,7 +18,7 @@ class DetectorTimingTests(unittest.TestCase):
     @patch.object(calibration, 'fit_timing_offset')
     def test_determine_detector_timing_offset(self, mock_fit):
         # Empty list
-        offset = calibration.determine_detector_timing_offset([])
+        offset = calibration.determine_detector_timing_offset(array([]))
         self.assertTrue(all(isnan(offset)))
 
         dt = array([-10, 0, 10])
