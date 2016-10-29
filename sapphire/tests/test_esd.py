@@ -6,12 +6,13 @@ import tables
 
 from sapphire import esd, api
 from sapphire.tests.validate_results import validate_results
-
-from .esd_load_data import (create_tempfile_path,
-                            test_data_path, test_data_coincidences_path,
-                            perform_load_data, perform_load_coincidences,
-                            perform_esd_download_data,
-                            perform_download_coincidences)
+from sapphire.tests.esd_load_data import (create_tempfile_path,
+                                          test_data_path,
+                                          test_data_coincidences_path,
+                                          perform_load_data,
+                                          perform_load_coincidences,
+                                          perform_esd_download_data,
+                                          perform_download_coincidences)
 
 
 class ESDTest(unittest.TestCase):

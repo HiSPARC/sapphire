@@ -9,8 +9,7 @@ import tables
 
 from sapphire import publicdb
 from sapphire.tests.validate_results import validate_results
-
-from .esd_load_data import create_tempfile_path
+from sapphire.tests.esd_load_data import create_tempfile_path
 
 
 self_path = os.path.dirname(__file__)
