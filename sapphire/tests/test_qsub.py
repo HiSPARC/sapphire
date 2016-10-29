@@ -46,7 +46,7 @@ class SubmitJobTest(unittest.TestCase):
     def test_submit_job(self, mock_delete, mock_check_output, mock_create,
                         mock_which):
         mock_create.return_value = (sentinel.script_path, sentinel.script_name)
-        mock_check_output.return_value = ''
+        mock_check_output.return_value = b''
         qsub.submit_job(sentinel.script, sentinel.name, sentinel.queue, sentinel.extra)
 
         mock_create.assert_called_once_with(sentinel.script, sentinel.name)
