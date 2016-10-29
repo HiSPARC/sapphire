@@ -15,6 +15,7 @@ import glob
 import textwrap
 import logging
 import argparse
+from six.moves import range
 
 from .. import qsub
 
@@ -114,7 +115,7 @@ def store_command(seed):
 def run(queue):
     """Get list of seeds to process, then submit jobs to process them"""
 
-    os.umask(002)
+    os.umask(0o02)
     logger.info('Getting todo list of seeds to convert.')
     seeds = get_seeds_todo()
     # seeds = filter_large_seeds(seeds)
@@ -125,7 +126,7 @@ def run(queue):
 
     logger.info('Submitting jobs for %d simulations.' % n_jobs_to_submit)
     try:
-        for _ in xrange(n_jobs_to_submit):
+        for _ in range(n_jobs_to_submit):
             seed = seeds.pop()
             command = store_command(seed)
             script = SCRIPT_TEMPLATE.format(command=command, datadir=DATADIR)

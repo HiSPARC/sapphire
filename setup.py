@@ -1,11 +1,6 @@
 from setuptools import setup, find_packages
 import sys
 
-
-if sys.version_info[:2] != (2, 7):
-    raise Exception('Only Python 2.7 is supported.')
-
-
 setup(name='hisparc-sapphire',
       version='1.1.0',
       packages=find_packages(),
@@ -24,6 +19,7 @@ setup(name='hisparc-sapphire',
                    'Operating System :: OS Independent',
                    'Programming Language :: Python',
                    'Programming Language :: Python :: 2.7',
+                   'Programming Language :: Python :: 3.5',
                    'Topic :: Scientific/Engineering',
                    'Topic :: Education',
                    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'],
@@ -52,6 +48,6 @@ setup(name='hisparc-sapphire',
                                  'tests/corsika/test_data/*/DAT000000',
                                  'tests/corsika/test_data/*/*.h5',
                                  'tests/simulations/test_data/*.h5']},
-      install_requires=['numpy', 'scipy', 'tables>=3.2.0',
-                        'progressbar2>=3.7.0', 'lazy', 'mock'],
+      install_requires=['numpy', 'scipy', 'tables>=3.3.0',
+                        'progressbar2>=3.7.0', 'lazy', 'mock', 'six'],
       test_suite="sapphire.tests",)

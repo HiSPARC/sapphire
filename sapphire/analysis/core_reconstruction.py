@@ -15,9 +15,10 @@
     reconstructed x and y coordinates.
 
 """
-from __future__ import division
-from itertools import izip_longest, combinations
+
 import warnings
+from itertools import combinations
+from six.moves import zip_longest
 
 from numpy import isnan, nan, cos, sqrt, mean, array
 
@@ -89,7 +90,7 @@ class EventCoreReconstruction(object):
 
         """
         events = pbar(events, show=progress)
-        events_init = izip_longest(events, initials)
+        events_init = zip_longest(events, initials)
         cores = [self.reconstruct_event(event, detector_ids, initial)
                  for event, initial in events_init]
         if len(cores):
@@ -144,7 +145,7 @@ class CoincidenceCoreReconstruction(object):
                 if station_number not in station_numbers:
                     continue
             station = self.cluster.get_station(station_number)
-            p_station = station_density(event, range(4), station)
+            p_station = station_density(event, list(range(4)), station)
             if not isnan(p_station):
                 sx, sy, sz = station.calc_center_of_mass_coordinates()
                 p.append(p_station)
@@ -174,12 +175,12 @@ class CoincidenceCoreReconstruction(object):
 
         """
         coincidences = pbar(coincidences, show=progress)
-        coin_init = izip_longest(coincidences, initials)
+        coin_init = zip_longest(coincidences, initials)
         cores = [self.reconstruct_coincidence(coincidence, station_numbers,
                                               initial)
                  for coincidence, initial in coin_init]
         if len(cores):
-            core_x, core_y = zip(*cores)
+            core_x, core_y = list(zip(*cores))
         else:
             core_x, core_y = ((), ())
         return core_x, core_y

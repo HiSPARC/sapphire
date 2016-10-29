@@ -14,7 +14,7 @@ class CorsikaFileTests(unittest.TestCase):
         self.file = corsika.reader.CorsikaFile(DATA_FILE)
 
     def tearDown(self):
-        pass
+        self.file.finish()
 
     def test_validate_file(self):
         """Verify that the data file is valid"""
@@ -26,7 +26,7 @@ class CorsikaFileTests(unittest.TestCase):
 
         header = self.file.get_header()
         self.assertIsInstance(header, corsika.blocks.RunHeader)
-        self.assertEqual(header.id, 'RUNH')
+        self.assertEqual(header.id, b'RUNH')
         self.assertAlmostEqual(header.version, 7.4, 4)
         for h in [10., 5000., 30000., 50000., 110000.]:
             t = header.height_to_thickness(h)
@@ -37,14 +37,14 @@ class CorsikaFileTests(unittest.TestCase):
 
         end = self.file.get_end()
         self.assertIsInstance(end, corsika.blocks.RunEnd)
-        self.assertEqual(end.id, 'RUNE')
+        self.assertEqual(end.id, b'RUNE')
         self.assertEqual(end.n_events_processed, 1)
 
     def test_events(self):
         """Verify that the Events are properly read"""
 
         events = self.file.get_events()
-        event = events.next()
+        event = next(events)
         self.assertIsInstance(event, corsika.reader.CorsikaEvent)
         self.assertEqual(event.last_particle_index, 1086892)
 
@@ -52,10 +52,10 @@ class CorsikaFileTests(unittest.TestCase):
         """Verify that the Event header is properly read"""
 
         events = self.file.get_events()
-        event = events.next()
+        event = next(events)
         header = event.get_header()
         self.assertIsInstance(header, corsika.blocks.EventHeader)
-        self.assertEqual(header.id, 'EVTH')
+        self.assertEqual(header.id, b'EVTH')
         self.assertEqual(corsika.particles.name(header.particle_id), 'proton')
         self.assertEqual(header.energy, 1e14)
         self.assertEqual(header.azimuth, -pi / 2.)
@@ -66,27 +66,27 @@ class CorsikaFileTests(unittest.TestCase):
         """Verify that the Event end is properly read"""
 
         events = self.file.get_events()
-        event = events.next()
+        event = next(events)
         end = event.get_end()
         self.assertIsInstance(end, corsika.blocks.EventEnd)
-        self.assertEqual(end.id, 'EVTE')
+        self.assertEqual(end.id, b'EVTE')
         self.assertEqual(end.n_muons_output, 1729)
 
     def test_particles(self):
         """Verify that the Particles are properly read"""
 
         events = self.file.get_events()
-        event = events.next()
+        event = next(events)
         particles = event.get_particles()
-        particle = particles.next()
+        particle = next(particles)
         self.assertIsInstance(particle, tuple)
         self.assertEqual(len(particle), 11)
-        self.assertEqual(corsika.particles.name(particle[6]), 'muon_p')
+        self.assertEqual(corsika.particles.name(int(particle[6])), 'muon_p')
         self.assertAlmostEqual(particle[3], -56.2846679688)
         self.assertAlmostEqual(particle[4], -172.535859375)
         self.assertAlmostEqual(particle[7], 181.484397728)
-        particle = particles.next()
-        self.assertEqual(corsika.particles.name(particle[6]), 'muon_m')
+        particle = next(particles)
+        self.assertEqual(corsika.particles.name(int(particle[6])), 'muon_m')
 
 
 if __name__ == '__main__':

@@ -118,7 +118,7 @@ def prepare_output(n):
     :return: path to the temporary file and a PyTables handler for the file.
 
     """
-    os.umask(002)
+    os.umask(0o02)
     tmp_path = create_tempfile_path()
     overview = tables.open_file(tmp_path, 'w')
     overview.create_table('/', 'simulations', Simulations,
@@ -141,7 +141,7 @@ def all_seeds(source):
 
     dirs = glob.glob(os.path.join(source, '*_*'))
     seeds = [os.path.basename(dir) for dir in dirs]
-    return set(seeds)
+    return sorted(set(seeds))
 
 
 def generate_corsika_overview(source, destination, progress=False):

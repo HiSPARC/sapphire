@@ -156,45 +156,45 @@ class CorsikaQuery(object):
         else:
             return available
 
-    def filter(self, type, value):
+    def filter(self, key, value):
         """Filter to be in a range
 
-        :param type: variable to filter.
+        :param key: variable to filter.
         :param value: value to match.
         :return: query.
 
         """
-        query = '(%s == %s)' % (type, value)
+        query = '(%s == %s)' % (key, value)
 
         return query
 
-    def float_filter(self, type, value):
+    def float_filter(self, key, value):
         """Filter float values
 
         Take into account that the values are likely not a perfect match.
 
-        :param type: variable to filter.
+        :param key: variable to filter.
         :param value: value to match.
         :return: query.
 
         """
-        query = '(abs(%s - %s) < 1e-4)' % (type, value)
+        query = '(abs(%s - %s) < 1e-4)' % (key, value)
 
         return query
 
-    def range_filter(self, type, min=None, max=None):
+    def range_filter(self, key, min=None, max=None):
         """Filter to be in a range
 
-        :param type: variable to filter.
+        :param key: variable to filter.
         :param min,max: limits on the value.
         :return: query.
 
         """
         queries = []
         if min is not None:
-            queries.append('(%s >= %s)' % (type, min))
+            queries.append('(%s >= %s)' % (key, min))
         if max is not None:
-            queries.append('(%s <= %s)' % (type, max))
+            queries.append('(%s <= %s)' % (key, max))
         query = ' & '.join(queries)
 
         return query

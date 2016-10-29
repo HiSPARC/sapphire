@@ -81,7 +81,7 @@ class StoreCorsikaDataCommandTests(StoreCorsikaDataTests):
 
     def test_store_data(self):
         result = subprocess.check_output(self.command, shell=True)
-        self.assertEqual(result, '')
+        self.assertEqual(result, b'')
 
         self.assertRaises(subprocess.CalledProcessError,
                           subprocess.check_output,
@@ -90,7 +90,7 @@ class StoreCorsikaDataCommandTests(StoreCorsikaDataTests):
 
         result = subprocess.check_output(self.command + ' --overwrite',
                                          shell=True)
-        self.assertEqual(result, '')
+        self.assertEqual(result, b'')
 
         validate_results(self, self.expected_path, self.destination_path)
 

@@ -12,6 +12,8 @@
         Find HiSPARC and KASCADE events that belong together.
 
 """
+from __future__ import print_function
+
 import gzip
 import time
 from os.path import splitext
@@ -72,13 +74,13 @@ class StoreKascadeData(object):
                 raise RuntimeError("HiSPARC event table is empty")
 
             if self.progress:
-                print "Processing data from %s to %s" % (time.ctime(start),
-                                                         time.ctime(stop))
+                print("Processing data from %s to %s" % (time.ctime(start),
+                                                         time.ctime(stop)))
         else:
             start = None
             stop = None
             if self.progress:
-                print "Processing all data"
+                print("Processing all data")
 
         self._process_events_in_range(start, stop)
 

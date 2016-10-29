@@ -64,10 +64,12 @@
     - Arne de Laat <adelaat@nikhef.nl>
 
 """
+from __future__ import division
 
 from struct import unpack
 import warnings
 import os
+from six.moves import range
 
 from .blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
                      ParticleData, Format, ParticleDataThin, FormatThin,
@@ -132,18 +134,18 @@ class CorsikaEvent(object):
         for sub_block_index in self._raw_file._subblocks_indices(
                 self._header_index, self._end_index):
             for particle in self._raw_file._get_particles(sub_block_index):
-                type = particle[6]  # particle type
-                level = particle[9]  # observation level
+                particle_type = particle[6]
+                observation_level = particle[9]
 
                 # skip padding, used to fill a subblock
-                if type == 0:
+                if particle_type == 0:
                     continue
                 # muon additional information
-                if type in [75, 76]:
+                if particle_type in [75, 76]:
                     warnings.warn('Ignoring muon additional information.')
                     continue
                 # ignore all observation levels except for nr. 1
-                if level != 1:
+                if observation_level != 1:
                     warnings.warn('Only observation level 1 will be read!')
                     continue
 
@@ -179,6 +181,17 @@ class CorsikaFile(object):
         self._end = None
         self.format = Format()
 
+    def finish(self):
+        """Close the opened CORSIKA data file"""
+
+        self._file.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.finish()
+
     def check(self):
         """Check DAT file format
 
@@ -200,7 +213,7 @@ class CorsikaFile(object):
                             'of blocks!'.format(name=self._filename))
         block_size = self.format.block_size
         padding = self.format.block_padding_size
-        n_blocks = self._size / block_size
+        n_blocks = self._size // block_size
         for block in range(n_blocks):
             self._file.seek(block * block_size)
             a = unpack('i', self._file.read(padding))[0]
@@ -221,8 +234,8 @@ class CorsikaFile(object):
         block_size = self.format.block_size
         subblock_size = self.format.subblock_size
         n_blocks = self._size / block_size
-        for b in xrange(0, n_blocks * block_size, block_size):
-            for s in xrange(0, self.format.subblocks_per_block):
+        for b in range(0, n_blocks * block_size, block_size):
+            for s in range(0, self.format.subblocks_per_block):
                 pos = b + s * subblock_size + self.format.block_padding_size
                 self._file.seek(pos)
                 yield unpack(self.format.subblock_format,
@@ -268,9 +281,9 @@ class CorsikaFile(object):
         for block in self._subblocks_indices():
             self._file.seek(block)
             tag = unpack('4s', self._file.read(self.format.field_size))[0]
-            if tag == 'EVTH':
+            if tag == b'EVTH':
                 event_head = block
-            elif tag == 'EVTE':
+            elif tag == b'EVTE':
                 yield CorsikaEvent(self, event_head, block)
                 event_head = None
 
@@ -283,9 +296,9 @@ class CorsikaFile(object):
         """
         block_size = self.format.block_size
         subblock_size = self.format.subblock_size
-        n_blocks = self._size / block_size
-        for b in xrange(0, n_blocks * block_size, block_size):
-            for s in xrange(0, self.format.subblocks_per_block):
+        n_blocks = self._size // block_size
+        for b in range(0, n_blocks * block_size, block_size):
+            for s in range(0, self.format.subblocks_per_block):
                 pos = b + s * subblock_size + self.format.block_padding_size
                 if ((min_sub_block is not None and pos <= min_sub_block) or
                         (max_sub_block is not None and pos >= max_sub_block)):
@@ -299,10 +312,10 @@ class CorsikaFile(object):
         tails = []
         for block in self._subblocks_indices():
             self._file.seek(block)
-            type = unpack('4s', self._file.read(self.format.field_size))[0]
-            if type == 'EVTH':
+            tag = unpack('4s', self._file.read(self.format.field_size))[0]
+            if tag == b'EVTH':
                 heads.append(block)
-            elif type == 'EVTE':
+            elif tag == b'EVTE':
                 tails.append(block)
         return (heads, tails)
 
@@ -320,10 +333,10 @@ class CorsikaFile(object):
         """Get the indices for the start of the run header and end"""
         for block in self._subblocks_indices():
             self._file.seek(block)
-            type = unpack('4s', self._file.read(self.format.field_size))[0]
-            if type == 'RUNH':
+            tag = unpack('4s', self._file.read(self.format.field_size))[0]
+            if tag == b'RUNH':
                 head = block
-            elif type == 'RUNE':
+            elif tag == b'RUNE':
                 tail = block
         return head, tail
 

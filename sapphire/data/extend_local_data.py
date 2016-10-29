@@ -28,8 +28,8 @@ def update_additional_local_tsv(progress=True):
 
     station_numbers = Network().station_numbers()
 
-    for type in ['eventtime']:
-        update_sublevel_tsv(type, station_numbers, progress)
+    for data_type in ['eventtime']:
+        update_sublevel_tsv(data_type, station_numbers, progress)
 
 
 def main():

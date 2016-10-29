@@ -23,6 +23,8 @@
         $ qsub_corsika 100 16 proton 22.5 -q generic -a 90
 
 """
+from __future__ import print_function
+
 import os
 import random
 import textwrap
@@ -30,6 +32,7 @@ import subprocess
 import argparse
 import warnings
 from math import modf, log10
+from six.moves import range
 
 from . import particles
 from ..utils import pbar
@@ -157,7 +160,7 @@ class CorsikaBatch(object):
         """Setup CORSIKA environment"""
 
         # Set umask
-        os.umask(002)
+        os.umask(0o02)
 
         # Setup directories
         taken = self.taken_seeds()
@@ -278,7 +281,7 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
 
     """
     if progress:
-        print textwrap.dedent("""\
+        print(textwrap.dedent("""\
             Batch submitting jobs to Stoomboot:
             Number of jobs      {n}
             Particle energy     10^{e} eV
@@ -288,7 +291,7 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
             Stoomboot queue     {q}
             CORSIKA executable  {c}
             """.format(n=n, e=energy, p=particle, z=zenith, a=azimuth, q=queue,
-                       c=corsika))
+                       c=corsika)))
 
     available_slots = qsub.check_queue(queue)
     if available_slots <= 0:
@@ -298,7 +301,7 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
         warnings.warn('Submitting {n} jobs because queue almost full.'
                       .format(n=n))
 
-    for _ in pbar(xrange(n), show=progress):
+    for _ in pbar(range(n), show=progress):
         batch = CorsikaBatch(energy=energy, particle=particle, zenith=zenith,
                              azimuth=azimuth, queue=queue, corsika=corsika)
         batch.run()

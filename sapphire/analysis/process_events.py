@@ -28,13 +28,14 @@
 
 """
 import zlib
-from itertools import izip
+
 import operator
 import os
 import warnings
 
 import tables
 import numpy as np
+from six.moves import range, zip
 
 from ..api import Station
 from ..utils import pbar, ERR
@@ -245,7 +246,7 @@ class ProcessEvents(object):
         :param events: the events table to normalize.
 
         """
-        row_ids = range(len(events))
+        row_ids = list(range(len(events)))
         events.modify_column(column=row_ids, colname='event_id')
 
     def _create_results_table(self):
@@ -268,7 +269,7 @@ class ProcessEvents(object):
                                        self.processed_events_description,
                                        expectedrows=length)
 
-        for x in xrange(length):
+        for x in range(length):
             table.row.append()
         table.flush()
 
@@ -364,9 +365,10 @@ class ProcessEvents(object):
         blobs = self._get_blobs()
 
         try:
-            trace = zlib.decompress(blobs[idx]).split(',')
+            trace = zlib.decompress(blobs[idx]).decode('utf-8').split(',')
         except zlib.error:
-            trace = zlib.decompress(blobs[idx][1:-1]).split(',')
+            trace = (zlib.decompress(blobs[idx][1:-1])
+                     .decode('utf-8').split(','))
         if trace[-1] == '':
             del trace[-1]
         trace = (int(x) for x in trace)
@@ -508,8 +510,8 @@ class ProcessIndexedEvents(ProcessEvents):
 
         timings = self.process_traces()
 
-        for event, (t1, t2, t3, t4) in izip(table.itersequence(self.indexes),
-                                            timings):
+        for event, (t1, t2, t3, t4) in zip(table.itersequence(self.indexes),
+                                           timings):
             event['t1'] = t1
             event['t2'] = t2
             event['t3'] = t3
@@ -938,7 +940,7 @@ class ProcessEventsFromSource(ProcessEvents):
                                             self.processed_events_description,
                                             expectedrows=length)
 
-        for x in xrange(length):
+        for x in range(length):
             table.row.append()
         table.flush()
 

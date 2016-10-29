@@ -26,6 +26,7 @@ import random
 import numpy as np
 import tables
 
+from six import iteritems
 from .. import storage
 from ..analysis.process_events import ProcessEvents
 from ..utils import pbar
@@ -183,7 +184,7 @@ class BaseSimulation(object):
                                'integrals': 4 * [-1.]}
 
         for detector_id, observables in enumerate(detector_observables, 1):
-            for key, value in observables.iteritems():
+            for key, value in iteritems(observables):
                 if key in ['n', 't']:
                     key = key + str(detector_id)
                     station_observables[key] = value
@@ -205,7 +206,7 @@ class BaseSimulation(object):
         events_table = self.station_groups[station_id].events
         row = events_table.row
         row['event_id'] = events_table.nrows
-        for key, value in station_observables.iteritems():
+        for key, value in iteritems(station_observables):
             if key in events_table.colnames:
                 row[key] = value
             else:
@@ -316,7 +317,7 @@ class BaseSimulation(object):
         """Stores the references to the station groups for coincidences"""
 
         for station_group in self.station_groups:
-            self.s_index.append(station_group._v_pathname)
+            self.s_index.append(station_group._v_pathname.encode('utf-8'))
         self.s_index.flush()
 
     def __repr__(self):

@@ -26,7 +26,8 @@ class SimpleClusterTest(unittest.TestCase):
                 detector.get_xy_coordinates()
 
     def assertTupleAlmostEqual(self, actual, expected):
-        self.assertTrue(type(actual) == type(expected) == tuple)
+        self.assertIsInstance(actual, tuple)
+        self.assertIsInstance(expected, tuple)
 
         msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
         for actual_value, expected_value in zip(actual, expected):

@@ -1,6 +1,6 @@
 import os
 import tempfile
-from urllib import urlretrieve
+from six.moves.urllib.request import urlretrieve
 
 import tables
 import datetime

@@ -16,6 +16,8 @@ Example usage::
     >>> sim.run()
 
 """
+from __future__ import division
+
 from math import pi, sin, cos, tan, atan2, sqrt
 
 import numpy as np
@@ -102,7 +104,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         n_detectors = len(station.detectors)
-        ids = range(1, n_detectors + 1)
+        ids = list(range(1, n_detectors + 1))
         arrival_times = [station_observables['t%d' % id] for id in ids]
         ext_timestamp = shower_parameters['ext_timestamp']
 

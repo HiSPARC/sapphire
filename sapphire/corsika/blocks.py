@@ -5,15 +5,16 @@ The classes in this module correspond one-to-one with the sub-blocks
 (and blocks) as specified in the CORSIKA users manual.
 
 Author: Javier Gonzalez
-
 """
+from __future__ import division
+
 import struct
 import math
 
 import numpy
 
-import units
-import particles
+from . import units
+from . import particles
 try:
     from numba import jit
 except ImportError:
@@ -212,9 +213,9 @@ class EventHeader(object):
             self.azimuth = azimuth
 
         self.n_seeds = subblock[12]
-        self.seeds = numpy.array(zip(subblock[13:41:3],
-                                     subblock[14:42:3],
-                                     subblock[15:43:3]))
+        self.seeds = numpy.array(list(zip(subblock[13:41:3],
+                                          subblock[14:42:3],
+                                          subblock[15:43:3])))
 
         self.run_number = subblock[43]
         self.date_start = subblock[44]
@@ -434,8 +435,8 @@ def particle_data(subblock):
     y = x_corsika
     t = subblock[6] * units.ns  # or z for additional muon info
 
-    id = description / 1000
-    hadron_generation = description / 10 % 100
+    id = description // 1000
+    hadron_generation = description // 10 % 100
     observation_level = description % 10
 
     r = math.sqrt(x ** 2 + y ** 2)

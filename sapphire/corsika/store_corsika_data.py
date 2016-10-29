@@ -14,6 +14,8 @@
         $ store_corsika_data --progress DAT000000 corsika.h5
 
 """
+from __future__ import print_function
+
 import argparse
 import tempfile
 import os
@@ -96,17 +98,19 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
             os.remove(destination)
 
     if not thin:
-        corsika_data = CorsikaFile(source)
+        CorsikaReader = CorsikaFile
     else:
-        corsika_data = CorsikaFileThin(source)
+        CorsikaReader = CorsikaFileThin
 
     temp_dir = os.path.dirname(destination)
     unsorted = create_tempfile_path(temp_dir)
     temp_path = create_tempfile_path(temp_dir)
 
-    with tables.open_file(unsorted, 'a') as hdf_temp:
+    with CorsikaReader(source) as corsika_data, \
+            tables.open_file(unsorted, 'a') as hdf_temp:
         store_corsika_data(corsika_data, hdf_temp, progress=progress,
                            thin=thin)
+
     with tables.open_file(unsorted, 'r') as hdf_unsorted, \
             tables.open_file(destination, 'w') as hdf_data, \
             tables.open_file(temp_path, 'w') as hdf_temp:
@@ -143,7 +147,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
 
     """
     if progress:
-        print "Converting CORSIKA data (%s) to HDF5 format" % source._filename
+        print("Converting CORSIKA data (%s) to HDF5 format" % source._filename)
     source.check()
 
     if not thin:
@@ -162,7 +166,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
                                              expectedrows=n_particles)
         except tables.NodeError:
             if progress:
-                print '%s already exists, doing nothing' % table_name
+                print('%s already exists, doing nothing' % table_name)
                 return
             else:
                 raise
@@ -203,7 +207,7 @@ def create_index(hdf_data, table_name='groundparticles', progress=False):
     """
     table = hdf_data.get_node('/', table_name)
     if progress:
-        print 'Ensuring the x column for table %s is indexed.' % table_name
+        print('Ensuring the x column for table %s is indexed.' % table_name)
     try:
         table.cols.x.create_csindex()
     except ValueError:
@@ -220,7 +224,7 @@ def copy_and_sort_node(hdf_temp, hdf_data, table_name='groundparticles',
     target_root = hdf_data.get_node('/')
     source_table = hdf_temp.get_node('/', table_name)
     if progress:
-        print 'Creating the sorted HDF5 file.'
+        print('Creating the sorted HDF5 file.')
     source_table.copy(newparent=target_root, sortby='x', propindexes=True)
     hdf_temp.copy_node_attrs('/', target_root)
 

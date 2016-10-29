@@ -6,8 +6,8 @@
     :mod:`~sapphire.esd`.
 
 """
-import xmlrpclib
-import urllib
+from six.moves.xmlrpc_client import ServerProxy
+from six.moves.urllib.request import urlretrieve
 import datetime
 import tables
 import os
@@ -56,21 +56,21 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         INFO:hisparc.publicdb:Done.
 
     """
-    server = xmlrpclib.ServerProxy(PUBLICDB_XMLRPC_URL)
+    server = ServerProxy(PUBLICDB_XMLRPC_URL)
 
     for t0, t1 in datetimerange(start, end):
         logger.info("%s %s" % (t0, t1))
         logger.info("Getting server data URL (%s)" % t0)
         try:
             url = server.hisparc.get_data_url(station_id, t0, get_blobs)
-        except Exception, exc:
+        except Exception as exc:
             if re.search("No data", str(exc)):
                 logger.warning("No data for %s" % t0)
                 continue
             else:
                 raise
         logger.info("Downloading data...")
-        tmp_datafile, headers = urllib.urlretrieve(url)
+        tmp_datafile, headers = urlretrieve(url)
         logger.info("Storing data...")
         _store_data(file, group, tmp_datafile, t0, t1)
         logger.info("Done.")

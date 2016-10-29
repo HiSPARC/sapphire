@@ -12,9 +12,10 @@
     For regular use, look up :func:`download_data`.
 
 """
-import urllib2
-import urllib
-from httplib import BadStatusLine
+from six.moves.urllib.parse import urlencode
+from six.moves.urllib.request import urlopen
+from six.moves.http_client import BadStatusLine
+from six import itervalues
 import csv
 import os.path
 import calendar
@@ -23,6 +24,7 @@ import datetime
 import itertools
 import collections
 import re
+from codecs import iterdecode
 
 import tables
 from progressbar import ProgressBar, ETA, Bar, Percentage
@@ -116,7 +118,7 @@ def load_data(file, group, tsv_file, type='events'):
         raise ValueError("Data type not recognized.")
 
     with open(tsv_file, 'rb') as data:
-        reader = csv.reader(data, delimiter='\t')
+        reader = csv.reader(iterdecode(data, 'utf-8'), delimiter='\t')
         with read_and_store_class(table) as writer:
             for line in reader:
                 writer.store_line(line)
@@ -169,7 +171,7 @@ def download_data(file, group, station_number, start=None, end=None,
         end = start + datetime.timedelta(days=1)
 
     # build and open url, create tables and set read function
-    query = urllib.urlencode({'start': start, 'end': end})
+    query = urlencode({'start': start, 'end': end})
     if type == 'events':
         url = EVENTS_URL.format(station_number=station_number, query=query)
         table = _get_or_create_events_table(file, group)
@@ -186,10 +188,10 @@ def download_data(file, group, station_number, start=None, end=None,
         raise ValueError("Data type not recognized.")
 
     try:
-        data = urllib2.urlopen(url)
+        data = urlopen(url)
     except BadStatusLine:
         # Unexplained transient error, retry once
-        data = urllib2.urlopen(url)
+        data = urlopen(url)
 
     # keep track of event timestamp within [start, end] interval for
     # progressbar
@@ -202,7 +204,7 @@ def download_data(file, group, station_number, start=None, end=None,
 
     # loop over lines in tsv as they come streaming in
     prev_update = time.time()
-    reader = csv.reader(data, delimiter='\t')
+    reader = csv.reader(iterdecode(data, 'utf-8'), delimiter='\t')
     with read_and_store(table) as writer:
         for line in reader:
             timestamp = writer.store_line(line)
@@ -289,7 +291,7 @@ def load_coincidences(file, tsv_file, group=''):
     with open(tsv_file, 'rb') as data:
         # loop over lines in tsv as they come streaming in, keep temporary
         # lists until a full coincidence is in.
-        reader = csv.reader(data, delimiter='\t')
+        reader = csv.reader(iterdecode(data, 'utf-8'), delimiter='\t')
         current_coincidence = 0
         coincidence = []
         for line in reader:
@@ -373,17 +375,17 @@ def download_coincidences(file, group='', cluster=None, stations=None,
         raise Exception('To few stations in query, give at least n.')
 
     # build and open url, create tables and set read function
-    query = urllib.urlencode({'cluster': cluster, 'stations': stations,
-                              'start': start, 'end': end, 'n': n})
+    query = urlencode({'cluster': cluster, 'stations': stations,
+                       'start': start, 'end': end, 'n': n})
     url = COINCIDENCES_URL.format(query=query)
     station_groups = _read_or_get_station_groups(file, group)
     c_group = _get_or_create_coincidences_tables(file, group, station_groups)
 
     try:
-        data = urllib2.urlopen(url, timeout=1800)
+        data = urlopen(url, timeout=1800)
     except BadStatusLine:
         # Unexplained transient error, retry once
-        data = urllib2.urlopen(url, timeout=1800)
+        data = urlopen(url, timeout=1800)
 
     # keep track of event timestamp within [start, end] interval for
     # progressbar
@@ -397,7 +399,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     # loop over lines in tsv as they come streaming in, keep temporary
     # lists until a full coincidence is in.
     prev_update = time.time()
-    reader = csv.reader(data, delimiter='\t')
+    reader = csv.reader(iterdecode(data, 'utf-8'), delimiter='\t')
     current_coincidence = 0
     coincidence = []
     for line in reader:
@@ -458,6 +460,7 @@ def _read_or_get_station_groups(file, group):
         re_number = re.compile('[0-9]+$')
         groups = collections.OrderedDict()
         for sid, station_group in enumerate(s_index):
+            station_group = station_group.decode()
             station = int(re_number.search(station_group).group())
             groups[station] = {'group': station_group,
                                's_index': sid}
@@ -511,7 +514,7 @@ def _create_coincidences_tables(file, group, station_groups):
     # Create coincidences table
     description = storage.Coincidence
     s_columns = {'s%d' % station: tables.BoolCol(pos=p)
-                 for p, station in enumerate(station_groups.iterkeys(), 12)}
+                 for p, station in enumerate(station_groups, 12)}
     description.columns.update(s_columns)
     coincidences = file.create_table(coin_group, 'coincidences', description,
                                      createparents=True)
@@ -521,8 +524,8 @@ def _create_coincidences_tables(file, group, station_groups):
 
     # Create and fill s_index
     s_index = file.create_vlarray(coin_group, 's_index', tables.VLStringAtom())
-    for station_group in station_groups.itervalues():
-        s_index.append(station_group['group'])
+    for station_group in itervalues(station_groups):
+        s_index.append(station_group['group'].encode('utf-8'))
 
     return coincidences._v_parent
 

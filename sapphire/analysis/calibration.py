@@ -9,7 +9,8 @@ Determine the PMT response curve to correct the detected number of MIPs.
 from __future__ import division
 
 from datetime import datetime, timedelta
-from itertools import tee, izip, combinations, chain
+from itertools import tee, combinations, chain
+from six.moves import zip
 
 from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
                    sqrt, abs, sum)
@@ -430,4 +431,4 @@ def pairwise(iterable):
 
     a, b = tee(iterable)
     next(b, None)
-    return izip(a, b)
+    return zip(a, b)

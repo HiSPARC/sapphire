@@ -23,7 +23,10 @@ So to find e+/e-:
 
 
 """
+
+
 import re
+from six import iteritems
 
 
 def name(particle_id):
@@ -37,7 +40,8 @@ def name(particle_id):
     try:
         return ID[particle_id]
     except KeyError:
-        return ATOMIC_NUMBER[particle_id % 100] + str(int(particle_id / 100))
+        return (ATOMIC_NUMBER[int(particle_id) % 100] +
+                str(int(particle_id // 100)))
 
 
 def particle_id(name):
@@ -49,10 +53,10 @@ def particle_id(name):
              For atoms the code is: A x 100 + Z
 
     """
-    for pid, particle_name in ID.iteritems():
+    for pid, particle_name in iteritems(ID):
         if name == particle_name:
             return pid
-    for z, atom_name in ATOMIC_NUMBER.iteritems():
+    for z, atom_name in iteritems(ATOMIC_NUMBER):
         # Note; the mass number assumes no neutrons. To get a correct
         # weight append the weight to the name, e.g. helium4 or carbon14
         if name == atom_name:

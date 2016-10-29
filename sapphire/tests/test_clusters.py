@@ -288,7 +288,8 @@ class StationTests(unittest.TestCase):
         self.assertTupleAlmostEqual(center, (5, 4.5, 0.5))
 
     def assertTupleAlmostEqual(self, actual, expected):
-        self.assertTrue(type(actual) == type(expected) == tuple)
+        self.assertIsInstance(actual, tuple)
+        self.assertIsInstance(expected, tuple)
 
         msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
         for actual_value, expected_value in zip(actual, expected):
@@ -460,7 +461,8 @@ class CompassStationsTests(unittest.TestCase):
                                     (-5.0, 0, 0))
 
     def assertTupleAlmostEqual(self, actual, expected):
-        self.assertTrue(type(actual) == type(expected) == tuple)
+        self.assertIsInstance(actual, tuple)
+        self.assertIsInstance(expected, tuple)
 
         msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
         for actual_value, expected_value in zip(actual, expected):

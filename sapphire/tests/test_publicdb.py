@@ -9,8 +9,7 @@ import tables
 
 from sapphire import publicdb
 from sapphire.tests.validate_results import validate_results
-
-from esd_load_data import create_tempfile_path
+from sapphire.tests.esd_load_data import create_tempfile_path
 
 
 self_path = os.path.dirname(__file__)
@@ -27,8 +26,8 @@ class DownloadDataTest(unittest.TestCase):
         logging.disable(logging.NOTSET)
 
     @patch.object(publicdb, '_store_data')
-    @patch.object(publicdb.urllib, 'urlretrieve')
-    @patch.object(publicdb.xmlrpclib, 'ServerProxy')
+    @patch.object(publicdb, 'urlretrieve')
+    @patch.object(publicdb, 'ServerProxy')
     def test_download_data(self, mock_server, mock_retrieve, mock_store):
         start = datetime(2010, 1, 1, 11)
         end = datetime(2010, 1, 1, 13)

@@ -30,11 +30,14 @@
             coin.search_and_store_coincidences()
 
 """
+from __future__ import print_function
+
 import os.path
 
 import tables
 import numpy as np
 from progressbar import ProgressBar, ETA, Bar, Percentage
+from six.moves import range
 
 from . import process_events
 from .. import storage
@@ -251,11 +254,11 @@ class Coincidences(object):
 
             if 'blobs' in station_group:
                 if self.progress:
-                    print "Processing coincidence events with traces"
+                    print("Processing coincidence events with traces")
                 Process = process_events.ProcessIndexedEventsWithLINT
             else:
                 if self.progress:
-                    print "Processing coincidence events without traces"
+                    print("Processing coincidence events without traces")
                 Process = process_events.ProcessIndexedEventsWithoutTraces
 
             process = Process(self.data, station_group, index,
@@ -336,7 +339,7 @@ class Coincidences(object):
                     'n1', 'n2', 'n3', 'n4', 't1', 't2', 't3', 't4'):
             row[key] = event[key]
 
-        signals = [event[key] for key in 'n1', 'n2', 'n3', 'n4']
+        signals = [event[key] for key in ('n1', 'n2', 'n3', 'n4')]
         N = sum([1 if u > self.trig_threshold else 0 for u in signals])
         row['N'] = N
 
@@ -457,14 +460,14 @@ class Coincidences(object):
             pbar = ProgressBar(max_value=len(timestamps),
                                widgets=[Percentage(), Bar(), ETA()]).start()
 
-        for i in xrange(len(timestamps)):
+        for i in range(len(timestamps)):
 
             # build coincidence, starting with the current timestamp
             c = [i]
             t0 = timestamps[i][0]
 
             # traverse the rest of the timestamps
-            for j in xrange(i + 1, len(timestamps)):
+            for j in range(i + 1, len(timestamps)):
                 # if a timestamp is within the coincidence window, add it
                 if timestamps[j][0] - t0 < window:
                     c.append(j)
@@ -668,7 +671,7 @@ class CoincidencesESD(Coincidences):
             self.coincidence_group, 's_index', tables.VLStringAtom(),
             expectedrows=len(self.station_groups))
         for station_group in self.station_groups:
-            s_index.append(station_group)
+            s_index.append(station_group.encode('utf-8'))
         s_index.flush()
 
     def _store_coincidence(self, coincidence):

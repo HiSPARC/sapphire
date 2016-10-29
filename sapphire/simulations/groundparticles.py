@@ -15,6 +15,8 @@ Example usage::
     >>> sim.run()
 
 """
+from __future__ import print_function
+
 from math import pi, sin, cos, tan, sqrt, log10
 from time import time
 
@@ -583,7 +585,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
                 try:
                     self.groundparticles = data.get_node('/groundparticles')
                 except tables.NoSuchNodeError:
-                    print 'No groundparticles in %s' % seeds
+                    print('No groundparticles in %s' % seeds)
                     continue
 
                 for j in range(n_reuse):

@@ -1,6 +1,7 @@
 import unittest
 from itertools import cycle
 
+from six.moves import builtins
 from mock import patch, sentinel, mock_open
 
 from sapphire import qsub
@@ -45,7 +46,7 @@ class SubmitJobTest(unittest.TestCase):
     def test_submit_job(self, mock_delete, mock_check_output, mock_create,
                         mock_which):
         mock_create.return_value = (sentinel.script_path, sentinel.script_name)
-        mock_check_output.return_value = ''
+        mock_check_output.return_value = b''
         qsub.submit_job(sentinel.script, sentinel.name, sentinel.queue, sentinel.extra)
 
         mock_create.assert_called_once_with(sentinel.script, sentinel.name)
@@ -81,14 +82,13 @@ class CreateScriptTest(unittest.TestCase):
 
     @patch.object(qsub.os, 'chmod')
     def test_create_script(self, mock_chmod):
-        mock_file = mock_open()
-        with patch('__builtin__.open', mock_file):
+        with patch.object(builtins, 'open', mock_open()) as mock_file:
             res_path, res_name = qsub.create_script(sentinel.script, 'hoi')
         self.assertEqual(res_path, '/tmp/his_hoi.sh')
         self.assertEqual(res_name, 'his_hoi.sh')
         mock_file.assert_called_once_with(res_path, 'w')
         mock_file().write.called_once_with(sentinel.script)
-        mock_chmod.assert_called_once_with(res_path, 0774)
+        mock_chmod.assert_called_once_with(res_path, 0o774)
 
 
 class DeleteScriptTest(unittest.TestCase):

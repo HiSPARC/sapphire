@@ -7,8 +7,10 @@
     It is reproduced here to make it easy to read the algorithm.
 
 """
+from six.moves import range
 from numpy import around, convolve, ones, where
 from lazy import lazy
+
 
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
 
@@ -240,7 +242,7 @@ class MeanFilter(object):
         else:
             filtered_trace.extend(trace[:4])
 
-        for i in xrange(4, len(trace)):
+        for i in range(4, len(trace)):
             local_mean = moving_average[i]
             if abs(trace[i] - trace[i - 1]) > 2 * self.threshold:
                 filtered_trace.append(trace[i])
@@ -265,7 +267,7 @@ class MeanFilter(object):
 
         filtered_trace = [local_mean_rounded] * 4
 
-        for i in xrange(4, len(trace)):
+        for i in range(4, len(trace)):
             local_mean = moving_average[i]
             if (trace[i] > local_mean) == (trace[i - 1] > local_mean):
                 # Both values on same side of the local_mean

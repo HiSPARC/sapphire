@@ -98,6 +98,10 @@ class ReconstructESDEventsTest(unittest.TestCase):
 
     def test__store_reconstruction(self):
         event = MagicMock()
+        # _store_reconstruction calls  min(event['n1'], ...).
+        # but MagicMock is unordered in python 3!
+        # Mock a dict that always returns 42.
+        event.__getitem__.side_effect = lambda x: 42.
         self.rec.reconstructions = MagicMock()
         self.rec._store_reconstruction(event, sentinel.core_x, sentinel.core_y,
                                        sentinel.theta, sentinel.phi, [1, 3, 4])
@@ -169,16 +173,16 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         station = MagicMock(number=sentinel.number, spec=['number'])
         self.rec.cluster.stations = [station]
         self.rec.get_station_timing_offsets()
-        self.assertEqual(self.rec.offsets.keys(), [sentinel.number])
-        self.assertEqual(self.rec.offsets.values(), [sentinel.station])
+        self.assertEqual(list(self.rec.offsets.keys()), [sentinel.number])
+        self.assertEqual(list(self.rec.offsets.values()), [sentinel.station])
 
         detector = MagicMock(offset=1.)
         station = MagicMock(number=sentinel.number, gps_offset=2., detectors=[detector],
                             spec=['gps_offset', 'number'])
         self.rec.cluster.stations = [station]
         self.rec.get_station_timing_offsets()
-        self.assertEqual(self.rec.offsets.keys(), [sentinel.number])
-        self.assertEqual(self.rec.offsets.values(), [[3.]])
+        self.assertEqual(list(self.rec.offsets.keys()), [sentinel.number])
+        self.assertEqual(list(self.rec.offsets.values()), [[3.]])
 
     def test_reconstruct_directions(self):
         self.rec.coincidences = MagicMock()
