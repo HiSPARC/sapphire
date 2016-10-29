@@ -32,7 +32,7 @@ ADC_HIGH_THRESHOLD = 323  #: Default high ADC threshold for HiSPARC II
 ADC_LOW_THRESHOLD_III = 82  #: Default low ADC threshold for HiSPARC III
 ADC_HIGH_THRESHOLD_III = 150  #: Default high ADC threshold for HiSPARC III
 
-DATA_REDUCTION_PADDING = 26  #: Padding to still allow baseline determination
+DATA_REDUCTION_PADDING = 26  #: Padding to allow later baseline determination
 
 
 class TraceObservables(object):
@@ -57,14 +57,20 @@ class TraceObservables(object):
 
     """
 
-    def __init__(self, traces):
+    def __init__(self, traces, threshold=ADC_BASELINE_THRESHOLD,
+                 padding=DATA_REDUCTION_PADDING):
         """Initialize the class
 
         :param traces: a NumPy array of traces, ordered such that the first
                        element is the first sample of each trace.
+        :param threshold: value of the threshold to use, in ADC counts.
+        :param padding: number of samples which should be usuable to determine
+                        the baseline.
 
         """
         self.traces = traces
+        self.threshold = threshold
+        self.padding = padding
         self.n = self.traces.shape[1]
         self.missing = [-1] * (4 - self.n)
         if self.n not in [2, 4]:
@@ -84,7 +90,7 @@ class TraceObservables(object):
         :return: the baseline in ADC count.
 
         """
-        baselines = around(self.traces[:DATA_REDUCTION_PADDING].mean(axis=0))
+        baselines = around(self.traces[:self.padding].mean(axis=0))
         return baselines.astype('int').tolist() + self.missing
 
     @lazy
@@ -94,8 +100,7 @@ class TraceObservables(object):
         :return: the standard deviation in milli ADC count.
 
         """
-        std_dev = around(self.traces[:DATA_REDUCTION_PADDING].std(axis=0) *
-                         1000)
+        std_dev = around(self.traces[:self.padding].std(axis=0) * 1000)
         return std_dev.astype('int').tolist() + self.missing
 
     @lazy
@@ -117,7 +122,7 @@ class TraceObservables(object):
         :return: the pulse integral in ADC count * sample.
 
         """
-        threshold = ADC_BASELINE_THRESHOLD
+        threshold = self.threshold
         integrals = where(self.traces - self.baselines[:self.n] > threshold,
                           self.traces - self.baselines[:self.n], 0).sum(axis=0)
         return integrals.tolist() + self.missing
@@ -302,8 +307,8 @@ class DataReduction(object):
                  padding=DATA_REDUCTION_PADDING):
         """Initialize the class
 
-        :param threshold: value of the threshold to use.
-        :param padding: number of samples around .
+        :param threshold: value of the threshold to use, in ADC counts.
+        :param padding: number of samples to keep around the determined cuts.
 
         """
         self.threshold = threshold
