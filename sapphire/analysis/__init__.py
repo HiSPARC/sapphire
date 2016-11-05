@@ -2,9 +2,6 @@
 
 This package contains modules for performing various analysis tasks:
 
-:mod:`~sapphire.analysis.calibration`
-    determine calibration values
-
 :mod:`~sapphire.analysis.coincidence_queries`
     filter coincidences analysed with
     :class:`~sapphire.analysis.coincidences.CoincidencesESD`
@@ -36,11 +33,16 @@ This package contains modules for performing various analysis tasks:
 :mod:`~sapphire.analysis.reconstructions`
     perform shower reconstructions
 
+:mod:`~sapphire.analysis.signal_calibration`
+    determine signal calibration values
+
 :mod:`~sapphire.analysis.time_deltas`
     determine time deltas for station pairs
 
+:mod:`~sapphire.analysis.timing_calibration`
+    determine timing calibration values
+
 """
-from . import calibration
 from . import coincidence_queries
 from . import coincidences
 from . import core_reconstruction
@@ -51,11 +53,12 @@ from . import landau
 from . import process_events
 from . import process_traces
 from . import reconstructions
+from . import signal_calibration
 from . import time_deltas
+from . import timing_calibration
 
 
-__all__ = ['calibration',
-           'coincidence_queries',
+__all__ = ['coincidence_queries',
            'coincidences',
            'core_reconstruction',
            'direction_reconstruction',
@@ -65,4 +68,6 @@ __all__ = ['calibration',
            'process_events',
            'process_traces',
            'reconstructions',
-           'time_deltas']
+           'signal_calibration',
+           'time_deltas',
+           'timing_calibration']

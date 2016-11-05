@@ -12,7 +12,7 @@ from .direction_reconstruction import (EventDirectionReconstruction,
 from .core_reconstruction import (EventCoreReconstruction,
                                   CoincidenceCoreReconstruction)
 from .coincidence_queries import CoincidenceQuery
-from .calibration import determine_detector_timing_offsets
+from .timing_calibration import determine_detector_timing_offsets
 from ..utils import pbar
 
 
