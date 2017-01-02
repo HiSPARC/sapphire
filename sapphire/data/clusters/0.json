@@ -1,30 +1,30 @@
 [
     {
-        "name": "Amsterdam", 
+        "name": "Amsterdam",
         "number": 0
-    }, 
+    },
     {
-        "name": "Zaanstad", 
+        "name": "Zaanstad",
         "number": 100
-    }, 
+    },
     {
-        "name": "Haarlem", 
+        "name": "Haarlem",
         "number": 200
-    }, 
+    },
     {
-        "name": "Kennemerland", 
+        "name": "Kennemerland",
         "number": 300
-    }, 
+    },
     {
-        "name": "Alkmaar", 
+        "name": "Alkmaar",
         "number": 400
-    }, 
+    },
     {
-        "name": "Science Park", 
+        "name": "Science Park",
         "number": 500
-    }, 
+    },
     {
-        "name": "Hoorn", 
+        "name": "Hoorn",
         "number": 600
     }
 ]

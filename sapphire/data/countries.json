@@ -1,18 +1,18 @@
 [
     {
-        "name": "Netherlands", 
+        "name": "Netherlands",
         "number": 0
-    }, 
+    },
     {
-        "name": "United Kingdom", 
+        "name": "United Kingdom",
         "number": 10000
-    }, 
+    },
     {
-        "name": "Denmark", 
+        "name": "Denmark",
         "number": 20000
-    }, 
+    },
     {
-        "name": "Germany", 
+        "name": "Germany",
         "number": 70000
     }
 ]
