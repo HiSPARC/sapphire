@@ -18,7 +18,8 @@ before_install:
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda update --yes conda
-  - conda config --yes --add channels conda-forge
+  - conda config --add channels conda-forge
+  - conda config --add channels numba
 
 install:
   - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba
