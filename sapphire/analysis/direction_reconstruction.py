@@ -1235,7 +1235,7 @@ class CurvedRegressionAlgorithm(CurvedMixin, BaseDirectionAlgorithm):
             if iteration > self.MAX_ITERATIONS:
                 return nan, nan
             t_proj = [ti - self.time_delay(xi, yi, core_x, core_y, theta, phi)
-                     for ti, xi, yi in zip(t, x, y)]
+                      for ti, xi, yi in zip(t, x, y)]
             theta_prev = theta
             theta, phi = regress2d.reconstruct_common(t_proj, x, y)
             dtheta = abs(theta - theta_prev)
@@ -1308,8 +1308,8 @@ class CurvedRegressionAlgorithm3D(CurvedMixin, BaseDirectionAlgorithm):
             x_proj = [xi - zi * nxnz for xi, zi in zip(x, z)]
             y_proj = [yi - zi * nynz for yi, zi in zip(y, z)]
             t_proj = [ti + zi / (c * nz) -
-                     self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
-                     for ti, xpi, ypi, zi in zip(t, x_proj, y_proj, z)]
+                      self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
+                      for ti, xpi, ypi, zi in zip(t, x_proj, y_proj, z)]
             theta_prev = theta
             theta, phi = regress2d.reconstruct_common(t_proj, x_proj, y_proj)
             dtheta = abs(theta - theta_prev)
