@@ -1146,7 +1146,39 @@ class RegressionAlgorithm3D(BaseDirectionAlgorithm):
         return theta, phi
 
 
-class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
+class CurvedMixin(object):
+
+    """Provide methods to estimate the time delay due to front curvature
+
+    Given a core location, detector position, and shower angle the radial core
+    distance can be determined, which can be used to determine the expected
+    time delay.
+
+    """
+
+    def time_delay(self, x, y, core_x, core_y, theta, phi):
+        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
+        return self.front.delay_at_r(r)
+
+    @classmethod
+    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
+        """Determine the radial core distance
+
+        :param x,y,z: positions of the detectors in m.
+        :param core_x,core_y: core position at z = 0 in m.
+        :param theta,phi: reconstructed shower direction.
+        :return: radial core distance in m.
+
+        """
+        dx = core_x - x
+        dy = core_y - y
+        nx = sin(theta) * cos(phi)
+        ny = sin(theta) * sin(phi)
+        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
+                    2 * dx * dy * nx * ny)
+
+
+class CurvedRegressionAlgorithm(CurvedMixin, BaseDirectionAlgorithm):
 
     """Reconstruct angles taking the shower front curvature into account.
 
@@ -1210,21 +1242,8 @@ class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
 
         return theta, phi
 
-    def time_delay(self, x, y, core_x, core_y, theta, phi):
-        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
-        return self.front.delay_at_r(r)
 
-    @classmethod
-    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
-        dx = core_x - x
-        dy = core_y - y
-        nx = sin(theta) * cos(phi)
-        ny = sin(theta) * sin(phi)
-        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
-                    2 * dx * dy * nx * ny)
-
-
-class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
+class CurvedRegressionAlgorithm3D(CurvedMixin, BaseDirectionAlgorithm):
 
     """Reconstruct angles accounting for front curvature and detector altitudes
 
@@ -1296,19 +1315,6 @@ class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
-
-    def time_delay(self, x, y, core_x, core_y, theta, phi):
-        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
-        return self.front.delay_at_r(r)
-
-    @classmethod
-    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
-        dx = core_x - x
-        dy = core_y - y
-        nx = sin(theta) * cos(phi)
-        ny = sin(theta) * sin(phi)
-        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
-                    2 * dx * dy * nx * ny)
 
 
 def logic_checks(t, x, y, z):
