@@ -956,12 +956,10 @@ class FitAlgorithm3D(BaseDirectionAlgorithm):
             phi2 = nan
             theta2 = nan
 
-        # in case one of the theta's is smaller than pi/2 (shower from above)
-        # and one larger than pi/2 (shower from below),
+        # In case one of the theta's is smaller than pi/2 (shower from above)
+        # and the other is either nan or larger than pi/2 (shower from below),
         # the first one is considered correct.
-        # if both come from above (or from below), both theta's are rejected
-        # the check is preceeded by a check if the fit has not delivered nans.
-
+        # If both come from above (or from below), both theta's are rejected.
         if theta1 <= pi / 2. and (isnan(theta2) or theta2 > pi / 2.):
             theta = theta1
             phi = phi1
