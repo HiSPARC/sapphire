@@ -1213,10 +1213,12 @@ class ProcessWeatherFromSource(ProcessDataTableFromSource):
 
     """Process HiSPARC weather from a different source.
 
-    This class is a subclass of ProcessWeather.  The difference is that in
-    this class, the source and destination are assumed to be different
-    files.  This also means that the source is untouched (no renaming of
-    original event tables) and the destination is assumed to be empty.
+    This class behaves like a subclass of ProcessWeather because of a common
+    ancestor (ProcessDataTable). The difference between this class
+    and ProcessWeather is that in this class, the source and destination are
+    assumed to be different files. This also means that the source is
+    untouched (no renaming of original event tables) and the destination is
+    assumed to be empty.
 
     """
     table_name = 'weather'
@@ -1238,10 +1240,12 @@ class ProcessSinglesFromSource(ProcessDataTableFromSource):
 
     """Process HiSPARC singles data from a different source.
 
-    This class is a subclass of ProcessSingles.  The difference is that in
-    this class, the source and destination are assumed to be different
-    files.  This also means that the source is untouched (no renaming of
-    original event tables) and the destination is assumed to be empty.
+    This class behaves like a subclass of ProcessSingles because of a common
+    ancestor (ProcessDataTable). The difference between this class
+    and ProcessSingles is that in this class, the source and destination are
+    assumed to be different files. This also means that the source is
+    untouched (no renaming of original event tables) and the destination is
+    assumed to be empty.
 
     """
     table_name = 'singles'
