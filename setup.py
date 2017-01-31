@@ -50,5 +50,5 @@ setup(name='hisparc-sapphire',
                                  'tests/simulations/test_data/*.h5']},
       install_requires=['numpy', 'scipy', 'tables>=3.3.0',
                         'progressbar2>=3.7.0', 'lazy', 'mock', 'six'],
-      extras_require={'dev': ['Sphinx', 'flake8']},
+      extras_require={'dev': ['Sphinx', 'flake8', 'coverage']},
       test_suite="sapphire.tests",)
