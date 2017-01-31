@@ -269,7 +269,7 @@ class ProcessEvents(object):
                                        self.processed_events_description,
                                        expectedrows=length)
 
-        for x in range(length):
+        for _ in range(length):
             table.row.append()
         table.flush()
 
@@ -686,7 +686,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             timestamp = event['timestamp']
             try:
                 self.thresholds, self.trigger = self.station.trigger(timestamp)
-            except:
+            except Exception:
                 warnings.warn('Unknown trigger settings, not reconstructing '
                               'trigger offset.')
                 # Do not reconstruct t_trigger by pretending external trigger.
@@ -940,7 +940,7 @@ class ProcessEventsFromSource(ProcessEvents):
                                             self.processed_events_description,
                                             expectedrows=length)
 
-        for x in range(length):
+        for _ in range(length):
             table.row.append()
         table.flush()
 

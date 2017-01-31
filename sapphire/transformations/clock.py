@@ -408,5 +408,5 @@ def process_time(time):
     except (TypeError, ValueError):
         try:
             return datetime_to_gps(time)
-        except:
+        except Exception:
             raise RuntimeError('Unable to parse time: ', time)

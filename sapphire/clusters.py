@@ -34,18 +34,23 @@ class Detector(object):
     _detector_size = (.5, 1.)
 
     def __init__(self, station, position, orientation='UD',
-                 detector_timestamps=[0]):
+                 detector_timestamps=None):
         """Initialize detector
 
         :param station: station instance this detector is part of.
         :param position: x,y,z position of the center of the detectors
-            relative to the station center. z is optional.
+            relative to the station center. z is optional. Multiple positions
+            can be provided by giving lists for each axis.
         :param orientation: orientation of the long side of the detector.
             Either the angle in radians, or 'UD' or 'LR' meaning an
             up-down or left-right orientation of the long side of the
             detector respectively.
+        :param detector_timestamps: list of timestamps, the timestamp at
+            which each of the layouts became active.
 
         """
+        if detector_timestamps is None:
+            detector_timestamps = [0]
         self.station = station
         if hasattr(position[0], "__len__"):
             self.x = position[0]
@@ -176,8 +181,8 @@ class Station(object):
     _detectors = None
 
     def __init__(self, cluster, station_id, position, angle=None,
-                 detectors=None, station_timestamps=[0],
-                 detector_timestamps=[0], number=None):
+                 detectors=None, station_timestamps=None,
+                 detector_timestamps=None, number=None):
         """Initialize station
 
         :param cluster: cluster this station is a part of
@@ -191,12 +196,20 @@ class Station(object):
             Orientation is either 'UD' or 'LR' meaning an up-down or
             left-right orientation of the long side of the detector
             respectively.
+        :param station_timestamps: list of timestamps, the timestamp at
+            which each of the positions became active.
+        :param detector_timestamps: list of timestamps, the timestamp at
+            which each of the layouts became active.
         :param number: optional unique identifier for a station this can
             be used by the cluster to find a specific station and makes
             it easier to link to a real station. If not given it will be
             equal to the station_id.
 
         """
+        if station_timestamps is None:
+            station_timestamps = [0]
+        if detector_timestamps is None:
+            detector_timestamps = [0]
         self.cluster = cluster
         self.station_id = station_id
         if hasattr(position[0], "__len__"):
@@ -414,7 +427,7 @@ class BaseCluster(object):
             station._update_timestamp(self._timestamp)
 
     def _add_station(self, position, angle=None, detectors=None,
-                     station_timestamps=[0], detector_timestamps=[0],
+                     station_timestamps=None, detector_timestamps=None,
                      number=None):
         """Add a station to the cluster
 
@@ -427,6 +440,10 @@ class BaseCluster(object):
             Orientation is either 'UD' or 'LR' meaning an up-down or
             left-right orientation of the long side of the detector
             respectively.
+        :param station_timestamps: list of timestamps, the timestamp at
+            which each of the positions became active.
+        :param detector_timestamps: list of timestamps, the timestamp at
+            which each of the layouts became active.
         :param number: optional unique identifier for a station this can
             later be used to find a specific station and makes it easier
             to link to a real station. If not given it will be equal to
@@ -640,8 +657,8 @@ class CompassStations(BaseCluster):
 
     """
 
-    def _add_station(self, position, detectors, station_timestamps=[0],
-                     detector_timestamps=[0], number=None):
+    def _add_station(self, position, detectors, station_timestamps=None,
+                     detector_timestamps=None, number=None):
         """Add a station to the cluster
 
         :param position: x,y,z coordinates of the station relative
@@ -791,7 +808,7 @@ class HiSPARCStations(CompassStations):
                 station_info = api.Station(station, force_fresh=force_fresh,
                                            force_stale=force_stale)
                 locations = station_info.gps_locations
-            except:
+            except Exception:
                 if skip_missing:
                     missing_gps.append(station)
                     continue
@@ -819,7 +836,7 @@ class HiSPARCStations(CompassStations):
                 razbs = [[detectors['%s%d' % (field, i)] for field in fields]
                          for i in range(1, n_detectors + 1)]
                 detector_ts = detectors['timestamp']
-            except:
+            except Exception:
                 missing_detectors.append(station)
                 # Fallback detector positions in (r, alpha, z, beta)
                 if n_detectors == 2:
