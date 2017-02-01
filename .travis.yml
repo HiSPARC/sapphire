@@ -2,6 +2,7 @@ language: python
 python:
   - "2.7"
   - "3.5"
+  - "3.6"
 
 sudo: false
 
@@ -19,7 +20,8 @@ before_install:
   - conda update --yes conda
 
 install:
-  - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba
+  - conda create --yes -n build_env python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba
+  - source activate build_env
   - pip install coverage coveralls codecov
   - pip install -e .[dev]
 
