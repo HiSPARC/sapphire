@@ -50,11 +50,11 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         # Combinations of shower parameters and detector after transformations
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (-0, -0, -0)),
-                        ((10, -60, 0), (-10, 60, -0)),
-                        ((10, -60, pi / 2), (60, 10, -pi / 2)))
+        combinations = ((0, 0, 0),
+                        (10, -60, 0),
+                        (10, -60, pi / 2))
 
-        for input, expected in combinations:
+        for input in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             self.simulation.get_particles_in_detector(self.detectors[0], shower_parameters)
             x, y = self.detectors[0].get_xy_coordinates()
@@ -133,14 +133,14 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
         # Combinations of shower parameters and detector after transformations
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (-0, -0, -0)),
-                        ((10, -60, 0), (-10, 60, -0)))
+        combinations = ((0, 0, 0),
+                        (10, -60, 0))
 
-        for input, expected in combinations:
+        for input in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             self.simulation.get_particles_in_detector(self.detectors[0], shower_parameters)
             x, y = self.detectors[0].get_xy_coordinates()
-            size = .6
+            size = 0.6
             self.simulation.groundparticles.read_where.assert_called_with(
                 '(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & '
                 '(b11 < y - 0.000000 * x) & (y - 0.000000 * x < b12) & '

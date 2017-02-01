@@ -56,7 +56,7 @@ class EventDirectionReconstruction(object):
         self.station = station
 
     def reconstruct_event(self, event, detector_ids=None, offsets=NO_OFFSET,
-                          initial={}):
+                          initial=None):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -95,22 +95,23 @@ class EventDirectionReconstruction(object):
         return theta, phi, ids
 
     def reconstruct_events(self, events, detector_ids=None, offsets=NO_OFFSET,
-                           progress=True, initials=[]):
+                           progress=True, initials=None):
         """Reconstruct events
 
-        :param events: the events table for the station from an ESD data
-                       file.
+        :param events: the events table for the station from an ESD data file.
         :param detector_ids: detectors to use for the reconstructions.
         :param offsets: time offsets for each detector or a
             :class:`~sapphire.api.Station` object.
         :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
-                        parameters.
+                         parameters.
         :return: list of theta, phi, and detector ids.
 
         """
+        if initials is None:
+            initials = []
         events = pbar(events, show=progress)
-        events_init = zip_longest(events, initials, fillvalue={})
+        events_init = zip_longest(events, initials)
         angles = [self.reconstruct_event(event, detector_ids, offsets, initial)
                   for event, initial in events_init]
         if len(angles):
@@ -144,7 +145,7 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster = cluster
 
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
-                                offsets={}, initial={}):
+                                offsets=None, initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of three
@@ -159,6 +160,10 @@ class CoincidenceDirectionReconstruction(object):
         """
         if len(coincidence_events) < 3:
             return nan, nan, []
+        if offsets is None:
+            offsets = {}
+        if initial is None:
+            initial = {}
 
         # Subtract base timestamp to prevent loss of precision
         ts0 = int(coincidence_events[0][1]['timestamp'])
@@ -197,7 +202,7 @@ class CoincidenceDirectionReconstruction(object):
         return theta, phi, nums
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 offsets={}, progress=True, initials=[]):
+                                 offsets=None, progress=True, initials=None):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidence events, each consisting
@@ -209,12 +214,16 @@ class CoincidenceDirectionReconstruction(object):
                         detector from a specific station.
         :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
-                        parameters.
+                         parameters.
         :return: list of theta, phi, and station numbers.
 
         """
+        if offsets is None:
+            offsets = {}
+        if initials is None:
+            initials = []
         coincidences = pbar(coincidences, show=progress)
-        coin_init = zip_longest(coincidences, initials, fillvalue={})
+        coin_init = zip_longest(coincidences, initials)
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
                                                offsets, initial)
                   for coincidence, initial in coin_init]
@@ -266,7 +275,7 @@ class CoincidenceDirectionReconstruction(object):
                 try:
                     o, e = offsets[sn].station_timing_offset(ref_sn,
                                                              midnight_ts)
-                except:
+                except Exception:
                     o, e = NO_STATION_OFFSET
                 else:
                     if isnan(o) and isnan(e):
@@ -341,7 +350,7 @@ class CoincidenceDirectionReconstructionDetectors(
     """
 
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
-                                offsets={}, initial={}):
+                                offsets=None, initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of one
@@ -357,6 +366,10 @@ class CoincidenceDirectionReconstructionDetectors(
         """
         if len(coincidence_events) < 1:
             return nan, nan, []
+        if offsets is None:
+            offsets = {}
+        if initial is None:
+            initial = {}
 
         # Subtract base timestamp to prevent loss of precision
         ts0 = int(coincidence_events[0][1]['timestamp'])
@@ -407,7 +420,7 @@ class BaseDirectionAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct shower angles
 
         :param t: detector arrival time in ns.
@@ -444,7 +457,7 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -636,7 +649,7 @@ class DirectAlgorithmCartesian(BaseDirectionAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -703,7 +716,7 @@ class DirectAlgorithmCartesian3D(BaseDirectionAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -894,7 +907,7 @@ class SphereAlgorithm(object):
 class FitAlgorithm3D(BaseDirectionAlgorithm):
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1007,7 +1020,7 @@ class RegressionAlgorithm(BaseDirectionAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1091,7 +1104,7 @@ class RegressionAlgorithm3D(BaseDirectionAlgorithm):
     MAX_ITERATIONS = 1000
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1190,7 +1203,7 @@ class CurvedRegressionAlgorithm(CurvedMixin, BaseDirectionAlgorithm):
     def __init__(self):
         self.front = CorsikaStationFront()
 
-    def reconstruct_common(self, t, x, y, z=None, initial={}):
+    def reconstruct_common(self, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1203,6 +1216,8 @@ class CurvedRegressionAlgorithm(CurvedMixin, BaseDirectionAlgorithm):
                         reconstructions, including core position.
 
         """
+        if initial is None:
+            initial = {}
         core_x = initial.get('core_x', nan)
         core_y = initial.get('core_y', nan)
         if isnan(core_y) or isnan(core_y):
@@ -1255,7 +1270,7 @@ class CurvedRegressionAlgorithm3D(CurvedMixin, BaseDirectionAlgorithm):
     def __init__(self):
         self.front = CorsikaStationFront()
 
-    def reconstruct_common(self, t, x, y, z=None, initial={}):
+    def reconstruct_common(self, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1268,6 +1283,8 @@ class CurvedRegressionAlgorithm3D(CurvedMixin, BaseDirectionAlgorithm):
                         reconstructions, including core position.
 
         """
+        if initial is None:
+            initial = {}
         core_x = initial.get('core_x', nan)
         core_y = initial.get('core_y', nan)
         if isnan(core_y) or isnan(core_y):

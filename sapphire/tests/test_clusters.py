@@ -310,7 +310,7 @@ class BaseClusterTests(unittest.TestCase):
             number = Mock(name='number')
             cluster._add_station((x, y, z), angle, detector_list, number=number)
             mock_station.assert_called_with(cluster, 0, (x, y, z), angle,
-                                            detector_list, [0], [0], number)
+                                            detector_list, None, None, number)
 
     def test_set_timestamp(self):
         with patch('sapphire.clusters.Station'):

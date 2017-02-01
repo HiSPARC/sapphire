@@ -98,7 +98,7 @@ class DirectionReconstruction(object):
     def reconstruct_angle(self, event, offsets=None):
         """Reconstruct angles from a single event"""
 
-        c = 3.00e+8
+        c = 0.3
 
         if offsets is not None:
             self._correct_offsets(event, offsets)
@@ -111,8 +111,8 @@ class DirectionReconstruction(object):
 
         phi = arctan2((dt2 * r1 * cos(phi1) - dt1 * r2 * cos(phi2)),
                       (dt2 * r1 * sin(phi1) - dt1 * r2 * sin(phi2)) * -1)
-        theta1 = arcsin(c * dt1 * 1e-9 / (r1 * cos(phi - phi1)))
-        theta2 = arcsin(c * dt2 * 1e-9 / (r2 * cos(phi - phi2)))
+        theta1 = arcsin(c * dt1 / (r1 * cos(phi - phi1)))
+        theta2 = arcsin(c * dt2 / (r2 * cos(phi - phi2)))
 
         e1 = sqrt(self.rel_theta1_errorsq(theta1, phi, phi1, phi2, r1, r2))
         e2 = sqrt(self.rel_theta2_errorsq(theta2, phi, phi1, phi2, r1, r2))
@@ -128,7 +128,7 @@ class DirectionReconstruction(object):
     @classmethod
     def rel_theta1_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
-        c = .3
+        c = 0.3
 
         sintheta = sin(theta)
         sinphiphi1 = sin(phi - phi1)
@@ -149,7 +149,7 @@ class DirectionReconstruction(object):
     @classmethod
     def rel_theta2_errorsq(cls, theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
-        c = .3
+        c = 0.3
 
         sintheta = sin(theta)
         sinphiphi2 = sin(phi - phi2)
@@ -170,7 +170,7 @@ class DirectionReconstruction(object):
     @staticmethod
     def rel_phi_errorsq(theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
-        c = .3
+        c = 0.3
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
@@ -198,7 +198,7 @@ class DirectionReconstruction(object):
     @staticmethod
     def dphi_dt0(theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
-        c = .3
+        c = 0.3
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
@@ -217,7 +217,7 @@ class DirectionReconstruction(object):
     @staticmethod
     def dphi_dt1(theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
-        c = .3
+        c = 0.3
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
@@ -234,7 +234,7 @@ class DirectionReconstruction(object):
     @staticmethod
     def dphi_dt2(theta, phi, phi1, phi2, r1=10, r2=10):
         # speed of light in m / ns
-        c = .3
+        c = 0.3
 
         tanphi = tan(phi)
         sinphi1 = sin(phi1)
