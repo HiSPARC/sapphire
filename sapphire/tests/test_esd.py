@@ -131,7 +131,6 @@ class ESDTest(unittest.TestCase):
         output_path = create_tempfile_path()
         perform_esd_download_data(output_path)
         validate_results(self, test_data_path, output_path)
-
         os.remove(output_path)
 
     @unittest.skipUnless(api.API.check_connection(),
