@@ -219,5 +219,6 @@ class DataReductionTests(unittest.TestCase):
         for input, expected in combinations:
             self.assertEqual(self.dr.add_padding(*input), expected)
 
+
 if __name__ == '__main__':
     unittest.main()

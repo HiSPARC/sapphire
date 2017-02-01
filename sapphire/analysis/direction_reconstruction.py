@@ -956,12 +956,10 @@ class FitAlgorithm3D(BaseDirectionAlgorithm):
             phi2 = nan
             theta2 = nan
 
-        # in case one of the theta's is smaller than pi/2 (shower from above)
-        # and one larger than pi/2 (shower from below),
+        # In case one of the theta's is smaller than pi/2 (shower from above)
+        # and the other is either nan or larger than pi/2 (shower from below),
         # the first one is considered correct.
-        # if both come from above (or from below), both theta's are rejected
-        # the check is preceeded by a check if the fit has not delivered nans.
-
+        # If both come from above (or from below), both theta's are rejected.
         if theta1 <= pi / 2. and (isnan(theta2) or theta2 > pi / 2.):
             theta = theta1
             phi = phi1
@@ -1136,17 +1134,49 @@ class RegressionAlgorithm3D(BaseDirectionAlgorithm):
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
             nz = cos(theta)
-            dxproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
-            dyproj = [yi - zi * nynz for yi, zi in zip(y, z)]
-            dtproj = [ti + zi / (c * nz) for ti, zi in zip(t, z)]
+            x_proj = [xi - zi * nxnz for xi, zi in zip(x, z)]
+            y_proj = [yi - zi * nynz for yi, zi in zip(y, z)]
+            t_proj = [ti + zi / (c * nz) for ti, zi in zip(t, z)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(dtproj, dxproj, dyproj)
+            theta, phi = regress2d.reconstruct_common(t_proj, x_proj, y_proj)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
 
 
-class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
+class CurvedMixin(object):
+
+    """Provide methods to estimate the time delay due to front curvature
+
+    Given a core location, detector position, and shower angle the radial core
+    distance can be determined, which can be used to determine the expected
+    time delay.
+
+    """
+
+    def time_delay(self, x, y, core_x, core_y, theta, phi):
+        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
+        return self.front.delay_at_r(r)
+
+    @classmethod
+    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
+        """Determine the radial core distance
+
+        :param x,y,z: positions of the detectors in m.
+        :param core_x,core_y: core position at z = 0 in m.
+        :param theta,phi: reconstructed shower direction.
+        :return: radial core distance in m.
+
+        """
+        dx = core_x - x
+        dy = core_y - y
+        nx = sin(theta) * cos(phi)
+        ny = sin(theta) * sin(phi)
+        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
+                    2 * dx * dy * nx * ny)
+
+
+class CurvedRegressionAlgorithm(CurvedMixin, BaseDirectionAlgorithm):
 
     """Reconstruct angles taking the shower front curvature into account.
 
@@ -1202,29 +1232,16 @@ class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
             iteration += 1
             if iteration > self.MAX_ITERATIONS:
                 return nan, nan
-            tproj = [ti - self.time_delay(xi, yi, core_x, core_y, theta, phi)
-                     for ti, xi, yi in zip(t, x, y)]
+            t_proj = [ti - self.time_delay(xi, yi, core_x, core_y, theta, phi)
+                      for ti, xi, yi in zip(t, x, y)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(tproj, x, y)
+            theta, phi = regress2d.reconstruct_common(t_proj, x, y)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
 
-    def time_delay(self, x, y, core_x, core_y, theta, phi):
-        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
-        return self.front.delay_at_r(r)
 
-    @classmethod
-    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
-        dx = core_x - x
-        dy = core_y - y
-        nx = sin(theta) * cos(phi)
-        ny = sin(theta) * sin(phi)
-        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
-                    2 * dx * dy * nx * ny)
-
-
-class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
+class CurvedRegressionAlgorithm3D(CurvedMixin, BaseDirectionAlgorithm):
 
     """Reconstruct angles accounting for front curvature and detector altitudes
 
@@ -1286,29 +1303,16 @@ class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
             nz = cos(theta)
-            xproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
-            yproj = [yi - zi * nynz for yi, zi in zip(y, z)]
-            tproj = [ti + zi / (c * nz) -
-                     self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
-                     for ti, xpi, ypi, zi in zip(t, xproj, yproj, z)]
+            x_proj = [xi - zi * nxnz for xi, zi in zip(x, z)]
+            y_proj = [yi - zi * nynz for yi, zi in zip(y, z)]
+            t_proj = [ti + zi / (c * nz) -
+                      self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
+                      for ti, xpi, ypi, zi in zip(t, x_proj, y_proj, z)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(tproj, xproj, yproj)
+            theta, phi = regress2d.reconstruct_common(t_proj, x_proj, y_proj)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
-
-    def time_delay(self, x, y, core_x, core_y, theta, phi):
-        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
-        return self.front.delay_at_r(r)
-
-    @classmethod
-    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
-        dx = core_x - x
-        dy = core_y - y
-        nx = sin(theta) * cos(phi)
-        ny = sin(theta) * sin(phi)
-        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
-                    2 * dx * dy * nx * ny)
 
 
 def logic_checks(t, x, y, z):
