@@ -156,9 +156,9 @@ def get_and_store_tsv(url):
     data = API._retrieve_url(url, base=SRC_BASE)
     # Strip empty and comment lines
     data = '\n'.join(d for d in data.split('\n') if len(d) and d[0] != '#')
-    # End with empty newline
-    data += '\n'
     if data:
+        # End with empty newline
+        data += '\n'
         tsv_path = path.join(LOCAL_BASE, url.strip('/') + extsep + 'tsv')
         with open(tsv_path, 'w') as tsvfile:
             tsvfile.write(data)
