@@ -115,7 +115,7 @@ class ErrorlessSimulationTest(HiSPARCSimulationTest):
 
     def test_simulate_adc_sampling(self):
         self.assertEqual(self.simulation.simulate_adc_sampling(0), 0)
-        self.assertEqual(self.simulation.simulate_adc_sampling(.1), .1)
+        self.assertEqual(self.simulation.simulate_adc_sampling(0.1), 0.1)
         self.assertEqual(self.simulation.simulate_adc_sampling(1.25), 1.25)
         self.assertEqual(self.simulation.simulate_adc_sampling(2.5), 2.5)
         self.assertEqual(self.simulation.simulate_adc_sampling(4), 4.)

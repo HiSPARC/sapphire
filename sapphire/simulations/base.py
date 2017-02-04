@@ -94,7 +94,7 @@ class BaseSimulation(object):
                              'energy': None,
                              'ext_timestamp': None}
 
-        for i in pbar(range(self.N), show=self.progress):
+        for _ in pbar(range(self.N), show=self.progress):
             yield shower_parameters
 
     def simulate_events_for_shower(self, shower_parameters):

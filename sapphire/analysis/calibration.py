@@ -419,7 +419,7 @@ def datetime_range(start, end, step=1):
     remainder = interval % step
 
     chunk_start = start
-    for i in range(number_of_steps):
+    for _ in range(number_of_steps):
         chunk_end = chunk_start + timedelta(step + min(1, remainder))
         yield chunk_start, chunk_end
         chunk_start = chunk_end

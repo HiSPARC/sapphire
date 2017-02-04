@@ -15,6 +15,13 @@ from sapphire.tests.esd_load_data import (create_tempfile_path,
                                           perform_download_coincidences)
 
 
+class StaleNetwork(api.Network):
+    """api.Network with `force_stale=True` always true"""
+    def __init__(self, *args, **kwargs):
+        super(StaleNetwork, self).__init__(*args, **kwargs)
+        self.force_stale = True
+
+
 class ESDTest(unittest.TestCase):
 
     def test_create_table(self):
@@ -98,7 +105,8 @@ class ESDTest(unittest.TestCase):
         validate_results(self, test_data_path, output_path)
         os.remove(output_path)
 
-    def test_load_coincidences_output(self):
+    @patch.object(esd.api, 'Network', side_effect=StaleNetwork)
+    def test_load_coincidences_output(self, mock_esd_api_network):
         """Load coincidences tsv into hdf5 and verify the output"""
 
         output_path = create_tempfile_path()
@@ -127,7 +135,8 @@ class ESDTest(unittest.TestCase):
 
     @unittest.skipUnless(api.API.check_connection(),
                          "Internet connection required")
-    def test_download_coincidences(self):
+    @patch.object(esd.api, 'Network', side_effect=StaleNetwork)
+    def test_download_coincidences(self, mock_esd_api_network):
         """Download coincidence data from esd and validate results"""
 
         output_path = create_tempfile_path()

@@ -1,10 +1,10 @@
 {
     "active": true,
-    "altitude": 130.21,
+    "altitude": 129.74,
     "cluster": "Sussex",
     "country": "United Kingdom",
-    "latitude": 50.8654752,
-    "longitude": -0.0857853,
+    "latitude": 50.8654756,
+    "longitude": -0.0857889,
     "name": "University of Sussex",
     "number": 15001,
     "scintillators": [
