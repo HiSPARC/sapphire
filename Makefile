@@ -1,4 +1,4 @@
-.PHONY: test unittests flaketest docstest gh-pages
+.PHONY: test unittests flaketest docstest gh-pages update_local_data
 
 test: unittests flaketest doctest
 
@@ -27,6 +27,18 @@ ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
 	git add -A
 	git commit -m "Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`"
 	git checkout master
+else
+	$(error Working tree is not clean, please commit all changes.)
+endif
+
+update_local_data:
+ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
+	@echo "Updating local data. Creating test data to match local data and committing."
+	sapphire/data/update_local_data
+	sapphire/tests/create_and_store_test_data
+	git add -A
+	git commit -m "Updated local and test data for `git log master -1 --pretty=short --abbrev-commit`"
+	@echo "Done."
 else
 	$(error Working tree is not clean, please commit all changes.)
 endif
