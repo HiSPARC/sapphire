@@ -28,7 +28,7 @@ from scipy.sparse.csgraph import shortest_path
 from .event_utils import (station_arrival_time, detector_arrival_time,
                           relative_detector_arrival_times)
 from ..simulations.showerfront import CorsikaStationFront
-from ..utils import (pbar, norm_angle, c, make_relative, vector_length,
+from ..utils import (pbar, norm_angle, C, make_relative, vector_length,
                      floor_in_base, memoize)
 from ..api import Station
 
@@ -510,11 +510,11 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
         if r1 == 0 or r2 == 0:
             pass
         elif not dt1 == 0 and not phi - phi1 == pi / 2:
-            sintheta = c * -dt1 / (r1 * cos(phi - phi1))
+            sintheta = C * -dt1 / (r1 * cos(phi - phi1))
             if abs(sintheta) <= 1:
                 theta = arcsin(sintheta)
         elif not dt2 == 0 and not phi - phi2 == pi / 2:
-            sintheta = c * -dt2 / (r2 * cos(phi - phi2))
+            sintheta = C * -dt2 / (r2 * cos(phi - phi2))
             if abs(sintheta) <= 1:
                 theta = arcsin(sintheta)
 
@@ -538,14 +538,14 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = r1 ** 2 * (1 - sintheta ** 2) * cos(phi - phi1) ** 2
 
-        A = (r1 ** 2 * sinphiphi1 ** 2 *
+        a = (r1 ** 2 * sinphiphi1 ** 2 *
              cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-        B = -(2 * r1 * c * sinphiphi1 *
+        b = -(2 * r1 * C * sinphiphi1 *
               (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
                cls.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
-        C = 2 * c ** 2
+        c = 2 * C ** 2
 
-        errsq = (A * sintheta ** 2 + B * sintheta + C) / den
+        errsq = (a * sintheta ** 2 + b * sintheta + c) / den
 
         return where(isnan(errsq), inf, errsq)
 
@@ -558,14 +558,14 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = r2 ** 2 * (1 - sintheta ** 2) * cos(phi - phi2) ** 2
 
-        A = (r2 ** 2 * sinphiphi2 ** 2 *
+        a = (r2 ** 2 * sinphiphi2 ** 2 *
              cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-        B = -(2 * r2 * c * sinphiphi2 *
+        b = -(2 * r2 * C * sinphiphi2 *
               (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
                cls.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
-        C = 2 * c ** 2
+        c = 2 * C ** 2
 
-        errsq = (A * sintheta ** 2 + B * sintheta + C) / den
+        errsq = (a * sintheta ** 2 + b * sintheta + c) / den
 
         return where(isnan(errsq), inf, errsq)
 
@@ -581,19 +581,19 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = ((1 + tanphi ** 2) ** 2 * r1 ** 2 * r2 ** 2 * sin(theta) ** 2 *
                (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2 /
-               c ** 2)
+               C ** 2)
 
-        A = (r1 ** 2 * sinphi1 ** 2 +
+        a = (r1 ** 2 * sinphi1 ** 2 +
              r2 ** 2 * sinphi2 ** 2 -
              r1 * r2 * sinphi1 * sinphi2)
-        B = (2 * r1 ** 2 * sinphi1 * cosphi1 +
+        b = (2 * r1 ** 2 * sinphi1 * cosphi1 +
              2 * r2 ** 2 * sinphi2 * cosphi2 -
              r1 * r2 * (sinphi2 * cosphi1 + sinphi1 * cosphi2))
-        C = (r1 ** 2 * cosphi1 ** 2 +
+        c = (r1 ** 2 * cosphi1 ** 2 +
              r2 ** 2 * cosphi2 ** 2 -
              r1 * r2 * cosphi1 * cosphi2)
 
-        return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
+        return 2 * (a * tanphi ** 2 + b * tanphi + c) / den
 
     @classmethod
     def dphi_dt0(cls, theta, phi, phi1, phi2, r1=10, r2=10):
@@ -613,7 +613,7 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta) *
                (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2)) /
-               c)
+               C)
         num = -r2 * (sinphi2 * tanphi + cosphi2)
 
         return num / den
@@ -629,7 +629,7 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = ((1 + tanphi ** 2) * r1 * r2 * sin(theta) *
                (sinphi2 * cos(phi - phi1) - sinphi1 * cos(phi - phi2)) /
-               c)
+               C)
         num = r1 * (sinphi1 * tanphi + cosphi1)
 
         return num / den
@@ -683,8 +683,8 @@ class DirectAlgorithmCartesian(BaseDirectionAlgorithm):
                  phi as given by Montanus2014 eq 26.
 
         """
-        ux = c * (dt2 * dx1 - dt1 * dx2)
-        uy = c * (dt2 * dy1 - dt1 * dy2)
+        ux = C * (dt2 * dx1 - dt1 * dx2)
+        uy = C * (dt2 * dy1 - dt1 * dy2)
 
         vz = dx1 * dy2 - dx2 * dy1
 
@@ -756,7 +756,7 @@ class DirectAlgorithmCartesian3D(BaseDirectionAlgorithm):
         """
         d1 = array([dx1, dy1, dz1])
         d2 = array([dx2, dy2, dz2])
-        u = c * (dt2 * d1 - dt1 * d2)
+        u = C * (dt2 * d1 - dt1 * d2)
         v = cross(d1, d2)
         uxv = cross(u, v)
 
@@ -853,32 +853,32 @@ class SphereAlgorithm(object):
         t01 = t[0] - t[1]
         t02 = t[0] - t[2]
 
-        A = 2. * (x01 * y02 - x02 * y01)
-        B = 2. * (x02 * z01 - x01 * z02)
-        C = 2. * (x02 * t01 - x01 * t02) * c ** 2
-        D = (x02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2) -
-             x01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2))
-        E = 2. * (y01 * z02 - y02 * z01)
-        F = 2. * (y01 * t02 - y02 * t01) * c ** 2
-        G = (y01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2) -
-             y02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2))
+        a = 2. * (x01 * y02 - x02 * y01)
+        b = 2. * (x02 * z01 - x01 * z02)
+        c = 2. * (x02 * t01 - x01 * t02) * C ** 2
+        d = (x02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * C) ** 2) -
+             x01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * C) ** 2))
+        e = 2. * (y01 * z02 - y02 * z01)
+        f = 2. * (y01 * t02 - y02 * t01) * C ** 2
+        g = (y01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * C) ** 2) -
+             y02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * C) ** 2))
 
-        T = A ** 2 + B ** 2 + E ** 2
-        V = (B * C + E * F) / T
-        W = (B * D + E * G) / T
-        P = (D ** 2 + G ** 2) / T
-        Q = 2 * (C * D + F * G) / T
-        R = (C ** 2 + F ** 2 - (A * c) ** 2) / T
+        t = a ** 2 + b ** 2 + e ** 2
+        v = (b * c + e * f) / t
+        w = (b * d + e * g) / t
+        p = (d ** 2 + g ** 2) / t
+        q = 2 * (c * d + f * g) / t
+        r = (c ** 2 + f ** 2 - (a * C) ** 2) / t
 
         t_int0 = t_int - t[0]
 
         sign = 1
 
-        z = -V * t_int0 - W + sign * sqrt((V ** 2 - R) * t_int0 ** 2 +
-                                          (2 * V * W - Q) * t_int0 +
-                                          W ** 2 - P)
-        y = (B * z + C * t_int0 + D) / A
-        x = (E * z + F * t_int0 + G) / A
+        z = -v * t_int0 - w + sign * sqrt((v ** 2 - r) * t_int0 ** 2 +
+                                          (2 * v * w - q) * t_int0 +
+                                          w ** 2 - p)
+        y = (b * z + c * t_int0 + d) / a
+        x = (e * z + f * t_int0 + g) / a
 
         x_int = x[0] + x
         y_int = y[0] + y
@@ -891,11 +891,11 @@ class SphereAlgorithm(object):
             # Select interaction above the earths surface.
 
             sign = -1
-            z = -V * t_int0 - W + sign * sqrt((V ** 2 - R) * t_int0 ** 2 +
-                                              (2 * V * W - Q) * t_int0 +
-                                              W ** 2 - P)
-            y = (B * z + C * t_int0 + D) / A
-            x = (E * z + F * t_int0 + G) / A
+            z = -v * t_int0 - w + sign * sqrt((v ** 2 - r) * t_int0 ** 2 +
+                                              (2 * v * w - q) * t_int0 +
+                                              w ** 2 - p)
+            y = (b * z + c * t_int0 + d) / a
+            x = (e * z + f * t_int0 + g) / a
 
             x_int = x[0] + x
             y_int = y[0] + y
@@ -1003,7 +1003,7 @@ class FitAlgorithm3D(BaseDirectionAlgorithm):
         """
         nx, ny, nz, m = n_xyz
 
-        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti + m) ** 2
+        slq = sum([(nx * xi + ny * yi + zi * nz + C * ti + m) ** 2
                    for ti, xi, yi, zi in zip(dt, dx, dy, dz)])
         return slq + m * m
 
@@ -1073,11 +1073,11 @@ class RegressionAlgorithm(BaseDirectionAlgorithm):
 
         numer = (tx * (k * yy - ys ** 2) + xy * (ts * ys - k * ty) +
                  xs * ys * ty - ts * xs * yy)
-        nx = c * numer / denom
+        nx = C * numer / denom
 
         numer = (ty * (k * xx - xs ** 2) + xy * (ts * xs - k * tx) +
                  xs * ys * tx - ts * ys * xx)
-        ny = c * numer / denom
+        ny = C * numer / denom
 
         horiz = nx ** 2 + ny ** 2
         if horiz > 1.:
@@ -1149,7 +1149,7 @@ class RegressionAlgorithm3D(BaseDirectionAlgorithm):
             nz = cos(theta)
             x_proj = [xi - zi * nxnz for xi, zi in zip(x, z)]
             y_proj = [yi - zi * nynz for yi, zi in zip(y, z)]
-            t_proj = [ti + zi / (c * nz) for ti, zi in zip(t, z)]
+            t_proj = [ti + zi / (C * nz) for ti, zi in zip(t, z)]
             theta_prev = theta
             theta, phi = regress2d.reconstruct_common(t_proj, x_proj, y_proj)
             dtheta = abs(theta - theta_prev)
@@ -1322,7 +1322,7 @@ class CurvedRegressionAlgorithm3D(CurvedMixin, BaseDirectionAlgorithm):
             nz = cos(theta)
             x_proj = [xi - zi * nxnz for xi, zi in zip(x, z)]
             y_proj = [yi - zi * nynz for yi, zi in zip(y, z)]
-            t_proj = [ti + zi / (c * nz) -
+            t_proj = [ti + zi / (C * nz) -
                       self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
                       for ti, xpi, ypi, zi in zip(t, x_proj, y_proj, z)]
             theta_prev = theta
@@ -1366,7 +1366,7 @@ def logic_checks(t, x, y, z):
             dx = txyz0[1] - txyz1[1]
             dy = txyz0[2] - txyz1[2]
             dz = txyz0[3] - txyz1[3]
-            dt_max = vector_length(dx, dy, dz) / c
+            dt_max = vector_length(dx, dy, dz) / C
             if dt_max < dt:
                 return False
 

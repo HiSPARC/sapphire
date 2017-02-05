@@ -23,7 +23,7 @@ from math import pi, sin, cos, tan, atan2, sqrt
 import numpy as np
 
 from .detector import HiSPARCSimulation, ErrorlessSimulation
-from ..utils import pbar, c, vector_length
+from ..utils import pbar, C, vector_length
 
 
 class FlatFrontSimulation(HiSPARCSimulation):
@@ -94,7 +94,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
         theta = shower_parameters['zenith']
         r = r1 * cos(phi - phi1) - z1 * tan(theta)
         cdt = - (r * sin(theta) + z1 / cos(theta))
-        dt = cdt / c
+        dt = cdt / C
         return dt
 
     def simulate_gps(self, station_observables, shower_parameters, station):
@@ -159,7 +159,7 @@ class FlatFrontSimulation2D(FlatFrontSimulation):
         theta = shower_parameters['zenith']
         r = r1 * cos(phi - phi1)
         cdt = -r * sin(theta)
-        dt = cdt / c
+        dt = cdt / C
         return dt
 
 
@@ -266,7 +266,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
         r_core = sqrt(x ** 2 + y ** 2 + z ** 2 -
                       (x * nx + y * ny + z * nz) ** 2)
         t_shape = self.delay_at_r(r_core)
-        dt = t_shape + (cdt / c)
+        dt = t_shape + (cdt / C)
 
         return dt
 
