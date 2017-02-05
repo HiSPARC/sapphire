@@ -43,8 +43,8 @@ class BaseLdfTest(unittest.TestCase):
 
         self.assertEqual(self.ldf.calculate_ldf_value(r=0), 0)
         self.assertEqual(self.ldf.calculate_ldf_value(r=10), 0)
-        self.assertEqual(self.ldf.calculate_ldf_value(r=0, Ne=1e10), 0)
-        self.assertEqual(self.ldf.calculate_ldf_value(r=0, Ne=1e10, s=3), 0)
+        self.assertEqual(self.ldf.calculate_ldf_value(r=0, n_electrons=1e10), 0)
+        self.assertEqual(self.ldf.calculate_ldf_value(r=0, n_electrons=1e10, s=3), 0)
 
     def test_calculate_core_distance(self):
         # TODO: Add core distances for inclined showers

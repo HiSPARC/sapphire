@@ -12,8 +12,8 @@ import numpy as np
 
 SCINTILLATOR_THICKNESS = 2.0  # cm
 MAX_DEPTH = 112.  # longest straight path in scintillator in cm
-dEdx = 2.0  # 2 MeV per cm
-max_E = dEdx * SCINTILLATOR_THICKNESS
+ENERGY_LOSS = 2.0  # 2 MeV per cm
+MAX_E = ENERGY_LOSS * SCINTILLATOR_THICKNESS
 MIP = 3.38  # MeV
 
 ELECTRON_REST_MASS_MeV = 0.5109989  # MeV
@@ -45,10 +45,11 @@ def compton_energy_transfer(gamma_energy):
 
     """
     edge = compton_edge(gamma_energy)
-    T = np.linspace(0, edge, 1000)
+    recoil_energies = np.linspace(0, edge, 1000)
 
     # electron energy distribution
-    electron_energy = [dsigma_dT(gamma_energy, EE) for EE in T]
+    electron_energy = [dsigma_dt(gamma_energy, recoil_energy)
+                       for recoil_energy in recoil_energies]
 
     cumulative_energy = np.cumsum(electron_energy)
 
@@ -60,7 +61,7 @@ def compton_energy_transfer(gamma_energy):
     return compton_edge(gamma_energy) * conversion_factor
 
 
-def dsigma_dT(E, T):
+def dsigma_dt(gamma_energy, recoil_energy):
     """Differential cross section dsigma/dT
 
     Differential cross section for energy transfer from gamma
@@ -68,22 +69,22 @@ def dsigma_dT(E, T):
 
     W.R. Leo (1987) p 54
 
-    :param E: photon energy [MeV].
-    :param T: electron recoil energy [MeV].
+    :param gamma_energy: photon energy [MeV].
+    :param recoil_energy: electron recoil energy [MeV].
 
     """
     r_e = 2.82e-15  # classical electron radius [m]
 
-    gamma = E / ELECTRON_REST_MASS_MeV
+    gamma = gamma_energy / ELECTRON_REST_MASS_MeV
 
-    s = T / E
+    s = recoil_energy / gamma_energy
 
     return (np.pi * (r_e ** 2) / (ELECTRON_REST_MASS_MeV * gamma ** 2) *
             (2 + (s ** 2 / ((gamma ** 2) * ((1 - s) ** 2))) +
             (s / (1 - s)) * (s - 2 / gamma)))
 
 
-def max_energy_deposit_in_MIPS(depth, scintillator_depth):
+def max_energy_deposit_in_mips(depth, scintillator_depth):
     """Maximum energy transfer from electron to scintillator
 
     Determine maximum energy transfer based on remaining scinitillator
@@ -96,7 +97,7 @@ def max_energy_deposit_in_MIPS(depth, scintillator_depth):
     :param scintillator_depth: total depth of the scintillator [cm].
 
     """
-    return (scintillator_depth - depth) * max_E / (scintillator_depth * MIP)
+    return (scintillator_depth - depth) * MAX_E / (scintillator_depth * MIP)
 
 
 def simulate_detector_mips_gammas(p, theta):
@@ -132,7 +133,7 @@ def simulate_detector_mips_gammas(p, theta):
 
             # kinetic energy transfered to electron by compton scattering
             energy_deposit = compton_energy_transfer(energy) / MIP
-            max_deposit = max_energy_deposit_in_MIPS(depth_compton,
+            max_deposit = max_energy_deposit_in_mips(depth_compton,
                                                      scintillator_depth)
             mips += min(max_deposit, energy_deposit)
 
@@ -142,7 +143,7 @@ def simulate_detector_mips_gammas(p, theta):
             # 1.022 MeV used for creation of two particles
             # all the rest is electron kinetic energy
             energy_deposit = (energy - 1.022) / MIP
-            max_deposit = max_energy_deposit_in_MIPS(depth_pair,
+            max_deposit = max_energy_deposit_in_mips(depth_pair,
                                                      scintillator_depth)
             mips += min(max_deposit, energy_deposit)
 

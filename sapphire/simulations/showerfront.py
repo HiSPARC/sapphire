@@ -18,7 +18,7 @@ Example usage::
 """
 from __future__ import division
 
-from math import pi, sin, cos, tan, atan2, sqrt
+from math import sin, cos, tan, atan2, sqrt
 
 import numpy as np
 
@@ -211,15 +211,10 @@ class ConeFrontSimulation(FlatFrontSimulation):
                  (x, y-tuple), azimuth and zenith.
 
         """
-        R = self.max_core_distance
+        r_max = self.max_core_distance
 
         for i in pbar(range(self.n), show=self.progress):
-            r = sqrt(np.random.uniform(0, R ** 2))
-            phi = np.random.uniform(-pi, pi)
-
-            x = r * cos(phi)
-            y = r * sin(phi)
-
+            x, y = self.generate_core_position(r_max)
             azimuth = self.generate_azimuth()
 
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),

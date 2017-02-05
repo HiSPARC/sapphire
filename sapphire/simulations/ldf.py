@@ -13,7 +13,7 @@ Example usage::
 
     >>> sim = NkgLdfSimulation(max_core_distance=400, min_energy=1e15,
     ...                        max_energy=1e21, cluster=cluster,
-    ...                        datafile=data, N=200)
+    ...                        datafile=data, n=200)
     >>> sim.run()
 
 """
@@ -113,7 +113,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
         r = self.ldf.calculate_core_distance(x, y, core_x, core_y, zenith,
                                              azimuth)
 
-        p_shower = self.ldf.calculate_ldf_value(r, Ne=size)
+        p_shower = self.ldf.calculate_ldf_value(r, n_electrons=size)
         p_ground = p_shower * cos(zenith)
         num_particles = self.simulate_particles_for_density(
             p_ground * detector.get_area())
@@ -248,7 +248,7 @@ class BaseLdf(object):
 
     """
 
-    def calculate_ldf_value(self, r, Ne=None, s=None):
+    def calculate_ldf_value(self, r, n_electrons=None, s=None):
         return 0.
 
     def calculate_core_distance(self, x, y, x0, y0, theta, phi):
@@ -277,19 +277,19 @@ class NkgLdf(BaseLdf):
 
     # shower parameters
     # Age parameter and Moliere radius from Thoudam2012 sec 5.6.
-    _Ne = 10 ** 4.8
+    _n_electrons = 10 ** 4.8
     _s = 1.7
     _r0 = 30.
 
-    def __init__(self, Ne=None, s=None):
+    def __init__(self, n_electrons=None, s=None):
         """NKG LDF setup
 
-        :param Ne: Shower size (number of electrons).
+        :param n_electrons: Shower size (number of electrons).
         :param s: Shower age parameter.
 
         """
-        if Ne is not None:
-            self._Ne = Ne
+        if n_electrons is not None:
+            self._n_electrons = n_electrons
         if s is not None:
             self._s = s
 
@@ -303,29 +303,29 @@ class NkgLdf(BaseLdf):
         """
         self._c_s = self._c(self._s)
 
-    def calculate_ldf_value(self, r, Ne=None, s=None):
+    def calculate_ldf_value(self, r, n_electrons=None, s=None):
         """Calculate the LDF value
 
         :param r: core distance in m.
-        :param Ne: number of electrons in the shower.
+        :param n_electrons: number of electrons in the shower.
         :param s: shower age parameter.
         :return: particle density in m ** -2.
 
         """
-        if Ne is None:
-            Ne = self._Ne
+        if n_electrons is None:
+            n_electrons = self._n_electrons
         if s is None:
             s = self._s
-        return self.ldf_value(r, Ne, s)
+        return self.ldf_value(r, n_electrons, s)
 
-    def ldf_value(self, r, Ne, s):
+    def ldf_value(self, r, n_electrons, s):
         """Calculate the LDF value
 
         Given a core distance, shower size, and shower age.
         As given in Fokkema2012 eq 7.2.
 
         :param r: core distance in m.
-        :param Ne: number of electrons in the shower.
+        :param n_electrons: number of electrons in the shower.
         :param s: shower age parameter.
         :return: particle density in m ** -2.
 
@@ -336,7 +336,8 @@ class NkgLdf(BaseLdf):
             c_s = self._c(s)
         r0 = self._r0
 
-        return Ne * c_s * (r / r0) ** (s - 2) * (1 + r / r0) ** (s - 4.5)
+        return (n_electrons * c_s * (r / r0) ** (s - 2) *
+                (1 + r / r0) ** (s - 4.5))
 
     def _c(self, s):
         """Part of the LDF
@@ -358,20 +359,20 @@ class KascadeLdf(NkgLdf):
 
     # shower parameters
     # Values from Fokkema2012 sec 7.1.
-    _Ne = 10 ** 4.8
+    _n_electrons = 10 ** 4.8
     _s = 0.94  # Shape parameter
     _r0 = 40.
     _alpha = 1.5
     _beta = 3.6
 
-    def ldf_value(self, r, Ne, s):
+    def ldf_value(self, r, n_electrons, s):
         """Calculate the LDF value
 
         Given a core distance, shower size, and shower age.
         As given in Fokkema2012 eq 7.4.
 
         :param r: core distance in m.
-        :param Ne: number of electrons in the shower.
+        :param n_electrons: number of electrons in the shower.
         :param s: shower shape parameter.
         :return: particle density in m ** -2.
 
@@ -384,7 +385,8 @@ class KascadeLdf(NkgLdf):
         alpha = self._alpha
         beta = self._beta
 
-        return Ne * c_s * (r / r0) ** (s - alpha) * (1 + r / r0) ** (s - beta)
+        return (n_electrons * c_s * (r / r0) ** (s - alpha) *
+                (1 + r / r0) ** (s - beta))
 
     def _c(self, s):
         """Part of the LDF
@@ -409,16 +411,17 @@ class EllipsLdf(KascadeLdf):
 
     # shower parameters
     # Values from Montanus, paper to follow.
-    _Ne = 10 ** 4.8
+    _n_electrons = 10 ** 4.8
     _s1 = -.5  # Shape parameter
     _s2 = -2.6  # Shape parameter
     _r0 = 30.
     _zenith = 0.
     _azimuth = 0.
 
-    def __init__(self, Ne=None, zenith=None, azimuth=None, s1=None, s2=None):
-        if Ne is not None:
-            self._Ne = Ne
+    def __init__(self, n_electrons=None, zenith=None, azimuth=None, s1=None,
+                 s2=None):
+        if n_electrons is not None:
+            self._n_electrons = n_electrons
         if zenith is not None:
             self._zenith = zenith
         if azimuth is not None:
@@ -438,24 +441,26 @@ class EllipsLdf(KascadeLdf):
         """
         self._c_s = self._c(self._s1, self._s2)
 
-    def calculate_ldf_value(self, r, phi, Ne=None, zenith=None, azimuth=None):
+    def calculate_ldf_value(self, r, phi, n_electrons=None, zenith=None,
+                            azimuth=None):
         """Calculate the LDF value for a given core distance and polar angle
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
-        :param Ne: number of electrons in the shower.
+        :param n_electrons: number of electrons in the shower.
         :return: particle density in m ** -2.
 
         """
-        if Ne is None:
-            Ne = self._Ne
+        if n_electrons is None:
+            n_electrons = self._n_electrons
         if zenith is None:
             zenith = self._zenith
         if azimuth is None:
             azimuth = self._azimuth
-        return self.ldf_value(r, phi, Ne, zenith, azimuth, self._s1, self._s2)
+        return self.ldf_value(r, phi, n_electrons, zenith, azimuth, self._s1,
+                              self._s2)
 
-    def ldf_value(self, r, phi, Ne, zenith, azimuth, s1, s2):
+    def ldf_value(self, r, phi, n_electrons, zenith, azimuth, s1, s2):
         """Calculate the LDF value
 
         Given a core distance, core polar angle, zenith angle, azimuth angle,
@@ -468,7 +473,7 @@ class EllipsLdf(KascadeLdf):
 
         :param r: core distance in m.
         :param phi: polar angle in rad.
-        :param Ne: number of electrons in the shower.
+        :param n_electrons: number of electrons in the shower.
         :param zenith: zenith angle in rad.
         :param azimuth: azimuth angle in rad.
         :param s1: shower shape parameter.
@@ -491,7 +496,8 @@ class EllipsLdf(KascadeLdf):
         term2 = 1 + k / r0
         muoncorr = 1 + k / (11.24 * r0)  # See warning in docstring.
         with warnings.catch_warnings(record=True):
-            p = Ne * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 * muoncorr
+            p = (n_electrons * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 *
+                 muoncorr)
         return p
 
     def _c(self, s1, s2):

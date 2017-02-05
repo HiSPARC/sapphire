@@ -210,7 +210,7 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
 
     def test_select_simulation(self):
         self.simulation.generate_zenith = lambda: 0.27  # 15.5 deg
-        self.simulation.generate_energy = lambda min_e, max_e: 10 ** 16.4
+        self.simulation.generate_energy = lambda e_min, e_max: 10 ** 16.4
         self.simulation.available_energies = set(arange(12, 18, 0.5))
         self.simulation.available_zeniths = {e: set(arange(0, 60, 7.5))
                                              for e in self.simulation.available_energies}

@@ -809,7 +809,7 @@ class SphereAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_source_ECS(cls, t, x, y, z, timestamp):
+    def reconstruct_equatorial(cls, t, x, y, z, timestamp):
         """Reconstructs the source in the Equatorial Coordinate System.
 
         :param t: An array with three arrival times in ns.
@@ -823,11 +823,11 @@ class SphereAlgorithm(object):
         """
         t_int = array([-1000, -10000]) + t[0]
         x_int, y_int, z_int = cls.interaction_curve(x, y, z, t, t_int)
-        dec_source = arctan2(z_int[1] - z_int[0],
-                             sqrt((x_int[1] - x_int[0]) ** 2. +
-                                  (y_int[1] - y_int[0]) ** 2.))
-        RA_source = arctan2(x_int[1] - x_int[0], y_int[1] - y_int[0])
-        return dec_source, RA_source
+        dec = arctan2(z_int[1] - z_int[0],
+                      sqrt((x_int[1] - x_int[0]) ** 2. +
+                           (y_int[1] - y_int[0]) ** 2.))
+        ra = arctan2(x_int[1] - x_int[0], y_int[1] - y_int[0])
+        return dec, ra
 
     @staticmethod
     def interaction_curve(x, y, z, t, t_int):

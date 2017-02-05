@@ -68,29 +68,29 @@ class Scintillator(object):
     pdf_values = None
     pdf_domain = full_domain.compress(full_domain >= -5)
 
-    def landau_pdf(self, Delta):
+    def landau_pdf(self, delta):
         """The Landau energy loss distribution function
 
         Fokkema2012, eq 2.9, where lf is eq 2.10.
 
-        :param Delta: Energy loss in the scintillator.
+        :param delta: Energy loss in the scintillator.
         :return: energy loss probability.
 
         """
-        lf = self.lf(Delta)
+        lf = self.lf(delta)
         return self.pdf(lf) / self.xi
 
-    def lf(self, Delta):
+    def lf(self, delta):
         """Calculate the lambda parameter
 
         Fokkema2012, eq 2.10.
         With additional shift by delta.
 
-        :param Delta: Energy loss in the scintillator.
+        :param delta: Energy loss in the scintillator.
         :return: lambda parameter.
 
         """
-        return Delta / self.xi - self._lf0
+        return delta / self.xi - self._lf0
 
     def pdf(self, lf):
         """The Landau probability density function
