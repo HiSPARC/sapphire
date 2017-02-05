@@ -340,8 +340,8 @@ class Coincidences(object):
             row[key] = event[key]
 
         signals = [event[key] for key in ('n1', 'n2', 'n3', 'n4')]
-        N = sum([1 if u > self.trig_threshold else 0 for u in signals])
-        row['N'] = N
+        n = sum([1 if u > self.trig_threshold else 0 for u in signals])
+        row['N'] = n
 
         row.append()
         self.observables.flush()
