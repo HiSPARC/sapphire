@@ -77,7 +77,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'particle': event_header.particle}
         self.corsika_azimuth = event_header.azimuth
 
-        for i in pbar(range(self.N), show=self.progress):
+        for i in pbar(range(self.n), show=self.progress):
             ext_timestamp = (now + i) * int(1e9)
             x, y = self.generate_core_position(r)
             shower_azimuth = self.generate_azimuth()
@@ -569,7 +569,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         n_reuse = 100
         now = int(time())
 
-        for i in pbar(range(self.N), show=self.progress):
+        for i in pbar(range(self.n), show=self.progress):
             sim = self.select_simulation()
             if sim is None:
                 continue

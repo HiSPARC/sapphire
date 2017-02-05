@@ -51,7 +51,7 @@ class BaseSimulation(object):
         self.cluster = cluster
         self.data = data
         self.output_path = output_path
-        self.N = N
+        self.n = N
         self.progress = progress
 
         self._prepare_output_tables()
@@ -94,7 +94,7 @@ class BaseSimulation(object):
                              'energy': None,
                              'ext_timestamp': None}
 
-        for _ in pbar(range(self.N), show=self.progress):
+        for _ in pbar(range(self.n), show=self.progress):
             yield shower_parameters
 
     def simulate_events_for_shower(self, shower_parameters):
@@ -310,7 +310,7 @@ class BaseSimulation(object):
                                                    station.number)
             description = ProcessEvents.processed_events_description
             self.data.create_table(station_group, 'events', description,
-                                   expectedrows=self.N)
+                                   expectedrows=self.n)
             self.station_groups.append(station_group)
 
     def _store_station_index(self):

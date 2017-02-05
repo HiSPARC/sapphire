@@ -197,7 +197,7 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.cq.finish.assert_called_once_with()
 
     def test_generate_shower_parameters(self):
-        self.simulation.N = 5
+        self.simulation.n = 5
         self.simulation.select_simulation = Mock()
         self.simulation.select_simulation.return_value = None
         shower_parameters = self.simulation.generate_shower_parameters()
@@ -206,7 +206,7 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         else:
             self.assertRaises(StopIteration, shower_parameters.__next__)
         self.assertEqual(self.simulation.select_simulation.call_count,
-                         self.simulation.N)
+                         self.simulation.n)
 
     def test_select_simulation(self):
         self.simulation.generate_zenith = lambda: 0.27  # 15.5 deg

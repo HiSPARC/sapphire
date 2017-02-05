@@ -49,7 +49,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
                  (x, y-tuple) and azimuth.
 
         """
-        for i in pbar(range(self.N), show=self.progress):
+        for i in pbar(range(self.n), show=self.progress):
             shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
                                  'azimuth': self.generate_azimuth(),
                                  'zenith': self.generate_attenuated_zenith(),
@@ -213,7 +213,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
         """
         R = self.max_core_distance
 
-        for i in pbar(range(self.N), show=self.progress):
+        for i in pbar(range(self.n), show=self.progress):
             r = sqrt(np.random.uniform(0, R ** 2))
             phi = np.random.uniform(-pi, pi)
 

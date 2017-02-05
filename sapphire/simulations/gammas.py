@@ -108,10 +108,10 @@ def simulate_detector_mips_gammas(p, theta):
 
     """
     # p [eV] and E [MeV]
-    E = p / 1e6
+    energies = p / 1e6
 
     mips = 0
-    for energy, angle in zip(E, theta):
+    for energy, angle in zip(energies, theta):
         # project depth onto direction of incident particle
         scintillator_depth = min(SCINTILLATOR_THICKNESS / np.cos(angle),
                                  MAX_DEPTH)
@@ -162,7 +162,7 @@ def pair_mean_free_path(gamma_energy):
     :return: mean free path [cm].
 
     """
-    l_pair = np.array([
+    energy_path_pair_production = np.array([
         (4, 689.31), (5, 504.52), (6, 404.96),
         (7, 343.56), (8, 302.00), (9, 271.84),
         (10, 249.03), (11, 231.28), (12, 217.04),
@@ -181,11 +181,11 @@ def pair_mean_free_path(gamma_energy):
         (50000, 57.17), (60000, 57.13), (80000, 57.12),
         (100000, 57.08)])
 
-    E = l_pair[:, 0]
-    l = l_pair[:, 1]
+    gamma_energies = energy_path_pair_production[:, 0]
+    mean_free_paths = energy_path_pair_production[:, 1]
 
-    idx = E.searchsorted(gamma_energy, side='left')
-    return l[idx]
+    idx = gamma_energies.searchsorted(gamma_energy, side='left')
+    return mean_free_paths[idx]
 
 
 def compton_mean_free_path(gamma_energy):
@@ -201,7 +201,7 @@ def compton_mean_free_path(gamma_energy):
     :return: mean free path [cm].
 
     """
-    l_compton = np.array([
+    energy_path_compton_scattering = np.array([
         (4, 31.88), (5, 36.90), (6, 41.75),
         (7, 46.47), (8, 51.05), (9, 55.52),
         (10, 59.95), (11, 64.27), (12, 68.54),
@@ -220,8 +220,8 @@ def compton_mean_free_path(gamma_energy):
         (50000, 90579.71), (60000, 107146.68), (80000, 139684.31),
         (100000, 171791.79)])
 
-    E = l_compton[:, 0]
-    l = l_compton[:, 1]
+    gamma_energies = energy_path_compton_scattering[:, 0]
+    mean_free_paths = energy_path_compton_scattering[:, 1]
 
-    idx = E.searchsorted(gamma_energy, side='left')
-    return l[idx]
+    idx = gamma_energies.searchsorted(gamma_energy, side='left')
+    return mean_free_paths[idx]
