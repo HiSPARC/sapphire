@@ -255,14 +255,14 @@ class Coincidences(object):
             if 'blobs' in station_group:
                 if self.progress:
                     print("Processing coincidence events with traces")
-                Process = process_events.ProcessIndexedEventsWithLINT
+                processor = process_events.ProcessIndexedEventsWithLINT
             else:
                 if self.progress:
                     print("Processing coincidence events without traces")
-                Process = process_events.ProcessIndexedEventsWithoutTraces
+                processor = process_events.ProcessIndexedEventsWithoutTraces
 
-            process = Process(self.data, station_group, index,
-                              progress=self.progress)
+            process = processor(self.data, station_group, index,
+                                progress=self.progress)
             process.process_and_store_results(overwrite=overwrite)
 
     def store_coincidences(self):
