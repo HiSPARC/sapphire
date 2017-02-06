@@ -48,7 +48,8 @@ def compton_energy_transfer(gamma_energy):
     recoil_energies = np.linspace(0, edge, 1000)
 
     # electron energy distribution
-    electron_energy = [dsigma_dt(gamma_energy, recoil_energy)
+    electron_energy = [energy_transfer_cross_section(gamma_energy,
+                                                     recoil_energy)
                        for recoil_energy in recoil_energies]
 
     cumulative_energy = np.cumsum(electron_energy)
@@ -61,7 +62,7 @@ def compton_energy_transfer(gamma_energy):
     return compton_edge(gamma_energy) * conversion_factor
 
 
-def dsigma_dt(gamma_energy, recoil_energy):
+def energy_transfer_cross_section(gamma_energy, recoil_energy):
     """Differential cross section dsigma/dT
 
     Differential cross section for energy transfer from gamma

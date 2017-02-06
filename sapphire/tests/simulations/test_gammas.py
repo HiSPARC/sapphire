@@ -56,7 +56,7 @@ class GammasTest(unittest.TestCase):
         for gamma_energy in [3., 10., 100.]:
             self.assertAlmostEqual(gammas.compton_energy_transfer(gamma_energy), 0.)
 
-    def test_dsigma_dt(self):
+    def test_energy_transfer_cross_section(self):
         # The plot from github.com/tomkooij/lio-project/photons/check_sapphire_gammas.py
         # has been checked with Evans (1955) p. 693 figure 5.1
         # Peaks from this plot: (E [MeV], cross_section [barn])
@@ -65,7 +65,7 @@ class GammasTest(unittest.TestCase):
         barn = 1e-28  # m**2. Note that the figure in Evans is in centibarn!
         for E, cross_section in combinations:
             edge = gammas.compton_edge(E)
-            self.assertAlmostEqual(gammas.dsigma_dt(E, edge) / barn, cross_section, places=1)
+            self.assertAlmostEqual(gammas.energy_transfer_cross_section(E, edge) / barn, cross_section, places=1)
 
     def test_max_energy_transfer(self):
         self.assertAlmostEqual(gammas.max_energy_deposit_in_mips(0., 1.), gammas.MAX_E / gammas.MIP)
