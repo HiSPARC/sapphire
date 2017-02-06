@@ -52,6 +52,8 @@ def perform_esd_download_data(filename):
                           progress=False)
         esd.download_data(datafile, '/', 501, start, end, type='weather',
                           progress=False)
+        esd.download_data(datafile, '/', 501, singles_start, singles_end,
+                          type='singles', progress=False)
         esd.download_lightning(datafile, '/', 4, lightning_start,
                                lightning_end, progress=False)
 
