@@ -10,7 +10,7 @@ from numpy.random import uniform, normal
 from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration
 from sapphire.transformations.clock import datetime_to_gps
-from sapphire.utils import C
+from sapphire.utils import c
 
 
 class DetectorTimingTests(unittest.TestCase):
@@ -23,7 +23,7 @@ class DetectorTimingTests(unittest.TestCase):
 
         dt = array([-10, 0, 10])
         dz = 0.6
-        dzc = dz / C
+        dzc = dz / c
 
         # Good result
         mock_fit.return_value = (1., 2.)
@@ -57,7 +57,7 @@ class StationTimingTests(unittest.TestCase):
     def test_determine_station_timing_offset(self, mock_fit, mock_percentile):
         mock_percentile.return_value = (-50., 50.)
         dz = 0.6
-        dzc = dz / C
+        dzc = dz / c
 
         # Empty list
         offset = calibration.determine_station_timing_offset([])

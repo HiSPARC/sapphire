@@ -26,7 +26,7 @@ import tables
 from .gammas import simulate_detector_mips_gammas
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
-from ..utils import pbar, norm_angle, closest_in_list, vector_length, C
+from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
 
 
 class GroundParticlesSimulation(HiSPARCSimulation):
@@ -131,7 +131,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             mips = self.simulate_detector_mips_for_particles(particles)
             particles['t'] += self.simulate_signal_transport_time(n_detected)
             nz = cos(shower_parameters['zenith'])
-            tproj = detector.get_coordinates()[-1] / (C * nz)
+            tproj = detector.get_coordinates()[-1] / (c * nz)
             first_signal = particles['t'].min() + detector.offset - tproj
             observables = {'n': round(mips, 3),
                            't': self.simulate_adc_sampling(first_signal)}

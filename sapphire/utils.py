@@ -20,7 +20,7 @@ from progressbar import ProgressBar, ETA, Bar, Percentage
 ERR = [-1, -999]
 
 #: Speed of light in vacuum in m / ns.
-C = 0.299792458
+c = 0.299792458
 
 
 def pbar(iterable, length=None, show=True, **kwargs):

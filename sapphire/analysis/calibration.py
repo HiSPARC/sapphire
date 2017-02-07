@@ -17,7 +17,7 @@ from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
 from scipy.optimize import curve_fit
 
 from ..clusters import HiSPARCStations, HiSPARCNetwork
-from ..utils import gauss, round_in_base, memoize, get_active_index, pbar, C
+from ..utils import gauss, round_in_base, memoize, get_active_index, pbar, c
 from ..api import Station
 from ..transformations.clock import datetime_to_gps, gps_to_datetime
 
@@ -83,7 +83,7 @@ def determine_detector_timing_offset(dt, dz=0):
              the error of the mean.
 
     """
-    dt_filter = abs(dt + dz / C) < 100
+    dt_filter = abs(dt + dz / c) < 100
     if not sum(dt_filter):
         return nan, nan
     p = round_in_base(percentile(dt.compress(dt_filter), [0.5, 99.5]), 2.5)
@@ -91,7 +91,7 @@ def determine_detector_timing_offset(dt, dz=0):
     if not len(bins):
         return nan, nan
     detector_offset, detector_offset_error = fit_timing_offset(dt, bins)
-    detector_offset += dz / C
+    detector_offset += dz / c
     if abs(detector_offset) > 100:
         return nan, nan
     return detector_offset, detector_offset_error
@@ -350,7 +350,7 @@ def determine_station_timing_offset(dt, dz=0):
     # and at most 200 bins.
     bins = linspace(p[0], p[1], min(int(p[1] - p[0]), len(dt) / 4, 200))
     station_offset, station_offset_error = fit_timing_offset(dt, bins)
-    station_offset += dz / C
+    station_offset += dz / c
     if abs(station_offset) > 1000:
         return nan, nan
     return station_offset, station_offset_error
