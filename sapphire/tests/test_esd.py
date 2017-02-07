@@ -71,6 +71,24 @@ class ESDTest(unittest.TestCase):
                                                   createparents=True)
         self.assertEqual(result, file.create_table.return_value)
 
+    def test_create_singles_table(self):
+        description = {'event_id': tables.UInt32Col(pos=0),
+                       'timestamp': tables.Time32Col(pos=1),
+                       'mas_ch1_low': tables.Int32Col(pos=2),
+                       'mas_ch1_high': tables.Int32Col(pos=3),
+                       'mas_ch2_low': tables.Int32Col(pos=4),
+                       'mas_ch2_high': tables.Int32Col(pos=5),
+                       'slv_ch1_low': tables.Int32Col(pos=6),
+                       'slv_ch1_high': tables.Int32Col(pos=7),
+                       'slv_ch2_low': tables.Int32Col(pos=8),
+                       'slv_ch2_high': tables.Int32Col(pos=9)}
+        file = MagicMock()
+        result = esd._create_singles_table(file, sentinel.group)
+        file.create_table.assert_called_once_with(sentinel.group, 'singles',
+                                                  description,
+                                                  createparents=True)
+        self.assertEqual(result, file.create_table.return_value)
+
     def test__first_available_numbered_path(self):
         """Check if correct path is given if there is no existing h5."""
 
