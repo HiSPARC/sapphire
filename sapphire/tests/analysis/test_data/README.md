@@ -23,6 +23,26 @@ after downloading, and the file repacked otherwise you are left with
     $ ptrepack --complevel 9 --complib blosc process_events_temp.h5 process_events.h5
     $ rm process_events_temp.h5
 
+A singles table is subsequently stored in `process_events.h5` by
+downloading 20 seconds of singles data from the ESD (20 rows).
+Some duplicates are added by overwriting two rows, and the table is shuffled.
+
+    >>> import tables
+    >>> import numpy as np
+    >>> from datetime import datetime
+    >>> from sapphire import download_data
+    >>> data = tables.open_file('process_events_temp.h5', 'a')
+    >>> download_data(data, '/s501', 501, datetime(2017, 1, 1),
+    ...               datetime(2017, 1, 1, 0, 0, 20), type='singles')
+    >>> t = data.root.s501.singles
+    >>> x = t.read()
+    >>> t.remove_rows(0, 20)
+    >>> dupe = x[17]; x[3] = dupe; x[19] = dupe
+    >>> np.random.shuffle(x)
+    >>> x['event_id'] = np.arange(20)
+    >>> t.append(x); t.flush()
+    >>> data.close()
+
 
 Notes on recreating `coincidences.h5`
 -------------------------------------
