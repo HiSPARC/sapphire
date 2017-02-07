@@ -320,7 +320,7 @@ class ProcessSinglesTests(unittest.TestCase):
         # check for unique and sorted timestamps
         singles_table = self.data.get_node(DATA_GROUP, 'singles')
         ts = singles_table.col('timestamp')
-        unique_ts = array(list(set(ts)))
+        unique_ts = array(sorted(set(ts)))
         assert_array_equal(ts, unique_ts)
 
     def create_tempfile_from_testdata(self):
@@ -361,7 +361,7 @@ class ProcessSinglesFromSourceTests(ProcessSinglesTests):
         # check for unique and sorted timestamps
         singles_table = self.dest_data.get_node('/', 'singles')
         ts = singles_table.col('timestamp')
-        unique_ts = array(list(set(ts)))
+        unique_ts = array(sorted(set(ts)))
         assert_array_equal(ts, unique_ts)
 
 
