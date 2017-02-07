@@ -107,7 +107,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
 
     @unittest.skip("Needs better mocking, or just drop it")
     def test_simulate_detector_observables(self):
-        area = .5
+        area = 0.5
         detector = Mock()
         detector.get_area.return_value = area
 
