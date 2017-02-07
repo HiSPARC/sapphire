@@ -6,6 +6,8 @@ import warnings
 import operator
 
 import tables
+from numpy import array
+from numpy.testing import assert_array_equal
 from mock import Mock
 
 from sapphire.analysis import process_events
@@ -298,6 +300,69 @@ class ProcessEventsFromSourceWithTriggerOffsetStationTests(ProcessEventsFromSour
         self.assertEqual(times[0], 162.5)
         self.assertEqual(times[2], -999)
         self.assertEqual(times[4], -999)
+
+
+class ProcessSinglesTests(unittest.TestCase):
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+        self.data_path = self.create_tempfile_from_testdata()
+        self.data = tables.open_file(self.data_path, 'a')
+        self.proc = process_events.ProcessSingles(self.data, DATA_GROUP,
+                                                  progress=False)
+
+    def tearDown(self):
+        warnings.resetwarnings()
+        self.data.close()
+        os.remove(self.data_path)
+
+    def test_process_and_store_results(self):
+        self.proc.process_and_store_results()
+        # check for unique and sorted timestamps
+        singles_table = self.data.get_node(DATA_GROUP, 'singles')
+        ts = singles_table.col('timestamp')
+        unique_ts = array(list(set(ts)))
+        assert_array_equal(ts, unique_ts)
+
+    def create_tempfile_from_testdata(self):
+        tmp_path = self.create_tempfile_path()
+        data_path = self.get_testdata_path()
+        shutil.copyfile(data_path, tmp_path)
+        return tmp_path
+
+    def create_tempfile_path(self):
+        fd, path = tempfile.mkstemp('.h5')
+        os.close(fd)
+        return path
+
+    def get_testdata_path(self):
+        dir_path = os.path.dirname(__file__)
+        return os.path.join(dir_path, TEST_DATA_FILE)
+
+
+class ProcessSinglesFromSourceTests(ProcessSinglesTests):
+    def setUp(self):
+        warnings.filterwarnings('ignore')
+        self.source_path = self.create_tempfile_from_testdata()
+        self.source_data = tables.open_file(self.source_path, 'r')
+        self.dest_path = self.create_tempfile_path()
+        self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.proc = process_events.ProcessSinglesFromSource(
+            self.source_data, self.dest_data, DATA_GROUP, '/')
+
+    def tearDown(self):
+        warnings.resetwarnings()
+        self.source_data.close()
+        os.remove(self.source_path)
+        self.dest_data.close()
+        os.remove(self.dest_path)
+
+    def test_process_and_store_results(self):
+        self.proc.process_and_store_results()
+        # check for unique and sorted timestamps
+        singles_table = self.dest_data.get_node('/', 'singles')
+        ts = singles_table.col('timestamp')
+        unique_ts = array(list(set(ts)))
+        assert_array_equal(ts, unique_ts)
 
 
 if __name__ == '__main__':
