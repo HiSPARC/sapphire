@@ -494,7 +494,7 @@ class ParticleData(object):
         return 200 <= self.id < 9900 or self.id == 14
 
     @property
-    def is_Cherenkov(self):
+    def is_cherenkov(self):
         return 9900 <= self.id
 
     @property

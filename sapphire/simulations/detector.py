@@ -178,7 +178,7 @@ class HiSPARCSimulation(BaseSimulation):
         return mips
 
     @classmethod
-    def generate_core_position(cls, R):
+    def generate_core_position(cls, r_max):
         """Generate a random core position within a circle
 
         DF: This is the fastest implementation I could come up with.  I
@@ -188,11 +188,11 @@ class HiSPARCSimulation(BaseSimulation):
         slow, because of an if-statement, and despite some optimizations
         suggested by HM).
 
-        :param R: Maximum core distance, in meters.
-        :return: Random x, y position in the disc with radius R.
+        :param r: Maximum core distance, in meters.
+        :return: Random x, y position in the disc with radius r_max.
 
         """
-        r = sqrt(np.random.uniform(0, R ** 2))
+        r = sqrt(np.random.uniform(0, r_max ** 2))
         phi = np.random.uniform(-pi, pi)
         x = r * cos(phi)
         y = r * sin(phi)
@@ -262,7 +262,7 @@ class HiSPARCSimulation(BaseSimulation):
         return np.random.uniform(-pi, pi)
 
     @classmethod
-    def generate_energy(cls, min_E=1e14, max_E=1e21, alpha=-2.75):
+    def generate_energy(cls, e_min=1e14, e_max=1e21, alpha=-2.75):
         """Generate a random shower energy
 
         Source: http://mathworld.wolfram.com/RandomNumber.html
@@ -270,15 +270,15 @@ class HiSPARCSimulation(BaseSimulation):
         Simple approximation of the cosmic-ray energy spectrum. Showers
         with higher energy occur less often, following a power law.
 
-        :param min_E,max_E: Energy bounds for the distribution (in eV).
+        :param e_min,e_max: Energy bounds for the distribution (in eV).
         :param alpha: Steepness of the power law distribution.
         :return: primary particle energy, in eV.
 
         """
         x = np.random.random()
         a1 = alpha + 1.
-        E = (min_E ** a1 + x * (max_E ** a1 - min_E ** a1)) ** (1 / a1)
-        return E
+        energy = (e_min ** a1 + x * (e_max ** a1 - e_min ** a1)) ** (1 / a1)
+        return energy
 
 
 class ErrorlessSimulation(HiSPARCSimulation):

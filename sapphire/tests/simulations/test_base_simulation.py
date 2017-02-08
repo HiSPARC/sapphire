@@ -17,17 +17,17 @@ class BaseSimulationTest(unittest.TestCase):
         self.cluster = sentinel.cluster
         self.data = sentinel.data
         self.output_path = sentinel.output_path
-        self.N = sentinel.N
+        self.n = sentinel.n
 
         self.simulation = BaseSimulation(self.cluster, self.data,
-                                         self.output_path, self.N,
+                                         self.output_path, self.n,
                                          progress=False)
 
     def test_init_sets_attributes(self):
         self.assertIs(self.simulation.cluster, self.cluster)
         self.assertIs(self.simulation.data, self.data)
         self.assertIs(self.simulation.output_path, self.output_path)
-        self.assertIs(self.simulation.N, self.N)
+        self.assertIs(self.simulation.n, self.n)
 
     def test_init_calls_prepare_output_tables(self):
         self.mock_prepare_output_tables.assert_called_once_with()
@@ -61,7 +61,7 @@ class BaseSimulationTest(unittest.TestCase):
                                       sentinel.events)
 
     def test_generate_shower_parameters(self):
-        self.simulation.N = 10
+        self.simulation.n = 10
         output = self.simulation.generate_shower_parameters()
         self.assertIsInstance(output, types.GeneratorType)
 
@@ -252,7 +252,7 @@ class BaseSimulationTest(unittest.TestCase):
         # The following tests need a better mock of cluster in order to work.
         # self.data.create_group.assert_any_call(self.simulation.cluster_group, 'station_0')
         # self.data.create_table.assert_any_call(
-        #     station_group, 'events', storage.ProcessedHisparcEvent, expectedrows=self.N)
+        #     station_group, 'events', storage.ProcessedHisparcEvent, expectedrows=self.n)
 
     @unittest.skip("Does not test this unit")
     def test_init_stores_cluster_in_attrs(self):

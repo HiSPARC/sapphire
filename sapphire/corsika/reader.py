@@ -398,9 +398,6 @@ class CorsikaFile(object):
         return unpack(self.format.particles_format,
                       self._file.read(self.format.particles_size))
 
-    def Blocks():
-        pass
-
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self._filename)
 
