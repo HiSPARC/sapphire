@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys
 
 setup(name='hisparc-sapphire',
-      version='1.2.0',
+      version='1.3.0',
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
