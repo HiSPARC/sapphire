@@ -516,7 +516,9 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        return core_x, core_y, chi2best, factorbest * ldf.EllipsLdf._Ne
+        size = factorbest * ldf.EllipsLdf._n_electrons
+
+        return core_x, core_y, chi2best, size
 
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,

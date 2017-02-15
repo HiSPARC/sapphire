@@ -56,7 +56,7 @@ class GammasTest(unittest.TestCase):
         for gamma_energy in [3., 10., 100.]:
             self.assertAlmostEqual(gammas.compton_energy_transfer(gamma_energy), 0.)
 
-    def test_dsigma_dT(self):
+    def test_energy_transfer_cross_section(self):
         # The plot from github.com/tomkooij/lio-project/photons/check_sapphire_gammas.py
         # has been checked with Evans (1955) p. 693 figure 5.1
         # Peaks from this plot: (E [MeV], cross_section [barn])
@@ -65,12 +65,12 @@ class GammasTest(unittest.TestCase):
         barn = 1e-28  # m**2. Note that the figure in Evans is in centibarn!
         for E, cross_section in combinations:
             edge = gammas.compton_edge(E)
-            self.assertAlmostEqual(gammas.dsigma_dT(E, edge) / barn, cross_section, places=1)
+            self.assertAlmostEqual(gammas.energy_transfer_cross_section(E, edge) / barn, cross_section, places=1)
 
     def test_max_energy_transfer(self):
-        self.assertAlmostEqual(gammas.max_energy_deposit_in_MIPS(0., 1.), gammas.max_E / gammas.MIP)
-        self.assertAlmostEqual(gammas.max_energy_deposit_in_MIPS(0.5, 1.), 0.5 * gammas.max_E / gammas.MIP)
-        self.assertAlmostEqual(gammas.max_energy_deposit_in_MIPS(1., 1.), 0.)
+        self.assertAlmostEqual(gammas.max_energy_deposit_in_mips(0., 1.), gammas.MAX_E / gammas.MIP)
+        self.assertAlmostEqual(gammas.max_energy_deposit_in_mips(0.5, 1.), 0.5 * gammas.MAX_E / gammas.MIP)
+        self.assertAlmostEqual(gammas.max_energy_deposit_in_mips(1., 1.), 0.)
 
     @patch.object(gammas, 'compton_energy_transfer')
     @patch.object(gammas, 'pair_mean_free_path')
@@ -86,7 +86,7 @@ class GammasTest(unittest.TestCase):
 
         mips = gammas.simulate_detector_mips_gammas(p, theta)
         mock_compton.assert_called_once_with(10. / 1e6)
-        self.assertLessEqual(mips, gammas.max_E)
+        self.assertLessEqual(mips, gammas.MAX_E)
 
     @patch.object(gammas, 'compton_energy_transfer')
     @patch.object(gammas, 'pair_mean_free_path')
@@ -104,7 +104,7 @@ class GammasTest(unittest.TestCase):
         for _ in range(100):
             mips = gammas.simulate_detector_mips_gammas(p, theta)
             self.assertFalse(mock_compton.called)
-            self.assertLessEqual(mips, gammas.max_E)
+            self.assertLessEqual(mips, gammas.MAX_E)
 
         # not enough energy for pair production
         E = np.array([0.5, 0.7])  # MeV

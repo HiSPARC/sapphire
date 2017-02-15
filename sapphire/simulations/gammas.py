@@ -12,8 +12,8 @@ import numpy as np
 
 SCINTILLATOR_THICKNESS = 2.0  # cm
 MAX_DEPTH = 112.  # longest straight path in scintillator in cm
-dEdx = 2.0  # 2 MeV per cm
-max_E = dEdx * SCINTILLATOR_THICKNESS
+ENERGY_LOSS = 2.0  # 2 MeV per cm
+MAX_E = ENERGY_LOSS * SCINTILLATOR_THICKNESS
 MIP = 3.38  # MeV
 
 ELECTRON_REST_MASS_MeV = 0.5109989  # MeV
@@ -45,10 +45,12 @@ def compton_energy_transfer(gamma_energy):
 
     """
     edge = compton_edge(gamma_energy)
-    T = np.linspace(0, edge, 1000)
+    recoil_energies = np.linspace(0, edge, 1000)
 
     # electron energy distribution
-    electron_energy = [dsigma_dT(gamma_energy, EE) for EE in T]
+    electron_energy = [energy_transfer_cross_section(gamma_energy,
+                                                     recoil_energy)
+                       for recoil_energy in recoil_energies]
 
     cumulative_energy = np.cumsum(electron_energy)
 
@@ -60,7 +62,7 @@ def compton_energy_transfer(gamma_energy):
     return compton_edge(gamma_energy) * conversion_factor
 
 
-def dsigma_dT(E, T):
+def energy_transfer_cross_section(gamma_energy, recoil_energy):
     """Differential cross section dsigma/dT
 
     Differential cross section for energy transfer from gamma
@@ -68,22 +70,22 @@ def dsigma_dT(E, T):
 
     W.R. Leo (1987) p 54
 
-    :param E: photon energy [MeV].
-    :param T: electron recoil energy [MeV].
+    :param gamma_energy: photon energy [MeV].
+    :param recoil_energy: electron recoil energy [MeV].
 
     """
     r_e = 2.82e-15  # classical electron radius [m]
 
-    gamma = E / ELECTRON_REST_MASS_MeV
+    gamma = gamma_energy / ELECTRON_REST_MASS_MeV
 
-    s = T / E
+    s = recoil_energy / gamma_energy
 
     return (np.pi * (r_e ** 2) / (ELECTRON_REST_MASS_MeV * gamma ** 2) *
             (2 + (s ** 2 / ((gamma ** 2) * ((1 - s) ** 2))) +
             (s / (1 - s)) * (s - 2 / gamma)))
 
 
-def max_energy_deposit_in_MIPS(depth, scintillator_depth):
+def max_energy_deposit_in_mips(depth, scintillator_depth):
     """Maximum energy transfer from electron to scintillator
 
     Determine maximum energy transfer based on remaining scinitillator
@@ -96,7 +98,7 @@ def max_energy_deposit_in_MIPS(depth, scintillator_depth):
     :param scintillator_depth: total depth of the scintillator [cm].
 
     """
-    return (scintillator_depth - depth) * max_E / (scintillator_depth * MIP)
+    return (scintillator_depth - depth) * MAX_E / (scintillator_depth * MIP)
 
 
 def simulate_detector_mips_gammas(p, theta):
@@ -108,10 +110,10 @@ def simulate_detector_mips_gammas(p, theta):
 
     """
     # p [eV] and E [MeV]
-    E = p / 1e6
+    energies = p / 1e6
 
     mips = 0
-    for energy, angle in zip(E, theta):
+    for energy, angle in zip(energies, theta):
         # project depth onto direction of incident particle
         scintillator_depth = min(SCINTILLATOR_THICKNESS / np.cos(angle),
                                  MAX_DEPTH)
@@ -132,7 +134,7 @@ def simulate_detector_mips_gammas(p, theta):
 
             # kinetic energy transfered to electron by compton scattering
             energy_deposit = compton_energy_transfer(energy) / MIP
-            max_deposit = max_energy_deposit_in_MIPS(depth_compton,
+            max_deposit = max_energy_deposit_in_mips(depth_compton,
                                                      scintillator_depth)
             mips += min(max_deposit, energy_deposit)
 
@@ -142,7 +144,7 @@ def simulate_detector_mips_gammas(p, theta):
             # 1.022 MeV used for creation of two particles
             # all the rest is electron kinetic energy
             energy_deposit = (energy - 1.022) / MIP
-            max_deposit = max_energy_deposit_in_MIPS(depth_pair,
+            max_deposit = max_energy_deposit_in_mips(depth_pair,
                                                      scintillator_depth)
             mips += min(max_deposit, energy_deposit)
 
@@ -162,7 +164,7 @@ def pair_mean_free_path(gamma_energy):
     :return: mean free path [cm].
 
     """
-    l_pair = np.array([
+    energy_path_pair_production = np.array([
         (4, 689.31), (5, 504.52), (6, 404.96),
         (7, 343.56), (8, 302.00), (9, 271.84),
         (10, 249.03), (11, 231.28), (12, 217.04),
@@ -181,11 +183,11 @@ def pair_mean_free_path(gamma_energy):
         (50000, 57.17), (60000, 57.13), (80000, 57.12),
         (100000, 57.08)])
 
-    E = l_pair[:, 0]
-    l = l_pair[:, 1]
+    gamma_energies = energy_path_pair_production[:, 0]
+    mean_free_paths = energy_path_pair_production[:, 1]
 
-    idx = E.searchsorted(gamma_energy, side='left')
-    return l[idx]
+    idx = gamma_energies.searchsorted(gamma_energy, side='left')
+    return mean_free_paths[idx]
 
 
 def compton_mean_free_path(gamma_energy):
@@ -201,7 +203,7 @@ def compton_mean_free_path(gamma_energy):
     :return: mean free path [cm].
 
     """
-    l_compton = np.array([
+    energy_path_compton_scattering = np.array([
         (4, 31.88), (5, 36.90), (6, 41.75),
         (7, 46.47), (8, 51.05), (9, 55.52),
         (10, 59.95), (11, 64.27), (12, 68.54),
@@ -220,8 +222,8 @@ def compton_mean_free_path(gamma_energy):
         (50000, 90579.71), (60000, 107146.68), (80000, 139684.31),
         (100000, 171791.79)])
 
-    E = l_compton[:, 0]
-    l = l_compton[:, 1]
+    gamma_energies = energy_path_compton_scattering[:, 0]
+    mean_free_paths = energy_path_compton_scattering[:, 1]
 
-    idx = E.searchsorted(gamma_energy, side='left')
-    return l[idx]
+    idx = gamma_energies.searchsorted(gamma_energy, side='left')
+    return mean_free_paths[idx]

@@ -32,9 +32,9 @@ def zenithazimuth_to_equatorial(latitude, longitude, timestamp, zenith,
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
     """
-    altitude, Azimuth = zenithazimuth_to_horizontal(zenith, azimuth)
+    altitude, alt_azimuth = zenithazimuth_to_horizontal(zenith, azimuth)
     lst = clock.gps_to_lst(timestamp, longitude)
-    ra, dec = horizontal_to_equatorial(latitude, lst, altitude, Azimuth)
+    ra, dec = horizontal_to_equatorial(latitude, lst, altitude, alt_azimuth)
 
     return ra, dec
 
@@ -52,18 +52,18 @@ def zenithazimuth_to_horizontal(zenith, azimuth):
 
     """
     altitude = norm_angle(pi / 2. - zenith)
-    Azimuth = norm_angle(pi / 2. - azimuth)
+    alt_azimuth = norm_angle(pi / 2. - azimuth)
 
-    return altitude, Azimuth
+    return altitude, alt_azimuth
 
 
-def horizontal_to_zenithazimuth(altitude, Azimuth):
+def horizontal_to_zenithazimuth(altitude, alt_azimuth):
     """Inverse of zenithazimuth_to_horizontal is the same transformation"""
 
-    return zenithazimuth_to_horizontal(altitude, Azimuth)
+    return zenithazimuth_to_horizontal(altitude, alt_azimuth)
 
 
-def horizontal_to_equatorial(latitude, lst, altitude, Azimuth):
+def horizontal_to_equatorial(latitude, lst, altitude, alt_azimuth):
     """Convert Horizontal to Equatorial coordinates (J2000.0)
 
     :param latitude: Position of the observer on Earth in degrees.
@@ -71,26 +71,26 @@ def horizontal_to_equatorial(latitude, lst, altitude, Azimuth):
     :param lst: Local Siderial Time observer at the time of observation
                 in decimal hours.
     :param altitude: altitude is the angle above the horizon in radians.
-    :param Azimuth: Azimuth angle in horizontal plane in radians.
+    :param alt_azimuth: Azimuth angle in horizontal plane in radians.
 
     :return: Right ascension (ra) and Declination (dec) in radians.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
     """
-    ha, dec = horizontal_to_hadec(latitude, altitude, Azimuth)
+    ha, dec = horizontal_to_hadec(latitude, altitude, alt_azimuth)
     ra = ha_to_ra(ha, lst)
 
     return ra, dec
 
 
-def horizontal_to_hadec(latitude, altitude, Azimuth):
+def horizontal_to_hadec(latitude, altitude, alt_azimuth):
     """Convert Horizontal to Hour Angle and Declination
 
     :param latitude: Position of the observer on Earth in degrees.
                      North positive.
     :param altitude: altitude is the angle above the horizon in radians.
-    :param Azimuth: Azimuth angle in horizontal plane in radians.
+    :param alt_azimuth: Azimuth angle in horizontal plane in radians.
 
     :return: Hour angle (ha) and Declination (dec) in radians.
 
@@ -100,8 +100,8 @@ def horizontal_to_hadec(latitude, altitude, Azimuth):
 
     slat = sin(radians(latitude))
     clat = cos(radians(latitude))
-    sazi = sin(Azimuth)
-    cazi = cos(Azimuth)
+    sazi = sin(alt_azimuth)
+    cazi = cos(alt_azimuth)
     salt = sin(altitude)
     calt = cos(altitude)
 
@@ -160,12 +160,13 @@ def equatorial_to_horizontal(latitude, longitude, timestamp, right_ascension,
     cdec = cos(declination)
 
     altitude = arcsin((sdec * slat) + (cdec * clat * cha))
-    Azimuth = arccos((sdec - (slat * sin(altitude))) / (clat * cos(altitude)))
+    alt_azimuth = arccos((sdec - (slat * sin(altitude))) /
+                         (clat * cos(altitude)))
 
     if sha > 0:
-        Azimuth = 2 * pi - Azimuth
+        alt_azimuth = 2 * pi - alt_azimuth
 
-    zenith, azimuth = horizontal_to_zenithazimuth(altitude, Azimuth)
+    zenith, azimuth = horizontal_to_zenithazimuth(altitude, alt_azimuth)
 
     return zenith, azimuth
 
@@ -186,11 +187,11 @@ def equatorial_to_galactic(right_ascension, declintation, epoch='J2000'):
     dec = radians(declintation)
 
     xyz = array(axes.spherical_to_cartesian(1, dec, ra))
-    rotMatrix = array([[-0.054875539, 0.494109454, -0.867666136],
-                       [-0.873437105, -0.444829594, -0.198076390],
-                       [-0.483834992, 0.746982249, 0.455983795]])
+    rot_matrix = array([[-0.054875539, 0.494109454, -0.867666136],
+                        [-0.873437105, -0.444829594, -0.198076390],
+                        [-0.483834992, 0.746982249, 0.455983795]])
 
-    newxyz = dot(xyz, rotMatrix)
+    newxyz = dot(xyz, rot_matrix)
     latitude, longitude = axes.cartesian_to_spherical(*newxyz)[1:]
 
     return degrees(longitude), degrees(latitude)

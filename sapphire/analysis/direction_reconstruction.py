@@ -538,14 +538,14 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = r1 ** 2 * (1 - sintheta ** 2) * cos(phi - phi1) ** 2
 
-        A = (r1 ** 2 * sinphiphi1 ** 2 *
-             cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-        B = -(2 * r1 * c * sinphiphi1 *
-              (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
-               cls.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
-        C = 2 * c ** 2
+        aa = (r1 ** 2 * sinphiphi1 ** 2 *
+              cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+        bb = -(2 * r1 * c * sinphiphi1 *
+               (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
+                cls.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
+        cc = 2 * c ** 2
 
-        errsq = (A * sintheta ** 2 + B * sintheta + C) / den
+        errsq = (aa * sintheta ** 2 + bb * sintheta + cc) / den
 
         return where(isnan(errsq), inf, errsq)
 
@@ -558,14 +558,14 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = r2 ** 2 * (1 - sintheta ** 2) * cos(phi - phi2) ** 2
 
-        A = (r2 ** 2 * sinphiphi2 ** 2 *
-             cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-        B = -(2 * r2 * c * sinphiphi2 *
-              (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
-               cls.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
-        C = 2 * c ** 2
+        aa = (r2 ** 2 * sinphiphi2 ** 2 *
+              cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+        bb = -(2 * r2 * c * sinphiphi2 *
+               (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
+                cls.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
+        cc = 2 * c ** 2
 
-        errsq = (A * sintheta ** 2 + B * sintheta + C) / den
+        errsq = (aa * sintheta ** 2 + bb * sintheta + cc) / den
 
         return where(isnan(errsq), inf, errsq)
 
@@ -583,17 +583,17 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
                (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2 /
                c ** 2)
 
-        A = (r1 ** 2 * sinphi1 ** 2 +
-             r2 ** 2 * sinphi2 ** 2 -
-             r1 * r2 * sinphi1 * sinphi2)
-        B = (2 * r1 ** 2 * sinphi1 * cosphi1 +
-             2 * r2 ** 2 * sinphi2 * cosphi2 -
-             r1 * r2 * (sinphi2 * cosphi1 + sinphi1 * cosphi2))
-        C = (r1 ** 2 * cosphi1 ** 2 +
-             r2 ** 2 * cosphi2 ** 2 -
-             r1 * r2 * cosphi1 * cosphi2)
+        aa = (r1 ** 2 * sinphi1 ** 2 +
+              r2 ** 2 * sinphi2 ** 2 -
+              r1 * r2 * sinphi1 * sinphi2)
+        bb = (2 * r1 ** 2 * sinphi1 * cosphi1 +
+              2 * r2 ** 2 * sinphi2 * cosphi2 -
+              r1 * r2 * (sinphi2 * cosphi1 + sinphi1 * cosphi2))
+        cc = (r1 ** 2 * cosphi1 ** 2 +
+              r2 ** 2 * cosphi2 ** 2 -
+              r1 * r2 * cosphi1 * cosphi2)
 
-        return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
+        return 2 * (aa * tanphi ** 2 + bb * tanphi + cc) / den
 
     @classmethod
     def dphi_dt0(cls, theta, phi, phi1, phi2, r1=10, r2=10):
@@ -809,7 +809,7 @@ class SphereAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_source_ECS(cls, t, x, y, z, timestamp):
+    def reconstruct_equatorial(cls, t, x, y, z, timestamp):
         """Reconstructs the source in the Equatorial Coordinate System.
 
         :param t: An array with three arrival times in ns.
@@ -823,11 +823,11 @@ class SphereAlgorithm(object):
         """
         t_int = array([-1000, -10000]) + t[0]
         x_int, y_int, z_int = cls.interaction_curve(x, y, z, t, t_int)
-        dec_source = arctan2(z_int[1] - z_int[0],
-                             sqrt((x_int[1] - x_int[0]) ** 2. +
-                                  (y_int[1] - y_int[0]) ** 2.))
-        RA_source = arctan2(x_int[1] - x_int[0], y_int[1] - y_int[0])
-        return dec_source, RA_source
+        dec = arctan2(z_int[1] - z_int[0],
+                      sqrt((x_int[1] - x_int[0]) ** 2. +
+                           (y_int[1] - y_int[0]) ** 2.))
+        ra = arctan2(x_int[1] - x_int[0], y_int[1] - y_int[0])
+        return dec, ra
 
     @staticmethod
     def interaction_curve(x, y, z, t, t_int):
@@ -853,32 +853,32 @@ class SphereAlgorithm(object):
         t01 = t[0] - t[1]
         t02 = t[0] - t[2]
 
-        A = 2. * (x01 * y02 - x02 * y01)
-        B = 2. * (x02 * z01 - x01 * z02)
-        C = 2. * (x02 * t01 - x01 * t02) * c ** 2
-        D = (x02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2) -
+        a = 2. * (x01 * y02 - x02 * y01)
+        b = 2. * (x02 * z01 - x01 * z02)
+        h = 2. * (x02 * t01 - x01 * t02) * c ** 2
+        d = (x02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2) -
              x01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2))
-        E = 2. * (y01 * z02 - y02 * z01)
-        F = 2. * (y01 * t02 - y02 * t01) * c ** 2
-        G = (y01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2) -
+        e = 2. * (y01 * z02 - y02 * z01)
+        f = 2. * (y01 * t02 - y02 * t01) * c ** 2
+        g = (y01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2) -
              y02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2))
 
-        T = A ** 2 + B ** 2 + E ** 2
-        V = (B * C + E * F) / T
-        W = (B * D + E * G) / T
-        P = (D ** 2 + G ** 2) / T
-        Q = 2 * (C * D + F * G) / T
-        R = (C ** 2 + F ** 2 - (A * c) ** 2) / T
+        t = a ** 2 + b ** 2 + e ** 2
+        v = (b * h + e * f) / t
+        w = (b * d + e * g) / t
+        p = (d ** 2 + g ** 2) / t
+        q = 2 * (h * d + f * g) / t
+        r = (h ** 2 + f ** 2 - (a * c) ** 2) / t
 
         t_int0 = t_int - t[0]
 
         sign = 1
 
-        z = -V * t_int0 - W + sign * sqrt((V ** 2 - R) * t_int0 ** 2 +
-                                          (2 * V * W - Q) * t_int0 +
-                                          W ** 2 - P)
-        y = (B * z + C * t_int0 + D) / A
-        x = (E * z + F * t_int0 + G) / A
+        z = -v * t_int0 - w + sign * sqrt((v ** 2 - r) * t_int0 ** 2 +
+                                          (2 * v * w - q) * t_int0 +
+                                          w ** 2 - p)
+        y = (b * z + h * t_int0 + d) / a
+        x = (e * z + f * t_int0 + g) / a
 
         x_int = x[0] + x
         y_int = y[0] + y
@@ -891,11 +891,11 @@ class SphereAlgorithm(object):
             # Select interaction above the earths surface.
 
             sign = -1
-            z = -V * t_int0 - W + sign * sqrt((V ** 2 - R) * t_int0 ** 2 +
-                                              (2 * V * W - Q) * t_int0 +
-                                              W ** 2 - P)
-            y = (B * z + C * t_int0 + D) / A
-            x = (E * z + F * t_int0 + G) / A
+            z = -v * t_int0 - w + sign * sqrt((v ** 2 - r) * t_int0 ** 2 +
+                                              (2 * v * w - q) * t_int0 +
+                                              w ** 2 - p)
+            y = (b * z + h * t_int0 + d) / a
+            x = (e * z + f * t_int0 + g) / a
 
             x_int = x[0] + x
             y_int = y[0] + y

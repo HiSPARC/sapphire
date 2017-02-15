@@ -89,13 +89,13 @@ def get_active_index(values, value):
     return idx - 1
 
 
-def gauss(x, N, mu, sigma):
+def gauss(x, n, mu, sigma):
     """Gaussian distribution
 
     To be used for fitting where the integral is not 1.
 
     """
-    return N * norm.pdf(x, mu, sigma)
+    return n * norm.pdf(x, mu, sigma)
 
 
 def norm_angle(angle):

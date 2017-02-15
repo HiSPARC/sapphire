@@ -100,19 +100,19 @@ def date_to_juliandate(year, month, day):
         month1 = month + 12
 
     if year1 > 1582 or (year1 == 1582 and month >= 10 and day >= 15):
-        A = int(year1 / 100)
-        B = 2 - A + int(A / 4)
+        a = int(year1 / 100)
+        b = 2 - a + int(a / 4)
     else:
-        B = 0
+        b = 0
 
     if year1 < 0:
-        C = int((365.25 * year1) - 0.75)
+        c = int((365.25 * year1) - 0.75)
     else:
-        C = int(365.25 * year1)
+        c = int(365.25 * year1)
 
-    D = int(30.6001 * (month1 + 1))
+    d = int(30.6001 * (month1 + 1))
 
-    return B + C + D + day + 1720994.5
+    return b + c + d + day + 1720994.5
 
 
 def datetime_to_juliandate(dt):
@@ -122,9 +122,9 @@ def datetime_to_juliandate(dt):
     :return: The Julian Date for the given datetime object.
 
     """
-    A = date_to_juliandate(dt.year, dt.month, dt.day)
-    B = time_to_decimal(dt.time()) / 24.
-    return A + B
+    juliandate = date_to_juliandate(dt.year, dt.month, dt.day)
+    decimal_time = time_to_decimal(dt.time()) / 24.
+    return juliandate + decimal_time
 
 
 def juliandate_to_modifiedjd(juliandate):
@@ -206,10 +206,10 @@ def gmst_to_utc(dt):
     t0 = 6.697374558 + (2400.051336 * t) + (0.000025862 * t * t)
     t0 %= 24
 
-    GST = (time_to_decimal(dt.time()) - t0) % 24
-    UT = GST * 0.9972695663
+    gst = (time_to_decimal(dt.time()) - t0) % 24
+    ut = gst * 0.9972695663
 
-    time = decimal_to_time(UT)
+    time = decimal_to_time(ut)
 
     return dt.replace(hour=time.hour, minute=time.minute, second=time.seconds,
                       microsecond=time.microsecond)
@@ -226,28 +226,28 @@ def juliandate_to_utc(juliandate):
     jd_frac, jd_int = math.modf(juliandate)
 
     if jd_int > 2299160:
-        A = int((jd_int - 1867216.25) / 36524.25)
-        B = jd_int + 1 + A - int(A / 4)
+        a = int((jd_int - 1867216.25) / 36524.25)
+        b = jd_int + 1 + a - int(a / 4)
     else:
-        B = jd_int
+        b = jd_int
 
-    C = B + 1524
-    D = int((C - 122.1) / 365.25)
-    E = int(365.25 * D)
-    G = int((C - E) / 30.6001)
+    c = b + 1524
+    d = int((c - 122.1) / 365.25)
+    e = int(365.25 * d)
+    g = int((c - e) / 30.6001)
 
-    day = C - E + jd_frac - int(30.6001 * G)
+    day = c - e + jd_frac - int(30.6001 * g)
 
-    if G < 13.5:
-        month = G - 1
+    if g < 13.5:
+        month = g - 1
     else:
-        month = G - 13
+        month = g - 13
     month = int(month)
 
     if month > 2.5:
-        year = D - 4716
+        year = d - 4716
     else:
-        year = D - 4715
+        year = d - 4715
     year = int(year)
 
     day_frac, day = math.modf(day)

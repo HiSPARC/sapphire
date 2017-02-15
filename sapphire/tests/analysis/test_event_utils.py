@@ -203,7 +203,7 @@ class GetDetectorIdsTests(unittest.TestCase):
     def test_get_detector_ids(self):
         self.assertEqual(event_utils.get_detector_ids(), list(range(4)))
         station = MagicMock()
-        station.n_detectors.return_value = 2
+        station.detectors.__len__.return_value = 2
         self.assertEqual(event_utils.get_detector_ids(station=station), list(range(2)))
         event = MagicMock()
         event.__getitem__.side_effect = lambda name: [10, 100, 40, -1]

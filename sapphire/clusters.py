@@ -713,12 +713,12 @@ class SimpleCluster(BaseCluster):
 
         # calculate station positions. the cluster resembles a single
         # four-detector HiSPARC station, but scaled up
-        A = size / 2
-        B = A / sqrt(3)
-        self._add_station((0, 2 * B, 0), 0)
+        a = size / 2
+        b = a / sqrt(3)
+        self._add_station((0, 2 * b, 0), 0)
         self._add_station((0, 0, 0), 0)
-        self._add_station((-A, -B, 0), 2 * pi / 3)
-        self._add_station((A, -B, 0), -2 * pi / 3)
+        self._add_station((-a, -b, 0), 2 * pi / 3)
+        self._add_station((a, -b, 0), -2 * pi / 3)
 
 
 class SingleStation(BaseCluster):
