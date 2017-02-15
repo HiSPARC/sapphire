@@ -36,6 +36,7 @@ from . import storage
 BASE = 'http://data.hisparc.nl/data/'
 EVENTS_URL = BASE + '{station_number:d}/events/?{query}'
 WEATHER_URL = BASE + '{station_number:d}/weather/?{query}'
+SINGLES_URL = BASE + '{station_number:d}/singles/?{query}'
 LIGHTNING_URL = BASE + 'knmi/lightning/{lightning_type:d}/?{query}'
 COINCIDENCES_URL = BASE + 'network/coincidences/?{query}'
 
@@ -94,8 +95,8 @@ def load_data(file, group, tsv_file, type='events'):
     :param group: the PyTables destination group, which need not exist.
     :param tsv_file: path to the tsv file downloaded from the HiSPARC
                      Public Database.
-    :param type: the datatype to load, either 'events', 'weather', or
-                 'lightning'.
+    :param type: the datatype to load, either 'events', 'weather',
+                 'singles' or 'lightning'.
 
     Example::
 
@@ -111,6 +112,9 @@ def load_data(file, group, tsv_file, type='events'):
     elif type == 'weather':
         table = _get_or_create_weather_table(file, group)
         read_and_store_class = _read_line_and_store_weather_class
+    elif type == 'singles':
+        table = _get_or_create_singles_table(file, group)
+        read_and_store_class = _read_line_and_store_singles_class
     elif type == 'lightning':
         table = _get_or_create_lightning_table(file, group)
         read_and_store_class = _read_line_and_store_lightning_class
@@ -135,7 +139,8 @@ def download_data(file, group, station_number, start=None, end=None,
         interval.
     :param end: a datetime instance defining the end of the search
         interval.
-    :param type: the datatype to download, either 'events' or 'weather'.
+    :param type: the datatype to download, either 'events', 'weather',
+        or 'singles'.
     :param progress: if True show a progressbar while downloading.
 
     If group is None, use '/s<station_number>' as a default.
@@ -180,6 +185,10 @@ def download_data(file, group, station_number, start=None, end=None,
         url = WEATHER_URL.format(station_number=station_number, query=query)
         table = _get_or_create_weather_table(file, group)
         read_and_store = _read_line_and_store_weather_class
+    elif type == 'singles':
+        url = SINGLES_URL.format(station_number=station_number, query=query)
+        table = _get_or_create_singles_table(file, group)
+        read_and_store = _read_line_and_store_singles_class
     elif type == 'lightning':
         url = LIGHTNING_URL.format(lightning_type=station_number, query=query)
         table = _get_or_create_lightning_table(file, group)
@@ -609,6 +618,39 @@ def _create_weather_table(file, group):
     return file.create_table(group, 'weather', description, createparents=True)
 
 
+def _get_or_create_singles_table(file, group):
+    """Get or create singles table in PyTables file"""
+
+    try:
+        return file.get_node(group, 'singles')
+    except tables.NoSuchNodeError:
+        return _create_singles_table(file, group)
+
+
+def _create_singles_table(file, group):
+    """Create singles table in PyTables file
+
+    Create a singles table containing the ESD singles columns which are
+    available in the TSV download.
+
+    :param file: PyTables file.
+    :param group: the group to contain the singles table, which need not
+                  exist.
+
+    """
+    description = {'event_id': tables.UInt32Col(pos=0),
+                   'timestamp': tables.Time32Col(pos=1),
+                   'mas_ch1_low': tables.Int32Col(pos=2),
+                   'mas_ch1_high': tables.Int32Col(pos=3),
+                   'mas_ch2_low': tables.Int32Col(pos=4),
+                   'mas_ch2_high': tables.Int32Col(pos=5),
+                   'slv_ch1_low': tables.Int32Col(pos=6),
+                   'slv_ch1_high': tables.Int32Col(pos=7),
+                   'slv_ch2_low': tables.Int32Col(pos=8),
+                   'slv_ch2_high': tables.Int32Col(pos=9)}
+    return file.create_table(group, 'singles', description, createparents=True)
+
+
 def _get_or_create_lightning_table(file, group):
     """Get or create lightning table in PyTables file"""
 
@@ -792,6 +834,45 @@ class _read_line_and_store_weather_class(_read_line_and_store_event_class):
         row['heat_index'] = int(heat_index)
         row['dew_point'] = float(dew_point)
         row['wind_chill'] = float(wind_chill)
+
+        # store event
+        row.append()
+
+        self.event_counter += 1
+        # force flush every 1e6 rows to free buffers
+        if not self.event_counter % 1000000:
+            self.table.flush()
+
+        return int(timestamp)
+
+
+class _read_line_and_store_singles_class(_read_line_and_store_event_class):
+
+    """Store lines of singles data from the ESD"""
+
+    def store_line(self, line):
+        # ignore comment lines
+        if line[0][0] == '#':
+            return 0.
+
+        # break up TSV line
+        (date, time, timestamp,
+         mas_ch1_low, mas_ch1_high, mas_ch2_low, mas_ch2_high,
+         slv_ch1_low, slv_ch1_high, slv_ch2_low, slv_ch2_high) = line
+
+        row = self.table.row
+
+        # convert string values to correct data types
+        row['event_id'] = self.event_counter
+        row['timestamp'] = int(timestamp)
+        row['mas_ch1_low'] = int(mas_ch1_low)
+        row['mas_ch1_high'] = int(mas_ch1_high)
+        row['mas_ch2_low'] = int(mas_ch2_low)
+        row['mas_ch2_high'] = int(mas_ch2_high)
+        row['slv_ch1_low'] = int(slv_ch1_low)
+        row['slv_ch1_high'] = int(slv_ch1_high)
+        row['slv_ch2_low'] = int(slv_ch2_low)
+        row['slv_ch2_high'] = int(slv_ch2_high)
 
         # store event
         row.append()
