@@ -58,7 +58,7 @@ def linear_intersection(slope_1, intercept_1, slope_2, intercept_2):
     """
     if slope_1 == slope_2:
         raise Exception('The lines are parallel and will never cross')
-    return ((intercept_2 - intercept_1) / (slope_1 - slope_2))
+    return (intercept_2 - intercept_1) / (slope_1 - slope_2)
 
 
 def linear_circle_linear(x, radius, slope_low, intercept_low, slope_high,
