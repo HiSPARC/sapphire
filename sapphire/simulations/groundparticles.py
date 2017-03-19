@@ -66,7 +66,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                  (x, y-tuple) and azimuth.
 
         """
-        r = self.max_core_distance
+        r_max = self.max_core_distance
         now = int(time())
 
         event_header = self.corsikafile.get_node_attr('/', 'event_header')
@@ -77,9 +77,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                               'particle': event_header.particle}
         self.corsika_azimuth = event_header.azimuth
 
-        for i in pbar(range(self.N), show=self.progress):
+        for i in pbar(range(self.n), show=self.progress):
             ext_timestamp = (now + i) * int(1e9)
-            x, y = self.generate_core_position(r)
+            x, y = self.generate_core_position(r_max)
             shower_azimuth = self.generate_azimuth()
 
             shower_parameters = {'ext_timestamp': ext_timestamp,
@@ -477,16 +477,16 @@ class FixedCoreDistanceSimulation(GroundParticlesSimulation):
     """
 
     @classmethod
-    def generate_core_position(cls, R):
+    def generate_core_position(cls, r_max):
         """Generate a random core position on a circle
 
-        :param R: Core distance, in meters.
-        :return: Random x, y position on the circle with radius R.
+        :param r_max: Fixed core distance, in meters.
+        :return: Random x, y position on the circle with radius r_max.
 
         """
         phi = np.random.uniform(-pi, pi)
-        x = R * cos(phi)
-        y = R * sin(phi)
+        x = r_max * cos(phi)
+        y = r_max * sin(phi)
         return x, y
 
 
@@ -569,7 +569,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         n_reuse = 100
         now = int(time())
 
-        for i in pbar(range(self.N), show=self.progress):
+        for i in pbar(range(self.n), show=self.progress):
             sim = self.select_simulation()
             if sim is None:
                 continue

@@ -132,7 +132,7 @@ class API(object):
             try:
                 with open(localpath) as localdata:
                     data = json.load(localdata)
-            except:
+            except Exception:
                 if self.force_stale:
                     raise Exception('Couldn\'t find requested data locally.')
                 raise Exception('Couldn\'t get requested data from server '
@@ -166,7 +166,7 @@ class API(object):
                     warnings.filterwarnings('ignore')
                     data = genfromtxt(localpath, delimiter='\t', dtype=None,
                                       names=names)
-            except:
+            except Exception:
                 if self.force_stale:
                     raise Exception('Couldn\'t find requested data locally.')
                 raise Exception('Couldn\'t get requested data from server '

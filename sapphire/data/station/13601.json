@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 110.68,
+    "cluster": "Bristol",
+    "country": "United Kingdom",
+    "latitude": 50.7256034,
+    "longitude": -3.5298252,
+    "name": "Exeter Mathematics School",
+    "number": 13601,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Exeter"
+}

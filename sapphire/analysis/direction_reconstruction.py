@@ -56,7 +56,7 @@ class EventDirectionReconstruction(object):
         self.station = station
 
     def reconstruct_event(self, event, detector_ids=None, offsets=NO_OFFSET,
-                          initial={}):
+                          initial=None):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -95,22 +95,23 @@ class EventDirectionReconstruction(object):
         return theta, phi, ids
 
     def reconstruct_events(self, events, detector_ids=None, offsets=NO_OFFSET,
-                           progress=True, initials=[]):
+                           progress=True, initials=None):
         """Reconstruct events
 
-        :param events: the events table for the station from an ESD data
-                       file.
+        :param events: the events table for the station from an ESD data file.
         :param detector_ids: detectors to use for the reconstructions.
         :param offsets: time offsets for each detector or a
             :class:`~sapphire.api.Station` object.
         :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
-                        parameters.
+                         parameters.
         :return: list of theta, phi, and detector ids.
 
         """
+        if initials is None:
+            initials = []
         events = pbar(events, show=progress)
-        events_init = zip_longest(events, initials, fillvalue={})
+        events_init = zip_longest(events, initials)
         angles = [self.reconstruct_event(event, detector_ids, offsets, initial)
                   for event, initial in events_init]
         if len(angles):
@@ -144,7 +145,7 @@ class CoincidenceDirectionReconstruction(object):
         self.cluster = cluster
 
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
-                                offsets={}, initial={}):
+                                offsets=None, initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of three
@@ -159,6 +160,10 @@ class CoincidenceDirectionReconstruction(object):
         """
         if len(coincidence_events) < 3:
             return nan, nan, []
+        if offsets is None:
+            offsets = {}
+        if initial is None:
+            initial = {}
 
         # Subtract base timestamp to prevent loss of precision
         ts0 = int(coincidence_events[0][1]['timestamp'])
@@ -197,7 +202,7 @@ class CoincidenceDirectionReconstruction(object):
         return theta, phi, nums
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 offsets={}, progress=True, initials=[]):
+                                 offsets=None, progress=True, initials=None):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidence events, each consisting
@@ -209,12 +214,16 @@ class CoincidenceDirectionReconstruction(object):
                         detector from a specific station.
         :param progress: if True show a progress bar while reconstructing.
         :param initials: list of dictionaries with already reconstructed shower
-                        parameters.
+                         parameters.
         :return: list of theta, phi, and station numbers.
 
         """
+        if offsets is None:
+            offsets = {}
+        if initials is None:
+            initials = []
         coincidences = pbar(coincidences, show=progress)
-        coin_init = zip_longest(coincidences, initials, fillvalue={})
+        coin_init = zip_longest(coincidences, initials)
         angles = [self.reconstruct_coincidence(coincidence, station_numbers,
                                                offsets, initial)
                   for coincidence, initial in coin_init]
@@ -266,7 +275,7 @@ class CoincidenceDirectionReconstruction(object):
                 try:
                     o, e = offsets[sn].station_timing_offset(ref_sn,
                                                              midnight_ts)
-                except:
+                except Exception:
                     o, e = NO_STATION_OFFSET
                 else:
                     if isnan(o) and isnan(e):
@@ -341,7 +350,7 @@ class CoincidenceDirectionReconstructionDetectors(
     """
 
     def reconstruct_coincidence(self, coincidence_events, station_numbers=None,
-                                offsets={}, initial={}):
+                                offsets=None, initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence_events: a coincidence list consisting of one
@@ -357,6 +366,10 @@ class CoincidenceDirectionReconstructionDetectors(
         """
         if len(coincidence_events) < 1:
             return nan, nan, []
+        if offsets is None:
+            offsets = {}
+        if initial is None:
+            initial = {}
 
         # Subtract base timestamp to prevent loss of precision
         ts0 = int(coincidence_events[0][1]['timestamp'])
@@ -407,7 +420,7 @@ class BaseDirectionAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct shower angles
 
         :param t: detector arrival time in ns.
@@ -444,7 +457,7 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -525,14 +538,14 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = r1 ** 2 * (1 - sintheta ** 2) * cos(phi - phi1) ** 2
 
-        A = (r1 ** 2 * sinphiphi1 ** 2 *
-             cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-        B = -(2 * r1 * c * sinphiphi1 *
-              (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
-               cls.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
-        C = 2 * c ** 2
+        aa = (r1 ** 2 * sinphiphi1 ** 2 *
+              cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+        bb = -(2 * r1 * c * sinphiphi1 *
+               (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
+                cls.dphi_dt1(theta, phi, phi1, phi2, r1, r2)))
+        cc = 2 * c ** 2
 
-        errsq = (A * sintheta ** 2 + B * sintheta + C) / den
+        errsq = (aa * sintheta ** 2 + bb * sintheta + cc) / den
 
         return where(isnan(errsq), inf, errsq)
 
@@ -545,14 +558,14 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
 
         den = r2 ** 2 * (1 - sintheta ** 2) * cos(phi - phi2) ** 2
 
-        A = (r2 ** 2 * sinphiphi2 ** 2 *
-             cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
-        B = -(2 * r2 * c * sinphiphi2 *
-              (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
-               cls.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
-        C = 2 * c ** 2
+        aa = (r2 ** 2 * sinphiphi2 ** 2 *
+              cls.rel_phi_errorsq(theta, phi, phi1, phi2, r1, r2))
+        bb = -(2 * r2 * c * sinphiphi2 *
+               (cls.dphi_dt0(theta, phi, phi1, phi2, r1, r2) -
+                cls.dphi_dt2(theta, phi, phi1, phi2, r1, r2)))
+        cc = 2 * c ** 2
 
-        errsq = (A * sintheta ** 2 + B * sintheta + C) / den
+        errsq = (aa * sintheta ** 2 + bb * sintheta + cc) / den
 
         return where(isnan(errsq), inf, errsq)
 
@@ -570,17 +583,17 @@ class DirectAlgorithm(BaseDirectionAlgorithm):
                (sinphi1 * cos(phi - phi2) - sinphi2 * cos(phi - phi1)) ** 2 /
                c ** 2)
 
-        A = (r1 ** 2 * sinphi1 ** 2 +
-             r2 ** 2 * sinphi2 ** 2 -
-             r1 * r2 * sinphi1 * sinphi2)
-        B = (2 * r1 ** 2 * sinphi1 * cosphi1 +
-             2 * r2 ** 2 * sinphi2 * cosphi2 -
-             r1 * r2 * (sinphi2 * cosphi1 + sinphi1 * cosphi2))
-        C = (r1 ** 2 * cosphi1 ** 2 +
-             r2 ** 2 * cosphi2 ** 2 -
-             r1 * r2 * cosphi1 * cosphi2)
+        aa = (r1 ** 2 * sinphi1 ** 2 +
+              r2 ** 2 * sinphi2 ** 2 -
+              r1 * r2 * sinphi1 * sinphi2)
+        bb = (2 * r1 ** 2 * sinphi1 * cosphi1 +
+              2 * r2 ** 2 * sinphi2 * cosphi2 -
+              r1 * r2 * (sinphi2 * cosphi1 + sinphi1 * cosphi2))
+        cc = (r1 ** 2 * cosphi1 ** 2 +
+              r2 ** 2 * cosphi2 ** 2 -
+              r1 * r2 * cosphi1 * cosphi2)
 
-        return 2 * (A * tanphi ** 2 + B * tanphi + C) / den
+        return 2 * (aa * tanphi ** 2 + bb * tanphi + cc) / den
 
     @classmethod
     def dphi_dt0(cls, theta, phi, phi1, phi2, r1=10, r2=10):
@@ -636,7 +649,7 @@ class DirectAlgorithmCartesian(BaseDirectionAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -703,7 +716,7 @@ class DirectAlgorithmCartesian3D(BaseDirectionAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 detections
 
         This function converts the coordinates to be suitable for the
@@ -796,7 +809,7 @@ class SphereAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_source_ECS(cls, t, x, y, z, timestamp):
+    def reconstruct_equatorial(cls, t, x, y, z, timestamp):
         """Reconstructs the source in the Equatorial Coordinate System.
 
         :param t: An array with three arrival times in ns.
@@ -810,11 +823,11 @@ class SphereAlgorithm(object):
         """
         t_int = array([-1000, -10000]) + t[0]
         x_int, y_int, z_int = cls.interaction_curve(x, y, z, t, t_int)
-        dec_source = arctan2(z_int[1] - z_int[0],
-                             sqrt((x_int[1] - x_int[0]) ** 2. +
-                                  (y_int[1] - y_int[0]) ** 2.))
-        RA_source = arctan2(x_int[1] - x_int[0], y_int[1] - y_int[0])
-        return dec_source, RA_source
+        dec = arctan2(z_int[1] - z_int[0],
+                      sqrt((x_int[1] - x_int[0]) ** 2. +
+                           (y_int[1] - y_int[0]) ** 2.))
+        ra = arctan2(x_int[1] - x_int[0], y_int[1] - y_int[0])
+        return dec, ra
 
     @staticmethod
     def interaction_curve(x, y, z, t, t_int):
@@ -840,32 +853,32 @@ class SphereAlgorithm(object):
         t01 = t[0] - t[1]
         t02 = t[0] - t[2]
 
-        A = 2. * (x01 * y02 - x02 * y01)
-        B = 2. * (x02 * z01 - x01 * z02)
-        C = 2. * (x02 * t01 - x01 * t02) * c ** 2
-        D = (x02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2) -
+        a = 2. * (x01 * y02 - x02 * y01)
+        b = 2. * (x02 * z01 - x01 * z02)
+        h = 2. * (x02 * t01 - x01 * t02) * c ** 2
+        d = (x02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2) -
              x01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2))
-        E = 2. * (y01 * z02 - y02 * z01)
-        F = 2. * (y01 * t02 - y02 * t01) * c ** 2
-        G = (y01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2) -
+        e = 2. * (y01 * z02 - y02 * z01)
+        f = 2. * (y01 * t02 - y02 * t01) * c ** 2
+        g = (y01 * (x02 ** 2 + y02 ** 2 + z02 ** 2 - (t02 * c) ** 2) -
              y02 * (x01 ** 2 + y01 ** 2 + z01 ** 2 - (t01 * c) ** 2))
 
-        T = A ** 2 + B ** 2 + E ** 2
-        V = (B * C + E * F) / T
-        W = (B * D + E * G) / T
-        P = (D ** 2 + G ** 2) / T
-        Q = 2 * (C * D + F * G) / T
-        R = (C ** 2 + F ** 2 - (A * c) ** 2) / T
+        t = a ** 2 + b ** 2 + e ** 2
+        v = (b * h + e * f) / t
+        w = (b * d + e * g) / t
+        p = (d ** 2 + g ** 2) / t
+        q = 2 * (h * d + f * g) / t
+        r = (h ** 2 + f ** 2 - (a * c) ** 2) / t
 
         t_int0 = t_int - t[0]
 
         sign = 1
 
-        z = -V * t_int0 - W + sign * sqrt((V ** 2 - R) * t_int0 ** 2 +
-                                          (2 * V * W - Q) * t_int0 +
-                                          W ** 2 - P)
-        y = (B * z + C * t_int0 + D) / A
-        x = (E * z + F * t_int0 + G) / A
+        z = -v * t_int0 - w + sign * sqrt((v ** 2 - r) * t_int0 ** 2 +
+                                          (2 * v * w - q) * t_int0 +
+                                          w ** 2 - p)
+        y = (b * z + h * t_int0 + d) / a
+        x = (e * z + f * t_int0 + g) / a
 
         x_int = x[0] + x
         y_int = y[0] + y
@@ -878,11 +891,11 @@ class SphereAlgorithm(object):
             # Select interaction above the earths surface.
 
             sign = -1
-            z = -V * t_int0 - W + sign * sqrt((V ** 2 - R) * t_int0 ** 2 +
-                                              (2 * V * W - Q) * t_int0 +
-                                              W ** 2 - P)
-            y = (B * z + C * t_int0 + D) / A
-            x = (E * z + F * t_int0 + G) / A
+            z = -v * t_int0 - w + sign * sqrt((v ** 2 - r) * t_int0 ** 2 +
+                                              (2 * v * w - q) * t_int0 +
+                                              w ** 2 - p)
+            y = (b * z + h * t_int0 + d) / a
+            x = (e * z + f * t_int0 + g) / a
 
             x_int = x[0] + x
             y_int = y[0] + y
@@ -894,7 +907,7 @@ class SphereAlgorithm(object):
 class FitAlgorithm3D(BaseDirectionAlgorithm):
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -956,12 +969,10 @@ class FitAlgorithm3D(BaseDirectionAlgorithm):
             phi2 = nan
             theta2 = nan
 
-        # in case one of the theta's is smaller than pi/2 (shower from above)
-        # and one larger than pi/2 (shower from below),
+        # In case one of the theta's is smaller than pi/2 (shower from above)
+        # and the other is either nan or larger than pi/2 (shower from below),
         # the first one is considered correct.
-        # if both come from above (or from below), both theta's are rejected
-        # the check is preceeded by a check if the fit has not delivered nans.
-
+        # If both come from above (or from below), both theta's are rejected.
         if theta1 <= pi / 2. and (isnan(theta2) or theta2 > pi / 2.):
             theta = theta1
             phi = phi1
@@ -1009,7 +1020,7 @@ class RegressionAlgorithm(BaseDirectionAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1093,7 +1104,7 @@ class RegressionAlgorithm3D(BaseDirectionAlgorithm):
     MAX_ITERATIONS = 1000
 
     @classmethod
-    def reconstruct_common(cls, t, x, y, z=None, initial={}):
+    def reconstruct_common(cls, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1136,17 +1147,49 @@ class RegressionAlgorithm3D(BaseDirectionAlgorithm):
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
             nz = cos(theta)
-            dxproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
-            dyproj = [yi - zi * nynz for yi, zi in zip(y, z)]
-            dtproj = [ti + zi / (c * nz) for ti, zi in zip(t, z)]
+            x_proj = [xi - zi * nxnz for xi, zi in zip(x, z)]
+            y_proj = [yi - zi * nynz for yi, zi in zip(y, z)]
+            t_proj = [ti + zi / (c * nz) for ti, zi in zip(t, z)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(dtproj, dxproj, dyproj)
+            theta, phi = regress2d.reconstruct_common(t_proj, x_proj, y_proj)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
 
 
-class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
+class CurvedMixin(object):
+
+    """Provide methods to estimate the time delay due to front curvature
+
+    Given a core location, detector position, and shower angle the radial core
+    distance can be determined, which can be used to determine the expected
+    time delay.
+
+    """
+
+    def time_delay(self, x, y, core_x, core_y, theta, phi):
+        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
+        return self.front.delay_at_r(r)
+
+    @classmethod
+    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
+        """Determine the radial core distance
+
+        :param x,y,z: positions of the detectors in m.
+        :param core_x,core_y: core position at z = 0 in m.
+        :param theta,phi: reconstructed shower direction.
+        :return: radial core distance in m.
+
+        """
+        dx = core_x - x
+        dy = core_y - y
+        nx = sin(theta) * cos(phi)
+        ny = sin(theta) * sin(phi)
+        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
+                    2 * dx * dy * nx * ny)
+
+
+class CurvedRegressionAlgorithm(CurvedMixin, BaseDirectionAlgorithm):
 
     """Reconstruct angles taking the shower front curvature into account.
 
@@ -1160,7 +1203,7 @@ class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
     def __init__(self):
         self.front = CorsikaStationFront()
 
-    def reconstruct_common(self, t, x, y, z=None, initial={}):
+    def reconstruct_common(self, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1173,6 +1216,8 @@ class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
                         reconstructions, including core position.
 
         """
+        if initial is None:
+            initial = {}
         core_x = initial.get('core_x', nan)
         core_y = initial.get('core_y', nan)
         if isnan(core_y) or isnan(core_y):
@@ -1202,29 +1247,16 @@ class CurvedRegressionAlgorithm(BaseDirectionAlgorithm):
             iteration += 1
             if iteration > self.MAX_ITERATIONS:
                 return nan, nan
-            tproj = [ti - self.time_delay(xi, yi, core_x, core_y, theta, phi)
-                     for ti, xi, yi in zip(t, x, y)]
+            t_proj = [ti - self.time_delay(xi, yi, core_x, core_y, theta, phi)
+                      for ti, xi, yi in zip(t, x, y)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(tproj, x, y)
+            theta, phi = regress2d.reconstruct_common(t_proj, x, y)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
 
-    def time_delay(self, x, y, core_x, core_y, theta, phi):
-        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
-        return self.front.delay_at_r(r)
 
-    @classmethod
-    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
-        dx = core_x - x
-        dy = core_y - y
-        nx = sin(theta) * cos(phi)
-        ny = sin(theta) * sin(phi)
-        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
-                    2 * dx * dy * nx * ny)
-
-
-class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
+class CurvedRegressionAlgorithm3D(CurvedMixin, BaseDirectionAlgorithm):
 
     """Reconstruct angles accounting for front curvature and detector altitudes
 
@@ -1238,7 +1270,7 @@ class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
     def __init__(self):
         self.front = CorsikaStationFront()
 
-    def reconstruct_common(self, t, x, y, z=None, initial={}):
+    def reconstruct_common(self, t, x, y, z=None, initial=None):
         """Reconstruct angles from 3 or more detections
 
         This function converts the arguments to be suitable for the
@@ -1251,6 +1283,8 @@ class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
                         reconstructions, including core position.
 
         """
+        if initial is None:
+            initial = {}
         core_x = initial.get('core_x', nan)
         core_y = initial.get('core_y', nan)
         if isnan(core_y) or isnan(core_y):
@@ -1286,29 +1320,16 @@ class CurvedRegressionAlgorithm3D(BaseDirectionAlgorithm):
             nxnz = tan(theta) * cos(phi)
             nynz = tan(theta) * sin(phi)
             nz = cos(theta)
-            xproj = [xi - zi * nxnz for xi, zi in zip(x, z)]
-            yproj = [yi - zi * nynz for yi, zi in zip(y, z)]
-            tproj = [ti + zi / (c * nz) -
-                     self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
-                     for ti, xpi, ypi, zi in zip(t, xproj, yproj, z)]
+            x_proj = [xi - zi * nxnz for xi, zi in zip(x, z)]
+            y_proj = [yi - zi * nynz for yi, zi in zip(y, z)]
+            t_proj = [ti + zi / (c * nz) -
+                      self.time_delay(xpi, ypi, core_x, core_y, theta, phi)
+                      for ti, xpi, ypi, zi in zip(t, x_proj, y_proj, z)]
             theta_prev = theta
-            theta, phi = regress2d.reconstruct_common(tproj, xproj, yproj)
+            theta, phi = regress2d.reconstruct_common(t_proj, x_proj, y_proj)
             dtheta = abs(theta - theta_prev)
 
         return theta, phi
-
-    def time_delay(self, x, y, core_x, core_y, theta, phi):
-        r = self.radial_core_distance(x, y, core_x, core_y, theta, phi)
-        return self.front.delay_at_r(r)
-
-    @classmethod
-    def radial_core_distance(cls, x, y, core_x, core_y, theta, phi):
-        dx = core_x - x
-        dy = core_y - y
-        nx = sin(theta) * cos(phi)
-        ny = sin(theta) * sin(phi)
-        return sqrt(dx ** 2 * (1 - nx ** 2) + dy ** 2 * (1 - ny ** 2) -
-                    2 * dx * dy * nx * ny)
 
 
 def logic_checks(t, x, y, z):

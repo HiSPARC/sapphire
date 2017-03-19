@@ -43,7 +43,7 @@ class EventCoreReconstruction(object):
         self.estimator = CenterMassAlgorithm
         self.station = station
 
-    def reconstruct_event(self, event, detector_ids=None, initial={}):
+    def reconstruct_event(self, event, detector_ids=None, initial=None):
         """Reconstruct a single event
 
         :param event: an event (e.g. from an events table), or any
@@ -60,6 +60,7 @@ class EventCoreReconstruction(object):
         p, x, y, z = ([], [], [], [])
         if detector_ids is None:
             detector_ids = range(4)
+
         self.station.cluster.set_timestamp(event['timestamp'])
         for id in detector_ids:
             p_detector = detector_density(event, id, self.station)
@@ -77,7 +78,7 @@ class EventCoreReconstruction(object):
         return core_x, core_y
 
     def reconstruct_events(self, events, detector_ids=None, progress=True,
-                           initials=[]):
+                           initials=None):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
@@ -89,6 +90,9 @@ class EventCoreReconstruction(object):
         :return: (x, y) core positions in m.
 
         """
+        if initials is None:
+            initials = []
+
         events = pbar(events, show=progress)
         events_init = zip_longest(events, initials)
         cores = [self.reconstruct_event(event, detector_ids, initial)
@@ -121,7 +125,7 @@ class CoincidenceCoreReconstruction(object):
         self.cluster = cluster
 
     def reconstruct_coincidence(self, coincidence, station_numbers=None,
-                                initial={}):
+                                initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
@@ -161,7 +165,7 @@ class CoincidenceCoreReconstruction(object):
         return core_x, core_y
 
     def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 progress=True, initials=[]):
+                                 progress=True, initials=None):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidences, each consisting of
@@ -174,6 +178,9 @@ class CoincidenceCoreReconstruction(object):
         :return: (x, y) core positions in m.
 
         """
+        if initials is None:
+            initials = []
+
         coincidences = pbar(coincidences, show=progress)
         coin_init = zip_longest(coincidences, initials)
         cores = [self.reconstruct_coincidence(coincidence, station_numbers,
@@ -201,7 +208,7 @@ class CoincidenceCoreReconstructionDetectors(
     """
 
     def reconstruct_coincidence(self, coincidence, station_numbers=None,
-                                initial={}):
+                                initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
@@ -251,7 +258,7 @@ class BaseCoreAlgorithm(object):
     """
 
     @classmethod
-    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+    def reconstruct_common(cls, p, x, y, z=None, initial=None):
         """Reconstruct core position
 
         :param p: detector particle density in m^-2.
@@ -283,7 +290,7 @@ class CenterMassAlgorithm(BaseCoreAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+    def reconstruct_common(cls, p, x, y, z=None, initial=None):
         """Reconstruct core position
 
         :param p: detector particle density in m^-2.
@@ -294,6 +301,8 @@ class CenterMassAlgorithm(BaseCoreAlgorithm):
         :return: reconstructed core position.
 
         """
+        if initial is None:
+            initial = {}
         theta = initial.get('theta', nan)
         if not isnan(theta):
             p = [density * cos(theta) for density in p]
@@ -330,7 +339,7 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+    def reconstruct_common(cls, p, x, y, z=None, initial=None):
         """Reconstruct core
 
         :param p: detector particle density in m^-2.
@@ -343,6 +352,8 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
             raise Exception('This algorithm requires at least 4 detections.')
+        if initial is None:
+            initial = {}
 
         phit = []
         xhit = []
@@ -445,7 +456,7 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
     """
 
     @classmethod
-    def reconstruct_common(cls, p, x, y, z=None, initial={}):
+    def reconstruct_common(cls, p, x, y, z=None, initial=None):
         """Reconstruct core position
 
         :param p: detector particle density in m^-2.
@@ -456,6 +467,8 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
         :return: reconstructed core position.
 
         """
+        if initial is None:
+            initial = {}
         theta = initial.get('theta', 0.)
         phi = initial.get('phi', 0.)
         return cls.reconstruct(p, x, y, theta, phi)[:2]
@@ -503,7 +516,9 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
         core_x, core_y, chi2best, factorbest = cls.selectbest(
             p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
 
-        return core_x, core_y, chi2best, factorbest * ldf.EllipsLdf._Ne
+        size = factorbest * ldf.EllipsLdf._n_electrons
+
+        return core_x, core_y, chi2best, size
 
     @staticmethod
     def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,

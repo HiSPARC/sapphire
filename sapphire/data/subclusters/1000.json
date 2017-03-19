@@ -1,38 +1,38 @@
 [
     {
-        "name": "Universiteit Utrecht", 
+        "name": "Universiteit Utrecht",
         "number": 1001
-    }, 
+    },
     {
-        "name": "Christelijk Gymnasium Utrecht", 
+        "name": "Christelijk Gymnasium Utrecht",
         "number": 1002
-    }, 
+    },
     {
-        "name": "Museum Sterrenwacht Sonnenborgh", 
+        "name": "Museum Sterrenwacht Sonnenborgh",
         "number": 1003
-    }, 
+    },
     {
-        "name": "Utrecht University Educatorium", 
+        "name": "Utrecht University Educatorium",
         "number": 1005
-    }, 
+    },
     {
-        "name": "University College Utrecht 1", 
+        "name": "University College Utrecht 1",
         "number": 1006
-    }, 
+    },
     {
-        "name": "University College Utrecht 2", 
+        "name": "University College Utrecht 2",
         "number": 1007
-    }, 
+    },
     {
-        "name": "Stedelijk Gymnasium Utrecht", 
+        "name": "Stedelijk Gymnasium Utrecht",
         "number": 1008
-    }, 
+    },
     {
-        "name": "FOM Bureau", 
+        "name": "FOM Bureau",
         "number": 1009
-    }, 
+    },
     {
-        "name": "Ornstein Laboratory", 
+        "name": "Ornstein Laboratory",
         "number": 1010
     }
 ]

@@ -40,18 +40,18 @@ class BaseSimulation(object):
     :param data: writeable PyTables file handle.
     :param output_path: path (as string) to the PyTables group (need not
                         exist) in which the result tables will be created.
-    :param N: number of simulations to perform.
+    :param n: number of simulations to perform.
     :param seed: seed for the pseudo-random number generators.
     :param progress: if True show a progressbar while simulating.
 
     """
 
-    def __init__(self, cluster, data, output_path='/', N=1, seed=None,
+    def __init__(self, cluster, data, output_path='/', n=1, seed=None,
                  progress=True):
         self.cluster = cluster
         self.data = data
         self.output_path = output_path
-        self.N = N
+        self.n = n
         self.progress = progress
 
         self._prepare_output_tables()
@@ -94,7 +94,7 @@ class BaseSimulation(object):
                              'energy': None,
                              'ext_timestamp': None}
 
-        for i in pbar(range(self.N), show=self.progress):
+        for _ in pbar(range(self.n), show=self.progress):
             yield shower_parameters
 
     def simulate_events_for_shower(self, shower_parameters):
@@ -310,7 +310,7 @@ class BaseSimulation(object):
                                                    station.number)
             description = ProcessEvents.processed_events_description
             self.data.create_table(station_group, 'events', description,
-                                   expectedrows=self.N)
+                                   expectedrows=self.n)
             self.station_groups.append(station_group)
 
     def _store_station_index(self):

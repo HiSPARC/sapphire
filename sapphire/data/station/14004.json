@@ -1,25 +1,25 @@
 {
-    "active": true, 
-    "altitude": 106.9, 
-    "cluster": "Birmingham", 
-    "country": "United Kingdom", 
-    "latitude": 51.7465336, 
-    "longitude": -2.2353856, 
-    "name": "Marling", 
-    "number": 14004, 
+    "active": true,
+    "altitude": 106.9,
+    "cluster": "Birmingham",
+    "country": "United Kingdom",
+    "latitude": 51.7465336,
+    "longitude": -2.2353856,
+    "name": "Marling",
+    "number": 14004,
     "scintillators": [
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
+            "alpha": null,
+            "beta": null,
+            "height": null,
             "radius": null
-        }, 
+        },
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
+            "alpha": null,
+            "beta": null,
+            "height": null,
             "radius": null
         }
-    ], 
+    ],
     "subcluster": "Birmingham"
 }

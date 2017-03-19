@@ -50,11 +50,11 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         # Combinations of shower parameters and detector after transformations
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (-0, -0, -0)),
-                        ((10, -60, 0), (-10, 60, -0)),
-                        ((10, -60, pi / 2), (60, 10, -pi / 2)))
+        combinations = ((0, 0, 0),
+                        (10, -60, 0),
+                        (10, -60, pi / 2))
 
-        for input, expected in combinations:
+        for input in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             self.simulation.get_particles_in_detector(self.detectors[0], shower_parameters)
             x, y = self.detectors[0].get_xy_coordinates()
@@ -133,14 +133,14 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
         # Combinations of shower parameters and detector after transformations
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (-0, -0, -0)),
-                        ((10, -60, 0), (-10, 60, -0)))
+        combinations = ((0, 0, 0),
+                        (10, -60, 0))
 
-        for input, expected in combinations:
+        for input in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             self.simulation.get_particles_in_detector(self.detectors[0], shower_parameters)
             x, y = self.detectors[0].get_xy_coordinates()
-            size = .6
+            size = 0.6
             self.simulation.groundparticles.read_where.assert_called_with(
                 '(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & '
                 '(b11 < y - 0.000000 * x) & (y - 0.000000 * x < b12) & '
@@ -197,7 +197,7 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.cq.finish.assert_called_once_with()
 
     def test_generate_shower_parameters(self):
-        self.simulation.N = 5
+        self.simulation.n = 5
         self.simulation.select_simulation = Mock()
         self.simulation.select_simulation.return_value = None
         shower_parameters = self.simulation.generate_shower_parameters()
@@ -206,11 +206,11 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         else:
             self.assertRaises(StopIteration, shower_parameters.__next__)
         self.assertEqual(self.simulation.select_simulation.call_count,
-                         self.simulation.N)
+                         self.simulation.n)
 
     def test_select_simulation(self):
         self.simulation.generate_zenith = lambda: 0.27  # 15.5 deg
-        self.simulation.generate_energy = lambda min_e, max_e: 10 ** 16.4
+        self.simulation.generate_energy = lambda e_min, e_max: 10 ** 16.4
         self.simulation.available_energies = set(arange(12, 18, 0.5))
         self.simulation.available_zeniths = {e: set(arange(0, 60, 7.5))
                                              for e in self.simulation.available_energies}

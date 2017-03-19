@@ -1,166 +1,174 @@
 [
     {
-        "name": "Amsterdam", 
+        "name": "Amsterdam",
         "number": 0
-    }, 
+    },
     {
-        "name": "Zaanstad", 
+        "name": "Zaanstad",
         "number": 100
-    }, 
+    },
     {
-        "name": "Haarlem", 
+        "name": "Haarlem",
         "number": 200
-    }, 
+    },
     {
-        "name": "Kennemerland", 
+        "name": "Kennemerland",
         "number": 300
-    }, 
+    },
     {
-        "name": "Alkmaar", 
+        "name": "Alkmaar",
         "number": 400
-    }, 
+    },
     {
-        "name": "Science Park", 
+        "name": "Science Park",
         "number": 500
-    }, 
+    },
     {
-        "name": "Hoorn", 
+        "name": "Hoorn",
         "number": 600
-    }, 
+    },
     {
-        "name": "Utrecht", 
+        "name": "Utrecht",
         "number": 1000
-    }, 
+    },
     {
-        "name": "Hilversum", 
+        "name": "Hilversum",
         "number": 1100
-    }, 
+    },
     {
-        "name": "Nijmegen", 
+        "name": "Nijmegen",
         "number": 2000
-    }, 
+    },
     {
-        "name": "Venray", 
+        "name": "Venray",
         "number": 2100
-    }, 
+    },
     {
-        "name": "Harderwijk", 
+        "name": "Harderwijk",
         "number": 2200
-    }, 
+    },
     {
-        "name": "Leiden", 
+        "name": "Leiden",
         "number": 3000
-    }, 
+    },
     {
-        "name": "Zwijndrecht", 
+        "name": "Zwijndrecht",
         "number": 3100
-    }, 
+    },
     {
-        "name": "Middelharnis", 
+        "name": "Middelharnis",
         "number": 3200
-    }, 
+    },
     {
-        "name": "Alphen aan de Rijn", 
+        "name": "Alphen aan de Rijn",
         "number": 3300
-    }, 
+    },
     {
-        "name": "Terneuzen", 
+        "name": "Terneuzen",
         "number": 3400
-    }, 
+    },
     {
-        "name": "Delft", 
+        "name": "Delft",
         "number": 3500
-    }, 
+    },
     {
-        "name": "Leidschendam-Voorburg", 
+        "name": "Leidschendam-Voorburg",
         "number": 3600
-    }, 
+    },
     {
-        "name": "Den Haag", 
+        "name": "Den Haag",
         "number": 3700
-    }, 
+    },
     {
-        "name": "Groningen", 
+        "name": "Groningen",
         "number": 4000
-    }, 
+    },
     {
-        "name": "Enschede", 
+        "name": "Enschede",
         "number": 7000
-    }, 
+    },
     {
-        "name": "Hengelo", 
+        "name": "Hengelo",
         "number": 7100
-    }, 
+    },
     {
-        "name": "Almelo", 
+        "name": "Almelo",
         "number": 7200
-    }, 
+    },
     {
-        "name": "Deventer", 
+        "name": "Deventer",
         "number": 7300
-    }, 
+    },
     {
-        "name": "Haaksbergen", 
+        "name": "Haaksbergen",
         "number": 7400
-    }, 
+    },
     {
-        "name": "Eindhoven", 
+        "name": "Eindhoven",
         "number": 8000
-    }, 
+    },
     {
-        "name": "Tilburg", 
+        "name": "Tilburg",
         "number": 8100
-    }, 
+    },
     {
-        "name": "Panningen", 
+        "name": "Panningen",
         "number": 8200
-    }, 
+    },
     {
-        "name": "Weert", 
+        "name": "Weert",
         "number": 8300
-    }, 
+    },
     {
-        "name": "Cambridge", 
+        "name": "Cambridge",
         "number": 11000
-    }, 
+    },
     {
-        "name": "Durham", 
+        "name": "Durham",
         "number": 12000
-    }, 
+    },
     {
-        "name": "Bristol", 
+        "name": "Bristol",
         "number": 13000
-    }, 
+    },
     {
-        "name": "Bath", 
+        "name": "Bath",
         "number": 13100
-    }, 
+    },
     {
-        "name": "Swindon", 
+        "name": "Swindon",
         "number": 13200
-    }, 
+    },
     {
-        "name": "Chippenham", 
+        "name": "Chippenham",
         "number": 13300
-    }, 
+    },
     {
-        "name": "Okehampton", 
+        "name": "Okehampton",
         "number": 13400
-    }, 
+    },
     {
-        "name": "Torquay", 
+        "name": "Torquay",
         "number": 13500
-    }, 
+    },
     {
-        "name": "Birmingham", 
+        "name": "Exeter",
+        "number": 13600
+    },
+    {
+        "name": "Birmingham",
         "number": 14000
-    }, 
+    },
     {
-        "name": "Aarhus", 
+        "name": "Sussex",
+        "number": 15000
+    },
+    {
+        "name": "Aarhus",
         "number": 20000
-    }, 
+    },
     {
-        "name": "Karlsruhe", 
+        "name": "Karlsruhe",
         "number": 70000
     }
 ]

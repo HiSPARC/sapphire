@@ -36,14 +36,14 @@ anguish and despair.  SAPPHiRE's ultimate goal: no more of that.
 Installation
 ------------
 
-Required: Python 2.7. pip will take care of dependencies, but installing 
+Required: Python. pip will take care of dependencies, but installing 
 numpy, scipy and pytables from a python distribution is preferred. We use 
 miniconda, which includes the conda package manager.
 
 First, `install conda <http://conda.pydata.org/docs/install/quick.html>`_ 
 and optionally create a virtualenv::
 
-    $ conda create --name hisparc python=2.7 numpy scipy pytables
+    $ conda create --name hisparc python numpy scipy pytables
     $ source activate hisparc
 
 or alternatively just install the dependencies::
@@ -71,7 +71,7 @@ You're done!
 Development
 -----------
 
-Install python 2.7 (preferably using conda) as described above but clone
+Install python (preferably using conda) as described above but clone
 the sapphire repo instead of installing using pip:: 
 
     $ git clone https://github.com/HiSPARC/sapphire.git
@@ -92,8 +92,11 @@ last release. Then tag the commit and push it to GitHub::
    $ git tag vX.Y.Z
    $ git push --tags
 
-Then upload the new version to PyPI (this requires the ``wheel`` package)::
+Then upload the new version to PyPI (this requires the ``wheel`` and ``twine``
+packages)::
 
-   $ python setup.py sdist bdist_wheel upload
-
+   $ python setup.py sdist bdist_wheel
+   $ twine upload dist/hisparc-sapphire-X.Y.Z.tar.gz
+   $ twine upload dist/hisparc_sapphire-X.Y.Z-py2.py3-none-any.whl
+   
 The latest version is then available from PyPI.

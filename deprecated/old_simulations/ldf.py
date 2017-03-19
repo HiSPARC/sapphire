@@ -208,7 +208,7 @@ class BaseLdf(object):
 class KascadeLdf(BaseLdf):
     # shower parameters
     _Ne = 10 ** 4.8
-    _s = .94
+    _s = 0.94
     _r0 = 40.
     _alpha = 1.5
     _beta = 3.6

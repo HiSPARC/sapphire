@@ -1,22 +1,22 @@
 [
     {
-        "name": "Enschede", 
+        "name": "Enschede",
         "number": 7000
-    }, 
+    },
     {
-        "name": "Hengelo", 
+        "name": "Hengelo",
         "number": 7100
-    }, 
+    },
     {
-        "name": "Almelo", 
+        "name": "Almelo",
         "number": 7200
-    }, 
+    },
     {
-        "name": "Deventer", 
+        "name": "Deventer",
         "number": 7300
-    }, 
+    },
     {
-        "name": "Haaksbergen", 
+        "name": "Haaksbergen",
         "number": 7400
     }
 ]

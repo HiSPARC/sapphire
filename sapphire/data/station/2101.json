@@ -1,25 +1,25 @@
 {
-    "active": false, 
-    "altitude": 91.46, 
-    "cluster": "Nijmegen", 
-    "country": "Netherlands", 
-    "latitude": 51.5196388, 
-    "longitude": 5.977004, 
-    "name": "Raaijland College", 
-    "number": 2101, 
+    "active": true,
+    "altitude": 89.62,
+    "cluster": "Nijmegen",
+    "country": "Netherlands",
+    "latitude": 51.5196226,
+    "longitude": 5.977016,
+    "name": "Raaijland College",
+    "number": 2101,
     "scintillators": [
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
+            "alpha": null,
+            "beta": null,
+            "height": null,
             "radius": null
-        }, 
+        },
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
+            "alpha": null,
+            "beta": null,
+            "height": null,
             "radius": null
         }
-    ], 
+    ],
     "subcluster": "Venray"
 }

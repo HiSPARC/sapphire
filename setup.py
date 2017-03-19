@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys
 
 setup(name='hisparc-sapphire',
-      version='1.2.0',
+      version='1.3.1',
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
@@ -50,5 +50,5 @@ setup(name='hisparc-sapphire',
                                  'tests/simulations/test_data/*.h5']},
       install_requires=['numpy', 'scipy', 'tables>=3.3.0',
                         'progressbar2>=3.7.0', 'lazy', 'mock', 'six'],
-      extras_require={'dev': ['Sphinx', 'flake8']},
+      extras_require={'dev': ['Sphinx', 'flake8', 'coverage']},
       test_suite="sapphire.tests",)

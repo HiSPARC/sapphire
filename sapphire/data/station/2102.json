@@ -1,25 +1,25 @@
 {
-    "active": false, 
-    "altitude": 85.04, 
-    "cluster": "Nijmegen", 
-    "country": "Netherlands", 
-    "latitude": 51.5187617, 
-    "longitude": 5.9749058, 
-    "name": "Raaijland College (Gilde)", 
-    "number": 2102, 
+    "active": true,
+    "altitude": 85.04,
+    "cluster": "Nijmegen",
+    "country": "Netherlands",
+    "latitude": 51.5187617,
+    "longitude": 5.9749058,
+    "name": "Raaijland College (Gilde)",
+    "number": 2102,
     "scintillators": [
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
+            "alpha": null,
+            "beta": null,
+            "height": null,
             "radius": null
-        }, 
+        },
         {
-            "alpha": null, 
-            "beta": null, 
-            "height": null, 
+            "alpha": null,
+            "beta": null,
+            "height": null,
             "radius": null
         }
-    ], 
+    ],
     "subcluster": "Venray"
 }

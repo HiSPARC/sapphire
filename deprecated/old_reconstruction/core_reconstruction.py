@@ -151,7 +151,7 @@ class CoreReconstruction(object):
             station = self._get_station_from_event(event)
             for detector, idx in zip(station.detectors, ['n1', 'n2', 'n3', 'n4']):
                 x, y = detector.get_xy_coordinates()
-                value = event[idx] / .5
+                value = event[idx] / 0.5
                 solver.add_measurement_at_xy(x, y, value)
 
     def _calculate_chi_squared(self, solver, xopt, yopt, shower_size):

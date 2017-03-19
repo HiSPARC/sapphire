@@ -57,7 +57,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         # Three detections, direct reconstruction
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2])
         dirrec.direct.reconstruct_common.assert_called_once_with(
-            [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3, {})
+            [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3, None)
         dirrec.fit.reconstruct_common.assert_not_called()
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
@@ -67,13 +67,13 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2, 3])
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
         dirrec.fit.reconstruct_common.assert_called_once_with(
-            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, {})
+            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, None)
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
         self.assertEqual(len(ids), 4)
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=None)
         dirrec.fit.reconstruct_common.assert_called_with(
-            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, {})
+            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, None)
         self.assertEqual(dirrec.fit.reconstruct_common.call_count, 2)
 
         # Four detections, fit reconstruction with offsets
@@ -91,7 +91,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
                                                    sentinel.detector_ids, sentinel.offsets, progress=False),
                          ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.ids, sentinel.ids)))
         self.assertEqual(mock_reconstruct_event.call_count, 2)
-        mock_reconstruct_event.assert_called_with(sentinel.event, sentinel.detector_ids, sentinel.offsets, {})
+        mock_reconstruct_event.assert_called_with(sentinel.event, sentinel.detector_ids, sentinel.offsets, None)
         self.assertEqual(dirrec.reconstruct_events([], sentinel.detector_ids, sentinel.offsets, progress=False),
                          ((), (), ()))
         self.assertEqual(mock_reconstruct_event.call_count, 2)
@@ -200,7 +200,7 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
                                                               sentinel.station_numbers, sentinel.offsets, progress=False),
                          ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.nums, sentinel.nums)))
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
-        mock_reconstruct_coincidence.assert_called_with(sentinel.coincidence, sentinel.station_numbers, sentinel.offsets, {})
+        mock_reconstruct_coincidence.assert_called_with(sentinel.coincidence, sentinel.station_numbers, sentinel.offsets, None)
         self.assertEqual(self.dirrec.reconstruct_coincidences([], sentinel.station_numbers, sentinel.offsets, progress=False),
                          ((), (), ()))
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
@@ -397,7 +397,7 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
                                                               sentinel.station_numbers, sentinel.offsets, progress=False),
                          ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.nums, sentinel.nums)))
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
-        mock_reconstruct_coincidence.assert_called_with(sentinel.coincidence, sentinel.station_numbers, sentinel.offsets, {})
+        mock_reconstruct_coincidence.assert_called_with(sentinel.coincidence, sentinel.station_numbers, sentinel.offsets, None)
         self.assertEqual(self.dirrec.reconstruct_coincidences([], sentinel.station_numbers, sentinel.offsets, progress=False),
                          ((), (), ()))
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
@@ -411,7 +411,7 @@ class BaseAlgorithm(object):
 
     """
 
-    def call_reconstruct(self, t, x, y, z, initial={}):
+    def call_reconstruct(self, t, x, y, z, initial=None):
         return self.algorithm.reconstruct_common(t, x, y, z, initial)
 
 

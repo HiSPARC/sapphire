@@ -73,7 +73,7 @@ def update_toplevel_json(data_type):
     url = API.urls[data_type]
     try:
         get_and_store_json(url)
-    except:
+    except Exception:
         print('Failed to get %s data' % data_type)
 
 
@@ -87,7 +87,7 @@ def update_sublevel_json(arg_type, data_type, progress=True):
     url = API.urls[arg_type]
     try:
         numbers = [x['number'] for x in loads(API._retrieve_url(url))]
-    except:
+    except Exception:
         if progress:
             print('Failed to get %s data' % data_type)
         return
@@ -98,7 +98,7 @@ def update_sublevel_json(arg_type, data_type, progress=True):
                                             'month': '', 'day': ''})
         try:
             get_and_store_json(url.strip('/'))
-        except:
+        except Exception:
             if progress:
                 print('Failed to get %s data for %s %d' %
                       (data_type, arg_type, number))
@@ -118,7 +118,7 @@ def update_sublevel_tsv(data_type, station_numbers, progress=True):
         url = url.strip('/') + '/'
         try:
             get_and_store_tsv(url)
-        except:
+        except Exception:
             if progress and data_type != 'layout':
                 print('Failed to get %s for station %d' % (data_type, number))
             continue
@@ -139,7 +139,7 @@ def update_subsublevel_tsv(data_type, station_numbers, network, progress=True):
                                              station_2=number2)
         try:
             get_and_store_tsv(url)
-        except:
+        except Exception:
             if progress:
                 print('Failed to get %s data for station pair %d-%d' %
                       (data_type, number1, number2))
@@ -156,9 +156,9 @@ def get_and_store_tsv(url):
     data = API._retrieve_url(url, base=SRC_BASE)
     # Strip empty and comment lines
     data = '\n'.join(d for d in data.split('\n') if len(d) and d[0] != '#')
-    # End with empty newline
-    data += '\n'
     if data:
+        # End with empty newline
+        data += '\n'
         tsv_path = path.join(LOCAL_BASE, url.strip('/') + extsep + 'tsv')
         with open(tsv_path, 'w') as tsvfile:
             tsvfile.write(data)

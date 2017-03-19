@@ -109,15 +109,15 @@ class StoreKascadeData(object):
             data = [int(x) for x in data[:4]] + [float(x) for x in data[4:]]
 
             # KASCADE timestamp
-            Gt = data[2]
+            gt = data[2]
 
             # if start and stop are specified, the following boils down to:
-            #     start <= Gt < stop
+            #     start <= gt < stop
             # but also take start is None and/or stop is None into
             # consideration
-            if (start is None or start <= Gt) and (stop is None or Gt < stop):
+            if (start is None or start <= gt) and (stop is None or gt < stop):
                 self._store_kascade_event(data)
-            elif stop is not None and Gt >= stop:
+            elif stop is not None and gt >= stop:
                 # timestamp is after explicitly specified stop time, so no need
                 # to process the rest of the data
                 break

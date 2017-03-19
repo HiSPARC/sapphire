@@ -14,6 +14,7 @@ test_data_coincidences_path = os.path.join(self_path,
                                            'test_data/esd_coincidence_data.h5')
 events_source = os.path.join(self_path, 'test_data/events-s501-20120101.tsv')
 weather_source = os.path.join(self_path, 'test_data/weather-s501-20120101.tsv')
+singles_source = os.path.join(self_path, 'test_data/singles-s501-20170101.tsv')
 lightning_source = os.path.join(self_path,
                                 'test_data/lightning-knmi-20150717.tsv')
 coincidences_source = os.path.join(self_path,
@@ -35,6 +36,7 @@ def perform_load_data(filename):
     with tables.open_file(filename, 'w', filters=filters) as datafile:
         esd.load_data(datafile, '/', events_source, 'events')
         esd.load_data(datafile, '/', weather_source, 'weather')
+        esd.load_data(datafile, '/', singles_source, 'singles')
         esd.load_data(datafile, '/', lightning_source, 'lightning')
 
 
@@ -44,6 +46,8 @@ def perform_esd_download_data(filename):
     filters = tables.Filters(complevel=1)
     start = datetime.datetime(2012, 1, 1, 0, 0, 0)
     end = datetime.datetime(2012, 1, 1, 0, 1, 0)
+    singles_start = datetime.datetime(2017, 1, 1, 0, 0, 0)
+    singles_end = datetime.datetime(2017, 1, 1, 0, 10, 0)
     lightning_start = datetime.datetime(2015, 7, 17, 0, 0, 0)
     lightning_end = datetime.datetime(2015, 7, 17, 0, 10, 0)
 
@@ -52,6 +56,8 @@ def perform_esd_download_data(filename):
                           progress=False)
         esd.download_data(datafile, '/', 501, start, end, type='weather',
                           progress=False)
+        esd.download_data(datafile, '/', 501, singles_start, singles_end,
+                          type='singles', progress=False)
         esd.download_lightning(datafile, '/', 4, lightning_start,
                                lightning_end, progress=False)
 
@@ -87,6 +93,9 @@ def create_and_store_test_data():
     urlretrieve('http://data.hisparc.nl/data/501/events/'
                 '?download=True&start=2012-01-01&end=2012-01-01+00:01:00',
                 events_source)
+    urlretrieve('http://data.hisparc.nl/data/501/singles'
+                '?download=True&start=2017-01-01&end=2017-01-01+00:10:00',
+                singles_source)
     urlretrieve('http://data.hisparc.nl/data/knmi/lightning/4/'
                 '?download=True&start=2015-07-17&end=2015-07-17+00:10:00',
                 lightning_source)

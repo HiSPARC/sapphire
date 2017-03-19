@@ -269,7 +269,7 @@ class ProcessEvents(object):
                                        self.processed_events_description,
                                        expectedrows=length)
 
-        for x in range(length):
+        for _ in range(length):
             table.row.append()
         table.flush()
 
@@ -686,7 +686,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             timestamp = event['timestamp']
             try:
                 self.thresholds, self.trigger = self.station.trigger(timestamp)
-            except:
+            except Exception:
                 warnings.warn('Unknown trigger settings, not reconstructing '
                               'trigger offset.')
                 # Do not reconstruct t_trigger by pretending external trigger.
@@ -940,7 +940,7 @@ class ProcessEventsFromSource(ProcessEvents):
                                             self.processed_events_description,
                                             expectedrows=length)
 
-        for x in range(length):
+        for _ in range(length):
             table.row.append()
         table.flush()
 
@@ -1029,24 +1029,27 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
                      self.progress))
 
 
-class ProcessWeather(ProcessEvents):
+class ProcessDataTable(ProcessEvents):
 
-    """Process HiSPARC weather to clean the data.
+    """Process HiSPARC abstract data table to clean the data.
 
-    This class can be used to process a set of HiSPARC weather, to
-    remove duplicates and sort the data by timestamp to store it in to a
-    copy of the weather table.
+    Abstract data is a PyTables table containing a timestamp for each row.
+    Weather and singles data are examples of such tables. This class can be
+    used to process a set of abstract HiSPARC data, to remove duplicates and
+    sort the data by timestamp to store it in to a copy of the table.
 
     """
+    table_name = 'abstract_data'  # overwrite with 'weather' or 'singles'
 
     def process_and_store_results(self, destination=None, overwrite=False,
                                   limit=None):
-        """Process weather and store the results.
+        """Process table and store the results.
 
         :param destination: name of the table where the results will be
-            written.  The default, None, corresponds to 'weather'.
+            written.  The default, None, corresponds to the value stored
+            in self.table_name.
         :param overwrite: if True, overwrite previously obtained results.
-        :param limit: the maximum number of weather that will be stored.
+        :param limit: the maximum number of records that will be stored.
             The default, None, corresponds to no limit.
 
         """
@@ -1054,18 +1057,18 @@ class ProcessWeather(ProcessEvents):
 
         self._check_destination(destination, overwrite)
 
-        self._clean_weather_table()
+        self._clean_data_table()
 
     def _get_source(self, source):
         """Return the table containing the events.
 
         :param source: the *name* of the table.  If None, this method will
-            try to find the original weather table.
+            try to find the original table.
         :return: table object
 
         """
         if source is None:
-            source = self.group.weather
+            source = self.data.get_node(self.group, self.table_name)
         else:
             source = self.data.get_node(self.group, source)
         return source
@@ -1073,11 +1076,11 @@ class ProcessWeather(ProcessEvents):
     def _check_destination(self, destination, overwrite):
         """Check if the destination is valid"""
 
-        if destination == '_t_weather':
-            raise RuntimeError("The _t_weather table is reserved for internal "
-                               "use.  Choose another destination.")
+        if destination == '_t_%s' % self.table_name:
+            raise RuntimeError("The _t_%s table is for internal use. Choose "
+                               "another destination." % self.table_name)
         elif destination is None:
-            destination = 'weather'
+            destination = self.table_name
 
         # If destination == source, source will be overwritten.
         if self.source.name != destination:
@@ -1087,33 +1090,34 @@ class ProcessWeather(ProcessEvents):
 
         self.destination = destination
 
-    def _clean_weather_table(self):
-        """Clean the weather table.
+    def _clean_data_table(self):
+        """Clean the table.
 
         Remove duplicate events and sort the table by timestamp.
 
         """
-        weather = self.source
+        data = self.source
 
-        enumerated_timestamps = list(enumerate(weather.col('timestamp')))
+        enumerated_timestamps = list(enumerate(data.col('timestamp')))
         enumerated_timestamps.sort(key=operator.itemgetter(1))
 
         unique_sorted_ids = self._find_unique_row_ids(enumerated_timestamps)
 
-        new_weather = self._replace_table_with_selected_rows(weather,
-                                                             unique_sorted_ids)
-        self.source = new_weather
-        self._normalize_event_ids(new_weather)
+        new_data = self._replace_table_with_selected_rows(data,
+                                                          unique_sorted_ids)
+        self.source = new_data
+        self._normalize_event_ids(new_data)
 
     def _replace_table_with_selected_rows(self, table, row_ids):
-        """Replace weather table with selected rows.
+        """Replace data table with selected rows.
 
         :param table: original table to be replaced.
         :param row_ids: row ids of the selected rows which should go in
             the destination table.
 
         """
-        tmptable = self.data.create_table(self.group, '_t_weather',
+        tmptable = self.data.create_table(self.group,
+                                          '_t_%s' % self.table_name,
                                           description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         tmptable.append(selected_rows)
@@ -1122,11 +1126,11 @@ class ProcessWeather(ProcessEvents):
         return tmptable
 
 
-class ProcessWeatherFromSource(ProcessWeather):
+class ProcessDataTableFromSource(ProcessDataTable):
 
-    """Process HiSPARC weather from a different source.
+    """Process HiSPARC abstract data table from a different source.
 
-    This class is a subclass of ProcessWeather.  The difference is that in
+    This class is a subclass of ProcessDataTable. The difference is that in
     this class, the source and destination are assumed to be different
     files.  This also means that the source is untouched (no renaming of
     original event tables) and the destination is assumed to be empty.
@@ -1160,7 +1164,7 @@ class ProcessWeatherFromSource(ProcessWeather):
         :return: table object
 
         """
-        source = self.source_group.weather
+        source = self.source_file.get_node(self.source_group, self.table_name)
         return source
 
     def _check_destination(self, destination, overwrite):
@@ -1168,14 +1172,15 @@ class ProcessWeatherFromSource(ProcessWeather):
         pass
 
     def _replace_table_with_selected_rows(self, table, row_ids):
-        """Replace weather table with selected rows.
+        """Replace data table with selected rows.
 
         :param table: original table to be replaced.
         :param row_ids: row ids of the selected rows which should go in
             the destination table.
 
         """
-        new_table = self.dest_file.create_table(self.dest_group, 'weather',
+        new_table = self.dest_file.create_table(self.dest_group,
+                                                self.table_name,
                                                 description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         new_table.append(selected_rows)
@@ -1190,3 +1195,57 @@ class ProcessWeatherFromSource(ProcessWeather):
                     (self.__class__.__name__, self.source_file.filename,
                      self.dest_file.filename, self.source_group._v_pathname,
                      self.dest_group._v_pathname, self.progress))
+
+
+class ProcessWeather(ProcessDataTable):
+
+    """Process HiSPARC weather to clean the data.
+
+    This class can be used to process a set of HiSPARC weather, to
+    remove duplicates and sort the data by timestamp to store it in to a
+    copy of the weather table.
+
+    """
+    table_name = 'weather'
+
+
+class ProcessWeatherFromSource(ProcessDataTableFromSource):
+
+    """Process HiSPARC weather from a different source.
+
+    This class behaves like a subclass of ProcessWeather because of a common
+    ancestor (ProcessDataTable). The difference between this class
+    and ProcessWeather is that in this class, the source and destination are
+    assumed to be different files. This also means that the source is
+    untouched (no renaming of original event tables) and the destination is
+    assumed to be empty.
+
+    """
+    table_name = 'weather'
+
+
+class ProcessSingles(ProcessDataTable):
+
+    """Process HiSPARC singles data to clean the data.
+
+    This class can be used to process a set of HiSPARC singles data, to
+    remove duplicates and sort the data by timestamp to store it in to a
+    copy of the singles data table.
+
+    """
+    table_name = 'singles'
+
+
+class ProcessSinglesFromSource(ProcessDataTableFromSource):
+
+    """Process HiSPARC singles data from a different source.
+
+    This class behaves like a subclass of ProcessSingles because of a common
+    ancestor (ProcessDataTable). The difference between this class
+    and ProcessSingles is that in this class, the source and destination are
+    assumed to be different files. This also means that the source is
+    untouched (no renaming of original event tables) and the destination is
+    assumed to be empty.
+
+    """
+    table_name = 'singles'
