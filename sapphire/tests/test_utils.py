@@ -36,13 +36,6 @@ class PbarTests(unittest.TestCase):
         self.assertIsInstance(pb, progressbar.ProgressBar)
         self.assertEqual(list(pb), self.iterable)
 
-    def test_pbar_generator_wrong_length(self):
-        """Raise exception for generator with wrong length"""
-
-        generator = (y for y in self.iterable)
-        pb = utils.pbar(generator, length=len(self.iterable) - 5, fd=self.output)
-        self.assertRaises(ValueError, list, pb)
-
     def test_pbar_hide_output(self):
         """Empty output when not showing progressbar"""
 
