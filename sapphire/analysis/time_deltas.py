@@ -23,7 +23,7 @@
 """
 import re
 from itertools import combinations
-import os
+import posixpath
 
 import tables
 from numpy import isnan
@@ -59,7 +59,7 @@ class ProcessTimeDeltas(object):
         self.data = data
         self.cq = CoincidenceQuery(self.data, coincidence_group)
         self.progress = progress
-        self.destination = os.path.join(coincidence_group, destination)
+        self.destination = posixpath.join(coincidence_group, destination)
 
     def determine_and_store_time_deltas(self):
         """Find station pairs, determine time deltas, and store the results."""
