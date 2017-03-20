@@ -29,7 +29,17 @@ from ..corsika.corsika_queries import CorsikaQuery
 from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
 
 
-class GroundParticlesSimulation(HiSPARCSimulation):
+
+
+
+
+
+
+
+
+
+
+class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
 
     def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
         """Simulation initialization
@@ -40,8 +50,10 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                                   center of cluster.
 
         """
-        super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
+        print("- Start with initializing the super of GroundParticlesSimulation (HiSPARCSimulation)")
+        super(GroundParticlesGEANT4Simulation, self).__init__(*args, **kwargs)
 
+        print("-- Obtain groundparticles from corsika and set max core distance")
         self.corsikafile = tables.open_file(corsikafile_path, 'r')
         self.groundparticles = self.corsikafile.get_node('/groundparticles')
         self.max_core_distance = max_core_distance
@@ -124,6 +136,410 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
+
+        particles = self.get_particles_in_detector(detector, shower_parameters)
+        n_detected = len(particles)
+
+        if n_detected:
+            mips, firstarrival = self.simulate_detector_mips_for_particles(particles,
+                                                             detector,
+                                                             shower_parameters)
+            particles['t'] += firstarrival
+            nz = cos(shower_parameters['zenith'])
+            tproj = detector.get_coordinates()[-1] / (c * nz)
+            first_signal = particles['t'].min() + detector.offset - tproj
+            observables = {'n': round(mips, 3),
+                           't': self.simulate_adc_sampling(first_signal)}
+        else:
+            observables = {'n': 0., 't': -999}
+
+        return observables
+
+    def simulate_detector_mips_for_particles(self, particles, detector,
+                                             shower_parameters):
+        """Simulate the detector signal for particles
+
+        :param particles: particle rows with the p_[x, y, z]
+                          components of the particle momenta.
+
+        """
+        # First run the geant4 simulation for each particle
+        mips_per_particle = []
+        arrivaltimes = []
+        for particle in particles:
+            # Determine which particle hit the detector
+            particle_id = particle["particle_id"]
+            if particle_id == 1:
+                particletype = "gamma"
+            elif particle_id == 2:
+                particletype = "e+"
+            elif particle_id == 3:
+                particletype = "e-"
+            elif particle_id == 5:
+                particletype = "mu+"
+            elif particle_id == 6:
+                particletype = "mu-"
+            
+            # Determine the position the particle hit the detector in the
+            # detector reference system (-25 < x < 25 and -50 < y < 50)
+            x = particle["x"]
+            y = particle["y"]
+            p = np.array([x,y])
+            
+            detx, dety, detz = detector.get_coordinates()
+            detcorners = detector.get_corners()
+            
+            zenith = shower_parameters['zenith']
+            azimuth = self.corsika_azimuth
+
+            znxnz = detz * tan(zenith) * cos(azimuth)
+            znynz = detz * tan(zenith) * sin(azimuth)
+            detxproj = detx - znxnz
+            detyproj = dety - znynz
+            
+            detcproj = [(cx - znxnz, cy - znynz) for cx, cy in detcorners]
+            cproj1 = np.array([detcproj[0][0],detcproj[0][1]])
+            cproj2 = np.array([detcproj[1][0],detcproj[1][1]])
+            cproj3 = np.array([detcproj[2][0],detcproj[2][1]])
+            cproj4 = np.array([detcproj[3][0],detcproj[3][1]])
+            
+            
+            ydistance = np.linalg.norm(np.cross(cproj2-cproj1, cproj1-p))/ \
+                        np.linalg.norm(cproj2-cproj1)
+            xdistance = np.linalg.norm(np.cross(cproj4-cproj1, cproj1-p))/ \
+                        np.linalg.norm(cproj4-cproj1)
+            
+            xdetcoord = 100*xdistance - 25
+            ydetcoord = 100*ydistance - 50
+            
+            # Determine at which angle the particle hit the detector
+            px = particle["p_x"]
+            py = particle["p_y"]
+            pz = particle["p_z"]
+            
+            particleenergy = np.sqrt(px*px+py*py+pz*pz)
+            
+            print("geant4/./skibox", "1", particletype,
+                  "{}".format(particleenergy),
+                  "{}".format(xdetcoord),
+                  "{}".format(ydetcoord),
+                  "-99899",
+                  "{}".format(px),
+                  "{}".format(py),
+                  "{}".format(pz))
+            
+            import subprocess
+            output = subprocess.check_output(["geant4/./skibox", "1", particletype,
+                                              "{}".format(particleenergy),
+                                              "{}".format(ydetcoord),
+                                              "{}".format(xdetcoord),
+                                              "-99899",
+                                              "{}".format(px),
+                                              "{}".format(py),
+                                              "{}".format(pz)])
+            
+            file = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
+            try:
+                numberofphotons = len(file[:,1])-1 # first element is header
+                arrivaltime = min(file[1:,0])
+            
+                #from matplotlib import pyplot as plt
+                #arrival_times = file[1:,0]
+                #plt.hist(arrival_times,bins=30)
+                #plt.show()
+            
+            except:
+                numberofphotons = 0
+                arrivaltime = 999
+            
+            import shutil
+            shutil.rmtree("RUN_1")
+            
+            if particletype != "gamma" and numberofphotons == 0:
+                print("something went wrong")
+            
+            print(numberofphotons)
+        
+            mips_per_particle.append(numberofphotons) # not a mip actually but I adapted Arne's code
+            arrivaltimes.append(arrivaltime)
+
+        mips = np.sum(np.array(mips_per_particle))
+        firstarrival = min(arrivaltimes)
+        print('--')
+        print(mips, firstarrival)
+        #import sys
+        #sys.exit()
+        # Combine the separate geant4 runs to obtain the signal (in mips)
+
+        return mips, firstarrival
+    
+    def simulate_trigger(self, detector_observables):
+        """Simulate a trigger response.
+
+        This implements the trigger as used on HiSPARC stations:
+        - 4-detector station: at least two high or three low signals.
+        - 2-detector station: at least 2 low signals.
+
+        :param detector_observables: list of dictionaries, each containing
+                                     the observables of one detector.
+        :return: True if the station triggers, False otherwise.
+
+        """
+        n_detectors = len(detector_observables)
+        detectors_low = sum([True for observables in detector_observables
+                             if observables['n'] > 0.3])
+        detectors_high = sum([True for observables in detector_observables
+                              if observables['n'] > 0.5])
+
+        if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
+            return True
+        elif n_detectors == 2 and detectors_low >= 2:
+            return True
+        else:
+            return False
+
+    def simulate_gps(self, station_observables, shower_parameters, station):
+        """Simulate gps timestamp.
+
+        :param station_observables: dictionary containing the observables
+                                    of the station.
+        :param shower_parameters: dictionary with the shower parameters.
+        :param station: :class:`sapphire.clusters.Station` for which
+                         to simulate the gps timestamp.
+        :return: station_observables updated with gps timestamp and
+                 trigger time.
+
+        """
+        arrival_times = [station_observables['t%d' % id]
+                         for id in range(1, 5)
+                         if station_observables.get('n%d' % id, -1) > 0]
+
+        if len(arrival_times) > 1:
+            trigger_time = sorted(arrival_times)[1]
+
+            ext_timestamp = shower_parameters['ext_timestamp']
+            ext_timestamp += int(trigger_time + station.gps_offset +
+                                 self.simulate_gps_uncertainty())
+            timestamp = int(ext_timestamp / int(1e9))
+            nanoseconds = int(ext_timestamp % int(1e9))
+
+            gps_timestamp = {'ext_timestamp': ext_timestamp,
+                             'timestamp': timestamp,
+                             'nanoseconds': nanoseconds,
+                             't_trigger': trigger_time}
+            station_observables.update(gps_timestamp)
+
+        return station_observables
+
+    def get_particles_in_detector(self, detector, shower_parameters):
+        """Simulate the detector detection area accurately.
+
+        First particles are filtered to see which fall inside a
+        non-rotated square box around the detector (i.e. sides of 1.2m).
+        For the remaining particles a more accurate query is used to see
+        which actually hit the detector. The advantage of using the
+        square is that column indexes can be used, which may speed up
+        queries.
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         to get particles.
+        :param shower_parameters: dictionary with the shower parameters.
+
+        """
+        
+        # Possible keys in particles
+        #
+        # particle_id, 1 = gamma, 2-3 is electron, 4 is neutrino, 5-6 is muon
+        # r - core distance in m
+        # phi - azimuth angle in rad
+        # x - x position in m
+        # y - y position in m
+        # t - time since first interaction in ns
+        # p_x - momentum in x direction in eV/c
+        # p_y - momentum in y direction in eV/c
+        # p_z - momentum in z direction in eV/c
+        # hadron_generation
+        # observation_level - observation level above sea level in cm
+        
+        detector_boundary = 0.6
+
+        x, y, z = detector.get_coordinates()
+        corners = detector.get_corners()
+        zenith = shower_parameters['zenith']
+        azimuth = self.corsika_azimuth
+
+        znxnz = z * tan(zenith) * cos(azimuth)
+        znynz = z * tan(zenith) * sin(azimuth)
+        xproj = x - znxnz
+        yproj = y - znynz
+
+        cproj = [(cx - znxnz, cy - znynz) for cx, cy in corners]
+
+        b11, line1, b12 = self.get_line_boundary_eqs(*cproj[0:3])
+        b21, line2, b22 = self.get_line_boundary_eqs(*cproj[1:4])
+        query = ("(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & "
+                 "(b11 < %s) & (%s < b12) & (b21 < %s) & (%s < b22) & "
+                 "(particle_id <= 6)" %
+                 (xproj - detector_boundary, xproj + detector_boundary,
+                  yproj - detector_boundary, yproj + detector_boundary,
+                  line1, line1, line2, line2))
+
+        return self.groundparticles.read_where(query)
+
+    def get_line_boundary_eqs(self, p0, p1, p2):
+        """Get line equations using three points
+
+        Given three points, this function computes the equations for two
+        parallel lines going through these points.  The first and second
+        point are on the same line, whereas the third point is taken to
+        be on a line which runs parallel to the first.  The return value
+        is an equation and two boundaries which can be used to test if a
+        point is between the two lines.
+
+        :param p0,p1: (x, y) tuples on the same line.
+        :param p2: (x, y) tuple on the parallel line.
+        :return: value1, equation, value2, such that points satisfying
+            value1 < equation < value2 are between the parallel lines.
+
+        Example::
+
+            >>> get_line_boundary_eqs((0, 0), (1, 1), (0, 2))
+            (0.0, 'y - 1.000000 * x', 2.0)
+
+        """
+        (x0, y0), (x1, y1), (x2, y2) = p0, p1, p2
+
+        # Compute the general equation for the lines
+        if x0 == x1:
+            # line is exactly vertical
+            line = "x"
+            b1, b2 = x0, x2
+        else:
+            # First, compute the slope
+            a = (y1 - y0) / (x1 - x0)
+
+            # Calculate the y-intercepts of both lines
+            b1 = y0 - a * x0
+            b2 = y2 - a * x2
+
+            line = "y - %f * x" % a
+
+        # And order the y-intercepts
+        if b1 > b2:
+            b1, b2 = b2, b1
+
+        return b1, line, b2
+
+
+
+
+
+
+
+
+
+
+
+
+
+class GroundParticlesSimulation(HiSPARCSimulation):
+
+    def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
+        """Simulation initialization
+
+        :param corsikafile_path: path to the corsika.h5 file containing
+                                 the groundparticles.
+        :param max_core_distance: maximum distance of shower core to
+                                  center of cluster.
+
+        """
+        print("- Start with initializing the super of GroundParticlesSimulation (HiSPARCSimulation)")
+        super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
+
+        print("-- Obtain groundparticles from corsika and set max core distance")
+        self.corsikafile = tables.open_file(corsikafile_path, 'r')
+        self.groundparticles = self.corsikafile.get_node('/groundparticles')
+        self.max_core_distance = max_core_distance
+
+    def __del__(self):
+        self.finish()
+
+    def finish(self):
+        """Clean-up after simulation"""
+
+        self.corsikafile.close()
+
+    def generate_shower_parameters(self):
+        """Generate shower parameters like core position, energy, etc.
+
+        For this groundparticles simulation, only the shower core position
+        and rotation angle of the shower are generated.  Do *not*
+        interpret these parameters as the position of the cluster, or the
+        rotation of the cluster!  Interpret them as *shower* parameters.
+
+        :return: dictionary with shower parameters: core_pos
+                 (x, y-tuple) and azimuth.
+
+        """
+        r_max = self.max_core_distance
+        now = int(time())
+
+        event_header = self.corsikafile.get_node_attr('/', 'event_header')
+        event_end = self.corsikafile.get_node_attr('/', 'event_end')
+        corsika_parameters = {'zenith': event_header.zenith,
+                              'size': event_end.n_electrons_levels,
+                              'energy': event_header.energy,
+                              'particle': event_header.particle}
+        self.corsika_azimuth = event_header.azimuth
+
+        for i in pbar(range(self.n), show=self.progress):
+            ext_timestamp = (now + i) * int(1e9)
+            x, y = self.generate_core_position(r_max)
+            shower_azimuth = self.generate_azimuth()
+
+            shower_parameters = {'ext_timestamp': ext_timestamp,
+                                 'core_pos': (x, y),
+                                 'azimuth': shower_azimuth}
+
+            # Subtract CORSIKA shower azimuth from desired shower azimuth
+            # make it fit in (-pi, pi] to get rotation angle of the cluster.
+            alpha = shower_azimuth - self.corsika_azimuth
+            alpha = norm_angle(alpha)
+            self._prepare_cluster_for_shower(x, y, alpha)
+
+            shower_parameters.update(corsika_parameters)
+            yield shower_parameters
+
+    def _prepare_cluster_for_shower(self, x, y, alpha):
+        """Prepare the cluster object for the simulation of a shower.
+
+        Rotate and translate the cluster so that (0, 0) coincides with the
+        shower core position and that the angle between the rotated cluster
+        and the CORSIKA shower is the desired azimuth.
+
+        :param x,y: position of shower core relative to cluster origin in m.
+        :param alpha: angle the cluster needs to be rotated in radians.
+
+        """
+        # rotate the core position around the original cluster center
+        xp = x * cos(-alpha) - y * sin(-alpha)
+        yp = x * sin(-alpha) + y * cos(-alpha)
+
+        self.cluster.set_coordinates(-xp, -yp, 0, -alpha)
+
+    def simulate_detector_response(self, detector, shower_parameters):
+        """Simulate detector response to a shower.
+
+        Checks if leptons have passed a detector. If so, it returns the number
+        of leptons in the detector and the arrival time of the first lepton
+        passing the detector.
+
+        :param detector: :class:`~sapphire.clusters.Detector` for which
+                         the observables will be determined.
+        :param shower_parameters: dictionary with the shower parameters.
+
+        """
+
         particles = self.get_particles_in_detector(detector, shower_parameters)
         n_detected = len(particles)
 

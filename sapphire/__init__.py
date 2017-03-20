@@ -90,6 +90,7 @@ from .corsika.corsika_queries import CorsikaQuery
 from .esd import (quick_download, load_data, download_data, download_lightning,
                   download_coincidences)
 from .simulations.groundparticles import (GroundParticlesSimulation,
+                                          GroundParticlesGEANT4Simulation,
                                           MultipleGroundParticlesSimulation)
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
@@ -129,7 +130,7 @@ __all__ = ['analysis',
            'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
            'download_lightning', 'download_coincidences',
-           'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
+           'GroundParticlesSimulation', 'GroundParticlesGEANT4Simulation' 'MultipleGroundParticlesSimulation',
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
            'run_tests',

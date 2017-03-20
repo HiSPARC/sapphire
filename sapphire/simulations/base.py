@@ -48,14 +48,18 @@ class BaseSimulation(object):
 
     def __init__(self, cluster, data, output_path='/', n=1, seed=None,
                  progress=True):
+        print("--- Start with initializing BaseSimulation")
+        print("---- Set the cluster, data file, output path and number of simulations")
         self.cluster = cluster
         self.data = data
         self.output_path = output_path
         self.n = n
         self.progress = progress
 
+        print("---- Prepare the output tables in the outout data file (the same format as real ESD data)")
         self._prepare_output_tables()
 
+        print("---- Choose a random seed for the simulation")
         if seed is not None:
             random.seed(seed)
             np.random.seed(seed)
@@ -77,6 +81,7 @@ class BaseSimulation(object):
     def run(self):
         """Run the simulations."""
 
+        print("For each 'throw' generate shower parameters")
         for (shower_id, shower_parameters) in enumerate(
                 self.generate_shower_parameters()):
 
@@ -86,7 +91,6 @@ class BaseSimulation(object):
 
     def generate_shower_parameters(self):
         """Generate shower parameters like core position, energy, etc."""
-
         shower_parameters = {'core_pos': (None, None),
                              'zenith': None,
                              'azimuth': None,
@@ -114,7 +118,6 @@ class BaseSimulation(object):
 
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
-
         detector_observables = self.simulate_all_detectors(
             station.detectors, shower_parameters)
         has_triggered = self.simulate_trigger(detector_observables)
