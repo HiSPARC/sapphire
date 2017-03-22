@@ -16,10 +16,8 @@ from ..utils import ceil_in_base
 class HiSPARCSimulation(BaseSimulation):
 
     def __init__(self, *args, **kwargs):
-        print("-- Start with initializing the super of HiSPARCSimulation (BaseSimulation)")
         super(HiSPARCSimulation, self).__init__(*args, **kwargs)
 
-        print("--- Simulate and store station and detector (timing) offsets")
         self.simulate_and_store_offsets()
 
     def simulate_and_store_offsets(self):

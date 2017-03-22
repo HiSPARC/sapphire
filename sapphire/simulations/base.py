@@ -48,18 +48,14 @@ class BaseSimulation(object):
 
     def __init__(self, cluster, data, output_path='/', n=1, seed=None,
                  progress=True):
-        print("--- Start with initializing BaseSimulation")
-        print("---- Set the cluster, data file, output path and number of simulations")
         self.cluster = cluster
         self.data = data
         self.output_path = output_path
         self.n = n
         self.progress = progress
 
-        print("---- Prepare the output tables in the outout data file (the same format as real ESD data)")
         self._prepare_output_tables()
 
-        print("---- Choose a random seed for the simulation")
         if seed is not None:
             random.seed(seed)
             np.random.seed(seed)

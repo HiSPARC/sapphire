@@ -19,6 +19,8 @@ from __future__ import print_function
 
 from math import pi, sin, cos, tan, sqrt, log10
 from time import time
+import subprocess
+import shutil
 
 import numpy as np
 import tables
@@ -27,16 +29,6 @@ from .gammas import simulate_detector_mips_gammas
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
 from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
-
-
-
-
-
-
-
-
-
-
 
 
 class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
@@ -163,7 +155,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                           components of the particle momenta.
 
         """
-        # First run the geant4 simulation for each particle
+        # Run the geant4 simulation for each particle
         mips_per_particle = []
         arrivaltimes = []
         for particle in particles:
@@ -182,6 +174,8 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             
             # Determine the position the particle hit the detector in the
             # detector reference system (-25 < x < 25 and -50 < y < 50)
+            # taking projection due to detector-height differences into
+            # account.
             x = particle["x"]
             y = particle["y"]
             p = np.array([x,y])
@@ -203,7 +197,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             cproj3 = np.array([detcproj[2][0],detcproj[2][1]])
             cproj4 = np.array([detcproj[3][0],detcproj[3][1]])
             
-            
+            # Here I determine the distance from a point to a line
             ydistance = np.linalg.norm(np.cross(cproj2-cproj1, cproj1-p))/ \
                         np.linalg.norm(cproj2-cproj1)
             xdistance = np.linalg.norm(np.cross(cproj4-cproj1, cproj1-p))/ \
@@ -217,8 +211,10 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             py = particle["p_y"]
             pz = particle["p_z"]
             
+            # Determine the energy of the incoming particle
             particleenergy = np.sqrt(px*px+py*py+pz*pz)
             
+            """
             print("geant4/./skibox", "1", particletype,
                   "{}".format(particleenergy),
                   "{}".format(xdetcoord),
@@ -227,8 +223,12 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                   "{}".format(px),
                   "{}".format(py),
                   "{}".format(pz))
+            """
             
-            import subprocess
+            # Start the GEANT4 simulation using the position, direction and
+            # energy of the incoming particle. This simulation creates a
+            # new directory RUN_1 with a csv file containing the number of
+            # photons that arrived at the PMT.
             output = subprocess.check_output(["geant4/./skibox", "1", particletype,
                                               "{}".format(particleenergy),
                                               "{}".format(ydetcoord),
@@ -238,39 +238,33 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                                               "{}".format(py),
                                               "{}".format(pz)])
             
+            # Determine the number of photons that have arrived at the PMT
+            # and the time it took for the first photon to arrive at the PMT.
             file = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
             try:
                 numberofphotons = len(file[:,1])-1 # first element is header
                 arrivaltime = min(file[1:,0])
-            
-                #from matplotlib import pyplot as plt
-                #arrival_times = file[1:,0]
-                #plt.hist(arrival_times,bins=30)
-                #plt.show()
-            
             except:
+                # No photons have arrived (a gamma that didn't undergo any
+                # iteraction).
                 numberofphotons = 0
                 arrivaltime = 999
             
-            import shutil
+            # Remove the directory created by the GEANT4 simulation
             shutil.rmtree("RUN_1")
-            
-            if particletype != "gamma" and numberofphotons == 0:
-                print("something went wrong")
-            
-            print(numberofphotons)
-        
-            mips_per_particle.append(numberofphotons) # not a mip actually but I adapted Arne's code
+
+            # If multiple particles hit the detector, they are treated
+            # seperately. Make lists in order to be able to add all
+            # arrived photons.
+            mips_per_particle.append(numberofphotons)
             arrivaltimes.append(arrivaltime)
 
+        # Combine the separate geant4 runs to obtain the signal
+        # (in arrived photons)
         mips = np.sum(np.array(mips_per_particle))
         firstarrival = min(arrivaltimes)
-        print('--')
-        print(mips, firstarrival)
-        #import sys
-        #sys.exit()
-        # Combine the separate geant4 runs to obtain the signal (in mips)
-
+    
+        # Mip here stands for arrived photons.
         return mips, firstarrival
     
     def simulate_trigger(self, detector_observables):
@@ -287,9 +281,9 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         """
         n_detectors = len(detector_observables)
         detectors_low = sum([True for observables in detector_observables
-                             if observables['n'] > 0.3])
+                             if observables['n'] > 10])
         detectors_high = sum([True for observables in detector_observables
-                              if observables['n'] > 0.5])
+                              if observables['n'] > 30])
 
         if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
             return True
@@ -429,17 +423,6 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             b1, b2 = b2, b1
 
         return b1, line, b2
-
-
-
-
-
-
-
-
-
-
-
 
 
 class GroundParticlesSimulation(HiSPARCSimulation):
