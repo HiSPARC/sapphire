@@ -188,8 +188,6 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
 
             znxnz = detz * tan(zenith) * cos(azimuth)
             znynz = detz * tan(zenith) * sin(azimuth)
-            detxproj = detx - znxnz
-            detyproj = dety - znynz
             
             detcproj = [(cx - znxnz, cy - znynz) for cx, cy in detcorners]
             cproj1 = np.array([detcproj[0][0],detcproj[0][1]])
@@ -902,7 +900,7 @@ class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,
     pass
 
 
-class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
+class MultipleGroundParticlesSimulation(GroundParticlesGEANT4Simulation):
 
     """Use multiple CORSIKA simulated air showers in one run.
 
