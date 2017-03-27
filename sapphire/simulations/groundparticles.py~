@@ -211,6 +211,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
 
             # Apparently, in some cases the particle does not travel downwards,
             # misses the detector and makes that GEANT4 throws an error.
+            # If this happens simply just make it go downwards.
             if abs(pz) < abs(px) or abs(pz) < abs(py):
                 continue
 
