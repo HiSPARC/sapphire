@@ -208,6 +208,14 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             px = particle["p_x"]
             py = particle["p_y"]
             pz = particle["p_z"]
+
+            # Apparently, in some cases the particle does not travel downwards,
+            # misses the detector and makes that GEANT4 throws an error.
+            # If this happens simply just make it go downwards.
+            if abs(pz) < abs(px) or abs(pz) < abs(py):
+                px = 0
+                py = 0
+                pz = -1
             
             # Determine the energy of the incoming particle
             particleenergy = np.sqrt(px*px+py*py+pz*pz)
