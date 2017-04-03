@@ -155,6 +155,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                           components of the particle momenta.
 
         """
+        
         # Run the geant4 simulation for each particle
         mips_per_particle = []
         arrivaltimes = []
@@ -209,15 +210,10 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             py = particle["p_y"]
             pz = particle["p_z"]
 
-            # Apparently, in some cases the particle does not travel downwards,
-            # misses the detector and makes that GEANT4 throws an error.
-            if abs(pz) < abs(px) or abs(pz) < abs(py):
-                continue
-
             # Determine the energy of the incoming particle
             particleenergy = np.sqrt(px*px+py*py+pz*pz)
             
-            """
+            #"""
             print("geant4/./skibox", "1", particletype,
                   "{}".format(particleenergy),
                   "{}".format(xdetcoord),
@@ -226,7 +222,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                   "{}".format(px),
                   "{}".format(py),
                   "{}".format(pz))
-            """
+            #"""
             
             # Start the GEANT4 simulation using the position, direction and
             # energy of the incoming particle. This simulation creates a
@@ -245,7 +241,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # and the time it took for the first photon to arrive at the PMT.
             file = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
             try:
-                numberofphotons = len(file[:,1])-1 # first element is header
+                numberofphotons = len(file[1:,1]) # first element is header
                 arrivaltime = min(file[1:,0])
             except:
                 # No photons have arrived (a gamma that didn't undergo any
@@ -284,9 +280,9 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         """
         n_detectors = len(detector_observables)
         detectors_low = sum([True for observables in detector_observables
-                             if observables['n'] > 10])
+                             if observables['n'] > 30])
         detectors_high = sum([True for observables in detector_observables
-                              if observables['n'] > 30])
+                              if observables['n'] > 70])
 
         if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
             return True
