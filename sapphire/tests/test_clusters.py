@@ -2,6 +2,7 @@ from __future__ import division
 
 from math import pi, sqrt, atan2
 from numpy import array, nan
+from numpy.testing import assert_array_almost_equal
 
 import unittest
 
@@ -296,6 +297,7 @@ class StationTests(unittest.TestCase):
             self.assertAlmostEqual(actual_value, expected_value, msg=msg)
 
 
+
 class BaseClusterTests(unittest.TestCase):
     def test_add_station(self):
         with patch('sapphire.clusters.Station') as mock_station:
@@ -418,6 +420,16 @@ class BaseClusterTests(unittest.TestCase):
         x, y = cluster.calc_xy_center_of_mass_coordinates()
         self.assertAlmostEqual(x, 0)
         self.assertAlmostEqual(y, 0)
+
+    def test_set_center_off_mass_to_zero(self):
+        cluster = clusters.BaseCluster()
+        cluster._add_station((0, 0), 0, [((0, 5 * sqrt(3)), 'UD'),
+                                         ((0, 5 * sqrt(3) / 3), 'UD'),
+                                         ((-10, 0), 'LR'),
+                                         ((10, 0), 'LR')])
+        cluster.set_center_off_mass_to_zero()
+        center = cluster.calc_center_of_mass_coordinates()
+        assert_array_almost_equal(center, [0., 0., 0.])
 
     def test__distance(self):
         x = array([-5., 4., 3.])
@@ -563,6 +575,14 @@ class SingleDiamondStationTests(unittest.TestCase):
         detectors = stations[0].detectors
         self.assertEqual(len(detectors), 4)
 
+class HiSPARCStationTests(unittest.TestCase):
+    def setUp(self):
+        self.cluster = clusters.HiSPARCStations([501, 508, 510],
+                                                force_stale=True)
+
+    def test_zero_center_off_mass(self):
+        center = self.cluster.calc_center_of_mass_coordinates()
+        assert_array_almost_equal(center, [0., 0., 0.])
 
 class FlattenClusterTests(unittest.TestCase):
 
