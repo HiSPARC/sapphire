@@ -360,8 +360,8 @@ class StationTests(unittest.TestCase):
 
     def test_config(self):
         self.assertEqual(self.station.config()['detnum'], 501)
-        self.assertAlmostEqual(self.station.config(date(2011, 1, 1))['mas_ch1_current'],
-                         7.54901960784279)
+        self.assertAlmostEqual(self.station.config(
+            date(2011, 1, 1))['mas_ch1_current'], 7.54901960784279)
 
     def test_num_events(self):
         self.assertIsInstance(self.station.n_events(2004), int)
