@@ -297,7 +297,6 @@ class StationTests(unittest.TestCase):
             self.assertAlmostEqual(actual_value, expected_value, msg=msg)
 
 
-
 class BaseClusterTests(unittest.TestCase):
     def test_add_station(self):
         with patch('sapphire.clusters.Station') as mock_station:
@@ -575,6 +574,7 @@ class SingleDiamondStationTests(unittest.TestCase):
         detectors = stations[0].detectors
         self.assertEqual(len(detectors), 4)
 
+
 class HiSPARCStationTests(unittest.TestCase):
     def setUp(self):
         self.cluster = clusters.HiSPARCStations([501, 508, 510],
@@ -583,6 +583,7 @@ class HiSPARCStationTests(unittest.TestCase):
     def test_zero_center_off_mass(self):
         center = self.cluster.calc_center_of_mass_coordinates()
         assert_array_almost_equal(center, [0., 0., 0.])
+
 
 class FlattenClusterTests(unittest.TestCase):
 
