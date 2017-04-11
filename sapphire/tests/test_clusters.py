@@ -420,15 +420,27 @@ class BaseClusterTests(unittest.TestCase):
         self.assertAlmostEqual(x, 0)
         self.assertAlmostEqual(y, 0)
 
-    def test_set_center_off_mass_to_zero(self):
+    def test_set_center_off_mass_at_origin(self):
         cluster = clusters.BaseCluster()
         cluster._add_station((0, 0), 0, [((0, 5 * sqrt(3)), 'UD'),
                                          ((0, 5 * sqrt(3) / 3), 'UD'),
                                          ((-10, 0), 'LR'),
                                          ((10, 0), 'LR')])
-        cluster.set_center_off_mass_to_zero()
+        cluster.set_center_off_mass_at_origin()
         center = cluster.calc_center_of_mass_coordinates()
         assert_array_almost_equal(center, [0., 0., 0.])
+
+    def test_set_center_off_mass_at_origin_rotated_cluster(self):
+        cluster = clusters.BaseCluster()
+        cluster._add_station((0, 0), 0, [((0, 5 * sqrt(3)), 'UD'),
+                                         ((0, 5 * sqrt(3) / 3), 'UD'),
+                                         ((-10, 0), 'LR'),
+                                         ((10, 0), 'LR')])
+        cluster.set_coordinates(10., -10., 1., 1.)
+        cluster.set_center_off_mass_at_origin()
+        center = cluster.calc_center_of_mass_coordinates()
+        assert_array_almost_equal(center, [0., 0., 0.])
+        self.assertAlmostEqual(cluster.alpha, 1.)
 
     def test__distance(self):
         x = array([-5., 4., 3.])
