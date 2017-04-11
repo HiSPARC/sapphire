@@ -467,10 +467,13 @@ class BaseCluster(object):
                                       detectors, station_timestamps,
                                       detector_timestamps, number))
 
-    def set_center_off_mass_to_zero(self):
+    def set_center_off_mass_at_origin(self):
         """Set the cluster center of mass to (0, 0, 0)"""
+        self.x = 0
+        self.y = 0
+        self.z = 0
         x, y, z = self.calc_center_of_mass_coordinates()
-        self.set_coordinates(-x, -y, -z, 0)
+        self.set_coordinates(-x, -y, -z, self.alpha)
 
     @property
     def stations(self):
@@ -857,7 +860,7 @@ class HiSPARCStations(CompassStations):
 
             self._add_station(enu, razbs, station_ts, detector_ts, station)
 
-        self.set_center_off_mass_to_zero()
+        self.set_center_off_mass_at_origin()
 
         if len(missing_gps):
             warnings.warn('Could not get GPS location for stations: %s. '
