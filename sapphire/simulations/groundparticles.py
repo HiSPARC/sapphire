@@ -21,6 +21,7 @@ from math import pi, sin, cos, tan, sqrt, log10
 from time import time
 import subprocess
 import shutil
+from six import iteritems
 
 import numpy as np
 import tables
@@ -42,13 +43,12 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                                   center of cluster.
 
         """
-        print("- Start with initializing the super of GroundParticlesSimulation (HiSPARCSimulation)")
         super(GroundParticlesGEANT4Simulation, self).__init__(*args, **kwargs)
 
-        print("-- Obtain groundparticles from corsika and set max core distance")
         self.corsikafile = tables.open_file(corsikafile_path, 'r')
         self.groundparticles = self.corsikafile.get_node('/groundparticles')
         self.max_core_distance = max_core_distance
+        print("DOE JE WEL INIT?")
 
     def __del__(self):
         self.finish()
@@ -79,20 +79,27 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                               'size': event_end.n_electrons_levels,
                               'energy': event_header.energy,
                               'particle': event_header.particle}
+
         self.corsika_azimuth = event_header.azimuth
+
+        print("KOM JE HIER WEL?")
+        self.corsika_zenith = event_header.zenith
+        self.corsika_energy = event_header.energy
+        self.cr_particle = event_header.particle
+        self.core_distance = 0 # DEZE IS NOG NIET GOED (zet deze in detector.py)
 
         for i in pbar(range(self.n), show=self.progress):
             ext_timestamp = (now + i) * int(1e9)
             x, y = self.generate_core_position(r_max)
-            shower_azimuth = self.generate_azimuth()
+            self.shower_azimuth = self.generate_attenuated_azimuth()
 
             shower_parameters = {'ext_timestamp': ext_timestamp,
                                  'core_pos': (x, y),
-                                 'azimuth': shower_azimuth}
+                                 'azimuth': self.shower_azimuth}
 
             # Subtract CORSIKA shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
-            alpha = shower_azimuth - self.corsika_azimuth
+            alpha = self.shower_azimuth - self.corsika_azimuth
             alpha = norm_angle(alpha)
             self._prepare_cluster_for_shower(x, y, alpha)
 
@@ -133,17 +140,27 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         n_detected = len(particles)
 
         if n_detected:
-            mips, firstarrival = self.simulate_detector_mips_for_particles(particles,
-                                                             detector,
-                                                             shower_parameters)
+            n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
+            pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma = \
+            self.simulate_detector_mips_for_particles(particles, detector, 
+                                                          shower_parameters)
             particles['t'] += firstarrival
             nz = cos(shower_parameters['zenith'])
             tproj = detector.get_coordinates()[-1] / (c * nz)
             first_signal = particles['t'].min() + detector.offset - tproj
-            observables = {'n': round(mips, 3),
-                           't': self.simulate_adc_sampling(first_signal)}
+            observables = {'n': n_muons + n_electrons + n_gammas,
+                           'n_muons': n_muons,
+                           'n_electrons': n_electrons,
+                           'n_gammas': n_gammas,
+                           't': self.simulate_adc_sampling(first_signal),
+                           'integrals': pulseintegral,
+                           'integrals_muon': pulseintegral_muon,
+                           'integrals_electron': pulseintegral_electron,
+                           'integrals_gamma': pulseintegral_gamma}
         else:
-            observables = {'n': 0., 't': -999}
+            observables = {'n': 0, 'n_muons': 0, 'n_electrons': 0, 'n_gammas': 0,
+                           't': -999, 'integrals': 0., 'integrals_muon': 0.,
+                           'integrals_electron': 0., 'integrals_gamma': 0.}
 
         return observables
 
@@ -157,8 +174,14 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         """
         
         # Run the geant4 simulation for each particle
-        mips_per_particle = []
+        arrived_photons_per_particle = []
+        arrived_photons_per_particle_muon = []
+        arrived_photons_per_particle_electron = []
+        arrived_photons_per_particle_gamma = []
         arrivaltimes = []
+        n_muons = 0
+        n_electrons = 0
+        n_gammas = 0
         for particle in particles:
             # Determine which particle hit the detector
             particle_id = particle["particle_id"]
@@ -213,7 +236,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # Determine the energy of the incoming particle
             particleenergy = np.sqrt(px*px+py*py+pz*pz)
             
-            #"""
+            """
             print("geant4/./skibox", "1", particletype,
                   "{}".format(particleenergy),
                   "{}".format(xdetcoord),
@@ -222,7 +245,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                   "{}".format(px),
                   "{}".format(py),
                   "{}".format(pz))
-            #"""
+            """
             
             # Start the GEANT4 simulation using the position, direction and
             # energy of the incoming particle. This simulation creates a
@@ -243,11 +266,27 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             try:
                 numberofphotons = len(file[1:,1]) # first element is header
                 arrivaltime = min(file[1:,0])
+                # Succesful interaction, keep statistics
+                if particle_id == 1:
+                    n_gammas = n_gammas + 1
+                    arrived_photons_per_particle_gamma.append(numberofphotons)
+                elif particle_id == 2:
+                    n_electrons = n_electrons + 1
+                    arrived_photons_per_particle_electron.append(numberofphotons)
+                elif particle_id == 3:
+                    n_electrons = n_electrons + 1
+                    arrived_photons_per_particle_electron.append(numberofphotons)
+                elif particle_id == 5:
+                    n_muons = n_muons + 1
+                    arrived_photons_per_particle_muon.append(numberofphotons)
+                elif particle_id == 6:
+                    n_muons = n_muons + 1
+                    arrived_photons_per_particle_muon.append(numberofphotons)
             except:
                 # No photons have arrived (a gamma that didn't undergo any
                 # iteraction).
                 numberofphotons = 0
-                arrivaltime = 999
+                arrivaltime = -999
             
             # Remove the directory created by the GEANT4 simulation
             shutil.rmtree("RUN_1")
@@ -255,16 +294,20 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # If multiple particles hit the detector, they are treated
             # seperately. Make lists in order to be able to add all
             # arrived photons.
-            mips_per_particle.append(numberofphotons)
+            arrived_photons_per_particle.append(numberofphotons)
             arrivaltimes.append(arrivaltime)
 
         # Combine the separate geant4 runs to obtain the signal
         # (in arrived photons)
-        mips = np.sum(np.array(mips_per_particle))
+        pulseintegral = np.sum(np.array(arrived_photons_per_particle))
+        pulseintegral_muon = np.sum(np.array(arrived_photons_per_particle_muon))
+        pulseintegral_electron = np.sum(np.array(arrived_photons_per_particle_electron))
+        pulseintegral_gamma = np.sum(np.array(arrived_photons_per_particle_gamma))
         firstarrival = min(arrivaltimes)
     
         # Mip here stands for arrived photons.
-        return mips, firstarrival
+        return n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
+               pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma
     
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.
@@ -280,9 +323,9 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         """
         n_detectors = len(detector_observables)
         detectors_low = sum([True for observables in detector_observables
-                             if observables['n'] > 30])
+                             if observables['integrals'] > 30])
         detectors_high = sum([True for observables in detector_observables
-                              if observables['n'] > 70])
+                              if observables['integrals'] > 70])
 
         if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
             return True
@@ -423,6 +466,33 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
 
         return b1, line, b2
 
+    def store_station_observables(self, station_id, station_observables):
+        """Store station observables.
+
+        :param station_id: the id of the station in self.cluster
+        :param station_observables: A dictionary containing the
+            variables to be stored for this event.
+        :return: The index (row number) of the newly added event.
+
+        """
+        events_table = self.station_groups[station_id].events
+        row = events_table.row
+        row['event_id'] = events_table.nrows
+        #row['shower_energy'] = self.corsika_energy
+        #row['zenith'] = self.corsika_zenith
+        #row['azimuth'] = self.shower_azimuth
+        #row['cr_particle'] = self.cr_particle
+        #row['core_distance'] = self.core_distance
+        for key, value in iteritems(station_observables):
+            if key in events_table.colnames:
+                row[key] = value
+            else:
+                warnings.warn('Unsupported variable')
+        row.append()
+        events_table.flush()
+
+        return events_table.nrows - 1
+
 
 class GroundParticlesSimulation(HiSPARCSimulation):
 
@@ -435,10 +505,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                                   center of cluster.
 
         """
-        print("- Start with initializing the super of GroundParticlesSimulation (HiSPARCSimulation)")
         super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
 
-        print("-- Obtain groundparticles from corsika and set max core distance")
         self.corsikafile = tables.open_file(corsikafile_path, 'r')
         self.groundparticles = self.corsikafile.get_node('/groundparticles')
         self.max_core_distance = max_core_distance
