@@ -48,7 +48,6 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         self.corsikafile = tables.open_file(corsikafile_path, 'r')
         self.groundparticles = self.corsikafile.get_node('/groundparticles')
         self.max_core_distance = max_core_distance
-        print("DOE JE WEL INIT?")
 
     def __del__(self):
         self.finish()
@@ -81,8 +80,6 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                               'particle': event_header.particle}
 
         self.corsika_azimuth = event_header.azimuth
-
-        print("KOM JE HIER WEL?")
         self.corsika_zenith = event_header.zenith
         self.corsika_energy = event_header.energy
         self.cr_particle = event_header.particle
@@ -143,7 +140,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
             pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma = \
             self.simulate_detector_mips_for_particles(particles, detector, 
-                                                          shower_parameters)
+                                                      shower_parameters)
             particles['t'] += firstarrival
             nz = cos(shower_parameters['zenith'])
             tproj = detector.get_coordinates()[-1] / (c * nz)
@@ -182,19 +179,11 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         n_muons = 0
         n_electrons = 0
         n_gammas = 0
+        particle_types = ['', 'gamma', 'e+', 'e-', 'mu+', 'mu-']
         for particle in particles:
             # Determine which particle hit the detector
             particle_id = particle["particle_id"]
-            if particle_id == 1:
-                particletype = "gamma"
-            elif particle_id == 2:
-                particletype = "e+"
-            elif particle_id == 3:
-                particletype = "e-"
-            elif particle_id == 5:
-                particletype = "mu+"
-            elif particle_id == 6:
-                particletype = "mu-"
+            particletype = particle_types[particle_id]
             
             # Determine the position the particle hit the detector in the
             # detector reference system (-25 < x < 25 and -50 < y < 50)
@@ -202,7 +191,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # account.
             x = particle["x"]
             y = particle["y"]
-            p = np.array([x,y])
+            p = np.array([x, y])
             
             detx, dety, detz = detector.get_coordinates()
             detcorners = detector.get_corners()
@@ -220,13 +209,13 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             cproj4 = np.array([detcproj[3][0],detcproj[3][1]])
             
             # Here I determine the distance from a point to a line
-            ydistance = np.linalg.norm(np.cross(cproj2-cproj1, cproj1-p))/ \
-                        np.linalg.norm(cproj2-cproj1)
-            xdistance = np.linalg.norm(np.cross(cproj4-cproj1, cproj1-p))/ \
-                        np.linalg.norm(cproj4-cproj1)
+            ydistance = (np.linalg.norm(np.cross(cproj2 - cproj1, cproj1 - p)) /
+                         np.linalg.norm(cproj2 - cproj1))
+            xdistance = (np.linalg.norm(np.cross(cproj4 - cproj1, cproj1 - p)) /
+                         np.linalg.norm(cproj4 - cproj1))
             
-            xdetcoord = 100*xdistance - 25
-            ydetcoord = 100*ydistance - 50
+            xdetcoord = 100 * xdistance - 25
+            ydetcoord = 100 * ydistance - 50
             
             # Determine at which angle the particle hit the detector
             px = particle["p_x"]
@@ -234,18 +223,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             pz = particle["p_z"]
 
             # Determine the energy of the incoming particle
-            particleenergy = np.sqrt(px*px+py*py+pz*pz)
-            
-            """
-            print("geant4/./skibox", "1", particletype,
-                  "{}".format(particleenergy),
-                  "{}".format(xdetcoord),
-                  "{}".format(ydetcoord),
-                  "-99899",
-                  "{}".format(px),
-                  "{}".format(py),
-                  "{}".format(pz))
-            """
+            particleenergy = np.sqrt(px ** 2 + py ** 2 + pz ** 2)
             
             # Start the GEANT4 simulation using the position, direction and
             # energy of the incoming particle. This simulation creates a
@@ -264,23 +242,17 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # and the time it took for the first photon to arrive at the PMT.
             file = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
             try:
-                numberofphotons = len(file[1:,1]) # first element is header
-                arrivaltime = min(file[1:,0])
+                numberofphotons = len(file[1:, 1]) # first element is header
+                arrivaltime = min(file[1:, 0])
                 # Succesful interaction, keep statistics
                 if particle_id == 1:
-                    n_gammas = n_gammas + 1
+                    n_gammas += 1
                     arrived_photons_per_particle_gamma.append(numberofphotons)
-                elif particle_id == 2:
-                    n_electrons = n_electrons + 1
+                elif particle_id in [2, 3]:
+                    n_electrons += 1
                     arrived_photons_per_particle_electron.append(numberofphotons)
-                elif particle_id == 3:
-                    n_electrons = n_electrons + 1
-                    arrived_photons_per_particle_electron.append(numberofphotons)
-                elif particle_id == 5:
-                    n_muons = n_muons + 1
-                    arrived_photons_per_particle_muon.append(numberofphotons)
-                elif particle_id == 6:
-                    n_muons = n_muons + 1
+                elif particle_id in [5, 6]:
+                    n_muons += 1
                     arrived_photons_per_particle_muon.append(numberofphotons)
             except:
                 # No photons have arrived (a gamma that didn't undergo any
@@ -1124,8 +1096,7 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
                                       in eV.
 
         """
-        # Super of the super class.
-        super(GroundParticlesGEANT4Simulation, self).__init__(*args, **kwargs)
+        super(MultipleGroundParticlesGEANT4Simulation, self).__init__(*args, **kwargs)
 
         self.cq = CorsikaQuery(corsikaoverview_path)
         self.max_core_distance = max_core_distance
