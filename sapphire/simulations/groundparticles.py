@@ -79,24 +79,18 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                               'energy': event_header.energy,
                               'particle': event_header.particle}
 
-        self.corsika_azimuth = event_header.azimuth
-        self.corsika_zenith = event_header.zenith
-        self.corsika_energy = event_header.energy
-        self.cr_particle = event_header.particle
-        self.core_distance = 0 # DEZE IS NOG NIET GOED (zet deze in detector.py)
-
         for i in pbar(range(self.n), show=self.progress):
             ext_timestamp = (now + i) * int(1e9)
             x, y = self.generate_core_position(r_max)
-            self.shower_azimuth = self.generate_attenuated_azimuth()
+            shower_azimuth = self.generate_attenuated_azimuth()
 
             shower_parameters = {'ext_timestamp': ext_timestamp,
                                  'core_pos': (x, y),
-                                 'azimuth': self.shower_azimuth}
+                                 'azimuth': shower_azimuth}
 
             # Subtract CORSIKA shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
-            alpha = self.shower_azimuth - self.corsika_azimuth
+            alpha = shower_azimuth - self.corsika_azimuth
             alpha = norm_angle(alpha)
             self._prepare_cluster_for_shower(x, y, alpha)
 
@@ -179,7 +173,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         n_muons = 0
         n_electrons = 0
         n_gammas = 0
-        particle_types = ['', 'gamma', 'e+', 'e-', 'mu+', 'mu-']
+        particle_types = ['', 'gamma', 'e+', 'e-', '', 'mu+', 'mu-']
         for particle in particles:
             # Determine which particle hit the detector
             particle_id = particle["particle_id"]
@@ -450,11 +444,11 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         events_table = self.station_groups[station_id].events
         row = events_table.row
         row['event_id'] = events_table.nrows
-        #row['shower_energy'] = self.corsika_energy
-        #row['zenith'] = self.corsika_zenith
-        #row['azimuth'] = self.shower_azimuth
-        #row['cr_particle'] = self.cr_particle
-        #row['core_distance'] = self.core_distance
+        row['shower_energy'] = self.corsika_energy
+        row['zenith'] = self.corsika_zenith
+        row['azimuth'] = self.shower_azimuth
+        row['cr_particle'] = self.cr_particle
+        row['core_distance'] = self.core_distance
         for key, value in iteritems(station_observables):
             if key in events_table.colnames:
                 row[key] = value
@@ -1096,7 +1090,7 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
                                       in eV.
 
         """
-        super(MultipleGroundParticlesGEANT4Simulation, self).__init__(*args, **kwargs)
+        super(GroundParticlesGEANT4Simulation, self).__init__(*args, **kwargs)
 
         self.cq = CorsikaQuery(corsikaoverview_path)
         self.max_core_distance = max_core_distance
@@ -1140,6 +1134,10 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
                                   'particle': sim['particle_id']}
             self.corsika_azimuth = sim['azimuth']
 
+            self.corsika_zenith = sim['zenith']
+            self.corsika_energy = sim['energy']
+            self.cr_particle = sim['particle_id']
+
             seeds = self.cq.seeds([sim])[0]
             with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
                 try:
@@ -1151,15 +1149,16 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
                 for j in range(n_reuse):
                     ext_timestamp = (now + i + (float(j) / n_reuse)) * int(1e9)
                     x, y = self.generate_core_position(r)
-                    shower_azimuth = self.generate_azimuth()
+                    self.core_distance = np.sqrt(x**2 + y**2)
+                    self.shower_azimuth = self.generate_azimuth()
 
                     shower_parameters = {'ext_timestamp': ext_timestamp,
                                          'core_pos': (x, y),
-                                         'azimuth': shower_azimuth}
+                                         'azimuth': self.shower_azimuth}
 
                     # Subtract CORSIKA shower azimuth from desired shower
                     # azimuth to get rotation angle of the cluster.
-                    alpha = shower_azimuth - self.corsika_azimuth
+                    alpha = self.shower_azimuth - self.corsika_azimuth
                     alpha = norm_angle(alpha)
                     self._prepare_cluster_for_shower(x, y, alpha)
 
