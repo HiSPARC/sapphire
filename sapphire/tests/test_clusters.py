@@ -619,7 +619,7 @@ class HiSPARCStationTests(unittest.TestCase):
     def test_missing_gps_not_allowed(self):
         """Making cluster with station without GPS coords raises exception"""
         with self.assertRaises(KeyError):
-            cluster = clusters.HiSPARCStations(
+            clusters.HiSPARCStations(
                 [0, 508, 510], skip_missing=False, force_stale=True)
 
     def test_zero_center_off_mass(self):
