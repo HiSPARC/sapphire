@@ -810,8 +810,9 @@ class HiSPARCStations(CompassStations):
 
         missing_gps = []
         missing_detectors = []
+        reference_required = True
 
-        for i, station in enumerate(stations):
+        for station in stations:
             try:
                 station_info = api.Station(station, force_fresh=force_fresh,
                                            force_stale=force_stale)
@@ -828,11 +829,13 @@ class HiSPARCStations(CompassStations):
                 station_ts = locations['timestamp']
                 n_detectors = station_info.n_detectors()
 
-            if i == 0:
-                # Most recent location of first station as reference
+            if reference_required:
+                # Get latest GPS location of first station with locations
+                # as reference
                 self.lla = llas[-1]
                 transformation = geographic.FromWGS84ToENUTransformation(
                     self.lla)
+                reference_required = False
 
             # Station locations in ENU
             enu = [transformation.transform(lla) for lla in llas]

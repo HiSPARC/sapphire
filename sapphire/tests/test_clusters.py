@@ -1,10 +1,11 @@
 from __future__ import division
 
+import unittest
+import warnings
+
 from math import pi, sqrt, atan2
 from numpy import array, nan
 from numpy.testing import assert_array_almost_equal
-
-import unittest
 
 from mock import Mock, patch, sentinel
 
@@ -591,6 +592,35 @@ class HiSPARCStationTests(unittest.TestCase):
     def setUp(self):
         self.cluster = clusters.HiSPARCStations([501, 508, 510],
                                                 force_stale=True)
+
+    def test_first_station_was_reference(self):
+        """First station was origin before shift to center mass"""
+        self.assertNotEqual(self.cluster.get_station(501).get_coordinates(), (0., 0., 0., 0.))
+        self.assertNotEqual(self.cluster.get_station(508).get_coordinates(), (0., 0., 0., 0.))
+        # Undo cluster center at center mass
+        self.cluster.set_coordinates(0, 0, 0, 0)
+        self.assertEqual(self.cluster.get_station(501).get_coordinates(), (0., 0., 0., 0.))
+        self.assertNotEqual(self.cluster.get_station(508).get_coordinates(), (0., 0., 0., 0.))
+
+    def test_allow_missing_gps(self):
+        """Allow making cluster with station without GPS coords
+
+        First station with valid location is used as reference.
+
+        """
+        with warnings.catch_warnings(record=True) as warned:
+            cluster = clusters.HiSPARCStations(
+                [0, 508, 510], skip_missing=True, force_stale=True)
+        self.assertEqual(len(warned), 2)
+        # Undo cluster center at center mass
+        cluster.set_coordinates(0, 0, 0, 0)
+        self.assertEqual(cluster.get_station(508).get_coordinates(), (0., 0., 0., 0.))
+
+    def test_missing_gps_not_allowed(self):
+        """Making cluster with station without GPS coords raises exception"""
+        with self.assertRaises(KeyError):
+            cluster = clusters.HiSPARCStations(
+                [0, 508, 510], skip_missing=False, force_stale=True)
 
     def test_zero_center_off_mass(self):
         center = self.cluster.calc_center_of_mass_coordinates()
