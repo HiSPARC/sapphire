@@ -54,8 +54,9 @@ class ReconstructESDEvents(object):
             the results will also be stored in this group.
         :param station: either a station number or
             :class:`sapphire.clusters.Station` object. If it is a number the
-            positions and offsets will be retrieved from the API. Otherwise
-            the offsets will be determined with the available data.
+            positions and offsets will be retrieved from the API or
+            retrieved from the datafile when stored by a simulation.
+            Otherwise the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
         :param destination: alternative name for reconstruction table.
@@ -67,17 +68,23 @@ class ReconstructESDEvents(object):
         self.overwrite = overwrite
         self.progress = progress
         self.destination = destination
+        self.force_fresh = force_fresh
+        self.force_stale = force_stale
+
         self.offsets = [0., 0., 0., 0.]
 
         if isinstance(station, Station):
             self.station = station
-            self.api_station = None
+            self.station_number = None
         else:
-            cluster = HiSPARCStations([station], force_fresh=force_fresh,
-                                      force_stale=force_stale)
-            self.station = cluster.get_station(station)
-            self.api_station = api.Station(station, force_fresh=force_fresh,
-                                           force_stale=force_stale)
+            self.station_number = station
+            try:
+                cluster = data.get_node_attr('/coincidences', 'cluster')
+                self.station = cluster.get_station(station)
+            except (tables.NoSuchNodeError, AttributeError):
+                cluster = HiSPARCStations([station], force_fresh=force_fresh,
+                                          force_stale=force_stale)
+                self.station = cluster.get_station(station)
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
@@ -92,12 +99,7 @@ class ReconstructESDEvents(object):
         """Shorthand function to reconstruct event and store the results"""
 
         self.prepare_output()
-        if self.api_station is None:
-            self.offsets = determine_detector_timing_offsets(self.events,
-                                                             self.station)
-            self.store_offsets()
-        else:
-            self.offsets = self.api_station
+        self.get_detector_offsets()
         self.reconstruct_directions(detector_ids=detector_ids)
         self.reconstruct_cores(detector_ids=detector_ids)
         self.store_reconstructions()
@@ -151,6 +153,27 @@ class ReconstructESDEvents(object):
             self.reconstructions._v_attrs.station = self.station
         except tables.HDF5ExtError:
             warnings.warn('Unable to store station object, to large for HDF.')
+
+    def get_detector_offsets(self):
+        """Get or determine detector offsets
+
+        Simulations store the offsets in the cluster object, try to extract
+        that to be used for reconstructions. If those are not available
+        use the :class:`sapphire.api.Station` object for the station number.
+        Else determine the offsets from the event table.
+
+        """
+        try:
+            self.offsets = [d.offset for d in self.station.detectors]
+        except AttributeError:
+            if self.station_number is not None:
+                self.offsets = api.Station(self.station_number,
+                                           force_fresh=self.force_fresh,
+                                           force_stale=self.force_stale)
+            else:
+                self.offsets = determine_detector_timing_offsets(self.events,
+                                                                 self.station)
+                self.store_offsets()
 
     def store_offsets(self):
         """Store the determined offset in a table."""
