@@ -293,7 +293,8 @@ class ReconstructESDCoincidences(object):
         self.cq = CoincidenceQuery(data, self.coincidences_group)
         if cluster is None:
             try:
-                self.cluster = self.coincidences_group._f_getattr('cluster')
+                self.cluster = self.data.get_node_attr(self.coincidences_group,
+                                                       'cluster')
             except AttributeError:
                 s_active = self._get_active_stations()
                 self.cluster = HiSPARCStations(s_active,
