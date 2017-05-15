@@ -1,4 +1,4 @@
-""" Reconstructions
+""" Reconstruct HiSPARC events and coincidences
 
     This module contains classes that can be used to reconstruct
     HiSPARC events and coincidences. These classes can be used to automate
@@ -101,7 +101,7 @@ class ReconstructESDEvents(object):
             self.station = station
             self.station_number = None
             if self.verbose:
-                print('Using object %s for meta data.' % self.station)
+                print('Using object %s for metadata.' % self.station)
         else:
             self.station_number = station
             try:
@@ -192,6 +192,18 @@ class ReconstructESDEvents(object):
         use the :class:`sapphire.api.Station` object for the station number.
         Else determine the offsets from the event table.
 
+        - if a cluster object is provided:
+
+          -  use offsets from that object if available in the object
+          -  else determine the offsets from the events in datafile with the
+             provided cluster object.
+
+        - if a station number is provided:
+
+          -  if a cluster object is stored in the datafile use offsets from that
+             object if available.
+          -  else get offsets from `api.Station` object.
+
         """
         try:
             self.offsets = [d.offset for d in self.station.detectors]
@@ -280,7 +292,7 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
             the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
-        :param verbose: if True be verbose about station meta data usage.
+        :param verbose: if True be verbose about station metadata usage.
         :param destination: alternative name for reconstruction table.
 
         """
@@ -369,7 +381,7 @@ class ReconstructESDCoincidences(object):
         else:
             self.cluster = cluster
             if self.verbose:
-                print('Using cluster %s for meta data.' % self.cluster)
+                print('Using cluster %s for metadata.' % self.cluster)
 
         self.direction = CoincidenceDirectionReconstruction(self.cluster)
         self.core = CoincidenceCoreReconstruction(self.cluster)
