@@ -13,7 +13,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.rec = reconstructions.ReconstructESDEvents(
             self.data, sentinel.station_group, self.station,
             overwrite=sentinel.overwrite, progress=sentinel.progress,
-            destination=sentinel.destination)
+            verbose=sentinel.verbose, destination=sentinel.destination)
 
     def test_init(self):
         rec = self.rec
@@ -99,7 +99,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
     @patch.object(reconstructions.api, 'Station')
     @patch.object(reconstructions, 'determine_detector_timing_offsets')
     def test_get_detector_offsets(self, mock_determine_detctor_timing_offets,
-                                 mock_station):
+                                  mock_station):
         mock_station.return_value = sentinel.station
         self.rec.events = sentinel.events
         self.rec.station.detectors = [None, None]
@@ -143,7 +143,8 @@ class ReconstructESDEventsFromSourceTest(ReconstructESDEventsTest):
         self.rec = reconstructions.ReconstructESDEventsFromSource(
             self.data, self.dest_data, sentinel.station_group,
             sentinel.dest_group, self.station, overwrite=sentinel.overwrite,
-            progress=sentinel.progress, destination=sentinel.destination)
+            progress=sentinel.progress, verbose=sentinel.verbose,
+            destination=sentinel.destination)
 
     @unittest.skip('WIP')
     def test_prepare_output(self):
@@ -163,8 +164,8 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.cq = mock_cq
         self.rec = reconstructions.ReconstructESDCoincidences(
             self.data, sentinel.coin_group, overwrite=sentinel.overwrite,
-            progress=sentinel.progress, destination=sentinel.destination,
-            cluster=self.cluster)
+            progress=sentinel.progress, verbose=sentinel.verbose,
+            destination=sentinel.destination, cluster=self.cluster)
 
     def test_init(self):
         rec = self.rec
@@ -307,8 +308,8 @@ class ReconstructESDCoincidencesFromSourceTest(ReconstructESDCoincidencesTest):
         self.rec = reconstructions.ReconstructESDCoincidencesFromSource(
             self.data, self.dest_data, sentinel.coin_group,
             sentinel.dest_group, overwrite=sentinel.overwrite,
-            progress=sentinel.progress, destination=sentinel.destination,
-            cluster=self.cluster)
+            progress=sentinel.progress, verbose=sentinel.verbose,
+            destination=sentinel.destination, cluster=self.cluster)
 
     @unittest.skip('WIP')
     def test_prepare_output(self):
