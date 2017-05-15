@@ -11,7 +11,7 @@
     (cluster and detector layout, station and detector offsets) from
     various sources:
 
-    - from the API using :class:`sapphire.api.Station` objects
+    - from the public database using :class:`sapphire.api.Station` objects
     - from stored or provided :class`sappire.cluster.Station` objects,
       usually cluster or station layout stored by :mod:`sapphire.simulations`
 
@@ -76,8 +76,8 @@ class ReconstructESDEvents(object):
             the results will also be stored in this group.
         :param station: either a station number or
             :class:`sapphire.clusters.Station` object. If it is a number the
-            positions and offsets will be retrieved from the API or
-            retrieved from the datafile when stored by a simulation.
+            positions and offsets will be retrieved from the public database
+            or retrieved from the datafile when stored by a simulation.
             Otherwise the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
@@ -114,7 +114,8 @@ class ReconstructESDEvents(object):
                                           force_stale=force_stale)
                 self.station = cluster.get_station(station)
                 if self.verbose:
-                    print('Constructed object %s from API.' % self.station)
+                    print('Constructed object %s from public database.'
+                          % self.station)
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
@@ -215,7 +216,7 @@ class ReconstructESDEvents(object):
                                            force_fresh=self.force_fresh,
                                            force_stale=self.force_stale)
                 if self.verbose:
-                    print('Reading detector offsets from API.')
+                    print('Reading detector offsets from public database.')
             else:
                 self.offsets = determine_detector_timing_offsets(self.events,
                                                                  self.station)
@@ -288,8 +289,8 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
             the results will also be stored in this group.
         :param station: either a station number or
             :class:`sapphire.clusters.Station` object. If number the
-            positions and offsets are retrieved from the API. Otherwise
-            the offsets will be determined with the available data.
+            positions and offsets are retrieved from the public database.
+            Otherwise the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
         :param verbose: if True be verbose about station metadata usage.
@@ -377,7 +378,8 @@ class ReconstructESDCoincidences(object):
                                                force_fresh=force_fresh,
                                                force_stale=force_stale)
                 if self.verbose:
-                    print('Constructed cluster %s from API.' % self.cluster)
+                    print('Constructed cluster %s from public database.'
+                          % self.cluster)
         else:
             self.cluster = cluster
             if self.verbose:
@@ -483,7 +485,7 @@ class ReconstructESDCoincidences(object):
                                         force_stale=self.force_stale)
                             for station in self.cluster.stations}
             if self.verbose:
-                print('Using timing offsets from API.')
+                print('Using timing offsets from public database.')
 
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
@@ -555,8 +557,8 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
             the results will also be stored in this group.
         :param station: either a station number or
             :class:`sapphire.clusters.Station` object. If number the
-            positions and offsets are retrieved from the API. Otherwise
-            the offsets will be determined with the available data.
+            positions and offsets are retrieved from the public database.
+            Otherwise the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
         :param verbose: if True be verbose about station metadata usage.
