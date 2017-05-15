@@ -1,3 +1,23 @@
+""" Reconstructions
+
+    This module contains classes that can be used to reconstruct
+    HiSPARC events and coincidences. These classes can be used to automate
+    the tasks of reconstructing directions and/or cores.
+
+    The classes can reconstruct measured data from the ESD as well as
+    simulated data from :mod:`sapphire.simulations`.
+
+    The classes read data stored in HDF5 files and extract station meta data
+    (cluster and detector layout, station and detector offsets) from
+    various sources:
+
+    - from the API using :class:`sapphire.api.Station` objects
+    - from stored or provided :class`sappire.cluster.Station` objects,
+      usually cluster or station layout stored by :mod:`sapphire.simulations`
+
+     Reconstructed data is stored in HDF5 files.
+
+"""
 import os
 import warnings
 
