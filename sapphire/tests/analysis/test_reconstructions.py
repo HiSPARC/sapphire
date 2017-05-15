@@ -96,6 +96,32 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.rec.overwrite = False
         self.assertRaises(RuntimeError, self.rec.prepare_output)
 
+    @patch.object(reconstructions.api, 'Station')
+    @patch.object(reconstructions, 'determine_detector_timing_offsets')
+    def test_get_detector_offsets(self, mock_determine_detctor_timing_offets,
+                                 mock_station):
+        mock_station.return_value = sentinel.station
+        self.rec.events = sentinel.events
+        self.rec.station.detectors = [None, None]
+
+        # no offsets in station object no station_number ->
+        #  determine offsets from events
+        self.rec.get_detector_offsets()
+        mock_determine_detctor_timing_offets.assert_called_with(
+            sentinel.events, self.station)
+
+        # no offsets in station object and station number -> api.Station
+        self.rec.station_number = sentinel.station
+        self.rec.get_detector_offsets()
+        self.assertEqual(self.rec.offsets, sentinel.station)
+
+        # offsets from cluster object (stored by simulation)
+        detector = MagicMock(offset=sentinel.offset)
+        self.rec.station = MagicMock(number=sentinel.number,
+                                     detectors=[detector, detector])
+        self.rec.get_detector_offsets()
+        self.assertEqual(self.rec.offsets, [sentinel.offset, sentinel.offset])
+
     def test__store_reconstruction(self):
         event = MagicMock()
         # _store_reconstruction calls  min(event['n1'], ...).
