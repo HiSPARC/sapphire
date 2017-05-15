@@ -4,7 +4,8 @@ This package contains modules for performing various analysis tasks. Most of
 the modules are used for automatic processing and reconstuction of traces,
 events and coincidences and calculation of timing offsets.
 
-The reconstruction classes from the :mod:`~sapphire.analysis.reconstructions` module are often used interactively. Shower reconstructions, both from ESD-
+The reconstruction classes from the :mod:`~sapphire.analysis.reconstructions`
+module are often used interactively. Shower reconstructions, both from ESD-
 and simulated data are performed by the classes from
 :mod:`~sapphire.analysis.direction_reconstruction` and
 :mod:`~sapphire.analysis.core_reconstruction` to reconstruct events. But users

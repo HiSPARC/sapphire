@@ -200,8 +200,8 @@ class ReconstructESDEvents(object):
 
         - if a station number is provided:
 
-          -  if a cluster object is stored in the datafile use offsets from that
-             object if available.
+          -  if a cluster object is stored in the datafile use offsets from
+             that object if available.
           -  else get offsets from `api.Station` object.
 
         """

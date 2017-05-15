@@ -25,6 +25,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
 
         self.assertEqual(rec.overwrite, sentinel.overwrite)
         self.assertEqual(rec.progress, sentinel.progress)
+        self.assertEqual(rec.verbose, sentinel.verbose)
         self.assertEqual(rec.destination, sentinel.destination)
         self.assertEqual(rec.offsets, [0.] * 4)
 
@@ -177,6 +178,7 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
 
         self.assertEqual(rec.overwrite, sentinel.overwrite)
         self.assertEqual(rec.progress, sentinel.progress)
+        self.assertEqual(rec.verbose, sentinel.verbose)
         self.assertEqual(rec.destination, sentinel.destination)
         self.assertEqual(rec.offsets, {})
 
