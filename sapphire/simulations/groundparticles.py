@@ -21,6 +21,7 @@ from math import pi, sin, cos, tan, sqrt, log10
 from time import time
 import subprocess
 import shutil
+import os
 from six import iteritems
 
 import numpy as np
@@ -29,6 +30,7 @@ import tables
 from .gammas import simulate_detector_mips_gammas
 from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..corsika.corsika_queries import CorsikaQuery
+from ..corsika.particles import particle_id
 from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
 
 
@@ -78,19 +80,25 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                               'size': event_end.n_electrons_levels,
                               'energy': event_header.energy,
                               'particle': event_header.particle}
+        self.corsika_azimuth = event_header.azimuth
+
+        self.corsika_zenith = corsika_parameters['zenith']
+        self.corsika_energy = corsika_parameters['energy']
+        self.cr_particle = particle_id(corsika_parameters['particle'])
 
         for i in pbar(range(self.n), show=self.progress):
             ext_timestamp = (now + i) * int(1e9)
             x, y = self.generate_core_position(r_max)
-            shower_azimuth = self.generate_attenuated_azimuth()
+            self.core_distance = np.sqrt(x**2 + y**2)
+            self.shower_azimuth = self.generate_azimuth()
 
             shower_parameters = {'ext_timestamp': ext_timestamp,
                                  'core_pos': (x, y),
-                                 'azimuth': shower_azimuth}
+                                 'azimuth': self.shower_azimuth}
 
             # Subtract CORSIKA shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
-            alpha = shower_azimuth - self.corsika_azimuth
+            alpha = self.shower_azimuth - self.corsika_azimuth
             alpha = norm_angle(alpha)
             self._prepare_cluster_for_shower(x, y, alpha)
 
@@ -223,15 +231,25 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # energy of the incoming particle. This simulation creates a
             # new directory RUN_1 with a csv file containing the number of
             # photons that arrived at the PMT.
-            output = subprocess.check_output(["geant4/./skibox", "1", particletype,
+            output = subprocess.check_output(["/user/kaspervd/Documents/repositories/diamond/20170117_geant4_simulation/HiSPARC-stbc-build/./skibox", "1", particletype,
                                               "{}".format(particleenergy),
                                               "{}".format(ydetcoord),
                                               "{}".format(xdetcoord),
-                                              "-99899",
+                                              "-99899",#"-99893.695",
                                               "{}".format(px),
                                               "{}".format(py),
                                               "{}".format(pz)])
-            
+            #"""
+            print( "./skibox", "1", particletype,
+                                              "{}".format(particleenergy),
+                                              "{}".format(ydetcoord),
+                                              "{}".format(xdetcoord),
+                                              "-99893.695",
+                                              "{}".format(px),
+                                              "{}".format(py),
+                                              "{}".format(pz) )
+            #"""
+
             # Determine the number of photons that have arrived at the PMT
             # and the time it took for the first photon to arrive at the PMT.
             file = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
@@ -240,12 +258,15 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                 arrivaltime = min(file[1:, 0])
                 # Succesful interaction, keep statistics
                 if particle_id == 1:
+                    print("Gamma detected, strength: {}".format(numberofphotons))
                     n_gammas += 1
                     arrived_photons_per_particle_gamma.append(numberofphotons)
                 elif particle_id in [2, 3]:
+                    print("Electron detected, strength: {}".format(numberofphotons))
                     n_electrons += 1
                     arrived_photons_per_particle_electron.append(numberofphotons)
                 elif particle_id in [5, 6]:
+                    print("Muon detected, strength: {}".format(numberofphotons))
                     n_muons += 1
                     arrived_photons_per_particle_muon.append(numberofphotons)
             except:
@@ -1076,7 +1097,7 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
     """
 
     # CORSIKA data location at Nikhef
-    DATA = '/data/hisparc/corsika/data/{seeds}/corsika.h5'
+    DATA = '/dcache/hisparc/corsika/data/{seeds}/corsika.h5'
 
     def __init__(self, corsikaoverview_path, max_core_distance, min_energy,
                  max_energy, *args, **kwargs):
@@ -1120,10 +1141,10 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
 
         """
         r = self.max_core_distance
-        n_reuse = 100
+        n_reuse = 1
         now = int(time())
 
-        for i in pbar(range(self.n), show=self.progress):
+        for i in range(self.n):
             sim = self.select_simulation()
             if sim is None:
                 continue
@@ -1139,31 +1160,69 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
             self.cr_particle = sim['particle_id']
 
             seeds = self.cq.seeds([sim])[0]
-            with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
-                try:
-                    self.groundparticles = data.get_node('/groundparticles')
-                except tables.NoSuchNodeError:
-                    print('No groundparticles in %s' % seeds)
-                    continue
 
-                for j in range(n_reuse):
-                    ext_timestamp = (now + i + (float(j) / n_reuse)) * int(1e9)
-                    x, y = self.generate_core_position(r)
-                    self.core_distance = np.sqrt(x**2 + y**2)
-                    self.shower_azimuth = self.generate_azimuth()
+            if self.corsika_energy < (9.9*10**14):
+                # Because of the high dcache i/o load I create, all
+                # CORSIKA simulations with an energy below log(eV) = 15 
+                # were moved to a temporary directory on the stoomboot node.
+                tmpdir = os.environ["TMPDIR"]
+                localDATA = tmpdir+"/data/{seeds}/corsika.h5"
+                #print("Load local")
 
-                    shower_parameters = {'ext_timestamp': ext_timestamp,
-                                         'core_pos': (x, y),
-                                         'azimuth': self.shower_azimuth}
+                with tables.open_file(localDATA.format(seeds=seeds), 'r') as data:
+                    try:
+                        self.groundparticles = data.get_node('/groundparticles')
+                    except tables.NoSuchNodeError:
+                        print('No groundparticles in %s' % seeds)
+                        continue
 
-                    # Subtract CORSIKA shower azimuth from desired shower
-                    # azimuth to get rotation angle of the cluster.
-                    alpha = self.shower_azimuth - self.corsika_azimuth
-                    alpha = norm_angle(alpha)
-                    self._prepare_cluster_for_shower(x, y, alpha)
+                    for j in range(n_reuse):
+                        ext_timestamp = (now + i + (float(j) / n_reuse)) * int(1e9)
+                        x, y = self.generate_core_position(r)
+                        self.core_distance = np.sqrt(x**2 + y**2)
+                        self.shower_azimuth = self.generate_azimuth()
 
-                    shower_parameters.update(corsika_parameters)
-                    yield shower_parameters
+                        shower_parameters = {'ext_timestamp': ext_timestamp,
+                                             'core_pos': (x, y),
+                                             'azimuth': self.shower_azimuth}
+
+                        # Subtract CORSIKA shower azimuth from desired shower
+                        # azimuth to get rotation angle of the cluster.
+                        alpha = self.shower_azimuth - self.corsika_azimuth
+                        alpha = norm_angle(alpha)
+                        self._prepare_cluster_for_shower(x, y, alpha)
+    
+                        shower_parameters.update(corsika_parameters)
+                        yield shower_parameters
+
+            else: # Use the regular dcache data
+                #print("Load dCache")
+                with tables.open_file(self.DATA.format(seeds=seeds), 'r') as data:
+                    try:
+                        self.groundparticles = data.get_node('/groundparticles')
+                    except tables.NoSuchNodeError:
+                        print('No groundparticles in %s' % seeds)
+                        continue
+
+                    for j in range(n_reuse):
+                        ext_timestamp = (now + i + (float(j) / n_reuse)) * int(1e9)
+                        x, y = self.generate_core_position(r)
+                        self.core_distance = np.sqrt(x**2 + y**2)
+                        self.shower_azimuth = self.generate_azimuth()
+
+                        shower_parameters = {'ext_timestamp': ext_timestamp,
+                                             'core_pos': (x, y),
+                                             'azimuth': self.shower_azimuth}
+
+                        # Subtract CORSIKA shower azimuth from desired shower
+                        # azimuth to get rotation angle of the cluster.
+                        alpha = self.shower_azimuth - self.corsika_azimuth
+                        alpha = norm_angle(alpha)
+                        self._prepare_cluster_for_shower(x, y, alpha)
+    
+                        shower_parameters.update(corsika_parameters)
+                        yield shower_parameters
+
 
     def select_simulation(self):
         """Generate parameters for selecting a CORSIKA simulation

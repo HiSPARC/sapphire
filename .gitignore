@@ -15,6 +15,9 @@ hisparc_sapphire.egg-info/
 # Coverage
 .coverage
 
+# Editor generated
+*.py~
+
 # OS generated files
 .DS_Store*
 ehthumbs.db

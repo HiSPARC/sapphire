@@ -199,7 +199,7 @@ class HiSPARCSimulation(BaseSimulation):
         return x, y
 
     @classmethod
-    def generate_zenith(cls, min=0, max=pi / 3.):
+    def generate_zenith(cls, min=0, max=63.75 * (pi / 180)):
         """Generate a random zenith
 
         Generate a random zenith for a uniform distribution on a sphere.
