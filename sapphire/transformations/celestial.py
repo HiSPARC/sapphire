@@ -19,7 +19,7 @@ from . import clock, angles, axes
 
 def zenithazimuth_to_equatorial(latitude, longitude, timestamp, zenith,
                                 azimuth):
-    """Convert Horizontal to Equatorial coordinates (J2000.0)
+    """Convert Zenith Azimuth to Equatorial coordinates (J2000.0)
 
     :param latitude,longitude: Position of the observer on Earth in degrees.
                                North and east positive.
