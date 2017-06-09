@@ -3,12 +3,15 @@
     This module performs transformations between different
     Celestial coordinate systems.
 
+    Legacy transformations:
     Formulae from: Duffett-Smith1990
     'Astronomy with your personal computer'
     ISBN 0-521-38995-X
 
     TODO: CHECK IF THESE CONVERSIONS ARE CORRECT!
 
+    New tranformations have been added with _astropy added to function name
+    They are very exact.
 """
 from numpy import (arcsin, arccos, arctan2, cos, sin,
                    array, radians, degrees, pi, dot, around)
@@ -243,6 +246,7 @@ def galactic_to_equatorial(latitude, longitude, epoch='J2000'):
 
 try:
     import astropy.units as u
+    import datetime
     import numpy as np
 
     from astropy.coordinates import AltAz
@@ -250,21 +254,39 @@ try:
     from astropy.coordinates import SkyCoord
     from astropy.time import Time
 
-    def zenithazimuth_to_equatorial_astropy(latitude, longitude, timestamp, zenaz_coordinates):
+    from . import clock
+    from ..utils import norm_angle
 
-        return eq_coordinates
 
-    def equatorial_to_zenithazimuth_astropy(latitude, longitude, timestamp, eq_coordinates):
+    def zenithazimuth_to_equatorial_astropy(latitude, longitude, gps_timestamp, zenaz_coordinates):
+        hor_coordinates = [(norm_angle(0.5 * np.pi - i[0]), norm_angle(0.5 * np.pi - i[1])) for i in zenaz_coordinates]
 
-        return zenaz_coordinates
+        return horizontal_to_equatorial_astropy(latitude, longitude, gps_timestamp, hor_coordinates)
 
-    def horizontal_to_equatorial_astropy(latitude, longitude, timestamp, hor_coordinates):
 
-        return eq_coordinates
+    def equatorial_to_zenithazimuth_astropy(latitude, longitude, gps_timestamp, eq_coordinates):
+        hor_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, gps_timestamp, eq_coordinates)
+        zenaz_coordinates = [(norm_angle(0.5 * np.pi - i[0]), norm_angle(0.5 * np.pi - i[1])) for i in hor_coordinates]
 
-    def equatorial_to_horizontal_astropy(latitude, longitude, timestamp, eq_coordinates):
+        return np.array(zenaz_coordinates)
 
-        return hor_coordinates
+
+    def equatorial_to_horizontal_astropy(latitude, longitude, gps_timestamp, eq_coordinates):
+        loc = EarthLocation(longitude, latitude)
+        t = Time(datetime.datetime.utcfromtimestamp(clock.gps_to_utc(gps_timestamp)))
+        eq_frame = SkyCoord(eq_coordinates, location=loc, obstime=t, unit=u.rad, frame='icrs')
+        hor_frame = eq_frame.transform_to('altaz')
+
+        return np.array(zip(hor_frame.az.rad, hor_frame.alt.rad))
+
+
+    def horizontal_to_equatorial_astropy(latitude, longitude, gps_timestamp, hor_coordinates):
+        loc = EarthLocation(longitude, latitude)
+        t = Time(datetime.datetime.utcfromtimestamp(clock.gps_to_utc(gps_timestamp)))
+        hor_frame = SkyCoord(hor_coordinates, location=loc, obstime=t, unit=u.rad, frame='altaz')
+        eq_frame = hor_frame.transform_to('icrs')
+
+        return np.array(zip(eq_frame.ra.rad, eq_frame.dec.rad))
 
 except ImportError as e:
     import warnings
