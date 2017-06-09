@@ -240,3 +240,32 @@ def galactic_to_equatorial(latitude, longitude, epoch='J2000'):
     dec = arcsin(cosb * cospoledec * sinlpos + sinb * sinpoledec)
 
     return ra, dec
+
+try:
+    import astropy.units as u
+    import numpy as np
+
+    from astropy.coordinates import AltAz
+    from astropy.coordinates import EarthLocation
+    from astropy.coordinates import SkyCoord
+    from astropy.time import Time
+
+    def zenithazimuth_to_equatorial_astropy(latitude, longitude, timestamp, zenaz_coordinates):
+
+        return eq_coordinates
+
+    def equatorial_to_zenithazimuth_astropy(latitude, longitude, timestamp, eq_coordinates):
+
+        return zenaz_coordinates
+
+    def horizontal_to_equatorial_astropy(latitude, longitude, timestamp, hor_coordinates):
+
+        return eq_coordinates
+
+    def equatorial_to_horizontal_astropy(latitude, longitude, timestamp, eq_coordinates):
+
+        return hor_coordinates
+
+except ImportError as e:
+    import warnings
+    warnings.warn(str(e)+"\nImport of astropy failed; astropy transformations therefore not available", ImportWarning)
