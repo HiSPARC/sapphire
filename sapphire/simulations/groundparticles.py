@@ -122,6 +122,97 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
 
         self.cluster.set_coordinates(-xp, -yp, 0, -alpha)
 
+    def _simulateCathode(self, N_photon):
+        """Simulate Cathode
+        
+        :param N_photon: number photons
+        :return: number of emitted cathode electrons
+        
+        """
+        N_electron = 0
+        for i in xrange(0,int(N_photon)):
+            if np.random.random() < .25:
+                N_electron += 1
+        return N_electron
+
+    def _simulateTrace(self, N, start, t_rise=7.0, t_fall=25.0, stop=300.0, GR=3.0e8):
+        """Simulate event trace
+        
+        :param N: Number of emitted cathode electrons
+        :param start: Photon arrivel time in ns
+        :param t_rise: Risetime of the pulse
+        :param t_fall: Falltime of the pulse
+        :param stop: End of trace
+        :param GR: Gain times resistance of the PMT
+        
+        :return: trace with binned simulated data according to Leo ISBN 978-3-642-57920-2 page 190
+            
+        """
+        trace = []
+        e = 1.6e-19 # charge electron
+        for i in np.arange(0,start,2.5):
+            trace.append(0)
+        for i in np.arange(start,stop,2.5):
+            t = np.float(i - start)
+            constant = (GR * N * e)/((t_fall - t_rise)*1e-9) # time in s instead of ns
+            trace.append( constant * ( np.exp(-t/t_rise) - np.exp(-t/t_fall) ) )
+
+        return np.array(trace)
+
+    def _nikhef_pmt_response(self, x, a=1.34858663e+01, b=2.36726084e-01, c=9.33867298e+04, d=9.17932738e-01):
+        """Simulate PMT response of a Nikhef PMT
+        
+        :param x: The input signal in Volts
+        
+        :return: The output signal in Volts
+        
+        """
+        x = -x
+        return -(x * b / ((x ** a + c) ** (1 / a)) + d * x)
+
+    def _senstech_pmt_response(self, x, a=2.73715515, b=1.41952074, c=4.13343178, d=0.14960464):
+        """Simulate PMT response of a Senstech PMT
+            
+        :param x: The input signal in Volts
+            
+        :return: The output signal in Volts
+            
+        """
+        x = -x
+        return -(x * b / ((x ** a + c) ** (1 / a)) + d * x)
+
+    def _simulate_PMT(self, photontimes):
+        """Simulate an entire PMT from cathode to response of PMT type
+            
+        :param photontimes: an array with the arrival times of photons at the pmt
+        
+        :return: np array with the trace in V
+        
+        """
+        
+        # First check if the photontimes list is empty
+        if not photontimes:
+            return 0
+        
+        # Determine how many particles arrived per 2.5 nanosecond
+        n_phot, bin_edges, patches = plt.hist(photontimes,bins=np.linspace(0,200,81))
+        t_arr = (0.5*(bin_edges[1:] + bin_edges[:-1]))-1.25
+        
+        # Simulate the ideal response per nanosecond and combine all single ns responses
+        n_elec0 = self._simulateCathode(n_phot[0])
+        trace = self._simulateTrace(n_elec0, t_arr[0], stop=t_arr[-1]+2.5)
+        for nphot, tarr in zip(n_phot[1:],t_arr[1:]):
+            n_elec = self._simulateCathode(nphot)
+            trace += self._simulateTrace(n_elec, tarr, stop=t_arr[-1]+2.5)
+        
+        # Simulate the response curve of the PMT compared to an ideal PMT
+        trace_nikhef = []
+        for value in trace:
+            trace_nikhef.append(self._nikhef_pmt_response(value))
+            trace_nikhef = np.array(trace_nikhef)
+
+        return trace_nikhef
+
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
 
@@ -140,7 +231,9 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
 
         if n_detected:
             n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
-            pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma = \
+            pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma,
+            pulseheights, pulseheights_muon, pulseheights_electron, \
+            pulseheights_gamma = \
             self.simulate_detector_mips_for_particles(particles, detector, 
                                                       shower_parameters)
             particles['t'] += firstarrival
@@ -155,11 +248,17 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                            'integrals': pulseintegral,
                            'integrals_muon': pulseintegral_muon,
                            'integrals_electron': pulseintegral_electron,
-                           'integrals_gamma': pulseintegral_gamma}
+                           'integrals_gamma': pulseintegral_gamma,
+                           'pulseheights': pulseheight,
+                           'pulseheights_muon': pulseheight_muon,
+                           'pulseheights_electron': pulseheight_electron,
+                           'pulseheights_gamma': pulseheight_gamma}
         else:
             observables = {'n': 0, 'n_muons': 0, 'n_electrons': 0, 'n_gammas': 0,
                            't': -999, 'integrals': 0., 'integrals_muon': 0.,
-                           'integrals_electron': 0., 'integrals_gamma': 0.}
+                           'integrals_electron': 0., 'integrals_gamma': 0.,
+                           'pulseheights': 0., 'pulseheights_muon': 0.,
+                           'pulseheights_electron': 0., 'pulseheights_gamma': 0.}
 
         return observables
 
@@ -244,7 +343,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                                               "{}".format(particleenergy),
                                               "{}".format(ydetcoord),
                                               "{}".format(xdetcoord),
-                                              "-99893.695",
+                                              "-99899",
                                               "{}".format(px),
                                               "{}".format(py),
                                               "{}".format(pz) )
@@ -254,25 +353,25 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # and the time it took for the first photon to arrive at the PMT.
             file = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
             try:
-                numberofphotons = len(file[1:, 1]) # first element is header
+                photontimes = file[1:,0]
                 arrivaltime = min(file[1:, 0])
                 # Succesful interaction, keep statistics
                 if particle_id == 1:
                     print("Gamma detected, strength: {}".format(numberofphotons))
                     n_gammas += 1
-                    arrived_photons_per_particle_gamma.append(numberofphotons)
+                    arrived_photons_per_particle_gamma = np.append(arrived_photons_per_particle_gamma,photontimes)
                 elif particle_id in [2, 3]:
                     print("Electron detected, strength: {}".format(numberofphotons))
                     n_electrons += 1
-                    arrived_photons_per_particle_electron.append(numberofphotons)
+                    arrived_photons_per_particle_electron = np.append(arrived_photons_per_particle_electron,photontimes)
                 elif particle_id in [5, 6]:
                     print("Muon detected, strength: {}".format(numberofphotons))
                     n_muons += 1
-                    arrived_photons_per_particle_muon.append(numberofphotons)
+                    arrived_photons_per_particle_muon = np.append(arrived_photons_per_particle_muon,photontimes)
             except:
                 # No photons have arrived (a gamma that didn't undergo any
                 # iteraction).
-                numberofphotons = 0
+                photontimes = np.array([]) # empty list
                 arrivaltime = -999
             
             # Remove the directory created by the GEANT4 simulation
@@ -281,20 +380,34 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # If multiple particles hit the detector, they are treated
             # seperately. Make lists in order to be able to add all
             # arrived photons.
-            arrived_photons_per_particle.append(numberofphotons)
+            arrived_photons_per_particle = np.append(arrived_photons_per_particle,photontimes)
             arrivaltimes.append(arrivaltime)
 
-        # Combine the separate geant4 runs to obtain the signal
-        # (in arrived photons)
-        pulseintegral = np.sum(np.array(arrived_photons_per_particle))
-        pulseintegral_muon = np.sum(np.array(arrived_photons_per_particle_muon))
-        pulseintegral_electron = np.sum(np.array(arrived_photons_per_particle_electron))
-        pulseintegral_gamma = np.sum(np.array(arrived_photons_per_particle_gamma))
+        # We now have a list with the arrival times of the photons at the PMT (also for individual particles)
+        # The next step is to simulate the PMT
+        all_particles_trace = self._simulate_PMT(arrived_photons_per_particle)
+        muon_trace = self._simulate_PMT(arrived_photons_per_particle_muon)
+        electron_trace = self._simulate_PMT(arrived_photons_per_particle_electron)
+        gamma_trace = self._simulate_PMT(arrived_photons_per_particle_gamma)
+        
+        # Now obtain the pulseheight for each trace (in mV)
+        pulseheight = 1e3 * abs(all_particles_trace.min())
+        pulseheight_muon = 1e3 * abs(muon_trace.min())
+        pulseheight_electron = 1e3 * abs(electron_trace.min())
+        pulseheight_gamma = 1e3 * abs(gamma_trace.min())
+
+        # Now obtain the pulseintegral for each trace (in mVns)
+        pulseintegral = 1e3 * abs(2.5*all_particles_trace.sum())
+        pulseintegral_muon = 1e3 * abs(2.5*muon_trace.sum())
+        pulseintegral_electron = 1e3 * abs(2.5*electron_trace.sum())
+        pulseintegral_gamma = 1e3 * abs(2.5*gamma_trace.sum())
+        
+        # Also determine the first arrival time
         firstarrival = min(arrivaltimes)
     
-        # Mip here stands for arrived photons.
         return n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
-               pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma
+               pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma \
+               pulseheight, pulseheight_muon, pulseheight_electron, pulseheight_gamma
     
     def simulate_trigger(self, detector_observables):
         """Simulate a trigger response.

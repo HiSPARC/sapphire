@@ -183,14 +183,19 @@ class BaseSimulation(object):
                                'integrals': 4 * [-1.],
                                'integrals_muon': 4 * [-1.],
                                'integrals_electron': 4 * [-1.],
-                               'integrals_gamma': 4 * [-1.]}
+                               'integrals_gamma': 4 * [-1.],
+                               'pulseheights_muon': 4 * [-1.],
+                               'pulseheights_electron': 4 * [-1.],
+                               'pulseheights_gamma': 4 * [-1.]}
 
         for detector_id, observables in enumerate(detector_observables, 1):
             for key, value in iteritems(observables):
                 if key in ['n', 'n_muons', 'n_electrons', 'n_gammas', 't']:
                     key = key + str(detector_id)
                     station_observables[key] = value
-                elif key in ['pulseheights', 'integrals', 'integrals_muon', 'integrals_electron', 'integrals_gamma']:
+                elif key in ['pulseheights', 'integrals', 'integrals_muon', 'integrals_electron',
+                             'integrals_gamma', 'pulseheights_muon', 'pulseheights_electron',
+                             'pulseheights_gamma']:
                     idx = detector_id - 1
                     station_observables[key][idx] = value
 
@@ -332,6 +337,9 @@ class BaseSimulation(object):
             description["azimuth"] = tables.Float32Col(shape=(), dflt=-1.0, pos=39)
             description["core_distance"] = tables.Float32Col(shape=(), dflt=-1.0, pos=40)
             description["cr_particle"] = tables.Float32Col(shape=(), dflt=-1.0, pos=41)
+            description["pulseheights_muon"] = tables.Int32Col(shape=4, dflt=-1.0, pos=42)
+            description["pulseheights_electron"] = tables.Int32Col(shape=4, dflt=-1.0, pos=43)
+            description["pulseheights_gamma"] = tables.Int32Col(shape=4, dflt=-1.0, pos=44)
 
 
             self.data.create_table(station_group, 'events', description,
