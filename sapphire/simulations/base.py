@@ -193,7 +193,7 @@ class BaseSimulation(object):
                 if key in ['n', 'n_muons', 'n_electrons', 'n_gammas', 't']:
                     key = key + str(detector_id)
                     station_observables[key] = value
-                elif key in ['pulseheights', 'integrals', 'integrals_muon', 'integrals_electron',
+                elif key in ['pulseheights', 'integrals', 'integrals_muon','integrals_electron',
                              'integrals_gamma', 'pulseheights_muon', 'pulseheights_electron',
                              'pulseheights_gamma']:
                     idx = detector_id - 1
