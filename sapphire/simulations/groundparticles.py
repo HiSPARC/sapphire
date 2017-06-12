@@ -406,7 +406,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         firstarrival = min(arrivaltimes)
     
         return n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
-               pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma \
+               pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma, \
                pulseheight, pulseheight_muon, pulseheight_electron, pulseheight_gamma
     
     def simulate_trigger(self, detector_observables):
