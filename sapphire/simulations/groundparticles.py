@@ -231,7 +231,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
 
         if n_detected:
             n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
-            pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma,
+            pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma, \
             pulseheights, pulseheights_muon, pulseheights_electron, \
             pulseheights_gamma = \
             self.simulate_detector_mips_for_particles(particles, detector, 
