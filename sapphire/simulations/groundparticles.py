@@ -396,6 +396,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         pulseheight_electron = 1e3 * abs(electron_trace.min())
         pulseheight_gamma = 1e3 * abs(gamma_trace.min())
         
+        print( all_particles_trace )
         print( pulseheight, "mV" )
 
         # Now obtain the pulseintegral for each trace (in mVns)
