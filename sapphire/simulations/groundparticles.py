@@ -423,9 +423,9 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         """
         n_detectors = len(detector_observables)
         detectors_low = sum([True for observables in detector_observables
-                             if observables['integrals'] > 30])
+                             if observables['pulseheights'] > 30])
         detectors_high = sum([True for observables in detector_observables
-                              if observables['integrals'] > 70])
+                              if observables['pulseheights'] > 70])
 
         if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
             return True
