@@ -192,7 +192,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         
         # First check if the photontimes list is empty
         if not photontimes:
-            return 0
+            return np.array([0])
         
         # Determine how many particles arrived per 2.5 nanosecond
         n_phot, bin_edges, patches = plt.hist(photontimes,bins=np.linspace(0,200,81))
