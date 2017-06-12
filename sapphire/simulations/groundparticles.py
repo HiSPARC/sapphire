@@ -249,10 +249,10 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                            'integrals_muon': pulseintegral_muon,
                            'integrals_electron': pulseintegral_electron,
                            'integrals_gamma': pulseintegral_gamma,
-                           'pulseheights': pulseheight,
-                           'pulseheights_muon': pulseheight_muon,
-                           'pulseheights_electron': pulseheight_electron,
-                           'pulseheights_gamma': pulseheight_gamma}
+                           'pulseheights': pulseheights,
+                           'pulseheights_muon': pulseheights_muon,
+                           'pulseheights_electron': pulseheights_electron,
+                           'pulseheights_gamma': pulseheights_gamma}
         else:
             observables = {'n': 0, 'n_muons': 0, 'n_electrons': 0, 'n_gammas': 0,
                            't': -999, 'integrals': 0., 'integrals_muon': 0.,
