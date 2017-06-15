@@ -19,6 +19,9 @@ from numpy import (arcsin, arccos, arctan2, cos, sin,
 from ..utils import norm_angle
 from . import clock, angles, axes
 
+import datetime
+import numpy as np
+import warnings
 
 def zenithazimuth_to_equatorial(latitude, longitude, timestamp, zenith,
                                 azimuth):
@@ -268,12 +271,8 @@ def galactic_to_equatorial(latitude, longitude, epoch='J2000'):
 try:
     # This try-except structure has been implemented to accommodate those without astropy.
     import astropy.units as u
-    import datetime
-    import numpy as np
 
-    from astropy.coordinates import AltAz
-    from astropy.coordinates import EarthLocation
-    from astropy.coordinates import SkyCoord
+    from astropy.coordinates import AltAz, EarthLocation, SkyCoord
     from astropy.time import Time
 
 
@@ -283,72 +282,71 @@ try:
         :param latitude: Latitude in decimal degrees
         :param longitude: Longitude in decimal degrees
         :param utc_timestamp: Unix UTC timestamp integer
-        :param eq_coordinates: np.array of tuples (zen, az) in radians
+        :param zenaz_coordinates: np.array of tuples (zen, az) in radians
         :return: np.array of tuples (ra, dec) in radians
 
         For increased speed using array input is recommended.
         """
         # Convert and flip order of zenaz coordinates
-        hor_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in zenaz_coordinates]
+        horizontal_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in zenaz_coordinates]
 
-        return horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, hor_coordinates)
+        return horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, horizontal_coordinates)
 
 
-    def equatorial_to_zenithazimuth_astropy(latitude, longitude, utc_timestamp, eq_coordinates):
+    def equatorial_to_zenithazimuth_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates):
         """ Converts iterables of tuples of equatorial to zenithazimuth coordinates
 
         :param latitude: Latitude in decimal degrees
         :param longitude: Longitude in decimal degrees
         :param utc_timestamp: Unix UTC timestamp integer
-        :param eq_coordinates: np.array of tuples (ra, dec) in radians
+        :param equatorial_coordinates: np.array of tuples (ra, dec) in radians
         :return: np.array of tuples (zen, az) in radians
 
         For increased speed using array input is recommended.
-                """
-        hor_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, eq_coordinates)
+        """
+        horizontal_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates)
         # Convert and flip order of coordinates
-        zenaz_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in hor_coordinates]
+        zenaz_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in horizontal_coordinates]
 
         return np.array(zenaz_coordinates)
 
 
-    def equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, eq_coordinates):
+    def equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates):
         """ Converts iterables of tuples of equatorial coordinates to horizontal coordinates
 
         :param latitude: Latitude in decimal degrees
         :param longitude: Longitude in decimal degrees
         :param utc_timestamp: Unix UTC timestamp integer
-        :param eq_coordinates: np.array of tuples (ra, dec) in radians
+        :param equatorial_coordinates: np.array of tuples (ra, dec) in radians
         :return: np.array of tuples (az, alt) in radians
 
         For increased speed using array input is recommended.
         Contrary to the legacy non-astropy function this one does what its name says!
         """
-        loc = EarthLocation(longitude, latitude)
+        location = EarthLocation(longitude, latitude)
         t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
-        eq_frame = SkyCoord(eq_coordinates, location=loc, obstime=t, unit=u.rad, frame='icrs')
-        hor_frame = eq_frame.transform_to('altaz')
+        equatorial_frame = SkyCoord(equatorial_coordinates, location=location, obstime=t, unit=u.rad, frame='icrs')
+        horizontal_frame = equatorial_frame.transform_to('altaz')
 
-        return np.array(zip(hor_frame.az.rad, hor_frame.alt.rad))
+        return np.array(zip(horizontal_frame.az.rad, horizontal_frame.alt.rad))
 
 
-    def horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, hor_coordinates):
+    def horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, horizontal_coordinates):
         """ Converts iterables of tuples of horizontal coordinates to equatorial coordinates
 
         :param latitude: Latitude in decimal degrees
         :param longitude: Longitude in decimal degrees
         :param utc_timestamp: Unix UTC timestamp integer
-        :param hor_coordinates: np.array of tuples (az, alt) in radians
+        :param horizontal_coordinates: np.array of tuples (az, alt) in radians
         :return: np.array of tuples (ra, dec) in radians
         """
-        loc = EarthLocation(longitude, latitude)
+        location = EarthLocation(longitude, latitude)
         t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
-        hor_frame = SkyCoord(hor_coordinates, location=loc, obstime=t, unit=u.rad, frame='altaz')
-        eq_frame = hor_frame.transform_to('icrs')
+        horizontal_frame = SkyCoord(horizontal_coordinates, location=location, obstime=t, unit=u.rad, frame='altaz')
+        equatorial_frame = horizontal_frame.transform_to('icrs')
 
-        return np.array(zip(eq_frame.ra.rad, eq_frame.dec.rad))
+        return np.array(zip(equatorial_frame.ra.rad, equatorial_frame.dec.rad))
 
 
 except ImportError as e:
-    import warnings
     warnings.warn(str(e)+"\nImport of astropy failed; astropy transformations therefore not available", ImportWarning)
