@@ -3,15 +3,15 @@
     This module performs transformations between different
     Celestial coordinate systems.
 
-    Legacy transformations:
+    Legacy transformations (all those not marked astropy):
     Formulae from: Duffett-Smith1990
     'Astronomy with your personal computer'
     ISBN 0-521-38995-X
 
-    TODO: CHECK IF THESE CONVERSIONS ARE CORRECT!
-
-    New tranformations have been added with _astropy added to function name
-    They are very exact.
+    New transformations have been added with _astropy added to function name
+    They are very exact, in the order of arcsec.
+    Ethan van Woerkom is the author of the new transformations; contact him
+    for further information.
 """
 from numpy import (arcsin, arccos, arctan2, cos, sin,
                    array, radians, degrees, pi, dot, around)
@@ -44,6 +44,10 @@ def zenithazimuth_to_equatorial(latitude, longitude, timestamp, zenith,
 
 def zenithazimuth_to_horizontal(zenith, azimuth):
     """Convert from Zenith Azimuth to Horizontal coordinates
+
+    :param zenith: Zenith in radians
+    :param azimuth: Azimuth in radians
+    :return altitude, alt_azimuth: Alt, Az in radians
 
     Zenith Azimuth is the coordinate system used by HiSPARC. Zenith is
     the angle between the zenith and the direction. Azimuth is the angle
@@ -78,6 +82,8 @@ def horizontal_to_equatorial(latitude, lst, altitude, alt_azimuth):
 
     :return: Right ascension (ra) and Declination (dec) in radians.
 
+    Warning: Inexact transformation; astropy functions preferred.
+
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
     """
@@ -96,6 +102,8 @@ def horizontal_to_hadec(latitude, altitude, alt_azimuth):
     :param alt_azimuth: Azimuth angle in horizontal plane in radians.
 
     :return: Hour angle (ha) and Declination (dec) in radians.
+
+    Warning: Inexact transformation; astropy functions preferred.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
@@ -138,7 +146,7 @@ def ha_to_ra(ha, lst):
 
 def equatorial_to_horizontal(latitude, longitude, timestamp, right_ascension,
                              declination):
-    """Convert Equatorial (J2000.0) to Horizontal coordinates
+    """Convert Equatorial (J2000.0) to Zenith Azimuth (NB: NOT HORIZONTAL) coordinates
 
     :param latitude,longitude: Position of the observer on Earth in degrees.
                                North and east positive.
@@ -146,7 +154,12 @@ def equatorial_to_horizontal(latitude, longitude, timestamp, right_ascension,
     :param right_ascension: right_ascension of the observation in radians.
     :param declination: declination of the observation in radians.
 
-    :return: zenith and azimuth in radians.
+    :return: zenith and azimuth in radians. (NB: NOT ALT, AZ)
+
+    This function does different things to what the name does.
+    It returns in zenithazimuth format and not horizontal!
+    This function has been superseded by:
+    equatorial_to_horizontal_astropy
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
@@ -171,7 +184,7 @@ def equatorial_to_horizontal(latitude, longitude, timestamp, right_ascension,
 
     zenith, azimuth = horizontal_to_zenithazimuth(altitude, alt_azimuth)
 
-    return zenith, azimuth
+    return zenith, azimuth # NB: return is in zenithazimuth format not horizontal
 
 
 def equatorial_to_galactic(right_ascension, declintation, epoch='J2000'):
@@ -179,9 +192,13 @@ def equatorial_to_galactic(right_ascension, declintation, epoch='J2000'):
 
     :param right_ascension: Right ascension (ra) in degrees.
     :param declintation: Declination (dec) in degrees.
-    :param epoch: Epoch for Equatorial coordinates, either 'J2000' or 'B1950'.
+    :param epoch: Epoch for Equatorial coordinates, either 'J2000' or 'B1950'. (B1950 not supported)!
 
     :return: Galactic longitude (l) and latitude (b) in degrees.
+
+    NB: This function has not been tested for accuracy by Ethan van Woerkom
+        It may work better than other legacy transformations; or worse
+        Use with own risk.
 
     From Duffett-Smith1990, 2100 EQGAL
 
@@ -210,6 +227,10 @@ def galactic_to_equatorial(latitude, longitude, epoch='J2000'):
     :param epoch: Epoch for Equatorial coordinates, either 'J2000' or 'B1950'.
 
     :return: Right ascension (ra) and Declination (dec) in radians.
+
+    NB: This function has not been tested for accuracy by Ethan van Woerkom
+        It may work better than other legacy transformations; or worse
+        Use with own risk.
 
     From Duffett-Smith1990, 2100 EQGAL
 
@@ -245,6 +266,7 @@ def galactic_to_equatorial(latitude, longitude, epoch='J2000'):
     return ra, dec
 
 try:
+    # This try-except structure has been implemented to accommodate those without astropy.
     import astropy.units as u
     import datetime
     import numpy as np
@@ -254,11 +276,18 @@ try:
     from astropy.coordinates import SkyCoord
     from astropy.time import Time
 
-    from . import clock
-    from ..utils import norm_angle
-
 
     def zenithazimuth_to_equatorial_astropy(latitude, longitude, utc_timestamp, zenaz_coordinates):
+        """ Converts iterables of tuples of zenithazimuth to equatorial coordinates
+
+        :param latitude: Latitude in decimal degrees
+        :param longitude: Longitude in decimal degrees
+        :param utc_timestamp: Unix UTC timestamp integer
+        :param eq_coordinates: np.array of tuples (zen, az) in radians
+        :return: np.array of tuples (ra, dec) in radians
+
+        For increased speed using array input is recommended.
+        """
         # Convert and flip order of zenaz coordinates
         hor_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in zenaz_coordinates]
 
@@ -266,6 +295,16 @@ try:
 
 
     def equatorial_to_zenithazimuth_astropy(latitude, longitude, utc_timestamp, eq_coordinates):
+        """ Converts iterables of tuples of equatorial to zenithazimuth coordinates
+
+        :param latitude: Latitude in decimal degrees
+        :param longitude: Longitude in decimal degrees
+        :param utc_timestamp: Unix UTC timestamp integer
+        :param eq_coordinates: np.array of tuples (ra, dec) in radians
+        :return: np.array of tuples (zen, az) in radians
+
+        For increased speed using array input is recommended.
+                """
         hor_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, eq_coordinates)
         # Convert and flip order of coordinates
         zenaz_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in hor_coordinates]
@@ -274,6 +313,17 @@ try:
 
 
     def equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, eq_coordinates):
+        """ Converts iterables of tuples of equatorial coordinates to horizontal coordinates
+
+        :param latitude: Latitude in decimal degrees
+        :param longitude: Longitude in decimal degrees
+        :param utc_timestamp: Unix UTC timestamp integer
+        :param eq_coordinates: np.array of tuples (ra, dec) in radians
+        :return: np.array of tuples (az, alt) in radians
+
+        For increased speed using array input is recommended.
+        Contrary to the legacy non-astropy function this one does what its name says!
+        """
         loc = EarthLocation(longitude, latitude)
         t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
         eq_frame = SkyCoord(eq_coordinates, location=loc, obstime=t, unit=u.rad, frame='icrs')
@@ -283,6 +333,14 @@ try:
 
 
     def horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, hor_coordinates):
+        """ Converts iterables of tuples of horizontal coordinates to equatorial coordinates
+
+        :param latitude: Latitude in decimal degrees
+        :param longitude: Longitude in decimal degrees
+        :param utc_timestamp: Unix UTC timestamp integer
+        :param hor_coordinates: np.array of tuples (az, alt) in radians
+        :return: np.array of tuples (ra, dec) in radians
+        """
         loc = EarthLocation(longitude, latitude)
         t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
         hor_frame = SkyCoord(hor_coordinates, location=loc, obstime=t, unit=u.rad, frame='altaz')

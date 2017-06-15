@@ -162,6 +162,14 @@ class EquatorialTests(unittest.TestCase):
 
 
 def test_transformations():
+    """
+    This function numerically evaluates a number of preprogrammed
+    values and the difference between our new and old transformations
+    New values may be added to testcases
+    :return: None
+
+    Ethan van Woerkom is responsible for the benchmarking functions; refer to him for when something is unclear
+    """
     # This tuple list contains all the used testcases for the test.
     # The meanings of the tuple entries are:
     # 0: latitude (deg) 1: longitude (deg) 2: utc_timestamp 3: J2000 RA (rad)
@@ -170,7 +178,7 @@ def test_transformations():
     testcases = [(48.86, 2.34, 1497003786, 0.8381070981, -0.5059006522, 3.26454625, 0.207694181, "stell. paris, alpha-for"),
                  (48.86, 2.34, 1497256975, 1.549728749, 0.1292784768, 1.969511946, 0.4898557422, "stell. paris, betelgeuse"),
                  (31.9633, -111.6, 2271646799, 0.05388704, 0.2650006125, 4.623697166, 0.66167856, "hor2eq IDL")]
-    ARC_RAD = 0.00000484136811 # one arcsecond in rad
+    ARC_RAD = 2*np.pi / 360 / 3600 # one arcsecond in rad
     for i in testcases:
         print 'Transformation test using:'
         print 'lat, long:', i[0], i[1], 'utc_time:', i[2], 'RA, DEC:', i[3], i[4]
@@ -207,8 +215,10 @@ def oldvsnew_diagram():
     equatorial_to_horizontal and equatorial_to_zenith_azimuth_astropy
     horizontal_to_equatorial and horizontal_to_zenith_azimuth_astropy
     Makes a histogram of the error differences between these two functions as well
-    Assuming of course that astropy is relatively errorless and the old errorfull
+    The errors seem to be in the order of 1000 arcsec
     :return: None
+
+    Ethan van Woerkom is responsible for the benchmarking functions; refer to him for when something is unclear
     """
     # make random frames, in correct angle range and from utc time 2000-2020
     frames = []
@@ -273,7 +283,7 @@ def oldvsnew_diagram():
     # Make figs hor - > eq
 
     plt.figure(4)
-    plt.suptitle('RA/DEC correlation in rads (horizontal_to_equatorial)')
+    plt.suptitle('RA/DEC  correlation in rads (horizontal_to_equatorial)')
     altrange = [-0.5*np.pi, 0.5*np.pi]
     plt.subplot(211)
     plt.title('Declination')
@@ -313,8 +323,21 @@ def oldvsnew_diagram():
     return
 
 try:
+    # This try-except block contains a pyephem accuracy benchmarking function.
+    # It uses this structure to accommodate people without pyephem.
     import ephem
     def pyephem_comp():
+        """
+        This function compares the values from transformations done by our new astropy functions
+        with the pyephem numbers. It generates correlation graphs between the new and old functions
+        and histograms of the frequency of errors.
+        Most errors do not much exceed 10 arcsec. There is complete correlation i.e. visually all points
+        are on the same 1:1 line.
+        These comparisons are done on the basis of 100 randomly generated points
+        :return: None
+
+        Ethan van Woerkom is responsible for the benchmarking functions; refer to him for when something is unclear
+        """
         # Set up randoms equatorial J2000 bodies that we will convert the RAs/Decs of.
         eq = [] # random frames to use
         for i in range(100):
@@ -451,6 +474,7 @@ try:
 
 
 except ImportError:
+    # Pyephem is not required so there is a case for when it is not present
     def pyephem_comp():
         print "Pyephem not present; no comparisons will be done"
 
