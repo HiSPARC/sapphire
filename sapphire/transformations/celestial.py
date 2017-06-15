@@ -258,35 +258,38 @@ try:
     from ..utils import norm_angle
 
 
-    def zenithazimuth_to_equatorial_astropy(latitude, longitude, gps_timestamp, zenaz_coordinates):
-        hor_coordinates = [(norm_angle(0.5 * np.pi - i[0]), norm_angle(0.5 * np.pi - i[1])) for i in zenaz_coordinates]
+    def zenithazimuth_to_equatorial_astropy(latitude, longitude, utc_timestamp, zenaz_coordinates):
+        # Convert and flip order of zenaz coordinates
+        hor_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in zenaz_coordinates]
 
-        return horizontal_to_equatorial_astropy(latitude, longitude, gps_timestamp, hor_coordinates)
+        return horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, hor_coordinates)
 
 
-    def equatorial_to_zenithazimuth_astropy(latitude, longitude, gps_timestamp, eq_coordinates):
-        hor_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, gps_timestamp, eq_coordinates)
-        zenaz_coordinates = [(norm_angle(0.5 * np.pi - i[0]), norm_angle(0.5 * np.pi - i[1])) for i in hor_coordinates]
+    def equatorial_to_zenithazimuth_astropy(latitude, longitude, utc_timestamp, eq_coordinates):
+        hor_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, eq_coordinates)
+        # Convert and flip order of coordinates
+        zenaz_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in hor_coordinates]
 
         return np.array(zenaz_coordinates)
 
 
-    def equatorial_to_horizontal_astropy(latitude, longitude, gps_timestamp, eq_coordinates):
+    def equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, eq_coordinates):
         loc = EarthLocation(longitude, latitude)
-        t = Time(datetime.datetime.utcfromtimestamp(clock.gps_to_utc(gps_timestamp)))
+        t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
         eq_frame = SkyCoord(eq_coordinates, location=loc, obstime=t, unit=u.rad, frame='icrs')
         hor_frame = eq_frame.transform_to('altaz')
 
         return np.array(zip(hor_frame.az.rad, hor_frame.alt.rad))
 
 
-    def horizontal_to_equatorial_astropy(latitude, longitude, gps_timestamp, hor_coordinates):
+    def horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, hor_coordinates):
         loc = EarthLocation(longitude, latitude)
-        t = Time(datetime.datetime.utcfromtimestamp(clock.gps_to_utc(gps_timestamp)))
+        t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
         hor_frame = SkyCoord(hor_coordinates, location=loc, obstime=t, unit=u.rad, frame='altaz')
         eq_frame = hor_frame.transform_to('icrs')
 
         return np.array(zip(eq_frame.ra.rad, eq_frame.dec.rad))
+
 
 except ImportError as e:
     import warnings
