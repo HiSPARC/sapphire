@@ -1,56 +1,40 @@
+"""
+This is a benchmarking module developed for testing the coordinate
+transformations by Ethan van Woerkom. The most important functions are
+oldvsnew_diagram and pyephem_comp, respectively testing the old against the new
+transformations and the new ones against pyephem.
+
+transformspeeds tests the speed of the new transformations
+"""
 import datetime
 import matplotlib.pyplot as plt
 import numpy as np
 import random as r
+import time
 
 from sapphire.transformations import celestial, clock
 
-def test_transformations():
-    """
-    This function numerically evaluates a number of preprogrammed
-    values and the difference between our new and old transformations
-    New values may be added to testcases
-    :return: None
+def transformspeeds():
+    print("Running speeds for 100.000 transformations of the astropy functions:")
+    a = np.array([(0,0)]*100000)
 
-    Ethan van Woerkom is responsible for the benchmarking functions; refer to him for when something is unclear
-    """
-    # This tuple list contains all the used testcases for the test.
-    # The meanings of the tuple entries are:
-    # 0: latitude (deg) 1: longitude (deg) 2: utc_timestamp 3: J2000 RA (rad)
-    # 4: J2000 DEC (rad) 5: horizontal az. (rad) 6: horizontal alt. (rad)
-    # 7: source of test name
-    testcases = [(48.86, 2.34, 1497003786, 0.8381070981, -0.5059006522, 3.26454625, 0.207694181, "stell. paris, alpha-for"),
-                 (48.86, 2.34, 1497256975, 1.549728749, 0.1292784768, 1.969511946, 0.4898557422, "stell. paris, betelgeuse"),
-                 (31.9633, -111.6, 2271646799, 0.05388704, 0.2650006125, 4.623697166, 0.66167856, "hor2eq IDL")]
-    ARC_RAD = 2*np.pi / 360 / 3600 # one arcsecond in rad
-    for i in testcases:
-        print 'Transformation test using:'
-        print 'lat, long:', i[0], i[1], 'utc_time:', i[2], 'RA, DEC:', i[3], i[4]
-        print 'az, alt:', i[5], i[6], 'from source: ', i[7]
+    t0 = time.clock()
 
-        t = celestial.equatorial_to_horizontal_astropy(i[0], i[1], i[2], [(i[3], i[4])])
-        print "equatorial_to_horizontal_astropy gave: ", t[0]
-        print "Should have been:                      ", (i[5],i[6])
-        print "Difference (dAZ, dALT) (arcsec):       ", ((t[0][0]-i[5])/ARC_RAD,(t[0][1]-i[6])/ARC_RAD)
+    celestial.equatorial_to_horizontal_astropy(0,0,1000000000,a)
+    t1 = time.clock()-t0
 
-        t = celestial.horizontal_to_equatorial_astropy(i[0], i[1], i[2], [(i[5], i[6])])
-        print "horizontal_to_equatorial_astropy gave: ", t[0]
-        print "Should have been:                      ", (i[3],i[4])
-        print "Difference (dAZ, dALT) (arcsec):       ", ((t[0][0]-i[3])/ARC_RAD,(t[0][1]-i[4])/ARC_RAD)
+    celestial.equatorial_to_zenithazimuth_astropy(0,0,1000000000,a)
+    t2 = time.clock()-t0
 
-        # equatorial to horizontal is actually a zenithazimuth to horizontal
-        t = celestial.equatorial_to_horizontal(i[0], i[1], clock.utc_to_gps(i[2]), i[3], i[4])
-        print "equatorial_to_horizontal gave:         ", (t[1], t[0])
-        a,b = celestial.horizontal_to_zenithazimuth(i[6], i[5])
-        print "Should have been:                      ", (b,a)
-        print "Difference (dAZ, dALT) (arcsec):       ", ((t[1] - b) / ARC_RAD, (t[0] - a) / ARC_RAD)
+    celestial.zenithazimuth_to_equatorial_astropy(0,0,1000000000,a)
+    t3 = time.clock()-t0
 
-        t = celestial.horizontal_to_equatorial(i[0], clock.utc_to_lst(datetime.datetime.utcfromtimestamp(i[2]), i[1]), i[6], i[5])
-        print "horizontal_to_equatorial (is zenaz):   ", (t[0],t[1])
-        print "Should have been:                      ", (i[3], i[4])
-        print "Difference (dAZ, dALT) (arcsec):       ", ((t[0] - i[3]) / ARC_RAD, (t[1] - i[4]) / ARC_RAD)
+    celestial.zenithazimuth_to_equatorial_astropy(0,0,1000000000,a)
+    t4 = time.clock()-t0
 
-        print("\n")
+    print "EQ->HO, EQ-> ZA, HO->EQ, ZA->EQ runtimes:"
+
+    print t1, t2, t3, t4
 
 def oldvsnew_diagram():
     """
@@ -78,7 +62,7 @@ def oldvsnew_diagram():
         frames.append((r.uniform(-90, 90), r.uniform(-180,180), r.randint(946684800,1577836800), r.uniform(0, 2*np.pi), r.uniform(-0.5*np.pi,0.5*np.pi)))
     for i in frames:
         etoha.append(celestial.equatorial_to_zenithazimuth_astropy(i[0],i[1], i[2], [(i[3], i[4])])[0])
-        etoh.append(celestial.equatorial_to_horizontal(i[0], i[1], clock.utc_to_gps(i[2]), i[3], i[4]))
+        etoh.append(celestial.equatorial_to_zenithazimuth(i[0], i[1], clock.utc_to_gps(i[2]), i[3], i[4]))
     # Data sets for hor to eq
     for i in frames:
         htoe.append(celestial.horizontal_to_equatorial(i[0], clock.utc_to_lst(datetime.datetime.utcfromtimestamp(i[2]), i[1]), i[4], i[3]))
@@ -86,7 +70,7 @@ def oldvsnew_diagram():
 
     # Make figs eq -> zenaz
     plt.figure(1)
-    plt.suptitle('Zen/Az correlation in rads (equatorial_to_zenithazimuth/horizontal)')
+    plt.suptitle('Zen/Az correlation in rads (equatorial_to_zenithazimuth)')
 
     zenrange = [0, np.pi]
     plt.subplot(211)
@@ -114,13 +98,13 @@ def oldvsnew_diagram():
     plt.figure(2)
     nieuw = (np.array(etoh)-np.array(etoha))/2/np.pi*360*3600 # Take difference and convert to arcsec
     plt.hist([i[0] for i in nieuw], bins = 20)
-    plt.title('Zenith Old-New Error (equatorial_to_zenithazimuth/horizontal)')
+    plt.title('Zenith Old-New Error (equatorial_to_zenithazimuth)')
     plt.xlabel('Error (arcsec)')
     plt.ylabel('Counts')
 
     plt.figure(3)
     plt.hist([i[1] for i in nieuw], bins=20)
-    plt.title('Azimuth Old-New Error (equatorial_to_zenithazimuth/horizontal)')
+    plt.title('Azimuth Old-New Error (equatorial_to_zenithazimuth)')
     plt.xlabel('Error (arcsec)')
     plt.ylabel('Counts')
 

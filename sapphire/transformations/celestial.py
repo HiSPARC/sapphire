@@ -285,8 +285,14 @@ try:
 
         For increased speed using array input is recommended.
         """
-        # Convert and flip order of zenaz coordinates
-        horizontal_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in zenaz_coordinates]
+
+        # Convert and flip order of zenaz coordinates, done in numpy for speed
+        zenaz_coordinates = np.array(zenaz_coordinates)
+        zenaz_coordinates = 0.5*np.pi - zenaz_coordinates
+        horizontal_coordinates = np.unwrap(zenaz_coordinates[:,[1,0]])
+
+        # Normalise angle
+        horizontal_coordinates = norm_angle(horizontal_coordinates)
 
         return horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, horizontal_coordinates)
 
@@ -302,11 +308,19 @@ try:
 
         For increased speed using array input is recommended.
         """
-        horizontal_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates)
-        # Convert and flip order of coordinates
-        zenaz_coordinates = [(norm_angle(0.5 * np.pi - i[1]), norm_angle(0.5 * np.pi - i[0])) for i in horizontal_coordinates]
 
-        return np.array(zenaz_coordinates)
+        equatorial_coordinates = np.array(equatorial_coordinates)
+        horizontal_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates)
+
+        # Convert and flip order of zenaz coordinates, done in numpy for speed
+        horizontal_coordinates = np.array(horizontal_coordinates)
+        horizontal_coordinates = 0.5 * np.pi - horizontal_coordinates
+        zenaz_coordinates = horizontal_coordinates[:, [1, 0]]
+
+        # Normalise angle
+        zenaz_coordinates = norm_angle(zenaz_coordinates)
+
+        return zenaz_coordinates
 
 
     def equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates):
@@ -321,6 +335,9 @@ try:
         For increased speed using array input is recommended.
         Contrary to the legacy non-astropy function this one does what its name says!
         """
+        # For speed in numpy
+        equatorial_coordinates = np.array(equatorial_coordinates)
+
         location = EarthLocation(longitude, latitude)
         t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
         equatorial_frame = SkyCoord(equatorial_coordinates, location=location, obstime=t, unit=u.rad, frame='icrs')
@@ -338,6 +355,9 @@ try:
         :param horizontal_coordinates: np.array of tuples (az, alt) in radians
         :return: np.array of tuples (ra, dec) in radians
         """
+        # For speed in numpy
+        horizontal_coordinates = np.array(horizontal_coordinates)
+
         location = EarthLocation(longitude, latitude)
         t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
         horizontal_frame = SkyCoord(horizontal_coordinates, location=location, obstime=t, unit=u.rad, frame='altaz')
