@@ -147,9 +147,9 @@ def ha_to_ra(ha, lst):
     return ra
 
 
-def equatorial_to_horizontal(latitude, longitude, timestamp, right_ascension,
+def equatorial_to_zenithazimuth(latitude, longitude, timestamp, right_ascension,
                              declination):
-    """Convert Equatorial (J2000.0) to Zenith Azimuth (NB: NOT HORIZONTAL) coordinates
+    """Convert Equatorial (J2000.0) to Zenith Azimuth coordinates
 
     :param latitude,longitude: Position of the observer on Earth in degrees.
                                North and east positive.
@@ -157,12 +157,10 @@ def equatorial_to_horizontal(latitude, longitude, timestamp, right_ascension,
     :param right_ascension: right_ascension of the observation in radians.
     :param declination: declination of the observation in radians.
 
-    :return: zenith and azimuth in radians. (NB: NOT ALT, AZ)
+    :return: zenith and azimuth in radians.
 
-    This function does different things to what the name does.
-    It returns in zenithazimuth format and not horizontal!
-    This function has been superseded by:
-    equatorial_to_horizontal_astropy
+    This function was renamed from equatorial_to_horizontal to
+    equatorial_to_zenithazimuth in order to make it operate as the name does.
 
     From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG
 
@@ -187,7 +185,7 @@ def equatorial_to_horizontal(latitude, longitude, timestamp, right_ascension,
 
     zenith, azimuth = horizontal_to_zenithazimuth(altitude, alt_azimuth)
 
-    return zenith, azimuth # NB: return is in zenithazimuth format not horizontal
+    return zenith, azimuth
 
 
 def equatorial_to_galactic(right_ascension, declintation, epoch='J2000'):
