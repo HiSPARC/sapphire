@@ -26,6 +26,9 @@ from six import iteritems
 
 import numpy as np
 import tables
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot as plt
 
 from .gammas import simulate_detector_mips_gammas
 from .detector import HiSPARCSimulation, ErrorlessSimulation
@@ -135,7 +138,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                 N_electron += 1
         return N_electron
 
-    def _simulateTrace(self, N, start, t_rise=7.0, t_fall=25.0, stop=300.0, GR=3.0e8):
+    def _simulateTrace(self, N, start, t_rise=7.0, t_fall=25.0, stop=300.0, GR=7.5e8):
         """Simulate event trace
         
         :param N: Number of emitted cathode electrons
@@ -191,7 +194,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         """
         
         # First check if the photontimes list is empty
-        if not photontimes:
+        if len(photontimes) == 0:
             return np.array([0])
         
         # Determine how many particles arrived per 2.5 nanosecond
@@ -209,7 +212,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         trace_nikhef = []
         for value in trace:
             trace_nikhef.append(self._nikhef_pmt_response(value))
-            trace_nikhef = np.array(trace_nikhef)
+        trace_nikhef = np.array(trace_nikhef)
 
         return trace_nikhef
 
@@ -270,7 +273,15 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                           components of the particle momenta.
 
         """
-        
+        # Determine the arrival time of the first particles measured since the
+        # start of the shower (first interaction)
+        times_since_first_interaction = []
+        for particle in particles:
+            t = particle["t"]
+            times_since_first_interaction.append(t)
+        t_first_interaction = min(times_since_first_interaction)
+        print("--")
+
         # Run the geant4 simulation for each particle
         arrived_photons_per_particle = []
         arrived_photons_per_particle_muon = []
@@ -351,21 +362,29 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
 
             # Determine the number of photons that have arrived at the PMT
             # and the time it took for the first photon to arrive at the PMT.
-            file = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
+            geantfile = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
             try:
-                photontimes = file[1:,0]
-                arrivaltime = min(file[1:, 0])
+                photontimes = geantfile[1:,0]
+                arrivaltime = min(photontimes)
+
+                # Not all particles arrive at the same time, so a trace gets
+                # wider if there is some time between the creation of scintil.
+                # photons. In order to achieve this add the arrival time of the
+                # particle with respect to the first arrived particle to the
+                # arrival times of the scint. photons created by this particle.
+                # If there is only one particle this latency is zero.
+                t_later_than_first = particle["t"] - t_first_interaction
+                print("Later than first (in ns): ",t_later_than_first)
+                photontimes += t_later_than_first
+
                 # Succesful interaction, keep statistics
                 if particle_id == 1:
-                    print("Gamma detected, strength: {}".format(numberofphotons))
                     n_gammas += 1
                     arrived_photons_per_particle_gamma = np.append(arrived_photons_per_particle_gamma,photontimes)
                 elif particle_id in [2, 3]:
-                    print("Electron detected, strength: {}".format(numberofphotons))
                     n_electrons += 1
                     arrived_photons_per_particle_electron = np.append(arrived_photons_per_particle_electron,photontimes)
                 elif particle_id in [5, 6]:
-                    print("Muon detected, strength: {}".format(numberofphotons))
                     n_muons += 1
                     arrived_photons_per_particle_muon = np.append(arrived_photons_per_particle_muon,photontimes)
             except:
@@ -373,7 +392,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                 # iteraction).
                 photontimes = np.array([]) # empty list
                 arrivaltime = -999
-            
+
             # Remove the directory created by the GEANT4 simulation
             shutil.rmtree("RUN_1")
 
@@ -396,7 +415,6 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         pulseheight_electron = 1e3 * abs(electron_trace.min())
         pulseheight_gamma = 1e3 * abs(gamma_trace.min())
         
-        print( all_particles_trace )
         print( pulseheight, "mV" )
 
         # Now obtain the pulseintegral for each trace (in mVns)
