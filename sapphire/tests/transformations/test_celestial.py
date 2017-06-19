@@ -160,5 +160,6 @@ class EquatorialTests(unittest.TestCase):
         self.assertAlmostEqual(dec, dec_expected, 2)
         self.assertAlmostEqual(dec, dec_astropy, 2)
 
+
 if __name__ == '__main__':
     unittest.main()
