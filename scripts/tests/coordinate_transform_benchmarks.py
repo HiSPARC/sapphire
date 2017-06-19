@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import random as r
 import time
-
 from sapphire.transformations import celestial, clock
+from sapphire.utils import angle_between, norm_angle
 
 def transformspeeds():
     print("Running speeds for 100.000 transformations of the astropy functions:")
@@ -35,6 +35,26 @@ def transformspeeds():
     print "EQ->HO, EQ-> ZA, HO->EQ, ZA->EQ runtimes:"
 
     print t1, t2, t3, t4
+
+def angle_between_horizontal(azimuth1, altitude1, azimuth2, altitude2):
+    """Calculate the angle between two horizontal coordinates
+
+    Using the haversine formula,
+    from: http://www.movable-type.co.uk/scripts/latlong.html
+
+    :param azimuth#: Azimuth parts of the coordinates in radians.
+    :param altitude#: Altitude parts of the coordinates in radians.
+    :return: Angle between the two coordinates in radians.
+
+    """
+    zenith1, azimuth1 = celestial.horizontal_to_zenithazimuth(altitude1, azimuth1)
+    zenith2, azimuth2 = celestial.horizontal_to_zenithazimuth(altitude2, azimuth2)
+    dlat = zenith1 - zenith2
+    dlon = azimuth2 - azimuth1
+    a = (np.sin(dlat / 2) ** 2 + np.sin(zenith1) * np.sin(zenith2) * np.sin(dlon / 2) ** 2)
+    angle = 2 * np.arcsin(np.sqrt(a))
+
+    return angle
 
 def oldvsnew_diagram():
     """
@@ -108,6 +128,14 @@ def oldvsnew_diagram():
     plt.xlabel('Error (arcsec)')
     plt.ylabel('Counts')
 
+    # Make histogram of differences using the absolute distance in arcsec-this graph has no wrapping issues
+    plt.figure(7)
+    nieuw = np.array([angle_between(etoh[i][0], etoh[i][1], etoha[i][0], etoha[i][1]) for i in range(len(etoh))])*3600*360/2/np.pi
+    plt.hist(nieuw, bins=20)
+    plt.title('ZEN+AZ Old-New Error (equatorial_to_zenithazimuth)')
+    plt.xlabel('Error (arcsec)')
+    plt.ylabel('Counts')
+
     # Make figs hor - > eq
 
     plt.figure(4)
@@ -144,6 +172,15 @@ def oldvsnew_diagram():
     nieuw = (np.array(htoe) - np.array(htoea)) / 2 / np.pi * 360 * 3600  # Take difference and convert to arcsec
     plt.hist([i[0] for i in nieuw], bins=20)
     plt.title('Right Ascension Old-New Error (horizontal_to_equatorial)')
+    plt.xlabel('Error (arcsec)')
+    plt.ylabel('Counts')
+
+    # Make histogram of differences using the absolute distance in arcsec-this graph has no wrapping issues
+    plt.figure(8)
+    nieuw = np.array([angle_between_horizontal(htoe[i][0], htoe[i][1], htoea[i][0], htoea[i][1]) for i in range(len(htoe))])
+    nieuw = nieuw / 2 / np.pi * 360 * 3600  # Take difference and convert to arcsec
+    plt.hist(nieuw, bins=20)
+    plt.title('RA+DEC Old-New Error (horizontal_to_equatorial)')
     plt.xlabel('Error (arcsec)')
     plt.ylabel('Counts')
 
@@ -297,6 +334,28 @@ try:
 
         plt.ylabel('Counts')
         plt.xlabel('Error (arcsec)')
+
+
+        # Make histograms of differences using the absolute distance in arcsec-these graphs have no wrapping issues
+
+        plt.figure(7)
+        nieuw = np.array(
+            [angle_between_horizontal(altaz[i][0], altaz[i][1], etoha[i][0], etoha[i][1]) for i in range(len(etoha))])
+        nieuw = nieuw / 2 / np.pi * 360 * 3600
+        plt.hist(nieuw, bins=20)
+        plt.title('Alt+Azi Error RA,DEC->(pyephem/astropy)->Altaz')
+        plt.xlabel('Error (arcsec)')
+        plt.ylabel('Counts')
+
+        plt.figure(8)
+        nieuw = np.array(
+            [angle_between_horizontal(efemeq[i][0], efemeq[i][1], htoea[i][0], htoea[i][1]) for i in range(len(htoea))])
+        nieuw = nieuw / 2 / np.pi * 360 * 3600  # Take difference and convert to arcsec
+        plt.hist(nieuw, bins=20)
+        plt.title('RA+DEC Error Altaz->(pyephem/astropy)->RA,DEC')
+        plt.xlabel('Error (arcsec)')
+        plt.ylabel('Counts')
+
         # Done; output
         plt.show()
 
