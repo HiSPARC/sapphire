@@ -13,15 +13,16 @@
     Ethan van Woerkom is the author of the new transformations; contact him
     for further information.
 """
-from numpy import (arcsin, arccos, arctan2, cos, sin,
-                   array, radians, degrees, pi, dot, around)
+from numpy import (arcsin, arccos, cos, sin,
+                   radians, pi, around)
 
 from ..utils import norm_angle
-from . import clock, angles, axes
+from . import clock, angles
 
 import datetime
 import numpy as np
 import warnings
+
 
 def zenithazimuth_to_equatorial(latitude, longitude, timestamp, zenith,
                                 azimuth):
@@ -147,8 +148,8 @@ def ha_to_ra(ha, lst):
     return ra
 
 
-def equatorial_to_zenithazimuth(latitude, longitude, timestamp, right_ascension,
-                             declination):
+def equatorial_to_zenithazimuth(latitude, longitude, timestamp,
+                                right_ascension, declination):
     """Convert Equatorial (J2000.0) to Zenith Azimuth coordinates
 
     :param latitude,longitude: Position of the observer on Earth in degrees.
@@ -187,16 +188,20 @@ def equatorial_to_zenithazimuth(latitude, longitude, timestamp, right_ascension,
 
     return zenith, azimuth
 
+
 try:
-    # This try-except structure has been implemented to accommodate those without astropy.
+    # This try-except structure has been implemented,
+    # to accommodate those without astropy.
     import astropy.units as u
 
     from astropy.coordinates import AltAz, EarthLocation, SkyCoord
     from astropy.time import Time
 
 
-    def zenithazimuth_to_equatorial_astropy(latitude, longitude, utc_timestamp, zenaz_coordinates):
-        """ Converts iterables of tuples of zenithazimuth to equatorial coordinates
+    def zenithazimuth_to_equatorial_astropy(latitude, longitude, utc_timestamp,
+                                            zenaz_coordinates):
+        """ Converts iterables of tuples of zenithazimuth
+            to equatorial coordinates
 
         :param latitude: Latitude in decimal degrees
         :param longitude: Longitude in decimal degrees
@@ -210,16 +215,21 @@ try:
         # Convert and flip order of zenaz coordinates, done in numpy for speed
         zenaz_coordinates = np.array(zenaz_coordinates)
         zenaz_coordinates = 0.5*np.pi - zenaz_coordinates
-        horizontal_coordinates = np.unwrap(zenaz_coordinates[:,[1,0]])
+        horizontal_coordinates = np.unwrap(zenaz_coordinates[:, [1, 0]])
 
         # Normalise angle
         horizontal_coordinates = norm_angle(horizontal_coordinates)
 
-        return horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, horizontal_coordinates)
+        return horizontal_to_equatorial_astropy(latitude, longitude,
+                                                utc_timestamp,
+                                                horizontal_coordinates)
 
 
-    def equatorial_to_zenithazimuth_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates):
-        """ Converts iterables of tuples of equatorial to zenithazimuth coordinates
+    def equatorial_to_zenithazimuth_astropy(latitude, longitude,
+                                            utc_timestamp,
+                                            equatorial_coordinates):
+        """ Converts iterables of tuples of equatorial
+            to zenithazimuth coordinates
 
         :param latitude: Latitude in decimal degrees
         :param longitude: Longitude in decimal degrees
@@ -231,7 +241,10 @@ try:
         """
 
         equatorial_coordinates = np.array(equatorial_coordinates)
-        horizontal_coordinates = equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates)
+        horizontal_coordinates =\
+            equatorial_to_horizontal_astropy(latitude, longitude,
+                                             utc_timestamp,
+                                             equatorial_coordinates)
 
         # Convert and flip order of zenaz coordinates, done in numpy for speed
         horizontal_coordinates = np.array(horizontal_coordinates)
@@ -244,8 +257,11 @@ try:
         return zenaz_coordinates
 
 
-    def equatorial_to_horizontal_astropy(latitude, longitude, utc_timestamp, equatorial_coordinates):
-        """ Converts iterables of tuples of equatorial coordinates to horizontal coordinates
+    def equatorial_to_horizontal_astropy(latitude, longitude,
+                                         utc_timestamp,
+                                         equatorial_coordinates):
+        """ Converts iterables of tuples of equatorial coordinates
+            to horizontal coordinates
 
         :param latitude: Latitude in decimal degrees
         :param longitude: Longitude in decimal degrees
@@ -254,21 +270,24 @@ try:
         :return: np.array of tuples (az, alt) in radians
 
         For increased speed using array input is recommended.
-        Contrary to the legacy non-astropy function this one does what its name says!
         """
         # For speed in numpy
         equatorial_coordinates = np.array(equatorial_coordinates)
 
         location = EarthLocation(longitude, latitude)
         t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
-        equatorial_frame = SkyCoord(equatorial_coordinates, location=location, obstime=t, unit=u.rad, frame='icrs')
+        equatorial_frame = SkyCoord(equatorial_coordinates, location=location,
+                                    obstime=t, unit=u.rad, frame='icrs')
         horizontal_frame = equatorial_frame.transform_to('altaz')
 
         return np.array(zip(horizontal_frame.az.rad, horizontal_frame.alt.rad))
 
 
-    def horizontal_to_equatorial_astropy(latitude, longitude, utc_timestamp, horizontal_coordinates):
-        """ Converts iterables of tuples of horizontal coordinates to equatorial coordinates
+    def horizontal_to_equatorial_astropy(latitude, longitude,
+                                         utc_timestamp,
+                                         horizontal_coordinates):
+        """ Converts iterables of tuples of
+            horizontal coordinates to equatorial coordinates
 
         :param latitude: Latitude in decimal degrees
         :param longitude: Longitude in decimal degrees
@@ -281,11 +300,13 @@ try:
 
         location = EarthLocation(longitude, latitude)
         t = Time(datetime.datetime.utcfromtimestamp(utc_timestamp))
-        horizontal_frame = SkyCoord(horizontal_coordinates, location=location, obstime=t, unit=u.rad, frame='altaz')
+        horizontal_frame = SkyCoord(horizontal_coordinates, location=location,
+                                    obstime=t, unit=u.rad, frame='altaz')
         equatorial_frame = horizontal_frame.transform_to('icrs')
 
         return np.array(zip(equatorial_frame.ra.rad, equatorial_frame.dec.rad))
 
 
 except ImportError as e:
-    warnings.warn(str(e)+"\nImport of astropy failed; astropy transformations therefore not available", ImportWarning)
+    warnings.warn(str(e)+("\nImport of astropy failed; astropy transformations"
+                          "therefore not available"), ImportWarning)

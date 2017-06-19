@@ -12,7 +12,7 @@ import numpy as np
 import random as r
 import time
 from sapphire.transformations import celestial, clock
-from sapphire.utils import angle_between, norm_angle
+from sapphire.utils import angle_between
 
 def transformspeeds():
     print("Running speeds for 100.000 transformations of the astropy functions:")
@@ -62,11 +62,13 @@ def oldvsnew_diagram():
     Compares the correlations between the transformations:
     equatorial_to_horizontal and equatorial_to_zenith_azimuth_astropy
     horizontal_to_equatorial and horizontal_to_zenith_azimuth_astropy
-    Makes a histogram of the error differences between these two functions as well
+    Makes a histogram of the error differences
+    between these two functions as well.
     The errors seem to be in the order of 1000 arcsec
     :return: None
 
-    Ethan van Woerkom is responsible for the benchmarking functions; refer to him for when something is unclear
+    Ethan van Woerkom is responsible for the benchmarking functions;
+    refer to him for when something is unclear
     """
     # make random frames, in correct angle range and from utc time 2000-2020
     frames = []
@@ -303,7 +305,8 @@ try:
         plt.ylabel('Astropy Altitude (rad')
 
         # Plot with trendline
-        plt.plot([co[1] for co in altaz], [co[1] for co in etoha], 'b.', altdecrange, altdecrange, '-')
+        plt.plot([co[1] for co in altaz], [co[1] for co in etoha], 'b.',
+                 altdecrange, altdecrange, '-')
 
         # Azimuth
         plt.subplot(212)
@@ -312,7 +315,8 @@ try:
         plt.xlabel('Pyephem Azimuth (rad)')
         plt.ylabel('Astropy Azimuth (rad)')
 
-        plt.plot([co[0] for co in altaz], [co[0] for co in etoha], 'r.', azrarange, azrarange, '-')
+        plt.plot([co[0] for co in altaz], [co[0] for co in etoha],
+                 'r.', azrarange, azrarange, '-')
 
         # Formatting
         plt.tight_layout()
@@ -336,11 +340,13 @@ try:
         plt.xlabel('Error (arcsec)')
 
 
-        # Make histograms of differences using the absolute distance in arcsec-these graphs have no wrapping issues
+        # Make histograms of differences using the absolute distance in arcsec
+        # these graphs have no wrapping issues
 
         plt.figure(7)
         nieuw = np.array(
-            [angle_between_horizontal(altaz[i][0], altaz[i][1], etoha[i][0], etoha[i][1]) for i in range(len(etoha))])
+            [angle_between_horizontal(altaz[i][0], altaz[i][1], etoha[i][0],
+                                      etoha[i][1]) for i in range(len(etoha))])
         nieuw = nieuw / 2 / np.pi * 360 * 3600
         plt.hist(nieuw, bins=20)
         plt.title('Alt+Azi Error RA,DEC->(pyephem/astropy)->Altaz')
@@ -349,8 +355,11 @@ try:
 
         plt.figure(8)
         nieuw = np.array(
-            [angle_between_horizontal(efemeq[i][0], efemeq[i][1], htoea[i][0], htoea[i][1]) for i in range(len(htoea))])
-        nieuw = nieuw / 2 / np.pi * 360 * 3600  # Take difference and convert to arcsec
+            [angle_between_horizontal(efemeq[i][0], efemeq[i][1], htoea[i][0],
+                                      htoea[i][1]) for i in range(len(htoea))])
+        # Take difference and convert to arcsec
+        nieuw = nieuw / 2 / np.pi * 360 * 3600
+
         plt.hist(nieuw, bins=20)
         plt.title('RA+DEC Error Altaz->(pyephem/astropy)->RA,DEC')
         plt.xlabel('Error (arcsec)')
