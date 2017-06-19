@@ -12,7 +12,8 @@ Easy transformations between different systems.
     conversion between decimal and sexagesimal
 
 :mod:`~sapphire.transformations.celestial`
-    conversion between celestial coordinate systems, contains both legacy and new astropy functions
+    conversion between celestial coordinate systems, contains both
+    legacy and new astropy functions
 
 :mod:`~sapphire.transformations.clock`
     conversion between different time keeping systems

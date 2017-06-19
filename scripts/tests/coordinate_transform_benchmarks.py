@@ -207,7 +207,7 @@ def oldvsnew_diagram():
     # this graph has no wrapping issues
     plt.figure(8)
     nieuw = np.array([angle_between_horizontal(htoe[i][0], htoe[i][1],
-                    htoea[i][0], htoea[i][1]) for i in range(len(htoe))])
+                     htoea[i][0], htoea[i][1]) for i in range(len(htoe))])
     # Take diff. and convert to arcsec
     nieuw = nieuw / 2 / np.pi * 360 * 3600
     plt.hist(nieuw, bins=20)
@@ -274,8 +274,8 @@ try:
 
         # Produce horizontal_to_equatorial_astropy results
         for i in eq:
-            result = celestial.horizontal_to_equatorial_astropy(i[0], i[1],
-                                                        i[2], [(i[3], i[4])])
+            result = celestial.horizontal_to_equatorial_astropy(
+            i[0], i[1], i[2], [(i[3], i[4])])
             htoea.extend(result)
 
         # Produce equatorial_to_horizontal_astropy results

@@ -194,9 +194,8 @@ try:
     # to accommodate those without astropy.
     import astropy.units as u
 
-    from astropy.coordinates import AltAz, EarthLocation, SkyCoord
+    from astropy.coordinates import EarthLocation, SkyCoord
     from astropy.time import Time
-
 
     def zenithazimuth_to_equatorial_astropy(latitude, longitude, utc_timestamp,
                                             zenaz_coordinates):
@@ -214,7 +213,7 @@ try:
 
         # Convert and flip order of zenaz coordinates, done in numpy for speed
         zenaz_coordinates = np.array(zenaz_coordinates)
-        zenaz_coordinates = 0.5*np.pi - zenaz_coordinates
+        zenaz_coordinates = 0.5 * np.pi - zenaz_coordinates
         horizontal_coordinates = np.unwrap(zenaz_coordinates[:, [1, 0]])
 
         # Normalise angle
@@ -223,7 +222,6 @@ try:
         return horizontal_to_equatorial_astropy(latitude, longitude,
                                                 utc_timestamp,
                                                 horizontal_coordinates)
-
 
     def equatorial_to_zenithazimuth_astropy(latitude, longitude,
                                             utc_timestamp,
@@ -256,7 +254,6 @@ try:
 
         return zenaz_coordinates
 
-
     def equatorial_to_horizontal_astropy(latitude, longitude,
                                          utc_timestamp,
                                          equatorial_coordinates):
@@ -281,7 +278,6 @@ try:
         horizontal_frame = equatorial_frame.transform_to('altaz')
 
         return np.array(zip(horizontal_frame.az.rad, horizontal_frame.alt.rad))
-
 
     def horizontal_to_equatorial_astropy(latitude, longitude,
                                          utc_timestamp,
@@ -308,5 +304,4 @@ try:
 
 
 except ImportError as e:
-    warnings.warn(str(e)+("\nImport of astropy failed; astropy transformations"
-                          "therefore not available"), ImportWarning)
+    warnings.warn(str(e) + "\nImport of astropy failed", ImportWarning)
