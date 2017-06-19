@@ -15,7 +15,8 @@ from sapphire.transformations import celestial, clock
 from sapphire.utils import angle_between
 
 def transformspeeds():
-    print("Running speeds for 100.000 transformations of the astropy functions:")
+    print("Running speeds for 100.000 transformations"
+          "of the astropy functions:")
     a = np.array([(0,0)]*100000)
 
     t0 = time.clock()
@@ -47,14 +48,18 @@ def angle_between_horizontal(azimuth1, altitude1, azimuth2, altitude2):
     :return: Angle between the two coordinates in radians.
 
     """
-    zenith1, azimuth1 = celestial.horizontal_to_zenithazimuth(altitude1, azimuth1)
-    zenith2, azimuth2 = celestial.horizontal_to_zenithazimuth(altitude2, azimuth2)
+    zenith1, azimuth1 = celestial.horizontal_to_zenithazimuth(altitude1,
+                                                              azimuth1)
+    zenith2, azimuth2 = celestial.horizontal_to_zenithazimuth(altitude2,
+                                                              azimuth2)
     dlat = zenith1 - zenith2
     dlon = azimuth2 - azimuth1
-    a = (np.sin(dlat / 2) ** 2 + np.sin(zenith1) * np.sin(zenith2) * np.sin(dlon / 2) ** 2)
+    a = (np.sin(dlat / 2) ** 2 + np.sin(zenith1)
+         * np.sin(zenith2) * np.sin(dlon / 2) ** 2)
     angle = 2 * np.arcsin(np.sqrt(a))
 
     return angle
+
 
 def oldvsnew_diagram():
     """
@@ -81,14 +86,21 @@ def oldvsnew_diagram():
 
     # Create the data sets for eq to az
     for i in range(100):
-        frames.append((r.uniform(-90, 90), r.uniform(-180,180), r.randint(946684800,1577836800), r.uniform(0, 2*np.pi), r.uniform(-0.5*np.pi,0.5*np.pi)))
+        frames.append((r.uniform(-90, 90), r.uniform(-180,180),
+                       r.randint(946684800,1577836800), r.uniform(0, 2*np.pi),
+                       r.uniform(-0.5*np.pi,0.5*np.pi)))
     for i in frames:
-        etoha.append(celestial.equatorial_to_zenithazimuth_astropy(i[0],i[1], i[2], [(i[3], i[4])])[0])
-        etoh.append(celestial.equatorial_to_zenithazimuth(i[0], i[1], clock.utc_to_gps(i[2]), i[3], i[4]))
+        etoha.append(celestial.equatorial_to_zenithazimuth_astropy(i[0],
+                                                i[1], i[2], [(i[3], i[4])])[0])
+        etoh.append(celestial.equatorial_to_zenithazimuth(i[0], i[1],
+                                           clock.utc_to_gps(i[2]), i[3], i[4]))
     # Data sets for hor to eq
     for i in frames:
-        htoe.append(celestial.horizontal_to_equatorial(i[0], clock.utc_to_lst(datetime.datetime.utcfromtimestamp(i[2]), i[1]), i[4], i[3]))
-        htoea.extend(celestial.horizontal_to_equatorial_astropy(i[0], i[1], i[2], [(i[3], i[4])]))
+        htoe.append(celestial.horizontal_to_equatorial(i[0],
+        clock.utc_to_lst(datetime.datetime.utcfromtimestamp(i[2]), i[1]),
+                                                            i[4], i[3]))
+        htoea.extend(celestial.horizontal_to_equatorial_astropy(i[0], i[1],
+                                                        i[2], [(i[3], i[4])]))
 
     # Make figs eq -> zenaz
     plt.figure(1)
@@ -103,7 +115,8 @@ def oldvsnew_diagram():
 
     # Make figure and add 1:1 trendline
 
-    plt.plot([co[0] for co in etoha], [co[0] for co in etoh], 'r.', zenrange, straight(zenrange), '-')
+    plt.plot([co[0] for co in etoha], [co[0] for co in etoh], 'r.',
+             zenrange, straight(zenrange), '-')
 
     plt.subplot(212)
     plt.title('Azimuth')
@@ -112,13 +125,17 @@ def oldvsnew_diagram():
     plt.xlabel('New (Astropy)')
     plt.ylabel('Old')
     # Make figure and add 1:1 trendline
-    plt.plot([co[1] for co in etoha], [co[1] for co in etoh], 'b.', azrange, straight(azrange), '-')
+    plt.plot([co[1] for co in etoha], [co[1] for co in etoh],
+             'b.', azrange, straight(azrange), '-')
     plt.tight_layout() # Prevent titles merging
     plt.subplots_adjust(top=0.85)
 
     # Make histogram of differences
     plt.figure(2)
-    nieuw = (np.array(etoh)-np.array(etoha))/2/np.pi*360*3600 # Take difference and convert to arcsec
+    # Take diff. and convert to arcsec
+    nieuw = (np.array(etoh)-np.array(etoha))
+    nieuw *= 360 * 3600 / (2 * np.pi)
+
     plt.hist([i[0] for i in nieuw], bins = 20)
     plt.title('Zenith Old-New Error (equatorial_to_zenithazimuth)')
     plt.xlabel('Error (arcsec)')
@@ -130,9 +147,12 @@ def oldvsnew_diagram():
     plt.xlabel('Error (arcsec)')
     plt.ylabel('Counts')
 
-    # Make histogram of differences using the absolute distance in arcsec-this graph has no wrapping issues
+    # Make histogram of differences using the absolute distance in arcsec
+    # this graph has no wrapping issues
     plt.figure(7)
-    nieuw = np.array([angle_between(etoh[i][0], etoh[i][1], etoha[i][0], etoha[i][1]) for i in range(len(etoh))])*3600*360/2/np.pi
+    nieuw = np.array([angle_between(etoh[i][0], etoh[i][1], etoha[i][0],
+                                    etoha[i][1]) for i in range(len(etoh))])
+    nieuw *= 360 * 3600 / (2 * np.pi)
     plt.hist(nieuw, bins=20)
     plt.title('ZEN+AZ Old-New Error (equatorial_to_zenithazimuth)')
     plt.xlabel('Error (arcsec)')
@@ -149,7 +169,8 @@ def oldvsnew_diagram():
     plt.xlabel('New (Astropy)')
     plt.ylabel('Old')
     # Make figure and add 1:1 trendline
-    plt.plot([co[1] for co in htoea], [co[1] for co in htoe], 'r.', altrange, straight(altrange), '-')
+    plt.plot([co[1] for co in htoea], [co[1] for co in htoe], 'r.',
+             altrange, straight(altrange), '-')
 
     plt.subplot(212)
     plt.title('Right Ascension')
@@ -158,29 +179,37 @@ def oldvsnew_diagram():
     plt.xlabel('New (Astropy)')
     plt.ylabel('Old')
     # Make figure and add 1:1 trendline
-    plt.plot([co[0] for co in htoea], [co[0] for co in htoe], 'b.', azrange, straight(azrange), '-')
+    plt.plot([co[0] for co in htoea], [co[0] for co in htoe], 'b.',
+             azrange, straight(azrange), '-')
     plt.tight_layout()  # Prevent titles merging
-    plt.subplots_adjust(top = 0.85)
+    plt.subplots_adjust(top=0.85)
 
     # Make histogram of differences
     plt.figure(5)
-    nieuw = (np.array(htoe) - np.array(htoea)) / 2 / np.pi * 360 * 3600  # Take difference and convert to arcsec
+    # Take diff. and convert to arcsec
+    nieuw = (np.array(htoe) - np.array(htoea))
+    nieuw *= 360 * 3600 / (2 * np.pi)
     plt.hist([i[1] for i in nieuw], bins=20)
     plt.title('Declination Old-New Error (horizontal_to_equatorial)')
     plt.xlabel('Error (arcsec)')
     plt.ylabel('Counts')
 
     plt.figure(6)
-    nieuw = (np.array(htoe) - np.array(htoea)) / 2 / np.pi * 360 * 3600  # Take difference and convert to arcsec
+    # Take diff. and convert to arcsec
+    nieuw = (np.array(htoe) - np.array(htoea))
+    nieuw *= 360 * 3600 / (2 * np.pi)
     plt.hist([i[0] for i in nieuw], bins=20)
     plt.title('Right Ascension Old-New Error (horizontal_to_equatorial)')
     plt.xlabel('Error (arcsec)')
     plt.ylabel('Counts')
 
-    # Make histogram of differences using the absolute distance in arcsec-this graph has no wrapping issues
+    # Make histogram of differences using the absolute distance in arcsec
+    # this graph has no wrapping issues
     plt.figure(8)
-    nieuw = np.array([angle_between_horizontal(htoe[i][0], htoe[i][1], htoea[i][0], htoea[i][1]) for i in range(len(htoe))])
-    nieuw = nieuw / 2 / np.pi * 360 * 3600  # Take difference and convert to arcsec
+    nieuw = np.array([angle_between_horizontal(htoe[i][0], htoe[i][1],
+                    htoea[i][0], htoea[i][1]) for i in range(len(htoe))])
+    # Take diff. and convert to arcsec
+    nieuw = nieuw / 2 / np.pi * 360 * 3600
     plt.hist(nieuw, bins=20)
     plt.title('RA+DEC Old-New Error (horizontal_to_equatorial)')
     plt.xlabel('Error (arcsec)')
@@ -195,21 +224,27 @@ try:
     import ephem
     def pyephem_comp():
         """
-        This function compares the values from transformations done by our new astropy functions
-        with the pyephem numbers. It generates correlation graphs between the new and old functions
-        and histograms of the frequency of errors.
-        Most errors do not much exceed 10 arcsec. There is complete correlation i.e. visually all points
-        are on the same 1:1 line.
-        These comparisons are done on the basis of 100 randomly generated points
+        This function compares the values from transformations done by our
+        new astropy functions with the pyephem numbers. It generates
+        correlation graphs between the new and old functions
+        and histograms of the frequency of errors. Most errors do not much
+        exceed 10 arcsec. There is complete correlation
+        i.e. visually all points are on the same 1:1 line.
+        These comparisons are done on the basis of 100 randomly generated
+        points
         :return: None
 
-        Ethan van Woerkom is responsible for the benchmarking functions; refer to him for when something is unclear
+        Ethan van Woerkom is responsible for the benchmarking functions;
+        refer to him for when something is unclear
         """
-        # Set up randoms equatorial J2000 bodies that we will convert the RAs/Decs of.
+        # Set up randoms equatorial J2000 bodies
+        # that we will convert the RAs/Decs of.
         eq = [] # random frames to use
         for i in range(100):
-            eq.append((r.uniform(-90, 90), r.uniform(-180, 180), r.randint(946684800, 1577836800),
-                           r.uniform(0, 2 * np.pi), r.uniform(-0.5 * np.pi, 0.5 * np.pi)))
+            eq.append((r.uniform(-90, 90), r.uniform(-180, 180),
+                       r.randint(946684800, 1577836800),
+                       r.uniform(0, 2 * np.pi),
+                       r.uniform(-0.5 * np.pi, 0.5 * np.pi)))
         efemeq = [] # store pyephem transformations to equatorial
         altaz = [] # store pyephem transformations to altaz (horizontal)
         htoea = [] # store astropy transformations to equatorial
@@ -228,9 +263,10 @@ try:
             coord._ra = i[3]
             coord._dec = i[4]
 
-            # Do calculation and add to list, it is necessary to force the coords into radians
+            # Do calculation and add to list, it is necessary
+            # to force the coords into radians
             coord.compute(obs)
-            altaz.append((float(coord.az),float(coord.alt)))
+            altaz.append((float(coord.az), float(coord.alt)))
 
             # Also calculate efemeq using eq
             result = obs.radec_of(i[3], i[4])
@@ -238,12 +274,14 @@ try:
 
         # Produce horizontal_to_equatorial_astropy results
         for i in eq:
-            result = celestial.horizontal_to_equatorial_astropy(i[0], i[1], i[2], [(i[3],i[4])])
+            result = celestial.horizontal_to_equatorial_astropy(i[0], i[1],
+                                                        i[2], [(i[3], i[4])])
             htoea.extend(result)
 
         # Produce equatorial_to_horizontal_astropy results
         for i in eq:
-            result = celestial.equatorial_to_horizontal_astropy(i[0], i[1], i[2], [(i[3], i[4])])
+            result = celestial.equatorial_to_horizontal_astropy(i[0], i[1],
+                                                        i[2], [(i[3], i[4])])
             etoha.extend(result)
 
         altdecrange = [-0.5*np.pi, 0.5*np.pi]
@@ -260,7 +298,8 @@ try:
         plt.ylabel('Astropy RA (rad)')
 
         # Plot RA correlation and trendline
-        plt.plot([co[0] for co in efemeq], [co[0] for co in htoea], 'b.', azrarange, azrarange, '-')
+        plt.plot([co[0] for co in efemeq], [co[0] for co in htoea], 'b.',
+                 azrarange, azrarange, '-')
 
         # DEC correlation subplot
         plt.subplot(212)
@@ -270,7 +309,8 @@ try:
         plt.ylabel('Astropy DEC (rad)')
 
         # Plot DEC correlation and trendline
-        plt.plot([co[1] for co in efemeq], [co[1] for co in htoea], 'r.', altdecrange, altdecrange, '-')
+        plt.plot([co[1] for co in efemeq], [co[1] for co in htoea],
+                 'r.', altdecrange, altdecrange, '-')
 
         # Formatting
         plt.tight_layout()
@@ -279,7 +319,11 @@ try:
         # Make RA error histogram
         plt.figure(2)
         plt.title('RA Error Altaz->(Astropy/Pyephem)->RA,DEC')
-        nieuw = (np.array(htoea) - np.array(efemeq))/2/np.pi* 360 * 3600 # Get differences in arcsec
+
+        nieuw = (np.array(htoea) - np.array(efemeq))
+        # Get differences in arcsec
+        nieuw *= 360 * 3600 / (2 * np.pi)
+
         plt.hist([co[0] for co in nieuw], bins=20)
 
         plt.ylabel('Counts')
@@ -325,7 +369,8 @@ try:
         # Alt error histogram
         plt.figure(5)
         plt.title('Altitude Error RA,DEC->(pyephem/astropy)->Altaz')
-        nieuw = (np.array(etoha)-np.array(altaz))/2/np.pi*360*3600
+        nieuw = (np.array(etoha)-np.array(altaz))
+        nieuw *= 360 * 3600 / (2 * np.pi)
         plt.hist([co[1] for co in nieuw], bins=20)
 
         plt.ylabel('Counts')
@@ -339,7 +384,6 @@ try:
         plt.ylabel('Counts')
         plt.xlabel('Error (arcsec)')
 
-
         # Make histograms of differences using the absolute distance in arcsec
         # these graphs have no wrapping issues
 
@@ -347,7 +391,7 @@ try:
         nieuw = np.array(
             [angle_between_horizontal(altaz[i][0], altaz[i][1], etoha[i][0],
                                       etoha[i][1]) for i in range(len(etoha))])
-        nieuw = nieuw / 2 / np.pi * 360 * 3600
+        nieuw *= 360 * 3600 / (2 * np.pi)
         plt.hist(nieuw, bins=20)
         plt.title('Alt+Azi Error RA,DEC->(pyephem/astropy)->Altaz')
         plt.xlabel('Error (arcsec)')
@@ -358,7 +402,7 @@ try:
             [angle_between_horizontal(efemeq[i][0], efemeq[i][1], htoea[i][0],
                                       htoea[i][1]) for i in range(len(htoea))])
         # Take difference and convert to arcsec
-        nieuw = nieuw / 2 / np.pi * 360 * 3600
+        nieuw *= 360 * 3600 / (2 * np.pi)
 
         plt.hist(nieuw, bins=20)
         plt.title('RA+DEC Error Altaz->(pyephem/astropy)->RA,DEC')
