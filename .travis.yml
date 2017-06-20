@@ -20,7 +20,7 @@ before_install:
   - conda update --yes conda
 
 install:
-  - conda create --yes -n build_env python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba
+  - conda create --yes -n build_env python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba astropy
   - source activate build_env
   - pip install coverage coveralls codecov
   - pip install -e .[dev]

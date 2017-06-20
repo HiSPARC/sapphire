@@ -9,6 +9,14 @@ import numpy as np
 
 from sapphire.transformations import base, celestial, clock
 
+# This is to switch off tests in case astropy is not present
+try:
+    import astropy
+    has_astropy = True
+    astropy.__version__  # Make flake8 shut up about astropy unused
+except ImportError:
+    has_astropy = False
+
 
 class ZenithAzimuthHorizontalTests(unittest.TestCase):
 
@@ -194,6 +202,12 @@ class AstropyEquatorialTests(unittest.TestCase):
     coordinates from astropy.
     """
     def test_pyephem_htoea(self):
+        """
+        Check  celestial.horizontal_to_equatorial_astropy
+        """
+        if not has_astropy:
+            return  # Abort test if astropy not present
+
         # This is the transform inputs
         eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
                3.8662384455822716, -0.31222454326513827),
@@ -220,6 +234,12 @@ class AstropyEquatorialTests(unittest.TestCase):
         np.testing.assert_almost_equal(efemeq, htoea_test, 4)
 
     def test_pyephem_etoha(self):
+        """
+        Check celestial.equatorial_to_horizontal_astropy
+        """
+        if not has_astropy:
+            return  # Abort test if astropy not present
+
         # This is the transform inputs
         eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
                3.8662384455822716, -0.31222454326513827),
@@ -245,6 +265,12 @@ class AstropyEquatorialTests(unittest.TestCase):
         np.testing.assert_almost_equal(altaz, etoha_test, 4)
 
     def test_pyephem_eqtozenaz(self):
+        """
+        celestial.equatorial_to_zenithazimuth_astropy
+        """
+        if not has_astropy:
+            return  # Abort test if astropy not present
+
         # This is the transform inputs
         eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
                3.8662384455822716, -0.31222454326513827),
@@ -270,6 +296,12 @@ class AstropyEquatorialTests(unittest.TestCase):
         np.testing.assert_almost_equal(zenaz, eqtozenaz_test, 4)
 
     def test_pyephem_zenaztoeq(self):
+        """
+        Check celestial.zenithazimuth_to_equatorial_astropy
+        """
+        if not has_astropy:
+            return  # Abort test if astropy not present
+
         # transform inputs converted to of zenaz inputs
         zeneq = [(-39.34633914878846, -112.2277168069694,
                   1295503840, 1.8830208700600348, -2.295442118787375),
