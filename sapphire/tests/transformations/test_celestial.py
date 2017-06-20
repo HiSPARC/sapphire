@@ -228,28 +228,28 @@ class AstropyEquatorialTests(unittest.TestCase):
         eqtozenaz_test = []
 
         # Produce horizontal_to_equatorial_astropy results
-        for i in eq:
+        for latitude, longitude, gps, az, alt in eq:
             result = celestial.horizontal_to_equatorial_astropy(
-                i[0], i[1], i[2], [(i[3], i[4])])
+                latitude, longitude, gps, [(az, alt)])
             htoea_test.extend(result)
 
         # Produce equatorial_to_horizontal_astropy results
-        for i in eq:
-            result = celestial.equatorial_to_horizontal_astropy(i[0], i[1],
-                                                                i[2],
-                                                                [(i[3], i[4])])
+        for latitude, longitude, gps, ra, dec in eq:
+            result = celestial.equatorial_to_horizontal_astropy(
+                latitude, longitude, gps, [(ra, dec)])
+
             etoha_test.extend(result)
 
         # Produce zenithazimuth_to_equatorial_astropy results
-        for i in zeneq:
+        for latitude, longitude, gps, zen, az in zeneq:
             result = celestial.zenithazimuth_to_equatorial_astropy(
-                i[0], i[1], i[2], [(i[3], i[4])])
+                latitude, longitude, gps, [(zen, az)])
             zenaztoeq_test.extend(result)
 
         # Produce equatorial_to_zenithazimuth_astropy results
-        for i in eq:
+        for latitude, longitude, gps, ra, dec in eq:
             result = celestial.equatorial_to_zenithazimuth_astropy(
-                i[0], i[1], i[2], [(i[3], i[4])])
+                latitude, longitude, gps, [(ra, dec)])
             eqtozenaz_test.extend(result)
 
         # Check if all inputs are correct, cast to numpy array for certainty

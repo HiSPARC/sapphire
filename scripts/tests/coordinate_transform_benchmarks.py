@@ -249,19 +249,19 @@ try:
         altaz = [] # store pyephem transformations to altaz (horizontal)
         htoea = [] # store astropy transformations to equatorial
         etoha = [] # store astropy transformations to horizontal (altaz)
-        for i in eq:
+        for latitude, longitude, utc, ra, dec in eq:
             # Calculate altaz
             # Set observer for each case
             obs = ephem.Observer()
-            obs.lat = str(i[0])
-            obs.lon = str(i[1])
-            obs.date = datetime.datetime.utcfromtimestamp(i[2])
+            obs.lat = str(latitude)
+            obs.lon = str(longitude)
+            obs.date = datetime.datetime.utcfromtimestamp(utc)
             obs.pressure = 0 # Crucial to prevent refraction correction!
 
             # Set body for each case
             coord = ephem.FixedBody()
-            coord._ra = i[3]
-            coord._dec = i[4]
+            coord._ra = ra
+            coord._dec = dec
 
             # Do calculation and add to list, it is necessary
             # to force the coords into radians
@@ -269,19 +269,21 @@ try:
             altaz.append((float(coord.az), float(coord.alt)))
 
             # Also calculate efemeq using eq
-            result = obs.radec_of(i[3], i[4])
+            result = obs.radec_of(ra, dec) # This is of course not ra,dec but
+            # actually az, alt.
+
             efemeq.append((float(result[0]), float(result[1])))
 
         # Produce horizontal_to_equatorial_astropy results
-        for i in eq:
+        for latitude, longitude, utc, az, alt in eq:
             result = celestial.horizontal_to_equatorial_astropy(
-            i[0], i[1], i[2], [(i[3], i[4])])
+                latitude, longitude, utc, [(az, alt)])
             htoea.extend(result)
 
         # Produce equatorial_to_horizontal_astropy results
-        for i in eq:
-            result = celestial.equatorial_to_horizontal_astropy(i[0], i[1],
-                                                        i[2], [(i[3], i[4])])
+        for latitude, longitude, utc, ra, dec in eq:
+            result = celestial.equatorial_to_horizontal_astropy(
+                latitude, longitude, utc, [(ra, dec)])
             etoha.extend(result)
 
         altdecrange = [-0.5*np.pi, 0.5*np.pi]
