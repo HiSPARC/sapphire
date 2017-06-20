@@ -327,5 +327,6 @@ class AstropyEquatorialTests(unittest.TestCase):
         # Test zenithazimuth_to_equatorial_astropy
         np.testing.assert_almost_equal(efemeq, zenaztoeq_test, 4)
 
+
 if __name__ == '__main__':
     unittest.main()
