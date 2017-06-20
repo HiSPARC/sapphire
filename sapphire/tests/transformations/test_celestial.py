@@ -193,7 +193,7 @@ class AstropyEquatorialTests(unittest.TestCase):
     Pyephem results and in this test they are compared to 10 different
     coordinates from astropy.
     """
-    def test_pyephem(self):
+    def test_pyephem_htoea(self):
         # This is the transform inputs
         eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
                3.8662384455822716, -0.31222454326513827),
@@ -201,6 +201,75 @@ class AstropyEquatorialTests(unittest.TestCase):
                3.901575896592809, -0.3926720112815971),
               (48.02031016860923, -157.4023812557098, 1126251396,
                3.366278312183976, -1.3610394240813288)]
+
+        # result of pyephem hor->eq/zenaz-> eq
+        efemeq = [(5.620508199785029, -0.3651173667585858),
+                  (5.244630787139936, -0.7866376569183651),
+                  (2.276751381056623, -1.0406498066785745)]
+
+        htoea_test = []
+
+        # Produce horizontal_to_equatorial_astropy results
+        for latitude, longitude, gps, az, alt in eq:
+            result = celestial.horizontal_to_equatorial_astropy(
+                latitude, longitude, gps, [(az, alt)])
+            htoea_test.extend(result)
+
+        # Check if all inputs are correct
+        # Test horizontal_to_equatorial_astropy
+        np.testing.assert_almost_equal(efemeq, htoea_test, 4)
+
+    def test_pyephem_etoha(self):
+        # This is the transform inputs
+        eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
+               3.8662384455822716, -0.31222454326513827),
+              (53.13143508448587, -49.24074935964933, 985619982,
+               3.901575896592809, -0.3926720112815971),
+              (48.02031016860923, -157.4023812557098, 1126251396,
+               3.366278312183976, -1.3610394240813288)]
+        # result of pyephem eq->hor
+        altaz = [(2.175107479095459, -0.19537943601608276),
+                 (5.25273323059082, -0.8308737874031067),
+                 (3.4536221027374268, -0.894329845905304)]
+
+        etoha_test = []
+
+        # Produce equatorial_to_horizontal_astropy results
+        for latitude, longitude, gps, ra, dec in eq:
+            result = celestial.equatorial_to_horizontal_astropy(
+                latitude, longitude, gps, [(ra, dec)])
+
+            etoha_test.extend(result)
+
+        # Check if all inputs are correct
+        np.testing.assert_almost_equal(altaz, etoha_test, 4)
+
+    def test_pyephem_eqtozenaz(self):
+        # This is the transform inputs
+        eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
+               3.8662384455822716, -0.31222454326513827),
+              (53.13143508448587, -49.24074935964933, 985619982,
+               3.901575896592809, -0.3926720112815971),
+              (48.02031016860923, -157.4023812557098, 1126251396,
+               3.366278312183976, -1.3610394240813288)]
+        # result converted for eq->zenaz
+        zenaz = [(1.7661757628109793, -0.6043111523005624),
+                 (2.4016701141980032, 2.6012484033836625),
+                 (2.4651261727002005, -1.8828257759425302)]
+
+        eqtozenaz_test = []
+
+        # Produce equatorial_to_zenithazimuth_astropy results
+        for latitude, longitude, gps, ra, dec in eq:
+            result = celestial.equatorial_to_zenithazimuth_astropy(
+                latitude, longitude, gps, [(ra, dec)])
+            eqtozenaz_test.extend(result)
+
+        # Check if all inputs are correct, cast to numpy array for certainty
+        # Test equatorial_to_zenithazimuth_astropy
+        np.testing.assert_almost_equal(zenaz, eqtozenaz_test, 4)
+
+    def test_pyephem_zenaztoeq(self):
         # transform inputs converted to of zenaz inputs
         zeneq = [(-39.34633914878846, -112.2277168069694,
                   1295503840, 1.8830208700600348, -2.295442118787375),
@@ -213,32 +282,8 @@ class AstropyEquatorialTests(unittest.TestCase):
         efemeq = [(5.620508199785029, -0.3651173667585858),
                   (5.244630787139936, -0.7866376569183651),
                   (2.276751381056623, -1.0406498066785745)]
-        # result of pyephem eq->hor
-        altaz = [(2.175107479095459, -0.19537943601608276),
-                 (5.25273323059082, -0.8308737874031067),
-                 (3.4536221027374268, -0.894329845905304)]
-        # result converted to eq->zenaz
-        zenaz = [(1.7661757628109793, -0.6043111523005624),
-                 (2.4016701141980032, 2.6012484033836625),
-                 (2.4651261727002005, -1.8828257759425302)]
 
-        htoea_test = []
-        etoha_test = []
         zenaztoeq_test = []
-        eqtozenaz_test = []
-
-        # Produce horizontal_to_equatorial_astropy results
-        for latitude, longitude, gps, az, alt in eq:
-            result = celestial.horizontal_to_equatorial_astropy(
-                latitude, longitude, gps, [(az, alt)])
-            htoea_test.extend(result)
-
-        # Produce equatorial_to_horizontal_astropy results
-        for latitude, longitude, gps, ra, dec in eq:
-            result = celestial.equatorial_to_horizontal_astropy(
-                latitude, longitude, gps, [(ra, dec)])
-
-            etoha_test.extend(result)
 
         # Produce zenithazimuth_to_equatorial_astropy results
         for latitude, longitude, gps, zen, az in zeneq:
@@ -246,21 +291,9 @@ class AstropyEquatorialTests(unittest.TestCase):
                 latitude, longitude, gps, [(zen, az)])
             zenaztoeq_test.extend(result)
 
-        # Produce equatorial_to_zenithazimuth_astropy results
-        for latitude, longitude, gps, ra, dec in eq:
-            result = celestial.equatorial_to_zenithazimuth_astropy(
-                latitude, longitude, gps, [(ra, dec)])
-            eqtozenaz_test.extend(result)
-
         # Check if all inputs are correct, cast to numpy array for certainty
-        # Test horizontal_to_equatorial_astropy
-        np.testing.assert_almost_equal(efemeq, htoea_test, 4)
         # Test zenithazimuth_to_equatorial_astropy
         np.testing.assert_almost_equal(efemeq, zenaztoeq_test, 4)
-        # Test equatorial_to_horizontal_astropy
-        np.testing.assert_almost_equal(altaz, etoha_test, 4)
-        # Test equatorial_to_zenithazimuth_astropy
-        np.testing.assert_almost_equal(zenaz, eqtozenaz_test, 4)
 
 if __name__ == '__main__':
     unittest.main()

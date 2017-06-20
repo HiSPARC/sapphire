@@ -239,10 +239,8 @@ try:
         """
 
         equatorial_coordinates = np.array(equatorial_coordinates)
-        horizontal_coordinates =\
-            equatorial_to_horizontal_astropy(latitude, longitude,
-                                             utc_timestamp,
-                                             equatorial_coordinates)
+        horizontal_coordinates = equatorial_to_horizontal_astropy(
+            latitude, longitude, utc_timestamp, equatorial_coordinates)
 
         # Convert and flip order of zenaz coordinates, done in numpy for speed
         horizontal_coordinates = np.array(horizontal_coordinates)
