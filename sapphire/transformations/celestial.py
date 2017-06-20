@@ -275,7 +275,7 @@ try:
                                     obstime=t, unit=u.rad, frame='icrs')
         horizontal_frame = equatorial_frame.transform_to('altaz')
 
-        return np.array(zip(horizontal_frame.az.rad, horizontal_frame.alt.rad))
+        return np.array((horizontal_frame.az.rad, horizontal_frame.alt.rad)).T
 
     def horizontal_to_equatorial_astropy(latitude, longitude,
                                          utc_timestamp,
@@ -298,7 +298,7 @@ try:
                                     obstime=t, unit=u.rad, frame='altaz')
         equatorial_frame = horizontal_frame.transform_to('icrs')
 
-        return np.array(zip(equatorial_frame.ra.rad, equatorial_frame.dec.rad))
+        return np.array((equatorial_frame.ra.rad, equatorial_frame.dec.rad)).T
 
 
 except ImportError as e:
