@@ -21,12 +21,16 @@ class ZenithAzimuthHorizontalTests(unittest.TestCase):
 
     def test_zenithazimuth_to_horizontal(self):
         for zenith, altitude in zip(self.zenith, self.altitude):
-            self.assertEqual(celestial.zenithazimuth_to_horizontal(zenith, 0)[0], altitude)
-            self.assertEqual(celestial.horizontal_to_zenithazimuth(altitude, 0)[0], zenith)
+            self.assertEqual(celestial.zenithazimuth_to_horizontal(
+                zenith, 0)[0], altitude)
+            self.assertEqual(celestial.horizontal_to_zenithazimuth(
+                altitude, 0)[0], zenith)
 
         for azimuth, Azimuth in zip(self.azimuth, self.Azimuth):
-            self.assertEqual(celestial.zenithazimuth_to_horizontal(0, azimuth)[1], Azimuth)
-            self.assertEqual(celestial.horizontal_to_zenithazimuth(0, Azimuth)[1], azimuth)
+            self.assertEqual(celestial.zenithazimuth_to_horizontal(
+                0, azimuth)[1], Azimuth)
+            self.assertEqual(celestial.horizontal_to_zenithazimuth(
+                0, Azimuth)[1], azimuth)
 
 
 class EquatorialTests(unittest.TestCase):
@@ -36,7 +40,8 @@ class EquatorialTests(unittest.TestCase):
     Use references as tests also used by astropy.
 
     Source:
-    https://github.com/astropy/astropy/blob/master/astropy/coordinates/tests/accuracy/test_altaz_icrs.py
+    https://github.com/astropy/astropy/blob/master/
+    astropy/coordinates/tests/accuracy/test_altaz_icrs.py
 
     Licensed under a 3-clause BSD style license - see:
     https://github.com/astropy/astropy/blob/master/licenses/LICENSE.rst
@@ -85,8 +90,8 @@ class EquatorialTests(unittest.TestCase):
                                                         gps, zenith, azimuth)
 
         # Test eq_to_zenaz merely against IDL
-        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(latitude,
-        longitude, gps, ra_expected, dec_expected)
+        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(
+            latitude, longitude, gps, ra_expected, dec_expected)
 
         self.assertAlmostEqual(ra, ra_expected, 1)
         self.assertAlmostEqual(ra, ra_astropy, 1)
@@ -124,14 +129,11 @@ class EquatorialTests(unittest.TestCase):
         # SAPPHiRE
         gps = clock.utc_to_gps(calendar.timegm(utc.utctimetuple()))
         zenith, azimuth = celestial.horizontal_to_zenithazimuth(altitude, azi)
-        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude,
-                                                        gps, zenith, azimuth)
+        ra, dec = celestial.zenithazimuth_to_equatorial(
+            latitude, longitude, gps, zenith, azimuth)
 
-        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(latitude,
-                                                                longitude, gps,
-                                                                ra_expected,
-                                                                dec_expected)
-
+        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(
+            latitude, longitude, gps, ra_expected, dec_expected)
 
         self.assertAlmostEqual(ra, ra_expected, 2)
         self.assertAlmostEqual(ra, ra_astropy, 2)
@@ -184,6 +186,7 @@ class EquatorialTests(unittest.TestCase):
         self.assertAlmostEqual(zencalc, zenith, 2)
         self.assertAlmostEqual(azcalc, azimuth, 2)
 
+
 class AstropyEquatorialTests(unittest.TestCase):
     """
     This tests the 4 new astropy functions. They should be very close to
@@ -191,12 +194,10 @@ class AstropyEquatorialTests(unittest.TestCase):
     coordinates from astropy.
     """
     def test_pyephem(self):
-        from sapphire.transformations import celestial
-        import numpy as np
         # This is the transform inputs
         eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
                3.8662384455822716, -0.31222454326513827),
-              (53.13143508448587,-49.24074935964933, 985619982,
+              (53.13143508448587, -49.24074935964933, 985619982,
                3.901575896592809, -0.3926720112815971),
               (48.02031016860923, -157.4023812557098, 1126251396,
                3.366278312183976, -1.3610394240813288)]
@@ -210,8 +211,8 @@ class AstropyEquatorialTests(unittest.TestCase):
 
         # result of pyephem hor->eq/zenaz-> eq
         efemeq = [(5.620508199785029, -0.3651173667585858),
-                 (5.244630787139936, -0.7866376569183651),
-                 (2.276751381056623, -1.0406498066785745)]
+                  (5.244630787139936, -0.7866376569183651),
+                  (2.276751381056623, -1.0406498066785745)]
         # result of pyephem eq->hor
         altaz = [(2.175107479095459, -0.19537943601608276),
                  (5.25273323059082, -0.8308737874031067),
@@ -247,10 +248,8 @@ class AstropyEquatorialTests(unittest.TestCase):
 
         # Produce equatorial_to_zenithazimuth_astropy results
         for i in eq:
-            result = celestial.equatorial_to_zenithazimuth_astropy(i[0], i[1],
-                                                                i[2],
-                                                                [(i[3],
-                                                                  i[4])])
+            result = celestial.equatorial_to_zenithazimuth_astropy(
+                i[0], i[1], i[2], [(i[3], i[4])])
             eqtozenaz_test.extend(result)
 
         # Check if all inputs are correct, cast to numpy array for certainty
@@ -262,10 +261,6 @@ class AstropyEquatorialTests(unittest.TestCase):
         np.testing.assert_almost_equal(altaz, etoha_test, 4)
         # Test equatorial_to_zenithazimuth_astropy
         np.testing.assert_almost_equal(zenaz, eqtozenaz_test, 4)
-
-
-
-
 
 if __name__ == '__main__':
     unittest.main()
