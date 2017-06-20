@@ -200,13 +200,11 @@ class AstropyEquatorialTests(unittest.TestCase):
     This tests the 4 new astropy functions. They should be very close to
     Pyephem results and in this test they are compared to 10 different
     coordinates from astropy.
+
     """
+    @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_htoea(self):
-        """
-        Check  celestial.horizontal_to_equatorial_astropy
-        """
-        if not has_astropy:
-            return  # Abort test if astropy not present
+        """ Check celestial.horizontal_to_equatorial_astropy """
 
         # This is the transform inputs
         eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
@@ -233,12 +231,9 @@ class AstropyEquatorialTests(unittest.TestCase):
         # Test horizontal_to_equatorial_astropy
         np.testing.assert_almost_equal(efemeq, htoea_test, 4)
 
+    @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_etoha(self):
-        """
-        Check celestial.equatorial_to_horizontal_astropy
-        """
-        if not has_astropy:
-            return  # Abort test if astropy not present
+        """Check celestial.equatorial_to_horizontal_astropy"""
 
         # This is the transform inputs
         eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
@@ -264,12 +259,11 @@ class AstropyEquatorialTests(unittest.TestCase):
         # Check if all inputs are correct
         np.testing.assert_almost_equal(altaz, etoha_test, 4)
 
+    @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_eqtozenaz(self):
         """
         celestial.equatorial_to_zenithazimuth_astropy
         """
-        if not has_astropy:
-            return  # Abort test if astropy not present
 
         # This is the transform inputs
         eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
@@ -295,12 +289,9 @@ class AstropyEquatorialTests(unittest.TestCase):
         # Test equatorial_to_zenithazimuth_astropy
         np.testing.assert_almost_equal(zenaz, eqtozenaz_test, 4)
 
+    @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_zenaztoeq(self):
-        """
-        Check celestial.zenithazimuth_to_equatorial_astropy
-        """
-        if not has_astropy:
-            return  # Abort test if astropy not present
+        """Check celestial.zenithazimuth_to_equatorial_astropy"""
 
         # transform inputs converted to of zenaz inputs
         zeneq = [(-39.34633914878846, -112.2277168069694,
