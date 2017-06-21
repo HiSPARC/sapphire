@@ -4,16 +4,15 @@ import unittest
 
 from math import pi
 
-
 import numpy as np
 
 from sapphire.transformations import base, celestial, clock
 
 # This is to switch off tests in case astropy is not present
+# Noqa used to silence flake8
 try:
-    import astropy
+    import astropy  # noqa : F401
     has_astropy = True
-    astropy.__version__  # Make flake8 shut up about astropy unused
 except ImportError:
     has_astropy = False
 
@@ -293,7 +292,9 @@ class AstropyEquatorialTests(unittest.TestCase):
     def test_pyephem_zenaztoeq(self):
         """Check celestial.zenithazimuth_to_equatorial_astropy"""
 
-        # transform inputs converted to of zenaz inputs
+        # equatorial inputs from test_pyephem_eqtozenaz transformed into
+        # the shape of zenithazimuth coordinates so that they may be used for
+        # reverse benchmarking purposes.
         zeneq = [(-39.34633914878846, -112.2277168069694,
                   1295503840, 1.8830208700600348, -2.295442118787375),
                  (53.13143508448587, -49.24074935964933, 985619982,

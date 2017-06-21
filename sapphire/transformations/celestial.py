@@ -13,8 +13,7 @@
     Ethan van Woerkom is the author of the new transformations; contact him
     for further information.
 """
-from numpy import (arcsin, arccos, cos, sin,
-                   radians, pi, around)
+from numpy import (arcsin, arccos, cos, sin, radians, pi, around)
 
 from ..utils import norm_angle
 from . import clock, angles
