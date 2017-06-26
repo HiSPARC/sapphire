@@ -194,6 +194,7 @@ class EquatorialTests(unittest.TestCase):
         self.assertAlmostEqual(azcalc, azimuth, 2)
 
 
+@unittest.skipUnless(has_astropy, "astropy required.")
 class AstropyEquatorialTests(unittest.TestCase):
     """
     This tests the 4 new astropy functions. They should be very close to
@@ -210,7 +211,6 @@ class AstropyEquatorialTests(unittest.TestCase):
         from astropy.utils import iers
         iers.conf.auto_download = False
 
-    @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_htoea(self):
         """ Check celestial.horizontal_to_equatorial_astropy """
 
@@ -239,7 +239,6 @@ class AstropyEquatorialTests(unittest.TestCase):
         # Test horizontal_to_equatorial_astropy
         np.testing.assert_almost_equal(efemeq, htoea_test, 4)
 
-    @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_etoha(self):
         """Check celestial.equatorial_to_horizontal_astropy"""
 
@@ -267,7 +266,6 @@ class AstropyEquatorialTests(unittest.TestCase):
         # Check if all inputs are correct
         np.testing.assert_almost_equal(altaz, etoha_test, 4)
 
-    @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_eqtozenaz(self):
         """
         celestial.equatorial_to_zenithazimuth_astropy
@@ -297,7 +295,6 @@ class AstropyEquatorialTests(unittest.TestCase):
         # Test equatorial_to_zenithazimuth_astropy
         np.testing.assert_almost_equal(zenaz, eqtozenaz_test, 4)
 
-    @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_zenaztoeq(self):
         """Check celestial.zenithazimuth_to_equatorial_astropy"""
 
