@@ -201,6 +201,15 @@ class AstropyEquatorialTests(unittest.TestCase):
     coordinates from astropy.
 
     """
+
+    def setUp(self):
+        """
+        This is necessary to prevent iers downloads during testing
+        and mute output
+        """
+        from astropy.utils import iers
+        iers.conf.auto_download = False
+
     @unittest.skipUnless(has_astropy, "astropy required.")
     def test_pyephem_htoea(self):
         """ Check celestial.horizontal_to_equatorial_astropy """
