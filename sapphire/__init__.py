@@ -69,8 +69,6 @@ from . import time_util
 from . import transformations
 from . import utils
 
-from .analysis.calibration import (determine_detector_timing_offsets,
-                                   DetermineStationTimingOffsets)
 from .analysis.coincidence_queries import CoincidenceQuery
 from .analysis.coincidences import Coincidences, CoincidencesESD
 from .analysis.find_mpv import FindMostProbableValueInSpectrum
@@ -84,6 +82,8 @@ from .analysis.reconstructions import (ReconstructESDEvents,
                                        ReconstructESDEventsFromSource,
                                        ReconstructESDCoincidences)
 from .analysis.time_deltas import ProcessTimeDeltas
+from .analysis.timing_calibration import (determine_detector_timing_offsets,
+                                          DetermineStationTimingOffsets)
 from .api import Network, Station
 from .clusters import HiSPARCStations, HiSPARCNetwork, ScienceParkCluster
 from .corsika.corsika_queries import CorsikaQuery
@@ -111,8 +111,6 @@ __all__ = ['analysis',
            'time_util',
            'transformations',
            'utils',
-           'determine_detector_timing_offsets',
-           'DetermineStationTimingOffsets',
            'CoincidenceQuery',
            'Coincidences', 'CoincidencesESD',
            'FindMostProbableValueInSpectrum',
@@ -124,6 +122,8 @@ __all__ = ['analysis',
            'ReconstructESDEvents', 'ReconstructESDEventsFromSource',
            'ReconstructESDCoincidences',
            'ProcessTimeDeltas',
+           'determine_detector_timing_offsets',
+           'DetermineStationTimingOffsets',
            'Network', 'Station',
            'HiSPARCStations', 'HiSPARCNetwork', 'ScienceParkCluster',
            'CorsikaQuery',
@@ -134,5 +134,4 @@ __all__ = ['analysis',
            'FlatFrontSimulation', 'ConeFrontSimulation',
            'run_tests',
            'zenithazimuth_to_equatorial',
-           'gps_to_datetime', 'datetime_to_gps'
-           ]
+           'gps_to_datetime', 'datetime_to_gps']

@@ -8,7 +8,6 @@ Data analysis
 .. toctree::
    :hidden:
 
-   analysis/calibration
    analysis/coincidence_queries
    analysis/coincidences
    analysis/core_reconstruction
@@ -19,4 +18,6 @@ Data analysis
    analysis/process_events
    analysis/process_traces
    analysis/reconstructions
+   analysis/signal_calibration
    analysis/time_deltas
+   analysis/timing_calibration

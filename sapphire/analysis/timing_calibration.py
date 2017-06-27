@@ -1,9 +1,8 @@
-""" Determine calibration values for data
+""" Determine timing calibration values for data
 
-This module can be used to determine calibration values from data.
+This module can be used to determine timing calibration values from data.
 
 Determine timing offsets for detectors and stations to correct arrival times.
-Determine the PMT response curve to correct the detected number of MIPs.
 
 """
 from __future__ import division
