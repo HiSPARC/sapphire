@@ -776,7 +776,7 @@ The results are stored in the datafile in the `reconstructions` group::
     >>> print(data.root.s501.reconstructions)
     /s501/reconstructions (Table(29569,)) ''
 
-    >>>data.root.s501.reconstructions.col('zenith')
+    >>> data.root.s501.reconstructions.col('zenith')
     array([ nan,  nan,  nan, ...,  nan,  nan, 0.66482645], dtype=float32)
 
 The `nan` values in the zenith angle array are values that cannot be
