@@ -1,3 +1,25 @@
+""" Reconstruct HiSPARC events and coincidences
+
+    This module contains classes that can be used to reconstruct
+    HiSPARC events and coincidences. These classes can be used to automate
+    the tasks of reconstructing directions and/or cores.
+
+    The classes can reconstruct measured data from the ESD as well as
+    simulated data from :mod:`sapphire.simulations`.
+
+    The classes read data stored in HDF5 files and extract station metadata
+    (cluster and detector layout, station and detector offsets) from
+    various sources:
+
+    - from the public database using :class:`sapphire.api.Station` objects
+    - from stored or provided :class`sappire.cluster.Station` objects,
+      usually cluster or station layout stored by :mod:`sapphire.simulations`
+
+     Reconstructed data is stored in HDF5 files.
+
+"""
+from __future__ import print_function
+
 import os
 import warnings
 
@@ -44,7 +66,7 @@ class ReconstructESDEvents(object):
     """
 
     def __init__(self, data, station_group, station,
-                 overwrite=False, progress=True,
+                 overwrite=False, progress=True, verbose=False,
                  destination='reconstructions',
                  force_fresh=False, force_stale=False):
         """Initialize the class.
@@ -54,10 +76,12 @@ class ReconstructESDEvents(object):
             the results will also be stored in this group.
         :param station: either a station number or
             :class:`sapphire.clusters.Station` object. If it is a number the
-            positions and offsets will be retrieved from the API. Otherwise
-            the offsets will be determined with the available data.
+            positions and offsets will be retrieved from the public database
+            or retrieved from the datafile when stored by a simulation.
+            Otherwise the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
+        :param verbose: if True be verbose about station metadata usage.
         :param destination: alternative name for reconstruction table.
 
         """
@@ -66,18 +90,32 @@ class ReconstructESDEvents(object):
         self.events = self.station_group.events
         self.overwrite = overwrite
         self.progress = progress
+        self.verbose = verbose
         self.destination = destination
+        self.force_fresh = force_fresh
+        self.force_stale = force_stale
+
         self.offsets = [0., 0., 0., 0.]
 
         if isinstance(station, Station):
             self.station = station
-            self.api_station = None
+            self.station_number = None
+            if self.verbose:
+                print('Using object %s for metadata.' % self.station)
         else:
-            cluster = HiSPARCStations([station], force_fresh=force_fresh,
-                                      force_stale=force_stale)
-            self.station = cluster.get_station(station)
-            self.api_station = api.Station(station, force_fresh=force_fresh,
-                                           force_stale=force_stale)
+            self.station_number = station
+            try:
+                cluster = data.get_node_attr('/coincidences', 'cluster')
+                self.station = cluster.get_station(station)
+                if self.verbose:
+                    print('Read object %s from datafile.' % self.station)
+            except (tables.NoSuchNodeError, AttributeError):
+                cluster = HiSPARCStations([station], force_fresh=force_fresh,
+                                          force_stale=force_stale)
+                self.station = cluster.get_station(station)
+                if self.verbose:
+                    print('Constructed object %s from public database.'
+                          % self.station)
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
@@ -92,12 +130,7 @@ class ReconstructESDEvents(object):
         """Shorthand function to reconstruct event and store the results"""
 
         self.prepare_output()
-        if self.api_station is None:
-            self.offsets = determine_detector_timing_offsets(self.events,
-                                                             self.station)
-            self.store_offsets()
-        else:
-            self.offsets = self.api_station
+        self.get_detector_offsets()
         self.reconstruct_directions(detector_ids=detector_ids)
         self.reconstruct_cores(detector_ids=detector_ids)
         self.store_reconstructions()
@@ -151,6 +184,45 @@ class ReconstructESDEvents(object):
             self.reconstructions._v_attrs.station = self.station
         except tables.HDF5ExtError:
             warnings.warn('Unable to store station object, to large for HDF.')
+
+    def get_detector_offsets(self):
+        """Get or determine detector offsets
+
+        Simulations store the offsets in the cluster object, try to extract
+        that to be used for reconstructions. If those are not available
+        use the :class:`sapphire.api.Station` object for the station number.
+        Else determine the offsets from the event table.
+
+        - if a cluster object is provided:
+
+          -  use offsets from that object if available in the object
+          -  else determine the offsets from the events in datafile with the
+             provided cluster object.
+
+        - if a station number is provided:
+
+          -  if a cluster object is stored in the datafile use offsets from
+             that object if available.
+          -  else get offsets from `api.Station` object.
+
+        """
+        try:
+            self.offsets = [d.offset for d in self.station.detectors]
+            if self.verbose:
+                print('Read detector offsets from station object.')
+        except AttributeError:
+            if self.station_number is not None:
+                self.offsets = api.Station(self.station_number,
+                                           force_fresh=self.force_fresh,
+                                           force_stale=self.force_stale)
+                if self.verbose:
+                    print('Reading detector offsets from public database.')
+            else:
+                self.offsets = determine_detector_timing_offsets(self.events,
+                                                                 self.station)
+                self.store_offsets()
+                if self.verbose:
+                    print('Determined offsets from event data: ', self.offsets)
 
     def store_offsets(self):
         """Store the determined offset in a table."""
@@ -207,7 +279,7 @@ class ReconstructESDEvents(object):
 class ReconstructESDEventsFromSource(ReconstructESDEvents):
 
     def __init__(self, source_data, dest_data, source_group, dest_group,
-                 station, overwrite=False, progress=True,
+                 station, overwrite=False, progress=True, verbose=False,
                  destination='reconstructions',
                  force_fresh=False, force_stale=False):
         """Initialize the class.
@@ -217,15 +289,16 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
             the results will also be stored in this group.
         :param station: either a station number or
             :class:`sapphire.clusters.Station` object. If number the
-            positions and offsets are retrieved from the API. Otherwise
-            the offsets will be determined with the available data.
+            positions and offsets are retrieved from the public database.
+            Otherwise the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
+        :param verbose: if True be verbose about station metadata usage.
         :param destination: alternative name for reconstruction table.
 
         """
         super(ReconstructESDEventsFromSource, self).__init__(
-            source_data, source_group, station, overwrite, progress,
+            source_data, source_group, station, overwrite, progress, verbose,
             destination, force_fresh, force_stale)
         self.dest_data = dest_data
         self.dest_group = dest_group
@@ -267,7 +340,7 @@ class ReconstructESDCoincidences(object):
     """
 
     def __init__(self, data, coincidences_group='/coincidences',
-                 overwrite=False, progress=True,
+                 overwrite=False, progress=True, verbose=False,
                  destination='reconstructions', cluster=None,
                  force_fresh=False, force_stale=False):
         """Initialize the class.
@@ -276,6 +349,7 @@ class ReconstructESDCoincidences(object):
         :param coincidences_group: the destination group.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
+        :param verbose: if True be verbose about station metadata usage.
         :param destination: alternative name for reconstruction table.
         :param cluster: a Cluster object to use for the reconstructions.
 
@@ -285,6 +359,7 @@ class ReconstructESDCoincidences(object):
         self.coincidences = self.coincidences_group.coincidences
         self.overwrite = overwrite
         self.progress = progress
+        self.verbose = verbose
         self.destination = destination
         self.force_fresh = force_fresh
         self.force_stale = force_stale
@@ -293,14 +368,22 @@ class ReconstructESDCoincidences(object):
         self.cq = CoincidenceQuery(data, self.coincidences_group)
         if cluster is None:
             try:
-                self.cluster = self.coincidences_group._f_getattr('cluster')
+                self.cluster = self.data.get_node_attr(self.coincidences_group,
+                                                       'cluster')
+                if self.verbose:
+                    print('Read cluster %s from datafile.' % self.cluster)
             except AttributeError:
                 s_active = self._get_active_stations()
                 self.cluster = HiSPARCStations(s_active,
                                                force_fresh=force_fresh,
                                                force_stale=force_stale)
+                if self.verbose:
+                    print('Constructed cluster %s from public database.'
+                          % self.cluster)
         else:
             self.cluster = cluster
+            if self.verbose:
+                print('Using cluster %s for metadata.' % self.cluster)
 
         self.direction = CoincidenceDirectionReconstruction(self.cluster)
         self.core = CoincidenceCoreReconstruction(self.cluster)
@@ -393,12 +476,16 @@ class ReconstructESDCoincidences(object):
             self.offsets = {station.number: [station.gps_offset + d.offset
                                              for d in station.detectors]
                             for station in self.cluster.stations}
+            if self.verbose:
+                print('Using timing offsets from cluster object.')
         except AttributeError:
             self.offsets = {station.number:
                             api.Station(station.number,
                                         force_fresh=self.force_fresh,
                                         force_stale=self.force_stale)
                             for station in self.cluster.stations}
+            if self.verbose:
+                print('Using timing offsets from public database.')
 
     def store_reconstructions(self):
         """Loop over list of reconstructed data and store results
@@ -460,7 +547,7 @@ class ReconstructESDCoincidences(object):
 class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
 
     def __init__(self, source_data, dest_data, source_group, dest_group,
-                 overwrite=False, progress=True,
+                 overwrite=False, progress=True, verbose=False,
                  destination='reconstructions', cluster=None,
                  force_fresh=False, force_stale=False):
         """Initialize the class.
@@ -470,16 +557,17 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
             the results will also be stored in this group.
         :param station: either a station number or
             :class:`sapphire.clusters.Station` object. If number the
-            positions and offsets are retrieved from the API. Otherwise
-            the offsets will be determined with the available data.
+            positions and offsets are retrieved from the public database.
+            Otherwise the offsets will be determined with the available data.
         :param overwrite: if True overwrite existing reconstruction table.
         :param progress: if True show a progressbar while reconstructing.
+        :param verbose: if True be verbose about station metadata usage.
         :param destination: alternative name for reconstruction table.
 
         """
         super(ReconstructESDCoincidencesFromSource, self).__init__(
-            source_data, source_group, overwrite, progress, destination,
-            cluster, force_fresh, force_stale)
+            source_data, source_group, overwrite, progress, verbose,
+            destination, cluster, force_fresh, force_stale)
         self.dest_data = dest_data
         self.dest_group = dest_group
 
