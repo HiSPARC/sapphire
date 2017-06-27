@@ -3,6 +3,9 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+env:
+  - ASTROPY=yes
+  - ASTROPY=no
 
 sudo: false
 
@@ -20,8 +23,11 @@ before_install:
   - conda update --yes conda
 
 install:
-  - conda create --yes -n build_env python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba astropy
+  - conda create --yes -n build_env python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba
   - source activate build_env
+  - if [ "$ASTROPY" = "yes" ]; then
+      conda install --yes astropy;
+    fi
   - pip install coverage coveralls codecov
   - pip install -e .[dev]
 
