@@ -84,12 +84,12 @@ class DetectorTests(unittest.TestCase):
         coordinates = self.detector_2.get_cylindrical_coordinates()
         self.assertEqual(coordinates, (sqrt(5), atan2(2, -1), 1))
 
-    def test_LR_get_corners(self):
+    def test_left_right_get_corners(self):
         self.mock_station.get_coordinates.return_value = (.25, 3, 0, 0)
         corners = self.detector_1.get_corners()
         self.assertEqual(corners, [(.75, 3.25), (.75, 2.75), (1.75, 2.75), (1.75, 3.25)])
 
-    def test_LR_get_corners_rotated(self):
+    def test_left_right_get_corners_rotated(self):
         self.mock_station.get_coordinates.return_value = (0, 0, 0, pi / 2)
         corners = self.detector_1.get_corners()
         expected_corners = [(-0.25, 0.5), (0.25, 0.5), (0.25, 1.5), (-0.25, 1.5)]
@@ -97,7 +97,7 @@ class DetectorTests(unittest.TestCase):
             self.assertAlmostEqual(x, expected_x)
             self.assertAlmostEqual(y, expected_y)
 
-    def test_UD_get_corners(self):
+    def test_up_down_get_corners(self):
         self.mock_station.get_coordinates.return_value = (0.25, 3, 0, 0)
         corners = self.detector_2.get_corners()
         self.assertEqual(corners, [(-1, 4.5), (-0.5, 4.5), (-0.5, 5.5), (-1, 5.5)])
@@ -197,31 +197,31 @@ class StationTests(unittest.TestCase):
             cluster.get_coordinates.return_value = (sqrt(2) / 2, sqrt(2) / 2, 0, pi / 8)
             station = clusters.Station(cluster, 1, (0, 0), 0, [((0, 0), 'LR')])
             coordinates = station.get_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2, 0, pi / 8))
+            self.assert_tuple_almost_equal(coordinates, (sqrt(2) / 2, sqrt(2) / 2, 0, pi / 8))
             coordinates = station.get_xyalpha_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2, pi / 8))
+            self.assert_tuple_almost_equal(coordinates, (sqrt(2) / 2, sqrt(2) / 2, pi / 8))
             coordinates = station.get_xy_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (sqrt(2) / 2, sqrt(2) / 2))
+            self.assert_tuple_almost_equal(coordinates, (sqrt(2) / 2, sqrt(2) / 2))
 
             # Station *and* cluster not in origin and cluster rotated
             cluster.get_coordinates.return_value = (0, 10, 0, pi / 2)
             station = clusters.Station(cluster, 1, (0, 5), 0, [((0, 0), 'LR')])
             coordinates = station.get_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (-5, 10, 0, pi / 2))
+            self.assert_tuple_almost_equal(coordinates, (-5, 10, 0, pi / 2))
             coordinates = station.get_xyalpha_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (-5, 10, pi / 2))
+            self.assert_tuple_almost_equal(coordinates, (-5, 10, pi / 2))
             coordinates = station.get_xy_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (-5, 10))
+            self.assert_tuple_almost_equal(coordinates, (-5, 10))
 
             # Station *and* cluster not in origin and cluster *and* station rotated
             cluster.get_coordinates.return_value = (0, 10, 0, pi / 2)
             station = clusters.Station(cluster, 1, (0, 5), pi / 4, [((0, 0), 'LR')])
             coordinates = station.get_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (-5, 10, 0, 3 * pi / 4))
+            self.assert_tuple_almost_equal(coordinates, (-5, 10, 0, 3 * pi / 4))
             coordinates = station.get_xyalpha_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (-5, 10, 3 * pi / 4))
+            self.assert_tuple_almost_equal(coordinates, (-5, 10, 3 * pi / 4))
             coordinates = station.get_xy_coordinates()
-            self.assertTupleAlmostEqual(coordinates, (-5, 10))
+            self.assert_tuple_almost_equal(coordinates, (-5, 10))
 
             self.assertTrue(mock_detector.called)
 
@@ -254,19 +254,19 @@ class StationTests(unittest.TestCase):
         cluster.get_coordinates.return_value = (sqrt(2) / 2, sqrt(2) / 2, 0, pi / 8)
         station = clusters.Station(cluster, 1, (0, 0), 0, [((0, 0), 'LR')])
         coordinates = station.get_polar_alpha_coordinates()
-        self.assertTupleAlmostEqual(coordinates, (1, pi / 4, pi / 8))
+        self.assert_tuple_almost_equal(coordinates, (1, pi / 4, pi / 8))
 
         # Station *and* cluster not in origin and cluster rotated
         cluster.get_coordinates.return_value = (0, 10, 0, pi / 2)
         station = clusters.Station(cluster, 1, (0, 5), 0, [((0, 0), 'LR')])
         coordinates = station.get_polar_alpha_coordinates()
-        self.assertTupleAlmostEqual(coordinates, (sqrt(125), 2.0344439357957027, pi / 2))
+        self.assert_tuple_almost_equal(coordinates, (sqrt(125), 2.0344439357957027, pi / 2))
 
         # Station *and* cluster not in origin and cluster *and* station rotated
         cluster.get_coordinates.return_value = (0, 10, 0, pi / 2)
         station = clusters.Station(cluster, 1, (0, 5), pi / 4, [((0, 0), 'LR')])
         coordinates = station.get_polar_alpha_coordinates()
-        self.assertTupleAlmostEqual(coordinates, (sqrt(125), 2.0344439357957027, 3 * pi / 4))
+        self.assert_tuple_almost_equal(coordinates, (sqrt(125), 2.0344439357957027, 3 * pi / 4))
 
     def test_calc_r_and_phi_for_detectors(self):
         cluster = Mock()
@@ -285,11 +285,11 @@ class StationTests(unittest.TestCase):
                                    detectors=[((0, 0, 0), 'LR'), ((10, 9, 1), 'LR'),
                                               ((nan, nan, nan), 'LR'), ((nan, nan, nan), 'LR')])
         center = station.calc_xy_center_of_mass_coordinates()
-        self.assertTupleAlmostEqual(center, (5, 4.5))
+        self.assert_tuple_almost_equal(center, (5, 4.5))
         center = station.calc_center_of_mass_coordinates()
-        self.assertTupleAlmostEqual(center, (5, 4.5, 0.5))
+        self.assert_tuple_almost_equal(center, (5, 4.5, 0.5))
 
-    def assertTupleAlmostEqual(self, actual, expected):
+    def assert_tuple_almost_equal(self, actual, expected):
         self.assertIsInstance(actual, tuple)
         self.assertIsInstance(expected, tuple)
 
@@ -481,10 +481,9 @@ class CompassStationsTests(unittest.TestCase):
         detectors = stations[0].detectors
         self.assertEqual(len(detectors), 1)
         self.assertEqual(detectors[0].x, [-5.0])
-        self.assertTupleAlmostEqual(detectors[0].get_coordinates(),
-                                    (-5.0, 0, 0))
+        self.assert_tuple_almost_equal(detectors[0].get_coordinates(), (-5.0, 0, 0))
 
-    def assertTupleAlmostEqual(self, actual, expected):
+    def assert_tuple_almost_equal(self, actual, expected):
         self.assertIsInstance(actual, tuple)
         self.assertIsInstance(expected, tuple)
 

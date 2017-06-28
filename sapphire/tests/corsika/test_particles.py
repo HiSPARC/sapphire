@@ -30,7 +30,7 @@ class CorsikaParticlesTests(unittest.TestCase):
         self.atoms = [(1406, 'carbon14'),
                       (9999, 'einsteinium99')]
 
-    def test_particle_IDs(self):
+    def test_particle_ids(self):
         """Verify that the correct names belong to each ID"""
 
         for id, name in self.pid_name:

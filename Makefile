@@ -6,10 +6,8 @@ unittests:
 	coverage run --branch --source=sapphire setup.py test
 
 flaketest:
-	flake8 --ignore=Z --exclude=sapphire/transformations/geographic.py,sapphire/tests/,sapphire/corsika/qsub_corsika.py sapphire
+	flake8 --exclude=sapphire/tests/ sapphire
 	flake8 --ignore=E501 sapphire/tests/
-	flake8 --ignore=E501 sapphire/corsika/qsub_corsika.py
-	flake8 --exit-zero --ignore=Z sapphire/transformations/geographic.py
 
 doctest:
 	sphinx-build -anW doc doc/_build/html

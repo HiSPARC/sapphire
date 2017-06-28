@@ -3,5 +3,5 @@ def square(x):
 
 
 if __name__ == '__main__':
-    print 1, 2, 3
-    print square(1), square(2), square(3)
+    print(1, 2, 3)
+    print(square(1), square(2), square(3))

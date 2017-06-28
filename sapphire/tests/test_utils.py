@@ -96,28 +96,28 @@ class GaussTests(unittest.TestCase):
 
     """Test against explicit Gaussian"""
 
-    def gaussian(self, x, N, mu, sigma):
-        return N * exp(-(x - mu) ** 2. / (2. * sigma ** 2)) / (sigma * sqrt(2 * pi))
+    def gaussian(self, x, n, mu, sigma):
+        return n * exp(-(x - mu) ** 2. / (2. * sigma ** 2)) / (sigma * sqrt(2 * pi))
 
     def test_gauss(self):
-        x, N, mu, sigma = (1., 1., 0., 1.)
-        self.assertEqual(utils.gauss(x, N, mu, sigma), self.gaussian(x, N, mu, sigma))
-        N = 2.
-        self.assertEqual(utils.gauss(x, N, mu, sigma), self.gaussian(x, N, mu, sigma))
+        x, n, mu, sigma = (1., 1., 0., 1.)
+        self.assertEqual(utils.gauss(x, n, mu, sigma), self.gaussian(x, n, mu, sigma))
+        n = 2.
+        self.assertEqual(utils.gauss(x, n, mu, sigma), self.gaussian(x, n, mu, sigma))
         sigma = 2.
-        self.assertEqual(utils.gauss(x, N, mu, sigma), self.gaussian(x, N, mu, sigma))
+        self.assertEqual(utils.gauss(x, n, mu, sigma), self.gaussian(x, n, mu, sigma))
         x = 1e5
-        self.assertEqual(utils.gauss(x, N, mu, sigma), 0.)
+        self.assertEqual(utils.gauss(x, n, mu, sigma), 0.)
 
     def test_gauss_array(self):
         """Test for arrays of random values"""
 
-        n = 10000
-        x, N, mu = random.uniform(-100, 100, size=(3, n))
+        size = 10000
+        x, n, mu = random.uniform(-100, 100, size=(3, size))
         # sigma can not be 0
-        sigma = random.uniform(1e-15, 100, size=n)
-        value1 = utils.gauss(x, N, mu, sigma)
-        value2 = self.gaussian(x, N, mu, sigma)
+        sigma = random.uniform(1e-15, 100, size=size)
+        value1 = utils.gauss(x, n, mu, sigma)
+        value2 = self.gaussian(x, n, mu, sigma)
         self.assertTrue(all(abs(value1 - value2) < 1e-10))
 
 
