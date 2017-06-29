@@ -45,7 +45,7 @@ class FromWGS84ToENUTransformation(object):
 
         """
         self.ref_lla = ref_llacoordinates
-        self.ref_XYZ = self.lla_to_ecef(ref_llacoordinates)
+        self.ref_ecef = self.lla_to_ecef(ref_llacoordinates)
 
     def transform(self, coordinates):
         """Transfrom WGS84 coordinates to ENU coordinates"""
@@ -143,7 +143,7 @@ class FromWGS84ToENUTransformation(object):
 
         """
         latitude, longitude, altitude = self.ref_lla
-        xr, yr, zr = self.ref_XYZ
+        xr, yr, zr = self.ref_ecef
         x, y, z = coordinates
 
         lat = radians(latitude)
@@ -169,7 +169,7 @@ class FromWGS84ToENUTransformation(object):
 
         """
         latitude, longitude, altitude = self.ref_lla
-        xr, yr, zr = self.ref_XYZ
+        xr, yr, zr = self.ref_ecef
 
         lat = radians(latitude)
         lon = radians(longitude)

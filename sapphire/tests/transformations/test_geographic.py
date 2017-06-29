@@ -12,17 +12,17 @@ class GeographicTransformationTests(unittest.TestCase):
     def test_attributes(self):
         self.assertEqual(self.ref_lla, self.transform.ref_lla)
 
-        ref_XYZ = (3889144.77, 336914.68, 5027133.30)
-        self.assert_tuple_almost_equal(ref_XYZ, self.transform.ref_XYZ, 2)
+        ref_ecef = (3889144.77, 336914.68, 5027133.30)
+        self.assert_tuple_almost_equal(ref_ecef, self.transform.ref_ecef, 2)
 
     def test_ecef_to_lla(self):
-        lla = self.transform.ecef_to_lla(self.transform.ref_XYZ)
+        lla = self.transform.ecef_to_lla(self.transform.ref_ecef)
         self.assert_tuple_almost_equal(self.ref_lla, lla)
 
     def test_ecef_to_enu(self):
-        enu = self.transform.ecef_to_enu(self.transform.ref_XYZ)
+        enu = self.transform.ecef_to_enu(self.transform.ref_ecef)
         ecef = self.transform.enu_to_ecef(enu)
-        self.assert_tuple_almost_equal(self.transform.ref_XYZ, ecef)
+        self.assert_tuple_almost_equal(self.transform.ref_ecef, ecef)
 
     def test_lla_to_enu(self):
         enu = self.transform.lla_to_enu(self.transform.ref_lla)
