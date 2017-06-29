@@ -29,7 +29,7 @@ class WGS84Datum(object):
 
 class FromWGS84ToENUTransformation(object):
 
-    """Convert between various gerographic coordinate systems
+    """Convert between various geographic coordinate systems
 
     This class converts coordinates between LLA, ENU, and ECEF.
 
