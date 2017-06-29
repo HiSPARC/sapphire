@@ -61,13 +61,14 @@ class RotateCartesianTests(unittest.TestCase):
 
     def test_rotate_cartesian(self):
         input = (3., 4., 5.)
-        self.assertEqual(input, axes.rotate_cartesian(*input, 0, 'x'))
-        self.assertEqual(input, axes.rotate_cartesian(*input, 0, 'y'))
-        self.assertEqual(input, axes.rotate_cartesian(*input, 0, 'z'))
+        x, y, z = input
+        self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'x'))
+        self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'y'))
+        self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'z'))
 
-        testing.assert_almost_equal((3., -5., 4.), axes.rotate_cartesian(*input, pi / 2, 'x'))
-        testing.assert_almost_equal((5., 4., -3.), axes.rotate_cartesian(*input, pi / 2, 'y'))
-        testing.assert_almost_equal((-4., 3., 5.), axes.rotate_cartesian(*input, pi / 2, 'z'))
+        testing.assert_almost_equal((3., -5., 4.), axes.rotate_cartesian(x, y, z, pi / 2, 'x'))
+        testing.assert_almost_equal((5., 4., -3.), axes.rotate_cartesian(x, y, z, pi / 2, 'y'))
+        testing.assert_almost_equal((-4., 3., 5.), axes.rotate_cartesian(x, y, z, pi / 2, 'z'))
 
 
 class RotationMatrixTests(unittest.TestCase):
