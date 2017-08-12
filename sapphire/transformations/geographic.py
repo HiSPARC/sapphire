@@ -150,9 +150,9 @@ class FromWGS84ToENUTransformation(object):
         lon = radians(longitude)
 
         transformation = matrix([
-            [           -sin(lon),             cos(lon),       0.],  # noqa: E201, E241
+            [           -sin(lon),             cos(lon),       0.],  # noqa
             [-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat)],
-            [ cos(lat) * cos(lon),  cos(lat) * sin(lon), sin(lat)]])  # noqa: E201, E241
+            [ cos(lat) * cos(lon),  cos(lat) * sin(lon), sin(lat)]])  # noqa
 
         coordinates = matrix([[x - xr], [y - yr], [z - zr]])
 
@@ -176,8 +176,8 @@ class FromWGS84ToENUTransformation(object):
 
         transformation = matrix([
             [-sin(lon), -sin(lat) * cos(lon), cos(lat) * cos(lon)],
-            [ cos(lon), -sin(lat) * sin(lon), cos(lat) * sin(lon)],  # noqa: E201, E241
-            [       0.,             cos(lat),            sin(lat)]])  # noqa: E201, E241
+            [ cos(lon), -sin(lat) * sin(lon), cos(lat) * sin(lon)],  # noqa
+            [       0.,             cos(lat),            sin(lat)]])  # noqa
 
         x, y, z = (transformation * matrix(coordinates).T).A1
 
