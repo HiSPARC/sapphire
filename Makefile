@@ -1,4 +1,4 @@
-.PHONY: test unittests flaketest docstest update_data
+.PHONY: test unittests flaketest doctest update_data
 
 test: unittests flaketest doctest
 
