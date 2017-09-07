@@ -38,6 +38,9 @@ after_success:
   - codecov
   - coveralls
 
+before_deploy:
+  - touch doc/_build/html/.nojekyll
+
 deploy:
   provider: pages
   skip_cleanup: true
