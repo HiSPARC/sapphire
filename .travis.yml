@@ -43,7 +43,6 @@ deploy:
   skip_cleanup: true
   github_token: $GITHUB_TOKEN
   local_dir: doc/_build/html
-  target_branch: gh-pages-test
   email: beheer@hisparc.nl
   name: HiSPARC-Bot
   on:
