@@ -1,7 +1,19 @@
 from setuptools import setup, find_packages
 
+
+# set version number and write to sapphire/version.py
+version = '1.4.0.dev0'
+
+version_py = """\
+# Created by setup.py. Do not edit.
+__version__ = "{version}"
+"""
+with open('sapphire/version.py', 'w') as f:
+    f.write(version_py.format(version=version))
+
+
 setup(name='hisparc-sapphire',
-      version='1.4.0',
+      version=version,
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
