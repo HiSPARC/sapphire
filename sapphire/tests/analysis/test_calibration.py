@@ -250,7 +250,7 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         mock_station.assert_called_once_with(sentinel.station, force_stale=self.off.force_stale)
 
     def test_get_r_dz(self):
-        r_102_105 = 82.2162521322  # 2014,1,1
+        r_102_105 = 88.11877198608  # 2014,1,1
         dz_102_105 = -4.13568408095
         r, dz = self.off._get_r_dz(datetime(2014, 1, 1).date(), 102, 105)
         self.assertAlmostEqual(r, r_102_105)
