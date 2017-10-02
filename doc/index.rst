@@ -20,7 +20,6 @@ Contents:
    tutorial
    examples
    sapphire
-   README
 
 
 Indices and tables
