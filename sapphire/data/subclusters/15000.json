@@ -2,5 +2,9 @@
     {
         "name": "University of Sussex",
         "number": 15001
+    },
+    {
+        "name": "Cardinal Newman Catholic School",
+        "number": 15002
     }
 ]

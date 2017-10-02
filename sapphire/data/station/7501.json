@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 48.96,
+    "cluster": "Enschede",
+    "country": "Netherlands",
+    "latitude": 52.2378888,
+    "longitude": 6.8585229,
+    "name": "De Waerdenborch",
+    "number": 7501,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Holten"
+}
