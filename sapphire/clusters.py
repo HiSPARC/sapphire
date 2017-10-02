@@ -817,6 +817,8 @@ class HiSPARCStations(CompassStations):
                 station_info = api.Station(station, force_fresh=force_fresh,
                                            force_stale=force_stale)
                 locations = station_info.gps_locations
+                llas = locations[['latitude', 'longitude', 'altitude']]
+                station_ts = locations['timestamp']
             except Exception:
                 if skip_missing:
                     missing_gps.append(station)
@@ -825,8 +827,6 @@ class HiSPARCStations(CompassStations):
                     raise KeyError('Could not get GPS info for station %d.' %
                                    station)
             else:
-                llas = locations[['latitude', 'longitude', 'altitude']]
-                station_ts = locations['timestamp']
                 n_detectors = station_info.n_detectors()
 
             if reference_required:
