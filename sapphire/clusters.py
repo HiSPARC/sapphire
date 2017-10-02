@@ -827,7 +827,6 @@ class HiSPARCStations(CompassStations):
                     raise KeyError('Could not get GPS info for station %d.' %
                                    station)
             else:
-
                 n_detectors = station_info.n_detectors()
 
             if reference_required:
