@@ -138,7 +138,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                 N_electron += 1
         return N_electron
 
-    def _simulateTrace(self, N, start, t_rise=7.0, t_fall=25.0, stop=300.0, GR=7.5e8):
+    def _simulateTrace(self, N, start, t_rise=7.0, t_fall=25.0, stop=300.0, GR=8.5e8):
         """Simulate event trace
         
         :param N: Number of emitted cathode electrons
@@ -198,6 +198,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             return np.array([0])
         
         # Determine how many particles arrived per 2.5 nanosecond
+        plt.clf()
         n_phot, bin_edges, patches = plt.hist(photontimes,bins=np.linspace(0,200,81))
         t_arr = (0.5*(bin_edges[1:] + bin_edges[:-1]))-1.25
         
@@ -308,6 +309,41 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             detx, dety, detz = detector.get_coordinates()
             detcorners = detector.get_corners()
             
+            # Obtain corners
+            c1 = np.array(detcorners[0])
+            c2 = np.array(detcorners[1])
+            c3 = np.array(detcorners[2])
+            c4 = np.array(detcorners[3])
+            
+            # Rotate corners to convenient system where the axes of the detector align with x and y
+            # I don't know what all the entries in the orientation list are but the last one works.
+            theta = detector.orientation[-1]
+            THETA = np.array([[np.cos(theta),-1*np.sin(theta)], [np.sin(theta),np.cos(theta)]])
+            
+            c1_new = np.inner(THETA, (c1 - c1)) + c1
+            c2_new = np.inner(THETA, (c2 - c1)) + c1
+            c3_new = np.inner(THETA, (c3 - c1)) + c1
+            c4_new = np.inner(THETA, (c4 - c1)) + c1
+            
+            # Increase the size of the detector to also include perspex hits and near misses 
+            # (which could still be a hit because the skibox lid is a bit higher than the scintillator)
+            c1_new = np.array([c1_new[0] - 0.1, c1_new[1] - 0.1])
+            c2_new = np.array([c2_new[0] + 0.1, c2_new[1] - 0.1])
+            c3_new = np.array([c3_new[0] + 0.1, c3_new[1] + 0.675 + 0.1])
+            c4_new = np.array([c4_new[0] - 0.1, c4_new[1] + 0.675 + 0.1])
+            
+            # Rotate the system back
+            theta = -1.0 * theta
+            THETA_BACK = np.array([[np.cos(theta),-1*np.sin(theta)], [np.sin(theta),np.cos(theta)]])
+            
+            c1_new = np.inner(THETA_BACK, (c1_new - c1)) + c1
+            c2_new = np.inner(THETA_BACK, (c2_new - c1)) + c1
+            c3_new = np.inner(THETA_BACK, (c3_new - c1)) + c1
+            c4_new = np.inner(THETA_BACK, (c4_new - c1)) + c1
+            
+            # Slightly bigger detcorners now
+            detcorners = [c1_new, c2_new, c3_new, c4_new]
+
             zenith = shower_parameters['zenith']
             azimuth = self.corsika_azimuth
 
@@ -326,8 +362,8 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             xdistance = (np.linalg.norm(np.cross(cproj4 - cproj1, cproj1 - p)) /
                          np.linalg.norm(cproj4 - cproj1))
             
-            xdetcoord = 100 * xdistance - 25
-            ydetcoord = 100 * ydistance - 50
+            xdetcoord = 100 * xdistance - 35
+            ydetcoord = 100 * ydistance - 60
             
             # Determine at which angle the particle hit the detector
             px = particle["p_x"]
@@ -345,7 +381,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                                               "{}".format(particleenergy),
                                               "{}".format(ydetcoord),
                                               "{}".format(xdetcoord),
-                                              "-99899",#"-99893.695",
+                                              "-99889",#"-99893.695",
                                               "{}".format(px),
                                               "{}".format(py),
                                               "{}".format(pz)])
@@ -354,7 +390,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                                               "{}".format(particleenergy),
                                               "{}".format(ydetcoord),
                                               "{}".format(xdetcoord),
-                                              "-99899",
+                                              "-99889",
                                               "{}".format(px),
                                               "{}".format(py),
                                               "{}".format(pz) )
@@ -424,7 +460,14 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         pulseintegral_gamma = 1e3 * abs(2.5*gamma_trace.sum())
         
         # Also determine the first arrival time
-        firstarrival = min(arrivaltimes)
+        # If an electron was detected and a gamma without interaction, the event will be triggered but
+        # the minimal arrival time will be -999 because of the non-interacting gamma. So I need to
+        # correct for this. But if only a non-interacting gamma was detected I need to keep the -999
+        # in the list otherwise we don't have a firstarrival time. The solution is to remove all -999
+        # values anyway if multiple particles hit the detector.
+        if len(arrivaltimes) > 1:
+            arrivaltimes = arrivaltimes[arrivaltimes > -999]
+        firstarrival = np.min(arrivaltimes)
     
         return n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
                pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma, \
@@ -518,10 +561,46 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         # hadron_generation
         # observation_level - observation level above sea level in cm
         
-        detector_boundary = 0.6
+        detector_boundary = 0.8
 
         x, y, z = detector.get_coordinates()
-        corners = detector.get_corners()
+        detcorners = detector.get_corners()
+
+        # Obtain corners
+        c1 = np.array(detcorners[0])
+        c2 = np.array(detcorners[1])
+        c3 = np.array(detcorners[2])
+        c4 = np.array(detcorners[3])
+        
+        # Rotate corners to convenient system where the axes of the detector align with x and y
+        # I don't know what all the entries in the orientation list are but the last one works.
+        theta = detector.orientation[-1]
+        THETA = np.array([[np.cos(theta),-1*np.sin(theta)], [np.sin(theta),np.cos(theta)]])
+        
+        c1_new = np.inner(THETA, (c1 - c1)) + c1
+        c2_new = np.inner(THETA, (c2 - c1)) + c1
+        c3_new = np.inner(THETA, (c3 - c1)) + c1
+        c4_new = np.inner(THETA, (c4 - c1)) + c1
+        
+        # Increase the size of the detector to also include perspex hits and near misses 
+        # (which could still be a hit because the skibox lid is a bit higher than the scintillator)
+        c1_new = np.array([c1_new[0] - 0.1, c1_new[1] - 0.1])
+        c2_new = np.array([c2_new[0] + 0.1, c2_new[1] - 0.1])
+        c3_new = np.array([c3_new[0] + 0.1, c3_new[1] + 0.675 + 0.1])
+        c4_new = np.array([c4_new[0] - 0.1, c4_new[1] + 0.675 + 0.1])
+        
+        # Rotate the system back
+        theta = -1.0 * theta
+        THETA_BACK = np.array([[np.cos(theta),-1*np.sin(theta)], [np.sin(theta),np.cos(theta)]])
+        
+        c1_new = np.inner(THETA_BACK, (c1_new - c1)) + c1
+        c2_new = np.inner(THETA_BACK, (c2_new - c1)) + c1
+        c3_new = np.inner(THETA_BACK, (c3_new - c1)) + c1
+        c4_new = np.inner(THETA_BACK, (c4_new - c1)) + c1
+        
+        # Slightly bigger corners now
+        corners = [c1_new, c2_new, c3_new, c4_new]
+
         zenith = shower_parameters['zenith']
         azimuth = self.corsika_azimuth
 
@@ -1376,3 +1455,23 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
             return None
         sim = np.random.choice(sims)
         return sim
+
+
+class RandomRadiiGEANT4Simulation(MultipleGroundParticlesGEANT4Simulation):
+
+    """In a normal MultipleGroundParticlesGEANT4Simulation simulation the core
+    position is chosen to be a random position within a circle area. This class
+    enables the same simulation but now the core position is chosen at random
+    radii.
+
+    """
+    
+    @classmethod
+    def generate_core_position(cls, r_max):
+        phi = np.random.uniform(-pi, pi)
+        r = np.random.uniform(0, r_max)
+        x = r * cos(phi)
+        y = r * sin(phi)
+        return x, y
+
+
