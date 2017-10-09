@@ -92,7 +92,8 @@ from .esd import (quick_download, load_data, download_data, download_lightning,
 from .simulations.groundparticles import (GroundParticlesSimulation,
                                           GroundParticlesGEANT4Simulation,
                                           MultipleGroundParticlesSimulation,
-                                          MultipleGroundParticlesGEANT4Simulation)
+                                          MultipleGroundParticlesGEANT4Simulation,
+                                          RandomRadiiGEANT4Simulation)
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
 from .tests import run_tests
@@ -132,7 +133,7 @@ __all__ = ['analysis',
            'quick_download', 'load_data', 'download_data',
            'download_lightning', 'download_coincidences',
            'GroundParticlesSimulation', 'GroundParticlesGEANT4Simulation',
-           'MultipleGroundParticlesSimulation', 'MultipleGroundParticlesGEANT4Simulation'
+           'MultipleGroundParticlesSimulation', 'MultipleGroundParticlesGEANT4Simulation','RandomRadiiGEANT4Simulation'
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
            'run_tests',
