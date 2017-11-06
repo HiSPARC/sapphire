@@ -80,6 +80,35 @@ class BaseSimulation(object):
         for (shower_id, shower_parameters) in enumerate(
                 self.generate_shower_parameters()):
 
+            chosen_energy = np.log10( shower_parameters['energy'] )
+            chosen_core_pos = shower_parameters['core_pos']
+            chosen_radius = np.sqrt( chosen_core_pos[0]**2. + chosen_core_pos[1]**2. )
+
+            if (chosen_energy < (13 + 0.1)) and (chosen_energy > (13 - 0.1)) and chosen_radius > 40:
+                continue
+            if (chosen_energy < (13.5 + 0.1)) and (chosen_energy > (13.5 - 0.1)) and chosen_radius > 60:
+                continue
+            if (chosen_energy < (14 + 0.1)) and (chosen_energy > (14 - 0.1)) and chosen_radius > 70:
+                continue
+            if (chosen_energy < (14.5 + 0.1)) and (chosen_energy > (14.5 - 0.1)) and chosen_radius > 80:
+                continue
+            if (chosen_energy < (15 + 0.1)) and (chosen_energy > (15 - 0.1)) and chosen_radius > 100:
+                continue
+            if (chosen_energy < (15.5 + 0.1)) and (chosen_energy > (15.5 - 0.1)) and chosen_radius > 200:
+                continue
+            if (chosen_energy < (16 + 0.1)) and (chosen_energy > (16 - 0.1)) and chosen_radius > 250:
+                continue
+            if (chosen_energy < (16.5 + 0.1)) and (chosen_energy > (16.5 - 0.1)) and chosen_radius > 600:
+                continue
+            if (chosen_energy < (17 + 0.1)) and (chosen_energy > (17 - 0.1)) and chosen_radius > 600:
+                continue
+            if (chosen_energy < (17.5 + 0.1)) and (chosen_energy > (17.5 - 0.1)) and chosen_radius > 1000:
+                continue
+            if (chosen_energy < (18 + 0.1)) and (chosen_energy > (18 - 0.1)) and chosen_radius > 1000:
+                continue
+
+            #print(chosen_energy, chosen_radius)
+
             station_events = self.simulate_events_for_shower(shower_parameters)
             # No need to store coincidences of a cluster containing only one station
             if len(self.cluster.stations) > 1:

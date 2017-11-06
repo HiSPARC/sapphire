@@ -37,7 +37,7 @@ from ..corsika.particles import particle_id
 from ..utils import pbar, norm_angle, closest_in_list, vector_length, c
 
 
-class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
+class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
 
     def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
         """Simulation initialization
@@ -281,7 +281,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             t = particle["t"]
             times_since_first_interaction.append(t)
         t_first_interaction = min(times_since_first_interaction)
-        print("--")
+        #print("--")
 
         # Run the geant4 simulation for each particle
         arrived_photons_per_particle = []
@@ -299,7 +299,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             particletype = particle_types[particle_id]
             
             # Determine the position the particle hit the detector in the
-            # detector reference system (-25 < x < 25 and -50 < y < 50)
+            # corsika detector reference system (-25 < x < 25 and -50 < y < 50)
             # taking projection due to detector-height differences into
             # account.
             x = particle["x"]
@@ -317,7 +317,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             
             # Rotate corners to convenient system where the axes of the detector align with x and y
             # I don't know what all the entries in the orientation list are but the last one works.
-            theta = detector.orientation[-1]
+            theta = detector.orientation[-1] + (self.shower_azimuth - self.corsika_azimuth)
             THETA = np.array([[np.cos(theta),-1*np.sin(theta)], [np.sin(theta),np.cos(theta)]])
             
             c1_new = np.inner(THETA, (c1 - c1)) + c1
@@ -357,13 +357,14 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             cproj4 = np.array([detcproj[3][0],detcproj[3][1]])
             
             # Here I determine the distance from a point to a line
-            ydistance = (np.linalg.norm(np.cross(cproj2 - cproj1, cproj1 - p)) /
+            xdistance = (np.linalg.norm(np.cross(cproj2 - cproj1, cproj1 - p)) /
                          np.linalg.norm(cproj2 - cproj1))
-            xdistance = (np.linalg.norm(np.cross(cproj4 - cproj1, cproj1 - p)) /
+            ydistance = (np.linalg.norm(np.cross(cproj4 - cproj1, cproj1 - p)) /
                          np.linalg.norm(cproj4 - cproj1))
-            
-            xdetcoord = 100 * xdistance - 35
-            ydetcoord = 100 * ydistance - 60
+           
+            # Convert to cm 
+            xdetcoord = 100 * xdistance - 50 - 10
+            ydetcoord = 100 * ydistance - 25 - 10
             
             # Determine at which angle the particle hit the detector
             px = particle["p_x"]
@@ -379,8 +380,8 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             # photons that arrived at the PMT.
             output = subprocess.check_output(["/user/kaspervd/Documents/repositories/diamond/20170117_geant4_simulation/HiSPARC-stbc-build/./skibox", "1", particletype,
                                               "{}".format(particleenergy),
-                                              "{}".format(ydetcoord),
                                               "{}".format(xdetcoord),
+                                              "{}".format(ydetcoord),
                                               "-99889",#"-99893.695",
                                               "{}".format(px),
                                               "{}".format(py),
@@ -388,8 +389,8 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
             #"""
             print( "./skibox", "1", particletype,
                                               "{}".format(particleenergy),
-                                              "{}".format(ydetcoord),
                                               "{}".format(xdetcoord),
+                                              "{}".format(ydetcoord),
                                               "-99889",
                                               "{}".format(px),
                                               "{}".format(py),
@@ -410,7 +411,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
                 # arrival times of the scint. photons created by this particle.
                 # If there is only one particle this latency is zero.
                 t_later_than_first = particle["t"] - t_first_interaction
-                print("Later than first (in ns): ",t_later_than_first)
+                #print("Later than first (in ns): ",t_later_than_first)
                 photontimes += t_later_than_first
 
                 # Succesful interaction, keep statistics
@@ -451,7 +452,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         pulseheight_electron = 1e3 * abs(electron_trace.min())
         pulseheight_gamma = 1e3 * abs(gamma_trace.min())
         
-        print( pulseheight, "mV" )
+        #print( pulseheight, "mV" )
 
         # Now obtain the pulseintegral for each trace (in mVns)
         pulseintegral = 1e3 * abs(2.5*all_particles_trace.sum())
@@ -561,7 +562,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         # hadron_generation
         # observation_level - observation level above sea level in cm
         
-        detector_boundary = 0.8
+        detector_boundary = 3.0
 
         x, y, z = detector.get_coordinates()
         detcorners = detector.get_corners()
@@ -574,7 +575,7 @@ class GroundParticlesGEANT4Simulation(HiSPARCSimulation):
         
         # Rotate corners to convenient system where the axes of the detector align with x and y
         # I don't know what all the entries in the orientation list are but the last one works.
-        theta = detector.orientation[-1]
+        theta = detector.orientation[-1] + (self.shower_azimuth - self.corsika_azimuth)
         THETA = np.array([[np.cos(theta),-1*np.sin(theta)], [np.sin(theta),np.cos(theta)]])
         
         c1_new = np.inner(THETA, (c1 - c1)) + c1
