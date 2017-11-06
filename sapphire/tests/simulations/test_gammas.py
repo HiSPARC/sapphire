@@ -97,8 +97,8 @@ class GammasTest(unittest.TestCase):
         mock_l_pair.return_value = 1e-3
 
         mock_compton.return_value = 42.
-        E = np.array([10., 7.])  # MeV
-        p = E * 1e6  # eV
+        energies = np.array([10., 7.])  # MeV
+        p = energies * 1e6  # eV
         theta = np.array([0.])
 
         for _ in range(100):
@@ -107,8 +107,8 @@ class GammasTest(unittest.TestCase):
             self.assertLessEqual(mips, gammas.MAX_E)
 
         # not enough energy for pair production
-        E = np.array([0.5, 0.7])  # MeV
-        p = E * 1e6  # eV
+        energies = np.array([0.5, 0.7])  # MeV
+        p = energies * 1e6  # eV
         theta = np.array([0., 0.])
         for _ in range(100):
             self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)

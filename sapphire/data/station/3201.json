@@ -1,10 +1,10 @@
 {
     "active": true,
-    "altitude": 51.13,
+    "altitude": 52.86,
     "cluster": "Leiden",
     "country": "Netherlands",
-    "latitude": 51.7538702,
-    "longitude": 4.1589412,
+    "latitude": 51.7538645,
+    "longitude": 4.1589422,
     "name": "CSG Prins Maurits",
     "number": 3201,
     "scintillators": [

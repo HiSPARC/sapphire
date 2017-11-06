@@ -104,6 +104,10 @@
         "number": 7400
     },
     {
+        "name": "Holten",
+        "number": 7500
+    },
+    {
         "name": "Eindhoven",
         "number": 8000
     },
@@ -162,6 +166,10 @@
     {
         "name": "Sussex",
         "number": 15000
+    },
+    {
+        "name": "Cardiff",
+        "number": 16000
     },
     {
         "name": "Aarhus",

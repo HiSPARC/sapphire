@@ -3,6 +3,9 @@ python:
   - "2.7"
   - "3.5"
   - "3.6"
+env:
+  - ASTROPY=yes
+  - ASTROPY=no
 
 sudo: false
 
@@ -22,6 +25,9 @@ before_install:
 install:
   - conda create --yes -n build_env python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba
   - source activate build_env
+  - if [ "$ASTROPY" = "yes" ]; then
+      conda install --yes astropy;
+    fi
   - pip install coverage coveralls codecov
   - pip install -e .[dev]
 
@@ -31,3 +37,18 @@ script:
 after_success:
   - codecov
   - coveralls
+
+before_deploy:
+  - touch doc/_build/html/.nojekyll
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: doc/_build/html
+  email: beheer@hisparc.nl
+  name: HiSPARC-Bot
+  on:
+    branch: master
+    python: 3.6
+    condition: "$ASTROPY = yes"

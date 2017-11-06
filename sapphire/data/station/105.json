@@ -9,16 +9,16 @@
     "number": 105,
     "scintillators": [
         {
-            "alpha": -65.9,
-            "beta": -65.9,
+            "alpha": 308.0,
+            "beta": 112.0,
             "height": 0.0,
-            "radius": 0.5
+            "radius": 0.73
         },
         {
-            "alpha": -65.9,
-            "beta": -65.9,
+            "alpha": 112.0,
+            "beta": 292.0,
             "height": 0.0,
-            "radius": 10.5
+            "radius": 10.6
         }
     ],
     "subcluster": "Zaanstad"

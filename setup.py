@@ -1,8 +1,19 @@
 from setuptools import setup, find_packages
-import sys
+
+
+# set version number and write to sapphire/version.py
+version = '1.5.1'
+
+version_py = """\
+# Created by setup.py. Do not edit.
+__version__ = "{version}"
+"""
+with open('sapphire/version.py', 'w') as f:
+    f.write(version_py.format(version=version))
+
 
 setup(name='hisparc-sapphire',
-      version='1.3.1',
+      version=version,
       packages=find_packages(),
       url='http://github.com/hisparc/sapphire/',
       bugtrack_url='http://github.com/HiSPARC/sapphire/issues',
@@ -14,15 +25,17 @@ setup(name='hisparc-sapphire',
       description='A framework for the HiSPARC experiment',
       long_description=open('README.rst').read(),
       keywords=['HiSPARC', 'Nikhef', 'cosmic rays'],
-      classifiers=['Intended Audience :: Science/Research',
-                   'Intended Audience :: Education',
-                   'Operating System :: OS Independent',
-                   'Programming Language :: Python',
-                   'Programming Language :: Python :: 2.7',
-                   'Programming Language :: Python :: 3.5',
-                   'Topic :: Scientific/Engineering',
-                   'Topic :: Education',
-                   'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'],
+      classifiers=[
+          'Intended Audience :: Science/Research',
+          'Intended Audience :: Education',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Topic :: Scientific/Engineering',
+          'Topic :: Education',
+          'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'],
       scripts=['sapphire/corsika/generate_corsika_overview',
                'sapphire/corsika/qsub_corsika',
                'sapphire/corsika/qsub_store_corsika_data',
@@ -50,5 +63,7 @@ setup(name='hisparc-sapphire',
                                  'tests/simulations/test_data/*.h5']},
       install_requires=['numpy', 'scipy', 'tables>=3.3.0',
                         'progressbar2>=3.7.0', 'lazy', 'mock', 'six'],
-      extras_require={'dev': ['Sphinx', 'flake8', 'coverage']},
+      extras_require={
+          'dev': ['Sphinx', 'flake8', 'pep8-naming', 'coverage'],
+          'astropy': ["astropy"]},
       test_suite="sapphire.tests",)

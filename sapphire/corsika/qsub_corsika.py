@@ -76,7 +76,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     DIRECT    ./                       output directory
     USER      hisparc                  user
     DEBUG     F  6  F  1000000         debug flag and log.unit for out
-    EXIT                               terminates input""")
+    EXIT                               terminates input""")  # noqa: E501
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
 
@@ -260,8 +260,9 @@ class CorsikaBatch(object):
         particle = particles.name(self.particle)
         azimuth = self.phi - 90
         return ('%s(energy=%r, particle=%r, zenith=%r, azimuth=%r, queue=%r, '
-                'corsika=%r)' % (self.__class__.__name__, energy, particle,
-                                 self.theta, azimuth, self.queue, self.corsika))
+                'corsika=%r)' %
+                (self.__class__.__name__, energy, particle, self.theta,
+                 azimuth, self.queue, self.corsika))
 
 
 def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,

@@ -18,14 +18,14 @@ class SimpleClusterTest(unittest.TestCase):
                   for station in self.cluster.stations]
 
         for actual_value, expected_value in zip(actual, expected):
-            self.assertTupleAlmostEqual(actual_value, expected_value)
+            self.assert_tuple_almost_equal(actual_value, expected_value)
 
     def test_get_detector_coordinates(self):
         for station in self.cluster.stations:
             for detector in station.detectors:
                 detector.get_xy_coordinates()
 
-    def assertTupleAlmostEqual(self, actual, expected):
+    def assert_tuple_almost_equal(self, actual, expected):
         self.assertIsInstance(actual, tuple)
         self.assertIsInstance(expected, tuple)
 

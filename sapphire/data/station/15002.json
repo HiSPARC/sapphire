@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 109.28,
+    "cluster": "Sussex",
+    "country": "United Kingdom",
+    "latitude": 50.8370673,
+    "longitude": -0.1576097,
+    "name": "Cardinal Newman Catholic School",
+    "number": 15002,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Sussex"
+}

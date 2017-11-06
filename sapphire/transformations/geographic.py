@@ -29,7 +29,7 @@ class WGS84Datum(object):
 
 class FromWGS84ToENUTransformation(object):
 
-    """Convert between various gerographic coordinate systems
+    """Convert between various geographic coordinate systems
 
     This class converts coordinates between LLA, ENU, and ECEF.
 
@@ -45,7 +45,7 @@ class FromWGS84ToENUTransformation(object):
 
         """
         self.ref_lla = ref_llacoordinates
-        self.ref_XYZ = self.lla_to_ecef(ref_llacoordinates)
+        self.ref_ecef = self.lla_to_ecef(ref_llacoordinates)
 
     def transform(self, coordinates):
         """Transfrom WGS84 coordinates to ENU coordinates"""
@@ -69,7 +69,7 @@ class FromWGS84ToENUTransformation(object):
         ECEF: Earth-Centered, Earth-Fixed
 
         The conversion formulas are taken from
-        http://en.wikipedia.org/wiki/Geodetic_system#From_geodetic_to_ECEF
+        https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#From_geodetic_to_ECEF_coordinates
         but slightly reworked.
 
         Mind that the input is expected to be in degrees, as is standard in
@@ -89,13 +89,13 @@ class FromWGS84ToENUTransformation(object):
         b = self.geode.b
         e = self.geode.e
 
-        N = a / sqrt(1 - e ** 2 * sin(latitude) ** 2)
+        n = a / sqrt(1 - e ** 2 * sin(latitude) ** 2)
 
-        X = (N + altitude) * cos(latitude) * cos(longitude)
-        Y = (N + altitude) * cos(latitude) * sin(longitude)
-        Z = (b ** 2 / a ** 2 * N + altitude) * sin(latitude)
+        x = (n + altitude) * cos(latitude) * cos(longitude)
+        y = (n + altitude) * cos(latitude) * sin(longitude)
+        z = (b ** 2 / a ** 2 * n + altitude) * sin(latitude)
 
-        return X, Y, Z
+        return x, y, z
 
     def ecef_to_lla(self, coordinates):
         """Convert from ECEF coordinates to LLA coordinates
@@ -110,21 +110,21 @@ class FromWGS84ToENUTransformation(object):
         :return: latitude, longitude (in degrees) and altitude (in meters).
 
         """
-        X, Y, Z = coordinates
+        x, y, z = coordinates
 
         a = self.geode.a
         b = self.geode.b
         e = self.geode.e
         eprime = self.geode.eprime
 
-        p = sqrt(X ** 2 + Y ** 2)
-        th = atan2(a * Z, b * p)
+        p = sqrt(x ** 2 + y ** 2)
+        th = atan2(a * z, b * p)
 
-        longitude = atan2(Y, X)
-        latitude = atan2((Z + eprime ** 2 * b * sin(th) ** 3),
+        longitude = atan2(y, x)
+        latitude = atan2((z + eprime ** 2 * b * sin(th) ** 3),
                          (p - e ** 2 * a * cos(th) ** 3))
-        N = a / sqrt(1 - e ** 2 * sin(latitude) ** 2)
-        altitude = p / cos(latitude) - N
+        n = a / sqrt(1 - e ** 2 * sin(latitude) ** 2)
+        altitude = p / cos(latitude) - n
 
         return degrees(latitude), degrees(longitude), altitude
 
@@ -143,18 +143,18 @@ class FromWGS84ToENUTransformation(object):
 
         """
         latitude, longitude, altitude = self.ref_lla
-        Xr, Yr, Zr = self.ref_XYZ
-        X, Y, Z = coordinates
+        xr, yr, zr = self.ref_ecef
+        x, y, z = coordinates
 
         lat = radians(latitude)
         lon = radians(longitude)
 
         transformation = matrix([
-            [           -sin(lon),             cos(lon),       0.],
+            [           -sin(lon),             cos(lon),       0.],  # noqa
             [-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat)],
-            [ cos(lat) * cos(lon),  cos(lat) * sin(lon), sin(lat)]])
+            [ cos(lat) * cos(lon),  cos(lat) * sin(lon), sin(lat)]])  # noqa
 
-        coordinates = matrix([[X - Xr], [Y - Yr], [Z - Zr]])
+        coordinates = matrix([[x - xr], [y - yr], [z - zr]])
 
         return (transformation * coordinates).A1
 
@@ -169,19 +169,19 @@ class FromWGS84ToENUTransformation(object):
 
         """
         latitude, longitude, altitude = self.ref_lla
-        Xr, Yr, Zr = self.ref_XYZ
+        xr, yr, zr = self.ref_ecef
 
         lat = radians(latitude)
         lon = radians(longitude)
 
         transformation = matrix([
             [-sin(lon), -sin(lat) * cos(lon), cos(lat) * cos(lon)],
-            [ cos(lon), -sin(lat) * sin(lon), cos(lat) * sin(lon)],
-            [       0.,             cos(lat),            sin(lat)]])
+            [ cos(lon), -sin(lat) * sin(lon), cos(lat) * sin(lon)],  # noqa
+            [       0.,             cos(lat),            sin(lat)]])  # noqa
 
         x, y, z = (transformation * matrix(coordinates).T).A1
 
-        return x + Xr, y + Yr, z + Zr
+        return x + xr, y + yr, z + zr
 
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self.ref_lla)
