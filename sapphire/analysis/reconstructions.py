@@ -97,25 +97,7 @@ class ReconstructESDEvents(object):
 
         self.offsets = [0., 0., 0., 0.]
 
-        if isinstance(station, Station):
-            self.station = station
-            self.station_number = None
-            if self.verbose:
-                print('Using object %s for metadata.' % self.station)
-        else:
-            self.station_number = station
-            try:
-                cluster = data.get_node_attr('/coincidences', 'cluster')
-                self.station = cluster.get_station(station)
-                if self.verbose:
-                    print('Read object %s from datafile.' % self.station)
-            except (tables.NoSuchNodeError, AttributeError):
-                cluster = HiSPARCStations([station], force_fresh=force_fresh,
-                                          force_stale=force_stale)
-                self.station = cluster.get_station(station)
-                if self.verbose:
-                    print('Constructed object %s from public database.'
-                          % self.station)
+        self._get_or_create_station_object(station)
 
         self.direction = EventDirectionReconstruction(self.station)
         self.core = EventCoreReconstruction(self.station)
@@ -188,9 +170,9 @@ class ReconstructESDEvents(object):
     def get_detector_offsets(self):
         """Get or determine detector offsets
 
-        Simulations store the offsets in the cluster object, try to extract
-        that to be used for reconstructions. If those are not available
-        use the :class:`sapphire.api.Station` object for the station number.
+        Try to extract the offsets from the provided cluster object.
+        If those are not available use the :class:`sapphire.api.Station`
+        object for the station number.
         Else determine the offsets from the event table.
 
         - if a cluster object is provided:
@@ -275,6 +257,22 @@ class ReconstructESDEvents(object):
             row['d%d' % (id + 1)] = True
         row.append()
 
+    def _get_or_create_station_object(self, station):
+            if isinstance(station, Station):
+                self.station = station
+                self.station_number = None
+                if self.verbose:
+                    print('Using object %s for metadata.' % self.station)
+            else:
+                self.station_number = station
+                cluster = HiSPARCStations([station],
+                                          force_fresh=self.force_fresh,
+                                          force_stale=self.force_stale)
+                self.station = cluster.get_station(station)
+                if self.verbose:
+                    print('Constructed object %s from public database.'
+                          % self.station)
+
 
 class ReconstructESDEventsFromSource(ReconstructESDEvents):
 
@@ -324,6 +322,50 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
             warnings.warn('Unable to store station object, to large for HDF.')
 
 
+class ReconstructSimulatedEvents(ReconstructESDEvents):
+    """Reconstruct simulated events from single stations
+
+    Simulated events use simulated meta-data (e.g. timing offsets)
+    which are stored as a :class:`~sapphire.clusters.BaseCluster` object
+    The object is stored as an node attribute of '/coincidences' in the
+    HDF5 file. This class will try to read that object and use it's meta-data
+    in reconstructions.
+
+    The station number must match the station number in the stored object.
+
+    Example usage::
+
+        >>> import tables
+        >>> from sapphire import ReconstructESDEvents
+
+        >>> data = tables.open_file('simulation.h5', 'a')
+        >>> station_path = '/cluster_simulations/station_506'
+        >>> rec = ReconstructESDEvents(data, station_path, 506, overwrite=True)
+        >>> rec.reconstruct_and_store()
+    """
+
+    def _get_or_create_station_object(self, station):
+        """Read object from HDF5 file."""
+
+        if isinstance(station, Station):
+            self.station = station
+            self.station_number = None
+            if self.verbose:
+                print('Using object %s for metadata.' % self.station)
+        else:
+            self.station_number = station
+            try:
+                cluster = self.data.get_node_attr('/coincidences', 'cluster')
+                self.station = cluster.get_station(station)
+                if self.station is None:
+                    raise RuntimeError('Station %d not found in cluster'
+                                       ' object.' % self.station_number)
+                if self.verbose:
+                    print('Read object %s from datafile.' % self.station)
+            except (tables.NoSuchNodeError, AttributeError):
+                raise RuntimeError('Unable to read cluster object from HDF')
+
+
 class ReconstructESDCoincidences(object):
 
     """Reconstruct coincidences, e.g. event between multiple stations
@@ -366,24 +408,7 @@ class ReconstructESDCoincidences(object):
         self.offsets = {}
 
         self.cq = CoincidenceQuery(data, self.coincidences_group)
-        if cluster is None:
-            try:
-                self.cluster = self.data.get_node_attr(self.coincidences_group,
-                                                       'cluster')
-                if self.verbose:
-                    print('Read cluster %s from datafile.' % self.cluster)
-            except AttributeError:
-                s_active = self._get_active_stations()
-                self.cluster = HiSPARCStations(s_active,
-                                               force_fresh=force_fresh,
-                                               force_stale=force_stale)
-                if self.verbose:
-                    print('Constructed cluster %s from public database.'
-                          % self.cluster)
-        else:
-            self.cluster = cluster
-            if self.verbose:
-                print('Using cluster %s for metadata.' % self.cluster)
+        self.cluster = self._get_or_create_cluster_object(cluster)
 
         self.direction = CoincidenceDirectionReconstruction(self.cluster)
         self.core = CoincidenceCoreReconstruction(self.cluster)
@@ -466,10 +491,10 @@ class ReconstructESDCoincidences(object):
     def get_station_timing_offsets(self):
         """Construct a dict of :class:`~sapphire.api.Station` objects
 
-        Simulations store the offsets in the cluster object, try to extract
-        that into a dictionary, to be used by the reconstructions.
-        If the data is not from simulations create an
-        :class:`~sapphire.api.Station` object for each station in the cluster.
+        Try to extract offsets from provided cluster objects into a dictionary,
+        to be used by the reconstructions.
+        If the cluster is not available create a :class:`~sapphire.api.Station`
+        object for each station in the cluster.
 
         """
         try:
@@ -525,6 +550,24 @@ class ReconstructESDCoincidences(object):
             row['s%d' % number] = True
 
         row.append()
+
+    def _get_or_create_cluster_object(self, cluster):
+        """Create cluster object from public database"""
+
+        if cluster is None:
+            s_active = self._get_active_stations()
+            cluster = HiSPARCStations(s_active,
+                                      force_fresh=self.force_fresh,
+                                      force_stale=self.force_stale)
+            if self.verbose:
+                print('Constructed cluster %s from public database.'
+                      % self.cluster)
+            return cluster
+        else:
+            # TODO: check cluster object isinstance
+            if self.verbose:
+                print('Using cluster %s for metadata.' % self.cluster)
+            return cluster
 
     def _get_active_stations(self):
         """Return station numbers with non-empty event table in datafile"""
@@ -595,3 +638,41 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
             self.reconstructions._v_attrs.cluster = self.cluster
         except tables.HDF5ExtError:
             warnings.warn('Unable to store cluster object, to large for HDF.')
+
+
+class ReconstructSimulatedCoincidence(ReconstructESDCoincidences):
+    """Reconstruct simulated coincidences.
+
+    Simulated coincidences use simulated meta-data (e.g. timing offsets)
+    which are stored as a :class:`~sapphire.clusters.BaseCluster` object
+    The object is stored as an node attribute of '/coincidences' in the
+    HDF5 file. This class will try to read that object and use it's meta-data
+    in reconstructions.
+
+    Example usage::
+
+        >>> import tables
+        >>> from sapphire import ReconstructSimulatedCoincidences
+
+        >>> data = tables.open_file('simulated.h5', 'a')
+        >>> rec = ReconstructSimulatedCoincidences(data, overwrite=True)
+        >>> rec.reconstruct_and_store()
+
+    """
+    def _get_or_create_cluster_object(self, cluster):
+        """Read cluster object from HDF5 file"""
+
+        if cluster is None:
+            try:
+                cluster = self.data.get_node_attr(self.coincidences_group,
+                                                  'cluster')
+                if self.verbose:
+                    print('Read cluster %s from datafile.' % self.cluster)
+                return cluster
+            except (tables.NoSuchNodeError, AttributeError):
+                raise RuntimeError('Unable to read cluster object from HDF')
+        else:
+            # TODO: check cluster object
+            if self.verbose:
+                print('Using cluster %s for metadata.' % self.cluster)
+            return cluster
