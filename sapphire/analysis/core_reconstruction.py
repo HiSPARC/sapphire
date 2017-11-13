@@ -544,18 +544,18 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
                     xstations, ystations, xtry, ytry)
                 rho = a.calculate_ldf_value(r, angle)
 
-                mmdivl = 0.
+                mmdivk = 0.
                 m = 0.
-                l = 0.
+                k = 0.
 
                 for i, j in zip(p, rho):
-                    mmdivl += 1. * i * i / j
+                    mmdivk += 1. * i * i / j
                     m += i
-                    l += j
+                    k += j
 
-                sizefactor = sqrt(mmdivl / l)
+                sizefactor = sqrt(mmdivk / k)
                 with warnings.catch_warnings(record=True):
-                    chi2 = 2. * (sizefactor * l - m)
+                    chi2 = 2. * (sizefactor * k - m)
                 if chi2 < chi2best:
                     factorbest = sizefactor
                     xbest = xtry
