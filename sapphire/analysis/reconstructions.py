@@ -640,7 +640,7 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
             warnings.warn('Unable to store cluster object, to large for HDF.')
 
 
-class ReconstructSimulatedCoincidence(ReconstructESDCoincidences):
+class ReconstructSimulatedCoincidences(ReconstructESDCoincidences):
     """Reconstruct simulated coincidences.
 
     Simulated coincidences use simulated meta-data (e.g. timing offsets)

@@ -367,7 +367,7 @@ class ReconstructESDCoincidencesFromSourceTest(ReconstructESDCoincidencesTest):
         pass
 
 
-class ReconstructSimulatedCoincidenceTest(unittest.TestCase):
+class ReconstructSimulatedCoincidencesTest(unittest.TestCase):
 
     def setUp(self):
         self.data = MagicMock()
@@ -375,7 +375,7 @@ class ReconstructSimulatedCoincidenceTest(unittest.TestCase):
     @patch.object(reconstructions, 'CoincidenceQuery')
     def test_cluster_is_object(self, mock_cq):
         cluster = MagicMock()
-        rec = reconstructions.ReconstructSimulatedCoincidence(
+        rec = reconstructions.ReconstructSimulatedCoincidences(
             self.data, sentinel.coin_group, overwrite=sentinel.overwrite,
             progress=sentinel.progress, verbose=False,
             destination=sentinel.destination, cluster=cluster)
@@ -384,7 +384,7 @@ class ReconstructSimulatedCoincidenceTest(unittest.TestCase):
     def test_read_object_from_hdf5(self):
         fn = self.get_testdata_path(TEST_DATA_FILE)
         self.data = tables.open_file(fn, 'r')
-        rec = reconstructions.ReconstructSimulatedCoincidence(self.data)
+        rec = reconstructions.ReconstructSimulatedCoincidences(self.data)
 
         # isinstance does not work on classes that are read from pickles.
         self.assertEqual(rec.cluster.stations[0].station_id, 0)
