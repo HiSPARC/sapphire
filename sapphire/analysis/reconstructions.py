@@ -576,12 +576,11 @@ class ReconstructESDCoincidences(object):
             if self.verbose:
                 print('Constructed cluster %s from public database.'
                       % self.cluster)
-            return cluster
         else:
             # TODO: check cluster object isinstance
             if self.verbose:
                 print('Using cluster %s for metadata.' % self.cluster)
-            return cluster
+        return cluster
 
     def _get_active_stations(self):
         """Return station numbers with non-empty event table in datafile"""
@@ -696,11 +695,10 @@ class ReconstructSimulatedCoincidences(ReconstructESDCoincidences):
                                                   'cluster')
                 if self.verbose:
                     print('Read cluster %s from datafile.' % self.cluster)
-                return cluster
             except (tables.NoSuchNodeError, AttributeError):
                 raise RuntimeError('Unable to read cluster object from HDF')
         else:
             # TODO: check cluster object
             if self.verbose:
                 print('Using cluster %s for metadata.' % self.cluster)
-            return cluster
+        return cluster
