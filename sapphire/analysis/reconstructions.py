@@ -323,6 +323,7 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
 
 
 class ReconstructSimulatedEvents(ReconstructESDEvents):
+
     """Reconstruct simulated events from single stations
 
     Simulated events use simulated meta-data (e.g. timing offsets)
@@ -360,7 +361,6 @@ class ReconstructSimulatedEvents(ReconstructESDEvents):
             an :class:`~sapphire.clusters.Station` object.
 
         """
-
         if isinstance(station, Station):
             self.station = station
             self.station_number = None
@@ -654,6 +654,7 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
 
 
 class ReconstructSimulatedCoincidences(ReconstructESDCoincidences):
+
     """Reconstruct simulated coincidences.
 
     Simulated coincidences use simulated meta-data (e.g. timing offsets)
@@ -672,6 +673,7 @@ class ReconstructSimulatedCoincidences(ReconstructESDCoincidences):
         >>> rec.reconstruct_and_store()
 
     """
+
     def _get_or_create_cluster_object(self, cluster):
         """
         Returns a :class:`~sapphire.clusters.BaseCluster` object that
@@ -688,7 +690,6 @@ class ReconstructSimulatedCoincidences(ReconstructESDCoincidences):
             `None`.
 
         """
-
         if cluster is None:
             try:
                 cluster = self.data.get_node_attr(self.coincidences_group,
