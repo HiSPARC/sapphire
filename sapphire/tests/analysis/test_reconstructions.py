@@ -1,8 +1,12 @@
+import os
 import unittest
 
 from mock import sentinel, MagicMock, patch
 
+import tables
 from sapphire.analysis import reconstructions
+
+TEST_DATA_FILE = '../simulations/test_data/groundparticles_sim.h5'
 
 
 class ReconstructESDEventsTest(unittest.TestCase):
@@ -154,6 +158,43 @@ class ReconstructESDEventsFromSourceTest(ReconstructESDEventsTest):
     @unittest.skip('WIP')
     def test_prepare_output_existing(self):
         pass
+
+
+class ReconstructSimulatedEventsTest(unittest.TestCase):
+
+    def setUp(self):
+        self.data = None
+
+    def tearDown(self):
+        if isinstance(self.data, tables.file.File):
+            self.data.close()
+
+    def test_station_is_object(self):
+        self.data = MagicMock()
+        station = MagicMock(spec=reconstructions.Station)
+        rec = reconstructions.ReconstructSimulatedEvents(
+            self.data, sentinel.station_group, station,
+            overwrite=sentinel.overwrite, progress=sentinel.progress,
+            verbose=False, destination=sentinel.destination)
+        self.assertEqual(rec.station, station)
+
+    def test_read_object_from_hdf5(self):
+        fn = self.get_testdata_path(TEST_DATA_FILE)
+        self.data = tables.open_file(fn, 'r')
+        station_group = '/cluster_simulations/station_0'
+        rec = reconstructions.ReconstructSimulatedEvents(
+            self.data, station_group, 0)
+
+        # isinstance does not work on classes that are read from pickles.
+        self.assertEqual(rec.station.station_id, 0)
+
+        with self.assertRaises(RuntimeError):
+            rec = reconstructions.ReconstructSimulatedEvents(
+                self.data, station_group, -999)
+
+    def get_testdata_path(self, fn):
+        dir_path = os.path.dirname(__file__)
+        return os.path.join(dir_path, fn)
 
 
 class ReconstructESDCoincidencesTest(unittest.TestCase):
@@ -324,6 +365,37 @@ class ReconstructESDCoincidencesFromSourceTest(ReconstructESDCoincidencesTest):
     @unittest.skip('WIP')
     def test_prepare_output_columns(self):
         pass
+
+
+class ReconstructSimulatedCoincidencesTest(unittest.TestCase):
+
+    def setUp(self):
+        self.data = MagicMock()
+
+    def tearDown(self):
+        if isinstance(self.data, tables.file.File):
+            self.data.close()
+
+    @patch.object(reconstructions, 'CoincidenceQuery')
+    def test_cluster_is_object(self, mock_cq):
+        cluster = MagicMock()
+        rec = reconstructions.ReconstructSimulatedCoincidences(
+            self.data, sentinel.coin_group, overwrite=sentinel.overwrite,
+            progress=sentinel.progress, verbose=False,
+            destination=sentinel.destination, cluster=cluster)
+        self.assertEqual(rec.cluster, cluster)
+
+    def test_read_object_from_hdf5(self):
+        fn = self.get_testdata_path(TEST_DATA_FILE)
+        self.data = tables.open_file(fn, 'r')
+        rec = reconstructions.ReconstructSimulatedCoincidences(self.data)
+
+        # isinstance does not work on classes that are read from pickles.
+        self.assertEqual(rec.cluster.stations[0].station_id, 0)
+
+    def get_testdata_path(self, fn):
+        dir_path = os.path.dirname(__file__)
+        return os.path.join(dir_path, fn)
 
 
 if __name__ == '__main__':
