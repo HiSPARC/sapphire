@@ -90,13 +90,16 @@ from .corsika.corsika_queries import CorsikaQuery
 from .esd import (quick_download, load_data, download_data, download_lightning,
                   download_coincidences)
 from .simulations.groundparticles import (GroundParticlesSimulation,
-                                          MultipleGroundParticlesSimulation)
+                                          GroundParticlesGEANT4Simulation,
+                                          MultipleGroundParticlesSimulation,
+                                          MultipleGroundParticlesGEANT4Simulation,
+                                          RandomRadiiGEANT4Simulation)
 from .simulations.ldf import KascadeLdfSimulation, NkgLdfSimulation
 from .simulations.showerfront import FlatFrontSimulation, ConeFrontSimulation
 from .tests import run_tests
 from .transformations.celestial import zenithazimuth_to_equatorial
 from .transformations.clock import gps_to_datetime, datetime_to_gps
-from .version import __version__  # noqa
+#from .version import __version__  # noqa
 
 __all__ = ['analysis',
            'api',
@@ -130,7 +133,8 @@ __all__ = ['analysis',
            'CorsikaQuery',
            'quick_download', 'load_data', 'download_data',
            'download_lightning', 'download_coincidences',
-           'GroundParticlesSimulation', 'MultipleGroundParticlesSimulation',
+           'GroundParticlesSimulation', 'GroundParticlesGEANT4Simulation',
+           'MultipleGroundParticlesSimulation', 'MultipleGroundParticlesGEANT4Simulation','RandomRadiiGEANT4Simulation'
            'KascadeLdfSimulation', 'NkgLdfSimulation',
            'FlatFrontSimulation', 'ConeFrontSimulation',
            'run_tests',

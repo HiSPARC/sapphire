@@ -39,9 +39,9 @@ from ..utils import pbar
 from .. import qsub
 
 
-TEMPDIR = '/data/hisparc/corsika/running/'
-DATADIR = '/data/hisparc/corsika/data/'
-FAILDIR = '/data/hisparc/corsika/failed/'
+TEMPDIR = '/data/hisparc/kaspervd/corsika_low_energy_cuts/running/'
+DATADIR = '/dcache/hisparc/kaspervd/corsika_low_energy_cuts/data/'
+FAILDIR = '/dcache/hisparc/kaspervd/corsika_low_energy_cuts/failed/'
 CORSIKADIR = '/data/hisparc/corsika/corsika-74000/run/'
 INPUT_TEMPLATE = textwrap.dedent("""\
     RUNNR     0                        run number
@@ -65,7 +65,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     ELMFLG    T   T                    em. interaction flags (NKG,EGS)
     STEPFC    1.0                      mult. scattering step length fact.
     RADNKG    1000.E2                  outer radius for NKG lat.dens.distr. (cm)
-    ECUTS     0.3  0.3  0.003  0.003   energy cuts for particles (GeV, hadrons, muons, electrons, photons)
+    ECUTS     0.05  0.01  0.00005  0.00005   energy cuts for particles (GeV, hadrons, muons, electrons, photons)
     LONGI     T  10.  T  T             longit.distr. & step size & fit & out
     MUMULT    T                        muon multiple scattering angle
     MUADDI    F                        additional info for muons
@@ -76,7 +76,7 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     DIRECT    ./                       output directory
     USER      hisparc                  user
     DEBUG     F  6  F  1000000         debug flag and log.unit for out
-    EXIT                               terminates input""")  # noqa: E501
+    EXIT                               terminates input""")
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
 
@@ -260,9 +260,8 @@ class CorsikaBatch(object):
         particle = particles.name(self.particle)
         azimuth = self.phi - 90
         return ('%s(energy=%r, particle=%r, zenith=%r, azimuth=%r, queue=%r, '
-                'corsika=%r)' %
-                (self.__class__.__name__, energy, particle, self.theta,
-                 azimuth, self.queue, self.corsika))
+                'corsika=%r)' % (self.__class__.__name__, energy, particle,
+                                 self.theta, azimuth, self.queue, self.corsika))
 
 
 def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
@@ -321,9 +320,9 @@ def main():
                                          "or iron)")
     parser.add_argument('zenith', metavar='zenith',
                         help="zenith angle of primary particle in range 0..60,"
-                             " in steps of 7.5 [degrees]",
+                             " in steps of 3.75 [degrees]",
                         type=float,
-                        choices=[0, 7.5, 15, 22.5, 30, 37.5, 45, 52.5, 60])
+                        choices=[0,3.75,7.5,11.25,15,18.75,22.5,26.25,30,33.75,37.5,41.25,45,48.75,52.5,56.25,60])
     parser.add_argument('-a', '--azimuth', metavar='angle',
                         help="azimuth angle of primary particle in range "
                              "0..315, in steps of 45 [degrees]",

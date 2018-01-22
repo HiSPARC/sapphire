@@ -80,13 +80,46 @@ class BaseSimulation(object):
         for (shower_id, shower_parameters) in enumerate(
                 self.generate_shower_parameters()):
 
+            chosen_energy = np.log10( shower_parameters['energy'] )
+            chosen_core_pos = shower_parameters['core_pos']
+            chosen_radius = np.sqrt( chosen_core_pos[0]**2. + chosen_core_pos[1]**2. )
+
+            if (chosen_energy < (12.5 + 0.1)) and (chosen_energy > (12.5 - 0.1)) and chosen_radius > 50:
+                continue
+            if (chosen_energy < (13 + 0.1)) and (chosen_energy > (13 - 0.1)) and chosen_radius > 50:
+                continue
+            if (chosen_energy < (13.5 + 0.1)) and (chosen_energy > (13.5 - 0.1)) and chosen_radius > 65:
+                continue
+            if (chosen_energy < (14 + 0.1)) and (chosen_energy > (14 - 0.1)) and chosen_radius > 75:
+                continue
+            if (chosen_energy < (14.5 + 0.1)) and (chosen_energy > (14.5 - 0.1)) and chosen_radius > 110:
+                continue
+            if (chosen_energy < (15 + 0.1)) and (chosen_energy > (15 - 0.1)) and chosen_radius > 150:
+                continue
+            if (chosen_energy < (15.5 + 0.1)) and (chosen_energy > (15.5 - 0.1)) and chosen_radius > 250:
+                continue
+            if (chosen_energy < (16 + 0.1)) and (chosen_energy > (16 - 0.1)) and chosen_radius > 350:
+                continue
+            if (chosen_energy < (16.5 + 0.1)) and (chosen_energy > (16.5 - 0.1)) and chosen_radius > 500:
+                continue
+            """
+            if (chosen_energy < (17 + 0.1)) and (chosen_energy > (17 - 0.1)) and chosen_radius > 600:
+                continue
+            if (chosen_energy < (17.5 + 0.1)) and (chosen_energy > (17.5 - 0.1)) and chosen_radius > 1000:
+                continue
+            if (chosen_energy < (18 + 0.1)) and (chosen_energy > (18 - 0.1)) and chosen_radius > 1000:
+                continue
+            """
+            #print(chosen_energy, chosen_radius)
+
             station_events = self.simulate_events_for_shower(shower_parameters)
-            self.store_coincidence(shower_id, shower_parameters,
-                                   station_events)
+            # No need to store coincidences of a cluster containing only one station
+            if len(self.cluster.stations) > 1:
+                self.store_coincidence(shower_id, shower_parameters,
+                                       station_events)
 
     def generate_shower_parameters(self):
         """Generate shower parameters like core position, energy, etc."""
-
         shower_parameters = {'core_pos': (None, None),
                              'zenith': None,
                              'azimuth': None,
@@ -114,7 +147,6 @@ class BaseSimulation(object):
 
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
-
         detector_observables = self.simulate_all_detectors(
             station.detectors, shower_parameters)
         has_triggered = self.simulate_trigger(detector_observables)
@@ -122,7 +154,6 @@ class BaseSimulation(object):
             self.process_detector_observables(detector_observables)
         station_observables = self.simulate_gps(station_observables,
                                                 shower_parameters, station)
-
         return has_triggered, station_observables
 
     def simulate_all_detectors(self, detectors, shower_parameters):
@@ -149,8 +180,8 @@ class BaseSimulation(object):
             detector) and 't' (time of arrival of first detected particle).
 
         """
-        # implement this!
-        observables = {'n': 0., 't': -999}
+        observables = {'n': 0, 'n_muons': 0, 'n_electrons': 0, 'n_gammas': 0,
+                           't': -999, 'integrals': 0.}
 
         return observables
 
@@ -181,14 +212,22 @@ class BaseSimulation(object):
 
         """
         station_observables = {'pulseheights': 4 * [-1.],
-                               'integrals': 4 * [-1.]}
+                               'integrals': 4 * [-1.],
+                               'integrals_muon': 4 * [-1.],
+                               'integrals_electron': 4 * [-1.],
+                               'integrals_gamma': 4 * [-1.],
+                               'pulseheights_muon': 4 * [-1.],
+                               'pulseheights_electron': 4 * [-1.],
+                               'pulseheights_gamma': 4 * [-1.]}
 
         for detector_id, observables in enumerate(detector_observables, 1):
             for key, value in iteritems(observables):
-                if key in ['n', 't']:
+                if key in ['n', 'n_muons', 'n_electrons', 'n_gammas', 't']:
                     key = key + str(detector_id)
                     station_observables[key] = value
-                elif key in ['pulseheights', 'integrals']:
+                elif key in ['pulseheights', 'integrals', 'integrals_muon','integrals_electron',
+                             'integrals_gamma', 'pulseheights_muon', 'pulseheights_electron',
+                             'pulseheights_gamma']:
                     idx = detector_id - 1
                     station_observables[key][idx] = value
 
@@ -309,6 +348,32 @@ class BaseSimulation(object):
                                                    'station_%d' %
                                                    station.number)
             description = ProcessEvents.processed_events_description
+            # Add to this description some simulation-only parameters
+            description["n_muons1"] = tables.Float32Col(shape=(), dflt=-1.0, pos=22)
+            description["n_muons2"] = tables.Float32Col(shape=(), dflt=-1.0, pos=23)
+            description["n_muons3"] = tables.Float32Col(shape=(), dflt=-1.0, pos=24)
+            description["n_muons4"] = tables.Float32Col(shape=(), dflt=-1.0, pos=25)
+            description["n_electrons1"] = tables.Float32Col(shape=(), dflt=-1.0, pos=26)
+            description["n_electrons2"] = tables.Float32Col(shape=(), dflt=-1.0, pos=27)
+            description["n_electrons3"] = tables.Float32Col(shape=(), dflt=-1.0, pos=28)
+            description["n_electrons4"] = tables.Float32Col(shape=(), dflt=-1.0, pos=29)
+            description["n_gammas1"] = tables.Float32Col(shape=(), dflt=-1.0, pos=30)         
+            description["n_gammas2"] = tables.Float32Col(shape=(), dflt=-1.0, pos=31)
+            description["n_gammas3"] = tables.Float32Col(shape=(), dflt=-1.0, pos=32)
+            description["n_gammas4"] = tables.Float32Col(shape=(), dflt=-1.0, pos=33)
+            description["integrals_muon"] = tables.Int32Col(shape=4, dflt=-1.0, pos=34)
+            description["integrals_electron"] = tables.Int32Col(shape=4, dflt=-1.0, pos=35)
+            description["integrals_gamma"] = tables.Int32Col(shape=4, dflt=-1.0, pos=36)
+            description["shower_energy"] = tables.Float32Col(shape=(), dflt=-1.0, pos=37)
+            description["zenith"] = tables.Float32Col(shape=(), dflt=-1.0, pos=38)
+            description["azimuth"] = tables.Float32Col(shape=(), dflt=-1.0, pos=39)
+            description["core_distance"] = tables.Float32Col(shape=(), dflt=-1.0, pos=40)
+            description["cr_particle"] = tables.Float32Col(shape=(), dflt=-1.0, pos=41)
+            description["pulseheights_muon"] = tables.Int32Col(shape=4, dflt=-1.0, pos=42)
+            description["pulseheights_electron"] = tables.Int32Col(shape=4, dflt=-1.0, pos=43)
+            description["pulseheights_gamma"] = tables.Int32Col(shape=4, dflt=-1.0, pos=44)
+
+
             self.data.create_table(station_group, 'events', description,
                                    expectedrows=self.n)
             self.station_groups.append(station_group)

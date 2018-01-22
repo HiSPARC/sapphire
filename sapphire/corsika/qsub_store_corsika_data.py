@@ -21,16 +21,18 @@ from .. import qsub
 
 
 BIN_PATH = '/data/hisparc/env/miniconda/envs/corsika/bin/'
-LOGFILE = '/data/hisparc/corsika/logs/qsub_store_corsika.log'
-DATADIR = '/data/hisparc/corsika/data'
-QUEUED_SEEDS = '/data/hisparc/corsika/queued.log'
+LOGFILE = '/data/hisparc/kaspervd/corsika_low_energy_cuts/logs/qsub_store_corsika.log'
+TMPDIR = "$TMPDIR"
+DATADIR = '/dcache/hisparc/kaspervd/corsika_low_energy_cuts/data'
+QUEUED_SEEDS = '/data/hisparc/kaspervd/corsika_low_energy_cuts/queued.log'
 SOURCE_FILE = 'DAT000000'
 DESTINATION_FILE = 'corsika.h5'
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
     umask 002
     {command}
-    touch {datadir}
+    touch {tmpdir}
+    mv {tmpdir}/{filename} {datadir}/{seeddir}
     # To alleviate Stoomboot, make sure the job is not to short.
     sleep $[ ( $RANDOM % 60 ) + 60 ]""")
 
@@ -104,7 +106,7 @@ def store_command(seed):
     """Write queued seeds to file"""
 
     source = os.path.join(DATADIR, seed, SOURCE_FILE)
-    destination = os.path.join(DATADIR, seed, DESTINATION_FILE)
+    destination = os.path.join(TMPDIR, DESTINATION_FILE)
     command = ('{bin_path}python {bin_path}store_corsika_data {source} '
                '{destination}'.format(bin_path=BIN_PATH, source=source,
                                       destination=destination))
@@ -119,7 +121,7 @@ def run(queue):
     logger.info('Getting todo list of seeds to convert.')
     seeds = get_seeds_todo()
     # seeds = filter_large_seeds(seeds)
-    n_jobs_to_submit = min(len(seeds), qsub.check_queue(queue), 50)
+    n_jobs_to_submit = min(len(seeds), qsub.check_queue(queue), 200)
     extra = ''
     if queue == 'long':
         extra += " -l walltime=96:00:00"
@@ -129,7 +131,9 @@ def run(queue):
         for _ in range(n_jobs_to_submit):
             seed = seeds.pop()
             command = store_command(seed)
-            script = SCRIPT_TEMPLATE.format(command=command, datadir=DATADIR)
+            script = SCRIPT_TEMPLATE.format(command=command, tmpdir=TMPDIR,
+                                            filename=DESTINATION_FILE,
+                                            datadir=DATADIR,seeddir=seed)
             logger.info('Submitting job for %s.' % seed)
             qsub.submit_job(script, seed, queue, extra)
             append_queued_seeds([seed])
