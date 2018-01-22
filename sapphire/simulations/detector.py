@@ -262,13 +262,14 @@ class HiSPARCSimulation(BaseSimulation):
         return np.random.uniform(-pi, pi)
 
     @classmethod
-    def generate_energy(cls, e_min=1e14, e_max=1e21, alpha=-2.75):
+    def generate_energy(cls, e_min=1e13, e_max=1e18, e_knee=3e15, alpha=-2.75, beta=-3.1):
         """Generate a random shower energy
 
         Source: http://mathworld.wolfram.com/RandomNumber.html
 
-        Simple approximation of the cosmic-ray energy spectrum. Showers
-        with higher energy occur less often, following a power law.
+        Approximation of the cosmic-ray energy spectrum including the
+        knee. Showers with higher energy occur less often, following two
+        power laws.
 
         :param e_min,e_max: Energy bounds for the distribution (in eV).
         :param alpha: Steepness of the power law distribution.
@@ -276,8 +277,16 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         x = np.random.random()
+
         a1 = alpha + 1.
         energy = (e_min ** a1 + x * (e_max ** a1 - e_min ** a1)) ** (1 / a1)
+        
+        if energy > e_knee:
+            e_min = max(e_knee, e_min)
+            x = np.random.random()
+            a2 = beta + 1.
+            energy = (e_min ** a2 + x * (e_max ** a2 - e_min ** a2)) ** (1 / a2)
+        
         return energy
 
 

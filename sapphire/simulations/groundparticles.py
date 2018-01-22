@@ -378,60 +378,64 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
             # energy of the incoming particle. This simulation creates a
             # new directory RUN_1 with a csv file containing the number of
             # photons that arrived at the PMT.
-            output = subprocess.check_output(["/user/kaspervd/Documents/repositories/diamond/20170117_geant4_simulation/HiSPARC-stbc-build/./skibox", "1", particletype,
-                                              "{}".format(particleenergy),
-                                              "{}".format(xdetcoord),
-                                              "{}".format(ydetcoord),
-                                              "-99889",#"-99893.695",
-                                              "{}".format(px),
-                                              "{}".format(py),
-                                              "{}".format(pz)])
-            #"""
-            print( "./skibox", "1", particletype,
-                                              "{}".format(particleenergy),
-                                              "{}".format(xdetcoord),
-                                              "{}".format(ydetcoord),
-                                              "-99889",
-                                              "{}".format(px),
-                                              "{}".format(py),
-                                              "{}".format(pz) )
-            #"""
+            try: # sometimes the program crashes with exit status 11
+                output = subprocess.check_output(["/user/kaspervd/Documents/repositories/diamond/20170117_geant4_simulation/HiSPARC-stbc-build/./skibox", "1", particletype,
+                                                  "{}".format(particleenergy),
+                                                  "{}".format(xdetcoord),
+                                                  "{}".format(ydetcoord),
+                                                  "-99889",#"-99893.695",
+                                                  "{}".format(px),
+                                                  "{}".format(py),
+                                                  "{}".format(pz)])
+                #"""
+                print( "./skibox", "1", particletype,
+                                                  "{}".format(particleenergy),
+                                                  "{}".format(xdetcoord),
+                                                  "{}".format(ydetcoord),
+                                                  "-99889",
+                                                  "{}".format(px),
+                                                  "{}".format(py),
+                                                  "{}".format(pz) )
+                #"""
+    
+                # Determine the number of photons that have arrived at the PMT
+                # and the time it took for the first photon to arrive at the PMT.
+                geantfile = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
+                try:
+                    photontimes = geantfile[1:,0]
+                    arrivaltime = min(photontimes)
+    
+                    # Not all particles arrive at the same time, so a trace gets
+                    # wider if there is some time between the creation of scintil.
+                    # photons. In order to achieve this add the arrival time of the
+                    # particle with respect to the first arrived particle to the
+                    # arrival times of the scint. photons created by this particle.
+                    # If there is only one particle this latency is zero.
+                    t_later_than_first = particle["t"] - t_first_interaction
+                    #print("Later than first (in ns): ",t_later_than_first)
+                    photontimes += t_later_than_first
 
-            # Determine the number of photons that have arrived at the PMT
-            # and the time it took for the first photon to arrive at the PMT.
-            geantfile = np.genfromtxt("RUN_1/outpSD.csv", delimiter=",")
-            try:
-                photontimes = geantfile[1:,0]
-                arrivaltime = min(photontimes)
+                    # Succesful interaction, keep statistics
+                    if particle_id == 1:
+                        n_gammas += 1
+                        arrived_photons_per_particle_gamma = np.append(arrived_photons_per_particle_gamma,photontimes)
+                    elif particle_id in [2, 3]:
+                        n_electrons += 1
+                        arrived_photons_per_particle_electron = np.append(arrived_photons_per_particle_electron,photontimes)
+                    elif particle_id in [5, 6]:
+                        n_muons += 1
+                        arrived_photons_per_particle_muon = np.append(arrived_photons_per_particle_muon,photontimes)
+                except:
+                    # No photons have arrived (a gamma that didn't undergo any
+                    # iteraction).
+                    photontimes = np.array([]) # empty list
+                    arrivaltime = -999
 
-                # Not all particles arrive at the same time, so a trace gets
-                # wider if there is some time between the creation of scintil.
-                # photons. In order to achieve this add the arrival time of the
-                # particle with respect to the first arrived particle to the
-                # arrival times of the scint. photons created by this particle.
-                # If there is only one particle this latency is zero.
-                t_later_than_first = particle["t"] - t_first_interaction
-                #print("Later than first (in ns): ",t_later_than_first)
-                photontimes += t_later_than_first
-
-                # Succesful interaction, keep statistics
-                if particle_id == 1:
-                    n_gammas += 1
-                    arrived_photons_per_particle_gamma = np.append(arrived_photons_per_particle_gamma,photontimes)
-                elif particle_id in [2, 3]:
-                    n_electrons += 1
-                    arrived_photons_per_particle_electron = np.append(arrived_photons_per_particle_electron,photontimes)
-                elif particle_id in [5, 6]:
-                    n_muons += 1
-                    arrived_photons_per_particle_muon = np.append(arrived_photons_per_particle_muon,photontimes)
-            except:
-                # No photons have arrived (a gamma that didn't undergo any
-                # iteraction).
-                photontimes = np.array([]) # empty list
+                # Remove the directory created by the GEANT4 simulation
+                shutil.rmtree("RUN_1")
+            except: # If the program crashed with exit status 11
+                photontimes = np.array([])
                 arrivaltime = -999
-
-            # Remove the directory created by the GEANT4 simulation
-            shutil.rmtree("RUN_1")
 
             # If multiple particles hit the detector, they are treated
             # seperately. Make lists in order to be able to add all
@@ -461,6 +465,11 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
         pulseintegral_gamma = 1e3 * abs(2.5*gamma_trace.sum())
         
         # Also determine the first arrival time
+        trigger_delay = 0
+        for i, value in enumerate(all_particles_trace):
+            if value*1e3 < -30.0:
+                trigger_delay = i * 2.5
+                break
         # If an electron was detected and a gamma without interaction, the event will be triggered but
         # the minimal arrival time will be -999 because of the non-interacting gamma. So I need to
         # correct for this. But if only a non-interacting gamma was detected I need to keep the -999
@@ -468,7 +477,7 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
         # values anyway if multiple particles hit the detector.
         if len(arrivaltimes) > 1:
             arrivaltimes = arrivaltimes[arrivaltimes > -999]
-        firstarrival = np.min(arrivaltimes)
+        firstarrival = np.min(arrivaltimes) + trigger_delay
     
         return n_muons, n_electrons, n_gammas, firstarrival, pulseintegral, \
                pulseintegral_muon, pulseintegral_electron, pulseintegral_gamma, \
@@ -1286,7 +1295,11 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         shower_zenith = closest_in_list(np.degrees(zenith),
                                         self.available_zeniths[shower_energy])
 
-        sims = self.cq.simulations(energy=shower_energy, zenith=shower_zenith)
+        azimuth = 180.0*np.random.randint(0,2)
+        shower_azimuth = closest_in_list(azimuth,self.available_azimuths)
+
+        sims = self.cq.simulations(energy=shower_energy, zenith=shower_zenith,
+                                   azimuth=shower_azimuth)
         if not len(sims):
             return None
         sim = np.random.choice(sims)
@@ -1311,7 +1324,7 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
     """
 
     # CORSIKA data location at Nikhef
-    DATA = '/dcache/hisparc/corsika/data/{seeds}/corsika.h5'
+    DATA = '/dcache/hisparc/kaspervd/corsika_low_energy_cuts/data/{seeds}/corsika.h5'
 
     def __init__(self, corsikaoverview_path, max_core_distance, min_energy,
                  max_energy, *args, **kwargs):
@@ -1335,6 +1348,9 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
                                    if min_energy <= 10 ** e <= max_energy}
         self.available_zeniths = {e: self.cq.available_parameters('zenith',
                                                                   energy=e)
+                                  for e in self.available_energies}
+        self.available_azimuths = {e: self.cq.available_parameters('azimuth',
+                                                                   energy=e)
                                   for e in self.available_energies}
 
     def finish(self):
@@ -1375,12 +1391,12 @@ class MultipleGroundParticlesGEANT4Simulation(GroundParticlesGEANT4Simulation):
 
             seeds = self.cq.seeds([sim])[0]
 
-            if self.corsika_energy < (9.9*10**14):
+            if self.corsika_energy < (1e14 - 1e10):
                 # Because of the high dcache i/o load I create, all
-                # CORSIKA simulations with an energy below log(eV) = 15 
+                # CORSIKA simulations with an energy below log(eV) = 14 
                 # were moved to a temporary directory on the stoomboot node.
                 tmpdir = os.environ["TMPDIR"]
-                localDATA = tmpdir+"/data/{seeds}/corsika.h5"
+                localDATA = tmpdir+"/{seeds}/corsika.h5"
                 #print("Load local")
 
                 with tables.open_file(localDATA.format(seeds=seeds), 'r') as data:

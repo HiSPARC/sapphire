@@ -84,29 +84,32 @@ class BaseSimulation(object):
             chosen_core_pos = shower_parameters['core_pos']
             chosen_radius = np.sqrt( chosen_core_pos[0]**2. + chosen_core_pos[1]**2. )
 
-            if (chosen_energy < (13 + 0.1)) and (chosen_energy > (13 - 0.1)) and chosen_radius > 40:
+            if (chosen_energy < (12.5 + 0.1)) and (chosen_energy > (12.5 - 0.1)) and chosen_radius > 50:
                 continue
-            if (chosen_energy < (13.5 + 0.1)) and (chosen_energy > (13.5 - 0.1)) and chosen_radius > 60:
+            if (chosen_energy < (13 + 0.1)) and (chosen_energy > (13 - 0.1)) and chosen_radius > 50:
                 continue
-            if (chosen_energy < (14 + 0.1)) and (chosen_energy > (14 - 0.1)) and chosen_radius > 70:
+            if (chosen_energy < (13.5 + 0.1)) and (chosen_energy > (13.5 - 0.1)) and chosen_radius > 65:
                 continue
-            if (chosen_energy < (14.5 + 0.1)) and (chosen_energy > (14.5 - 0.1)) and chosen_radius > 80:
+            if (chosen_energy < (14 + 0.1)) and (chosen_energy > (14 - 0.1)) and chosen_radius > 75:
                 continue
-            if (chosen_energy < (15 + 0.1)) and (chosen_energy > (15 - 0.1)) and chosen_radius > 100:
+            if (chosen_energy < (14.5 + 0.1)) and (chosen_energy > (14.5 - 0.1)) and chosen_radius > 110:
                 continue
-            if (chosen_energy < (15.5 + 0.1)) and (chosen_energy > (15.5 - 0.1)) and chosen_radius > 200:
+            if (chosen_energy < (15 + 0.1)) and (chosen_energy > (15 - 0.1)) and chosen_radius > 150:
                 continue
-            if (chosen_energy < (16 + 0.1)) and (chosen_energy > (16 - 0.1)) and chosen_radius > 250:
+            if (chosen_energy < (15.5 + 0.1)) and (chosen_energy > (15.5 - 0.1)) and chosen_radius > 250:
                 continue
-            if (chosen_energy < (16.5 + 0.1)) and (chosen_energy > (16.5 - 0.1)) and chosen_radius > 600:
+            if (chosen_energy < (16 + 0.1)) and (chosen_energy > (16 - 0.1)) and chosen_radius > 350:
                 continue
+            if (chosen_energy < (16.5 + 0.1)) and (chosen_energy > (16.5 - 0.1)) and chosen_radius > 500:
+                continue
+            """
             if (chosen_energy < (17 + 0.1)) and (chosen_energy > (17 - 0.1)) and chosen_radius > 600:
                 continue
             if (chosen_energy < (17.5 + 0.1)) and (chosen_energy > (17.5 - 0.1)) and chosen_radius > 1000:
                 continue
             if (chosen_energy < (18 + 0.1)) and (chosen_energy > (18 - 0.1)) and chosen_radius > 1000:
                 continue
-
+            """
             #print(chosen_energy, chosen_radius)
 
             station_events = self.simulate_events_for_shower(shower_parameters)
