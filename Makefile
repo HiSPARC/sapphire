@@ -3,7 +3,7 @@
 test: unittests flaketest doctest
 
 unittests:
-	coverage run --branch --source=sapphire setup.py test
+	coverage run setup.py test
 
 flaketest:
 	flake8 --exclude=sapphire/tests/ sapphire
