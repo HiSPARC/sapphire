@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 import sys
-from sapphire import corsika
 
+from sapphire import corsika
 
 cors_file = corsika.CorsikaFile('../../sapphire/tests/corsika/DAT000000')
 

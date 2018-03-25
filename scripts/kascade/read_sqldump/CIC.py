@@ -6,13 +6,15 @@
 __author__ = "thevinh"
 __date__ = "$17-sep-2009"
 
-import struct
 import datetime
+import struct
+
 from zlib import compress
+
+import EventExportValues
 
 from HiSparc2Event import HiSparc2Event
 from legacy import unpack_legacy_message
-import EventExportValues
 
 
 class CIC(HiSparc2Event):

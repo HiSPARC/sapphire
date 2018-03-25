@@ -4,14 +4,15 @@ import os
 import tempfile
 
 import tables
+
 from mock import patch
 
 import sapphire.clusters
-from sapphire.simulations.groundparticles import GroundParticlesSimulation
-from sapphire.simulations.groundparticles import GroundParticlesGammaSimulation
-from sapphire.simulations.showerfront import FlatFrontSimulation
-from sapphire.simulations.ldf import NkgLdfSimulation
 
+from sapphire.simulations.groundparticles import (GroundParticlesGammaSimulation,
+                                                  GroundParticlesSimulation)
+from sapphire.simulations.ldf import NkgLdfSimulation
+from sapphire.simulations.showerfront import FlatFrontSimulation
 
 self_path = os.path.dirname(__file__)
 test_data_path = os.path.join(self_path, 'test_data/groundparticles_sim.h5')

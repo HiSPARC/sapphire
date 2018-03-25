@@ -1,6 +1,7 @@
-from lazy import lazy
-from numpy import degrees, radians, log10
 import tables
+
+from lazy import lazy
+from numpy import degrees, log10, radians
 
 from .particles import name, particle_id
 

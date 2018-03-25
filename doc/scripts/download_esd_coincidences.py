@@ -1,5 +1,7 @@
 import datetime
+
 import tables
+
 from sapphire import esd
 
 DATAFILE = 'data.h5'

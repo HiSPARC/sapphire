@@ -1,13 +1,15 @@
 import logging
+
 from math import pi
 
-import tables
 import numpy as np
+import tables
 
-from sapphire.kascade import StoreKascadeData, KascadeCoincidences
-from sapphire.analysis import process_events
 from sapphire import clusters
-from sapphire.analysis.direction_reconstruction import KascadeDirectionReconstruction
+from sapphire.analysis import process_events
+from sapphire.analysis.direction_reconstruction import \
+    KascadeDirectionReconstruction
+from sapphire.kascade import KascadeCoincidences, StoreKascadeData
 
 
 class Master(object):

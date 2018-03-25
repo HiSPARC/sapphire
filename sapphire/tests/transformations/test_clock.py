@@ -1,6 +1,6 @@
-import unittest
 import datetime
 import random
+import unittest
 
 from sapphire.transformations import clock
 

@@ -19,8 +19,8 @@ To make the script show information about what it will do add the help flag::
 """
 import argparse
 
-from .update_local_data import update_sublevel_tsv
 from ..api import Network
+from .update_local_data import update_sublevel_tsv
 
 
 def update_additional_local_tsv(progress=True):

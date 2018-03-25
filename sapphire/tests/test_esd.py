@@ -1,18 +1,19 @@
 import os
 import unittest
 
-from mock import patch, ANY, sentinel, MagicMock
 import tables
 
-from sapphire import esd, api
-from sapphire.tests.validate_results import validate_results
+from mock import ANY, MagicMock, patch, sentinel
+
+from sapphire import api, esd
 from sapphire.tests.esd_load_data import (create_tempfile_path,
-                                          test_data_path,
-                                          test_data_coincidences_path,
-                                          perform_load_data,
-                                          perform_load_coincidences,
+                                          perform_download_coincidences,
                                           perform_esd_download_data,
-                                          perform_download_coincidences)
+                                          perform_load_coincidences,
+                                          perform_load_data,
+                                          test_data_coincidences_path,
+                                          test_data_path)
+from sapphire.tests.validate_results import validate_results
 
 
 class StaleNetwork(api.Network):

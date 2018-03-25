@@ -7,12 +7,16 @@ transformations and the new ones against pyephem.
 transformspeeds tests the speed of the new transformations
 """
 import datetime
-import matplotlib.pyplot as plt
-import numpy as np
 import random as r
 import time
+
+import numpy as np
+
+import matplotlib.pyplot as plt
+
 from sapphire.transformations import celestial, clock
 from sapphire.utils import angle_between
+
 
 def transformspeeds():
     print("Running speeds for 100.000 transformations"

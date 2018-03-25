@@ -21,16 +21,18 @@
                 td.determine_and_store_time_deltas()
 
 """
-import re
-from itertools import combinations
 import posixpath
+import re
+
+from itertools import combinations
 
 import tables
+
 from numpy import isnan
 
-from ..utils import pbar
 from ..api import Station
 from ..storage import TimeDelta
+from ..utils import pbar
 from .coincidence_queries import CoincidenceQuery
 from .event_utils import station_arrival_time
 

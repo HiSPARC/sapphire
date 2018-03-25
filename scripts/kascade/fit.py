@@ -1,7 +1,8 @@
 import tables
-from scipy.optimize import curve_fit
 
 from numpy import *
+from scipy.optimize import curve_fit
+
 from pylab import *
 
 

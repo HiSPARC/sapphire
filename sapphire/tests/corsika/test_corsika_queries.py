@@ -1,7 +1,7 @@
-import unittest
 import os
+import unittest
 
-from mock import sentinel, patch, MagicMock
+from mock import MagicMock, patch, sentinel
 
 from sapphire.corsika import corsika_queries
 

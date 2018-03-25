@@ -1,4 +1,5 @@
 #!/usr/bin/env python
 
 from sapphire.tests.esd_load_data import create_and_store_test_data
+
 create_and_store_test_data()

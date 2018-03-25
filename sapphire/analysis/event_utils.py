@@ -7,10 +7,9 @@ aware of processed events (i.e. reconstructed number of MIPs, arrival
 times and trigger time) and stations.
 
 """
+from numpy import nan, nanmean, nanmin
+
 from ..utils import ERR
-
-from numpy import nan, nanmin, nanmean
-
 
 NO_OFFSET = [0., 0., 0., 0.]
 

@@ -1,9 +1,9 @@
 import tables
 
-from pylab import *
 from numpy import *
 
 from artist import GraphArtist
+from pylab import *
 
 
 def get_front_arrival_time(sim, R, dR, theta):

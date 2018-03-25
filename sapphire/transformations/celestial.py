@@ -13,14 +13,15 @@
     Ethan van Woerkom is the author of the new transformations; contact him
     for further information.
 """
-from numpy import (arcsin, arccos, cos, sin, radians, pi, around)
-
-from ..utils import norm_angle
-from . import clock, angles
-
 import datetime
-import numpy as np
 import warnings
+
+import numpy as np
+
+from numpy import arccos, arcsin, around, cos, pi, radians, sin
+
+from . import angles, clock
+from ..utils import norm_angle
 
 
 def zenithazimuth_to_equatorial(latitude, longitude, timestamp, zenith,

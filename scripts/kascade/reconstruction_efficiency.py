@@ -1,17 +1,18 @@
 from __future__ import division
 
-import tables
 import numpy as np
-import pylab as plt
+import tables
+
 from scipy import optimize, stats
 
-from sapphire.analysis import landau
+import artist.utils
+import pylab as plt
+
+from artist import GraphArtist
 
 import utils
 
-from artist import GraphArtist
-import artist.utils
-
+from sapphire.analysis import landau
 
 RANGE_MAX = 40000
 N_BINS = 400

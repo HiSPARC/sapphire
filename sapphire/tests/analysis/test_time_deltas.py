@@ -1,13 +1,13 @@
-import unittest
-import tempfile
 import os
 import shutil
+import tempfile
+import unittest
 
 import tables
-from mock import patch, sentinel, Mock
+
+from mock import Mock, patch, sentinel
 
 from sapphire.analysis import time_deltas
-
 
 TEST_DATA_FILE = 'test_data/esd_coincidences.h5'
 

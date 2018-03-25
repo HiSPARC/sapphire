@@ -9,9 +9,8 @@ import datetime
 
 import tables
 
-from sapphire.publicdb import download_data
 from sapphire.analysis import coincidences
-
+from sapphire.publicdb import download_data
 
 STATIONS = [501, 503, 506]
 START = datetime.datetime(2013, 1, 1)

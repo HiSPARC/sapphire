@@ -19,14 +19,15 @@ To make the script show information about what it will do add the help flag::
 """
 from __future__ import print_function
 
-from json import dump, loads
-from os import path, extsep, mkdir, makedirs
-from itertools import combinations
 import argparse
 import warnings
 
+from itertools import combinations
+from json import dump, loads
+from os import extsep, makedirs, mkdir, path
+
+from ..api import API, LOCAL_BASE, SRC_BASE, Network
 from ..clusters import HiSPARCNetwork
-from ..api import API, Network, LOCAL_BASE, SRC_BASE
 from ..utils import pbar
 
 

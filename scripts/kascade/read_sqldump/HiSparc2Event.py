@@ -4,10 +4,12 @@
     can then be uploaded to the eventwarehouse.
 """
 
-import struct
 import base64
-from Event import Event
+import struct
+
 import EventExportValues
+
+from Event import Event
 
 
 class HiSparc2Event(object, Event):

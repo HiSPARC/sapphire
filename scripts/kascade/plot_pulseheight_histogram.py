@@ -1,9 +1,9 @@
 import tables
 
+from artist import GraphArtist
 from pylab import *
 
 from sapphire.analysis import landau
-from artist import GraphArtist
 
 
 def plot_pulseheight_histogram(data):

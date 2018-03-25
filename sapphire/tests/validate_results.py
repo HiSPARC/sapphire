@@ -1,8 +1,9 @@
 """Compare HDF5 output from a test to expected result"""
 
-from numpy import array, all
-from numpy.testing import assert_array_equal
 import tables
+
+from numpy import all, array
+from numpy.testing import assert_array_equal
 
 
 def validate_results(test, expected_path, actual_path):

@@ -1,5 +1,5 @@
-import tables
 import scipy
+import tables
 
 from sapphire.analysis import landau
 

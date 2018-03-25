@@ -1,5 +1,4 @@
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 # set version number and write to sapphire/version.py
 version = '1.5.1'

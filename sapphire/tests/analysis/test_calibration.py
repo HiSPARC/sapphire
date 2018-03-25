@@ -1,11 +1,13 @@
 import unittest
 import warnings
-from mock import patch, sentinel, MagicMock, Mock, call
-from datetime import datetime, date
+
+from datetime import date, datetime
 
 import six
-from numpy import isnan, nan, array, all, std
-from numpy.random import uniform, normal
+
+from mock import MagicMock, Mock, call, patch, sentinel
+from numpy import all, array, isnan, nan, std
+from numpy.random import normal, uniform
 
 from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration

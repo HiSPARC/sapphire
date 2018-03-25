@@ -12,26 +12,26 @@
     For regular use, look up :func:`download_data`.
 
 """
-from six.moves.urllib.parse import urlencode
-from six.moves.urllib.request import urlopen
-from six.moves.http_client import BadStatusLine
-from six import itervalues
-import csv
-import os.path
 import calendar
-import time
+import collections
+import csv
 import datetime
 import itertools
-import collections
+import os.path
 import re
+import time
+
 from codecs import iterdecode
 
 import tables
-from progressbar import ProgressBar, ETA, Bar, Percentage
 
-from . import api
-from . import storage
+from progressbar import ETA, Bar, Percentage, ProgressBar
+from six import itervalues
+from six.moves.http_client import BadStatusLine
+from six.moves.urllib.parse import urlencode
+from six.moves.urllib.request import urlopen
 
+from . import api, storage
 
 BASE = 'http://data.hisparc.nl/data/'
 EVENTS_URL = BASE + '{station_number:d}/events/?{query}'

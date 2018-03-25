@@ -18,14 +18,15 @@
 """
 from __future__ import division
 
-from math import sqrt, pi, sin, cos, atan2
 import warnings
+
+from math import atan2, cos, pi, sin, sqrt
 
 import numpy as np
 
-from .transformations import axes, geographic
 from . import api
-from .utils import get_active_index, distance_between
+from .transformations import axes, geographic
+from .utils import distance_between, get_active_index
 
 
 class Detector(object):

@@ -19,11 +19,11 @@ Example usage::
 """
 import warnings
 
+from numpy import arctan2, cos, log10, pi, random, sin, sqrt
 from scipy.special import gamma
-from numpy import pi, sin, cos, sqrt, random, arctan2, log10
 
-from .detector import HiSPARCSimulation, ErrorlessSimulation
 from ..utils import pbar, vector_length
+from .detector import ErrorlessSimulation, HiSPARCSimulation
 
 
 class BaseLdfSimulation(HiSPARCSimulation):

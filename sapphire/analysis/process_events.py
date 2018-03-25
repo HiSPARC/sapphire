@@ -27,21 +27,21 @@
                     proc.process_and_store_results()
 
 """
-import zlib
-
 import operator
 import os
 import warnings
+import zlib
 
-import tables
 import numpy as np
+import tables
+
 from six.moves import range, zip
 
 from ..api import Station
-from ..utils import pbar, ERR
+from ..utils import ERR, pbar
 from .find_mpv import FindMostProbableValueInSpectrum
-from .process_traces import (ADC_TIME_PER_SAMPLE, ADC_LOW_THRESHOLD,
-                             ADC_HIGH_THRESHOLD)
+from .process_traces import (ADC_HIGH_THRESHOLD, ADC_LOW_THRESHOLD,
+                             ADC_TIME_PER_SAMPLE)
 
 ADC_THRESHOLD = 20  #: Threshold for arrival times, relative to the baseline
 ADC_LIMIT = 2 ** 12

@@ -1,13 +1,12 @@
-import unittest
 import os
 import random
+import unittest
 
 import numpy as np
+
 from numpy.testing import assert_almost_equal
 
-from sapphire.simulations.detector import (HiSPARCSimulation,
-                                           ErrorlessSimulation)
-
+from sapphire.simulations.detector import ErrorlessSimulation, HiSPARCSimulation
 
 self_path = os.path.dirname(__file__)
 

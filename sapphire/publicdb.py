@@ -6,17 +6,17 @@
     :mod:`~sapphire.esd`.
 
 """
-from six.moves.xmlrpc_client import ServerProxy
-from six.moves.urllib.request import urlretrieve
 import datetime
-import tables
+import logging
 import os
 import re
 
-import logging
+import tables
+
+from six.moves.urllib.request import urlretrieve
+from six.moves.xmlrpc_client import ServerProxy
 
 from .transformations.clock import datetime_to_gps
-
 
 logger = logging.getLogger('hisparc.publicdb')
 

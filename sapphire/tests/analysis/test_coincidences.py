@@ -1,15 +1,15 @@
-import unittest
-import tempfile
 import os
 import shutil
+import tempfile
+import unittest
 
-from mock import sentinel, patch, Mock
 import tables
+
+from mock import Mock, patch, sentinel
 from numpy import uint64
 
 from sapphire.analysis import coincidences
 from sapphire.tests.validate_results import validate_results
-
 
 TEST_DATA = 'test_data/coincidences.h5'
 TEST_DATA_ESD = 'test_data/esd_coincidences.h5'

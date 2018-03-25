@@ -1,5 +1,6 @@
-import tables
 from itertools import izip
+
+import tables
 
 
 def plot_ldf_and_models(data, group):
