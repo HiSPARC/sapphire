@@ -5,14 +5,13 @@ The module contains some commonly functions and classes.
 """
 from __future__ import division
 
-from functools import wraps
 from bisect import bisect_right
 from distutils.spawn import find_executable
+from functools import wraps
 
-from numpy import floor, ceil, round, arcsin, sin, pi, sqrt
+from numpy import arcsin, ceil, floor, pi, round, sin, sqrt
+from progressbar import ETA, Bar, Percentage, ProgressBar
 from scipy.stats import norm
-from progressbar import ProgressBar, ETA, Bar, Percentage
-
 
 #: Error values used to indicate missing or bad data.
 #: Code -999 is used if the reconstruction of a quantity failed.

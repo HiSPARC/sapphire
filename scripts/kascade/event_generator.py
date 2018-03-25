@@ -3,10 +3,10 @@ import datetime
 import struct
 
 from numpy.random import randint, random
+
 import MySQLdb
 
 from sapphire.transformations import clock
-
 
 T0 = 1234567890 # 14 Feb 2009 00:31:30
 H_SHIFT = 13.18 # HiSPARC timeshift

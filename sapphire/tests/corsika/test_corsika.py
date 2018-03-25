@@ -1,9 +1,9 @@
-import unittest
 import os.path
+import unittest
+
 from math import pi
 
 from sapphire import corsika
-
 
 data_file_dir = os.path.dirname(__file__)
 DATA_FILE = os.path.join(data_file_dir, 'test_data/1_2/DAT000000')

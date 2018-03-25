@@ -1,12 +1,14 @@
-import sys
-import os.path
-import calendar
 import base64
-import tables
-import logging
+import calendar
 import datetime
+import logging
+import os.path
+import sys
+
+import tables
 
 import storage
+
 from upload_codes import eventtype_upload_codes
 
 logger = logging.getLogger('writer.store_events')

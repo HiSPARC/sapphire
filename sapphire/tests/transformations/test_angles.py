@@ -1,5 +1,6 @@
-import unittest
 import random
+import unittest
+
 from math import pi
 
 from sapphire.transformations import angles

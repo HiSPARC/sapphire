@@ -1,10 +1,9 @@
-import unittest
-import tempfile
 import os
 import subprocess
+import tempfile
+import unittest
 
-from sapphire.corsika.generate_corsika_overview import \
-    generate_corsika_overview
+from sapphire.corsika.generate_corsika_overview import generate_corsika_overview
 from sapphire.tests.validate_results import validate_results
 
 TEST_DATA_PATH = 'test_data/'

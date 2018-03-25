@@ -21,21 +21,22 @@
         Station 13005 is in cluster Bristol.
 
 """
-import logging
 import datetime
 import json
+import logging
 import warnings
-from os import path, extsep
-from six.moves.urllib.request import urlopen
-from six.moves.urllib.error import HTTPError, URLError
-from six import BytesIO
+
+from os import extsep, path
 
 from lazy import lazy
-from numpy import (genfromtxt, atleast_1d, zeros, ones, logical_and,
-                   count_nonzero, negative)
+from numpy import (atleast_1d, count_nonzero, genfromtxt, logical_and, negative,
+                   ones, zeros)
+from six import BytesIO
+from six.moves.urllib.error import HTTPError, URLError
+from six.moves.urllib.request import urlopen
 
-from .utils import get_active_index, memoize
 from .transformations.clock import process_time
+from .utils import get_active_index, memoize
 
 logger = logging.getLogger('api')
 

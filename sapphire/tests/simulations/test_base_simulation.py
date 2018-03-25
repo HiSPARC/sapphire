@@ -1,12 +1,13 @@
-from mock import sentinel, Mock, patch, MagicMock, call
 import types
 import unittest
 import warnings
 
 import tables
 
-from sapphire.simulations.base import BaseSimulation
+from mock import MagicMock, Mock, call, patch, sentinel
+
 from sapphire import storage
+from sapphire.simulations.base import BaseSimulation
 
 
 class BaseSimulationTest(unittest.TestCase):

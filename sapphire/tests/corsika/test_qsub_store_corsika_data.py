@@ -1,8 +1,7 @@
 import unittest
 
+from mock import mock_open, patch, sentinel
 from six.moves import builtins
-
-from mock import patch, sentinel, mock_open
 
 from sapphire.corsika import qsub_store_corsika_data
 

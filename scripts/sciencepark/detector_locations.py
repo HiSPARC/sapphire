@@ -1,13 +1,14 @@
 """Show Science Park detector locations on OpenStreetMap"""
 
-import pylab as plt
 import numpy as np
+
+import pylab as plt
 
 import sapphire.api
 import sapphire.clusters
 import sapphire.simulations
-from sapphire.simulations.ldf import KascadeLdf
 
+from sapphire.simulations.ldf import KascadeLdf
 
 DETECTOR_COLORS = ['black', 'r', 'g', 'b']
 

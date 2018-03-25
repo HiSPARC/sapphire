@@ -25,19 +25,20 @@
 """
 from __future__ import print_function
 
+import argparse
 import os
 import random
-import textwrap
 import subprocess
-import argparse
+import textwrap
 import warnings
-from math import modf, log10
+
+from math import log10, modf
+
 from six.moves import range
 
 from . import particles
-from ..utils import pbar
 from .. import qsub
-
+from ..utils import pbar
 
 TEMPDIR = '/data/hisparc/corsika/running/'
 DATADIR = '/data/hisparc/corsika/data/'

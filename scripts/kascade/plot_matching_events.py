@@ -1,15 +1,16 @@
-import datetime
 import calendar
+import datetime
 
 import tables
-from pylab import *
+
 from scipy.optimize import curve_fit
 
-from sapphire.kascade import KascadeCoincidences
 from artist import GraphArtist, MultiPlot
+from pylab import *
 
 import utils
 
+from sapphire.kascade import KascadeCoincidences
 
 USE_TEX = True
 

@@ -1,5 +1,5 @@
-import re
 import itertools
+import re
 import warnings
 
 import tables

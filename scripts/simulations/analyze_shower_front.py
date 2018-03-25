@@ -1,14 +1,14 @@
-import tables
 import numpy as np
-import matplotlib.pyplot as plt
+import tables
+
 from scipy.optimize import curve_fit
 from scipy.stats import scoreatpercentile
-from pylab import *
-
-import utils
 
 from artist import GraphArtist
+from pylab import *
 
+import matplotlib.pyplot as plt
+import utils
 
 USE_TEX = False
 

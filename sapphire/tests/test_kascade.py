@@ -1,12 +1,11 @@
-import unittest
-import tempfile
 import os
+import tempfile
+import unittest
 
 import tables
 
 from sapphire import kascade
 from sapphire.tests.validate_results import validate_results
-
 
 self_path = os.path.dirname(__file__)
 TEST_DATA_FILE = os.path.join(self_path, 'test_data/kascade.dat')

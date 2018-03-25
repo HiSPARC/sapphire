@@ -3,11 +3,11 @@ from __future__ import division
 import unittest
 import warnings
 
-from math import pi, sqrt, atan2
-from numpy import array, nan
-from numpy.testing import assert_array_almost_equal
+from math import atan2, pi, sqrt
 
 from mock import Mock, patch, sentinel
+from numpy import array, nan
+from numpy.testing import assert_array_almost_equal
 
 from sapphire import clusters
 

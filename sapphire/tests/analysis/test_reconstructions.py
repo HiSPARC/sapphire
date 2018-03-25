@@ -1,9 +1,10 @@
 import os
 import unittest
 
-from mock import sentinel, MagicMock, patch
-
 import tables
+
+from mock import MagicMock, patch, sentinel
+
 from sapphire.analysis import reconstructions
 
 TEST_DATA_FILE = '../simulations/test_data/groundparticles_sim.h5'

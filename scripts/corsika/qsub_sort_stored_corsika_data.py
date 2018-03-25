@@ -1,11 +1,10 @@
 """ Convert unsorted CORSIKA HDF5 to sorted HDF5 using Stoomboot"""
 
-import os
 import glob
-import textwrap
-import subprocess
 import logging
-
+import os
+import subprocess
+import textwrap
 
 QUEUE = 'generic'
 LOGFILE = '/data/hisparc/corsika/logs/qsub_sort_corsika.log'

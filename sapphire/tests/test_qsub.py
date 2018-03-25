@@ -1,8 +1,9 @@
 import unittest
+
 from itertools import cycle
 
+from mock import mock_open, patch, sentinel
 from six.moves import builtins
-from mock import patch, sentinel, mock_open
 
 from sapphire import qsub
 

@@ -17,7 +17,6 @@ import tables
 from sapphire import clusters
 from sapphire.simulations import KascadeLdfSimulation
 
-
 DATAFILE = 'data.h5'
 
 N = 10000

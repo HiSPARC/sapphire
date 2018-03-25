@@ -6,8 +6,8 @@ Trainwrecks invite typos and thus many are easily confused about
 UTC/GPS/local time.  No more!
 
 """
-import datetime
 import calendar
+import datetime
 import time
 
 

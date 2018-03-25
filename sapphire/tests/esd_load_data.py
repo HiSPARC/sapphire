@@ -1,12 +1,12 @@
+import datetime
 import os
 import tempfile
-from six.moves.urllib.request import urlretrieve
 
 import tables
-import datetime
+
+from six.moves.urllib.request import urlretrieve
 
 from sapphire import esd
-
 
 self_path = os.path.dirname(__file__)
 test_data_path = os.path.join(self_path, 'test_data/esd_load_data.h5')

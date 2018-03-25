@@ -18,12 +18,12 @@ Example usage::
 """
 from __future__ import division
 
-from math import sin, cos, tan, atan2, sqrt
+from math import atan2, cos, sin, sqrt, tan
 
 import numpy as np
 
-from .detector import HiSPARCSimulation, ErrorlessSimulation
-from ..utils import pbar, c, vector_length
+from ..utils import c, pbar, vector_length
+from .detector import ErrorlessSimulation, HiSPARCSimulation
 
 
 class FlatFrontSimulation(HiSPARCSimulation):

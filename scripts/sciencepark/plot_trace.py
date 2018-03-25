@@ -1,9 +1,9 @@
 import tables
 
+from artist import GraphArtist
 from pylab import *
 
 from hisparc.analysis.traces import get_traces
-from artist import GraphArtist
 
 
 def plot_trace(station_group, idx):

@@ -4,7 +4,7 @@
     well-known formulas.
 
 """
-from math import sin, cos, atan2, sqrt, radians, degrees
+from math import atan2, cos, degrees, radians, sin, sqrt
 
 from numpy import matrix
 

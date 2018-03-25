@@ -2,10 +2,13 @@
 from __future__ import print_function
 
 import os
-import tables
 import tempfile
-from sapphire.utils import pbar
+
 from heapq import merge
+
+import tables
+
+from sapphire.utils import pbar
 
 
 class TableMergeSort(object):

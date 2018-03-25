@@ -1,13 +1,13 @@
 import os
-import warnings
 import re
+import warnings
 
 import tables
 
 import store_aires_data
-from sapphire.simulations import GroundParticlesSimulation, QSubSimulation
-from sapphire import clusters
 
+from sapphire import clusters
+from sapphire.simulations import GroundParticlesSimulation, QSubSimulation
 
 R = 100
 N = 100000

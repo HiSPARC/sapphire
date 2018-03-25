@@ -1,17 +1,17 @@
-import unittest
-import tempfile
+import operator
 import os
 import shutil
+import tempfile
+import unittest
 import warnings
-import operator
 
 import tables
+
+from mock import Mock
 from numpy import array
 from numpy.testing import assert_array_equal
-from mock import Mock
 
 from sapphire.analysis import process_events
-
 
 TEST_DATA_FILE = 'test_data/process_events.h5'
 DATA_GROUP = '/s501'

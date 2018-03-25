@@ -23,19 +23,20 @@ from __future__ import print_function
 import os
 import warnings
 
-from six.moves import zip_longest, zip
 import tables
 
-from ..storage import ReconstructedEvent, ReconstructedCoincidence
-from ..clusters import HiSPARCStations, Station
+from six.moves import zip, zip_longest
+
 from .. import api
-from .direction_reconstruction import (EventDirectionReconstruction,
-                                       CoincidenceDirectionReconstruction)
-from .core_reconstruction import (EventCoreReconstruction,
-                                  CoincidenceCoreReconstruction)
-from .coincidence_queries import CoincidenceQuery
-from .calibration import determine_detector_timing_offsets
+from ..clusters import HiSPARCStations, Station
+from ..storage import ReconstructedCoincidence, ReconstructedEvent
 from ..utils import pbar
+from .calibration import determine_detector_timing_offsets
+from .coincidence_queries import CoincidenceQuery
+from .core_reconstruction import (CoincidenceCoreReconstruction,
+                                  EventCoreReconstruction)
+from .direction_reconstruction import (CoincidenceDirectionReconstruction,
+                                       EventDirectionReconstruction)
 
 
 class ReconstructESDEvents(object):

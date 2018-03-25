@@ -23,13 +23,13 @@ apwlib.convert
 https://github.com/adrn/apwlib
 
 """
-from time import strptime
+import calendar
 import datetime
 import math
-import calendar
 
-from . import base, angles
+from time import strptime
 
+from . import angles, base
 
 #: Dates of leap second introductions.
 LEAP_SECONDS = (('January 1, 2017', 18),

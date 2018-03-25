@@ -1,5 +1,6 @@
-import re
 import gzip
+import re
+
 import tables
 
 from CIC import CIC

@@ -1,18 +1,20 @@
-from math import sqrt
 import datetime
+import itertools
 import operator
 import os.path
-import itertools
 
-import tables
+from math import sqrt
+
 import numpy as np
-from numpy import arctan2, cos, sin, arcsin, isnan, pi
+import tables
 
+from numpy import arcsin, arctan2, cos, isnan, pi, sin
+
+from sapphire import clusters, storage
+from sapphire.analysis.direction_reconstruction import DirectionReconstruction
+from sapphire.analysis.process_events import (ProcessEvents,
+                                              ProcessEventsWithLINT)
 from sapphire.publicdb import download_data
-from sapphire.analysis.process_events import ProcessEvents, ProcessEventsWithLINT
-from sapphire.analysis.direction_reconstruction import \
-        DirectionReconstruction
-from sapphire import storage, clusters
 from sapphire.utils import pbar
 
 

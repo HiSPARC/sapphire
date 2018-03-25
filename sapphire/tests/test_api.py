@@ -1,13 +1,15 @@
 import unittest
-from datetime import date, datetime
-from time import time
-import six
-from six.moves.urllib.error import HTTPError, URLError
 import warnings
-from os import path, extsep
+
+from datetime import date, datetime
+from os import extsep, path
+from time import time
+
+import six
 
 from mock import patch, sentinel
 from numpy.testing import assert_allclose, assert_equal
+from six.moves.urllib.error import HTTPError, URLError
 
 from sapphire import api
 
