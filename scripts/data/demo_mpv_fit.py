@@ -8,10 +8,10 @@ import datetime
 import warnings
 
 import numpy as np
+
 import pylab as plt
 
-from sapphire import Network, Station, FindMostProbableValueInSpectrum
-
+from sapphire import FindMostProbableValueInSpectrum, Network, Station
 
 COLORS = ['black', 'red', 'green', 'blue']
 

@@ -1,5 +1,6 @@
 import unittest
-from math import sqrt, atan2
+
+from math import atan2, sqrt
 
 from sapphire.corsika import blocks
 

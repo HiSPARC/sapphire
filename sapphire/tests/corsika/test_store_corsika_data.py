@@ -1,7 +1,7 @@
-import unittest
-import tempfile
 import os
 import subprocess
+import tempfile
+import unittest
 
 from sapphire.corsika.store_corsika_data import store_and_sort_corsika_data
 from sapphire.tests.validate_results import validate_results

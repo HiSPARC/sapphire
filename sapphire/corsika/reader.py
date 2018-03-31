@@ -66,14 +66,16 @@
 """
 from __future__ import division
 
-from struct import unpack
-import warnings
 import os
+import warnings
+
+from struct import unpack
+
 from six.moves import range
 
-from .blocks import (RunHeader, RunEnd, EventHeader, EventEnd,
-                     ParticleData, Format, ParticleDataThin, FormatThin,
-                     particle_data, particle_data_thin)
+from .blocks import (EventEnd, EventHeader, Format, FormatThin, ParticleData,
+                     ParticleDataThin, RunEnd, RunHeader, particle_data,
+                     particle_data_thin)
 
 
 class CorsikaEvent(object):

@@ -1,16 +1,17 @@
-import unittest
-from datetime import datetime
 import logging
-import shutil
 import os
+import shutil
+import unittest
 
-from mock import sentinel, Mock, patch
+from datetime import datetime
+
 import tables
 
-from sapphire import publicdb
-from sapphire.tests.validate_results import validate_results
-from sapphire.tests.esd_load_data import create_tempfile_path
+from mock import Mock, patch, sentinel
 
+from sapphire import publicdb
+from sapphire.tests.esd_load_data import create_tempfile_path
+from sapphire.tests.validate_results import validate_results
 
 self_path = os.path.dirname(__file__)
 test_data_src_path = os.path.join(self_path, 'test_data/publicdb_src.h5')

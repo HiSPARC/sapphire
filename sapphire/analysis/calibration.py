@@ -9,17 +9,17 @@ Determine the PMT response curve to correct the detected number of MIPs.
 from __future__ import division
 
 from datetime import datetime, timedelta
-from itertools import tee, combinations, chain
+from itertools import chain, combinations, tee
+
+from numpy import (abs, arange, histogram, isnan, linspace, nan, percentile,
+                   sqrt, std, sum)
+from scipy.optimize import curve_fit
 from six.moves import zip
 
-from numpy import (arange, histogram, percentile, linspace, std, nan, isnan,
-                   sqrt, abs, sum)
-from scipy.optimize import curve_fit
-
-from ..clusters import HiSPARCStations, HiSPARCNetwork
-from ..utils import gauss, round_in_base, memoize, get_active_index, pbar, c
 from ..api import Station
+from ..clusters import HiSPARCNetwork, HiSPARCStations
 from ..transformations.clock import datetime_to_gps, gps_to_datetime
+from ..utils import c, gauss, get_active_index, memoize, pbar, round_in_base
 
 
 def determine_detector_timing_offsets(events, station=None):

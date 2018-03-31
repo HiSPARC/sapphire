@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+
 from mock import patch
 
 from sapphire.simulations import gammas

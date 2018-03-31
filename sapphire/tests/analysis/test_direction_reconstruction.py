@@ -1,8 +1,8 @@
 import unittest
 import warnings
 
-from mock import sentinel, patch, Mock, MagicMock
-from numpy import isnan, nan, pi, sqrt, arcsin, arctan, array
+from mock import MagicMock, Mock, patch, sentinel
+from numpy import arcsin, arctan, array, isnan, nan, pi, sqrt
 
 from sapphire.analysis import direction_reconstruction
 from sapphire.simulations.showerfront import ConeFront

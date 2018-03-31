@@ -1,18 +1,20 @@
 import itertools
 
 import tables
-from pylab import *
-from scipy.stats import scoreatpercentile, chisquare
-from scipy.optimize import curve_fit
 
-from sapphire import clusters
-from sapphire.analysis.direction_reconstruction import DirectionReconstruction
-from sapphire.simulations.ldf import KascadeLdf
-import utils
+from scipy.optimize import curve_fit
+from scipy.stats import chisquare, scoreatpercentile
 
 import artist
 import artist.utils
 
+from pylab import *
+
+import utils
+
+from sapphire import clusters
+from sapphire.analysis.direction_reconstruction import DirectionReconstruction
+from sapphire.simulations.ldf import KascadeLdf
 
 STATION_TIMING_ERR = 2.4
 CLUSTER_TIMING_ERR = 5.5

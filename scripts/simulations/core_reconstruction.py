@@ -1,24 +1,26 @@
 from __future__ import division
 
-import tables
-from itertools import combinations
 import os
 import sys
 
+from itertools import combinations
+
 import numpy as np
-import pylab as plt
+import tables
+
 from scipy import optimize
 from scipy.misc import comb
 from scipy.stats import scoreatpercentile
 
-from sapphire.simulations import ldf
-from sapphire import storage
-from sapphire.analysis.core_reconstruction import *
-
-import utils
+import pylab as plt
 
 from pylab import *
 
+import utils
+
+from sapphire import storage
+from sapphire.analysis.core_reconstruction import *
+from sapphire.simulations import ldf
 
 DATAFILE = 'data.h5'
 

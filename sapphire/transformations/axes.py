@@ -22,7 +22,7 @@ Compass coordinates:
 - z: height above x,y-plane.
 
 """
-from numpy import sqrt, arctan2, arccos, sin, cos, matrix, radians, degrees
+from numpy import arccos, arctan2, cos, degrees, matrix, radians, sin, sqrt
 
 
 def cartesian_to_spherical(x, y, z):

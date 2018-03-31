@@ -34,9 +34,10 @@ from __future__ import print_function
 
 import os.path
 
-import tables
 import numpy as np
-from progressbar import ProgressBar, ETA, Bar, Percentage
+import tables
+
+from progressbar import ETA, Bar, Percentage, ProgressBar
 from six.moves import range
 
 from . import process_events

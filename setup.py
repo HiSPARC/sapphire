@@ -1,5 +1,4 @@
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 # set version number and write to sapphire/version.py
 version = '1.5.1'
@@ -64,6 +63,6 @@ setup(name='hisparc-sapphire',
       install_requires=['numpy', 'scipy', 'tables>=3.3.0',
                         'progressbar2>=3.7.0', 'lazy', 'mock', 'six'],
       extras_require={
-          'dev': ['Sphinx', 'flake8', 'pep8-naming', 'coverage'],
+          'dev': ['Sphinx', 'flake8', 'pep8-naming', 'coverage', 'flake8-isort'],
           'astropy': ["astropy"]},
       test_suite="sapphire.tests",)

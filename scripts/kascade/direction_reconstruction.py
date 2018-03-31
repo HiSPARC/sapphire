@@ -1,26 +1,26 @@
 from __future__ import division
 
-import tables
-from itertools import izip
 import os.path
 
-from pylab import *
+from itertools import izip
+
+import tables
 
 from scipy import integrate
+from scipy.interpolate import spline
 from scipy.special import erf
 from scipy.stats import scoreatpercentile
-from scipy.interpolate import spline
+
+import artist.utils
+
+from artist import GraphArtist, MultiPlot
+from pylab import *
 
 import utils
 
-from sapphire.analysis.direction_reconstruction import (DirectionReconstruction,
-                                                        BinnedDirectionReconstruction)
-
 from myshowerfront import *
-
-from artist import GraphArtist, MultiPlot
-import artist.utils
-
+from sapphire.analysis.direction_reconstruction import (BinnedDirectionReconstruction,
+                                                        DirectionReconstruction)
 
 DATADIR = '../simulations/plots'
 

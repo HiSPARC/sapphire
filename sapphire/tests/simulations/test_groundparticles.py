@@ -1,15 +1,14 @@
-import unittest
 import os
+import unittest
 
-from mock import Mock, sentinel
 import six
 import tables
-from numpy import pi, sqrt, random, testing, arange
+
+from mock import Mock, sentinel
+from numpy import arange, pi, random, sqrt, testing
 
 from sapphire.clusters import SingleDiamondStation
-
 from sapphire.simulations import groundparticles
-
 
 self_path = os.path.dirname(__file__)
 

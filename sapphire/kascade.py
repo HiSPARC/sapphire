@@ -16,12 +16,13 @@ from __future__ import print_function
 
 import gzip
 import time
+
 from os.path import splitext
 
 import numpy as np
 
-from .transformations import clock
 from .storage import KascadeEvent
+from .transformations import clock
 
 
 class StoreKascadeData(object):

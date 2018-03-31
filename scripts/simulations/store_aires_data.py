@@ -5,15 +5,21 @@
     can then be used as input for the detector simulation.
 
 """
-import os, sys
-sys.path.append(os.path.expanduser('~/work/HiSPARC/software/bzr/shower'))
-import aires
-import tables
+import os
 import os.path
+import sys
+
+import tables
+
+from numpy import *
+
+import aires
 
 from sapphire.storage import ShowerParticle
 
-from numpy import *
+sys.path.append(os.path.expanduser('~/work/HiSPARC/software/bzr/shower'))
+
+
 
 DATA_FILE = 'data.h5'
 

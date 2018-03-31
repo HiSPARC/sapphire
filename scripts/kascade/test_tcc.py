@@ -1,12 +1,12 @@
-import tables
 import time
 
-from sapphire.analysis.core_reconstruction import CoreReconstruction, \
-                                                  PlotCoreReconstruction
-from sapphire.utils import pbar
+import tables
 
 import artist
 
+from sapphire.analysis.core_reconstruction import (CoreReconstruction,
+                                                   PlotCoreReconstruction)
+from sapphire.utils import pbar
 
 X, Y = 65., 20.82
 

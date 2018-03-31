@@ -8,13 +8,13 @@ Author: Javier Gonzalez
 """
 from __future__ import division
 
-import struct
 import math
+import struct
 
 import numpy
 
-from . import units
-from . import particles
+from . import particles, units
+
 try:
     from numba import jit
 except ImportError:

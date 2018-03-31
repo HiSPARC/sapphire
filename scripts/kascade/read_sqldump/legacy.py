@@ -1,6 +1,7 @@
-import struct
 import datetime
 import random
+import struct
+
 from zlib import compress
 
 

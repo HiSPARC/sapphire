@@ -1,6 +1,6 @@
 import unittest
 
-from numpy import pi, sqrt, arccos, testing, matrix
+from numpy import arccos, matrix, pi, sqrt, testing
 
 from sapphire.transformations import axes
 

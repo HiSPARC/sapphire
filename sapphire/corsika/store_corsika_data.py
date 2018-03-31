@@ -17,14 +17,15 @@
 from __future__ import print_function
 
 import argparse
-import tempfile
 import os
+import tempfile
 
 import tables
-from progressbar import ProgressBar, ETA, Bar, Percentage
 
-from .reader import CorsikaFile, CorsikaFileThin
+from progressbar import ETA, Bar, Percentage, ProgressBar
+
 from .mergesort import TableMergeSort
+from .reader import CorsikaFile, CorsikaFileThin
 
 
 class GroundParticles(tables.IsDescription):

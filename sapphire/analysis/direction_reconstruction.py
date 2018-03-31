@@ -16,22 +16,22 @@
 
 """
 import warnings
+
 from itertools import combinations
 
-from six.moves import zip_longest
-from six import itervalues
-from numpy import (nan, isnan, arcsin, arccos, arctan2, sin, cos, tan,
-                   sqrt, where, pi, inf, array, cross, dot, sum, zeros)
+from numpy import (arccos, arcsin, arctan2, array, cos, cross, dot, inf, isnan,
+                   nan, pi, sin, sqrt, sum, tan, where, zeros)
 from scipy.optimize import minimize
 from scipy.sparse.csgraph import shortest_path
+from six import itervalues
+from six.moves import zip_longest
 
-from .event_utils import (station_arrival_time, detector_arrival_time,
-                          relative_detector_arrival_times)
-from ..simulations.showerfront import CorsikaStationFront
-from ..utils import (pbar, norm_angle, c, make_relative, vector_length,
-                     floor_in_base, memoize)
 from ..api import Station
-
+from ..simulations.showerfront import CorsikaStationFront
+from ..utils import (c, floor_in_base, make_relative, memoize, norm_angle, pbar,
+                     vector_length)
+from .event_utils import (detector_arrival_time,
+                          relative_detector_arrival_times, station_arrival_time)
 
 NO_OFFSET = [0., 0., 0., 0.]
 NO_STATION_OFFSET = (0., 100.)

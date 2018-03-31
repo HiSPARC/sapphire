@@ -1,9 +1,10 @@
 """ Utility functions """
 
 import inspect
-import matplotlib.pyplot as plt
+
 import numpy as np
 
+import matplotlib.pyplot as plt
 
 __suffix = ''
 __prefix = ''

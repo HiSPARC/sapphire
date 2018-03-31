@@ -3,14 +3,15 @@
 These are some common simulations for HiSPARC detectors.
 
 """
-from math import sqrt, acos, pi, cos, sin
 import warnings
+
+from math import acos, cos, pi, sin, sqrt
 
 import numpy as np
 import tables
 
-from .base import BaseSimulation
 from ..utils import ceil_in_base
+from .base import BaseSimulation
 
 
 class HiSPARCSimulation(BaseSimulation):

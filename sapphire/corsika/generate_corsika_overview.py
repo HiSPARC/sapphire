@@ -11,16 +11,16 @@
     CORSIKA simulation results called ``corsika.h5``.
 
 """
-import os
-import glob
-import tables
-import logging
-import shutil
 import argparse
+import glob
+import logging
+import os
+import shutil
 import tempfile
 
-from ..utils import pbar
+import tables
 
+from ..utils import pbar
 
 LOGFILE = '/data/hisparc/corsika/logs/generate_overview.log'
 DATA_PATH = '/data/hisparc/corsika/data'

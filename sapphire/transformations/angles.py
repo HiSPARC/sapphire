@@ -4,7 +4,7 @@
     Degrees, radians and hours.
 
 """
-from numpy import radians, degrees
+from numpy import degrees, radians
 
 
 def hours_to_degrees(angle):

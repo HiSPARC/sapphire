@@ -20,13 +20,14 @@ Example usage::
     >>> sim.run()
 
 """
-import warnings
 import random
+import warnings
 
 import numpy as np
 import tables
 
 from six import iteritems
+
 from .. import storage
 from ..analysis.process_events import ProcessEvents
 from ..utils import pbar

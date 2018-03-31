@@ -17,14 +17,15 @@
 """
 
 import warnings
+
 from itertools import combinations
+
+from numpy import array, cos, isnan, mean, nan, sqrt
 from six.moves import zip_longest
 
-from numpy import isnan, nan, cos, sqrt, mean, array
-
-from .event_utils import station_density, detector_density
-from ..utils import pbar
 from ..simulations import ldf
+from ..utils import pbar
+from .event_utils import detector_density, station_density
 
 
 class EventCoreReconstruction(object):

@@ -1,6 +1,6 @@
 import unittest
 
-from mock import sentinel, patch, call
+from mock import call, patch, sentinel
 
 from sapphire.analysis import coincidence_queries
 

@@ -1,7 +1,8 @@
 from __future__ import division
 
-from math import sqrt, pi
 import unittest
+
+from math import pi, sqrt
 
 from sapphire import clusters
 

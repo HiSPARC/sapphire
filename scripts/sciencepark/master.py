@@ -1,23 +1,26 @@
-from math import sqrt
 import datetime
+import itertools
 import operator
 import os.path
-import itertools
 
-import tables
+from math import sqrt
+
 import numpy as np
-from numpy import arctan2, cos, sin, arcsin, isnan, pi, linspace
+import tables
+
+from numpy import arcsin, arctan2, cos, isnan, linspace, pi, sin
 from scipy.optimize import curve_fit
 from scipy.stats import norm
 
-from sapphire.publicdb import download_data
 import sapphire.analysis.coincidences
-from sapphire.analysis.process_events import ProcessEvents
-from sapphire.analysis.direction_reconstruction import \
-    DirectionReconstruction
+
+from sapphire import clusters, storage
 from sapphire.analysis.core_reconstruction import CoreReconstruction
-from sapphire import storage, clusters
+from sapphire.analysis.direction_reconstruction import DirectionReconstruction
+from sapphire.analysis.process_events import ProcessEvents
+from sapphire.publicdb import download_data
 from sapphire.utils import pbar
+
 
 class Master:
     stations = range(501, 507)

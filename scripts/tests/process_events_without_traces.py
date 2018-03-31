@@ -10,9 +10,8 @@ import datetime
 
 import tables
 
-from sapphire.publicdb import download_data
 from sapphire.analysis import process_events
-
+from sapphire.publicdb import download_data
 
 if __name__ == '__main__':
     data = tables.open_file('testdata.h5', 'a')

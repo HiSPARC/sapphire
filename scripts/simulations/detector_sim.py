@@ -10,14 +10,15 @@
 """
 from __future__ import division
 
-import tables
 import os.path
 import sys
 import textwrap
 
-import clusters
-from simulations import GroundParticlesSimulation, QSubSimulation
+import tables
 
+import clusters
+
+from simulations import GroundParticlesSimulation, QSubSimulation
 
 DATAFILE = 'data-e15.h5'
 
