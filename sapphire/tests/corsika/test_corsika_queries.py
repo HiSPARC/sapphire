@@ -105,8 +105,8 @@ class MockCorsikaQueryTest(unittest.TestCase):
         mock_perform.assert_called_with(
             '(particle_id == 3) & '
             '(abs(log10(energy) - 15.5) < 1e-4) & '
-            '(abs(zenith - 0.392699081699) < 1e-4) & '
-            '(abs(azimuth - 1.57079632679) < 1e-4)', False)
+            '(abs(zenith - 0.39269908169872414) < 1e-4) & '
+            '(abs(azimuth - 1.5707963267948966) < 1e-4)', False)
 
     def test_filter(self):
         filter = self.cq.filter('foo', 123)
