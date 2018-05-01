@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/data/hisparc/kaspervd/env/miniconda/bin/python
 
 from sapphire.corsika.generate_corsika_overview import main
 main()

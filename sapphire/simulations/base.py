@@ -83,7 +83,7 @@ class BaseSimulation(object):
             chosen_energy = np.log10( shower_parameters['energy'] )
             chosen_core_pos = shower_parameters['core_pos']
             chosen_radius = np.sqrt( chosen_core_pos[0]**2. + chosen_core_pos[1]**2. )
-
+            """
             if (chosen_energy < (12.5 + 0.1)) and (chosen_energy > (12.5 - 0.1)) and chosen_radius > 50:
                 continue
             if (chosen_energy < (13 + 0.1)) and (chosen_energy > (13 - 0.1)) and chosen_radius > 50:
@@ -102,7 +102,6 @@ class BaseSimulation(object):
                 continue
             if (chosen_energy < (16.5 + 0.1)) and (chosen_energy > (16.5 - 0.1)) and chosen_radius > 500:
                 continue
-            """
             if (chosen_energy < (17 + 0.1)) and (chosen_energy > (17 - 0.1)) and chosen_radius > 600:
                 continue
             if (chosen_energy < (17.5 + 0.1)) and (chosen_energy > (17.5 - 0.1)) and chosen_radius > 1000:

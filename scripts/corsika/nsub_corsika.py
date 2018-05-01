@@ -1,9 +1,9 @@
-""" Run CORSIKA simulations on Stoomboot
+""" Run CORSIKA simulations on NDPF 
 
     In order to quickly get a good sample of simulated showers we use the
     Nikhef computer cluster Stoomboot to run multiple jobs simultaneously.
     For this purpose a script has been written that will make this easy.
-    The :mod:`~sapphire.corsika.qsub_corsika` script can submit as many
+    The :mod:`~sapphire.corsika.nsub_corsika` script can submit as many
     jobs as you want with the parameters that you desire. It automatically
     ensures that a unique combination of seeds for the random number
     sequences are used for each simulation.
@@ -14,13 +14,13 @@
 
     The syntax for calling the script can be seen by calling its help::
 
-        $ qsub_corsika --help
+        $ nsub_corsika --help
 
     For example, running 100 showers with proton primaries of 1e16 eV
     coming in at 22.5 degrees zenith and 90 degrees azimuth on the
     standard Stoomboot queue with the default CORSIKA configuration::
 
-        $ qsub_corsika 100 16 proton 22.5 -q generic -a 90
+        $ nsub_corsika 100 16 proton 22.5 -a 90
 
 """
 from __future__ import print_function
@@ -34,16 +34,16 @@ import warnings
 from math import modf, log10
 from six.moves import range
 
-from . import particles
-from ..utils import pbar
-from .. import qsub
+import nsub
 
 
-TEMPDIR = '/data/hisparc/kaspervd/corsika_low_energy_cuts/running/'
-DATADIR = '/dcache/hisparc/kaspervd/corsika_low_energy_cuts/data/'
-FAILDIR = '/dcache/hisparc/kaspervd/corsika_low_energy_cuts/failed/'
-EPOSDIR = '/data/hisparc/corsika_new/corsika-76400/epos/'
-CORSIKADIR = '/data/hisparc/corsika_new/corsika-76400/run/'
+TEMPDIR_NDPF = '$TMPDIR'
+DATADIR_NDPF = 'gsiftp://dcache.nikhef.nl/dcache/hisparc/kaspervd/corsika_low_energy_cuts/data/'
+FAILDIR_NDPF = 'gsiftp://dcache.nikhef.nl/dcache/hisparc/kaspervd/corsika_low_energy_cuts/failed/'
+
+TEMPDIR = '/data/tunnel/user/kaspervd/'
+
+CORSIKADIR = '/data/tunnel/user/kaspervd/run/'
 INPUT_TEMPLATE = textwrap.dedent("""\
     RUNNR     0                        run number
     EVTNR     1                        number of first shower event
@@ -71,66 +71,22 @@ INPUT_TEMPLATE = textwrap.dedent("""\
     MUMULT    T                        muon multiple scattering angle
     MUADDI    F                        additional info for muons
     OBSLEV    10.E2                    observation level -maaiveld -3.7m (cm)
-    OUTFILE   ./SECONDARIES
     MAXPRT    1                        max. number of printed events
     ECTMAP    1.E4                     cut on gamma factor for printout
     DATDIR    {tablesdir}              location of the input data tables
     DIRECT    ./                       output directory
     USER      hisparc                  user
     DEBUG     F  6  F  1000000         debug flag and log.unit for out
-    EXIT                               terminates input""")  # noqa: E501
-"""
-For EPOS the input template has to be changed. Some EPOPAR lines have to be added:
-"""
-INPUT_EPOS_TEMPLATE = textwrap.dedent("""\
-    RUNNR     0                        run number
-    EVTNR     1                        number of first shower event
-    SEED      {seed1}   0   0          seed for 1. random number sequence (hadron shower)
-    SEED      {seed2}   0   0          seed for 2. random number sequence (EGS4)
-    SEED      3   0   0                seed for 3. random number sequence (Cherenkov)
-    SEED      4   0   0                seed for 4. random number sequence (IACT)
-    SEED      5   0   0                seed for 5. random number sequence (NUPRIM)
-    SEED      6   0   0                seed for 6. random number sequence (PARALLEL)
-    NSHOW     1                        number of showers to generate (MAX 1 for PARALLEL)
-    PRMPAR    {particle}               particle type of prim. particle (14=proton, 1=photon, 3=electron)
-    ERANGE    {energy_pre}E{energy_pow}  {energy_pre}E{energy_pow} energy range of primary particle (GeV)
-    ESLOPE    -2.7                     slope of primary energy spectrum (E^y)
-    THETAP    {theta}   {theta}        range of zenith angle (degree)
-    PHIP      {phi}   {phi}            range of azimuth angle, phi is direction the shower points to (degree)
-    FIXCHI    0.                       starting altitude (g/cm**2)
-    FIXHEI    0.   0                   height and target type of first interaction (cm, [1=N, 2=O, 3=Ar])
-    MAGNET    18.908 45.261            magnetic field DAin Amsterdam (uT)
-    HADFLG    0  0  0  0  0  2         flags hadr.interact.&fragmentation
-    ELMFLG    T   T                    em. interaction flags (NKG,EGS)
-    STEPFC    1.0                      mult. scattering step length fact.
-    RADNKG    1000.E2                  outer radius for NKG lat.dens.distr. (cm)
-    ECUTS     0.05  0.01  0.00005  0.00005   energy cuts for particles (GeV, hadrons, muons, electrons, photons)
-    LONGI     T  10.  T  T             longit.distr. & step size & fit & out
-    OBSLEV    10.E2                    observation level -maaiveld -3.7m (cm)
-    MUMULT    T                        muon multiple scattering angle
-    MUADDI    F                        additional info for muons
-    OUTFILE   ./SECONDARIES
-    EPOPAR input {eposdir}epos.param
-    EPOPAR fname inics {eposdir}epos.inics
-    EPOPAR fname iniev {eposdir}epos.iniev
-    EPOPAR fname initl {eposdir}epos.initl
-    EPOPAR fname inirj {eposdir}epos.inirj
-    EPOPAR fname inihy {eposdir}epos.ini1b
-    EPOPAR fname check none
-    EPOPAR fname histo none
-    EPOPAR fname data none
-    EPOPAR fname copy none
-    MAXPRT    1                        max. number of printed events
-    ECTMAP    1.E4                     cut on gamma factor for printout
-    DATDIR    {tablesdir}              location of the input data tables
-    DIRECT    ./                       output directory
-    USER      hisparc                  user
-    DEBUG     F  6  F  1000000         debug flag and log.unit for out
-    EXIT                               terminates input""")  # noqa: E501
+    EXIT                               terminates input""")
 SCRIPT_TEMPLATE = textwrap.dedent("""\
     #!/usr/bin/env bash
+    export X509_USER_CERT="/data/tunnel/user/kaspervd/x509up_u8768"
+    export X509_USER_PROXY="/data/tunnel/user/kaspervd/x509up_u8768"
 
     umask 002
+
+    cp -r {rundir} {tempdir}/{seeddir}
+    cd {tempdir}/{seeddir}
 
     # Run CORSIKA
     /usr/bin/time -o time.log {corsika} < input-hisparc > corsika-output.log
@@ -138,10 +94,12 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     # Clean up after run
     if [ $? -eq 0 ]
     then
-        mv {rundir} {datadir}
+        globus-url-copy -r -cd {tempdir}/{seeddir} {datadir}{seeddir}
+        rm -r {rundir}
         exit 0
     else
-        mv {rundir} {faildir}
+        globus-url-copy -r -cd {tempdir}/{seeddir} {faildir}{seeddir}
+        rm -r {rundir}
         exit 1
     fi""")
 
@@ -160,25 +118,20 @@ class CorsikaBatch(object):
                    common choices: 0, 7.5, 15, 22.5, 30, 37.5, 45 and 52.5.
     :param azimuth: azimuth angle of the primary particle (in degrees),
                     common choices: 0, 45, 90, 135, 180, 225, 270 and 315.
-    :param queue: choose a queue to sumbit the job to:
-                  express - max 10 minutes, max 2 jobs
-                  short - max 4 hours, max 1000 jobs
-                  generic - max 24 hours, max 500 jobs
-                  long - max 96 hours (default 48 hours), max 500 jobs
     :param corsika: name of the compiled CORSIKA executable to use:
-                    corsika76400Linux_EPOS_gheisha
-                    corsika76400Linux_QGSII_gheisha
-                    corsika76400Linux_SIBYLL_gheisha
+                    corsika74000Linux_EPOS_gheisha
+                    corsika74000Linux_QGSII_gheisha
+                    corsika74000Linux_QGSJET_gheisha
+                    corsika74000Linux_SIBYLL_gheisha
 
     """
 
-    def __init__(self, energy=16, particle='proton', zenith=22.5, azimuth=180,
-                 queue='generic', corsika='corsika76400Linux_QGSII_gheisha'):
+    def __init__(self, energy=16, particle=14, zenith=22.5, azimuth=180,
+                 corsika='corsika74000Linux_QGSII_gheisha'):
         self.energy_pre, self.energy_pow = self.corsika_energy(energy)
-        self.particle = particles.particle_id(particle)  # Store as particle id
+        self.particle = particle  # Store as particle id
         self.theta = zenith
         self.phi = (azimuth + 90) % 360  # Stored as Phi defined by CORSIKA
-        self.queue = queue
         self.corsika = corsika
         self.seed1 = None
         self.seed2 = None
@@ -212,8 +165,7 @@ class CorsikaBatch(object):
         os.umask(0o02)
 
         # Setup directories
-        taken = self.taken_seeds()
-        self.generate_random_seeds(taken)
+        self.generate_random_seeds()
         self.make_rundir()
         self.goto_rundir()
 
@@ -225,36 +177,21 @@ class CorsikaBatch(object):
         """Submit job to Stoomboot"""
 
         name = "cor_{seed1}_{seed2}".format(seed1=self.seed1, seed2=self.seed2)
-        extra = "-d {rundir}".format(rundir=self.get_rundir())
-        if self.queue == 'long':
-            extra += " -l walltime=96:00:00"
         script = self.create_script()
+        queue = "titanic"
 
-        qsub.submit_job(script, name, self.queue, extra)
+        nsub.submit_job(script, name, queue)
 
-    def taken_seeds(self):
-        """Get list of seeds already used"""
-
-        taken = os.listdir(DATADIR)
-        taken.extend(os.listdir(TEMPDIR))
-        return taken
-
-    def generate_random_seeds(self, taken):
-        """Get unused combination of two seeds for CORSIKA
-
-        :param taken: List of seed combinations already taken
-                      each is formatted like this: 'seed1_seed2'
+    def generate_random_seeds(self):
+        """Get combination of two seeds for CORSIKA
 
         """
         seed1 = random.randint(1, 900000000)
         seed2 = random.randint(1, 900000000)
         seed = "{seed1}_{seed2}".format(seed1=seed1, seed2=seed2)
-        if seed not in taken:
-            self.seed1 = seed1
-            self.seed2 = seed2
-            self.rundir = seed + '/'
-        else:
-            self.generate_random_seeds(taken)
+        self.seed1 = seed1
+        self.seed2 = seed2
+        self.rundir = seed + '/'
 
     def make_rundir(self):
         """Make the run directory"""
@@ -275,21 +212,11 @@ class CorsikaBatch(object):
         """Make CORSIKA steering file"""
 
         input_path = os.path.join(self.get_rundir(), 'input-hisparc')
-
-        if self.corsika == "corsika76400Linux_EPOS_gheisha":
-            input = INPUT_EPOS_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
-                                               particle=self.particle, phi=self.phi,
-                                               energy_pre=self.energy_pre,
-                                               energy_pow=self.energy_pow,
-                                               theta=self.theta, tablesdir=CORSIKADIR,
-                                               eposdir=EPOSDIR)
-        else:
-            input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
-                                          particle=self.particle, phi=self.phi,
-                                          energy_pre=self.energy_pre,
-                                          energy_pow=self.energy_pow,
-                                          theta=self.theta, tablesdir=CORSIKADIR)
-
+        input = INPUT_TEMPLATE.format(seed1=self.seed1, seed2=self.seed2,
+                                      particle=self.particle, phi=self.phi,
+                                      energy_pre=self.energy_pre,
+                                      energy_pow=self.energy_pow,
+                                      theta=self.theta, tablesdir=CORSIKADIR)
         with open(input_path, 'w') as input_file:
             input_file.write(input)
 
@@ -300,7 +227,8 @@ class CorsikaBatch(object):
         run_path = self.get_rundir()
 
         script = SCRIPT_TEMPLATE.format(corsika=exec_path, rundir=run_path,
-                                        datadir=DATADIR, faildir=FAILDIR)
+                                        datadir=DATADIR_NDPF, faildir=FAILDIR_NDPF,
+                                        seeddir=self.rundir, tempdir=TEMPDIR_NDPF)
         return script
 
     def copy_config(self):
@@ -316,24 +244,23 @@ class CorsikaBatch(object):
 
     def __repr__(self):
         energy = round(log10(self.energy_pre * 10 ** self.energy_pow) + 9, 1)
-        particle = particles.name(self.particle)
+        particle = self.particle
         azimuth = self.phi - 90
-        return ('%s(energy=%r, particle=%r, zenith=%r, azimuth=%r, queue=%r, '
+        return ('%s(energy=%r, particle=%r, zenith=%r, azimuth=%r, '
                 'corsika=%r)' % (self.__class__.__name__, energy, particle,
-                                 self.theta, azimuth, self.queue, self.corsika))
+                                 self.theta, azimuth, self.corsika))
 
 
-def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
+def multiple_jobs(n, energy, particle, zenith, azimuth, corsika,
                   progress=True):
     """Use this to sumbit multiple jobs to Stoomboot
 
     :param n: Number of jobs to submit
     :param energy: log10(E[eV]) energy of primary particle
-    :param particle: Particle kind (as string, see
+    :param particle: Particle kind (as particle id, see
                      :mod:`~sapphire.corsika.particles` for possibilities)
     :param zenith: Zenith angle in degrees of the primary particle
     :param azimuth: Azimuth angle in degrees of the primary particle
-    :param queue: Stoomboot queue to submit to
     :param corsika: Name of the CORSIKA executable to use
     :param progress: if True print an overview of the chosen paramters and
                      show a progressbar of the job submission progress.
@@ -347,22 +274,14 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika,
             Primary particle    {p}
             Zenith angle        {z} degrees
             Azimuth angle       {a} degrees
-            Stoomboot queue     {q}
             CORSIKA executable  {c}
-            """.format(n=n, e=energy, p=particle, z=zenith, a=azimuth, q=queue,
+            """.format(n=n, e=energy, p=particle, z=zenith, a=azimuth,
                        c=corsika)))
 
-    available_slots = qsub.check_queue(queue)
-    if available_slots <= 0:
-        raise Exception('Submitting no jobs because selected queue is full.')
-    elif available_slots < n:
-        n = available_slots
-        warnings.warn('Submitting {n} jobs because queue almost full.'
-                      .format(n=n))
 
-    for _ in pbar(range(n), show=progress):
+    for _ in range(n):
         batch = CorsikaBatch(energy=energy, particle=particle, zenith=zenith,
-                             azimuth=azimuth, queue=queue, corsika=corsika)
+                             azimuth=azimuth, corsika=corsika)
         batch.run()
 
 
@@ -388,21 +307,13 @@ def main():
                         type=int,
                         default=0,
                         choices=[0, 45, 90, 135, 180, 225, 270, 315])
-    parser.add_argument('-q', '--queue', metavar='name',
-                        help="name of the Stoomboot queue to use, choose from "
-                             "express, short, generic (default), and long",
-                        default='generic',
-                        choices=['express', 'short', 'generic', 'long'])
     parser.add_argument('-c', '--corsika', metavar='exec',
-                        help="name of the CORSIKA executable to use: "
-                             "corsika76400Linux_QGSII_gheisha, "
-                             "corsika76400Linux_SIBYLL_gheisha, "
-                             "corsika76400Linux_EPOS_gheisha",
-                        default="corsika76400Linux_QGSII_gheisha",choices=["corsika76400Linux_QGSII_gheisha","corsika76400Linux_SIBYLL_gheisha","corsika76400Linux_EPOS_gheisha"])
+                        help="name of the CORSIKA executable to use",
+                        default="corsika74000Linux_QGSII_gheisha")
     args = parser.parse_args()
 
     multiple_jobs(args.n, args.energy, args.particle, args.zenith,
-                  args.azimuth, args.queue, args.corsika)
+                  args.azimuth, args.corsika)
 
 
 if __name__ == '__main__':

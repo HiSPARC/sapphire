@@ -47,9 +47,10 @@ class Simulations(tables.IsDescription):
     n_electron = tables.Float32Col(pos=12)
     n_muon = tables.Float32Col(pos=13)
     n_hadron = tables.Float32Col(pos=14)
+    model = tables.StringCol(8,pos=15)
 
 
-def write_row(table, seeds, header, end):
+def write_row(table, seeds, header, end, model):
     """Write the information of one simulation into a row
 
     :param table: the table where the new data should be appended.
@@ -74,6 +75,7 @@ def write_row(table, seeds, header, end):
     row['n_electron'] = end.n_electrons_levels
     row['n_muon'] = end.n_muons_levels
     row['n_hadron'] = end.n_hadrons_levels
+    row['model'] = model
     row.append()
 
 
@@ -86,6 +88,24 @@ def read_seeds(simulations_table, source, seeds):
     :param seeds: directory name of a simulation, format: '{seed1}_{seed2}'.
 
     """
+    qgsii_path_old = os.path.join(source, seeds, 'corsika74000Linux_QGSII_gheisha.log')
+    qgsii_path = os.path.join(source, seeds, 'corsika76400Linux_QGSII_gheisha.log')
+    sibyll_path = os.path.join(source, seeds, 'corsika76400Linux_SIBYLL_gheisha.log')
+    epos_path = os.path.join(source, seeds, 'corsika76400Linux_EPOS_gheisha.log')
+
+    model = ''
+    if os.path.exists(qgsii_path_old):
+        model = 'QGSII'
+    if os.path.exists(qgsii_path):
+        model = 'QGSII'
+    if os.path.exists(sibyll_path):
+        model = 'SIBYLL'
+    if os.path.exists(epos_path):
+        model = 'EPOS'
+    if model == '':
+        logger.info('%19s: No hadronic interaction model log file available.' % seeds)
+        return
+
     path = os.path.join(source, seeds, 'corsika.h5')
     if not os.path.exists(path):
         logger.info('%19s: No corsika.h5 available.' % seeds)
@@ -95,7 +115,7 @@ def read_seeds(simulations_table, source, seeds):
             try:
                 header = corsika_data.get_node_attr('/', 'event_header')
                 end = corsika_data.get_node_attr('/', 'event_end')
-                write_row(simulations_table, seeds, header, end)
+                write_row(simulations_table, seeds, header, end, model)
             except AttributeError:
                 logger.info('%19s: Missing attribute (header or end).' % seeds)
     except (IOError, tables.HDF5ExtError):

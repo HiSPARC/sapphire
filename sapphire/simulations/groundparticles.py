@@ -244,19 +244,27 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
             nz = cos(shower_parameters['zenith'])
             tproj = detector.get_coordinates()[-1] / (c * nz)
             first_signal = particles['t'].min() + detector.offset - tproj
-            observables = {'n': n_muons + n_electrons + n_gammas,
-                           'n_muons': n_muons,
-                           'n_electrons': n_electrons,
-                           'n_gammas': n_gammas,
-                           't': self.simulate_adc_sampling(first_signal),
-                           'integrals': pulseintegral,
-                           'integrals_muon': pulseintegral_muon,
-                           'integrals_electron': pulseintegral_electron,
-                           'integrals_gamma': pulseintegral_gamma,
-                           'pulseheights': pulseheights,
-                           'pulseheights_muon': pulseheights_muon,
-                           'pulseheights_electron': pulseheights_electron,
-                           'pulseheights_gamma': pulseheights_gamma}
+            # If the signal is below 30 mV n_detected exists but should not
+            if n_muons + n_electrons + n_gammas == 0:
+                observables = {'n': 0, 'n_muons': 0, 'n_electrons': 0, 'n_gammas': 0,
+                           't': -999, 'integrals': 0., 'integrals_muon': 0.,
+                           'integrals_electron': 0., 'integrals_gamma': 0.,
+                           'pulseheights': 0., 'pulseheights_muon': 0.,
+                           'pulseheights_electron': 0., 'pulseheights_gamma': 0.}
+            else:
+                observables = {'n': n_muons + n_electrons + n_gammas,
+                               'n_muons': n_muons,
+                               'n_electrons': n_electrons,
+                               'n_gammas': n_gammas,
+                               't': self.simulate_adc_sampling(first_signal),
+                               'integrals': pulseintegral,
+                               'integrals_muon': pulseintegral_muon,
+                               'integrals_electron': pulseintegral_electron,
+                               'integrals_gamma': pulseintegral_gamma,
+                               'pulseheights': pulseheights,
+                               'pulseheights_muon': pulseheights_muon,
+                               'pulseheights_electron': pulseheights_electron,
+                               'pulseheights_gamma': pulseheights_gamma}
         else:
             observables = {'n': 0, 'n_muons': 0, 'n_electrons': 0, 'n_gammas': 0,
                            't': -999, 'integrals': 0., 'integrals_muon': 0.,
@@ -1490,5 +1498,7 @@ class RandomRadiiGEANT4Simulation(MultipleGroundParticlesGEANT4Simulation):
         x = r * cos(phi)
         y = r * sin(phi)
         return x, y
+
+
 
 

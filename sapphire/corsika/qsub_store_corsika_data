@@ -1,4 +1,8 @@
+#!/data/hisparc/kaspervd/env/miniconda/bin/python
+
+"""
 #!/usr/bin/env python
+"""
 
 from sapphire.corsika.qsub_store_corsika_data import main
 main()

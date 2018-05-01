@@ -104,8 +104,17 @@ class CorsikaQuery(object):
         """
         return {degrees(zenith) for zenith in set(self.sims.col('zenith'))}
 
+    @lazy
+    def all_models(self):
+        """All available models
+
+        :return: set of available simulation models.
+
+        """
+        return {m for m in set(self.sims.col('model'))}
+
     def simulations(self, particle='proton', energy=None, zenith=None,
-                    azimuth=None, iterator=False):
+                    azimuth=None, model='QGSII', iterator=False):
         """Set of available energies given the requirements
 
         :param particle: primary particle must be this kind, name of particle.
@@ -129,6 +138,11 @@ class CorsikaQuery(object):
             queries.append(self.float_filter('zenith', radians(zenith)))
         if azimuth is not None:
             queries.append(self.float_filter('azimuth', radians(azimuth)))
+        if model is not None:
+            print self.all_models
+            if model not in self.all_models:
+                raise RuntimeError('Model not available')
+            queries.append(self.filter('model', '\''+model+'\''))
         query = ' & '.join(queries)
 
         filtered_simulations = self.perform_query(query, iterator)
