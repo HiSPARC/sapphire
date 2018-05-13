@@ -7,8 +7,7 @@ import tables
 
 from sapphire import clusters
 from sapphire.analysis import process_events
-from sapphire.analysis.direction_reconstruction import \
-    KascadeDirectionReconstruction
+from sapphire.analysis.direction_reconstruction import KascadeDirectionReconstruction
 from sapphire.kascade import KascadeCoincidences, StoreKascadeData
 
 

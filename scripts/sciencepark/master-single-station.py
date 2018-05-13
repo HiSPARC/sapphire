@@ -12,8 +12,7 @@ from numpy import arcsin, arctan2, cos, isnan, pi, sin
 
 from sapphire import clusters, storage
 from sapphire.analysis.direction_reconstruction import DirectionReconstruction
-from sapphire.analysis.process_events import (ProcessEvents,
-                                              ProcessEventsWithLINT)
+from sapphire.analysis.process_events import ProcessEvents, ProcessEventsWithLINT
 from sapphire.publicdb import download_data
 from sapphire.utils import pbar
 

@@ -4,8 +4,7 @@ import tables
 
 import artist
 
-from sapphire.analysis.core_reconstruction import (CoreReconstruction,
-                                                   PlotCoreReconstruction)
+from sapphire.analysis.core_reconstruction import CoreReconstruction, PlotCoreReconstruction
 from sapphire.utils import pbar
 
 X, Y = 65., 20.82

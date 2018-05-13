@@ -11,8 +11,7 @@ from __future__ import division
 from datetime import datetime, timedelta
 from itertools import chain, combinations, tee
 
-from numpy import (abs, arange, histogram, isnan, linspace, nan, percentile,
-                   sqrt, std, sum)
+from numpy import abs, arange, histogram, isnan, linspace, nan, percentile, sqrt, std, sum
 from scipy.optimize import curve_fit
 from six.moves import zip
 
