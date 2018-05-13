@@ -24,7 +24,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
 
-    @patch.object(direction_reconstruction, 'detector_arrival_time')
+    @patch.object(direction_reconstruction.event_utils, 'detector_arrival_time')
     def test_bad_times(self, mock_detector_arrival_time):
         mock_detector_arrival_time.return_value = nan
         station = Mock()
@@ -33,7 +33,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
 
-    @patch.object(direction_reconstruction, 'detector_arrival_time')
+    @patch.object(direction_reconstruction.event_utils, 'detector_arrival_time')
     def test_reconstruct_event(self, mock_detector_arrival_time):
         mock_detector_arrival_time.return_value = 0.
         station = MagicMock()
@@ -118,7 +118,7 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         self.assertTrue(isnan(theta))
         self.assertTrue(isnan(phi))
 
-    @patch.object(direction_reconstruction, 'station_arrival_time')
+    @patch.object(direction_reconstruction.event_utils, 'station_arrival_time')
     def test_reconstruct_coincidence(self, mock_station_arrival_time):
         dirrec = self.dirrec
         mock_station_arrival_time.return_value = 0.
@@ -302,7 +302,7 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
     def setUp(self):
         self.dirrec = direction_reconstruction.CoincidenceDirectionReconstructionDetectors(sentinel.cluster)
 
-    @patch.object(direction_reconstruction, 'relative_detector_arrival_times')
+    @patch.object(direction_reconstruction.event_utils, 'relative_detector_arrival_times')
     def test_reconstruct_coincidence(self, mock_arrival_times):
         dirrec = self.dirrec
         mock_arrival_times.return_value = [0., 0., nan, nan]
