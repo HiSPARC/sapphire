@@ -26,11 +26,11 @@ from scipy.sparse.csgraph import shortest_path
 from six import itervalues
 from six.moves import zip_longest
 
+from . import event_utils
 from ..api import Station
 from ..simulations.showerfront import CorsikaStationFront
 from ..utils import (c, floor_in_base, make_relative, memoize, norm_angle,
                      pbar, vector_length)
-from . import event_utils
 
 NO_OFFSET = [0., 0., 0., 0.]
 NO_STATION_OFFSET = (0., 100.)
