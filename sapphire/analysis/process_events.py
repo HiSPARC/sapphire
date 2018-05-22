@@ -40,8 +40,7 @@ from six.moves import range, zip
 from ..api import Station
 from ..utils import ERR, pbar
 from .find_mpv import FindMostProbableValueInSpectrum
-from .process_traces import (ADC_HIGH_THRESHOLD, ADC_LOW_THRESHOLD,
-                             ADC_TIME_PER_SAMPLE)
+from .process_traces import ADC_HIGH_THRESHOLD, ADC_LOW_THRESHOLD, ADC_TIME_PER_SAMPLE
 
 ADC_THRESHOLD = 20  #: Threshold for arrival times, relative to the baseline
 ADC_LIMIT = 2 ** 12

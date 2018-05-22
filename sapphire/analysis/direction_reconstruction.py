@@ -19,19 +19,17 @@ import warnings
 
 from itertools import combinations
 
-from numpy import (arccos, arcsin, arctan2, array, cos, cross, dot, inf, isnan,
-                   nan, pi, sin, sqrt, sum, tan, where, zeros)
+from numpy import (arccos, arcsin, arctan2, array, cos, cross, dot, inf, isnan, nan, pi, sin, sqrt, sum, tan,
+                   where, zeros)
 from scipy.optimize import minimize
 from scipy.sparse.csgraph import shortest_path
 from six import itervalues
 from six.moves import zip_longest
 
+from . import event_utils
 from ..api import Station
 from ..simulations.showerfront import CorsikaStationFront
-from ..utils import (c, floor_in_base, make_relative, memoize, norm_angle, pbar,
-                     vector_length)
-from .event_utils import (detector_arrival_time,
-                          relative_detector_arrival_times, station_arrival_time)
+from ..utils import c, floor_in_base, make_relative, memoize, norm_angle, pbar, vector_length
 
 NO_OFFSET = [0., 0., 0., 0.]
 NO_STATION_OFFSET = (0., 100.)
@@ -78,7 +76,7 @@ class EventDirectionReconstruction(object):
         if isinstance(offsets, Station):
             offsets = offsets.detector_timing_offset(event['timestamp'])
         for id in detector_ids:
-            t_detector = detector_arrival_time(event, id, offsets)
+            t_detector = event_utils.detector_arrival_time(event, id, offsets)
             if not isnan(t_detector):
                 dx, dy, dz = self.station.detectors[id].get_coordinates()
                 t.append(t_detector)
@@ -180,8 +178,8 @@ class CoincidenceDirectionReconstruction(object):
                     continue
             t_off = offsets.get(station_number, NO_OFFSET)
             station = self.cluster.get_station(station_number)
-            t_first = station_arrival_time(event, ets0, offsets=t_off,
-                                           station=station)
+            t_first = event_utils.station_arrival_time(
+                event, ets0, offsets=t_off, station=station)
             if not isnan(t_first):
                 sx, sy, sz = station.calc_center_of_mass_coordinates()
                 t.append(t_first)
@@ -386,9 +384,8 @@ class CoincidenceDirectionReconstructionDetectors(
                     continue
             t_off = offsets.get(station_number, NO_OFFSET)
             station = self.cluster.get_station(station_number)
-            t_detectors = relative_detector_arrival_times(event, ets0,
-                                                          offsets=t_off,
-                                                          station=station)
+            t_detectors = event_utils.relative_detector_arrival_times(
+                event, ets0, offsets=t_off, station=station)
             for t_detector, detector in zip(t_detectors, station.detectors):
                 if not isnan(t_detector):
                     dx, dy, dz = detector.get_coordinates()

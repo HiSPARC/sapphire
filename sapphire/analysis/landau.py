@@ -14,8 +14,7 @@
 """
 import warnings
 
-from numpy import (Inf, arctan, convolve, cos, exp, interp, linspace, log, pi,
-                   sin, vectorize)
+from numpy import Inf, arctan, convolve, cos, exp, interp, linspace, log, pi, sin, vectorize
 from scipy import integrate, stats
 
 

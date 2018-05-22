@@ -19,8 +19,7 @@ from pylab import *
 import utils
 
 from myshowerfront import *
-from sapphire.analysis.direction_reconstruction import (BinnedDirectionReconstruction,
-                                                        DirectionReconstruction)
+from sapphire.analysis.direction_reconstruction import BinnedDirectionReconstruction, DirectionReconstruction
 from sapphire.utils import pbar
 
 USE_TEX = False

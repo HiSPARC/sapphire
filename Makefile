@@ -6,8 +6,7 @@ unittests:
 	coverage run setup.py test
 
 flaketest:
-	flake8 --exclude=sapphire/tests/ sapphire
-	flake8 --ignore=E501 sapphire/tests/
+	flake8 sapphire
 
 doctest:
 	sphinx-build -anW doc doc/_build/html

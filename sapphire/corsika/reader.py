@@ -73,9 +73,8 @@ from struct import unpack
 
 from six.moves import range
 
-from .blocks import (EventEnd, EventHeader, Format, FormatThin, ParticleData,
-                     ParticleDataThin, RunEnd, RunHeader, particle_data,
-                     particle_data_thin)
+from .blocks import (EventEnd, EventHeader, Format, FormatThin, ParticleData, ParticleDataThin, RunEnd,
+                     RunHeader, particle_data, particle_data_thin)
 
 
 class CorsikaEvent(object):

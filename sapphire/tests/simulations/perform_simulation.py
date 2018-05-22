@@ -9,8 +9,7 @@ from mock import patch
 
 import sapphire.clusters
 
-from sapphire.simulations.groundparticles import (GroundParticlesGammaSimulation,
-                                                  GroundParticlesSimulation)
+from sapphire.simulations.groundparticles import GroundParticlesGammaSimulation, GroundParticlesSimulation
 from sapphire.simulations.ldf import NkgLdfSimulation
 from sapphire.simulations.showerfront import FlatFrontSimulation
 

@@ -6,13 +6,9 @@ import tables
 from mock import ANY, MagicMock, patch, sentinel
 
 from sapphire import api, esd
-from sapphire.tests.esd_load_data import (create_tempfile_path,
-                                          perform_download_coincidences,
-                                          perform_esd_download_data,
-                                          perform_load_coincidences,
-                                          perform_load_data,
-                                          test_data_coincidences_path,
-                                          test_data_path)
+from sapphire.tests.esd_load_data import (create_tempfile_path, perform_download_coincidences,
+                                          perform_esd_download_data, perform_load_coincidences,
+                                          perform_load_data, test_data_coincidences_path, test_data_path)
 from sapphire.tests.validate_results import validate_results
 
 
