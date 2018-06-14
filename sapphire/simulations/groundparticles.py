@@ -26,9 +26,6 @@ from six import iteritems
 
 import numpy as np
 import tables
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
 
 from .gammas import simulate_detector_mips_gammas
 from .detector import HiSPARCSimulation, ErrorlessSimulation
@@ -138,7 +135,7 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
                 N_electron += 1
         return N_electron
 
-    def _simulateTrace(self, N, start, t_rise=7.0, t_fall=25.0, stop=300.0, GR=8.5e8):
+    def _simulateTrace(self, N, start, t_rise=7.0, t_fall=25.0, stop=300.0, Gmean=17.0e6, R = 50.0):
         """Simulate event trace
         
         :param N: Number of emitted cathode electrons
@@ -151,38 +148,21 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
         :return: trace with binned simulated data according to Leo ISBN 978-3-642-57920-2 page 190
             
         """
+        if N == 0:
+            trace = np.zeros(80)
+            return trace
         trace = []
         e = 1.6e-19 # charge electron
+        sigma = Gmean / 10
+        sigma = sigma / np.sqrt(N)
+        G = np.random.normal(Gmean, sigma) # Gains are normally distributed with sigma 10%
         for i in np.arange(0,start,2.5):
             trace.append(0)
         for i in np.arange(start,stop,2.5):
             t = np.float(i - start)
-            constant = (GR * N * e)/((t_fall - t_rise)*1e-9) # time in s instead of ns
+            constant = (G * R * N * e)/((t_fall - t_rise)*1e-9) # time in s instead of ns
             trace.append( constant * ( np.exp(-t/t_rise) - np.exp(-t/t_fall) ) )
-
         return np.array(trace)
-
-    def _nikhef_pmt_response(self, x, a=1.34858663e+01, b=2.36726084e-01, c=9.33867298e+04, d=9.17932738e-01):
-        """Simulate PMT response of a Nikhef PMT
-        
-        :param x: The input signal in Volts
-        
-        :return: The output signal in Volts
-        
-        """
-        x = -x
-        return -(x * b / ((x ** a + c) ** (1 / a)) + d * x)
-
-    def _senstech_pmt_response(self, x, a=2.73715515, b=1.41952074, c=4.13343178, d=0.14960464):
-        """Simulate PMT response of a Senstech PMT
-            
-        :param x: The input signal in Volts
-            
-        :return: The output signal in Volts
-            
-        """
-        x = -x
-        return -(x * b / ((x ** a + c) ** (1 / a)) + d * x)
 
     def _simulate_PMT(self, photontimes):
         """Simulate an entire PMT from cathode to response of PMT type
@@ -198,8 +178,7 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
             return np.array([0])
         
         # Determine how many particles arrived per 2.5 nanosecond
-        plt.clf()
-        n_phot, bin_edges, patches = plt.hist(photontimes,bins=np.linspace(0,200,81))
+        n_phot, bin_edges = np.histogram(photontimes,bins=np.linspace(0,200,81))
         t_arr = (0.5*(bin_edges[1:] + bin_edges[:-1]))-1.25
         
         # Simulate the ideal response per nanosecond and combine all single ns responses
@@ -208,14 +187,9 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
         for nphot, tarr in zip(n_phot[1:],t_arr[1:]):
             n_elec = self._simulateCathode(nphot)
             trace += self._simulateTrace(n_elec, tarr, stop=t_arr[-1]+2.5)
-        
-        # Simulate the response curve of the PMT compared to an ideal PMT
-        trace_nikhef = []
-        for value in trace:
-            trace_nikhef.append(self._nikhef_pmt_response(value))
-        trace_nikhef = np.array(trace_nikhef)
+        trace = np.array(trace)
 
-        return trace_nikhef
+        return trace
 
     def simulate_detector_response(self, detector, shower_parameters):
         """Simulate detector response to a shower.
@@ -464,7 +438,7 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
         pulseheight_electron = 1e3 * abs(electron_trace.min())
         pulseheight_gamma = 1e3 * abs(gamma_trace.min())
         
-        #print( pulseheight, "mV" )
+        print( pulseheight )
 
         # Now obtain the pulseintegral for each trace (in mVns)
         pulseintegral = 1e3 * abs(2.5*all_particles_trace.sum())
@@ -482,8 +456,9 @@ class GroundParticlesGEANT4Simulation(ErrorlessSimulation):
         # the minimal arrival time will be -999 because of the non-interacting gamma. So I need to
         # correct for this. But if only a non-interacting gamma was detected I need to keep the -999
         # in the list otherwise we don't have a firstarrival time. The solution is to remove all -999
-        # values anyway if multiple particles hit the detector.
-        if len(arrivaltimes) > 1:
+        # values if a pulse height is measured.
+        arrivaltimes = np.array(arrivaltimes)
+        if pulseheight > 0:
             arrivaltimes = arrivaltimes[arrivaltimes > -999]
         firstarrival = np.min(arrivaltimes) + trigger_delay
     

@@ -139,7 +139,6 @@ class CorsikaQuery(object):
         if azimuth is not None:
             queries.append(self.float_filter('azimuth', radians(azimuth)))
         if model is not None:
-            print self.all_models
             if model not in self.all_models:
                 raise RuntimeError('Model not available')
             queries.append(self.filter('model', '\''+model+'\''))
