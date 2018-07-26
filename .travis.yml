@@ -4,9 +4,21 @@ python:
   - "3.5"
   - "3.6"
   - "3.7"
+  - nightly
 env:
   - ASTROPY=yes
   - ASTROPY=no
+
+matrix:
+  allow_failures:
+    - python: "3.7"
+      env: ASTROPY=yes
+    - python: "3.7"
+      env: ASTROPY=no
+    - python: nightly
+      env: ASTROPY=yes
+    - python: nightly
+      env: ASTROPY=no
 
 sudo: false
 
