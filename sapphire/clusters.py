@@ -97,14 +97,14 @@ class Detector(object):
         return x, y
 
     def get_coordinates(self):
-        X, Y, Z, alpha = self.station.get_coordinates()
+        x_station, y_station, z_station, alpha_station = self.station.get_coordinates()
 
-        sina = sin(alpha)
-        cosa = cos(alpha)
+        sina = sin(alpha_station)
+        cosa = cos(alpha_station)
 
-        x = X + (self.x[self.index] * cosa - self.y[self.index] * sina)
-        y = Y + (self.x[self.index] * sina + self.y[self.index] * cosa)
-        z = Z + self.z[self.index]
+        x = x_station + (self.x[self.index] * cosa - self.y[self.index] * sina)
+        y = y_station + (self.x[self.index] * sina + self.y[self.index] * cosa)
+        z = z_station + self.z[self.index]
 
         return x, y, z
 
@@ -144,7 +144,7 @@ class Detector(object):
         :return: coordinates of detector corners, list of (x, y) tuples.
 
         """
-        X, Y, _, alpha = self.station.get_coordinates()
+        x_station, y_station, _, alpha_station = self.station.get_coordinates()
 
         x = self.x[self.index]
         y = self.y[self.index]
@@ -163,9 +163,9 @@ class Detector(object):
                    for cx, cy in corners]
 
         # cluster frame
-        sina = sin(alpha)
-        cosa = cos(alpha)
-        corners = [(X + xc * cosa - yc * sina, Y + xc * sina + yc * cosa)
+        sina = sin(alpha_station)
+        cosa = cos(alpha_station)
+        corners = [(x_station + xc * cosa - yc * sina, y_station + xc * sina + yc * cosa)
                    for xc, yc in corners]
 
         return corners
@@ -305,15 +305,15 @@ class Station(object):
                  relative to absolute coordinate system
 
         """
-        X, Y, Z, alpha = self.cluster.get_coordinates()
+        x_cluster, y_cluster, z_cluster, alpha_cluster = self.cluster.get_coordinates()
 
-        sina = sin(alpha)
-        cosa = cos(alpha)
+        sina = sin(alpha_cluster)
+        cosa = cos(alpha_cluster)
 
-        x = X + (self.x[self.index] * cosa - self.y[self.index] * sina)
-        y = Y + (self.x[self.index] * sina + self.y[self.index] * cosa)
-        z = Z + self.z[self.index]
-        alpha = alpha + self.angle[self.index]
+        x = x_cluster + (self.x[self.index] * cosa - self.y[self.index] * sina)
+        y = y_cluster + (self.x[self.index] * sina + self.y[self.index] * cosa)
+        z = z_cluster + self.z[self.index]
+        alpha = alpha_cluster + self.angle[self.index]
 
         return x, y, z, alpha
 

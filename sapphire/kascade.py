@@ -142,7 +142,7 @@ class StoreKascadeData(object):
 
         # read all columns into KASCADE-named variables
         Irun, Ieve, Gt, Mmn, EnergyArray, Xc, Yc, Ze, Az, Size, Nmu, He0, \
-            Hmu0, He1, Hmu1, He2, Hmu2, He3, Hmu3, T200, P200 = data
+            Hmu0, He1, Hmu1, He2, Hmu2, He3, Hmu3, T200, P200 = data  # noqa: N806
 
         tablerow['run_id'] = Irun
         tablerow['event_id'] = Ieve
