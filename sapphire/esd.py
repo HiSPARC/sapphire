@@ -86,17 +86,15 @@ def _first_available_numbered_path():
 def load_data(file, group, tsv_file, type='events'):
     """Load downloaded event summary data into PyTables file.
 
-    If you've previously downloaded event summary data from
-    http://data.hisparc.nl/ in TSV format, you can load them into a PyTables
+    If you've previously downloaded event summary data from the HiSPARC Public
+    Database in TSV format, you can load them into a PyTables
     file using this method. The result is equal to directly downloading data
     using :func:`download_data`.
 
     :param file: the PyTables datafile handler.
     :param group: the PyTables destination group, which need not exist.
-    :param tsv_file: path to the tsv file downloaded from the HiSPARC
-                     Public Database.
-    :param type: the datatype to load, either 'events', 'weather',
-                 'singles' or 'lightning'.
+    :param tsv_file: path to the tsv file downloaded from the HiSPARC Public Database.
+    :param type: the datatype to load, either 'events', 'weather', 'singles', or 'lightning'.
 
     Example::
 
@@ -128,8 +126,7 @@ def load_data(file, group, tsv_file, type='events'):
                 writer.store_line(line)
 
 
-def download_data(file, group, station_number, start=None, end=None,
-                  type='events', progress=True):
+def download_data(file, group, station_number, start=None, end=None, type='events', progress=True):
     """Download event summary data
 
     :param file: the PyTables datafile handler.
@@ -167,8 +164,7 @@ def download_data(file, group, station_number, start=None, end=None,
     # sensible defaults for start and end
     if start is None:
         if end is not None:
-            raise RuntimeError("Start is None, but end is not. "
-                               "I can't go on like this.")
+            raise RuntimeError("Start is None, but end is not. I can't go on like this.")
         else:
             yesterday = datetime.date.today() - datetime.timedelta(days=1)
             start = datetime.datetime.combine(yesterday, datetime.time(0, 0))
@@ -208,8 +204,7 @@ def download_data(file, group, station_number, start=None, end=None,
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
     if progress:
-        pbar = ProgressBar(max_value=1.,
-                           widgets=[Percentage(), Bar(), ETA()]).start()
+        pbar = ProgressBar(max_value=1., widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in tsv as they come streaming in
     prev_update = time.time()
@@ -218,8 +213,7 @@ def download_data(file, group, station_number, start=None, end=None,
         for line in reader:
             timestamp = writer.store_line(line)
             # update progressbar every 0.5 seconds
-            if (progress and time.time() - prev_update > 0.5 and
-                    not timestamp == 0.):
+            if progress and time.time() - prev_update > 0.5 and not timestamp == 0.:
                 pbar.update((1. * timestamp - t_start) / t_delta)
                 prev_update = time.time()
     if progress:
@@ -234,22 +228,17 @@ def download_data(file, group, station_number, start=None, end=None,
             return
     else:
         # Last line is data, report failed download and date/time of last line
-        raise Exception('Failed to complete download, last received data '
-                        'from: %s %s.' % tuple(line[:2]))
+        raise Exception('Failed to complete download, last received data from: %s %s.' % tuple(line[:2]))
 
 
-def download_lightning(file, group, lightning_type=4, start=None, end=None,
-                       progress=True):
+def download_lightning(file, group, lightning_type=4, start=None, end=None, progress=True):
     """Download KNMI lightning data
 
     :param file: the PyTables datafile handler.
     :param group: the PyTables destination group, which need not exist.
-    :param lightning_type: type of lightning, see list below for the possible
-                           type codes.
-    :param start: a datetime instance defining the start of the search
-        interval.
-    :param end: a datetime instance defining the end of the search
-        interval.
+    :param lightning_type: type of lightning, see list below for the possible type codes.
+    :param start: a datetime instance defining the start of the search interval.
+    :param end: a datetime instance defining the end of the search interval.
     :param progress: if True show a progressbar while downloading.
 
     Lightning types:
@@ -269,15 +258,14 @@ def download_lightning(file, group, lightning_type=4, start=None, end=None,
     if lightning_type not in range(6):
         raise ValueError("Invalid lightning type.")
 
-    download_data(file, group, lightning_type, start=start, end=end,
-                  type='lightning', progress=progress)
+    download_data(file, group, lightning_type, start=start, end=end, type='lightning', progress=progress)
 
 
 def load_coincidences(file, tsv_file, group=''):
     """Load downloaded event summary data into PyTables file.
 
-    If you've previously downloaded coincidence data from
-    http://data.hisparc.nl/ in TSV format, you can load them into a PyTables
+    If you've previously downloaded coincidence data from the HiSPARC Public
+    Database in TSV format, you can load them into a PyTables
     file using this method. The result is equal to directly downloading data
     using :func:`download_coincidences`.
 
@@ -310,16 +298,14 @@ def load_coincidences(file, tsv_file, group=''):
                 coincidence.append(line)
             else:
                 # Full coincidence has been received, store it.
-                _read_lines_and_store_coincidence(file, c_group,
-                                                  coincidence, station_groups)
+                _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups)
                 coincidence = [line]
                 current_coincidence = int(line[0])
                 file.flush()
 
         if len(coincidence):
             # Store last coincidence
-            _read_lines_and_store_coincidence(file, c_group, coincidence,
-                                              station_groups)
+            _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups)
 
         if line[0][0] == '#':
             if len(line[0]) == 1:
@@ -344,10 +330,8 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     :param group: path of destination group, which need not exist yet.
     :param cluster: HiSPARC cluster name for which to get data.
     :param stations: a list of HiSPARC station numbers for which to get data.
-    :param start: a datetime instance defining the start of the search
-        interval.
-    :param end: a datetime instance defining the end of the search
-        interval.
+    :param start: a datetime instance defining the start of the search interval.
+    :param end: a datetime instance defining the end of the search interval.
     :param n: the minimum number of events in the coincidence.
 
     The start and end parameters may both be None.  In that case,
@@ -402,8 +386,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
     if progress:
-        pbar = ProgressBar(max_value=1.,
-                           widgets=[Percentage(), Bar(), ETA()]).start()
+        pbar = ProgressBar(max_value=1., widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in tsv as they come streaming in, keep temporary
     # lists until a full coincidence is in.
@@ -418,12 +401,9 @@ def download_coincidences(file, group='', cluster=None, stations=None,
             coincidence.append(line)
         else:
             # Full coincidence has been received, store it.
-            timestamp = _read_lines_and_store_coincidence(file, c_group,
-                                                          coincidence,
-                                                          station_groups)
+            timestamp = _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups)
             # update progressbar every 0.5 seconds
-            if (progress and time.time() - prev_update > 0.5 and
-                    not timestamp == 0.):
+            if progress and time.time() - prev_update > 0.5 and not timestamp == 0.:
                 pbar.update((1. * timestamp - t_start) / t_delta)
                 prev_update = time.time()
             coincidence = [line]
@@ -432,8 +412,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
 
     if len(coincidence):
         # Store last coincidence
-        _read_lines_and_store_coincidence(file, c_group, coincidence,
-                                          station_groups)
+        _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups)
     if progress:
         pbar.finish()
 
@@ -471,8 +450,7 @@ def _read_or_get_station_groups(file, group):
         for sid, station_group in enumerate(s_index):
             station_group = station_group.decode()
             station = int(re_number.search(station_group).group())
-            groups[station] = {'group': station_group,
-                               's_index': sid}
+            groups[station] = {'group': station_group, 's_index': sid}
         return groups
 
 
@@ -493,8 +471,7 @@ def _get_station_groups(group):
         stations = network.station_numbers(cluster=cluster['number'])
         for station in stations:
             groups[station] = {'group': ('%s/hisparc/cluster_%s/station_%d' %
-                                         (group, cluster['name'].lower(),
-                                          station)),
+                                         (group, cluster['name'].lower(), station)),
                                's_index': s_index}
             s_index += 1
     return groups
@@ -525,8 +502,7 @@ def _create_coincidences_tables(file, group, station_groups):
     s_columns = {'s%d' % station: tables.BoolCol(pos=p)
                  for p, station in enumerate(station_groups, 12)}
     description.columns.update(s_columns)
-    coincidences = file.create_table(coin_group, 'coincidences', description,
-                                     createparents=True)
+    coincidences = file.create_table(coin_group, 'coincidences', description, createparents=True)
 
     # Create c_index
     file.create_vlarray(coin_group, 'c_index', tables.UInt32Col(shape=2))
@@ -679,12 +655,10 @@ def _create_lightning_table(file, group):
                    'longitude': tables.Float32Col(pos=5),
                    'current': tables.Float32Col(pos=6)}
 
-    return file.create_table(group, 'lightning', description,
-                             createparents=True)
+    return file.create_table(group, 'lightning', description, createparents=True)
 
 
-def _read_lines_and_store_coincidence(file, c_group, coincidence,
-                                      station_groups):
+def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups):
     """Read TSV lines and store coincidence
 
     Read lines from the TSV download and store the coincidence and events.
@@ -704,8 +678,7 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence,
     row['N'] = len(coincidence)
     row['timestamp'] = int(coincidence[0][4])
     row['nanoseconds'] = int(coincidence[0][5])
-    row['ext_timestamp'] = (int(coincidence[0][4]) * int(1e9) +
-                            int(coincidence[0][5]))
+    row['ext_timestamp'] = int(coincidence[0][4]) * int(1e9) + int(coincidence[0][5])
 
     for event in coincidence:
         station_number = int(event[1])
@@ -751,8 +724,7 @@ class _read_line_and_store_event_class(object):
     def store_line(self, line):
         """Store a single line
 
-        :param line: the line to store as a tuple of strings (one element
-                     per column).
+        :param line: the line to store as a tuple of strings (one element per column).
         :return: timestamp of the stored event, or 0 if the given line was a
                  comment line starting with a '#'.
 
@@ -895,8 +867,7 @@ class _read_line_and_store_lightning_class(_read_line_and_store_event_class):
             return 0.
 
         # break up TSV line
-        (date, time_str, timestamp, nanoseconds, latitude, longitude,
-         current) = line[:7]
+        (date, time_str, timestamp, nanoseconds, latitude, longitude, current) = line[:7]
 
         row = self.table.row
 

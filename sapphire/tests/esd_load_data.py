@@ -9,16 +9,15 @@ from six.moves.urllib.request import urlretrieve
 from sapphire import esd
 
 self_path = os.path.dirname(__file__)
+
 test_data_path = os.path.join(self_path, 'test_data/esd_load_data.h5')
-test_data_coincidences_path = os.path.join(self_path,
-                                           'test_data/esd_coincidence_data.h5')
+test_data_coincidences_path = os.path.join(self_path, 'test_data/esd_coincidence_data.h5')
+
 events_source = os.path.join(self_path, 'test_data/events-s501-20120101.tsv')
 weather_source = os.path.join(self_path, 'test_data/weather-s501-20120101.tsv')
 singles_source = os.path.join(self_path, 'test_data/singles-s501-20170101.tsv')
-lightning_source = os.path.join(self_path,
-                                'test_data/lightning-knmi-20150717.tsv')
-coincidences_source = os.path.join(self_path,
-                                   'test_data/coincidences-20160310.tsv')
+lightning_source = os.path.join(self_path, 'test_data/lightning-knmi-20150717.tsv')
+coincidences_source = os.path.join(self_path, 'test_data/coincidences-20160310.tsv')
 
 
 def create_tempfile_path():
@@ -52,14 +51,10 @@ def perform_esd_download_data(filename):
     lightning_end = datetime.datetime(2015, 7, 17, 0, 10, 0)
 
     with tables.open_file(filename, 'w', filters=filters) as datafile:
-        esd.download_data(datafile, '/', 501, start, end, type='events',
-                          progress=False)
-        esd.download_data(datafile, '/', 501, start, end, type='weather',
-                          progress=False)
-        esd.download_data(datafile, '/', 501, singles_start, singles_end,
-                          type='singles', progress=False)
-        esd.download_lightning(datafile, '/', 4, lightning_start,
-                               lightning_end, progress=False)
+        esd.download_data(datafile, '/', 501, start, end, type='events', progress=False)
+        esd.download_data(datafile, '/', 501, start, end, type='weather', progress=False)
+        esd.download_data(datafile, '/', 501, singles_start, singles_end, type='singles', progress=False)
+        esd.download_lightning(datafile, '/', 4, lightning_start, lightning_end, progress=False)
 
 
 def perform_load_coincidences(filename):
@@ -78,8 +73,7 @@ def perform_download_coincidences(filename):
     end = datetime.datetime(2016, 3, 10, 0, 1, 0)
 
     with tables.open_file(filename, 'w', filters=filters) as datafile:
-        esd.download_coincidences(datafile, stations=[501, 510],
-                                  start=start, end=end, n=2, progress=False)
+        esd.download_coincidences(datafile, stations=[501, 510], start=start, end=end, n=2, progress=False)
 
 
 def create_and_store_test_data():

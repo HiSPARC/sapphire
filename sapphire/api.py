@@ -185,8 +185,8 @@ class API(object):
     def _retrieve_url(urlpath, base=API_BASE):
         """Open a HiSPARC API URL and read the data
 
-        :param urlpath: the api urlpath (after http://data.hisparc.nl/api/)
-            to retrieve
+        :param urlpath: the api urlpath (after the base) to retrieve
+        :param base: base url for the API
         :return: the data returned by the api as a string
 
         """

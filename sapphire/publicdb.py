@@ -146,37 +146,30 @@ def datetimerange(start, stop):
 
     Example::
 
-        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
-        ...                        datetime.datetime(2010, 1, 1, 13)):
+        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11), datetime.datetime(2010, 1, 1, 13)):
         ...     x
         ...
-        (datetime.datetime(2010, 1, 1, 11, 0),
-         datetime.datetime(2010, 1, 1, 13, 0))
+        (datetime.datetime(2010, 1, 1, 11, 0), datetime.datetime(2010, 1, 1, 13, 0))
 
-        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
-        ...                        datetime.datetime(2010, 1, 2)):
+        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11), datetime.datetime(2010, 1, 2)):
         ...     x
         ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
 
-        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
-        ...                        datetime.datetime(2010, 1, 2, 13)):
+        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11), datetime.datetime(2010, 1, 2, 13)):
         ...     x
         ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
-        (datetime.datetime(2010, 1, 2, 0, 0),
-         datetime.datetime(2010, 1, 2, 13, 0))
+        (datetime.datetime(2010, 1, 2, 0, 0), datetime.datetime(2010, 1, 2, 13, 0))
 
-        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11),
-        ...                        datetime.datetime(2010, 1, 5, 13)):
+        >>> for x in datetimerange(datetime.datetime(2010, 1, 1, 11), datetime.datetime(2010, 1, 5, 13)):
         ...     x
         ...
         (datetime.datetime(2010, 1, 1, 11, 0), None)
         (datetime.datetime(2010, 1, 2, 0, 0), None)
         (datetime.datetime(2010, 1, 3, 0, 0), None)
         (datetime.datetime(2010, 1, 4, 0, 0), None)
-        (datetime.datetime(2010, 1, 5, 0, 0),
-         datetime.datetime(2010, 1, 5, 13, 0))
+        (datetime.datetime(2010, 1, 5, 0, 0), datetime.datetime(2010, 1, 5, 13, 0))
 
     """
     if start > stop:
@@ -186,8 +179,7 @@ def datetimerange(start, stop):
         return
     else:
         yield start, None
-        cur = (start.replace(hour=0, minute=0, second=0, microsecond=0) +
-               datetime.timedelta(days=1))
+        cur = start.replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
         while cur.date() < stop.date():
             yield cur, None
             cur += datetime.timedelta(days=1)
@@ -204,8 +196,7 @@ def _get_or_create_group(file, group):
         group = file.get_node(group)
     except tables.NoSuchNodeError:
         parent, newgroup = os.path.split(group)
-        group = file.create_group(parent, newgroup, 'Data group',
-                                  createparents=True)
+        group = file.create_group(parent, newgroup, 'Data group', createparents=True)
     return group
 
 
@@ -216,11 +207,9 @@ def _get_or_create_node(file, group, src_node):
         node = file.get_node(group, src_node.name)
     except tables.NoSuchNodeError:
         if isinstance(src_node, tables.Table):
-            node = file.create_table(group, src_node.name,
-                                     src_node.description, src_node.title)
+            node = file.create_table(group, src_node.name, src_node.description, src_node.title)
         elif isinstance(src_node, tables.VLArray):
-            node = file.create_vlarray(group, src_node.name, src_node.atom,
-                                       src_node.title)
+            node = file.create_vlarray(group, src_node.name, src_node.atom, src_node.title)
         else:
             raise Exception("Unknown node class: %s" % type(src_node))
 
