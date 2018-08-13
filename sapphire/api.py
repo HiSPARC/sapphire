@@ -38,7 +38,7 @@ from six.moves.urllib.request import urlopen
 from .transformations.clock import process_time
 from .utils import get_active_index, get_publicdb_base, memoize
 
-logger = logging.getLogger('api')
+logger = logging.getLogger(__name__)
 
 API_BASE = urljoin(get_publicdb_base(), 'api/')
 SRC_BASE = urljoin(get_publicdb_base(), 'show/source/')
@@ -56,29 +56,23 @@ class API(object):
 
     """
 
-    urls = {"stations": 'stations/',
-            "stations_in_subcluster": 'subclusters/{subcluster_number}/',
-            "subclusters": 'subclusters/',
-            "subclusters_in_cluster": 'clusters/{cluster_number}/',
-            "clusters": 'clusters/',
-            "clusters_in_country": 'countries/{country_number}/',
-            "countries": 'countries/',
-            "stations_with_data": 'stations/data/{year}/{month}/{day}/',
-            "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
-            "station_info": 'station/{station_number}/',
-            "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
-            "has_weather": 'station/{station_number}/weather/{year}/{month}/'
-                           '{day}/',
-            "configuration": 'station/{station_number}/config/{year}/'
-                             '{month}/{day}/',
-            "number_of_events": 'station/{station_number}/num_events/{year}/'
-                                '{month}/{day}/{hour}/',
-            "event_trace": 'station/{station_number}/trace/{ext_timestamp}/',
-            "pulseheight_fit": 'station/{station_number}/plate/{plate_number}/'
-                               'pulseheight/fit/{year}/{month}/{day}/',
-            "pulseheight_drift": 'station/{station_number}/plate/'
-                                 '{plate_number}/pulseheight/drift/{year}/'
-                                 '{month}/{day}/{number_of_days}/'}
+    urls = {
+        "stations": 'stations/',
+        "stations_in_subcluster": 'subclusters/{subcluster_number}/',
+        "subclusters": 'subclusters/',
+        "subclusters_in_cluster": 'clusters/{cluster_number}/',
+        "clusters": 'clusters/',
+        "clusters_in_country": 'countries/{country_number}/',
+        "countries": 'countries/',
+        "stations_with_data": 'stations/data/{year}/{month}/{day}/',
+        "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
+        "station_info": 'station/{station_number}/',
+        "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
+        "has_weather": 'station/{station_number}/weather/{year}/{month}/{day}/',
+        "configuration": 'station/{station_number}/config/{year}/{month}/{day}/',
+        "number_of_events": 'station/{station_number}/num_events/{year}/{month}/{day}/{hour}/',
+        "event_trace": 'station/{station_number}/trace/{ext_timestamp}/'
+    }
 
     src_urls = {
         'coincidencetime': 'coincidencetime/{year}/{month}/{day}/',
@@ -97,8 +91,8 @@ class API(object):
         'trigger': 'trigger/{station_number}/',
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/',
-        'station_timing_offsets': 'station_timing_offsets/{station_1}/'
-                                  '{station_2}/'}
+        'station_timing_offsets': 'station_timing_offsets/{station_1}/{station_2}/'
+    }
 
     def __init__(self, force_fresh=False, force_stale=False):
         """Initialize API class
@@ -118,26 +112,25 @@ class API(object):
         :return: the data returned by the api as dictionary or integer.
 
         """
+        urlpath = urlpath.rstrip('/')
         if self.force_fresh and self.force_stale:
             raise Exception('Can not force fresh and stale simultaneously.')
         try:
             if self.force_stale:
                 raise Exception
-            json_data = self._retrieve_url(urlpath)
+            json_data = self._retrieve_url(urlpath, base=API_BASE)
             data = json.loads(json_data)
         except Exception:
             if self.force_fresh:
                 raise Exception('Couldn\'t get requested data from server.')
-            localpath = path.join(LOCAL_BASE,
-                                  urlpath.strip('/') + extsep + 'json')
+            localpath = path.join(LOCAL_BASE, urlpath + extsep + 'json')
             try:
                 with open(localpath) as localdata:
                     data = json.load(localdata)
             except Exception:
                 if self.force_stale:
                     raise Exception('Couldn\'t find requested data locally.')
-                raise Exception('Couldn\'t get requested data from server '
-                                'nor find it locally.')
+                raise Exception('Couldn\'t get requested data from server nor find it locally.')
             if not self.force_stale:
                 warnings.warn('Using local data. Possibly outdated.')
 
@@ -151,6 +144,7 @@ class API(object):
         :return: the data returned as array.
 
         """
+        urlpath = urlpath.rstrip('/')
         if self.force_fresh and self.force_stale:
             raise Exception('Can not force fresh and stale simultaneously.')
         try:
@@ -160,18 +154,15 @@ class API(object):
         except Exception:
             if self.force_fresh:
                 raise Exception('Couldn\'t get requested data from server.')
-            localpath = path.join(LOCAL_BASE,
-                                  urlpath.strip('/') + extsep + 'tsv')
+            localpath = path.join(LOCAL_BASE, urlpath + extsep + 'tsv')
             try:
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
-                    data = genfromtxt(localpath, delimiter='\t', dtype=None,
-                                      names=names)
+                    data = genfromtxt(localpath, delimiter='\t', dtype=None, names=names)
             except Exception:
                 if self.force_stale:
                     raise Exception('Couldn\'t find requested data locally.')
-                raise Exception('Couldn\'t get requested data from server '
-                                'nor find it locally.')
+                raise Exception('Couldn\'t get requested data from server nor find it locally.')
             if not self.force_stale:
                 warnings.warn('Using local data. Possibly outdated.')
         else:
@@ -191,13 +182,12 @@ class API(object):
         :return: the data returned by the api as a string
 
         """
-        url = base + urlpath
+        url = urljoin(base, urlpath + '/')
         logging.debug('Getting: ' + url)
         try:
             result = urlopen(url).read().decode('utf-8')
         except HTTPError as e:
-            raise Exception('A HTTP %d error occured for the url: %s' %
-                            (e.code, url))
+            raise Exception('A HTTP %d error occured for the url: %s' % (e.code, url))
         except URLError:
             raise Exception('An URL error occured.')
 
@@ -226,8 +216,7 @@ class API(object):
             raise Exception('You must also specify the day')
 
     def __repr__(self):
-        return "%s(force_fresh=%s, force_stale=%s)" % (self.__class__.__name__,
-                                                       self.force_fresh,
+        return "%s(force_fresh=%s, force_stale=%s)" % (self.__class__.__name__, self.force_fresh,
                                                        self.force_stale)
 
 
@@ -275,8 +264,7 @@ class Network(API):
         if country is None:
             clusters = self._all_clusters
         else:
-            path = (self.urls['clusters_in_country']
-                    .format(country_number=country))
+            path = self.urls['clusters_in_country'].format(country_number=country)
             clusters = self._get_json(path)
         return clusters
 
@@ -308,16 +296,13 @@ class Network(API):
             subclusters = self._all_subclusters
         elif country is not None:
             subclusters = []
-            path = (self.urls['clusters_in_country']
-                    .format(country_number=country))
+            path = self.urls['clusters_in_country'].format(country_number=country)
             clusters = self._get_json(path)
             for cluster in clusters:
-                path = (self.urls['subclusters_in_cluster']
-                        .format(cluster_number=cluster['number']))
+                path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster['number'])
                 subclusters.extend(self._get_json(path))
         else:
-            path = (self.urls['subclusters_in_cluster']
-                    .format(cluster_number=cluster))
+            path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster)
             subclusters = self._get_json(path)
         return subclusters
 
@@ -349,37 +334,30 @@ class Network(API):
             stations = self._all_stations
         elif country is not None:
             stations = []
-            path = (self.urls['clusters_in_country']
-                    .format(country_number=country))
+            path = self.urls['clusters_in_country'].format(country_number=country)
             clusters = self._get_json(path)
             for cluster in clusters:
-                path = (self.urls['subclusters_in_cluster']
-                        .format(cluster_number=cluster['number']))
+                path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster['number'])
                 subclusters = self._get_json(path)
                 for subcluster in subclusters:
-                    path = (self.urls['stations_in_subcluster']
-                            .format(subcluster_number=subcluster['number']))
+                    path = self.urls['stations_in_subcluster'].format(subcluster_number=subcluster['number'])
                     stations.extend(self._get_json(path))
         elif cluster is not None:
             stations = []
-            path = (self.urls['subclusters_in_cluster']
-                    .format(cluster_number=cluster))
+            path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster)
             subclusters = self._get_json(path)
             for subcluster in subclusters:
-                path = (self.urls['stations_in_subcluster']
-                        .format(subcluster_number=subcluster['number']))
+                path = self.urls['stations_in_subcluster'].format(subcluster_number=subcluster['number'])
                 stations.extend(self._get_json(path))
         elif subcluster is not None:
-            path = (self.urls['stations_in_subcluster']
-                    .format(subcluster_number=subcluster))
+            path = self.urls['stations_in_subcluster'].format(subcluster_number=subcluster)
             stations = self._get_json(path)
         return stations
 
     def station_numbers(self, country=None, cluster=None, subcluster=None):
         """Same as stations but only retuns a list of station numbers"""
 
-        stations = self.stations(country=country, cluster=cluster,
-                                 subcluster=subcluster)
+        stations = self.stations(country=country, cluster=cluster, subcluster=subcluster)
         return [station['number'] for station in stations]
 
     def nested_network(self):
@@ -406,8 +384,7 @@ class Network(API):
         """
         self.validate_partial_date(year, month, day)
 
-        path = (self.urls['stations_with_data']
-                .format(year=year, month=month, day=day).strip("/"))
+        path = self.urls['stations_with_data'].format(year=year, month=month, day=day)
         return self._get_json(path)
 
     def stations_with_weather(self, year='', month='', day=''):
@@ -420,8 +397,7 @@ class Network(API):
         """
         self.validate_partial_date(year, month, day)
 
-        path = (self.urls['stations_with_weather']
-                .format(year=year, month=month, day=day).strip("/"))
+        path = self.urls['stations_with_weather'].format(year=year, month=month, day=day)
         return self._get_json(path)
 
     def coincidence_time(self, year, month, day):
@@ -432,8 +408,7 @@ class Network(API):
 
         """
         columns = ('hour', 'counts')
-        path = self.src_urls['coincidencetime'].format(year=year, month=month,
-                                                       day=day)
+        path = self.src_urls['coincidencetime'].format(year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def coincidence_number(self, year, month, day):
@@ -444,29 +419,24 @@ class Network(API):
 
         """
         columns = ('n', 'counts')
-        path = self.src_urls['coincidencenumber'].format(year=year,
-                                                         month=month,
-                                                         day=day)
+        path = self.src_urls['coincidencenumber'].format(year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     @staticmethod
     def validate_numbers(country=None, cluster=None, subcluster=None):
         if country is not None and country % 10000:
-            raise Exception('Invalid country number, '
-                            'must be multiple of 10000.')
+            raise Exception('Invalid country number, must be multiple of 10000.')
         if cluster is not None and cluster % 1000:
-            raise Exception('Invalid cluster number, '
-                            'must be multiple of 1000.')
+            raise Exception('Invalid cluster number, must be multiple of 1000.')
         if subcluster is not None and subcluster % 100:
-            raise Exception('Invalid subcluster number, '
-                            'must be multiple of 100.')
+            raise Exception('Invalid subcluster number, must be multiple of 100.')
 
     def uptime(self, stations, start=None, end=None):
-        """Get number of hours which stations have been simultaneously active
+        """Get number of hours for which the given stations have been simultaneously active
 
         Using hourly eventrate data the number of hours in which the given
         stations all had data is determined. Only hours in which each station
-        had a reasonable eventrate are counted, to exclude bad data.
+        had a reasonable eventrate are counted, to exclude likely bad data.
 
         :param stations: station number or a list of station numbers.
         :param start,end: start, end timestamp.
@@ -478,9 +448,9 @@ class Network(API):
         if not hasattr(stations, '__len__'):
             stations = [stations]
 
-        for sn in stations:
-            data[sn] = Station(sn, force_fresh=self.force_fresh,
-                               force_stale=self.force_stale).event_time()
+        for station in stations:
+            data[station] = Station(station, force_fresh=self.force_fresh,
+                                    force_stale=self.force_stale).event_time()
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
@@ -488,12 +458,11 @@ class Network(API):
         len_array = (last - first) // 3600 + 1
         all_active = ones(len_array)
 
-        for sn in data.keys():
+        for station in data.keys():
             is_active = zeros(len_array)
-            start_i = (data[sn]['timestamp'][0] - first) // 3600
-            end_i = start_i + len(data[sn])
-            is_active[start_i:end_i] = (data[sn]['counts'] > 500) &\
-                                       (data[sn]['counts'] < 5000)
+            start_i = (data[station]['timestamp'][0] - first) // 3600
+            end_i = start_i + len(data[station])
+            is_active[start_i:end_i] = 500 < data[station]['counts'] < 5000
             all_active = logical_and(all_active, is_active)
 
         # filter start, end
@@ -518,16 +487,14 @@ class Station(API):
         """Initialize station
 
         :param station: station number.
-        :param force_fresh: set to True to require data to be fresh
-                            from the server.
+        :param force_fresh: set to True to require data to be fresh from the server.
         :param force_stale: set to True to require data to be taken from local
                             data, not valid for all methods.
 
         """
         if force_fresh and force_stale:
             raise Exception('Can not force fresh and stale simultaneously.')
-        if station not in Network(force_fresh=force_fresh,
-                                  force_stale=force_stale).station_numbers():
+        if station not in Network(force_fresh=force_fresh, force_stale=force_stale).station_numbers():
             warnings.warn('Possibly invalid station, or without config.')
         self.force_fresh = force_fresh
         self.force_stale = force_stale
@@ -565,8 +532,7 @@ class Station(API):
         if date is None:
             date = datetime.date.today()
         path = (self.urls['configuration']
-                .format(station_number=self.station,
-                        year=date.year, month=date.month, day=date.day))
+                .format(station_number=self.station, year=date.year, month=date.month, day=date.day))
 
         return self._get_json(path)
 
@@ -585,8 +551,7 @@ class Station(API):
         self.validate_partial_date(year, month, day, hour)
 
         path = (self.urls['number_of_events']
-                .format(station_number=self.station, year=year, month=month,
-                        day=day, hour=hour).strip("/"))
+                .format(station_number=self.station, year=year, month=month, day=day, hour=hour))
         return self._get_json(path)
 
     def has_data(self, year='', month='', day=''):
@@ -600,9 +565,7 @@ class Station(API):
         """
         self.validate_partial_date(year, month, day)
 
-        path = (self.urls['has_data'].format(station_number=self.station,
-                                             year=year, month=month, day=day)
-                .strip("/"))
+        path = self.urls['has_data'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_json(path)
 
     def has_weather(self, year='', month='', day=''):
@@ -616,9 +579,7 @@ class Station(API):
         """
         self.validate_partial_date(year, month, day)
 
-        path = (self.urls['has_weather']
-                .format(station_number=self.station,
-                        year=year, month=month, day=day).strip("/"))
+        path = self.urls['has_weather'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_json(path)
 
     def event_trace(self, timestamp, nanoseconds, raw=False):
@@ -634,9 +595,7 @@ class Station(API):
 
         """
         ext_timestamp = '%d%09d' % (timestamp, nanoseconds)
-        path = (self.urls['event_trace'].format(station_number=self.station,
-                                                ext_timestamp=ext_timestamp)
-                .strip("/"))
+        path = self.urls['event_trace'].format(station_number=self.station, ext_timestamp=ext_timestamp)
         if raw is True:
             path += '?raw'
         return self._get_json(path)
@@ -656,9 +615,7 @@ class Station(API):
 
         """
         columns = ('timestamp', 'counts')
-        path = self.src_urls['eventtime'].format(station_number=self.station,
-                                                 year=year, month=month,
-                                                 day=day).strip("/")
+        path = self.src_urls['eventtime'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def pulse_height(self, year, month, day):
@@ -670,8 +627,7 @@ class Station(API):
         """
         columns = ('pulseheight', 'ph1', 'ph2', 'ph3', 'ph4')
         path = self.src_urls['pulseheight'].format(station_number=self.station,
-                                                   year=year, month=month,
-                                                   day=day)
+                                                   year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def pulse_integral(self, year, month, day):
@@ -682,9 +638,7 @@ class Station(API):
 
         """
         columns = ('pulseintegral', 'pi1', 'pi2', 'pi3', 'pi4')
-        path = self.src_urls['integral'].format(station_number=self.station,
-                                                year=year, month=month,
-                                                day=day)
+        path = self.src_urls['integral'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def azimuth(self, year, month, day):
@@ -695,8 +649,7 @@ class Station(API):
 
         """
         columns = ('angle', 'counts')
-        path = self.src_urls['azimuth'].format(station_number=self.station,
-                                               year=year, month=month, day=day)
+        path = self.src_urls['azimuth'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def zenith(self, year, month, day):
@@ -707,8 +660,7 @@ class Station(API):
 
         """
         columns = ('angle', 'counts')
-        path = self.src_urls['zenith'].format(station_number=self.station,
-                                              year=year, month=month, day=day)
+        path = self.src_urls['zenith'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def barometer(self, year, month, day):
@@ -720,8 +672,7 @@ class Station(API):
         """
         columns = ('timestamp', 'air_pressure')
         path = self.src_urls['barometer'].format(station_number=self.station,
-                                                 year=year, month=month,
-                                                 day=day)
+                                                 year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def temperature(self, year, month, day):
@@ -733,8 +684,7 @@ class Station(API):
         """
         columns = ('timestamp', 'temperature')
         path = self.src_urls['temperature'].format(station_number=self.station,
-                                                   year=year, month=month,
-                                                   day=day)
+                                                   year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     @lazy
@@ -875,8 +825,7 @@ class Station(API):
         thresholds = [[triggers[idx]['%s%d' % (t, i)]
                        for t in ('low', 'high')]
                       for i in range(1, 5)]
-        trigger = [triggers[idx][t]
-                   for t in ('n_low', 'n_high', 'and_or', 'external')]
+        trigger = [triggers[idx][t] for t in ('n_low', 'n_high', 'and_or', 'external')]
         return thresholds, trigger
 
     @lazy
@@ -935,10 +884,8 @@ class Station(API):
         if timestamp is None:
             idx = -1
         else:
-            idx = get_active_index(detector_timing_offsets['timestamp'],
-                                   timestamp)
-        detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i]
-                                  for i in range(1, 5)]
+            idx = get_active_index(detector_timing_offsets['timestamp'], timestamp)
+        detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i] for i in range(1, 5)]
 
         return detector_timing_offset
 
@@ -982,14 +929,11 @@ class Station(API):
         if timestamp is None:
             idx = -1
         else:
-            idx = get_active_index(station_timing_offsets['timestamp'],
-                                   timestamp)
-        station_timing_offset = (station_timing_offsets[idx]['offset'],
-                                 station_timing_offsets[idx]['error'])
+            idx = get_active_index(station_timing_offsets['timestamp'], timestamp)
+        station_timing_offset = (station_timing_offsets[idx]['offset'], station_timing_offsets[idx]['error'])
 
         return station_timing_offset
 
     def __repr__(self):
         return ("%s(%d, force_fresh=%s, force_stale=%s)" %
-                (self.__class__.__name__, self.station,
-                 self.force_fresh, self.force_stale))
+                (self.__class__.__name__, self.station, self.force_fresh, self.force_stale))

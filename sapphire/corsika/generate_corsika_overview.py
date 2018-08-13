@@ -26,7 +26,7 @@ LOGFILE = '/data/hisparc/corsika/logs/generate_overview.log'
 DATA_PATH = '/data/hisparc/corsika/data'
 OUTPUT_PATH = '/data/hisparc/corsika/corsika_overview.h5'
 
-logger = logging.getLogger('generate_corsika_overview')
+logger = logging.getLogger(__name__)
 
 
 class Simulations(tables.IsDescription):

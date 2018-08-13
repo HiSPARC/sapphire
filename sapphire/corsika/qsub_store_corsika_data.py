@@ -34,7 +34,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     # To alleviate Stoomboot, make sure the job is not to short.
     sleep $[ ( $RANDOM % 60 ) + 60 ]""")
 
-logger = logging.getLogger('qsub_store_corsika_data')
+logger = logging.getLogger(__name__)
 
 
 def all_seeds():

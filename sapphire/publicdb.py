@@ -20,7 +20,7 @@ from six.moves.xmlrpc_client import ServerProxy
 from .transformations.clock import datetime_to_gps
 from .utils import get_publicdb_base
 
-logger = logging.getLogger('hisparc.publicdb')
+logger = logging.getLogger(__name__)
 
 PUBLICDB_XMLRPC_URL = urljoin(get_publicdb_base(), 'raw_data/rpc')
 
@@ -50,11 +50,11 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         >>> start = datetime.datetime(2010, 9, 1)
         >>> end = datetime.datetime(2010, 9, 2)
         >>> sapphire.publicdb.download_data(data, '/s501', 501, start, end)
-        INFO:hisparc.publicdb:2010-09-01 00:00:00 None
-        INFO:hisparc.publicdb:Getting server data URL (2010-09-01 00:00:00)
-        INFO:hisparc.publicdb:Downloading data...
-        INFO:hisparc.publicdb:Storing data...
-        INFO:hisparc.publicdb:Done.
+        INFO:sapphire.publicdb:2010-09-01 00:00:00 None
+        INFO:sapphire.publicdb:Getting server data URL (2010-09-01 00:00:00)
+        INFO:sapphire.publicdb:Downloading data...
+        INFO:sapphire.publicdb:Storing data...
+        INFO:sapphire.publicdb:Done.
 
     """
     server = ServerProxy(PUBLICDB_XMLRPC_URL)
