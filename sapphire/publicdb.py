@@ -13,15 +13,16 @@ import re
 
 import tables
 
+from six.moves.urllib_parse import urljoin
 from six.moves.urllib.request import urlretrieve
 from six.moves.xmlrpc_client import ServerProxy
 
 from .transformations.clock import datetime_to_gps
+from .utils import get_publicdb_base
 
 logger = logging.getLogger('hisparc.publicdb')
 
-# PUBLICDB_XMLRPC_URL = 'http://localhost:8000/raw_data/rpc'
-PUBLICDB_XMLRPC_URL = 'http://data.hisparc.nl/raw_data/rpc'
+PUBLICDB_XMLRPC_URL = urljoin(get_publicdb_base(), 'raw_data/rpc')
 
 
 def download_data(file, group, station_id, start, end, get_blobs=False):

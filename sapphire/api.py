@@ -31,16 +31,17 @@ from os import extsep, path
 from lazy import lazy
 from numpy import atleast_1d, count_nonzero, genfromtxt, logical_and, negative, ones, zeros
 from six import BytesIO
+from six.moves.urllib_parse import urljoin
 from six.moves.urllib.error import HTTPError, URLError
 from six.moves.urllib.request import urlopen
 
 from .transformations.clock import process_time
-from .utils import get_active_index, memoize
+from .utils import get_active_index, get_publicdb_base, memoize
 
 logger = logging.getLogger('api')
 
-API_BASE = 'http://data.hisparc.nl/api/'
-SRC_BASE = 'http://data.hisparc.nl/show/source/'
+API_BASE = urljoin(get_publicdb_base(), 'api/')
+SRC_BASE = urljoin(get_publicdb_base(), 'show/source/')
 LOCAL_BASE = path.join(path.dirname(__file__), 'data')
 
 

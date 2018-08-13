@@ -27,18 +27,20 @@ import tables
 
 from progressbar import ETA, Bar, Percentage, ProgressBar
 from six import itervalues
+from six.moves.urllib_parse import urljoin
 from six.moves.http_client import BadStatusLine
 from six.moves.urllib.parse import urlencode
 from six.moves.urllib.request import urlopen
 
 from . import api, storage
+from .utils import get_publicdb_base
 
-BASE = 'http://data.hisparc.nl/data/'
-EVENTS_URL = BASE + '{station_number:d}/events/?{query}'
-WEATHER_URL = BASE + '{station_number:d}/weather/?{query}'
-SINGLES_URL = BASE + '{station_number:d}/singles/?{query}'
-LIGHTNING_URL = BASE + 'knmi/lightning/{lightning_type:d}/?{query}'
-COINCIDENCES_URL = BASE + 'network/coincidences/?{query}'
+BASE = urljoin(get_publicdb_base(), 'data/')
+EVENTS_URL = urljoin(BASE, '{station_number:d}/events/?{query}')
+WEATHER_URL = urljoin(BASE, '{station_number:d}/weather/?{query}')
+SINGLES_URL = urljoin(BASE, '{station_number:d}/singles/?{query}')
+LIGHTNING_URL = urljoin(BASE, 'knmi/lightning/{lightning_type:d}/?{query}')
+COINCIDENCES_URL = urljoin(BASE, 'network/coincidences/?{query}')
 
 
 def quick_download(station_number, date=None):
