@@ -182,7 +182,7 @@ class API(object):
         :return: the data returned by the api as a string
 
         """
-        url = urljoin(base, urlpath + '/')
+        url = urljoin(base, urlpath + '/' if urlpath else '')
         logging.debug('Getting: ' + url)
         try:
             result = urlopen(url).read().decode('utf-8')
@@ -462,7 +462,7 @@ class Network(API):
             is_active = zeros(len_array)
             start_i = (data[station]['timestamp'][0] - first) // 3600
             end_i = start_i + len(data[station])
-            is_active[start_i:end_i] = 500 < data[station]['counts'] < 5000
+            is_active[start_i:end_i] = (data[station]['counts'] > 500) & (data[station]['counts'] < 5000)
             all_active = logical_and(all_active, is_active)
 
         # filter start, end
