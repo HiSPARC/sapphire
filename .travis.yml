@@ -36,8 +36,7 @@ install:
   - if [ "$ASTROPY" = "yes" ]; then
       conda install --yes astropy;
     fi
-  - pip install coverage coveralls codecov
-  - pip install -e .[dev]
+  - pip install -e .[dev,coverage]
 
 script:
   - make test
