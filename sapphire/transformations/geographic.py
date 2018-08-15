@@ -6,7 +6,7 @@
 """
 from math import atan2, cos, degrees, radians, sin, sqrt
 
-from numpy import matrix
+from numpy import array
 
 
 class WGS84Datum(object):
@@ -149,14 +149,14 @@ class FromWGS84ToENUTransformation(object):
         lat = radians(latitude)
         lon = radians(longitude)
 
-        transformation = matrix([
+        transformation = array([
             [           -sin(lon),             cos(lon),       0.],  # noqa
             [-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat)],
             [ cos(lat) * cos(lon),  cos(lat) * sin(lon), sin(lat)]])  # noqa
 
-        coordinates = matrix([[x - xr], [y - yr], [z - zr]])
+        coordinates = array([[x - xr], [y - yr], [z - zr]])
 
-        return (transformation * coordinates).A1
+        return transformation.dot(coordinates)
 
     def enu_to_ecef(self, coordinates):
         """Convert from ENU coordinates to ECEF coordinates
@@ -174,12 +174,12 @@ class FromWGS84ToENUTransformation(object):
         lat = radians(latitude)
         lon = radians(longitude)
 
-        transformation = matrix([
+        transformation = array([
             [-sin(lon), -sin(lat) * cos(lon), cos(lat) * cos(lon)],
             [ cos(lon), -sin(lat) * sin(lon), cos(lat) * sin(lon)],  # noqa
             [       0.,             cos(lat),            sin(lat)]])  # noqa
 
-        x, y, z = (transformation * matrix(coordinates).T).A1
+        x, y, z = transformation.dot(array(coordinates))
 
         return x + xr, y + yr, z + zr
 

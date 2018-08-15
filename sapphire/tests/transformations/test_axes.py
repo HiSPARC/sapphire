@@ -1,6 +1,6 @@
 import unittest
 
-from numpy import arccos, matrix, pi, sqrt, testing
+from numpy import arccos, array, pi, sqrt, testing
 
 from sapphire.transformations import axes
 
@@ -76,7 +76,7 @@ class RotationMatrixTests(unittest.TestCase):
     def test_no_rotation_matrix(self):
         """Check if no rotation is correctly returned"""
 
-        no_rotation = matrix(((1, 0, 0), (0, 1, 0), (0, 0, 1)))
+        no_rotation = array(((1, 0, 0), (0, 1, 0), (0, 0, 1)))
         testing.assert_equal(axes.rotation_matrix(0, 'x'), no_rotation)
         testing.assert_equal(axes.rotation_matrix(0, 'y'), no_rotation)
         testing.assert_equal(axes.rotation_matrix(0, 'z'), no_rotation)
@@ -85,11 +85,11 @@ class RotationMatrixTests(unittest.TestCase):
         """Rotate by 90 degrees to swap the other two axes"""
 
         testing.assert_almost_equal(axes.rotation_matrix(pi / 2., 'x'),
-                                    matrix(((1, 0, 0), (0, 0, 1), (0, -1, 0))))
+                                    array(((1, 0, 0), (0, 0, 1), (0, -1, 0))))
         testing.assert_almost_equal(axes.rotation_matrix(pi / 2., 'y'),
-                                    matrix(((0, 0, -1), (0, 1, 0), (1, 0, 0))))
+                                    array(((0, 0, -1), (0, 1, 0), (1, 0, 0))))
         testing.assert_almost_equal(axes.rotation_matrix(pi / 2, 'z'),
-                                    matrix(((0, 1, 0), (-1, 0, 0), (0, 0, 1))))
+                                    array(((0, 1, 0), (-1, 0, 0), (0, 0, 1))))
 
 
 if __name__ == '__main__':
