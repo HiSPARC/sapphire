@@ -22,7 +22,7 @@ Compass coordinates:
 - z: height above x,y-plane.
 
 """
-from numpy import arccos, arctan2, cos, degrees, matrix, radians, sin, sqrt
+from numpy import arccos, arctan2, array, cos, degrees, radians, sin, sqrt
 
 
 def cartesian_to_spherical(x, y, z):
@@ -137,8 +137,8 @@ def rotate_cartesian(x, y, z, angle, axis='z'):
 
     """
     rot = rotation_matrix(angle, axis)
-    new = (x, y, z) * rot
-    return new.item(0), new.item(1), new.item(2)
+    new = rot.T.dot((x, y, z))
+    return tuple(new)
 
 
 def rotation_matrix(angle, axis='z'):
@@ -154,8 +154,8 @@ def rotation_matrix(angle, axis='z'):
     sina = sin(angle)
     cosa = cos(angle)
     if axis == 'z':
-        return matrix(((cosa, sina, 0), (-sina, cosa, 0), (0, 0, 1)))
+        return array(((cosa, sina, 0), (-sina, cosa, 0), (0, 0, 1)))
     elif axis == 'y':
-        return matrix(((cosa, 0, -sina), (0, 1, 0), (sina, 0, cosa)))
+        return array(((cosa, 0, -sina), (0, 1, 0), (sina, 0, cosa)))
     elif axis == 'x':
-        return matrix(((1, 0, 0), (0, cosa, sina), (0, -sina, cosa)))
+        return array(((1, 0, 0), (0, cosa, sina), (0, -sina, cosa)))
