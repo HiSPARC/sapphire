@@ -66,5 +66,6 @@ setup(name='hisparc-sapphire',
                         'progressbar2>=3.7.0', 'lazy', 'mock', 'six'],
       extras_require={
           'dev': ['Sphinx', 'flake8', 'pep8-naming', 'coverage', 'flake8-isort'],
+          'coverage': ['coveralls', 'codecov'],
           'astropy': ["astropy"]},
       test_suite="sapphire.tests",)
