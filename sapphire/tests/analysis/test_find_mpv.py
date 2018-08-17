@@ -25,7 +25,7 @@ class FindMostProbableValueInSpectrumTest(unittest.TestCase):
         # Warning from the find mpv function
         with warnings.catch_warnings(record=True) as w:
             # clear the warnings from find_mpv module
-            # http://bugs.python.org/issue4180
+            # https://bugs.python.org/issue4180
             if hasattr(find_mpv, '__warningregistry__'):
                 find_mpv.__warningregistry__ = {}
             warnings.simplefilter("always")

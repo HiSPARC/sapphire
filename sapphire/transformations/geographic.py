@@ -13,7 +13,7 @@ class WGS84Datum(object):
     """Definition of the WGS84 datum
 
     These definitions are taken from
-    http://en.wikipedia.org/wiki/Geodetic_system, believing that enough
+    https://en.wikipedia.org/wiki/Geodetic_system, believing that enough
     editors have gone over them to make sure they are correct.
 
     """
@@ -135,7 +135,7 @@ class FromWGS84ToENUTransformation(object):
         ENU: East, North, Up
 
         The conversion formulas are taken from
-        http://en.wikipedia.org/wiki/Geodetic_system#From_ECEF_to_ENU
+        https://en.wikipedia.org/wiki/Geodetic_system#From_ECEF_to_ENU
 
         :param coordinates: a tuple containing the ECEF coordinates (in meters)
                             of the point to transform

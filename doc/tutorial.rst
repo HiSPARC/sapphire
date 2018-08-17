@@ -15,9 +15,9 @@ see the :doc:`sapphire`.
 .. note::
     We'll require you to know basic Python.  If you're unfamiliar with Python,
     you can look at the official `Python tutorial
-    <http://docs.python.org/2/tutorial/>`_, the book `Think Python
-    <http://www.greenteapress.com/thinkpython/>`_, or `Getting started with
-    Python for science <http://scipy-lectures.github.io/intro/>`_.
+    <https://docs.python.org/3/tutorial/>`_, the book `Think Python
+    <https://greenteapress.com/wp/think-python-2e/>`_, or `Getting started with
+    Python for science <https://www.scipy-lectures.org/intro/>`_.
 
 
 First steps
@@ -94,7 +94,7 @@ that later.
 If we want to exercise more control, we need to do some things manually. First,
 we need the ``tables`` module to actually store the data. `PyTables
 <pytables.org>`_ is based on the open HDF5 data format, which is used by `many
-(research) institutes <http://www.hdfgroup.org/HDF5/users5.html>`_.  For
+(research) institutes <https://www.hdfgroup.org/HDF5/users5.html>`_.  For
 example, it is used by the KNMI and by NASA.  To specify the date and time for
 which to download the data, we need the ``datetime`` module.  Thus, we have::
 
@@ -245,7 +245,7 @@ object directly::
 
 There you go!  But what does it all *mean*?  Well, if you want to get to
 the bottom of it, read the `PyTables documentation
-<http://pytables.github.com/usersguide/index.html>`_.  We'll give a quick
+<http://www.pytables.org/usersguide/index.html>`_.  We'll give a quick
 overview here.
 
 First, this table contains 137600 rows.  In total, there are fourteen
@@ -255,7 +255,7 @@ columns: ``event_id``, ``timestamp``, ``nanoseconds``, ``ext_timestamp``,
 
 Each event has a unique [#event_id]_ identifier, ``event_id``.  Each
 event has a Unix timestamp in GPS time, *not* UTC.  A `Unix timestamp
-<http://en.wikipedia.org/wiki/Unix_time>`_ is the number of seconds that
+<https://en.wikipedia.org/wiki/Unix_time>`_ is the number of seconds that
 have passed since January 1, 1970.  The sub-second part of the timestamp
 is given in ``nanoseconds``.  The ``ext_timestamp`` is the full
 timestamp in nanoseconds. Since there cannot exist another event with the same
@@ -378,7 +378,7 @@ from the hassle of converting timestamps and confusing local time and GPS (or
 UTC) time.  It is important to realize that the |hisparc| station uses a GPS
 clock, and thus saves all timestamps in GPS time, which is certainly not local
 time!  You can look up `GPS time
-<http://en.wikipedia.org/wiki/Global_Positioning_System#Timekeeping>`_, but
+<https://en.wikipedia.org/wiki/Global_Positioning_System#Timekeeping>`_, but
 suffice it to say that it is *almost* equal to UTC time.  The difference is the
 leap seconds introduced after 1980.  In January 2013, GPS time was ahead of UTC
 by 16 seconds.  Since July 2015, it is ahead by 17 seconds. We will not refer
@@ -482,10 +482,9 @@ with hardly any events.
 
 To fix this, we'll make use of several arguments that can be passed to the
 ``hist`` function.  We'll also make use of some NumPy (`documentation
-<http://docs.scipy.org/doc/numpy/user/>`_) functionality.  For Pylab
-documentation, see the `Matplotlib site <http://matplotlib.org>`_
-(`function reference
-<http://matplotlib.org/1.2.0/api/pyplot_summary.html>`_).  Try this::
+<https://docs.scipy.org/doc/numpy/user/>`_) functionality.  For Pylab
+documentation, see the `Matplotlib site <https://matplotlib.org>`_.
+Try this::
 
     >>> bins = linspace(0, 2000, 101)
     >>> hist(ph, bins, histtype='step', log=True)
@@ -507,7 +506,7 @@ to distinguish.  The cut at 123 ADC is due to the trigger.  The bump at
 approximately 300 ADC is the so-called MIP (minimum ionizing particle)
 peak.  For an explanation of this plot and the features of the pulseheight
 histogram, see `David's thesis
-<http://www.nikhef.nl/pub/services/biblio/theses_pdf/thesis_D_Fokkema.pdf>`_,
+<https://www.nikhef.nl/pub/services/biblio/theses_pdf/thesis_D_Fokkema.pdf>`_,
 page 44–45, and 49–51.
 
 
@@ -712,7 +711,7 @@ with at least one event in a coincidence, and a coincidence table for the
 coincidence data. Just like when coincidences were searched manually::
 
    >>> print data
-   Object Tree: 
+   Object Tree:
    / (RootGroup) ''
    /coincidences (Group) ''
    /coincidences/c_index (VLArray(776,)) ''

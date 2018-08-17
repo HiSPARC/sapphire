@@ -122,7 +122,7 @@ def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     """Calculate the angle between two (zenith, azimuth) coordinates
 
     Using the haversine formula,
-    from: http://www.movable-type.co.uk/scripts/latlong.html
+    from: https://www.movable-type.co.uk/scripts/latlong.html
 
     :param zenith#: Zenith parts of the coordinates, in radians (0, pi/2).
     :param azimuth#: Azimuth parts of the coordinates, in radians (-pi, pi).
@@ -180,7 +180,7 @@ def which(program):
 def memoize(method):
     """Memoisation cache decorator
 
-    Source: http://stackoverflow.com/a/29954160/1033535
+    Source: https://stackoverflow.com/a/29954160/1033535
 
     """
     @wraps(method)

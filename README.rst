@@ -4,15 +4,15 @@ SAPPHiRE — A Framework for HiSPARC
 Introduction
 ------------
 
-.. image:: http://img.shields.io/pypi/v/hisparc-sapphire.svg
+.. image:: https://img.shields.io/pypi/v/hisparc-sapphire.svg
    :target: https://pypi.python.org/pypi/hisparc-sapphire/
-.. image:: http://img.shields.io/badge/license-GPLv3-blue.svg
+.. image:: https://img.shields.io/badge/license-GPLv3-blue.svg
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
-.. image:: http://img.shields.io/travis/HiSPARC/sapphire/master.svg
+.. image:: https://img.shields.io/travis/HiSPARC/sapphire/master.svg
    :target: https://travis-ci.org/HiSPARC/sapphire
-.. image:: http://img.shields.io/coveralls/HiSPARC/sapphire/master.svg?label=coveralls
+.. image:: https://img.shields.io/coveralls/HiSPARC/sapphire/master.svg?label=coveralls
    :target: https://coveralls.io/r/HiSPARC/sapphire
-.. image:: http://img.shields.io/codecov/c/github/HiSPARC/sapphire/master.svg?label=codecov
+.. image:: https://img.shields.io/codecov/c/github/HiSPARC/sapphire/master.svg?label=codecov
    :target: https://codecov.io/github/HiSPARC/sapphire
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
@@ -20,7 +20,7 @@ SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 process of completing the PhD research of David Fokkema.  The history of this
 repository contains the complete simulation, analysis and plot generation code
 that formed the basis for David's `thesis
-<http://www.nikhef.nl/pub/services/biblio/theses_pdf/thesis_D_Fokkema.pdf>`_.
+<https://www.nikhef.nl/pub/services/biblio/theses_pdf/thesis_D_Fokkema.pdf>`_.
 Arne de Laat took over development of SAPPHiRE while working on his own PhD
 research.
 
@@ -36,11 +36,11 @@ anguish and despair.  SAPPHiRE's ultimate goal: no more of that.
 Installation
 ------------
 
-Required: Python. pip will take care of dependencies, but installing 
-numpy, scipy and pytables from a python distribution is preferred. We use 
+Required: Python. pip will take care of dependencies, but installing
+numpy, scipy and pytables from a python distribution is preferred. We use
 miniconda, which includes the conda package manager.
 
-First, `install conda <http://conda.pydata.org/docs/install/quick.html>`_ 
+First, `install conda <https://conda.pydata.org/docs/install/quick.html>`_
 and optionally create a virtualenv::
 
     $ conda create --name hisparc python numpy scipy pytables
@@ -49,7 +49,7 @@ and optionally create a virtualenv::
 or alternatively just install the dependencies::
 
     $ conda install numpy scipy pytables sphinx
-   
+
 Then, using pip::
 
     $ pip install hisparc-sapphire
@@ -57,7 +57,7 @@ Then, using pip::
 This should install sapphire with all requirements. More extensive
 installation instructions are available in the documentation in the
 ``doc/`` directory.  You can compile them using Sphinx, or you can
-follow this link: http://docs.hisparc.nl/sapphire/.
+follow this link: https://docs.hisparc.nl/sapphire/.
 
 To check if it worked start Python and load the package:
 
@@ -72,7 +72,7 @@ Development
 -----------
 
 Install python (preferably using conda) as described above but clone
-the sapphire repo instead of installing using pip:: 
+the sapphire repo instead of installing using pip::
 
     $ git clone https://github.com/HiSPARC/sapphire.git
     $ cd sapphire
@@ -98,5 +98,5 @@ packages)::
    $ python setup.py sdist bdist_wheel
    $ twine upload dist/hisparc-sapphire-X.Y.Z.tar.gz
    $ twine upload dist/hisparc_sapphire-X.Y.Z-py2.py3-none-any.whl
-   
+
 The latest version is then available from PyPI.

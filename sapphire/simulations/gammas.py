@@ -154,7 +154,7 @@ def simulate_detector_mips_gammas(p, theta):
 def pair_mean_free_path(gamma_energy):
     """Mean free path pair production
 
-    NIST XCOM database: http://www.nist.gov/pml/data/xcom/
+    NIST XCOM database: https://www.nist.gov/pml/data/xcom/
     compound: C9H10
     pair production (total attenuation)
 
@@ -193,7 +193,7 @@ def pair_mean_free_path(gamma_energy):
 def compton_mean_free_path(gamma_energy):
     """Mean free path compton scattering
 
-    NIST XCOM database: http://www.nist.gov/pml/data/xcom/
+    NIST XCOM database: https://www.nist.gov/pml/data/xcom/
     compound: C9H10
     compton scattering (incoherent scattering)
 

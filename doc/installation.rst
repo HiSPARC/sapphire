@@ -30,7 +30,7 @@ packages, as well as graphical environments for doing your work. Anaconda has
 packages available for the three major platforms: Windows, OS X and Linux.
 
 Anaconda includes a graphical programming environment (`Spyder
-<http://pythonhosted.org/spyder/>`_) which makes it easy to write analysis
+<https://pythonhosted.org/spyder/>`_) which makes it easy to write analysis
 scripts while creating plots, testing small snippets of code, or inspecting
 your variables.
 
@@ -49,7 +49,7 @@ you covered.
 
 Miniconda is the package manager used by the Anaconda distribution.
 Installation instructions can be found at
-http://conda.pydata.org/docs/install/quick.html. After installation, install
+https://conda.pydata.org/docs/install/quick.html. After installation, install
 the following packages::
 
     $ conda install matplotlib scipy pytables
@@ -128,9 +128,9 @@ Installing |sapphire|
 =====================
 
 The |sapphire| package has been uploaded to `PyPI
-<http://pypi.python.org>`_ so that Pip knows where to find it.
+<https://pypi.org>`_ so that ``pip`` knows where to find it.
 
-There are now several scenarios for installing |sapphire|: let Pip
+There are now several scenarios for installing |sapphire|: let ``pip``
 install the release or development version or download the source code
 and use setup.py to install it.
 
@@ -157,7 +157,7 @@ Let me see the code!
 
 If you're interested in the development of |sapphire|, you can either go to the
 `GitHub page <https://github.com/hisparc/sapphire/>`_ or install the version
-control system (we use `Git <http://git-scm.com>`_) yourself.  For that, please
+control system (we use `Git <https://git-scm.com>`_) yourself.  For that, please
 see the `GitHub Help pages <https://help.github.com/articles/set-up-git>`_.
 
 To download the code and install |sapphire|, first go to
@@ -194,7 +194,7 @@ from Python(x,y)), or open a terminal and type::
 
     $ python
 
-Or, if you prefer, `IPython <http://ipython.org>`_::
+Or, if you prefer, `IPython <https://ipython.org>`_::
 
     $ ipython
 

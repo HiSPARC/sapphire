@@ -7,7 +7,7 @@ station data, perform a simulation or start analyzing (simulated) data.
 
 While SAPPHiRE currently is very capable, the documentation is still being
 heavily developed.  Please check the `GitHub repository
-<http://github.com/hisparc/sapphire/>`_ to view the activity log or browse
+<https://github.com/hisparc/sapphire/>`_ to view the activity log or browse
 or download the code.
 
 Contents:
