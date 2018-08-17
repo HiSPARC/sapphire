@@ -24,8 +24,7 @@ if __name__ == '__main__':
     for station, group in zip(STATIONS, station_groups):
         download_data(data, group, station, START, END)
 
-    coincidences = coincidences.Coincidences(data, '/coincidences',
-                                             station_groups)
+    coincidences = coincidences.Coincidences(data, '/coincidences', station_groups)
     coincidences.search_and_store_coincidences()
 
     # This is the manual method

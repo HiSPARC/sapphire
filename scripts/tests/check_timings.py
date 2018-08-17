@@ -33,7 +33,7 @@ def main():
     t1 = process._reconstruct_time_from_trace(trace, 0.)
     t0 /= 2.5e-9
     t1 /= 2.5e-9
-    print t0, t1
+    print(t0, t1)
 
     # Assertions
     assert abs(t0 - 2.0) < 1e-6
