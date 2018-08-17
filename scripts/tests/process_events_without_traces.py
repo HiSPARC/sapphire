@@ -21,4 +21,4 @@ if __name__ == '__main__':
     process = process_events.ProcessEventsWithoutTraces(data, '/s501')
     process.process_and_store_results(overwrite=True)
     offsets = process.determine_detector_timing_offsets()
-    print "Offsets:", offsets
+    print("Offsets:", offsets)

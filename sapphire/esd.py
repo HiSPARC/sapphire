@@ -58,7 +58,7 @@ def quick_download(station_number, date=None):
 
         >>> import sapphire.esd
         >>> data = sapphire.esd.quick_download(501)
-        >>> print data
+        >>> print(data)
         data1.h5 (File) u''
         Last modif.: 'Mon Jun  9 22:03:50 2014'
         Object Tree:

@@ -40,13 +40,13 @@ In that case, you don't need to import pylab.
 
 Whenever you see something like::
 
-    >>> print 'Hello, world'
+    >>> print('Hello, world')
     Hello, world
 
 it means we're typing in Python code.  The ``>>>`` is the Python *prompt*.
 It tells you that the Python interpreter is waiting for you to give it
-some instructions.  In the above example, we've typed in ``print 'Hello,
-world'``.  The interpreter subsequently executed the code and printed
+some instructions.  In the above example, we've typed in ``print ('Hello,
+world')``.  The interpreter subsequently executed the code and printed
 *Hello, world* on the screen.
 
 The first thing we'll have to do to start using |sapphire| is to *import*
@@ -78,7 +78,7 @@ quickly start playing with data::
     >>> from sapphire import esd
     >>> data = esd.quick_download(102)
     100%|####################################|Time: 5.91
-    >>> print data
+    >>> print(data)
     data8.h5 (File) ''
     Last modif.: 'Thu Oct 22 16:02:05 2015'
     Object Tree:
@@ -190,7 +190,7 @@ Looking around
 If you want to know what groups and tables are contained within the data
 file, just ``print`` it::
 
-    >>> print data
+    >>> print(data)
     mydata.h5 (File) ''
     Last modif.: 'Sat Dec 29 14:50:55 2012'
     Object Tree:
@@ -209,12 +209,12 @@ To directly access any object in the hierarchy, you can make use of the
 the remaining path, with dots instead of slashes.  For example, to access
 the events table::
 
-    >>> print data.root.s501.events
+    >>> print(data.root.s501.events)
     /s501/events (Table(137600,)) 'HiSPARC coincidences table'
 
 If you want, you can also access the object using its name as a string, by calling ``get_node`` on the file handler::
 
-    >>> print data.get_node('/s501/events')
+    >>> print(data.get_node('/s501/events'))
     /s501/events (Table(137600,)) 'HiSPARC coincidences table'
 
 Of course, we'd like to get some more information.  You can drop the print
@@ -548,7 +548,7 @@ At this point, we have downloaded data for three stations. Note that we
 used the :mod:`sapphire.esd` for downloading. Thus, we have no traces
 and the download is quick. Let's see what the datafile now contains::
 
-    >>> print data
+    >>> print(data)
     data.h5 (File) ''
     Last modif.: 'Mon Jan 14 17:34:39 2013'
     Object Tree:
@@ -581,7 +581,7 @@ If you want to tweak the process using non-default parameters, see the
 module documentation (:mod:`sapphire.analysis.coincidences`).  For now,
 let us turn to the results::
 
-    >>> print data
+    >>> print(data)
     data.h5 (File) ''
     Last modif.: 'Mon Jan 14 17:46:23 2013'
     Object Tree:
@@ -710,7 +710,7 @@ If you now look in the data file it will contain event tables for all stations
 with at least one event in a coincidence, and a coincidence table for the
 coincidence data. Just like when coincidences were searched manually::
 
-   >>> print data
+   >>> print(data)
    Object Tree:
    / (RootGroup) ''
    /coincidences (Group) ''

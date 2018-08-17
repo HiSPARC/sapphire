@@ -36,9 +36,9 @@ def transformspeeds():
     celestial.zenithazimuth_to_equatorial_astropy(0, 0, int(1e9), a)
     t4 = time.clock() - t0
 
-    print "EQ->HO, EQ-> ZA, HO->EQ, ZA->EQ runtimes:"
+    print("EQ->HO, EQ-> ZA, HO->EQ, ZA->EQ runtimes:")
 
-    print t1, t2, t3, t4
+    print(t1, t2, t3, t4)
 
 
 def angle_between_horizontal(azimuth1, altitude1, azimuth2, altitude2):
@@ -406,4 +406,4 @@ try:
 except ImportError:
     # Pyephem is not required so there is a case for when it is not present
     def pyephem_comp():
-        print "Pyephem not present; no comparisons will be done"
+        print("Pyephem not present; no comparisons will be done")

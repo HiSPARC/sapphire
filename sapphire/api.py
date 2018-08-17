@@ -12,7 +12,7 @@
         >>> stations = [5, 3102, 504, 7101, 8008, 13005]
         >>> clusters = [Station(station).cluster for station in stations]
         >>> for station, cluster in zip(stations, clusters):
-        ...     print 'Station %d is in cluster %s.' % (station, cluster)
+        ...     print('Station %d is in cluster %s.' % (station, cluster))
         Station 5 is in cluster Amsterdam.
         Station 3102 is in cluster Leiden.
         Station 504 is in cluster Amsterdam.

@@ -83,7 +83,7 @@ This script defines a function to calculate the squares of numbers. We use it to
    >>> from is_useful import square
    1 2 3
    1 4 9
-   >>> print square(16)
+   >>> print(square(16))
    256
 
 What happened? When we import a module, the code *inside* that module is run as well. We don't want that. When we *run* a script, the special variable ``__name__`` is equal to ``'__main__'``. When we *import* a script, the variable is equal to the name of the module, and *not* equal to ``'__main__'``. So, we can check for that:
@@ -100,7 +100,7 @@ If we run the script stand-alone, we get the expected result::
 But we can now also import the script without any unintended side effects::
 
    >>> from is_useful_and_importable import square
-   >>> print square(16)
+   >>> print(square(16))
    256
 
 It is good practice to always include the ``__name__ == '__main__'`` check.

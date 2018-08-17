@@ -86,7 +86,7 @@ class Master(object):
         try:
             sim = Simulation(*args, **kwargs)
         except RuntimeError, msg:
-            print msg
+            print(msg)
             return
         else:
             sim.run()

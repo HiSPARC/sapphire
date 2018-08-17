@@ -19,12 +19,10 @@ So to find e+/e-:
 
     particle.id = 1206
     if particle.id > 200:
-        print 'atom: %s' % particles.ATOMIC_NUMBER[particle.id % 100]
+        print('atom: %s' % particles.ATOMIC_NUMBER[particle.id % 100])
 
 
 """
-
-
 import re
 
 from six import iteritems

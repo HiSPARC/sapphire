@@ -85,7 +85,7 @@ def plot_uncertainty_mip(table):
     for N in range(1, 6):
         x.append(N)
         events = table.read_where('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
-        print len(events),
+        print(len(events),)
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
@@ -97,11 +97,11 @@ def plot_uncertainty_mip(table):
         y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
         y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
 
-    print
-    print "mip: min_n134, theta_std, phi_std"
+    print()
+    print("mip: min_n134, theta_std, phi_std")
     for u, v, w in zip(x, y, y2):
-        print u, v, w
-    print
+        print(u, v, w)
+    print()
 
     # Simulation data
     sx, sy, sy2 = loadtxt(os.path.join(DATADIR, 'DIR-plot_uncertainty_mip.txt'))
@@ -118,7 +118,7 @@ def plot_uncertainty_mip(table):
     with tables.open_file('master-ch4v2.h5') as data2:
         mc = my_std_t_for_R(data2, x, R_list)
     mc = sqrt(mc ** 2 + 1.2 ** 2 + 2.5 ** 2)
-    print mc
+    print(mc)
     ey = mc * sqrt(phi_errsq)
     ey2 = mc * sqrt(theta_errsq)
 
@@ -179,7 +179,7 @@ def plot_uncertainty_zenith(table):
         x.append(theta)
         THETA = deg2rad(theta)
         events = table.read_where('(min_n134 >= N) & (abs(reference_theta - THETA) <= DTHETA) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
-        print theta, len(events),
+        print(theta, len(events),)
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
@@ -190,11 +190,11 @@ def plot_uncertainty_zenith(table):
         #y2.append(std(errors2))
         y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
         y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
-    print
-    print "zenith: theta, theta_std, phi_std"
+    print()
+    print("zenith: theta, theta_std, phi_std")
     for u, v, w in zip(x, y, y2):
-        print u, v, w
-    print
+        print(u, v, w)
+    print()
 
     # Simulation data
     sx, sy, sy2 = loadtxt(os.path.join(DATADIR, 'DIR-plot_uncertainty_zenith.txt'))
@@ -258,7 +258,7 @@ def plot_uncertainty_core_distance(table):
     for R in range(0, 81, 20):
         x.append(R)
         events = table.read_where('(abs(min_n134 - N) <= DN) & (abs(reference_theta - THETA) <= DTHETA) & (abs(r - R) <= DR) & (abs(log10(k_energy) - LOGENERGY) <= DLOGENERGY)')
-        print len(events),
+        print(len(events),)
         errors = events['reference_theta'] - events['reconstructed_theta']
         # Make sure -pi < errors < pi
         errors = (errors + pi) % (2 * pi) - pi
@@ -270,11 +270,11 @@ def plot_uncertainty_core_distance(table):
         y.append((scoreatpercentile(errors, 83) - scoreatpercentile(errors, 17)) / 2)
         y2.append((scoreatpercentile(errors2, 83) - scoreatpercentile(errors2, 17)) / 2)
 
-    print
-    print "R: theta_std, phi_std"
+    print()
+    print("R: theta_std, phi_std")
     for u, v, w in zip(x, y, y2):
-        print u, v, w
-    print
+        print(u, v, w)
+    print()
 
 #    # Simulation data
     sx, sy, sy2 = loadtxt(os.path.join(DATADIR, 'DIR-plot_uncertainty_core_distance.txt'))
@@ -483,7 +483,7 @@ def boxplot_arrival_times(table, N):
         t1 = sel[:]['t1']
         ct1 = t1.compress((t1 > -999) & (t2 > -999))
         ct2 = t2.compress((t1 > -999) & (t2 > -999))
-        print len(t1), len(t2), len(ct1), len(ct2)
+        print(len(t1), len(t2), len(ct1), len(ct2))
         t25.append(scoreatpercentile(abs(ct2 - ct1), 25))
         t50.append(scoreatpercentile(abs(ct2 - ct1), 50))
         t75.append(scoreatpercentile(abs(ct2 - ct1), 75))
@@ -569,7 +569,7 @@ def boxplot_core_distances_for_mips(table):
         r50_list.append(scoreatpercentile(r, 50))
         r75_list.append(scoreatpercentile(r, 75))
         x.append(N)
-        print len(r)
+        print(len(r))
 
     sx, sr25, sr50, sr75 = loadtxt(os.path.join(DATADIR, 'DIR-save_for_kascade_boxplot_core_distances_for_mips.txt'))
 
@@ -661,7 +661,7 @@ def plot_fsot_vs_lint_for_zenith(fsot, lint):
 
         x.append((low + high) / 2)
 
-        print x[-1], len(f_sel), len(l_sel)
+        print(x[-1], len(f_sel), len(l_sel))
 
     clf()
     plot(x, rad2deg(f_y), label="FSOT phi")

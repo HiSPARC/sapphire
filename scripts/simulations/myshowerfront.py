@@ -47,7 +47,7 @@ def my_std_t(data, N):
     t = get_front_arrival_time(sim, 30, 5, pi / 8)
     n, bins = histogram(t, bins=linspace(0, 50, 401))
     mct = monte_carlo_timings(n, bins, 10000)
-    print "Monte Carlo:", N
+    print("Monte Carlo:", N)
 
     mint_list = []
     i = 0
@@ -70,7 +70,7 @@ def my_std_t_for_R(data, N_list, R_list):
         t = get_front_arrival_time(sim, R, 5, pi / 8)
         n, bins = histogram(t, bins=linspace(0, 50, 401))
         mct = monte_carlo_timings(n, bins, 10000)
-        print "Monte Carlo:", N
+        print("Monte Carlo:", N)
 
         mint_list = []
         i = 0
@@ -91,7 +91,7 @@ def my_t_draw_something(data, N, num_events):
     t = get_front_arrival_time(sim, 20, 5, pi / 8)
     n, bins = histogram(t, bins=linspace(0, 50, 201))
     mct = monte_carlo_timings(n, bins, num_events * N)
-    print "Monte Carlo:", N
+    print("Monte Carlo:", N)
 
     mint_list = []
     i = 0
@@ -121,8 +121,8 @@ def plot_R():
     xlabel("Core distance [m]")
     ylabel("Number of events")
 
-    print "mean", mean(R)
-    print "median", median(R)
+    print("mean", mean(R))
+    print("median", median(R))
 
     graph.set_xlabel(r"Core distance [\si{\meter}]")
     graph.set_ylabel("Number of events")
@@ -155,7 +155,7 @@ def plot_arrival_times():
     graph.set_ylimits(min=0)
     graph.save('plots/SIM-T')
 
-    print median(t), median(mct), median(mint)
+    print(median(t), median(mct), median(mint))
 
 
 if __name__ == '__main__':

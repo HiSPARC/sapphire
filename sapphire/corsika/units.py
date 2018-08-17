@@ -23,7 +23,7 @@ example:
 
 .. code-block:: python
 
-    >>> print "distance = %f mm" %  distance / mm
+    >>> print("distance = %f mm" %  distance / mm)
     1500000 mm
 
 The base units are:

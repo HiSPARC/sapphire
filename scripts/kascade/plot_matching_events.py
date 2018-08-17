@@ -37,11 +37,10 @@ def plot_nearest_neighbors(data, limit=None):
     hisparc_group = data.root.hisparc.cluster_kascade.station_601
     kascade_group = data.root.kascade
 
-    coincidences = KascadeCoincidences(data, hisparc_group, kascade_group,
-                                       ignore_existing=True)
+    coincidences = KascadeCoincidences(data, hisparc_group, kascade_group, ignore_existing=True)
 
     #dt_opt = find_optimum_dt(coincidences, p0=-13, limit=1000)
-    #print dt_opt
+    #print(dt_opt)
 
     graph = GraphArtist(axis='semilogy')
     styles = iter(['solid', 'dashed', 'dashdotted'])
@@ -50,12 +49,11 @@ def plot_nearest_neighbors(data, limit=None):
     figure()
     #for shift in -12, -13, dt_opt, -14:
     for shift in -12, -13, -14:
-        print "Shifting", shift
+        print("Shifting", shift)
         coincidences.search_coincidences(shift, dtlimit=1, limit=limit)
-        print "."
+        print(".")
         dts = coincidences.coincidences['dt']
-        n, bins, p = hist(abs(dts) / 1e9, bins=linspace(0, 1, 101),
-                          histtype='step', label='%.3f s' % shift)
+        n, bins, p = hist(abs(dts) / 1e9, bins=linspace(0, 1, 101), histtype='step', label='%.3f s' % shift)
         n = [u if u else 1e-99 for u in n]
         graph.histogram(n, bins, linestyle=styles.next() + ',gray')
         if uncorrelated is None:
@@ -84,7 +82,7 @@ def find_optimum_dt(coincidences, p0, delta=1e-3, limit=None):
     dt_old = Inf
 
     while abs(dt_new - dt_old) > delta:
-        print "Trying:", dt_new
+        print("Trying:", dt_new)
         coincidences.search_coincidences(dt_new, dtlimit=1, limit=limit)
         dts = coincidences.coincidences['dt'] / 1e9
 
@@ -109,8 +107,7 @@ def plot_residual_time_differences(data):
     t0_idx = min(idxes)
     t1_idx = max(idxes)
 
-    dts = c_index.read_where('(t0_idx <= k_idx) & (k_idx < t1_idx)',
-                            field='dt')
+    dts = c_index.read_where('(t0_idx <= k_idx) & (k_idx < t1_idx)', field='dt')
     all_dts = c_index.col('dt')
 
     figure()
