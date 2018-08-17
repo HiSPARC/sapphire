@@ -81,21 +81,15 @@ def create_and_store_test_data():
 
     perform_esd_download_data(test_data_path)
     perform_download_coincidences(test_data_coincidences_path)
-    urlretrieve('http://data.hisparc.nl/data/501/weather/'
-                '?download=True&start=2012-01-01&end=2012-01-01+00:01:00',
+    urlretrieve(esd.WEATHER_URL.format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
                 weather_source)
-    urlretrieve('http://data.hisparc.nl/data/501/events/'
-                '?download=True&start=2012-01-01&end=2012-01-01+00:01:00',
+    urlretrieve(esd.EVENTS_URL.format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
                 events_source)
-    urlretrieve('http://data.hisparc.nl/data/501/singles'
-                '?download=True&start=2017-01-01&end=2017-01-01+00:10:00',
+    urlretrieve(esd.SINGLES_URL.format(station_number=501, query='start=2017-01-01&end=2017-01-01+00:10:00'),
                 singles_source)
-    urlretrieve('http://data.hisparc.nl/data/knmi/lightning/4/'
-                '?download=True&start=2015-07-17&end=2015-07-17+00:10:00',
+    urlretrieve(esd.LIGHTNING_URL.format(lightning_type=4, query='start=2015-07-17&end=2015-07-17+00:10:00'),
                 lightning_source)
-    urlretrieve('http://data.hisparc.nl/data/network/coincidences/'
-                '?download=True&start=2016-03-10&end=2016-03-10+00:01:00'
-                '&stations=501,+510&n=2',
+    urlretrieve(esd.COINCIDENCES_URL.format(query='start=2016-03-10&end=2016-03-10+00:01:00&stations=501,+510&n=2'),
                 coincidences_source)
 
 
