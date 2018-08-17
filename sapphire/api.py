@@ -31,8 +31,8 @@ from os import extsep, path
 from lazy import lazy
 from numpy import atleast_1d, count_nonzero, genfromtxt, logical_and, negative, ones, zeros
 from six import BytesIO
-from six.moves.urllib_parse import urljoin
 from six.moves.urllib.error import HTTPError, URLError
+from six.moves.urllib.parse import urljoin
 from six.moves.urllib.request import urlopen
 
 from .transformations.clock import process_time

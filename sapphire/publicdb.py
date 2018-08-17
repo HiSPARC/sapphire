@@ -13,7 +13,7 @@ import re
 
 import tables
 
-from six.moves.urllib_parse import urljoin
+from six.moves.urllib.parse import urljoin
 from six.moves.urllib.request import urlretrieve
 from six.moves.xmlrpc_client import ServerProxy
 

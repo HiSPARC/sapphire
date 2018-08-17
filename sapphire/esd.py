@@ -27,9 +27,8 @@ import tables
 
 from progressbar import ETA, Bar, Percentage, ProgressBar
 from six import itervalues
-from six.moves.urllib_parse import urljoin
 from six.moves.http_client import BadStatusLine
-from six.moves.urllib.parse import urlencode
+from six.moves.urllib.parse import urlencode, urljoin
 from six.moves.urllib.request import urlopen
 
 from . import api, storage
