@@ -28,17 +28,18 @@ import tables
 from progressbar import ETA, Bar, Percentage, ProgressBar
 from six import itervalues
 from six.moves.http_client import BadStatusLine
-from six.moves.urllib.parse import urlencode
+from six.moves.urllib.parse import urlencode, urljoin
 from six.moves.urllib.request import urlopen
 
 from . import api, storage
+from .utils import get_publicdb_base
 
-BASE = 'http://data.hisparc.nl/data/'
-EVENTS_URL = BASE + '{station_number:d}/events/?{query}'
-WEATHER_URL = BASE + '{station_number:d}/weather/?{query}'
-SINGLES_URL = BASE + '{station_number:d}/singles/?{query}'
-LIGHTNING_URL = BASE + 'knmi/lightning/{lightning_type:d}/?{query}'
-COINCIDENCES_URL = BASE + 'network/coincidences/?{query}'
+BASE = urljoin(get_publicdb_base(), 'data/')
+EVENTS_URL = urljoin(BASE, '{station_number:d}/events/?{query}')
+WEATHER_URL = urljoin(BASE, '{station_number:d}/weather/?{query}')
+SINGLES_URL = urljoin(BASE, '{station_number:d}/singles/?{query}')
+LIGHTNING_URL = urljoin(BASE, 'knmi/lightning/{lightning_type:d}/?{query}')
+COINCIDENCES_URL = urljoin(BASE, 'network/coincidences/?{query}')
 
 
 def quick_download(station_number, date=None):
@@ -79,8 +80,7 @@ def _first_available_numbered_path():
 
     """
     path = 'data%d.h5'
-    return next(path % idx for idx in itertools.count(start=1)
-                if not os.path.exists(path % idx))
+    return next(path % idx for idx in itertools.count(start=1) if not os.path.exists(path % idx))
 
 
 def load_data(file, group, tsv_file, type='events'):
@@ -132,12 +132,9 @@ def download_data(file, group, station_number, start=None, end=None, type='event
     :param file: the PyTables datafile handler.
     :param group: the PyTables destination group, which need not exist.
     :param station_number: The HiSPARC station number for which to get data.
-    :param start: a datetime instance defining the start of the search
-        interval.
-    :param end: a datetime instance defining the end of the search
-        interval.
-    :param type: the datatype to download, either 'events', 'weather',
-        or 'singles'.
+    :param start: a datetime instance defining the start of the search interval.
+    :param end: a datetime instance defining the end of the search interval.
+    :param type: the datatype to download, either 'events', 'weather', or 'singles'.
     :param progress: if True show a progressbar while downloading.
 
     If group is None, use '/s<station_number>' as a default.
@@ -356,8 +353,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     # sensible defaults for start and end
     if start is None:
         if end is not None:
-            raise RuntimeError("Start is None, but end is not. "
-                               "I can't go on like this.")
+            raise RuntimeError("Start is None, but end is not. I can't go on like this.")
         else:
             yesterday = datetime.date.today() - datetime.timedelta(days=1)
             start = datetime.datetime.combine(yesterday, datetime.time(0, 0))
@@ -368,8 +364,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
         raise Exception('To few stations in query, give at least n.')
 
     # build and open url, create tables and set read function
-    query = urlencode({'cluster': cluster, 'stations': stations,
-                       'start': start, 'end': end, 'n': n})
+    query = urlencode({'cluster': cluster, 'stations': stations, 'start': start, 'end': end, 'n': n})
     url = COINCIDENCES_URL.format(query=query)
     station_groups = _read_or_get_station_groups(file, group)
     c_group = _get_or_create_coincidences_tables(file, group, station_groups)
@@ -624,6 +619,7 @@ def _create_singles_table(file, group):
                    'slv_ch1_high': tables.Int32Col(pos=7),
                    'slv_ch2_low': tables.Int32Col(pos=8),
                    'slv_ch2_high': tables.Int32Col(pos=9)}
+
     return file.create_table(group, 'singles', description, createparents=True)
 
 

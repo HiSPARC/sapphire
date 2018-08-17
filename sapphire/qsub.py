@@ -35,11 +35,9 @@ def check_queue(queue):
 
     """
     utils.which('qstat')
-    all_jobs = int(subprocess.check_output('qstat {queue} | '
-                                           'grep " [QR] " | wc -l'
+    all_jobs = int(subprocess.check_output('qstat {queue} | grep " [QR] " | wc -l'
                                            .format(queue=queue), shell=True))
-    user_jobs = int(subprocess.check_output('qstat -u $USER {queue} | '
-                                            'grep " [QR] " | wc -l'
+    user_jobs = int(subprocess.check_output('qstat -u $USER {queue} | grep " [QR] " | wc -l'
                                             .format(queue=queue), shell=True))
 
     if queue == 'express':
@@ -74,11 +72,9 @@ def submit_job(script, name, queue, extra=''):
     # -j oe: merge standard error into the standard output
     # -N: a recognizable name for the job
     qsub = ('qsub -q {queue} -V -z -j oe -N {name} {extra} {script}'
-            .format(queue=queue, name=script_name, script=script_path,
-                    extra=extra))
+            .format(queue=queue, name=script_name, script=script_path, extra=extra))
 
-    result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
-                                     shell=True)
+    result = subprocess.check_output(qsub, stderr=subprocess.STDOUT, shell=True)
     if not result == b'':
         raise Exception('%s - Error occured: %s' % (name, result))
 

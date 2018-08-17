@@ -8,6 +8,7 @@ from __future__ import division
 from bisect import bisect_right
 from distutils.spawn import find_executable
 from functools import wraps
+from os import environ
 
 from numpy import arcsin, ceil, floor, pi, round, sin, sqrt
 from progressbar import ETA, Bar, Percentage, ProgressBar
@@ -20,6 +21,16 @@ ERR = [-1, -999]
 
 #: Speed of light in vacuum in m / ns.
 c = 0.299792458
+
+
+def get_publicdb_base():
+    """Get the HiSPARC Public Database base URL
+
+    This can be configured by setting the PUBLICDB_BASE environment
+    variable to the desired URL.
+
+    """
+    return environ.get('PUBLICDB_BASE', 'http://data.hisparc.nl')
 
 
 def pbar(iterable, length=None, show=True, **kwargs):

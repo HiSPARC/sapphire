@@ -48,8 +48,7 @@ class StoreKascadeData(object):
 
         if kascade_path in data:
             if not force:
-                raise RuntimeError("Cancelling data storage; %s already exists"
-                                   % kascade_path)
+                raise RuntimeError("Cancelling data storage; %s already exists" % kascade_path)
             else:
                 data.remove_node(kascade_path, recursive=True)
 
@@ -75,8 +74,7 @@ class StoreKascadeData(object):
                 raise RuntimeError("HiSPARC event table is empty")
 
             if self.progress:
-                print("Processing data from %s to %s" % (time.ctime(start),
-                                                         time.ctime(stop)))
+                print("Processing data from %s to %s" % (time.ctime(start), time.ctime(stop)))
         else:
             start = None
             stop = None
@@ -164,16 +162,14 @@ class StoreKascadeData(object):
 
 
 class KascadeCoincidences(object):
-    def __init__(self, data, hisparc_group, kascade_group, overwrite=False,
-                 ignore_existing=False):
+    def __init__(self, data, hisparc_group, kascade_group, overwrite=False, ignore_existing=False):
         self.data = data
         self.hisparc_group = data.get_node(hisparc_group)
         self.kascade_group = data.get_node(kascade_group)
 
         if 'c_index' in self.kascade_group:
             if not overwrite and not ignore_existing:
-                raise RuntimeError("I found existing coincidences stored in "
-                                   "the KASCADE group")
+                raise RuntimeError("I found existing coincidences stored in the KASCADE group")
             elif overwrite:
                 data.remove_node(kascade_group, 'c_index')
 
@@ -266,16 +262,13 @@ class KascadeCoincidences(object):
             [coinc_dt, coinc_h_idx, coinc_k_idx], names='dt, h_idx, k_idx')
 
     def store_coincidences(self):
-        self.data.create_table(self.kascade_group, 'c_index',
-                               self.coincidences)
+        self.data.create_table(self.kascade_group, 'c_index', self.coincidences)
 
     def _get_cached_sorted_id_and_timestamp_arrays(self):
         if not hasattr(self, '_h'):
-            self._h = self._get_sorted_id_and_timestamp_array(
-                self.hisparc_group)
+            self._h = self._get_sorted_id_and_timestamp_array(self.hisparc_group)
         if not hasattr(self, '_k'):
-            self._k = self._get_sorted_id_and_timestamp_array(
-                self.kascade_group)
+            self._k = self._get_sorted_id_and_timestamp_array(self.kascade_group)
         return self._h.copy(), self._k.copy()
 
     def _get_sorted_id_and_timestamp_array(self, group):

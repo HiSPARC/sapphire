@@ -34,8 +34,7 @@ class Detector(object):
 
     _detector_size = (.5, 1.)
 
-    def __init__(self, station, position, orientation='UD',
-                 detector_timestamps=None):
+    def __init__(self, station, position, orientation='UD', detector_timestamps=None):
         """Initialize detector
 
         :param station: station instance this detector is part of.
@@ -73,8 +72,7 @@ class Detector(object):
         if len(detector_timestamps) == len(self.x):
             self.timestamps = detector_timestamps
         else:
-            raise Exception('Number of timestamps must equal number of '
-                            'postions')
+            raise Exception('Number of timestamps must equal number of postions')
         self.index = -1
 
     def _update_timestamp(self, timestamp):
@@ -159,8 +157,7 @@ class Detector(object):
         # station frame
         coso = cos(-o)
         sino = sin(-o)
-        corners = [(x + cx * coso - cy * sino, y + cx * sino + cy * coso)
-                   for cx, cy in corners]
+        corners = [(x + cx * coso - cy * sino, y + cx * sino + cy * coso) for cx, cy in corners]
 
         # cluster frame
         sina = sin(alpha_station)
@@ -172,8 +169,7 @@ class Detector(object):
 
     def __repr__(self):
         id = next(i for i, d in enumerate(self.station.detectors) if self is d)
-        return ("<%s, id: %d, station: %r>" %
-                (self.__class__.__name__, id, self.station))
+        return "<%s, id: %d, station: %r>" % (self.__class__.__name__, id, self.station)
 
 
 class Station(object):
@@ -232,8 +228,7 @@ class Station(object):
         if len(station_timestamps) == len(self.x):
             self.timestamps = station_timestamps
         else:
-            raise Exception('Number of timestamps must equal number of '
-                            'postions')
+            raise Exception('Number of timestamps must equal number of postions')
 
         if detectors is None:
             # detector positions for a standard station
@@ -269,8 +264,7 @@ class Station(object):
         """
         if self._detectors is None:
             self._detectors = []
-        self._detectors.append(Detector(self, position, orientation,
-                                        detector_timestamps))
+        self._detectors.append(Detector(self, position, orientation, detector_timestamps))
 
     @property
     def detectors(self):
@@ -378,8 +372,7 @@ class Station(object):
             absolute coordinate system
 
         """
-        x, y, z = zip(*[detector.get_coordinates()
-                      for detector in self.detectors])
+        x, y, z = zip(*[detector.get_coordinates() for detector in self.detectors])
 
         x0 = np.nanmean(x)
         y0 = np.nanmean(y)
@@ -389,8 +382,7 @@ class Station(object):
 
     def __repr__(self):
         return ("<%s, id: %d, number: %d, cluster: %r>" %
-                (self.__class__.__name__, self.station_id, self.number,
-                 self.cluster))
+                (self.__class__.__name__, self.station_id, self.number, self.cluster))
 
 
 class BaseCluster(object):
@@ -398,8 +390,7 @@ class BaseCluster(object):
 
     _stations = None
 
-    def __init__(self, position=(0, 0, 0), angle=0,
-                 lla=(52.35592417, 4.95114402, 56.10234594)):
+    def __init__(self, position=(0, 0, 0), angle=0, lla=(52.35592417, 4.95114402, 56.10234594)):
         """Override this function to build your cluster
 
         :param position: x,y,z position for the center of the cluster.
@@ -705,8 +696,7 @@ class CompassStations(BaseCluster):
                      for r, alpha, z, beta in detectors]
 
         super(CompassStations, self)._add_station(
-            position, None, detectors, station_timestamps, detector_timestamps,
-            number)
+            position, None, detectors, station_timestamps, detector_timestamps, number)
 
 
 class SimpleCluster(BaseCluster):
@@ -805,8 +795,7 @@ class HiSPARCStations(CompassStations):
 
     """
 
-    def __init__(self, stations, skip_missing=False, force_fresh=False,
-                 force_stale=False):
+    def __init__(self, stations, skip_missing=False, force_fresh=False, force_stale=False):
         super(HiSPARCStations, self).__init__()
 
         missing_gps = []
@@ -815,8 +804,7 @@ class HiSPARCStations(CompassStations):
 
         for station in stations:
             try:
-                station_info = api.Station(station, force_fresh=force_fresh,
-                                           force_stale=force_stale)
+                station_info = api.Station(station, force_fresh=force_fresh, force_stale=force_stale)
                 locations = station_info.gps_locations
                 llas = locations[['latitude', 'longitude', 'altitude']]
                 station_ts = locations['timestamp']
@@ -825,8 +813,7 @@ class HiSPARCStations(CompassStations):
                     missing_gps.append(station)
                     continue
                 else:
-                    raise KeyError('Could not get GPS info for station %d.' %
-                                   station)
+                    raise KeyError('Could not get GPS info for station %d.' % station)
             else:
                 n_detectors = station_info.n_detectors()
 
@@ -834,8 +821,7 @@ class HiSPARCStations(CompassStations):
                 # Get latest GPS location of first station with locations
                 # as reference
                 self.lla = llas[-1]
-                transformation = geographic.FromWGS84ToENUTransformation(
-                    self.lla)
+                transformation = geographic.FromWGS84ToENUTransformation(self.lla)
                 reference_required = False
 
             # Station locations in ENU
@@ -855,11 +841,9 @@ class HiSPARCStations(CompassStations):
                     razbs = [(5, 90, 0, 0), (5, 270, 0, 0)]
                 elif n_detectors == 4:
                     d = 10 / sqrt(3)
-                    razbs = [(d, 0, 0, 0), (0, 0, 0, 0),
-                             (d, -120, 0, 90), (d, 120, 0, 90)]
+                    razbs = [(d, 0, 0, 0), (0, 0, 0, 0), (d, -120, 0, 90), (d, 120, 0, 90)]
                 else:
-                    raise RuntimeError("Detector count unknown for station %d."
-                                       % station)
+                    raise RuntimeError("Detector count unknown for station %d." % station)
                 detector_ts = [0]
 
             self._add_station(enu, razbs, station_ts, detector_ts, station)
@@ -874,8 +858,7 @@ class HiSPARCStations(CompassStations):
                           'defaults will be used!' % str(missing_detectors))
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__.__name__,
-                           [s.number for s in self.stations])
+        return "%s(%r)" % (self.__class__.__name__, [s.number for s in self.stations])
 
 
 class ScienceParkCluster(HiSPARCStations):
@@ -892,12 +875,10 @@ class ScienceParkCluster(HiSPARCStations):
                  force_stale=False):
         if stations is None:
             network = api.Network(force_fresh, force_stale)
-            stations = [sn for sn in network.station_numbers(subcluster=500)
-                        if sn != 507]
+            stations = [sn for sn in network.station_numbers(subcluster=500) if sn != 507]
         else:
             stations = [sn for sn in stations if 500 < sn < 600]
-        super(ScienceParkCluster, self).__init__(stations, skip_missing,
-                                                 force_fresh, force_stale)
+        super(ScienceParkCluster, self).__init__(stations, skip_missing, force_fresh, force_stale)
 
 
 class HiSPARCNetwork(HiSPARCStations):
@@ -908,8 +889,7 @@ class HiSPARCNetwork(HiSPARCStations):
         network = api.Network(force_fresh, force_stale)
         stations = network.station_numbers()
         skip_missing = True  # Likely some station without GPS location
-        super(HiSPARCNetwork, self).__init__(stations, skip_missing,
-                                             force_fresh, force_stale)
+        super(HiSPARCNetwork, self).__init__(stations, skip_missing, force_fresh, force_stale)
 
     def __repr__(self):
         return "<%s>" % self.__class__.__name__
