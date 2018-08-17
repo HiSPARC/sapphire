@@ -19,6 +19,7 @@ Contents:
    installation
    tutorial
    examples
+   configuration
    sapphire
 
 
