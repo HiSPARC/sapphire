@@ -11,6 +11,7 @@ import tables
 from mock import MagicMock, Mock, call, patch, sentinel
 from numpy import all, array, isnan, nan, std
 from numpy.random import normal, uniform
+from six.moves import zip
 
 from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration
@@ -32,7 +33,8 @@ class DetectorTimingTests(unittest.TestCase):
             events = data.get_node('/station_501', 'events')
             station = SingleStation().get_station(0)
             offsets = calibration.determine_detector_timing_offsets(events, station)
-        self.assertEqual([-7.7414905117612465, 0.0, -1.6725096197014802, -7.4348643573709419], offsets)
+        for expected, actual in zip([-7.7415, 0.0, -1.6725, -7.4349], offsets):
+            self.assertAlmostEqual(expected, actual, 4)
 
     @patch.object(calibration, 'fit_timing_offset')
     def test_determine_detector_timing_offset(self, mock_fit):
