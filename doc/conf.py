@@ -45,7 +45,7 @@ copyright = u'2009-2018, {authors}'.format(authors=AUTHORS)
 # built documents.
 #
 # The current version.
-version = '1.7.0'
+version = '1.7.1'
 release = version
 
 # List of patterns, relative to source directory, that match files and
