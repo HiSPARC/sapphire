@@ -5,7 +5,6 @@ import warnings
 from datetime import date, datetime
 
 import six
-
 import tables
 
 from mock import MagicMock, Mock, call, patch, sentinel
