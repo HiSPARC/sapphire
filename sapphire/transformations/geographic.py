@@ -156,7 +156,7 @@ class FromWGS84ToENUTransformation(object):
 
         coordinates = array([x - xr, y - yr, z - zr])
 
-        return transformation.dot(coordinates)
+        return tuple(transformation.dot(coordinates))
 
     def enu_to_ecef(self, coordinates):
         """Convert from ENU coordinates to ECEF coordinates
