@@ -18,7 +18,3 @@ Or while already running Python::
 
     from os import environ
     environ['PUBLICDB_BASE'] = 'http://localhost:8000'
-
-.. note::
-    This has to be set before importing |sapphire|.
-    |sapphire| will read the once environment upon import.

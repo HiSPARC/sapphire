@@ -22,7 +22,9 @@ from .utils import get_publicdb_base
 
 logger = logging.getLogger(__name__)
 
-PUBLICDB_XMLRPC_URL = urljoin(get_publicdb_base(), 'raw_data/rpc')
+
+def get_publicdb_xmlrpc_url():
+    return urljoin(get_publicdb_base(), 'raw_data/rpc')
 
 
 def download_data(file, group, station_id, start, end, get_blobs=False):
@@ -57,7 +59,7 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         INFO:sapphire.publicdb:Done.
 
     """
-    server = ServerProxy(PUBLICDB_XMLRPC_URL)
+    server = ServerProxy(get_publicdb_xmlrpc_url())
 
     for t0, t1 in datetimerange(start, end):
         logger.info("%s %s" % (t0, t1))

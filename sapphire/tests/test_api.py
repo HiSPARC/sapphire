@@ -1,3 +1,4 @@
+import os
 import unittest
 import warnings
 
@@ -23,6 +24,15 @@ def has_extended_local_data(urlpath):
 
     localpath = path.join(api.LOCAL_BASE, urlpath.strip('/') + extsep + 'tsv')
     return path.exists(localpath)
+
+
+class APIBaseTest(unittest.TestCase):
+    def test_overwrite_base(self):
+        self.assertEqual('http://data.hisparc.nl/api/', api.get_api_base())
+        os.environ['PUBLICDB_BASE'] = 'http://localhost:8000/'
+        self.assertEqual('http://localhost:8000/api/', api.get_api_base())
+        del os.environ['PUBLICDB_BASE']
+        self.assertEqual('http://data.hisparc.nl/api/', api.get_api_base())
 
 
 class APITests(unittest.TestCase):
@@ -65,7 +75,7 @@ class APITestsLive(unittest.TestCase):
         self.api = api.API()
 
     def test__retrieve_url(self):
-        result = self.api._retrieve_url('')
+        result = self.api._retrieve_url('', api.get_api_base())
         self.assertIsInstance(result, six.string_types)
 
     def test__get_json(self):

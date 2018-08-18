@@ -26,7 +26,7 @@ from itertools import combinations
 from json import dump, loads
 from os import extsep, makedirs, mkdir, path
 
-from ..api import API, LOCAL_BASE, SRC_BASE, Network
+from ..api import API, LOCAL_BASE, Network, get_src_base
 from ..clusters import HiSPARCNetwork
 from ..utils import pbar
 
@@ -154,7 +154,7 @@ def get_and_store_json(url):
 
 
 def get_and_store_tsv(url):
-    data = API._retrieve_url(url, base=SRC_BASE)
+    data = API._retrieve_url(url, base=get_src_base())
     # Strip empty and comment lines
     data = '\n'.join(d for d in data.split('\n') if len(d) and d[0] != '#')
     if data:

@@ -81,15 +81,15 @@ def create_and_store_test_data():
 
     perform_esd_download_data(test_data_path)
     perform_download_coincidences(test_data_coincidences_path)
-    urlretrieve(esd.WEATHER_URL.format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
+    urlretrieve(esd.get_weather_url().format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
                 weather_source)
-    urlretrieve(esd.EVENTS_URL.format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
+    urlretrieve(esd.get_events_url().format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
                 events_source)
-    urlretrieve(esd.SINGLES_URL.format(station_number=501, query='start=2017-01-01&end=2017-01-01+00:10:00'),
+    urlretrieve(esd.get_singles_url().format(station_number=501, query='start=2017-01-01&end=2017-01-01+00:10:00'),
                 singles_source)
-    urlretrieve(esd.LIGHTNING_URL.format(lightning_type=4, query='start=2015-07-17&end=2015-07-17+00:10:00'),
+    urlretrieve(esd.get_lightning_url().format(lightning_type=4, query='start=2015-07-17&end=2015-07-17+00:10:00'),
                 lightning_source)
-    urlretrieve(esd.COINCIDENCES_URL.format(query='start=2016-03-10&end=2016-03-10+00:01:00&stations=501,+510&n=2'),
+    urlretrieve(esd.get_coincidences_url().format(query='start=2016-03-10&end=2016-03-10+00:01:00&stations=501,+510&n=2'),
                 coincidences_source)
 
 

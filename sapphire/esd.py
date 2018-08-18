@@ -34,12 +34,29 @@ from six.moves.urllib.request import urlopen
 from . import api, storage
 from .utils import get_publicdb_base
 
-BASE = urljoin(get_publicdb_base(), 'data/')
-EVENTS_URL = urljoin(BASE, '{station_number:d}/events/?{query}')
-WEATHER_URL = urljoin(BASE, '{station_number:d}/weather/?{query}')
-SINGLES_URL = urljoin(BASE, '{station_number:d}/singles/?{query}')
-LIGHTNING_URL = urljoin(BASE, 'knmi/lightning/{lightning_type:d}/?{query}')
-COINCIDENCES_URL = urljoin(BASE, 'network/coincidences/?{query}')
+
+def get_base_url():
+    return urljoin(get_publicdb_base(), 'data/')
+
+
+def get_events_url():
+    return urljoin(get_base_url(), '{station_number:d}/events/?{query}')
+
+
+def get_weather_url():
+    return urljoin(get_base_url(), '{station_number:d}/weather/?{query}')
+
+
+def get_singles_url():
+    return urljoin(get_base_url(), '{station_number:d}/singles/?{query}')
+
+
+def get_lightning_url():
+    return urljoin(get_base_url(), 'knmi/lightning/{lightning_type:d}/?{query}')
+
+
+def get_coincidences_url():
+    return urljoin(get_base_url(), 'network/coincidences/?{query}')
 
 
 def quick_download(station_number, date=None):
@@ -171,19 +188,19 @@ def download_data(file, group, station_number, start=None, end=None, type='event
     # build and open url, create tables and set read function
     query = urlencode({'start': start, 'end': end})
     if type == 'events':
-        url = EVENTS_URL.format(station_number=station_number, query=query)
+        url = get_events_url().format(station_number=station_number, query=query)
         table = _get_or_create_events_table(file, group)
         read_and_store = _read_line_and_store_event_class
     elif type == 'weather':
-        url = WEATHER_URL.format(station_number=station_number, query=query)
+        url = get_weather_url().format(station_number=station_number, query=query)
         table = _get_or_create_weather_table(file, group)
         read_and_store = _read_line_and_store_weather_class
     elif type == 'singles':
-        url = SINGLES_URL.format(station_number=station_number, query=query)
+        url = get_singles_url().format(station_number=station_number, query=query)
         table = _get_or_create_singles_table(file, group)
         read_and_store = _read_line_and_store_singles_class
     elif type == 'lightning':
-        url = LIGHTNING_URL.format(lightning_type=station_number, query=query)
+        url = get_lightning_url().format(lightning_type=station_number, query=query)
         table = _get_or_create_lightning_table(file, group)
         read_and_store = _read_line_and_store_lightning_class
     else:
@@ -365,7 +382,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
 
     # build and open url, create tables and set read function
     query = urlencode({'cluster': cluster, 'stations': stations, 'start': start, 'end': end, 'n': n})
-    url = COINCIDENCES_URL.format(query=query)
+    url = get_coincidences_url().format(query=query)
     station_groups = _read_or_get_station_groups(file, group)
     c_group = _get_or_create_coincidences_tables(file, group, station_groups)
 

@@ -40,9 +40,15 @@ from .utils import get_active_index, get_publicdb_base, memoize
 
 logger = logging.getLogger(__name__)
 
-API_BASE = urljoin(get_publicdb_base(), 'api/')
-SRC_BASE = urljoin(get_publicdb_base(), 'show/source/')
 LOCAL_BASE = path.join(path.dirname(__file__), 'data')
+
+
+def get_api_base():
+    return urljoin(get_publicdb_base(), 'api/')
+
+
+def get_src_base():
+    return urljoin(get_publicdb_base(), 'show/source/')
 
 
 class API(object):
@@ -108,7 +114,7 @@ class API(object):
     def _get_json(self, urlpath):
         """Retrieve a JSON from the HiSPARC API
 
-        :param urlpath: api urlpath to retrieve (i.e. after API_BASE).
+        :param urlpath: api urlpath to retrieve (i.e. after get_api_base).
         :return: the data returned by the api as dictionary or integer.
 
         """
@@ -118,7 +124,7 @@ class API(object):
         try:
             if self.force_stale:
                 raise Exception
-            json_data = self._retrieve_url(urlpath, base=API_BASE)
+            json_data = self._retrieve_url(urlpath, base=get_api_base())
             data = json.loads(json_data)
         except Exception:
             if self.force_fresh:
@@ -139,7 +145,7 @@ class API(object):
     def _get_tsv(self, urlpath, names=None):
         """Retrieve a Source TSV from the HiSPARC Public Database
 
-        :param urlpath: tsv urlpath to retrieve (i.e. path after SRC_BASE).
+        :param urlpath: tsv urlpath to retrieve (i.e. path after get_src_base).
         :param names: data column names.
         :return: the data returned as array.
 
@@ -150,7 +156,7 @@ class API(object):
         try:
             if self.force_stale:
                 raise Exception
-            tsv_data = self._retrieve_url(urlpath, base=SRC_BASE)
+            tsv_data = self._retrieve_url(urlpath, base=get_src_base())
         except Exception:
             if self.force_fresh:
                 raise Exception('Couldn\'t get requested data from server.')
@@ -174,7 +180,7 @@ class API(object):
         return atleast_1d(data)
 
     @staticmethod
-    def _retrieve_url(urlpath, base=API_BASE):
+    def _retrieve_url(urlpath, base=None):
         """Open a HiSPARC API URL and read the data
 
         :param urlpath: the api urlpath (after the base) to retrieve
@@ -201,7 +207,7 @@ class API(object):
 
         """
         try:
-            urlopen(API_BASE).read()
+            urlopen(get_api_base()).read()
         except URLError:
             return False
         return True
