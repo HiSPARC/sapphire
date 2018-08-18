@@ -35,8 +35,7 @@ class ProcessTimeDeltasTests(unittest.TestCase):
         mock_offsets = Mock()
         mock_station.return_value = mock_offsets
 
-        self.td.pairs = {(sentinel.station1, sentinel.station2),
-                         (sentinel.station1, sentinel.station3)}
+        self.td.pairs = {(sentinel.station1, sentinel.station2), (sentinel.station1, sentinel.station3)}
         self.td.get_detector_offsets()
 
         self.assertEqual(self.td.detector_timing_offsets,
@@ -50,8 +49,7 @@ class ProcessTimeDeltasTests(unittest.TestCase):
         self.assertRaises(Exception, self.data.get_node, node_path, 'time_deltas')
         self.td.store_time_deltas([12345678987654321], [2.5], pair)
         stored_data = self.data.get_node(node_path, 'time_deltas')
-        self.assertEqual(list(stored_data[0]),
-                         [12345678987654321, 12345678, 987654321, 2.5])
+        self.assertEqual(list(stored_data[0]), [12345678987654321, 12345678, 987654321, 2.5])
 
     def create_tempfile_from_testdata(self):
         tmp_path = self.create_tempfile_path()

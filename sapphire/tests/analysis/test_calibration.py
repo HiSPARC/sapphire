@@ -70,15 +70,13 @@ class StationTimingTests(unittest.TestCase):
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertEqual(offset, 1.)
         mock_percentile.assert_called_once_with([sentinel.dt], [0.5, 99.5])
-        offset, _ = calibration.determine_station_timing_offset([sentinel.dt],
-                                                                dz=dz)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt], dz=dz)
         self.assertEqual(offset, 1. + dzc)
 
         mock_fit.return_value = (-1.5, 5.)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertEqual(offset, -1.5)
-        offset, _ = calibration.determine_station_timing_offset([sentinel.dt],
-                                                                dz=dz)
+        offset, _ = calibration.determine_station_timing_offset([sentinel.dt], dz=dz)
         self.assertEqual(offset, -1.5 + dzc)
 
         mock_fit.return_value = (2500., 100.)
@@ -113,8 +111,7 @@ class BestReferenceTests(unittest.TestCase):
 
         # Not yet support number of detectors
         filters = array([[True, True, False], [True, False, True]])
-        self.assertRaises(IndexError, calibration.determine_best_reference,
-                          filters)
+        self.assertRaises(IndexError, calibration.determine_best_reference, filters)
 
 
 class SplitDatetimeRangeTests(unittest.TestCase):
@@ -223,8 +220,7 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         start = datetime(2014, 1, 1)
         end = datetime(2016, 12, 31)
         self.off.read_dt(station, ref_station, start, end)
-        table_path = ('/coincidences/time_deltas/station_%d/station_%d' %
-                      (ref_station, station))
+        table_path = ('/coincidences/time_deltas/station_%d/station_%d' % (ref_station, station))
         table_name = 'time_deltas'
         self.off.data.get_node.assert_called_once_with(table_path, table_name)
         self.assertTrue(table_mock.read_where.called)

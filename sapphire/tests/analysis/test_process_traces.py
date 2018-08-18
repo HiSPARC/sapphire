@@ -11,10 +11,8 @@ from sapphire.analysis import process_traces
 class TraceObservablesTests(unittest.TestCase):
 
     def setUp(self):
-        trace = ([200] * 400 + [500] + [510] + [400] * 10 + [200] * 600 +
-                 [400] * 10 + [200])
-        trace2 = ([203, 199] * 200 + [500] + [510] + [398, 402] * 5 +
-                  [203, 199] * 300 + [400] * 10 + [200])
+        trace = [200] * 400 + [500] + [510] + [400] * 10 + [200] * 600 + [400] * 10 + [200]
+        trace2 = [203, 199] * 200 + [500] + [510] + [398, 402] * 5 + [203, 199] * 300 + [400] * 10 + [200]
         self.traces = array([trace, trace2]).T
         self.to = process_traces.TraceObservables(self.traces)
 
@@ -28,8 +26,7 @@ class TraceObservablesTests(unittest.TestCase):
         self.assertEqual(self.to.pulseheights, [310, 309, -1, -1])
 
     def test_integrals(self):
-        self.assertEqual(self.to.integrals, [300 + 310 + 200 * 20,
-                                             299 + 309 + 199 * 20, -1, -1])
+        self.assertEqual(self.to.integrals, [300 + 310 + 200 * 20, 299 + 309 + 199 * 20, -1, -1])
 
     def test_n_peaks(self):
         self.assertEqual(self.to.n_peaks, [2, 2, -1, -1])
@@ -43,8 +40,7 @@ class MeanFilterTests(unittest.TestCase):
         self.mf = process_traces.MeanFilter()
 
     def test_init(self):
-        self.mf = process_traces.MeanFilter(use_threshold=True,
-                                            threshold=sentinel.threshold)
+        self.mf = process_traces.MeanFilter(use_threshold=True, threshold=sentinel.threshold)
         self.assertEqual(self.mf.threshold, sentinel.threshold)
         self.assertEqual(self.mf.filter, self.mf.mean_filter_with_threshold)
 
@@ -173,8 +169,7 @@ class DataReductionTests(unittest.TestCase):
         r_traces_no_baseline = self.dr.reduce_traces(traces)
         self.assertTrue((reduced_traces == r_traces).all())
         self.assertTrue((reduced_traces == r_traces_no_baseline).all())
-        self.assertEqual(len(reduced_traces),
-                         len(trace) - pre - post + self.dr.padding * 2)
+        self.assertEqual(len(reduced_traces), len(trace) - pre - post + self.dr.padding * 2)
         self.assertEqual(left, pre - self.dr.padding)
 
         pre = 10

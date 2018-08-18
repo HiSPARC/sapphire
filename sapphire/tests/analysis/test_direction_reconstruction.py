@@ -747,8 +747,7 @@ class DirectAlgorithmCartesianTest(unittest.TestCase, DirectAlgorithm):
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian()
 
 
-class DirectAlgorithmCartesian3DTest(unittest.TestCase,
-                                     DirectAltitudeAlgorithm):
+class DirectAlgorithmCartesian3DTest(unittest.TestCase, DirectAltitudeAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian3D()
@@ -779,8 +778,7 @@ class CurvedRegressionAlgorithmTest(unittest.TestCase, CurvedAlgorithm):
         self.algorithm.front = ConeFront()
 
 
-class CurvedRegressionAlgorithm3DTest(unittest.TestCase,
-                                      CurvedAltitudeAlgorithm):
+class CurvedRegressionAlgorithm3DTest(unittest.TestCase, CurvedAltitudeAlgorithm):
 
     def setUp(self):
         self.algorithm = direction_reconstruction.CurvedRegressionAlgorithm3D()

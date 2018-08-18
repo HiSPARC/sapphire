@@ -19,8 +19,7 @@ class FindMostProbableValueInSpectrumTest(unittest.TestCase):
         first_guess = fmpv.find_first_guess_mpv()
         with self.assertRaises(RuntimeError) as cm:
             fmpv.fit_mpv(first_guess)
-        self.assertEqual(str(cm.exception),
-                         "Number of data points not sufficient")
+        self.assertEqual(str(cm.exception), "Number of data points not sufficient")
 
         # Warning from the find mpv function
         with warnings.catch_warnings(record=True) as w:

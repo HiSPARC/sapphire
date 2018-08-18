@@ -20,9 +20,7 @@ class CoincidencesTests(unittest.TestCase):
     @patch.object(coincidences.tables, 'open_file')
     def setUp(self, mock_open_file):
         self.mock_open_file = mock_open_file
-        self.c = coincidences.Coincidences(sentinel.data, None,
-                                           sentinel.station_groups,
-                                           progress=False)
+        self.c = coincidences.Coincidences(sentinel.data, None, sentinel.station_groups, progress=False)
 
     def test_init(self):
         self.mock_open_file.assert_called_once_with(sentinel.data, 'r')
@@ -31,8 +29,7 @@ class CoincidencesTests(unittest.TestCase):
     @patch.object(coincidences.Coincidences, 'search_coincidences')
     @patch.object(coincidences.Coincidences, 'process_events')
     @patch.object(coincidences.Coincidences, 'store_coincidences')
-    def test_search_and_store_coincidences(self, mock_store, mock_process,
-                                           mock_search):
+    def test_search_and_store_coincidences(self, mock_store, mock_process, mock_search):
         self.c.search_and_store_coincidences()
         mock_search.assert_called_with(window=10000)
         mock_process.assert_called_with()
@@ -112,9 +109,7 @@ class CoincidencesESDTests(CoincidencesTests):
     @patch.object(coincidences.tables, 'open_file')
     def setUp(self, mock_open_file):
         self.mock_open_file = mock_open_file
-        self.c = coincidences.CoincidencesESD(sentinel.data, None,
-                                              sentinel.station_groups,
-                                              progress=False)
+        self.c = coincidences.CoincidencesESD(sentinel.data, None, sentinel.station_groups, progress=False)
 
     @patch.object(coincidences.CoincidencesESD, 'search_coincidences')
     @patch.object(coincidences.CoincidencesESD, 'store_coincidences')
@@ -122,8 +117,7 @@ class CoincidencesESDTests(CoincidencesTests):
         self.c.search_and_store_coincidences()
         mock_search.assert_called_with(window=10000)
         mock_store.assert_called_with(station_numbers=None)
-        self.c.search_and_store_coincidences(sentinel.window,
-                                             sentinel.station_numbers)
+        self.c.search_and_store_coincidences(sentinel.window, sentinel.station_numbers)
         mock_search.assert_called_with(window=sentinel.window)
         mock_store.assert_called_with(station_numbers=sentinel.station_numbers)
 
@@ -135,10 +129,8 @@ class CoincidencesESDTests(CoincidencesTests):
         self.assertEqual(self.c._src_timestamps, sentinel.timestamps)
         self.assertEqual(self.c._src_c_index, sentinel.c_index)
 
-        self.c.search_coincidences(sentinel.window, sentinel.shifts,
-                                   sentinel.limit)
-        mock__search.assert_called_with(sentinel.window, sentinel.shifts,
-                                        sentinel.limit)
+        self.c.search_coincidences(sentinel.window, sentinel.shifts, sentinel.limit)
+        mock__search.assert_called_with(sentinel.window, sentinel.shifts, sentinel.limit)
 
 
 class CoincidencesDataTests(unittest.TestCase):
@@ -187,8 +179,7 @@ class CoincidencesESDDataTests(CoincidencesDataTests):
             c = coincidences.CoincidencesESD(data, '/coincidences',
                                              ['/station_501', '/station_502'],
                                              progress=False)
-            self.assertRaises(RuntimeError, c.search_and_store_coincidences,
-                              station_numbers=[501])
+            self.assertRaises(RuntimeError, c.search_and_store_coincidences, station_numbers=[501])
             c.search_and_store_coincidences(station_numbers=[501, 502])
         validate_results(self, self.get_testdata_path(), self.data_path)
 
