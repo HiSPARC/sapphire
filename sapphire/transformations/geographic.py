@@ -154,7 +154,7 @@ class FromWGS84ToENUTransformation(object):
             [-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat)],
             [ cos(lat) * cos(lon),  cos(lat) * sin(lon), sin(lat)]])  # noqa
 
-        coordinates = array([[x - xr], [y - yr], [z - zr]])
+        coordinates = array([x - xr, y - yr, z - zr])
 
         return transformation.dot(coordinates)
 
