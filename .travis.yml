@@ -1,37 +1,38 @@
 language: python
 python:
-  - "2.7"
-  - "3.5"
   - "3.6"
-  - "3.7"
 env:
-  - ASTROPY=yes
-  - ASTROPY=no
-
-matrix:
-  allow_failures:
-    - python: "3.7"
-      env: ASTROPY=yes
-    - python: "3.7"
-      env: ASTROPY=no
+  - CONDA_PYTHON="2.7" ASTROPY=yes
+  - CONDA_PYTHON="2.7" ASTROPY=no
+  - CONDA_PYTHON="3.6" ASTROPY=yes
+  - CONDA_PYTHON="3.6" ASTROPY=no
+  - CONDA_PYTHON="3.7" ASTROPY=yes
+  - CONDA_PYTHON="3.7" ASTROPY=no
 
 sudo: false
 
-# Miniconda copied from
-# https://gist.github.com/dan-blanchard/7045057
+cache:
+  pip: true
+  directories:
+    - $HOME/miniconda
+
+before_cache:
+  - rm -rf $HOME/miniconda/envs/build_env
+  - conda clean --yes --quiet --packages
+
 before_install:
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      MINICONDA=Miniconda2-latest-Linux-x86_64.sh;
+  - if [ -f $HOME/miniconda/bin/conda ] ; then
+      echo "Using cached miniconda";
     else
-      MINICONDA=Miniconda3-latest-Linux-x86_64.sh;
+      wget --no-verbose https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+      rm -rf $HOME/miniconda;
+      bash miniconda.sh -b -p $HOME/miniconda;
     fi
-  - wget --no-verbose https://repo.continuum.io/miniconda/${MINICONDA} -O miniconda.sh
-  - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH=$HOME/miniconda/bin:$PATH
   - conda update --yes conda
 
 install:
-  - conda create --yes -n build_env python=$TRAVIS_PYTHON_VERSION numpy scipy pytables numba
+  - conda create --yes -n build_env python=$CONDA_PYTHON numpy scipy pytables numba
   - source activate build_env
   - if [ "$ASTROPY" = "yes" ]; then
       conda install --yes astropy;
@@ -57,5 +58,4 @@ deploy:
   name: HiSPARC-Bot
   on:
     branch: master
-    python: 3.6
-    condition: "$ASTROPY = yes"
+    condition: "$CONDA_PYTHON = 3.6 && $ASTROPY = yes"
