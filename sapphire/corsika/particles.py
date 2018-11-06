@@ -60,7 +60,7 @@ def particle_id(name):
         # weight append the weight to the name, e.g. helium4 or carbon14
         if name == atom_name:
             return z * 100 + z
-    atom = re.match("^([a-z]+)(\d+)$", name)
+    atom = re.match(r"^([a-z]+)(\d+)$", name)
     if atom is not None:
         return int(atom.group(2)) * 100 + (particle_id(atom.group(1)) % 100)
 
