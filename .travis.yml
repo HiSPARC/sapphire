@@ -2,8 +2,6 @@ language: python
 python:
   - "3.6"
 env:
-  - CONDA_PYTHON="2.7" ASTROPY=yes
-  - CONDA_PYTHON="2.7" ASTROPY=no
   - CONDA_PYTHON="3.6" ASTROPY=yes
   - CONDA_PYTHON="3.6" ASTROPY=no
   - CONDA_PYTHON="3.7" ASTROPY=yes
