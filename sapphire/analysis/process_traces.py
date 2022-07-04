@@ -7,7 +7,8 @@
     It is reproduced here to make it easy to read the algorithm.
 
 """
-from lazy import lazy
+from functools import cached_property
+
 from numpy import around, convolve, ones, where
 
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
@@ -74,7 +75,7 @@ class TraceObservables:
         if self.n not in [2, 4]:
             raise Exception('Unsupported number of detectors')
 
-    @lazy
+    @cached_property
     def baselines(self):
         """Mean value of the first part of the trace
 
@@ -91,7 +92,7 @@ class TraceObservables:
         baselines = around(self.traces[:self.padding].mean(axis=0))
         return baselines.astype('int').tolist() + self.missing
 
-    @lazy
+    @cached_property
     def std_dev(self):
         """Standard deviation of the first part of the trace
 
@@ -101,7 +102,7 @@ class TraceObservables:
         std_dev = around(self.traces[:self.padding].std(axis=0) * 1000)
         return std_dev.astype('int').tolist() + self.missing
 
-    @lazy
+    @cached_property
     def pulseheights(self):
         """Maximum peak to baseline value in trace
 
@@ -111,7 +112,7 @@ class TraceObservables:
         pulseheights = self.traces.max(axis=0) - self.baselines[:self.n]
         return pulseheights.tolist() + self.missing
 
-    @lazy
+    @cached_property
     def integrals(self):
         """Integral of trace for all values over threshold
 
@@ -125,7 +126,7 @@ class TraceObservables:
                           self.traces - self.baselines[:self.n], 0).sum(axis=0)
         return integrals.tolist() + self.missing
 
-    @lazy
+    @cached_property
     def n_peaks(self):
         """Number of peaks in the trace
 

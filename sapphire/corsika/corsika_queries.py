@@ -1,6 +1,7 @@
+from functools import cached_property
+
 import tables
 
-from lazy import lazy
 from numpy import degrees, log10, radians
 
 from .particles import name, particle_id
@@ -69,7 +70,7 @@ class CorsikaQuery:
 
         return simulation
 
-    @lazy
+    @cached_property
     def all_energies(self):
         """All available energies
 
@@ -78,7 +79,7 @@ class CorsikaQuery:
         """
         return set(log10(self.sims.col('energy')))
 
-    @lazy
+    @cached_property
     def all_particles(self):
         """All available particles
 
@@ -87,7 +88,7 @@ class CorsikaQuery:
         """
         return {name(p_id) for p_id in set(self.sims.col('particle_id'))}
 
-    @lazy
+    @cached_property
     def all_azimuths(self):
         """All available azimuths
 
@@ -96,7 +97,7 @@ class CorsikaQuery:
         """
         return {degrees(azimuth) for azimuth in set(self.sims.col('azimuth'))}
 
-    @lazy
+    @cached_property
     def all_zeniths(self):
         """All available zeniths
 
