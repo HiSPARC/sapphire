@@ -35,6 +35,7 @@ jobs:
       - run: make flaketest
 
   docs:
+    if: github.ref == 'refs/heads/master'
     needs: [tests, flake]
     runs-on: ubuntu-latest
     steps:
