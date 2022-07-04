@@ -38,9 +38,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: '3.10'
+          auto-update-conda: true
+      - run: conda install --quiet --yes astropy numpy scipy pytables numba
+      - run: pip install -e .[dev,coverage]
       - run: pip install Sphinx
       - run: make doctest
       - uses: peaceiris/actions-gh-pages@v3.8.0
