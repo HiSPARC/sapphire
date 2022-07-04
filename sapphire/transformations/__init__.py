@@ -23,12 +23,7 @@ Easy transformations between different systems.
 
 
 """
-from . import angles
-from . import axes
-from . import base
-from . import celestial
-from . import clock
-from . import geographic
+from . import angles, axes, base, celestial, clock, geographic
 
 __all__ = ['angles',
            'axes',

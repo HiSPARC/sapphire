@@ -22,7 +22,7 @@ import re
 import time
 
 from codecs import iterdecode
-from http_client import BadStatusLine
+from http.client import BadStatusLine
 from urllib.parse import urlencode, urljoin
 from urllib.request import urlopen
 

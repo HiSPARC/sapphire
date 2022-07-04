@@ -35,7 +35,6 @@ import zlib
 import numpy as np
 import tables
 
-
 from ..api import Station
 from ..utils import ERR, pbar
 from .find_mpv import FindMostProbableValueInSpectrum

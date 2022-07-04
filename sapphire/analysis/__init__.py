@@ -52,19 +52,20 @@ Modules in this package:
     determine time deltas for station pairs
 
 """
-from . import calibration
-from . import coincidence_queries
-from . import coincidences
-from . import core_reconstruction
-from . import direction_reconstruction
-from . import event_utils
-from . import find_mpv
-from . import landau
-from . import process_events
-from . import process_traces
-from . import reconstructions
-from . import time_deltas
-
+from . import (
+    calibration,
+    coincidence_queries,
+    coincidences,
+    core_reconstruction,
+    direction_reconstruction,
+    event_utils,
+    find_mpv,
+    landau,
+    process_events,
+    process_traces,
+    reconstructions,
+    time_deltas,
+)
 
 __all__ = ['calibration',
            'coincidence_queries',

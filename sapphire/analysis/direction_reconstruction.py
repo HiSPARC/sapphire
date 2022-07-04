@@ -19,15 +19,32 @@ import warnings
 
 from itertools import combinations, zip_longest
 
-from numpy import (arccos, arcsin, arctan2, array, cos, cross, dot, inf, isnan, nan, pi, sin, sqrt, sum, tan,
-                   where, zeros)
+from numpy import (
+    arccos,
+    arcsin,
+    arctan2,
+    array,
+    cos,
+    cross,
+    dot,
+    inf,
+    isnan,
+    nan,
+    pi,
+    sin,
+    sqrt,
+    sum,
+    tan,
+    where,
+    zeros,
+)
 from scipy.optimize import minimize
 from scipy.sparse.csgraph import shortest_path
 
-from . import event_utils
 from ..api import Station
 from ..simulations.showerfront import CorsikaStationFront
 from ..utils import c, floor_in_base, make_relative, memoize, norm_angle, pbar, vector_length
+from . import event_utils
 
 NO_OFFSET = [0., 0., 0., 0.]
 NO_STATION_OFFSET = (0., 100.)

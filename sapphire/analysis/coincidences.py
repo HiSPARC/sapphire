@@ -37,9 +37,9 @@ import tables
 
 from progressbar import ETA, Bar, Percentage, ProgressBar
 
-from . import process_events
 from .. import storage
 from ..utils import pbar
+from . import process_events
 
 
 class Coincidences:

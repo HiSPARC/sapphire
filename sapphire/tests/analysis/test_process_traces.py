@@ -1,7 +1,6 @@
 import unittest
 
 from itertools import cycle
-
 from unittest.mock import MagicMock, patch, sentinel
 
 from numpy import array

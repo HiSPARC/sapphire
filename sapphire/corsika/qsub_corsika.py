@@ -33,10 +33,9 @@ import warnings
 
 from math import log10, modf
 
-
-from . import particles
 from .. import qsub
 from ..utils import pbar
+from . import particles
 
 TEMPDIR = '/data/hisparc/corsika/running/'
 DATADIR = '/data/hisparc/corsika/data/'

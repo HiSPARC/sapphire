@@ -16,7 +16,6 @@ import logging
 import os
 import textwrap
 
-
 from .. import qsub
 
 BIN_PATH = '/data/hisparc/env/miniconda/envs/corsika/bin/'

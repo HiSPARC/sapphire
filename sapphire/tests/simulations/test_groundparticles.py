@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import Mock, sentinel
 
 import tables
+
 from numpy import arange, pi, random, sqrt, testing
 
 from sapphire.clusters import SingleDiamondStation

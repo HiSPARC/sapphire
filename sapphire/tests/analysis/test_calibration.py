@@ -3,10 +3,10 @@ import unittest
 import warnings
 
 from datetime import date, datetime
+from unittest.mock import MagicMock, Mock, call, patch, sentinel
 
 import tables
 
-from unittest.mock import MagicMock, Mock, call, patch, sentinel
 from numpy import all, array, isnan, nan, std
 from numpy.random import normal, uniform
 
