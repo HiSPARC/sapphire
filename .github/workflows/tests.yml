@@ -35,6 +35,7 @@ jobs:
       - run: make flaketest
 
   docs:
+    needs: [tests, flake]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
