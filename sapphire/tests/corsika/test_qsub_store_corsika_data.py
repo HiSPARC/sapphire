@@ -33,7 +33,7 @@ class SeedsTest(unittest.TestCase):
         with patch.object(builtins, 'open', mock_open()) as mock_file:
             mock_file.side_effect = IOError('no log!')
             seeds = qsub_store_corsika_data.seeds_in_queue()
-        mock_file.assert_called_with(qsub_store_corsika_data.QUEUED_SEEDS, 'r')
+        mock_file.assert_called_with(qsub_store_corsika_data.QUEUED_SEEDS)
         self.assertEqual(seeds, set())
 
     def test_write_queued_seeds(self):
