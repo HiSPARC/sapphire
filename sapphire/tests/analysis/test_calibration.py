@@ -30,7 +30,7 @@ class DetectorTimingTests(unittest.TestCase):
             events = data.get_node('/station_501', 'events')
             station = SingleStation().get_station(0)
             offsets = calibration.determine_detector_timing_offsets(events, station)
-        for expected, actual in zip([-7.7415, 0.0, -1.6725, -7.4349], offsets):
+        for expected, actual in zip([-7.7415, 0.0, -1.6725, -7.43484], offsets):
             self.assertAlmostEqual(expected, actual, 4)
 
     @patch.object(calibration, 'fit_timing_offset')

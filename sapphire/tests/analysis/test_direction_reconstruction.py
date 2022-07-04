@@ -628,11 +628,11 @@ class MultiAlgorithm(FlatAlgorithm):
 
         for time in times:
             zenith = arcsin((time * c) / h)
+            azimuth = pi / 6
 
             t = [0., 0., 0., 0.]
             t[1] = time
             t[3] = -time
-            azimuth = pi / 6
             theta, phi = self.call_reconstruct(t, x, y, z)
             self.assertAlmostEqual(phi, azimuth, 5)
             self.assertAlmostEqual(theta, zenith, 5)
@@ -653,11 +653,11 @@ class MultiAlgorithm(FlatAlgorithm):
 
         for time in times:
             zenith = arcsin((time * c) / h)
+            azimuth = - 3 * pi / 4
 
             t = [0., 0., 0., 0.]
             t[0] = -time
             t[2] = time
-            azimuth = - 3 * pi / 4
             theta, phi = self.call_reconstruct(t, x, y, z)
             self.assertAlmostEqual(phi, azimuth, 5)
             self.assertAlmostEqual(theta, zenith, 5)

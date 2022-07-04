@@ -25,7 +25,7 @@ class SeedsTest(unittest.TestCase):
     def test_seeds_in_queue(self):
         with patch.object(builtins, 'open', mock_open(read_data='123_456\n234_567')) as mock_file:
             seeds = qsub_store_corsika_data.seeds_in_queue()
-        mock_file.assert_called_once_with(qsub_store_corsika_data.QUEUED_SEEDS, 'r')
+        mock_file.assert_called_once_with(qsub_store_corsika_data.QUEUED_SEEDS)
         self.assertEqual(seeds, {'123_456', '234_567'})
         self.assertTrue(mock_file().read.called)
 
