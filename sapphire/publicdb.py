@@ -63,7 +63,7 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
 
     for t0, t1 in datetimerange(start, end):
         logger.info(f"{t0} {t1}")
-        logger.info(f"Getting server data URL (t0)")
+        logger.info(f"Getting server data URL {t0}")
         try:
             url = server.hisparc.get_data_url(station_id, t0, get_blobs)
         except Exception as exc:

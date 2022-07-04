@@ -168,10 +168,14 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         n_detectors = len(detector_observables)
-        detectors_low = sum(True for observables in detector_observables
-                             if observables['n'] > 0.3)
-        detectors_high = sum(True for observables in detector_observables
-                              if observables['n'] > 0.5)
+        detectors_low = sum(
+            True for observables in detector_observables
+            if observables['n'] > 0.3
+        )
+        detectors_high = sum(
+            True for observables in detector_observables
+            if observables['n'] > 0.5
+        )
 
         if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
             return True

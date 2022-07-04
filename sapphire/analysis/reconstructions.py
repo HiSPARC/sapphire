@@ -240,8 +240,7 @@ class ReconstructESDEvents:
         row['id'] = event['event_id']
         row['ext_timestamp'] = event['ext_timestamp']
         try:
-            row['min_n'] = min(event['n%d' % (id + 1)] for id in
-                                detector_ids)
+            row['min_n'] = min(event['n%d' % (id + 1)] for id in detector_ids)
         except ValueError:
             # sometimes, all arrival times are -999 or -1, and then
             # detector_ids = []. So min([]) gives a ValueError.
@@ -255,20 +254,19 @@ class ReconstructESDEvents:
         row.append()
 
     def _get_or_create_station_object(self, station):
-            if isinstance(station, Station):
-                self.station = station
-                self.station_number = None
-                if self.verbose:
-                    print('Using object %s for metadata.' % self.station)
-            else:
-                self.station_number = station
-                cluster = HiSPARCStations([station],
-                                          force_fresh=self.force_fresh,
-                                          force_stale=self.force_stale)
-                self.station = cluster.get_station(station)
-                if self.verbose:
-                    print('Constructed object %s from public database.'
-                          % self.station)
+        if isinstance(station, Station):
+            self.station = station
+            self.station_number = None
+            if self.verbose:
+                print('Using object %s for metadata.' % self.station)
+        else:
+            self.station_number = station
+            cluster = HiSPARCStations([station],
+                                      force_fresh=self.force_fresh,
+                                      force_stale=self.force_stale)
+            self.station = cluster.get_station(station)
+            if self.verbose:
+                print(f'Constructed object {self.station} from public database.')
 
 
 class ReconstructESDEventsFromSource(ReconstructESDEvents):

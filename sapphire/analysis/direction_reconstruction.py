@@ -1015,8 +1015,10 @@ class FitAlgorithm3D(BaseDirectionAlgorithm):
         """
         nx, ny, nz, m = n_xyz
 
-        slq = sum((nx * xi + ny * yi + zi * nz + c * ti + m) ** 2
-                   for ti, xi, yi, zi in zip(dt, dx, dy, dz))
+        slq = sum(
+            (nx * xi + ny * yi + zi * nz + c * ti + m) ** 2
+            for ti, xi, yi, zi in zip(dt, dx, dy, dz)
+        )
         return slq + m * m
 
 

@@ -130,7 +130,7 @@ class RunHeader:
         """
         a, b, c = self.a_atmospheric, self.b_atmospheric, self.c_atmospheric
 
-        layers = [l * units.cm for l in self.atmospheric_layer_boundaries]
+        layers = [layer * units.cm for layer in self.atmospheric_layer_boundaries]
 
         if thickness > self.height_to_thickness(layers[1]):
             height = c[0] * math.log(b[0] / (thickness - a[0]))
@@ -351,8 +351,12 @@ class RunEnd:
         self.n_events_processed = subblock[2]
 
     def __repr__(self):
-        return '{}(({!r}, {!r}, {!r}))'.format(self.__class__.__name__, self.id,
-                                     self.run_number, self.n_events_processed)
+        return '{}(({!r}, {!r}, {!r}))'.format(
+            self.__class__.__name__,
+            self.id,
+            self.run_number,
+            self.n_events_processed
+        )
 
 
 class EventEnd:

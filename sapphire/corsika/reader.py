@@ -160,8 +160,12 @@ class CorsikaEvent:
                 yield particle
 
     def __repr__(self):
-        return "{}({!r}, {!r}, {!r})".format(self.__class__.__name__, self._raw_file,
-                                   self._header_index, self._end_index)
+        return "{}({!r}, {!r}, {!r})".format(
+            self.__class__.__name__,
+            self._raw_file,
+            self._header_index,
+            self._end_index
+        )
 
 
 class CorsikaFile:

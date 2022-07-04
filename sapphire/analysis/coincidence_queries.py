@@ -152,7 +152,7 @@ class CoincidenceQuery:
         :return: coincidences within the specified timerange.
 
         """
-        query = '(%d <= timestamp) & (timestamp < %d)' % (start, stop)
+        query = f'({start} <= timestamp) & (timestamp < {stop})'
         filtered_coincidences = self.perform_query(query, iterator)
         return filtered_coincidences
 
@@ -165,9 +165,9 @@ class CoincidenceQuery:
 
         """
         if start:
-            query += ' & (%d <= timestamp)' % start
+            query += f' & ({start} <= timestamp)'
         if stop:
-            query += ' & (timestamp < %d)' % stop
+            query += f' & (timestamp < {stop})'
 
         return query
 
@@ -207,7 +207,7 @@ class CoincidenceQuery:
         :return: list of strings with column titles for each station.
 
         """
-        return ['s%d' % station for station in stations]
+        return [f's{station}' for station in stations]
 
     def _get_events(self, coincidence):
         """Get events belonging to a coincidence
@@ -370,7 +370,10 @@ class CoincidenceQuery:
 
     def __repr__(self):
         try:
-            return "{}({!r}, {!r})".format(self.__class__.__name__, self.data.filename,
-                                   self.coincidences._v_parent._v_pathname)
+            return "{}({!r}, {!r})".format(
+                self.__class__.__name__,
+                self.data.filename,
+                self.coincidences._v_parent._v_pathname
+            )
         except AttributeError:
-            return "<finished %s>" % self.__class__.__name__
+            return f"<finished {self.__class__.__name__}>"

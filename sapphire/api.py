@@ -26,8 +26,8 @@ import json
 import logging
 import warnings
 
-from io import BytesIO
 from functools import cached_property
+from io import BytesIO
 from os import extsep, path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
