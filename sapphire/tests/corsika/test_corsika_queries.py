@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from mock import MagicMock, patch, sentinel
+from unittest.mock import MagicMock, patch, sentinel
 
 from sapphire.corsika import corsika_queries
 
@@ -32,19 +32,19 @@ class CorsikaQueryTest(unittest.TestCase):
 
     def test_all_energies(self):
         energies = self.cq.all_energies
-        self.assertEqual(energies, set([14.]))
+        self.assertEqual(energies, {14.})
 
     def test_all_particles(self):
         particles = self.cq.all_particles
-        self.assertEqual(particles, set(['proton']))
+        self.assertEqual(particles, {'proton'})
 
     def test_all_azimuths(self):
         azimuths = self.cq.all_azimuths
-        self.assertEqual(azimuths, set([-90.]))
+        self.assertEqual(azimuths, {-90.})
 
     def test_all_zeniths(self):
         zeniths = self.cq.all_zeniths
-        self.assertEqual(zeniths, set([0.]))
+        self.assertEqual(zeniths, {0.})
 
     def test_available_parameters(self):
         result = self.cq.available_parameters('energy', particle='proton')

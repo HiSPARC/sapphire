@@ -16,7 +16,6 @@ import logging
 import os
 import textwrap
 
-from six.moves import range
 
 from .. import qsub
 
@@ -57,9 +56,9 @@ def seeds_in_queue():
     """Get set of seeds already queued to be processed"""
 
     try:
-        with open(QUEUED_SEEDS, 'r') as queued_seeds:
+        with open(QUEUED_SEEDS) as queued_seeds:
             seeds = queued_seeds.read().split('\n')
-    except IOError:
+    except OSError:
         seeds = []
     return set(seeds)
 

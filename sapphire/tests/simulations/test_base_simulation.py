@@ -2,9 +2,9 @@ import types
 import unittest
 import warnings
 
-import tables
+from unittest.mock import MagicMock, Mock, call, patch, sentinel
 
-from mock import MagicMock, Mock, call, patch, sentinel
+import tables
 
 from sapphire import storage
 from sapphire.simulations.base import BaseSimulation

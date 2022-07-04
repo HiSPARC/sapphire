@@ -9,7 +9,6 @@
 """
 from lazy import lazy
 from numpy import around, convolve, ones, where
-from six.moves import range
 
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
 
@@ -34,7 +33,7 @@ ADC_HIGH_THRESHOLD_III = 150  #: Default high ADC threshold for HiSPARC III
 DATA_REDUCTION_PADDING = 26  #: Padding to allow later baseline determination
 
 
-class TraceObservables(object):
+class TraceObservables:
 
     """Reconstruct trace observables
 
@@ -169,7 +168,7 @@ class TraceObservables(object):
         return n_peaks + self.missing
 
 
-class MeanFilter(object):
+class MeanFilter:
 
     """Filter raw traces
 
@@ -286,10 +285,10 @@ class MeanFilter(object):
             return ("%s(use_threshold=%s, threshold=%r)" %
                     (self.__class__.__name__, True, self.threshold))
         except AttributeError:
-            return "%s(use_threshold=%s)" % (self.__class__.__name__, False)
+            return f"{self.__class__.__name__}(use_threshold={False})"
 
 
-class DataReduction(object):
+class DataReduction:
 
     """Data reduce traces
 

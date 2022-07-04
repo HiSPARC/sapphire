@@ -30,7 +30,7 @@ def fit_gauss_to_timings(events, timing_data):
         b = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
         popt, pcov = curve_fit(gauss, b, n)
         x = linspace(-40, 40, 100)
-        plot(x, gauss(x, *popt), label="mu: %.2f, sigma: %.2f" % (popt[1],
+        plot(x, gauss(x, *popt), label="mu: {:.2f}, sigma: {:.2f}".format(popt[1],
                                                                   popt[2]))
     legend(prop={'size': 'small'})
     title("Delta t's for D >= 2.")

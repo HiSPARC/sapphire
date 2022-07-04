@@ -6,7 +6,7 @@ from numpy import degrees, log10, radians
 from .particles import name, particle_id
 
 
-class CorsikaQuery(object):
+class CorsikaQuery:
 
     def __init__(self, data, simulations_group='/simulations'):
         """Setup variables to point to the tables
@@ -165,7 +165,7 @@ class CorsikaQuery(object):
         :return: query.
 
         """
-        query = '(%s == %s)' % (key, value)
+        query = f'({key} == {value})'
 
         return query
 
@@ -179,7 +179,7 @@ class CorsikaQuery(object):
         :return: query.
 
         """
-        query = '(abs(%s - %s) < 1e-4)' % (key, value)
+        query = f'(abs({key} - {value}) < 1e-4)'
 
         return query
 
@@ -193,9 +193,9 @@ class CorsikaQuery(object):
         """
         queries = []
         if min is not None:
-            queries.append('(%s >= %s)' % (key, min))
+            queries.append(f'({key} >= {min})')
         if max is not None:
-            queries.append('(%s <= %s)' % (key, max))
+            queries.append(f'({key} <= {max})')
         query = ' & '.join(queries)
 
         return query

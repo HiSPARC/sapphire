@@ -35,7 +35,6 @@ import zlib
 import numpy as np
 import tables
 
-from six.moves import range, zip
 
 from ..api import Station
 from ..utils import ERR, pbar
@@ -53,7 +52,7 @@ TRIGGER_2 = (2, 0, False, 0)
 TRIGGER_4 = (3, 2, True, 0)
 
 
-class ProcessEvents(object):
+class ProcessEvents:
 
     """Process HiSPARC events to obtain several observables.
 
@@ -500,7 +499,7 @@ class ProcessIndexedEvents(ProcessEvents):
                          processing events.
 
         """
-        super(ProcessIndexedEvents, self).__init__(data, group, source,
+        super().__init__(data, group, source,
                                                    progress)
         self.indexes = indexes
 
@@ -644,7 +643,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         :param station: station number of station to which the data belongs.
 
         """
-        super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
+        super().__init__(data, group,
                                                              source, progress)
         if station is None:
             self.station = None
@@ -762,7 +761,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
         """
         results = [-999, -999, -999]
-        ordered_thresholds = sorted([(x, i) for i, x in enumerate(thresholds)])
+        ordered_thresholds = sorted((x, i) for i, x in enumerate(thresholds))
         last_value = None
         t = 0
 

@@ -1,12 +1,11 @@
-from __future__ import print_function
-
 import types
 import unittest
+
+from io import StringIO
 
 import progressbar
 
 from numpy import exp, pi, random, sqrt
-from six import StringIO
 
 from sapphire import utils
 

@@ -18,14 +18,12 @@
      Reconstructed data is stored in HDF5 files.
 
 """
-from __future__ import print_function
-
 import os
 import warnings
 
-import tables
+from itertools import zip_longest
 
-from six.moves import zip, zip_longest
+import tables
 
 from .. import api
 from ..clusters import HiSPARCStations, Station
@@ -37,7 +35,7 @@ from .core_reconstruction import CoincidenceCoreReconstruction, EventCoreReconst
 from .direction_reconstruction import CoincidenceDirectionReconstruction, EventDirectionReconstruction
 
 
-class ReconstructESDEvents(object):
+class ReconstructESDEvents:
 
     """Reconstruct events from single stations
 
@@ -242,8 +240,8 @@ class ReconstructESDEvents(object):
         row['id'] = event['event_id']
         row['ext_timestamp'] = event['ext_timestamp']
         try:
-            row['min_n'] = min([event['n%d' % (id + 1)] for id in
-                                detector_ids])
+            row['min_n'] = min(event['n%d' % (id + 1)] for id in
+                                detector_ids)
         except ValueError:
             # sometimes, all arrival times are -999 or -1, and then
             # detector_ids = []. So min([]) gives a ValueError.
@@ -294,7 +292,7 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
         :param destination: alternative name for reconstruction table.
 
         """
-        super(ReconstructESDEventsFromSource, self).__init__(
+        super().__init__(
             source_data, source_group, station, overwrite, progress, verbose,
             destination, force_fresh, force_stale)
         self.dest_data = dest_data
@@ -379,7 +377,7 @@ class ReconstructSimulatedEvents(ReconstructESDEvents):
                 raise RuntimeError('Unable to read cluster object from HDF')
 
 
-class ReconstructESDCoincidences(object):
+class ReconstructESDCoincidences:
 
     """Reconstruct coincidences, e.g. event between multiple stations
 
@@ -620,7 +618,7 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
         :param destination: alternative name for reconstruction table.
 
         """
-        super(ReconstructESDCoincidencesFromSource, self).__init__(
+        super().__init__(
             source_data, source_group, overwrite, progress, verbose,
             destination, cluster, force_fresh, force_stale)
         self.dest_data = dest_data

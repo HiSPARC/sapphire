@@ -56,7 +56,7 @@ class StoreThinCorsikaDataTests(StoreCorsikaDataTests):
     """Store thinned CORSIKA test using the function directly"""
 
     def setUp(self):
-        super(StoreThinCorsikaDataTests, self).setUp()
+        super().setUp()
         self.thin = True
 
     def get_testdata_path(self):
@@ -101,7 +101,7 @@ class StoreThinCorsikaDataCommandTests(StoreCorsikaDataCommandTests,
     """Store thinned CORSIKA test calling store command"""
 
     def setUp(self):
-        super(StoreThinCorsikaDataCommandTests, self).setUp()
+        super().setUp()
         self.command = STORE_CMD_THIN.format(source=self.source_path,
                                              destination=self.destination_path)
 

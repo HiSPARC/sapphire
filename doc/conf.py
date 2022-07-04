@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # SAPPHiRE documentation build configuration file
 #
@@ -19,7 +18,7 @@ import sys
 #sys.path.insert(0, os.path.abspath('.'))
 
 # Often reused
-AUTHORS = u'David Fokkema, Arne de Laat, and Tom Kooij'
+AUTHORS = 'David Fokkema, Arne de Laat, and Tom Kooij'
 
 # -- General configuration -----------------------------------------------------
 
@@ -37,8 +36,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'SAPPHiRE'
-copyright = u'2009-2018, {authors}'.format(authors=AUTHORS)
+project = 'SAPPHiRE'
+copyright = f'2009-2018, {AUTHORS}'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -103,7 +102,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'SAPPHiRE.tex', u'SAPPHiRE Documentation',
+  ('index', 'SAPPHiRE.tex', 'SAPPHiRE Documentation',
    AUTHORS, 'manual'),
 ]
 
@@ -117,7 +116,7 @@ latex_logo = 'logo/logo.pdf'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'sapphire', u'SAPPHiRE Documentation',
+    ('index', 'sapphire', 'SAPPHiRE Documentation',
      [AUTHORS], 1)
 ]
 
@@ -128,7 +127,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'SAPPHiRE', u'SAPPHiRE Documentation',
+  ('index', 'SAPPHiRE', 'SAPPHiRE Documentation',
    AUTHORS, 'SAPPHiRE',
    'One line description of project.',
    'Miscellaneous'),
@@ -138,10 +137,10 @@ texinfo_documents = [
 # -- Options for Epub output ---------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'SAPPHiRE'
+epub_title = 'SAPPHiRE'
 epub_author = AUTHORS
 epub_publisher = AUTHORS
-epub_copyright = u'2009-2016, {authors}'.format(authors=AUTHORS)
+epub_copyright = f'2009-2016, {AUTHORS}'
 
 
 # -- User-defined options ------------------------------------------------------

@@ -37,7 +37,7 @@ from .coincidence_queries import CoincidenceQuery
 from .event_utils import station_arrival_time
 
 
-class ProcessTimeDeltas(object):
+class ProcessTimeDeltas:
 
     """Process HiSPARC event coincidences to obtain time deltas.
 
@@ -132,7 +132,7 @@ class ProcessTimeDeltas(object):
             else:
                 previous_ets = ref_ets
             # Filter for possibility of same station twice in coincidence
-            if len(events) is not 2:
+            if len(events) != 2:
                 continue
             if events[0][0] == ref_station:
                 ref_id = 0

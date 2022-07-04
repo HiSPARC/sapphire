@@ -64,20 +64,18 @@
     - Arne de Laat <adelaat@nikhef.nl>
 
 """
-from __future__ import division
 
 import os
 import warnings
 
 from struct import unpack
 
-from six.moves import range
 
 from .blocks import (EventEnd, EventHeader, Format, FormatThin, ParticleData, ParticleDataThin, RunEnd,
                      RunHeader, particle_data, particle_data_thin)
 
 
-class CorsikaEvent(object):
+class CorsikaEvent:
     def __init__(self, raw_file, header_index, end_index):
         """CorsikaEvent constructor
 
@@ -153,11 +151,11 @@ class CorsikaEvent(object):
                 yield particle
 
     def __repr__(self):
-        return "%s(%r, %r, %r)" % (self.__class__.__name__, self._raw_file,
+        return "{}({!r}, {!r}, {!r})".format(self.__class__.__name__, self._raw_file,
                                    self._header_index, self._end_index)
 
 
-class CorsikaFile(object):
+class CorsikaFile:
 
     """CORSIKA output file handler
 
@@ -400,7 +398,7 @@ class CorsikaFile(object):
                       self._file.read(self.format.particles_size))
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__.__name__, self._filename)
+        return f"{self.__class__.__name__}({self._filename!r})"
 
 
 class CorsikaFileThin(CorsikaFile):
@@ -419,7 +417,7 @@ class CorsikaFileThin(CorsikaFile):
         It takes a filename as argument
 
         """
-        super(CorsikaFileThin, self).__init__(filename)
+        super().__init__(filename)
         self.format = FormatThin()
 
     def _get_particle_record(self, word):

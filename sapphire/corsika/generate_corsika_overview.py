@@ -98,7 +98,7 @@ def read_seeds(simulations_table, source, seeds):
                 write_row(simulations_table, seeds, header, end)
             except AttributeError:
                 logger.info('%19s: Missing attribute (header or end).' % seeds)
-    except (IOError, tables.HDF5ExtError):
+    except (OSError, tables.HDF5ExtError):
         logger.info('%19s: Unable to open file.' % seeds)
 
 

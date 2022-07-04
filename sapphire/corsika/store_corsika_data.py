@@ -14,7 +14,6 @@
         $ store_corsika_data --progress DAT000000 corsika.h5
 
 """
-from __future__ import print_function
 
 import argparse
 import os

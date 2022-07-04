@@ -1,5 +1,3 @@
-from __future__ import division
-
 import os.path
 
 from itertools import izip
@@ -312,7 +310,7 @@ def plot_uncertainty_core_distance(group):
     plot(x, rad2deg(y2), 'v-', label="Phi")
 
     # Labels etc.
-    xlabel("Core distance [m] $\pm %d$" % DR)
+    xlabel(r"Core distance [m] $\pm %d$" % DR)
     ylabel("Angle reconstruction uncertainty [deg]")
     #title(r"$N_{MIP} = %d, \theta = 22.5^\circ$" % N)
     ylim(ymin=0)
@@ -837,7 +835,7 @@ def artistplot_reconstruction_efficiency_vs_R_for_angles(N):
                       location=locations.next(),
                       relative_position=positions.next())
 
-    graph.set_xlabel("Core distance [\si{\meter}]")
+    graph.set_xlabel(r"Core distance [\si{\meter}]")
     graph.set_ylabel("Reconstruction efficiency")
     graph.set_xlimits(0, 100)
     graph.set_ylimits(max=1)

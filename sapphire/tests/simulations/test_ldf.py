@@ -23,7 +23,7 @@ class BaseLdfSimulationTest(unittest.TestCase):
 class BaseLdfSimulationWithoutErrorsTest(BaseLdfSimulationTest):
 
     def setUp(self):
-        super(BaseLdfSimulationWithoutErrorsTest, self).setUp()
+        super().setUp()
         self.simulation = ldf.BaseLdfSimulationWithoutErrors
 
     def test_simulate_particles_for_density(self):

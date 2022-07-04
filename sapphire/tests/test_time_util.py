@@ -1,7 +1,7 @@
 import datetime
 import unittest
 
-from mock import patch
+from unittest.mock import patch
 
 from sapphire import time_util
 

@@ -12,7 +12,6 @@
         Find HiSPARC and KASCADE events that belong together.
 
 """
-from __future__ import print_function
 
 import gzip
 import time
@@ -25,7 +24,7 @@ from .storage import KascadeEvent
 from .transformations import clock
 
 
-class StoreKascadeData(object):
+class StoreKascadeData:
     def __init__(self, data, kascade_filename, kascade_path='/kascade',
                  hisparc_path=None, force=False, progress=True):
         """Initialize the class.
@@ -48,7 +47,7 @@ class StoreKascadeData(object):
 
         if kascade_path in data:
             if not force:
-                raise RuntimeError("Cancelling data storage; %s already exists" % kascade_path)
+                raise RuntimeError(f"Cancelling data storage; {kascade_path} already exists")
             else:
                 data.remove_node(kascade_path, recursive=True)
 
@@ -74,7 +73,7 @@ class StoreKascadeData(object):
                 raise RuntimeError("HiSPARC event table is empty")
 
             if self.progress:
-                print("Processing data from %s to %s" % (time.ctime(start), time.ctime(stop)))
+                print(f"Processing data from {time.ctime(start)} to {time.ctime(stop)}")
         else:
             start = None
             stop = None
@@ -161,7 +160,7 @@ class StoreKascadeData(object):
         tablerow.append()
 
 
-class KascadeCoincidences(object):
+class KascadeCoincidences:
     def __init__(self, data, hisparc_group, kascade_group, overwrite=False, ignore_existing=False):
         self.data = data
         self.hisparc_group = data.get_node(hisparc_group)

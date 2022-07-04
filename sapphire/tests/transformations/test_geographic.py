@@ -38,7 +38,7 @@ class GeographicTransformationTests(unittest.TestCase):
         self.assertIsInstance(actual, tuple)
         self.assertIsInstance(expected, tuple)
 
-        msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
+        msg = "Tuples differ: {} != {}".format(str(actual), str(expected))
         for actual_value, expected_value in zip(actual, expected):
             self.assertAlmostEqual(actual_value, expected_value, places=places, msg=msg)
 

@@ -3,7 +3,7 @@ import unittest
 from sapphire.analysis import core_reconstruction
 
 
-class BaseAlgorithm(object):
+class BaseAlgorithm:
 
     """Use this class to check the different algorithms
 

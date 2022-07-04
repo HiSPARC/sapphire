@@ -3,7 +3,6 @@
 The module contains some commonly functions and classes.
 
 """
-from __future__ import division
 
 from bisect import bisect_right
 from distutils.spawn import find_executable
@@ -187,13 +186,13 @@ def memoize(method):
     def memoizer(self, *args, **kwargs):
 
         # Prepare and get reference to cache
-        attr = "_memo_{name}".format(name=method.__name__)
+        attr = f"_memo_{method.__name__}"
         if not hasattr(self, attr):
             setattr(self, attr, {})
         cache = getattr(self, attr)
 
         # Actual caching
-        key = '{args}{kwargs}'.format(args=args, kwargs=sorted(kwargs.items()))
+        key = f'{args}{sorted(kwargs.items())}'
         try:
             return cache[key]
         except KeyError:

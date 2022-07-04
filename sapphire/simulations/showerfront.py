@@ -16,7 +16,6 @@ Example usage::
     >>> sim.run()
 
 """
-from __future__ import division
 
 from math import atan2, cos, sin, sqrt, tan
 
@@ -29,7 +28,7 @@ from .detector import ErrorlessSimulation, HiSPARCSimulation
 class FlatFrontSimulation(HiSPARCSimulation):
 
     def __init__(self, *args, **kwargs):
-        super(FlatFrontSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Since the cluster is not rotated detector positions can be cached.
         for station in self.cluster.stations:
@@ -197,7 +196,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
         :param cone_angle: half of the opening angle of the cone.
 
         """
-        super(ConeFrontSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.max_core_distance = max_core_distance
         self.front = ConeFront()
 
@@ -266,7 +265,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
         return dt
 
 
-class FlatFront(object):
+class FlatFront:
 
     """Simple flat shower front"""
 
@@ -277,7 +276,7 @@ class FlatFront(object):
         return 0.
 
 
-class ConeFront(object):
+class ConeFront:
 
     """Simple cone shaped shower front"""
 
@@ -294,7 +293,7 @@ class ConeFront(object):
         return r * 0.2
 
 
-class CorsikaStationFront(object):
+class CorsikaStationFront:
 
     """Shower front shape derrived from CORSIKA simulations on a station.
 

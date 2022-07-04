@@ -15,7 +15,6 @@ Example usage::
     >>> sim.run()
 
 """
-from __future__ import print_function
 
 from math import cos, log10, pi, sin, sqrt, tan
 from time import time
@@ -40,7 +39,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                                   center of cluster.
 
         """
-        super(GroundParticlesSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.corsikafile = tables.open_file(corsikafile_path, 'r')
         self.groundparticles = self.corsikafile.get_node('/groundparticles')
@@ -169,10 +168,10 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         n_detectors = len(detector_observables)
-        detectors_low = sum([True for observables in detector_observables
-                             if observables['n'] > 0.3])
-        detectors_high = sum([True for observables in detector_observables
-                              if observables['n'] > 0.5])
+        detectors_low = sum(True for observables in detector_observables
+                             if observables['n'] > 0.3)
+        detectors_high = sum(True for observables in detector_observables
+                              if observables['n'] > 0.5)
 
         if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
             return True

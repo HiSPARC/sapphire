@@ -4,13 +4,11 @@ import warnings
 
 from datetime import date, datetime
 
-import six
 import tables
 
-from mock import MagicMock, Mock, call, patch, sentinel
+from unittest.mock import MagicMock, Mock, call, patch, sentinel
 from numpy import all, array, isnan, nan, std
 from numpy.random import normal, uniform
-from six.moves import zip
 
 from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration
@@ -304,7 +302,7 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         gps_mock.assert_has_calls([call(sentinel.ref_station), call(sentinel.station)], any_order=True)
 
         self.assertEqual(len(cuts), 8)
-        six.assertCountEqual(self, sorted(cuts), cuts)
+        self.assertCountEqual(sorted(cuts), cuts)
         self.assertEqual(cuts[0], datetime(2014, 1, 1))
         today = datetime.now()
         self.assertEqual(cuts[-1], datetime(today.year, today.month, today.day))

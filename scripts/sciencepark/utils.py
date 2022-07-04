@@ -31,7 +31,7 @@ def saveplot(suffix=''):
 
     if suffix:
         suffix = '-%s' % suffix
-    plt.savefig('plots/%s%s%s%s.pdf' % (__prefix, whosparent(), suffix, __suffix))
+    plt.savefig(f'plots/{__prefix}{whosparent()}{suffix}{__suffix}.pdf')
 
 
 def savedata(data, suffix=''):
@@ -39,7 +39,7 @@ def savedata(data, suffix=''):
 
     if suffix:
         suffix = '-%s' % suffix
-    filename = 'plots/%s%s%s%s.txt' % (__prefix, whosparent(), suffix, __suffix)
+    filename = f'plots/{__prefix}{whosparent()}{suffix}{__suffix}.txt'
     np.savetxt(filename, data)
 
 

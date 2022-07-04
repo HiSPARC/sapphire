@@ -26,14 +26,14 @@ import json
 import logging
 import warnings
 
+from io import BytesIO
 from os import extsep, path
+from urllib.error import HTTPError, URLError
+from urllib.parse import urljoin
+from urllib.request import urlopen
 
 from lazy import lazy
 from numpy import atleast_1d, count_nonzero, genfromtxt, logical_and, negative, ones, zeros
-from six import BytesIO
-from six.moves.urllib.error import HTTPError, URLError
-from six.moves.urllib.parse import urljoin
-from six.moves.urllib.request import urlopen
 
 from .transformations.clock import process_time
 from .utils import get_active_index, get_publicdb_base, memoize
@@ -51,7 +51,7 @@ def get_src_base():
     return urljoin(get_publicdb_base(), 'show/source/')
 
 
-class API(object):
+class API:
 
     """Base API class
 
@@ -222,8 +222,7 @@ class API(object):
             raise Exception('You must also specify the day')
 
     def __repr__(self):
-        return "%s(force_fresh=%s, force_stale=%s)" % (self.__class__.__name__, self.force_fresh,
-                                                       self.force_stale)
+        return f"{self.__class__.__name__}(force_fresh={self.force_fresh}, force_stale={self.force_stale})"
 
 
 class Network(API):

@@ -6,7 +6,7 @@ from sapphire import clusters
 from sapphire.simulations.ldf import KascadeLdf
 
 
-class ToyMonteCarlo(object):
+class ToyMonteCarlo:
     def main(self):
         global weights, densities, weighted_densities
         plt.figure()

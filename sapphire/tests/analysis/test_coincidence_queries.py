@@ -1,6 +1,6 @@
 import unittest
 
-from mock import call, patch, sentinel
+from unittest.mock import call, patch, sentinel
 
 from sapphire.analysis import coincidence_queries
 
@@ -101,7 +101,7 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         mock_columns.return_value = [sentinel.scolumn1, sentinel.scolumn2]
         result = self.cq._get_allowed_s_columns([sentinel.station1, sentinel.station2])
         mock_columns.assert_called_once_with([sentinel.station1, sentinel.station2])
-        self.assertEqual(result, set([sentinel.scolumn1]))
+        self.assertEqual(result, {sentinel.scolumn1})
 
     def test__get_s_columns(self):
         result = self.cq._get_s_columns([501])

@@ -2,9 +2,9 @@ import datetime
 import os
 import tempfile
 
-import tables
+from urllib.request import urlretrieve
 
-from six.moves.urllib.request import urlretrieve
+import tables
 
 from sapphire import esd
 

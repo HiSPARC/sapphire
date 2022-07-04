@@ -1,8 +1,8 @@
 import unittest
 
-import numpy as np
+from unittest.mock import patch
 
-from mock import patch
+import numpy as np
 
 from sapphire.simulations import gammas
 

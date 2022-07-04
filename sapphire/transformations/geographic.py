@@ -9,7 +9,7 @@ from math import atan2, cos, degrees, radians, sin, sqrt
 from numpy import array
 
 
-class WGS84Datum(object):
+class WGS84Datum:
     """Definition of the WGS84 datum
 
     These definitions are taken from
@@ -27,7 +27,7 @@ class WGS84Datum(object):
     eprime = sqrt(f * (2 - f) / (1 - f) ** 2)
 
 
-class FromWGS84ToENUTransformation(object):
+class FromWGS84ToENUTransformation:
 
     """Convert between various geographic coordinate systems
 
@@ -184,4 +184,4 @@ class FromWGS84ToENUTransformation(object):
         return x + xr, y + yr, z + zr
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__.__name__, self.ref_lla)
+        return f"{self.__class__.__name__}({self.ref_lla!r})"

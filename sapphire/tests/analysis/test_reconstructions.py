@@ -1,9 +1,9 @@
 import os
 import unittest
 
-import tables
+from unittest.mock import MagicMock, patch, sentinel
 
-from mock import MagicMock, patch, sentinel
+import tables
 
 from sapphire.analysis import reconstructions
 

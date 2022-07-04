@@ -7,7 +7,7 @@ import tables
 from .. import api
 
 
-class CoincidenceQuery(object):
+class CoincidenceQuery:
 
     """Perform queries on an ESD file where coincidences have been analysed.
 
@@ -242,8 +242,8 @@ class CoincidenceQuery(object):
             station_number = self.s_numbers[s_idx]
             s_node = self.s_nodes[s_idx]
             if s_node is None:
-                warnings.warn('Missing station group for station id %d.'
-                              'Reconstructions from it are excluded.' % s_idx)
+                warnings.warn(f'Missing station group for station id {s_idx}.'
+                              'Reconstructions from it are excluded.')
                 continue
             rec_table = s_node.reconstructions
             reconstructions.append((station_number, rec_table[e_idx]))
@@ -370,7 +370,7 @@ class CoincidenceQuery(object):
 
     def __repr__(self):
         try:
-            return "%s(%r, %r)" % (self.__class__.__name__, self.data.filename,
+            return "{}({!r}, {!r})".format(self.__class__.__name__, self.data.filename,
                                    self.coincidences._v_parent._v_pathname)
         except AttributeError:
             return "<finished %s>" % self.__class__.__name__

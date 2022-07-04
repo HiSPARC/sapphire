@@ -1,7 +1,8 @@
 import unittest
 import warnings
 
-from mock import MagicMock, Mock, patch, sentinel
+from unittest.mock import MagicMock, Mock, patch, sentinel
+
 from numpy import arcsin, arctan, array, isnan, nan, pi, sqrt
 
 from sapphire.analysis import direction_reconstruction
@@ -403,7 +404,7 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
 
 
-class BaseAlgorithm(object):
+class BaseAlgorithm:
 
     """Use this class to check the different algorithms
 
