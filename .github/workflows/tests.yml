@@ -1,0 +1,51 @@
+name: Run tests
+
+on:
+  push:
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        python-version: [
+            '3.7',
+            '3.8',
+            '3.9',
+            '3.10',
+        ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          auto-update-conda: true
+      - run: conda install astropy numpy scipy pytables numba
+      - run: pip install -e .[dev,coverage]
+      - run: make unittests
+
+  flake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install flake8 flake8-isort pep8-naming
+      - run: make flaketest
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install Sphinx
+      - run: make doctest
+      - uses: peaceiris/actions-gh-pages@v3.8.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: doc/_build/html
+          publish_branch: gh-pages
+          force_orphan: true
