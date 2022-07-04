@@ -366,7 +366,7 @@ class StationTests(unittest.TestCase):
         self.assertEqual(self.station.country(), 'Netherlands')
         self.assertEqual(self.station.cluster(), 'Amsterdam')
         self.assertEqual(self.station.subcluster(), 'Science Park')
-        self.assertEqual(self.station.n_detectors(), 4)
+        self.assertIn(self.station.n_detectors(), [2, 4])
 
     def test_config(self):
         self.assertEqual(self.station.config()['detnum'], 501)
