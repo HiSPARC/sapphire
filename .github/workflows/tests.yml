@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           auto-update-conda: true
-      - run: conda install astropy numpy scipy pytables numba
+      - run: conda install --quiet --yes astropy numpy scipy pytables numba
       - run: pip install -e .[dev,coverage]
       - run: make unittests
 
