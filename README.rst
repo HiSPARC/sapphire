@@ -9,7 +9,7 @@ Introduction
 .. image:: https://img.shields.io/badge/license-GPLv3-blue
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
 .. image:: https://img.shields.io/github/checks-status/HiSPARC/sapphire/master
-   :target: https://github.com/153957/sapphire/actions
+   :target: https://github.com/HiSPARC/sapphire/actions
 .. image:: https://img.shields.io/coveralls/HiSPARC/sapphire/master.svg?label=coveralls
    :target: https://coveralls.io/r/HiSPARC/sapphire
 .. image:: https://img.shields.io/codecov/c/github/HiSPARC/sapphire/master.svg?label=codecov
