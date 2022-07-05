@@ -3,6 +3,10 @@ name: Run tests
 on:
   push:
 
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
   tests:
     strategy:
