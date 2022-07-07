@@ -1,6 +1,3 @@
-# coding: utf-8
-from __future__ import print_function
-
 import os
 import tempfile
 
@@ -11,7 +8,7 @@ import tables
 from sapphire.utils import pbar
 
 
-class TableMergeSort(object):
+class TableMergeSort:
 
     """ Sort a PyTables HDF5 table either in memory or on-disk """
 

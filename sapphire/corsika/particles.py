@@ -25,8 +25,6 @@ So to find e+/e-:
 """
 import re
 
-from six import iteritems
-
 
 def name(particle_id):
     """Get the name for a CORSIKA particle code
@@ -52,10 +50,10 @@ def particle_id(name):
              For atoms the code is: A x 100 + Z
 
     """
-    for pid, particle_name in iteritems(ID):
+    for pid, particle_name in ID.items():
         if name == particle_name:
             return pid
-    for z, atom_name in iteritems(ATOMIC_NUMBER):
+    for z, atom_name in ATOMIC_NUMBER.items():
         # Note; the mass number assumes no neutrons. To get a correct
         # weight append the weight to the name, e.g. helium4 or carbon14
         if name == atom_name:

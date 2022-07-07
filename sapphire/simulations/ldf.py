@@ -38,7 +38,7 @@ class BaseLdfSimulation(HiSPARCSimulation):
                                       shower (in eV).
 
         """
-        super(BaseLdfSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.ldf = BaseLdf()
         self.max_core_distance = max_core_distance
@@ -151,7 +151,7 @@ class NkgLdfSimulation(BaseLdfSimulation):
     """Same as the BaseLdfSimulation but uses the NkgLdf as LDF"""
 
     def __init__(self, *args, **kwargs):
-        super(NkgLdfSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.ldf = NkgLdf()
 
@@ -169,7 +169,7 @@ class KascadeLdfSimulation(BaseLdfSimulation):
     """Same as the BaseLdfSimulation but uses the KascadeLdf as LDF"""
 
     def __init__(self, *args, **kwargs):
-        super(KascadeLdfSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.ldf = KascadeLdf()
 
@@ -187,7 +187,7 @@ class EllipsLdfSimulation(BaseLdfSimulation):
     """Same as BaseLdfSimulation but uses the EllipsLdF as LDF"""
 
     def __init__(self, *args, **kwargs):
-        super(EllipsLdfSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.ldf = EllipsLdf()
 
@@ -240,7 +240,7 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         return num_particles
 
 
-class BaseLdf(object):
+class BaseLdf:
 
     """Base LDF class
 

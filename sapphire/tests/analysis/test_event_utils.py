@@ -1,7 +1,8 @@
 import unittest
 import warnings
 
-from mock import MagicMock, patch, sentinel
+from unittest.mock import MagicMock, patch, sentinel
+
 from numpy import isnan, nan
 
 from sapphire.analysis import event_utils

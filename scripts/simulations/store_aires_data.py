@@ -41,7 +41,7 @@ def store_aires_data(data, group_name, file):
         print('%s already exists, doing nothing' % group_name)
         return
 
-    print("Storing AIRES data (%s) in %s" % (file, group))
+    print(f"Storing AIRES data ({file}) in {group}")
 
     if not os.path.exists(file):
         raise RuntimeError("File %s does not exist" % file)

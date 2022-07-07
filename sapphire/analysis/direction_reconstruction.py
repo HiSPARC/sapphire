@@ -17,25 +17,40 @@
 """
 import warnings
 
-from itertools import combinations
+from itertools import combinations, zip_longest
 
-from numpy import (arccos, arcsin, arctan2, array, cos, cross, dot, inf, isnan, nan, pi, sin, sqrt, sum, tan,
-                   where, zeros)
+from numpy import (
+    arccos,
+    arcsin,
+    arctan2,
+    array,
+    cos,
+    cross,
+    dot,
+    inf,
+    isnan,
+    nan,
+    pi,
+    sin,
+    sqrt,
+    sum,
+    tan,
+    where,
+    zeros,
+)
 from scipy.optimize import minimize
 from scipy.sparse.csgraph import shortest_path
-from six import itervalues
-from six.moves import zip_longest
 
-from . import event_utils
 from ..api import Station
 from ..simulations.showerfront import CorsikaStationFront
 from ..utils import c, floor_in_base, make_relative, memoize, norm_angle, pbar, vector_length
+from . import event_utils
 
 NO_OFFSET = [0., 0., 0., 0.]
 NO_STATION_OFFSET = (0., 100.)
 
 
-class EventDirectionReconstruction(object):
+class EventDirectionReconstruction:
 
     """Reconstruct direction for station events
 
@@ -123,7 +138,7 @@ class EventDirectionReconstruction(object):
                 (self.__class__.__name__, self.station, self.direct, self.fit))
 
 
-class CoincidenceDirectionReconstruction(object):
+class CoincidenceDirectionReconstruction:
 
     """Reconstruct direction for coincidences
 
@@ -233,7 +248,7 @@ class CoincidenceDirectionReconstruction(object):
 
     def get_station_offsets(self, coincidence_events, station_numbers,
                             offsets, ts0):
-        if offsets and isinstance(next(itervalues(offsets)), Station):
+        if offsets and isinstance(next(iter(offsets.values())), Station):
             if station_numbers is None:
                 # stations in the coincidence
                 stations = list({sn for sn, _ in coincidence_events})
@@ -408,7 +423,7 @@ class CoincidenceDirectionReconstructionDetectors(
         return theta, phi, nums
 
 
-class BaseDirectionAlgorithm(object):
+class BaseDirectionAlgorithm:
 
     """No actual direction reconstruction algorithm
 
@@ -792,7 +807,7 @@ class DirectAlgorithmCartesian3D(BaseDirectionAlgorithm):
         return theta, phi
 
 
-class SphereAlgorithm(object):
+class SphereAlgorithm:
 
     """Reconstruct the direction in equatorial coordinates
 
@@ -1000,8 +1015,10 @@ class FitAlgorithm3D(BaseDirectionAlgorithm):
         """
         nx, ny, nz, m = n_xyz
 
-        slq = sum([(nx * xi + ny * yi + zi * nz + c * ti + m) ** 2
-                   for ti, xi, yi, zi in zip(dt, dx, dy, dz)])
+        slq = sum(
+            (nx * xi + ny * yi + zi * nz + c * ti + m) ** 2
+            for ti, xi, yi, zi in zip(dt, dx, dy, dz)
+        )
         return slq + m * m
 
 
@@ -1154,7 +1171,7 @@ class RegressionAlgorithm3D(BaseDirectionAlgorithm):
         return theta, phi
 
 
-class CurvedMixin(object):
+class CurvedMixin:
 
     """Provide methods to estimate the time delay due to front curvature
 

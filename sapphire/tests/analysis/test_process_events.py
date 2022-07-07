@@ -5,9 +5,10 @@ import tempfile
 import unittest
 import warnings
 
+from unittest.mock import Mock
+
 import tables
 
-from mock import Mock
 from numpy import array
 from numpy.testing import assert_array_equal
 

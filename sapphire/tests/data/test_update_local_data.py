@@ -1,7 +1,7 @@
+import builtins
 import unittest
 
-from mock import patch
-from six.moves import builtins
+from unittest.mock import patch
 
 from sapphire.data import update_local_data
 

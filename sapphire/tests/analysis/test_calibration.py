@@ -3,14 +3,12 @@ import unittest
 import warnings
 
 from datetime import date, datetime
+from unittest.mock import MagicMock, Mock, call, patch, sentinel
 
-import six
 import tables
 
-from mock import MagicMock, Mock, call, patch, sentinel
 from numpy import all, array, isnan, nan, std
 from numpy.random import normal, uniform
-from six.moves import zip
 
 from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration
@@ -32,7 +30,7 @@ class DetectorTimingTests(unittest.TestCase):
             events = data.get_node('/station_501', 'events')
             station = SingleStation().get_station(0)
             offsets = calibration.determine_detector_timing_offsets(events, station)
-        for expected, actual in zip([-7.7415, 0.0, -1.6725, -7.4349], offsets):
+        for expected, actual in zip([-7.7415, 0.0, -1.6725, -7.43484], offsets):
             self.assertAlmostEqual(expected, actual, 4)
 
     @patch.object(calibration, 'fit_timing_offset')
@@ -304,7 +302,7 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         gps_mock.assert_has_calls([call(sentinel.ref_station), call(sentinel.station)], any_order=True)
 
         self.assertEqual(len(cuts), 8)
-        six.assertCountEqual(self, sorted(cuts), cuts)
+        self.assertCountEqual(sorted(cuts), cuts)
         self.assertEqual(cuts[0], datetime(2014, 1, 1))
         today = datetime.now()
         self.assertEqual(cuts[-1], datetime(today.year, today.month, today.day))

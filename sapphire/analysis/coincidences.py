@@ -30,22 +30,19 @@
             coin.search_and_store_coincidences()
 
 """
-from __future__ import print_function
-
 import os.path
 
 import numpy as np
 import tables
 
 from progressbar import ETA, Bar, Percentage, ProgressBar
-from six.moves import range
 
-from . import process_events
 from .. import storage
 from ..utils import pbar
+from . import process_events
 
 
-class Coincidences(object):
+class Coincidences:
     """Search for and store coincidences between HiSPARC stations.
 
     .. note::
@@ -341,7 +338,7 @@ class Coincidences(object):
             row[key] = event[key]
 
         signals = [event[key] for key in ('n1', 'n2', 'n3', 'n4')]
-        n = sum([1 if u > self.trig_threshold else 0 for u in signals])
+        n = sum(1 if u > self.trig_threshold else 0 for u in signals)
         row['N'] = n
 
         row.append()

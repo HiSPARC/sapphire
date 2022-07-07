@@ -22,12 +22,7 @@ This package contains modules for performing simulations:
     simulation of detector response due to gammas
 
 """
-from . import base
-from . import detector
-from . import groundparticles
-from . import ldf
-from . import showerfront
-from . import gammas
+from . import base, detector, gammas, groundparticles, ldf, showerfront
 
 __all__ = ['base',
            'detector',

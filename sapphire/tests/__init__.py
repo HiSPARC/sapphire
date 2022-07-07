@@ -5,8 +5,9 @@ SAPPHiRE code. These tests can also be used to verify if SAPPHiRE was
 installed correctly. Simply call the :func:`run_tests` function.
 
 """
-from unittest import defaultTestLoader, TestSuite, TextTestRunner
 import os
+
+from unittest import TestSuite, TextTestRunner, defaultTestLoader
 
 
 def run_tests():

@@ -17,7 +17,6 @@ To make the script show information about what it will do add the help flag::
     $ update_local_data --help
 
 """
-from __future__ import print_function
 
 import argparse
 import warnings

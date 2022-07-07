@@ -1,7 +1,9 @@
 import os
 import unittest
 
-from mock import MagicMock, patch, sentinel
+from unittest.mock import MagicMock, patch, sentinel
+
+from numpy.testing import assert_allclose
 
 from sapphire.corsika import corsika_queries
 
@@ -31,32 +33,30 @@ class CorsikaQueryTest(unittest.TestCase):
         self.assertRaises(IndexError, self.cq.get_info, '1_3')
 
     def test_all_energies(self):
-        energies = self.cq.all_energies
-        self.assertEqual(energies, set([14.]))
+        energies = list(self.cq.all_energies)
+        assert_allclose(energies, [14.])
 
     def test_all_particles(self):
         particles = self.cq.all_particles
-        self.assertEqual(particles, set(['proton']))
+        self.assertEqual(particles, {'proton'})
 
     def test_all_azimuths(self):
         azimuths = self.cq.all_azimuths
-        self.assertEqual(azimuths, set([-90.]))
+        self.assertEqual(azimuths, {-90.})
 
     def test_all_zeniths(self):
         zeniths = self.cq.all_zeniths
-        self.assertEqual(zeniths, set([0.]))
+        self.assertEqual(zeniths, {0.})
 
     def test_available_parameters(self):
-        result = self.cq.available_parameters('energy', particle='proton')
-        self.assertEqual(result, {14.0})
+        result = list(self.cq.available_parameters('energy', particle='proton'))
+        assert_allclose(result, [14.0])
         result = self.cq.available_parameters('particle_id', zenith=0.)
         self.assertEqual(result, {'proton'})
         result = self.cq.available_parameters('zenith', azimuth=-90.)
         self.assertEqual(result, {0.})
-        self.assertRaises(RuntimeError, self.cq.available_parameters, 'zenith',
-                          energy=19)
-        self.assertRaises(RuntimeError, self.cq.available_parameters, 'zenith',
-                          particle='iron')
+        self.assertRaises(RuntimeError, self.cq.available_parameters, 'zenith', energy=19)
+        self.assertRaises(RuntimeError, self.cq.available_parameters, 'zenith', particle='iron')
 
     def get_overview_path(self):
         dir_path = os.path.dirname(__file__)
@@ -71,8 +71,7 @@ class MockCorsikaQueryTest(unittest.TestCase):
         self.data_path = sentinel.data_path
         self.simulations_group = sentinel.simulations_group
 
-        self.cq = corsika_queries.CorsikaQuery(self.data_path,
-                                               self.simulations_group)
+        self.cq = corsika_queries.CorsikaQuery(self.data_path, self.simulations_group)
 
     def test_init(self):
         self.mock_open.assert_called_once_with(self.data_path, 'r')

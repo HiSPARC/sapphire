@@ -26,14 +26,14 @@ import json
 import logging
 import warnings
 
+from functools import cached_property
+from io import BytesIO
 from os import extsep, path
+from urllib.error import HTTPError, URLError
+from urllib.parse import urljoin
+from urllib.request import urlopen
 
-from lazy import lazy
 from numpy import atleast_1d, count_nonzero, genfromtxt, logical_and, negative, ones, zeros
-from six import BytesIO
-from six.moves.urllib.error import HTTPError, URLError
-from six.moves.urllib.parse import urljoin
-from six.moves.urllib.request import urlopen
 
 from .transformations.clock import process_time
 from .utils import get_active_index, get_publicdb_base, memoize
@@ -51,7 +51,7 @@ def get_src_base():
     return urljoin(get_publicdb_base(), 'show/source/')
 
 
-class API(object):
+class API:
 
     """Base API class
 
@@ -222,15 +222,14 @@ class API(object):
             raise Exception('You must also specify the day')
 
     def __repr__(self):
-        return "%s(force_fresh=%s, force_stale=%s)" % (self.__class__.__name__, self.force_fresh,
-                                                       self.force_stale)
+        return f"{self.__class__.__name__}(force_fresh={self.force_fresh}, force_stale={self.force_stale})"
 
 
 class Network(API):
 
     """Get info about the network (countries/clusters/subclusters/stations)"""
 
-    @lazy
+    @cached_property
     def _all_countries(self):
         """All countries data"""
 
@@ -251,7 +250,7 @@ class Network(API):
         countries = self.countries()
         return [country['number'] for country in countries]
 
-    @lazy
+    @cached_property
     def _all_clusters(self):
         """All countries data"""
 
@@ -281,7 +280,7 @@ class Network(API):
         clusters = self.clusters(country=country)
         return [cluster['number'] for cluster in clusters]
 
-    @lazy
+    @cached_property
     def _all_subclusters(self):
         """All countries data"""
 
@@ -319,7 +318,7 @@ class Network(API):
         subclusters = self.subclusters(country=country, cluster=cluster)
         return [subcluster['number'] for subcluster in subclusters]
 
-    @lazy
+    @cached_property
     def _all_stations(self):
         """All stations data"""
 
@@ -506,7 +505,7 @@ class Station(API):
         self.force_stale = force_stale
         self.station = station
 
-    @lazy
+    @cached_property
     def info(self):
         """Get general station info"""
 
@@ -693,7 +692,7 @@ class Station(API):
                                                    year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
-    @lazy
+    @cached_property
     def electronics(self):
         """Get the electronics version data
 
@@ -720,7 +719,7 @@ class Station(API):
                       ('master', 'slave', 'master_fpga', 'slave_fpga')]
         return electronic
 
-    @lazy
+    @cached_property
     def voltages(self):
         """Get the PMT voltage data
 
@@ -746,7 +745,7 @@ class Station(API):
         voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
         return voltage
 
-    @lazy
+    @cached_property
     def currents(self):
         """Get the PMT current data
 
@@ -772,7 +771,7 @@ class Station(API):
         current = [currents[idx]['current%d' % i] for i in range(1, 5)]
         return current
 
-    @lazy
+    @cached_property
     def gps_locations(self):
         """Get the GPS location data
 
@@ -802,7 +801,7 @@ class Station(API):
                     'altitude': locations[idx]['altitude']}
         return location
 
-    @lazy
+    @cached_property
     def triggers(self):
         """Get the trigger config data
 
@@ -834,7 +833,7 @@ class Station(API):
         trigger = [triggers[idx][t] for t in ('n_low', 'n_high', 'and_or', 'external')]
         return thresholds, trigger
 
-    @lazy
+    @cached_property
     def station_layouts(self):
         """Get the station layout data
 
@@ -867,7 +866,7 @@ class Station(API):
                           for i in range(1, 5)]
         return station_layout
 
-    @lazy
+    @cached_property
     def detector_timing_offsets(self):
         """Get the detector timing offsets data
 

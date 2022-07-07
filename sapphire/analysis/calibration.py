@@ -6,14 +6,11 @@ Determine timing offsets for detectors and stations to correct arrival times.
 Determine the PMT response curve to correct the detected number of MIPs.
 
 """
-from __future__ import division
-
 from datetime import datetime, timedelta
 from itertools import chain, combinations, tee
 
 from numpy import abs, arange, histogram, isnan, linspace, nan, percentile, sqrt, std, sum
 from scipy.optimize import curve_fit
-from six.moves import zip
 
 from ..api import Station
 from ..clusters import HiSPARCNetwork, HiSPARCStations
@@ -96,7 +93,7 @@ def determine_detector_timing_offset(dt, dz=0):
     return detector_offset, detector_offset_error
 
 
-class DetermineStationTimingOffsets(object):
+class DetermineStationTimingOffsets:
     """Determine the timing offsets between stations"""
 
     # Maximum distance between station pairs that are included in analysis

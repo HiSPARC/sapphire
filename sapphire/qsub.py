@@ -35,10 +35,8 @@ def check_queue(queue):
 
     """
     utils.which('qstat')
-    all_jobs = int(subprocess.check_output('qstat {queue} | grep " [QR] " | wc -l'
-                                           .format(queue=queue), shell=True))
-    user_jobs = int(subprocess.check_output('qstat -u $USER {queue} | grep " [QR] " | wc -l'
-                                            .format(queue=queue), shell=True))
+    all_jobs = int(subprocess.check_output(f'qstat {queue} | grep " [QR] " | wc -l', shell=True))
+    user_jobs = int(subprocess.check_output(f'qstat -u $USER {queue} | grep " [QR] " | wc -l', shell=True))
 
     if queue == 'express':
         return 2 - user_jobs
@@ -49,7 +47,7 @@ def check_queue(queue):
     elif queue == 'long':
         return min(500 - user_jobs, 1000 - all_jobs)
     else:
-        raise KeyError('Unknown queue name: {queue}'.format(queue=queue))
+        raise KeyError(f'Unknown queue name: {queue}')
 
 
 def submit_job(script, name, queue, extra=''):
@@ -71,12 +69,11 @@ def submit_job(script, name, queue, extra=''):
     # -z: do not print the job_identifier of the created job
     # -j oe: merge standard error into the standard output
     # -N: a recognizable name for the job
-    qsub = ('qsub -q {queue} -V -z -j oe -N {name} {extra} {script}'
-            .format(queue=queue, name=script_name, script=script_path, extra=extra))
+    qsub = f'qsub -q {queue} -V -z -j oe -N {script_name} {extra} {script_path}'
 
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT, shell=True)
     if not result == b'':
-        raise Exception('%s - Error occured: %s' % (name, result))
+        raise Exception(f'{name} - Error occured: {result}')
 
     delete_script(script_path)
 
@@ -84,7 +81,7 @@ def submit_job(script, name, queue, extra=''):
 def create_script(script, name):
     """Create script as temp file to be run on Stoomboot"""
 
-    script_name = 'his_{name}.sh'.format(name=name)
+    script_name = f'his_{name}.sh'
     script_path = os.path.join('/tmp', script_name)
 
     with open(script_path, 'w') as script_file:

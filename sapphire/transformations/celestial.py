@@ -20,8 +20,8 @@ import numpy as np
 
 from numpy import arccos, arcsin, around, cos, pi, radians, sin
 
-from . import angles, clock
 from ..utils import norm_angle
+from . import angles, clock
 
 
 def zenithazimuth_to_equatorial(latitude, longitude, timestamp, zenith,

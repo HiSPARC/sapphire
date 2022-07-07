@@ -4,12 +4,12 @@ SAPPHiRE — A Framework for HiSPARC
 Introduction
 ------------
 
-.. image:: https://img.shields.io/pypi/v/hisparc-sapphire.svg
+.. image:: https://img.shields.io/pypi/v/hisparc-sapphire
    :target: https://pypi.python.org/pypi/hisparc-sapphire/
-.. image:: https://img.shields.io/badge/license-GPLv3-blue.svg
+.. image:: https://img.shields.io/badge/license-GPLv3-blue
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
-.. image:: https://img.shields.io/travis/HiSPARC/sapphire/master.svg
-   :target: https://travis-ci.org/HiSPARC/sapphire
+.. image:: https://img.shields.io/github/checks-status/HiSPARC/sapphire/master
+   :target: https://github.com/HiSPARC/sapphire/actions
 .. image:: https://img.shields.io/coveralls/HiSPARC/sapphire/master.svg?label=coveralls
    :target: https://coveralls.io/r/HiSPARC/sapphire
 .. image:: https://img.shields.io/codecov/c/github/HiSPARC/sapphire/master.svg?label=codecov
@@ -82,7 +82,7 @@ the sapphire repo instead of installing using pip::
 Version release
 ---------------
 
-Important: First check if the last commit passes the tests on Travis CI!
+Important: First check if the last commit passes the tests on GitHub Actions!
 
 To release a new version modify the version number in ``setup.py``. Then
 create a commit for the new release with a title like 'Bump version to vX.Y.Z'

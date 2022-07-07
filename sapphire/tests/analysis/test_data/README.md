@@ -47,7 +47,7 @@ Some duplicates are added by overwriting two rows, and the table is shuffled.
 Notes on recreating `coincidences.h5`
 -------------------------------------
 
-    >>> from mock import patch
+    >>> from unittest.mock import patch
     >>> import tables
     >>> from sapphire import download_data, Coincidences
     >>> from datetime import datetime

@@ -1,8 +1,8 @@
+import builtins
 import unittest
 import warnings
 
-from mock import mock_open, patch, sentinel
-from six.moves import builtins
+from unittest.mock import mock_open, patch, sentinel
 
 from sapphire.corsika import qsub_corsika
 

@@ -35,8 +35,6 @@ import zlib
 import numpy as np
 import tables
 
-from six.moves import range, zip
-
 from ..api import Station
 from ..utils import ERR, pbar
 from .find_mpv import FindMostProbableValueInSpectrum
@@ -53,7 +51,7 @@ TRIGGER_2 = (2, 0, False, 0)
 TRIGGER_4 = (3, 2, True, 0)
 
 
-class ProcessEvents(object):
+class ProcessEvents:
 
     """Process HiSPARC events to obtain several observables.
 
@@ -500,8 +498,7 @@ class ProcessIndexedEvents(ProcessEvents):
                          processing events.
 
         """
-        super(ProcessIndexedEvents, self).__init__(data, group, source,
-                                                   progress)
+        super().__init__(data, group, source, progress)
         self.indexes = indexes
 
     def _store_results_from_traces(self):
@@ -509,8 +506,7 @@ class ProcessIndexedEvents(ProcessEvents):
 
         timings = self.process_traces()
 
-        for event, (t1, t2, t3, t4) in zip(table.itersequence(self.indexes),
-                                           timings):
+        for event, (t1, t2, t3, t4) in zip(table.itersequence(self.indexes), timings):
             event['t1'] = t1
             event['t2'] = t2
             event['t3'] = t3
@@ -571,8 +567,7 @@ class ProcessEventsWithLINT(ProcessEvents):
         return value
 
 
-class ProcessIndexedEventsWithLINT(ProcessIndexedEvents,
-                                   ProcessEventsWithLINT):
+class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
 
     """Process a subset of events using LInear INTerpolation.
 
@@ -602,8 +597,7 @@ class ProcessEventsWithoutTraces(ProcessEvents):
         pass
 
 
-class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces,
-                                        ProcessIndexedEvents):
+class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces, ProcessIndexedEvents):
 
     """Process a subset of events without traces
 
@@ -644,8 +638,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         :param station: station number of station to which the data belongs.
 
         """
-        super(ProcessEventsWithTriggerOffset, self).__init__(data, group,
-                                                             source, progress)
+        super().__init__(data, group, source, progress)
         if station is None:
             self.station = None
             self.thresholds = [(ADC_LOW_THRESHOLD, ADC_HIGH_THRESHOLD)] * 4
@@ -686,8 +679,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             try:
                 self.thresholds, self.trigger = self.station.trigger(timestamp)
             except Exception:
-                warnings.warn('Unknown trigger settings, not reconstructing '
-                              'trigger offset.')
+                warnings.warn('Unknown trigger settings, not reconstructing trigger offset.')
                 # Do not reconstruct t_trigger by pretending external trigger.
                 self.trigger = [0, 0, 0, 1]
 
@@ -762,7 +754,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
         """
         results = [-999, -999, -999]
-        ordered_thresholds = sorted([(x, i) for i, x in enumerate(thresholds)])
+        ordered_thresholds = sorted((x, i) for i, x in enumerate(thresholds))
         last_value = None
         t = 0
 
@@ -774,8 +766,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             else:
                 if last_value is not None:
                     t += 1
-                t, last_value = cls._first_value_above_threshold(trace,
-                                                                 threshold, t)
+                t, last_value = cls._first_value_above_threshold(trace, threshold, t)
                 results[i] = t
         return results
 
@@ -807,15 +798,12 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         if external:
             return -999
 
-        low_idx = [idx for idx in low_idx if not idx == -999]
-        high_idx = [idx for idx in high_idx if not idx == -999]
-        low_idx.sort()
-        high_idx.sort()
+        low_idx = sorted(idx for idx in low_idx if not idx == -999)
+        high_idx = sorted(idx for idx in high_idx if not idx == -999)
 
         if and_or:
             # low or high, which ever is first
-            if (n_low and n_high and
-                    len(low_idx) >= n_low and len(high_idx) >= n_high):
+            if n_low and n_high and len(low_idx) >= n_low and len(high_idx) >= n_high:
                 return min(low_idx[n_low - 1], high_idx[n_high - 1])
             elif n_high and len(high_idx) >= n_high:
                 return high_idx[n_high - 1]
@@ -825,8 +813,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             if n_low and n_high:
                 # low and high
                 if len(low_idx) >= n_low + n_high and len(high_idx) >= n_high:
-                    return max(low_idx[n_low + n_high - 1],
-                               high_idx[n_high - 1])
+                    return max(low_idx[n_low + n_high - 1], high_idx[n_high - 1])
             elif n_high:
                 # 0 low and high
                 if len(high_idx) >= n_high:
@@ -956,7 +943,7 @@ class ProcessEventsFromSource(ProcessEvents):
 
     def __repr__(self):
         if not self.source_file.isopen or not self.dest_file.isopen:
-            return "<finished %s>" % self.__class__.__name__
+            return f"<finished {self.__class__.__name__}>"
         else:
             return ("%s(%r, %r, %r, %r, progress=%r)" %
                     (self.__class__.__name__, self.source_file.filename,
@@ -1040,8 +1027,7 @@ class ProcessDataTable(ProcessEvents):
     """
     table_name = 'abstract_data'  # overwrite with 'weather' or 'singles'
 
-    def process_and_store_results(self, destination=None, overwrite=False,
-                                  limit=None):
+    def process_and_store_results(self, destination=None, overwrite=False, limit=None):
         """Process table and store the results.
 
         :param destination: name of the table where the results will be
@@ -1075,9 +1061,9 @@ class ProcessDataTable(ProcessEvents):
     def _check_destination(self, destination, overwrite):
         """Check if the destination is valid"""
 
-        if destination == '_t_%s' % self.table_name:
-            raise RuntimeError("The _t_%s table is for internal use. Choose "
-                               "another destination." % self.table_name)
+        if destination == f'_t_{self.table_name}':
+            raise RuntimeError(f"The _t_{self.table_name} table is for internal use. Choose "
+                               "another destination.")
         elif destination is None:
             destination = self.table_name
 
@@ -1116,7 +1102,7 @@ class ProcessDataTable(ProcessEvents):
 
         """
         tmptable = self.data.create_table(self.group,
-                                          '_t_%s' % self.table_name,
+                                          f'_t_{self.table_name}',
                                           description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         tmptable.append(selected_rows)
@@ -1136,8 +1122,7 @@ class ProcessDataTableFromSource(ProcessDataTable):
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group,
-                 progress=False):
+    def __init__(self, source_file, dest_file, source_group, dest_group, progress=False):
         """Initialize the class.
 
         :param source_file,dest_file: PyTables source and destination files.

@@ -11,11 +11,11 @@ import logging
 import os
 import re
 
-import tables
+from urllib.parse import urljoin
+from urllib.request import urlretrieve
+from xmlrpc.client import ServerProxy
 
-from six.moves.urllib.parse import urljoin
-from six.moves.urllib.request import urlretrieve
-from six.moves.xmlrpc_client import ServerProxy
+import tables
 
 from .transformations.clock import datetime_to_gps
 from .utils import get_publicdb_base
@@ -62,13 +62,13 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
     server = ServerProxy(get_publicdb_xmlrpc_url())
 
     for t0, t1 in datetimerange(start, end):
-        logger.info("%s %s" % (t0, t1))
-        logger.info("Getting server data URL (%s)" % t0)
+        logger.info(f"{t0} {t1}")
+        logger.info(f"Getting server data URL {t0}")
         try:
             url = server.hisparc.get_data_url(station_id, t0, get_blobs)
         except Exception as exc:
             if re.search("No data", str(exc)):
-                logger.warning("No data for %s" % t0)
+                logger.warning(f"No data for {t0}")
                 continue
             else:
                 raise

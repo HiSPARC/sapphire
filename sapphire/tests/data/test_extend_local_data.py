@@ -1,6 +1,6 @@
 import unittest
 
-from mock import patch, sentinel
+from unittest.mock import patch, sentinel
 
 from sapphire.data import extend_local_data
 

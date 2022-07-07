@@ -11,7 +11,7 @@ import datetime
 import time
 
 
-class GPSTime(object):
+class GPSTime:
     """Date/time utility class."""
 
     def __init__(self, *args):

@@ -3,9 +3,10 @@ import shutil
 import tempfile
 import unittest
 
+from unittest.mock import Mock, patch, sentinel
+
 import tables
 
-from mock import Mock, patch, sentinel
 from numpy import uint64
 
 from sapphire.analysis import coincidences

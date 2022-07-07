@@ -1,5 +1,3 @@
-from __future__ import division
-
 import unittest
 
 from math import pi, sqrt
@@ -30,7 +28,7 @@ class SimpleClusterTest(unittest.TestCase):
         self.assertIsInstance(actual, tuple)
         self.assertIsInstance(expected, tuple)
 
-        msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
+        msg = f"Tuples differ: {str(actual)} != {str(expected)}"
         for actual_value, expected_value in zip(actual, expected):
             self.assertAlmostEqual(actual_value, expected_value, msg=msg)
 

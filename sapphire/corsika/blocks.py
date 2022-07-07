@@ -6,7 +6,6 @@ The classes in this module correspond one-to-one with the sub-blocks
 
 Author: Javier Gonzalez
 """
-from __future__ import division
 
 import math
 import struct
@@ -24,7 +23,7 @@ except ImportError:
 
 # All sizes are in bytes
 
-class Format(object):
+class Format:
 
     """The binary format information of the file.
 
@@ -68,7 +67,7 @@ class Format(object):
 
 # From here on, things should not depend on the field size as everything is
 
-class RunHeader(object):
+class RunHeader:
 
     """The run header sub-block
 
@@ -131,7 +130,7 @@ class RunHeader(object):
         """
         a, b, c = self.a_atmospheric, self.b_atmospheric, self.c_atmospheric
 
-        layers = [l * units.cm for l in self.atmospheric_layer_boundaries]
+        layers = [layer * units.cm for layer in self.atmospheric_layer_boundaries]
 
         if thickness > self.height_to_thickness(layers[1]):
             height = c[0] * math.log(b[0] / (thickness - a[0]))
@@ -174,7 +173,7 @@ class RunHeader(object):
         return thickness
 
 
-class EventHeader(object):
+class EventHeader:
 
     """The event header sub-block
 
@@ -338,7 +337,7 @@ class EventHeader(object):
                  math.degrees(self.azimuth)))
 
 
-class RunEnd(object):
+class RunEnd:
 
     """The run end sub-block
 
@@ -352,11 +351,15 @@ class RunEnd(object):
         self.n_events_processed = subblock[2]
 
     def __repr__(self):
-        return '%s((%r, %r, %r))' % (self.__class__.__name__, self.id,
-                                     self.run_number, self.n_events_processed)
+        return '{}(({!r}, {!r}, {!r}))'.format(
+            self.__class__.__name__,
+            self.id,
+            self.run_number,
+            self.n_events_processed
+        )
 
 
-class EventEnd(object):
+class EventEnd:
 
     """The event end sub-block
 
@@ -459,7 +462,7 @@ def particle_data_thin(subblock):
     return particle_data(subblock[:7]) + (subblock[7],)
 
 
-class ParticleData(object):
+class ParticleData:
 
     """The particle data sub-block
 
@@ -520,7 +523,7 @@ class ParticleData(object):
                  self.t))
 
 
-class CherenkovData(object):
+class CherenkovData:
 
     """The cherenkov photon sub-block
 
@@ -552,7 +555,7 @@ class FormatThin(Format):
     """
 
     def __init__(self):
-        super(FormatThin, self).__init__()
+        super().__init__()
 
         # one block contains 6552 fields plus one header and one end field
         self.block_format = '6554f'
@@ -605,4 +608,4 @@ class CherenkovDataThin(CherenkovData):
 
     def __init__(self, subblock):
         self.weight = subblock[7]
-        super(CherenkovDataThin, self).__init__(subblock)
+        super().__init__(subblock)

@@ -7,7 +7,7 @@ import tables
 from .. import api
 
 
-class CoincidenceQuery(object):
+class CoincidenceQuery:
 
     """Perform queries on an ESD file where coincidences have been analysed.
 
@@ -152,7 +152,7 @@ class CoincidenceQuery(object):
         :return: coincidences within the specified timerange.
 
         """
-        query = '(%d <= timestamp) & (timestamp < %d)' % (start, stop)
+        query = f'({start} <= timestamp) & (timestamp < {stop})'
         filtered_coincidences = self.perform_query(query, iterator)
         return filtered_coincidences
 
@@ -165,9 +165,9 @@ class CoincidenceQuery(object):
 
         """
         if start:
-            query += ' & (%d <= timestamp)' % start
+            query += f' & ({start} <= timestamp)'
         if stop:
-            query += ' & (timestamp < %d)' % stop
+            query += f' & (timestamp < {stop})'
 
         return query
 
@@ -207,7 +207,7 @@ class CoincidenceQuery(object):
         :return: list of strings with column titles for each station.
 
         """
-        return ['s%d' % station for station in stations]
+        return [f's{station}' for station in stations]
 
     def _get_events(self, coincidence):
         """Get events belonging to a coincidence
@@ -242,8 +242,8 @@ class CoincidenceQuery(object):
             station_number = self.s_numbers[s_idx]
             s_node = self.s_nodes[s_idx]
             if s_node is None:
-                warnings.warn('Missing station group for station id %d.'
-                              'Reconstructions from it are excluded.' % s_idx)
+                warnings.warn(f'Missing station group for station id {s_idx}.'
+                              'Reconstructions from it are excluded.')
                 continue
             rec_table = s_node.reconstructions
             reconstructions.append((station_number, rec_table[e_idx]))
@@ -370,7 +370,10 @@ class CoincidenceQuery(object):
 
     def __repr__(self):
         try:
-            return "%s(%r, %r)" % (self.__class__.__name__, self.data.filename,
-                                   self.coincidences._v_parent._v_pathname)
+            return "{}({!r}, {!r})".format(
+                self.__class__.__name__,
+                self.data.filename,
+                self.coincidences._v_parent._v_pathname
+            )
         except AttributeError:
-            return "<finished %s>" % self.__class__.__name__
+            return f"<finished {self.__class__.__name__}>"

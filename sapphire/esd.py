@@ -22,14 +22,13 @@ import re
 import time
 
 from codecs import iterdecode
+from http.client import BadStatusLine
+from urllib.parse import urlencode, urljoin
+from urllib.request import urlopen
 
 import tables
 
 from progressbar import ETA, Bar, Percentage, ProgressBar
-from six import itervalues
-from six.moves.http_client import BadStatusLine
-from six.moves.urllib.parse import urlencode, urljoin
-from six.moves.urllib.request import urlopen
 
 from . import api, storage
 from .utils import get_publicdb_base
@@ -521,7 +520,7 @@ def _create_coincidences_tables(file, group, station_groups):
 
     # Create and fill s_index
     s_index = file.create_vlarray(coin_group, 's_index', tables.VLStringAtom())
-    for station_group in itervalues(station_groups):
+    for station_group in station_groups.values():
         s_index.append(station_group['group'].encode('utf-8'))
 
     return coincidences._v_parent
@@ -716,7 +715,7 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups
     return int(coincidence[0][4])
 
 
-class _read_line_and_store_event_class(object):
+class _read_line_and_store_event_class:
 
     """Store lines of event data from the ESD
 

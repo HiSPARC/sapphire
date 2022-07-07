@@ -23,7 +23,6 @@
         $ qsub_corsika 100 16 proton 22.5 -q generic -a 90
 
 """
-from __future__ import print_function
 
 import argparse
 import os
@@ -34,11 +33,9 @@ import warnings
 
 from math import log10, modf
 
-from six.moves import range
-
-from . import particles
 from .. import qsub
 from ..utils import pbar
+from . import particles
 
 TEMPDIR = '/data/hisparc/corsika/running/'
 DATADIR = '/data/hisparc/corsika/data/'
@@ -97,7 +94,7 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     fi""")
 
 
-class CorsikaBatch(object):
+class CorsikaBatch:
 
     """Run many simultaneous CORSIKA simulations using Stoomboot
 
@@ -176,8 +173,8 @@ class CorsikaBatch(object):
     def submit_job(self):
         """Submit job to Stoomboot"""
 
-        name = "cor_{seed1}_{seed2}".format(seed1=self.seed1, seed2=self.seed2)
-        extra = "-d {rundir}".format(rundir=self.get_rundir())
+        name = f"cor_{self.seed1}_{self.seed2}"
+        extra = f"-d {self.get_rundir()}"
         if self.queue == 'long':
             extra += " -l walltime=96:00:00"
         script = self.create_script()
@@ -200,7 +197,7 @@ class CorsikaBatch(object):
         """
         seed1 = random.randint(1, 900000000)
         seed2 = random.randint(1, 900000000)
-        seed = "{seed1}_{seed2}".format(seed1=seed1, seed2=seed2)
+        seed = f"{seed1}_{seed2}"
         if seed not in taken:
             self.seed1 = seed1
             self.seed2 = seed2

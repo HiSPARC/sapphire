@@ -1,5 +1,3 @@
-from __future__ import division
-
 import os.path
 
 from itertools import izip
@@ -135,7 +133,7 @@ def plot_uncertainty_mip(table):
     plot(nx, rad2deg(ey))#, label="Estimate Phi")
 
     # Labels etc.
-    xlabel("$N_{MIP} \pm %.1f$" % DN)
+    xlabel(r"$N_{MIP} \pm %.1f$" % DN)
     ylabel("Angle reconstruction uncertainty [deg]")
     title(r"$\theta = 22.5^\circ \pm %d^\circ \quad %.1f \leq \log(E) \leq %.1f$" % (rad2deg(DTHETA), LOGENERGY - DLOGENERGY, LOGENERGY + DLOGENERGY))
     legend(numpoints=1)
@@ -292,7 +290,7 @@ def plot_uncertainty_core_distance(table):
     graph.plot(sx[:-1], rad2deg(sy2[:-1]), mark='square*')
 
     # Labels etc.
-    xlabel("Core distance [m] $\pm %d$" % DR)
+    xlabel(r"Core distance [m] $\pm %d$" % DR)
     graph.set_xlabel(r"Core distance [\si{\meter}] $\pm \SI{%d}{\meter}$" % DR)
     ylabel("Angle reconstruction uncertainty [deg]")
     graph.set_ylabel(r"Angle reconstruction uncertainty [\si{\degree}]")
@@ -539,7 +537,7 @@ def boxplot_arrival_times(table, N):
 
     graph.set_ylimits(0, 15)
     graph.set_xlimits(0, 80)
-    graph.set_xlabel("Core distance [\si{\meter}]")
+    graph.set_xlabel(r"Core distance [\si{\meter}]")
     graph.set_ylabel(r"Arrival time difference $|t_2 - t_1|$ [\si{\nano\second}]")
     graph.show_xticklabels_for_all([(0, 0), (0, 1), (0, 2)])
     graph.set_xticklabels_position(0, 1, 'right')
@@ -587,7 +585,7 @@ def boxplot_core_distances_for_mips(table):
     plot(x, sr50, 'o-', color='black', markerfacecolor='none')
     plot(x, r50_list, 'o-', color='black')
 
-    ax2.xaxis.set_label_text("Minimum number of particles $\pm %.1f$" % DN)
+    ax2.xaxis.set_label_text(r"Minimum number of particles $\pm %.1f$" % DN)
     ax1.yaxis.set_label_text("Core distance [m]")
     fig.suptitle(r"$\theta = 22.5^\circ \pm %d^\circ, \quad %.1f \leq \log(E) \leq %.1f$" % (rad2deg(DTHETA), log10(ENERGY - DENERGY), log10(ENERGY + DENERGY)))
 
@@ -615,8 +613,8 @@ def boxplot_core_distances_for_mips(table):
     graph.set_label(0, 2, 'sim + exp')
 
     graph.set_ylimits(0, 50)
-    graph.set_xlabel("Minimum number of particles $\pm %.1f$" % DN)
-    graph.set_ylabel("Core distance [\si{\meter}]")
+    graph.set_xlabel(r"Minimum number of particles $\pm %.1f$" % DN)
+    graph.set_ylabel(r"Core distance [\si{\meter}]")
     graph.show_xticklabels_for_all([(0, 0), (0, 1), (0, 2)])
     graph.show_yticklabels(0, 0)
 

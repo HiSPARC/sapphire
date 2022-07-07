@@ -13,7 +13,7 @@ from ..utils import gauss
 MPV_FIT_WIDTH_FACTOR = 0.4
 
 
-class FindMostProbableValueInSpectrum(object):
+class FindMostProbableValueInSpectrum:
     """Find the most probable value (MPV) in a HiSPARC spectrum.
 
     This is a fast algorithm to find the MPV value in a HiSPARC spectrum.

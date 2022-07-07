@@ -1,8 +1,8 @@
 import unittest
 
 from itertools import cycle
+from unittest.mock import MagicMock, patch, sentinel
 
-from mock import MagicMock, patch, sentinel
 from numpy import array
 
 from sapphire.analysis import process_traces

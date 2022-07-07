@@ -17,7 +17,7 @@ from .base import BaseSimulation
 class HiSPARCSimulation(BaseSimulation):
 
     def __init__(self, *args, **kwargs):
-        super(HiSPARCSimulation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.simulate_and_store_offsets()
 

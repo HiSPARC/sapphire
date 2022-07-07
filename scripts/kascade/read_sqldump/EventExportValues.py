@@ -1,4 +1,3 @@
-
 export_values = {
     'CIC': [
         ('N', 'RED', 'data_reduction'),

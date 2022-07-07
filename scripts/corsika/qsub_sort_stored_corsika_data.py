@@ -47,9 +47,9 @@ def seeds_in_queue():
     """Get set of seeds already queued to be processed"""
 
     try:
-        with open(QUEUED_SEEDS, 'r') as queued_seeds:
+        with open(QUEUED_SEEDS) as queued_seeds:
             seeds = queued_seeds.read().split('\n')
-    except IOError:
+    except OSError:
         seeds = []
     return set(seeds)
 
@@ -89,7 +89,7 @@ def get_seeds_todo():
 def get_script_path(seed):
     """Create path for script"""
 
-    script_name = 'sort_{seed}.sh'.format(seed=seed)
+    script_name = f'sort_{seed}.sh'
     script_path = os.path.join('/tmp', script_name)
     return script_path
 
@@ -102,7 +102,7 @@ def create_script(seed):
 
     with open(script_path, 'w') as script:
         script.write(input)
-    os.chmod(script_path, 0774)
+    os.chmod(script_path, 0o774)
 
     return script_path
 
@@ -126,7 +126,7 @@ def submit_job(seed):
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
                                      shell=True)
     if not result == '':
-        msg = '%s - Error occured: %s' % (seed, result)
+        msg = f'{seed} - Error occured: {result}'
         logger.error(msg)
         raise Exception(msg)
 
@@ -141,7 +141,7 @@ def check_queue():
     :return: Number of available slots in the queue.
 
     """
-    queued = 'qstat {queue} | grep [RQ] | wc -l'.format(queue=QUEUE)
+    queued = f'qstat {QUEUE} | grep [RQ] | wc -l'
     user_queued = ('qstat -u $USER {queue} | grep [RQ] | wc -l'
                    .format(queue=QUEUE))
     n_queued = int(subprocess.check_output(queued, shell=True))
@@ -157,7 +157,7 @@ def check_queue():
 def run():
     """Get list of seeds to process, then submit jobs to process them"""
 
-    os.umask(002)
+    os.umask(0o02)
     logger.info('Getting todo list of seeds to convert.')
     seeds = get_seeds_todo()
     n_jobs_to_submit = min(len(seeds), check_queue())

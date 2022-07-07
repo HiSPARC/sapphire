@@ -12,7 +12,7 @@ import EventExportValues
 from Event import Event
 
 
-class HiSparc2Event(object, Event):
+class HiSparc2Event(Event):
     def __init__(self, message):
         """ Initialization
             First, determine message type from the argument. Then, check if

@@ -8,7 +8,6 @@
     station is simulated.
 
 """
-from __future__ import division
 
 import os.path
 import sys

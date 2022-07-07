@@ -3,9 +3,9 @@
 import os
 import tempfile
 
-import tables
+from unittest.mock import patch
 
-from mock import patch
+import tables
 
 import sapphire.clusters
 

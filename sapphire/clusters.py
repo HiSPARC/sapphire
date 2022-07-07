@@ -16,7 +16,6 @@
     These cluster objects are mainly used by simulations and reconstructions.
 
 """
-from __future__ import division
 
 import warnings
 
@@ -29,7 +28,7 @@ from .transformations import axes, geographic
 from .utils import distance_between, get_active_index
 
 
-class Detector(object):
+class Detector:
     """A HiSPARC detector"""
 
     _detector_size = (.5, 1.)
@@ -172,7 +171,7 @@ class Detector(object):
         return "<%s, id: %d, station: %r>" % (self.__class__.__name__, id, self.station)
 
 
-class Station(object):
+class Station:
     """A HiSPARC station"""
 
     _detectors = None
@@ -385,7 +384,7 @@ class Station(object):
                 (self.__class__.__name__, self.station_id, self.number, self.cluster))
 
 
-class BaseCluster(object):
+class BaseCluster:
     """Base class for HiSPARC clusters"""
 
     _stations = None
@@ -695,7 +694,7 @@ class CompassStations(BaseCluster):
         detectors = [(axes.compass_to_cartesian(r, alpha, z), np.radians(beta))
                      for r, alpha, z, beta in detectors]
 
-        super(CompassStations, self)._add_station(
+        super()._add_station(
             position, None, detectors, station_timestamps, detector_timestamps, number)
 
 
@@ -708,7 +707,7 @@ class SimpleCluster(BaseCluster):
     """
 
     def __init__(self, size=250):
-        super(SimpleCluster, self).__init__()
+        super().__init__()
 
         # calculate station positions. the cluster resembles a single
         # four-detector HiSPARC station, but scaled up
@@ -724,7 +723,7 @@ class SingleStation(BaseCluster):
     """Define a cluster containing a single station"""
 
     def __init__(self):
-        super(SingleStation, self).__init__()
+        super().__init__()
 
         self._add_station((0, 0, 0), 0)
 
@@ -733,7 +732,7 @@ class SingleDetectorStation(BaseCluster):
     """Define a cluster containing a single 1-detector station"""
 
     def __init__(self):
-        super(SingleDetectorStation, self).__init__()
+        super().__init__()
 
         detectors = [((0, 0, 0), 'UD')]
 
@@ -744,7 +743,7 @@ class SingleTwoDetectorStation(BaseCluster):
     """Define a cluster containing a single 2 detector station"""
 
     def __init__(self):
-        super(SingleTwoDetectorStation, self).__init__()
+        super().__init__()
 
         detectors = [((-5, 0, 0), 'UD'), ((5, 0, 0), 'UD')]
 
@@ -762,7 +761,7 @@ class SingleDiamondStation(BaseCluster):
     """
 
     def __init__(self):
-        super(SingleDiamondStation, self).__init__()
+        super().__init__()
 
         station_size = 10
         a = station_size / 2
@@ -796,7 +795,7 @@ class HiSPARCStations(CompassStations):
     """
 
     def __init__(self, stations, skip_missing=False, force_fresh=False, force_stale=False):
-        super(HiSPARCStations, self).__init__()
+        super().__init__()
 
         missing_gps = []
         missing_detectors = []
@@ -858,7 +857,7 @@ class HiSPARCStations(CompassStations):
                           'defaults will be used!' % str(missing_detectors))
 
     def __repr__(self):
-        return "%s(%r)" % (self.__class__.__name__, [s.number for s in self.stations])
+        return f"{self.__class__.__name__}({[s.number for s in self.stations]!r})"
 
 
 class ScienceParkCluster(HiSPARCStations):
@@ -878,7 +877,7 @@ class ScienceParkCluster(HiSPARCStations):
             stations = [sn for sn in network.station_numbers(subcluster=500) if sn != 507]
         else:
             stations = [sn for sn in stations if 500 < sn < 600]
-        super(ScienceParkCluster, self).__init__(stations, skip_missing, force_fresh, force_stale)
+        super().__init__(stations, skip_missing, force_fresh, force_stale)
 
 
 class HiSPARCNetwork(HiSPARCStations):
@@ -889,7 +888,7 @@ class HiSPARCNetwork(HiSPARCStations):
         network = api.Network(force_fresh, force_stale)
         stations = network.station_numbers()
         skip_missing = True  # Likely some station without GPS location
-        super(HiSPARCNetwork, self).__init__(stations, skip_missing, force_fresh, force_stale)
+        super().__init__(stations, skip_missing, force_fresh, force_stale)
 
     def __repr__(self):
         return "<%s>" % self.__class__.__name__

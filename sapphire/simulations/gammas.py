@@ -4,7 +4,6 @@ This module implements simulation of interactions of gamma photons with
 a scintillator. Used in groundparticle simulations.
 
 """
-from __future__ import division
 
 from random import expovariate
 

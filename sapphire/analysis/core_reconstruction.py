@@ -18,17 +18,16 @@
 
 import warnings
 
-from itertools import combinations
+from itertools import combinations, zip_longest
 
 from numpy import array, cos, isnan, mean, nan, sqrt
-from six.moves import zip_longest
 
 from ..simulations import ldf
 from ..utils import pbar
 from .event_utils import detector_density, station_density
 
 
-class EventCoreReconstruction(object):
+class EventCoreReconstruction:
 
     """Reconstruct core for station events
 
@@ -109,7 +108,7 @@ class EventCoreReconstruction(object):
                 (self.__class__.__name__, self.station, self.estimator))
 
 
-class CoincidenceCoreReconstruction(object):
+class CoincidenceCoreReconstruction:
 
     """Reconstruct core for coincidences
 
@@ -250,7 +249,7 @@ class CoincidenceCoreReconstructionDetectors(
         return core_x, core_y
 
 
-class BaseCoreAlgorithm(object):
+class BaseCoreAlgorithm:
 
     """No actual core reconstruction algorithm
 

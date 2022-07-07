@@ -117,7 +117,7 @@ class ParticleDataTests(unittest.TestCase):
 class ParticleDataThinTests(ParticleDataTests):
 
     def setUp(self):
-        super(ParticleDataThinTests, self).setUp()
+        super().setUp()
 
         # Input
         weight = 9.

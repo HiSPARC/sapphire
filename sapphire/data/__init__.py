@@ -9,9 +9,7 @@ This package contains modules for updating local data:
     bring already included data up to date
 
 """
-from . import extend_local_data
-from . import update_local_data
-
+from . import extend_local_data, update_local_data
 
 __all__ = ['extend_local_data',
            'update_local_data']

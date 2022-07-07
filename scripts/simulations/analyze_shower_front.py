@@ -85,7 +85,7 @@ def plot_and_fit_statistic(func):
     logf = lambda x, a, b: a * x + b
     g = lambda x, a, b: 10 ** logf(log10(x), a, b)
     popt, pcov = curve_fit(logf, logx, logy)
-    plot(x, g(x, *popt), label="f(x) = %.2e * x ^ %.2e" % (10 ** popt[1],
+    plot(x, g(x, *popt), label="f(x) = {:.2e} * x ^ {:.2e}".format(10 ** popt[1],
                                                            popt[0]))
 
 
@@ -139,7 +139,7 @@ def hists_core_distance_vs_time():
         sel = electrons.read_where('(low < core_distance) & (core_distance <= high)')
         arrival_time = sel[:]['arrival_time']
         plt.hist(arrival_time, bins=np.logspace(-2, 3, 50), histtype='step',
-                 label="%.2f <= log10(R) < %.2f" % (np.log10(low),
+                 label="{:.2f} <= log10(R) < {:.2f}".format(np.log10(low),
                                                     np.log10(high)))
 
     plt.xscale('log')

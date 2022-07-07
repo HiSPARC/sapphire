@@ -1,11 +1,9 @@
-from __future__ import division
-
 import unittest
 import warnings
 
 from math import atan2, pi, sqrt
+from unittest.mock import Mock, patch, sentinel
 
-from mock import Mock, patch, sentinel
 from numpy import array, nan
 from numpy.testing import assert_array_almost_equal
 
@@ -293,7 +291,7 @@ class StationTests(unittest.TestCase):
         self.assertIsInstance(actual, tuple)
         self.assertIsInstance(expected, tuple)
 
-        msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
+        msg = f"Tuples differ: {str(actual)} != {str(expected)}"
         for actual_value, expected_value in zip(actual, expected):
             self.assertAlmostEqual(actual_value, expected_value, msg=msg)
 
@@ -487,7 +485,7 @@ class CompassStationsTests(unittest.TestCase):
         self.assertIsInstance(actual, tuple)
         self.assertIsInstance(expected, tuple)
 
-        msg = "Tuples differ: %s != %s" % (str(actual), str(expected))
+        msg = f"Tuples differ: {str(actual)} != {str(expected)}"
         for actual_value, expected_value in zip(actual, expected):
             self.assertAlmostEqual(actual_value, expected_value, msg=msg)
 

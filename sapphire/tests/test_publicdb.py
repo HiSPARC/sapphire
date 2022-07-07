@@ -4,10 +4,9 @@ import shutil
 import unittest
 
 from datetime import datetime
+from unittest.mock import Mock, patch, sentinel
 
 import tables
-
-from mock import Mock, patch, sentinel
 
 from sapphire import publicdb
 from sapphire.tests.esd_load_data import create_tempfile_path

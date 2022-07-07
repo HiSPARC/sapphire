@@ -1,10 +1,10 @@
 import os
 import unittest
 
-import six
+from unittest.mock import Mock, sentinel
+
 import tables
 
-from mock import Mock, sentinel
 from numpy import arange, pi, random, sqrt, testing
 
 from sapphire.clusters import SingleDiamondStation
@@ -200,10 +200,7 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.select_simulation = Mock()
         self.simulation.select_simulation.return_value = None
         shower_parameters = self.simulation.generate_shower_parameters()
-        if six.PY2:
-            self.assertRaises(StopIteration, shower_parameters.next)
-        else:
-            self.assertRaises(StopIteration, shower_parameters.__next__)
+        self.assertRaises(StopIteration, shower_parameters.__next__)
         self.assertEqual(self.simulation.select_simulation.call_count,
                          self.simulation.n)
 

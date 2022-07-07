@@ -3,9 +3,9 @@ import shutil
 import tempfile
 import unittest
 
-import tables
+from unittest.mock import Mock, patch, sentinel
 
-from mock import Mock, patch, sentinel
+import tables
 
 from sapphire.analysis import time_deltas
 

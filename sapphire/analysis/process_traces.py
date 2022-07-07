@@ -7,9 +7,9 @@
     It is reproduced here to make it easy to read the algorithm.
 
 """
-from lazy import lazy
+from functools import cached_property
+
 from numpy import around, convolve, ones, where
-from six.moves import range
 
 ADC_TIME_PER_SAMPLE = 2.5  # in ns
 
@@ -34,7 +34,7 @@ ADC_HIGH_THRESHOLD_III = 150  #: Default high ADC threshold for HiSPARC III
 DATA_REDUCTION_PADDING = 26  #: Padding to allow later baseline determination
 
 
-class TraceObservables(object):
+class TraceObservables:
 
     """Reconstruct trace observables
 
@@ -75,7 +75,7 @@ class TraceObservables(object):
         if self.n not in [2, 4]:
             raise Exception('Unsupported number of detectors')
 
-    @lazy
+    @cached_property
     def baselines(self):
         """Mean value of the first part of the trace
 
@@ -92,7 +92,7 @@ class TraceObservables(object):
         baselines = around(self.traces[:self.padding].mean(axis=0))
         return baselines.astype('int').tolist() + self.missing
 
-    @lazy
+    @cached_property
     def std_dev(self):
         """Standard deviation of the first part of the trace
 
@@ -102,7 +102,7 @@ class TraceObservables(object):
         std_dev = around(self.traces[:self.padding].std(axis=0) * 1000)
         return std_dev.astype('int').tolist() + self.missing
 
-    @lazy
+    @cached_property
     def pulseheights(self):
         """Maximum peak to baseline value in trace
 
@@ -112,7 +112,7 @@ class TraceObservables(object):
         pulseheights = self.traces.max(axis=0) - self.baselines[:self.n]
         return pulseheights.tolist() + self.missing
 
-    @lazy
+    @cached_property
     def integrals(self):
         """Integral of trace for all values over threshold
 
@@ -126,7 +126,7 @@ class TraceObservables(object):
                           self.traces - self.baselines[:self.n], 0).sum(axis=0)
         return integrals.tolist() + self.missing
 
-    @lazy
+    @cached_property
     def n_peaks(self):
         """Number of peaks in the trace
 
@@ -169,7 +169,7 @@ class TraceObservables(object):
         return n_peaks + self.missing
 
 
-class MeanFilter(object):
+class MeanFilter:
 
     """Filter raw traces
 
@@ -286,10 +286,10 @@ class MeanFilter(object):
             return ("%s(use_threshold=%s, threshold=%r)" %
                     (self.__class__.__name__, True, self.threshold))
         except AttributeError:
-            return "%s(use_threshold=%s)" % (self.__class__.__name__, False)
+            return f"{self.__class__.__name__}(use_threshold={False})"
 
 
-class DataReduction(object):
+class DataReduction:
 
     """Data reduce traces
 

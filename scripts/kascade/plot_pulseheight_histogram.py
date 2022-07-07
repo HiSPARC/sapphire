@@ -33,7 +33,7 @@ def plot_pulseheight_histogram(data):
     n_trunc = where(n <= 100000, n, 100000)
     graph.histogram(n_trunc, bins, linestyle='gray')
     graph.add_pin('data', x=800, location='above right', use_arrow=True)
-    graph.add_pin('$\gamma$', x=90, location='above right',
+    graph.add_pin(r'$\gamma$', x=90, location='above right',
                   use_arrow=True)
     graph.plot(x, s.conv_landau_for_x(x, mev_scale=mev_scale,
                                       count_scale=count_scale),
