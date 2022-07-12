@@ -77,7 +77,7 @@ def validate_tables(test, expected_node, actual_node):
         assert_array_almost_equal(
             expected_col,
             actual_col,
-            f"Tables '{expected_node._v_pathname}' column '{colname}' do not match."
+            err_msg=f"Tables '{expected_node._v_pathname}' column '{colname}' do not match."
         )
 
 
