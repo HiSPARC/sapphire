@@ -3,7 +3,7 @@
 import tables
 
 from numpy import all, array
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_almost_equal
 
 
 def validate_results(test, expected_path, actual_path):
@@ -74,9 +74,11 @@ def validate_tables(test, expected_node, actual_node):
                       expected_node._v_pathname)
         expected_col = expected_node.col(colname)
         actual_col = actual_node.col(colname)
-        assert_array_equal(expected_col, actual_col,
-                           "Tables '%s' column '%s' do not match." %
-                           (expected_node._v_pathname, colname))
+        assert_array_almost_equal(
+            expected_col,
+            actual_col,
+            f"Tables '{expected_node._v_pathname}' column '{colname}' do not match."
+        )
 
 
 def validate_vlarrays(test, expected_node, actual_node):
