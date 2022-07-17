@@ -3,7 +3,7 @@
 test: unittests flaketest doctest
 
 unittests:
-	coverage run setup.py test --quiet
+	coverage run -m unittest
 
 flaketest:
 	flake8 sapphire
