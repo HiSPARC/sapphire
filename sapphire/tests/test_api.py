@@ -26,11 +26,11 @@ def has_extended_local_data(urlpath):
 
 class APIBaseTest(unittest.TestCase):
     def test_overwrite_base(self):
-        self.assertEqual('http://data.hisparc.nl/api/', api.get_api_base())
+        self.assertEqual('https://data.hisparc.nl/api/', api.get_api_base())
         os.environ['PUBLICDB_BASE'] = 'http://localhost:8000/'
         self.assertEqual('http://localhost:8000/api/', api.get_api_base())
         del os.environ['PUBLICDB_BASE']
-        self.assertEqual('http://data.hisparc.nl/api/', api.get_api_base())
+        self.assertEqual('https://data.hisparc.nl/api/', api.get_api_base())
 
 
 class APITests(unittest.TestCase):

@@ -45,7 +45,7 @@ def angle_between_horizontal(azimuth1, altitude1, azimuth2, altitude2):
     """Calculate the angle between two horizontal coordinates
 
     Using the haversine formula,
-    from: http://www.movable-type.co.uk/scripts/latlong.html
+    from: https://www.movable-type.co.uk/scripts/latlong.html
 
     :param azimuth#: Azimuth parts of the coordinates in radians.
     :param altitude#: Altitude parts of the coordinates in radians.

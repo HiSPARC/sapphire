@@ -29,7 +29,7 @@ def get_publicdb_base():
     variable to the desired URL.
 
     """
-    return environ.get('PUBLICDB_BASE', 'http://data.hisparc.nl')
+    return environ.get('PUBLICDB_BASE', 'https://data.hisparc.nl')
 
 
 def pbar(iterable, length=None, show=True, **kwargs):
