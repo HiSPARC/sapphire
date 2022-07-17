@@ -202,7 +202,7 @@ class FitTimingOffsetTests(unittest.TestCase):
             offset, error = calibration.fit_timing_offset(dt, bins)
             deviations.append((center - offset) / error)
             # Test if determined offset close to the actual center.
-            self.assertLess(abs(center - offset), 4 * error)
+            self.assertLess(abs(center - offset), 5 * error)
         # Test if estimated error correctly represents the errors in offsets.
         self.assertLess(abs(std(deviations) - 1), 0.35)
 
