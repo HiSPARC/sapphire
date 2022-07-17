@@ -188,6 +188,9 @@ class API:
         :return: the data returned by the api as a string
 
         """
+        if base is None:
+            base = get_api_base()
+
         url = urljoin(base, urlpath + '/' if urlpath else '')
         logging.debug('Getting: ' + url)
         try:
