@@ -267,8 +267,8 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         r_102_105 = 88.11877198608  # 2014,1,1
         dz_102_105 = -4.13568408095
         r, dz = self.off._get_r_dz(datetime(2014, 1, 1).date(), 102, 105)
-        self.assertAlmostEqual(r, r_102_105)
-        self.assertAlmostEqual(dz, dz_102_105)
+        self.assertAlmostEqual(r, r_102_105, places=6)
+        self.assertAlmostEqual(dz, dz_102_105, places=5)
 
     def test_determine_interval(self):
         combinations = ((0., 7),
