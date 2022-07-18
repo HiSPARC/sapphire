@@ -19,6 +19,8 @@ import warnings
 
 from itertools import combinations, zip_longest
 
+import numpy
+
 from numpy import (
     arccos,
     arcsin,
@@ -33,7 +35,6 @@ from numpy import (
     pi,
     sin,
     sqrt,
-    sum,
     tan,
     where,
     zeros,
@@ -1063,9 +1064,9 @@ class RegressionAlgorithm(BaseDirectionAlgorithm):
             return nan, nan
 
         k = len(t)
-        xs = sum(x)
-        ys = sum(y)
-        ts = sum(t)
+        xs = numpy.sum(x)
+        ys = numpy.sum(y)
+        ts = numpy.sum(t)
 
         xx = 0.
         yy = 0.
