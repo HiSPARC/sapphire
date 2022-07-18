@@ -20,8 +20,8 @@ def validate_results(test, expected_path, actual_path):
             try:
                 actual_node = actual_file.get_node(expected_node._v_pathname)
             except tables.NoSuchNodeError:
-                test.fail("Node '%s' does not exist in datafile" %
-                          expected_node._v_pathname)
+                test.fail(f"Node '{expected_node._v_pathname}' does not exist in datafile")
+
             if type(expected_node) is tables.table.Table:
                 validate_tables(test, expected_node, actual_node)
             elif type(expected_node) is tables.vlarray.VLArray:
@@ -51,27 +51,26 @@ def validate_results_node(test, expected_path, actual_path, expected_node,
         try:
             actual = actual_file.get_node(actual_node)
         except tables.NoSuchNodeError:
-            test.fail("Node '%s' does not exist in datafile" % actual_node)
-            if type(expected) is tables.table.Table:
-                validate_tables(test, expected, actual)
-            elif type(expected) is tables.vlarray.VLArray:
-                validate_vlarrays(test, expected, actual)
-            elif type(expected) is tables.array.Array:
-                validate_arrays(test, expected, actual)
-            else:
-                raise NotImplementedError
+            test.fail(f"Node '{actual_node}' does not exist in datafile")
+
+        if type(expected) is tables.table.Table:
+            validate_tables(test, expected, actual)
+        elif type(expected) is tables.vlarray.VLArray:
+            validate_vlarrays(test, expected, actual)
+        elif type(expected) is tables.array.Array:
+            validate_arrays(test, expected, actual)
+        else:
+            raise NotImplementedError
 
 
 def validate_tables(test, expected_node, actual_node):
     """Verify that two Tables are identical"""
 
     test.assertEqual(expected_node.nrows, actual_node.nrows,
-                     "Tables '%s' do not have the same length." %
-                     expected_node._v_pathname)
+                     f"Tables '{expected_node._v_pathname}' do not have the same length.")
     for colname in expected_node.colnames:
         test.assertIn(colname, actual_node.colnames,
-                      "Tables '%s' do not have the same columns." %
-                      expected_node._v_pathname)
+                      f"Tables '{expected_node._v_pathname}' do not have the same columns.")
         expected_col = expected_node.col(colname)
         actual_col = actual_node.col(colname)
         assert_array_almost_equal(
@@ -85,24 +84,19 @@ def validate_vlarrays(test, expected_node, actual_node):
     """Verify that two VLArrays are identical"""
 
     test.assertEqual(expected_node.shape, actual_node.shape,
-                     "VLArrays '%s' do not have the same shape." %
-                     expected_node._v_pathname)
-    for i, j in zip(expected_node, actual_node):
-        test.assertTrue(all(i == j),
-                        "VLArrays '%s' do not match." %
-                        expected_node._v_pathname)
+                     f"VLArrays '{expected_node._v_pathname}' do not have the same shape.")
+    for expected_array, actual_array in zip(expected_node, actual_node):
+        test.assertTrue(all(expected_array == actual_array),
+                        f"VLArrays '{expected_node._v_pathname}' do not match.")
 
 
 def validate_arrays(test, expected_node, actual_node):
     """Verify that two Arrays are identical"""
 
     test.assertEqual(expected_node.shape, actual_node.shape,
-                     "Arrays '%s' do not have the same shape." %
-                     expected_node._v_pathname)
-    test.assertTrue(all(array(expected_node.read()) ==
-                        array(actual_node.read())),
-                    "Arrays '%s' do not match." %
-                    expected_node._v_pathname)
+                     f"Arrays '{expected_node._v_pathname}' do not have the same shape.")
+    test.assertTrue(all(array(expected_node.read()) == array(actual_node.read())),
+                    f"Arrays '{expected_node._v_pathname}' do not match.")
 
 
 def validate_attributes(test, expected_node, actual_node):
