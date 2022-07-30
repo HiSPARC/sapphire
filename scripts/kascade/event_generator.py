@@ -19,7 +19,7 @@ def generate_events(timespan, rate, reconstructed_fraction):
 
     N = timespan * rate
     timestamps = randint(T0, T0 + timespan, N)
-    nanoseconds = randint(0, int(1e9), N)
+    nanoseconds = randint(0, 1_000_000_000, N)
 
     timestamps, nanoseconds = zip(*sorted(zip(timestamps, nanoseconds)))
 

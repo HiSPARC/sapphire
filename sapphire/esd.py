@@ -690,7 +690,7 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups
     row['N'] = len(coincidence)
     row['timestamp'] = int(coincidence[0][4])
     row['nanoseconds'] = int(coincidence[0][5])
-    row['ext_timestamp'] = int(coincidence[0][4]) * int(1e9) + int(coincidence[0][5])
+    row['ext_timestamp'] = int(coincidence[0][4]) * 1_000_000_000 + int(coincidence[0][5])
 
     for event in coincidence:
         station_number = int(event[1])
@@ -756,7 +756,7 @@ class _read_line_and_store_event_class:
         row['event_id'] = self.event_counter
         row['timestamp'] = int(timestamp)
         row['nanoseconds'] = int(nanoseconds)
-        row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
+        row['ext_timestamp'] = int(timestamp) * 1_000_000_000 + int(nanoseconds)
         row['pulseheights'] = [int(ph1), int(ph2), int(ph3), int(ph4)]
         row['integrals'] = [int(int1), int(int2), int(int3), int(int4)]
         row['n1'] = float(n1)
@@ -887,7 +887,7 @@ class _read_line_and_store_lightning_class(_read_line_and_store_event_class):
         row['event_id'] = self.event_counter
         row['timestamp'] = int(timestamp)
         row['nanoseconds'] = int(nanoseconds)
-        row['ext_timestamp'] = int(timestamp) * int(1e9) + int(nanoseconds)
+        row['ext_timestamp'] = int(timestamp) * 1_000_000_000 + int(nanoseconds)
         row['latitude'] = float(latitude)
         row['longitude'] = float(longitude)
         row['current'] = float(current)

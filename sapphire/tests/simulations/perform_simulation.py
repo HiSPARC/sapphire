@@ -24,7 +24,7 @@ test_data_nkg = os.path.join(self_path, 'test_data/nkgldf_sim.h5')
 def perform_groundparticlessimulation(filename, mock_time):
     """Perform a small simulation and store results in filename"""
 
-    mock_time.return_value = int(1e9)
+    mock_time.return_value = 1_000_000_000
 
     corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
     cluster = sapphire.clusters.SimpleCluster(size=40)
@@ -39,7 +39,7 @@ def perform_groundparticlessimulation(filename, mock_time):
 def perform_groundparticlesgammasimulation(filename, mock_time):
     """Perform a small simulation and store results in filename"""
 
-    mock_time.return_value = int(1e9)
+    mock_time.return_value = 1_000_000_000
 
     corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
     cluster = sapphire.clusters.SimpleCluster(size=40)

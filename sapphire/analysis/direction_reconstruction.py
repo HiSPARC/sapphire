@@ -181,7 +181,7 @@ class CoincidenceDirectionReconstruction:
 
         # Subtract base timestamp to prevent loss of precision
         ts0 = int(coincidence_events[0][1]['timestamp'])
-        ets0 = ts0 * int(1e9)
+        ets0 = ts0 * 1_000_000_000
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 
@@ -387,7 +387,7 @@ class CoincidenceDirectionReconstructionDetectors(
 
         # Subtract base timestamp to prevent loss of precision
         ts0 = int(coincidence_events[0][1]['timestamp'])
-        ets0 = ts0 * int(1e9)
+        ets0 = ts0 * 1_000_000_000
         self.cluster.set_timestamp(ts0)
         t, x, y, z, nums = ([], [], [], [], [])
 

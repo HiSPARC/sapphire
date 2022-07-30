@@ -145,7 +145,7 @@ class StoreKascadeData:
         tablerow['event_id'] = Ieve
         tablerow['timestamp'] = Gt
         tablerow['nanoseconds'] = Mmn
-        tablerow['ext_timestamp'] = Gt * int(1e9) + Mmn
+        tablerow['ext_timestamp'] = Gt * 1_000_000_000 + Mmn
         tablerow['energy'] = EnergyArray
         tablerow['core_pos'] = [Xc, Yc]
         tablerow['zenith'] = Ze

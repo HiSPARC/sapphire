@@ -24,16 +24,16 @@ def transformspeeds():
 
     t0 = time.clock()
 
-    celestial.equatorial_to_horizontal_astropy(0, 0, int(1e9), a)
+    celestial.equatorial_to_horizontal_astropy(0, 0, 1_000_000_000, a)
     t1 = time.clock() - t0
 
-    celestial.equatorial_to_zenithazimuth_astropy(0, 0, int(1e9), a)
+    celestial.equatorial_to_zenithazimuth_astropy(0, 0, 1_000_000_000, a)
     t2 = time.clock() - t0
 
-    celestial.zenithazimuth_to_equatorial_astropy(0, 0, int(1e9), a)
+    celestial.zenithazimuth_to_equatorial_astropy(0, 0, 1_000_000_000, a)
     t3 = time.clock() - t0
 
-    celestial.zenithazimuth_to_equatorial_astropy(0, 0, int(1e9), a)
+    celestial.zenithazimuth_to_equatorial_astropy(0, 0, 1_000_000_000, a)
     t4 = time.clock() - t0
 
     print("EQ->HO, EQ-> ZA, HO->EQ, ZA->EQ runtimes:")

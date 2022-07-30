@@ -77,7 +77,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         self.corsika_azimuth = event_header.azimuth
 
         for i in pbar(range(self.n), show=self.progress):
-            ext_timestamp = (now + i) * int(1e9)
+            ext_timestamp = (now + i) * 1_000_000_000
             x, y = self.generate_core_position(r_max)
             shower_azimuth = self.generate_azimuth()
 
@@ -206,8 +206,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             ext_timestamp = shower_parameters['ext_timestamp']
             ext_timestamp += int(trigger_time + station.gps_offset +
                                  self.simulate_gps_uncertainty())
-            timestamp = int(ext_timestamp / int(1e9))
-            nanoseconds = int(ext_timestamp % int(1e9))
+            timestamp = int(ext_timestamp / 1_000_000_000)
+            nanoseconds = int(ext_timestamp % 1_000_000_000)
 
             gps_timestamp = {'ext_timestamp': ext_timestamp,
                              'timestamp': timestamp,
@@ -592,7 +592,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
                     continue
 
                 for j in range(n_reuse):
-                    ext_timestamp = (now + i + (float(j) / n_reuse)) * int(1e9)
+                    ext_timestamp = (now + i + (float(j) / n_reuse)) * 1_000_000_000
                     x, y = self.generate_core_position(r)
                     shower_azimuth = self.generate_azimuth()
 

@@ -165,7 +165,7 @@ class ProcessTimeDeltas:
             dt_table.remove()
         except tables.NoSuchNodeError:
             pass
-        delta_data = [(ets, int(ets) / int(1e9), int(ets) % int(1e9),
+        delta_data = [(ets, int(ets) / 1_000_000_000, int(ets) % 1_000_000_000,
                        time_delta)
                       for ets, time_delta in zip(ext_timestamps, time_deltas)]
         table = self.data.create_table(table_path, 'time_deltas', TimeDelta,

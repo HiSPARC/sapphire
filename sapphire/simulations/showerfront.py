@@ -49,7 +49,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         for i in pbar(range(self.n), show=self.progress):
-            shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
+            shower_parameters = {'ext_timestamp': (1_000_000_000 + i) * 1_000_000_000,
                                  'azimuth': self.generate_azimuth(),
                                  'zenith': self.generate_attenuated_zenith(),
                                  'core_pos': (None, None),
@@ -116,8 +116,8 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         ext_timestamp += int(first_time + trigger_time + station.gps_offset +
                              self.simulate_gps_uncertainty())
-        timestamp = int(ext_timestamp / int(1e9))
-        nanoseconds = int(ext_timestamp % int(1e9))
+        timestamp = int(ext_timestamp / 1_000_000_000)
+        nanoseconds = int(ext_timestamp % 1_000_000_000)
 
         gps_timestamp = {'ext_timestamp': ext_timestamp,
                          'timestamp': timestamp,
@@ -216,7 +216,7 @@ class ConeFrontSimulation(FlatFrontSimulation):
             x, y = self.generate_core_position(r_max)
             azimuth = self.generate_azimuth()
 
-            shower_parameters = {'ext_timestamp': (int(1e9) + i) * int(1e9),
+            shower_parameters = {'ext_timestamp': (1_000_000_000 + i) * 1_000_000_000,
                                  'azimuth': azimuth,
                                  'zenith': self.generate_attenuated_zenith(),
                                  'core_pos': (x, y),
