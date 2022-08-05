@@ -15,6 +15,7 @@ hisparc_sapphire.egg-info/
 
 # Coverage
 .coverage
+coverage.json
 
 # OS generated files
 .DS_Store*
