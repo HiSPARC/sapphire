@@ -28,6 +28,8 @@ jobs:
       - run: pip install -e .[dev]
       - run: make unittests
       - uses: codecov/codecov-action@v3
+        with:
+          files: .coverage
 
   flake:
     runs-on: ubuntu-latest
