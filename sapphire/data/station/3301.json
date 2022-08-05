@@ -1,11 +1,11 @@
 {
     "active": true,
-    "altitude": 50.3,
+    "altitude": 51.21,
     "cluster": "Leiden",
     "country": "Netherlands",
-    "latitude": 52.1426854,
-    "longitude": 4.679177,
-    "name": "Scala College",
+    "latitude": 52.1426863,
+    "longitude": 4.6791798,
+    "name": "Scala College 1",
     "number": 3301,
     "scintillators": [
         {

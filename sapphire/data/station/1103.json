@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 55.67,
+    "cluster": "Utrecht",
+    "country": "Netherlands",
+    "latitude": 52.2143052,
+    "longitude": 5.1851665,
+    "name": "Alberdingk Thijm College",
+    "number": 1103,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Hilversum"
+}

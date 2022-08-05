@@ -1,25 +1,13 @@
 {
-    "active": true,
-    "altitude": 50.99,
+    "active": false,
+    "altitude": 50.35,
     "cluster": "Amsterdam",
     "country": "Netherlands",
-    "latitude": 52.4745076,
-    "longitude": 4.8258004,
+    "latitude": 52.4745097,
+    "longitude": 4.8258022,
     "name": "St. Michael College",
     "number": 101,
     "scintillators": [
-        {
-            "alpha": null,
-            "beta": null,
-            "height": null,
-            "radius": null
-        },
-        {
-            "alpha": null,
-            "beta": null,
-            "height": null,
-            "radius": null
-        },
         {
             "alpha": null,
             "beta": null,

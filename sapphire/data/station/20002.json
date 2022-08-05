@@ -1,10 +1,10 @@
 {
     "active": true,
-    "altitude": 80.36,
+    "altitude": 120.32,
     "cluster": "Aarhus",
     "country": "Denmark",
-    "latitude": 56.1674329,
-    "longitude": 10.2023599,
+    "latitude": 56.1856632,
+    "longitude": 10.1129243,
     "name": "Aarhus University 2",
     "number": 20002,
     "scintillators": [

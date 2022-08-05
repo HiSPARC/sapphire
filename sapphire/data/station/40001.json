@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 1745.84,
+    "cluster": "Windhoek",
+    "country": "Namibia",
+    "latitude": -22.6121006,
+    "longitude": 17.0569663,
+    "name": "University of Namibia",
+    "number": 40001,
+    "scintillators": [
+        {
+            "alpha": 165.0,
+            "beta": 75.0,
+            "height": 0.0,
+            "radius": 3.62
+        },
+        {
+            "alpha": 345.0,
+            "beta": 75.0,
+            "height": 0.0,
+            "radius": 4.07
+        }
+    ],
+    "subcluster": "Windhoek"
+}

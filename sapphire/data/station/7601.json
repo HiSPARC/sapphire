@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 75.62,
+    "cluster": "Enschede",
+    "country": "Netherlands",
+    "latitude": 52.0381894,
+    "longitude": 6.6167594,
+    "name": "SG Marianum",
+    "number": 7601,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Groenlo"
+}

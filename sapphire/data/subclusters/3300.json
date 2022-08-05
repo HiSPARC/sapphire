@@ -1,6 +1,6 @@
 [
     {
-        "name": "Scala College",
+        "name": "Scala College 1",
         "number": 3301
     },
     {
@@ -10,5 +10,9 @@
     {
         "name": "Ashram College",
         "number": 3303
+    },
+    {
+        "name": "Scala College 2",
+        "number": 3304
     }
 ]

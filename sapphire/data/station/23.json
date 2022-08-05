@@ -1,11 +1,11 @@
 {
-    "active": false,
+    "active": true,
     "altitude": 56.2,
     "cluster": "Amsterdam",
     "country": "Netherlands",
     "latitude": 52.3523156,
     "longitude": 4.8784077,
-    "name": "Fons Vitae Lyceum",
+    "name": "Fons Vitae Lyceum 1",
     "number": 23,
     "scintillators": [
         {

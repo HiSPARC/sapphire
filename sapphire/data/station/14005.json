@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 213.21,
+    "cluster": "Birmingham",
+    "country": "United Kingdom",
+    "latitude": 52.4298631,
+    "longitude": -1.8763722,
+    "name": "Swanshurst",
+    "number": 14005,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Birmingham"
+}

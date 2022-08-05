@@ -16,7 +16,7 @@
         "number": 5
     },
     {
-        "name": "Bern. Nieuwetijt Coll. (Damstede)",
+        "name": "Damstede Lyceum",
         "number": 6
     },
     {
@@ -36,6 +36,10 @@
         "number": 13
     },
     {
+        "name": "G. van der Veen",
+        "number": 15
+    },
+    {
         "name": "Vechtstede College",
         "number": 21
     },
@@ -44,16 +48,12 @@
         "number": 22
     },
     {
-        "name": "Fons Vitae Lyceum",
+        "name": "Fons Vitae Lyceum 1",
         "number": 23
     },
     {
         "name": "Cygnus Gymnasium",
         "number": 24
-    },
-    {
-        "name": "Fons Vitae Lyceum 2",
-        "number": 25
     },
     {
         "name": "St. Michael College",
@@ -74,6 +74,10 @@
     {
         "name": "Zaanlands Lyceum 4",
         "number": 105
+    },
+    {
+        "name": "Zaanlands Lyceum 2",
+        "number": 106
     },
     {
         "name": "Coornhert Lyceum",
@@ -116,7 +120,7 @@
         "number": 502
     },
     {
-        "name": "Vancis",
+        "name": "Interxion",
         "number": 503
     },
     {
@@ -152,6 +156,18 @@
         "number": 511
     },
     {
+        "name": "Nikhef 3",
+        "number": 512
+    },
+    {
+        "name": "Nikhef 4",
+        "number": 513
+    },
+    {
+        "name": "Nikhef 5",
+        "number": 514
+    },
+    {
         "name": "Nikhef (501-alt)",
         "number": 521
     },
@@ -160,8 +176,24 @@
         "number": 522
     },
     {
+        "name": "PySPARC test station",
+        "number": 599
+    },
+    {
         "name": "Werenfridus",
         "number": 601
+    },
+    {
+        "name": "Copernicus",
+        "number": 602
+    },
+    {
+        "name": "dAmpte",
+        "number": 603
+    },
+    {
+        "name": "Oscar Romero",
+        "number": 604
     },
     {
         "name": "Universiteit Utrecht",
@@ -208,6 +240,10 @@
         "number": 1102
     },
     {
+        "name": "Alberdingk Thijm College",
+        "number": 1103
+    },
+    {
         "name": "Radboud Universiteit 1",
         "number": 2001
     },
@@ -252,7 +288,7 @@
         "number": 2103
     },
     {
-        "name": "RSG-Slingerbos",
+        "name": "RSG Slingerbos",
         "number": 2201
     },
     {
@@ -284,7 +320,7 @@
         "number": 3105
     },
     {
-        "name": "CSG Prins Maurits",
+        "name": "CSG Prins Maurits 1",
         "number": 3201
     },
     {
@@ -296,7 +332,7 @@
         "number": 3203
     },
     {
-        "name": "Scala College",
+        "name": "Scala College 1",
         "number": 3301
     },
     {
@@ -306,6 +342,10 @@
     {
         "name": "Ashram College",
         "number": 3303
+    },
+    {
+        "name": "Scala College 2",
+        "number": 3304
     },
     {
         "name": "Sted. Scholengem. De Rede ",
@@ -322,6 +362,10 @@
     {
         "name": "Segbroek College",
         "number": 3701
+    },
+    {
+        "name": "NWO",
+        "number": 3702
     },
     {
         "name": "KVI",
@@ -356,6 +400,10 @@
         "number": 7101
     },
     {
+        "name": "Lyceum de Grundel",
+        "number": 7102
+    },
+    {
         "name": "CSG Het Noordik",
         "number": 7201
     },
@@ -368,15 +416,15 @@
         "number": 7401
     },
     {
-        "name": "De Waerdenborch",
-        "number": 7501
+        "name": "SG Marianum",
+        "number": 7601
     },
     {
         "name": "Universiteit Eindhoven 1",
         "number": 8001
     },
     {
-        "name": "Pleincollege Bisschop Bekkers",
+        "name": "Frits Philips College",
         "number": 8002
     },
     {
@@ -444,6 +492,14 @@
         "number": 8303
     },
     {
+        "name": "KS Etten-Leur",
+        "number": 8401
+    },
+    {
+        "name": "Prior Pursglove College",
+        "number": 12001
+    },
+    {
         "name": "Bristol University",
         "number": 13001
     },
@@ -468,12 +524,16 @@
         "number": 13006
     },
     {
-        "name": "BernardLovell",
+        "name": "Bernard Lovell",
         "number": 13007
     },
     {
         "name": "Bristol Cathedral Choir School",
         "number": 13008
+    },
+    {
+        "name": "BristolTest",
+        "number": 13009
     },
     {
         "name": "Beechen Cliff School",
@@ -484,11 +544,11 @@
         "number": 13102
     },
     {
-        "name": "RalphAllen",
+        "name": "Ralph Allen",
         "number": 13103
     },
     {
-        "name": "BathUni",
+        "name": "Bath University",
         "number": 13104
     },
     {
@@ -528,6 +588,22 @@
         "number": 14004
     },
     {
+        "name": "Swanshurst",
+        "number": 14005
+    },
+    {
+        "name": "South Bromsgrove",
+        "number": 14006
+    },
+    {
+        "name": "King Edward VI Camp Hill School for Boys",
+        "number": 14007
+    },
+    {
+        "name": "Birmingham University 2",
+        "number": 14008
+    },
+    {
         "name": "University of Sussex",
         "number": 15001
     },
@@ -540,6 +616,14 @@
         "number": 16001
     },
     {
+        "name": "Swansea University",
+        "number": 16101
+    },
+    {
+        "name": "Institute of Physics",
+        "number": 17001
+    },
+    {
         "name": "Aarhus University 1",
         "number": 20001
     },
@@ -550,5 +634,13 @@
     {
         "name": "Aarhus University 3",
         "number": 20003
+    },
+    {
+        "name": "University of Namibia",
+        "number": 40001
+    },
+    {
+        "name": "Transparency Detector 1",
+        "number": 60001
     }
 ]

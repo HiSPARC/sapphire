@@ -1,9 +1,5 @@
 [
     {
-        "name": "Leiden",
-        "number": 3000
-    },
-    {
         "name": "Zwijndrecht",
         "number": 3100
     },
@@ -30,5 +26,9 @@
     {
         "name": "Den Haag",
         "number": 3700
+    },
+    {
+        "name": "Leiden",
+        "number": 3000
     }
 ]

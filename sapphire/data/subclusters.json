@@ -108,6 +108,10 @@
         "number": 7500
     },
     {
+        "name": "Groenlo",
+        "number": 7600
+    },
+    {
         "name": "Eindhoven",
         "number": 8000
     },
@@ -122,6 +126,10 @@
     {
         "name": "Weert",
         "number": 8300
+    },
+    {
+        "name": "Etten-Leur",
+        "number": 8400
     },
     {
         "name": "Cambridge",
@@ -172,8 +180,28 @@
         "number": 16000
     },
     {
+        "name": "Swansea",
+        "number": 16100
+    },
+    {
+        "name": "London",
+        "number": 17000
+    },
+    {
         "name": "Aarhus",
         "number": 20000
+    },
+    {
+        "name": "Windhoek",
+        "number": 40000
+    },
+    {
+        "name": "Salt Lake City",
+        "number": 50000
+    },
+    {
+        "name": "Hargeisa",
+        "number": 60000
     },
     {
         "name": "Karlsruhe",

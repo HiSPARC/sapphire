@@ -1,9 +1,5 @@
 [
     {
-        "name": "Bristol",
-        "number": 13000
-    },
-    {
         "name": "Bath",
         "number": 13100
     },
@@ -26,5 +22,9 @@
     {
         "name": "Exeter",
         "number": 13600
+    },
+    {
+        "name": "Bristol",
+        "number": 13000
     }
 ]

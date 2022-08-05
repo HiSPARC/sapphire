@@ -1,25 +1,13 @@
 {
     "active": true,
-    "altitude": 69.87,
+    "altitude": 64.08,
     "cluster": "Amsterdam",
     "country": "Netherlands",
-    "latitude": 52.3550494,
-    "longitude": 4.9122628,
+    "latitude": 52.3550612,
+    "longitude": 4.9122508,
     "name": "Cygnus Gymnasium",
     "number": 24,
     "scintillators": [
-        {
-            "alpha": null,
-            "beta": null,
-            "height": null,
-            "radius": null
-        },
-        {
-            "alpha": null,
-            "beta": null,
-            "height": null,
-            "radius": null
-        },
         {
             "alpha": null,
             "beta": null,

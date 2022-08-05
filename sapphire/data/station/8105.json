@@ -1,24 +1,24 @@
 {
     "active": true,
-    "altitude": 67.46,
+    "altitude": 65.11,
     "cluster": "Eindhoven",
     "country": "Netherlands",
-    "latitude": 51.5318368,
-    "longitude": 5.0594568,
+    "latitude": 51.5318359,
+    "longitude": 5.0594559,
     "name": "Mill Hill College",
     "number": 8105,
     "scintillators": [
         {
-            "alpha": null,
-            "beta": null,
-            "height": null,
-            "radius": null
+            "alpha": 0.0,
+            "beta": 104.0,
+            "height": 0.0,
+            "radius": 1.82
         },
         {
-            "alpha": null,
-            "beta": null,
-            "height": null,
-            "radius": null
+            "alpha": 180.0,
+            "beta": 104.0,
+            "height": 0.0,
+            "radius": 2.47
         }
     ],
     "subcluster": "Tilburg"

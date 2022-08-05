@@ -12,6 +12,22 @@
         "number": 20000
     },
     {
+        "name": "Ireland",
+        "number": 30000
+    },
+    {
+        "name": "Namibia",
+        "number": 40000
+    },
+    {
+        "name": "United States",
+        "number": 50000
+    },
+    {
+        "name": "Somaliland",
+        "number": 60000
+    },
+    {
         "name": "Germany",
         "number": 70000
     }

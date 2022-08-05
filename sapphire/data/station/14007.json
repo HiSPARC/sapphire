@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 220.38,
+    "cluster": "Birmingham",
+    "country": "United Kingdom",
+    "latitude": 52.4311349,
+    "longitude": -1.9021782,
+    "name": "King Edward VI Camp Hill School for Boys",
+    "number": 14007,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Birmingham"
+}

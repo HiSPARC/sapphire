@@ -1,11 +1,11 @@
 {
     "active": true,
-    "altitude": 51.44,
+    "altitude": 50.45,
     "cluster": "Amsterdam",
     "country": "Netherlands",
-    "latitude": 52.35626,
-    "longitude": 4.952944,
-    "name": "Vancis",
+    "latitude": 52.3562533,
+    "longitude": 4.9529458,
+    "name": "Interxion",
     "number": 503,
     "scintillators": [
         {

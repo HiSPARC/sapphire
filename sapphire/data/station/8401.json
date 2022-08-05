@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 56.08,
+    "cluster": "Eindhoven",
+    "country": "Netherlands",
+    "latitude": 51.5671724,
+    "longitude": 4.6486691,
+    "name": "KS Etten-Leur",
+    "number": 8401,
+    "scintillators": [
+        {
+            "alpha": 61.7,
+            "beta": -30.9,
+            "height": 0.0,
+            "radius": -2.71
+        },
+        {
+            "alpha": 61.7,
+            "beta": -30.9,
+            "height": 0.0,
+            "radius": 2.71
+        }
+    ],
+    "subcluster": "Etten-Leur"
+}

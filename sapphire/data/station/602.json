@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 52.86,
+    "cluster": "Amsterdam",
+    "country": "Netherlands",
+    "latitude": 52.6567029,
+    "longitude": 5.0670461,
+    "name": "Copernicus",
+    "number": 602,
+    "scintillators": [
+        {
+            "alpha": 55.0,
+            "beta": 145.0,
+            "height": 0.0,
+            "radius": -2.95
+        },
+        {
+            "alpha": 55.0,
+            "beta": 145.0,
+            "height": 0.0,
+            "radius": 2.95
+        }
+    ],
+    "subcluster": "Hoorn"
+}

@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 47.33,
+    "cluster": "Amsterdam",
+    "country": "Netherlands",
+    "latitude": 52.6572492,
+    "longitude": 5.0730371,
+    "name": "Oscar Romero",
+    "number": 604,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Hoorn"
+}

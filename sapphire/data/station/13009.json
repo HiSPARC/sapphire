@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 156.7,
+    "cluster": "Bristol",
+    "country": "United Kingdom",
+    "latitude": 51.4582738,
+    "longitude": -2.6019102,
+    "name": "BristolTest",
+    "number": 13009,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Bristol"
+}

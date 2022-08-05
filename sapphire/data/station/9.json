@@ -1,10 +1,10 @@
 {
     "active": true,
-    "altitude": 73.2,
+    "altitude": 68.52,
     "cluster": "Amsterdam",
     "country": "Netherlands",
-    "latitude": 52.3328835,
-    "longitude": 4.8668674,
+    "latitude": 52.3328858,
+    "longitude": 4.8668797,
     "name": "Vrije Universiteit",
     "number": 9,
     "scintillators": [

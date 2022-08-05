@@ -1,10 +1,10 @@
 {
     "active": true,
-    "altitude": 88.31,
+    "altitude": 88.56,
     "cluster": "Cardiff",
     "country": "United Kingdom",
-    "latitude": 51.4840612,
-    "longitude": -3.1699799,
+    "latitude": 51.4840606,
+    "longitude": -3.1699824,
     "name": "Cardiff University",
     "number": 16001,
     "scintillators": [

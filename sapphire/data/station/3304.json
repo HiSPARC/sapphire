@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 56.48,
+    "cluster": "Leiden",
+    "country": "Netherlands",
+    "latitude": 52.128135,
+    "longitude": 4.6552024,
+    "name": "Scala College 2",
+    "number": 3304,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Alphen aan de Rijn"
+}

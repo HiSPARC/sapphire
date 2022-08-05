@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 107.92,
+    "cluster": "Cardiff",
+    "country": "United Kingdom",
+    "latitude": 51.6090677,
+    "longitude": -3.9823082,
+    "name": "Swansea University",
+    "number": 16101,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Swansea"
+}

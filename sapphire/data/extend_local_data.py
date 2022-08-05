@@ -35,7 +35,7 @@ def update_additional_local_tsv(progress=True):
 def main():
     descr = """Add additional data to local data, or update already downloaded
              data. Making data available locally can greatly speed up a
-             program which uses this data. Approximately 100 MB of data will
+             program which uses this data. More than 100 MB of data will
              be downloaded. The data contains the eventtime data, i.e. hourly
              number of events for all stations."""
     parser = argparse.ArgumentParser(description=descr)

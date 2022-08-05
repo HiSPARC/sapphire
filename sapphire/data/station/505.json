@@ -1,10 +1,10 @@
 {
     "active": true,
-    "altitude": 47.6,
+    "altitude": 41.13,
     "cluster": "Amsterdam",
     "country": "Netherlands",
-    "latitude": 52.3572524,
-    "longitude": 4.948385,
+    "latitude": 52.3572777,
+    "longitude": 4.9483585,
     "name": "ARCNL (PiMu)",
     "number": 505,
     "scintillators": [

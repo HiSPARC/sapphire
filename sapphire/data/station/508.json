@@ -1,10 +1,10 @@
 {
     "active": true,
-    "altitude": 50.52,
+    "altitude": 52.61,
     "cluster": "Amsterdam",
     "country": "Netherlands",
-    "latitude": 52.3563564,
-    "longitude": 4.950707,
+    "latitude": 52.356349,
+    "longitude": 4.9507215,
     "name": "Nikhef (MT)",
     "number": 508,
     "scintillators": [

@@ -8,7 +8,7 @@
         "number": 502
     },
     {
-        "name": "Vancis",
+        "name": "Interxion",
         "number": 503
     },
     {
@@ -44,11 +44,27 @@
         "number": 511
     },
     {
+        "name": "Nikhef 3",
+        "number": 512
+    },
+    {
+        "name": "Nikhef 4",
+        "number": 513
+    },
+    {
+        "name": "Nikhef 5",
+        "number": 514
+    },
+    {
         "name": "Nikhef (501-alt)",
         "number": 521
     },
     {
         "name": "Nikhef 2 (510-alt)",
         "number": 522
+    },
+    {
+        "name": "PySPARC test station",
+        "number": 599
     }
 ]

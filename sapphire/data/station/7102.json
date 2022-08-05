@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 72.03,
+    "cluster": "Enschede",
+    "country": "Netherlands",
+    "latitude": 52.2624689,
+    "longitude": 6.8103868,
+    "name": "Lyceum de Grundel",
+    "number": 7102,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Hengelo"
+}

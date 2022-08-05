@@ -1,9 +1,5 @@
 [
     {
-        "name": "Amsterdam",
-        "number": 0
-    },
-    {
         "name": "Zaanstad",
         "number": 100
     },
@@ -26,5 +22,9 @@
     {
         "name": "Hoorn",
         "number": 600
+    },
+    {
+        "name": "Amsterdam",
+        "number": 0
     }
 ]

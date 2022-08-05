@@ -1,9 +1,5 @@
 [
     {
-        "name": "Eindhoven",
-        "number": 8000
-    },
-    {
         "name": "Tilburg",
         "number": 8100
     },
@@ -14,5 +10,13 @@
     {
         "name": "Weert",
         "number": 8300
+    },
+    {
+        "name": "Etten-Leur",
+        "number": 8400
+    },
+    {
+        "name": "Eindhoven",
+        "number": 8000
     }
 ]

@@ -1,0 +1,37 @@
+{
+    "active": true,
+    "altitude": 142.93,
+    "cluster": "Durham",
+    "country": "United Kingdom",
+    "latitude": 54.5381558,
+    "longitude": -1.0476466,
+    "name": "Prior Pursglove College",
+    "number": 12001,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Durham"
+}

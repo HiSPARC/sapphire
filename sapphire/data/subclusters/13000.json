@@ -24,11 +24,15 @@
         "number": 13006
     },
     {
-        "name": "BernardLovell",
+        "name": "Bernard Lovell",
         "number": 13007
     },
     {
         "name": "Bristol Cathedral Choir School",
         "number": 13008
+    },
+    {
+        "name": "BristolTest",
+        "number": 13009
     }
 ]

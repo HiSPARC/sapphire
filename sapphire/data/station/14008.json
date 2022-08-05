@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 202.9,
+    "cluster": "Birmingham",
+    "country": "United Kingdom",
+    "latitude": 52.4498744,
+    "longitude": -1.929067,
+    "name": "Birmingham University 2",
+    "number": 14008,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Birmingham"
+}

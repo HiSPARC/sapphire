@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 82.91,
+    "cluster": "London",
+    "country": "United Kingdom",
+    "latitude": 51.53235,
+    "longitude": -0.1204932,
+    "name": "Institute of Physics",
+    "number": 17001,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "London"
+}

@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 1346.18,
+    "cluster": "Hargeisa",
+    "country": "Somaliland",
+    "latitude": 9.5240868,
+    "longitude": 44.074685,
+    "name": "Transparency Detector 1",
+    "number": 60001,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Hargeisa"
+}

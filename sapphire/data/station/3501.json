@@ -1,10 +1,10 @@
 {
     "active": true,
-    "altitude": 59.36,
+    "altitude": 58.0,
     "cluster": "Leiden",
     "country": "Netherlands",
-    "latitude": 52.0017804,
-    "longitude": 4.3682413,
+    "latitude": 52.0017824,
+    "longitude": 4.3682452,
     "name": "De Haagse Hogeschool (Delft)",
     "number": 3501,
     "scintillators": [

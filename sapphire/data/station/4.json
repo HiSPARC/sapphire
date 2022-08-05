@@ -1,24 +1,24 @@
 {
     "active": true,
-    "altitude": 54.61,
+    "altitude": 54.05,
     "cluster": "Amsterdam",
     "country": "Netherlands",
-    "latitude": 52.3779217,
-    "longitude": 4.8760647,
+    "latitude": 52.3779163,
+    "longitude": 4.8760657,
     "name": "Het Cartesius Lyceum",
     "number": 4,
     "scintillators": [
         {
-            "alpha": null,
-            "beta": null,
-            "height": null,
-            "radius": null
+            "alpha": 200.0,
+            "beta": 294.0,
+            "height": 0.0,
+            "radius": 2.175
         },
         {
-            "alpha": null,
-            "beta": null,
-            "height": null,
-            "radius": null
+            "alpha": 200.0,
+            "beta": 294.0,
+            "height": 0.0,
+            "radius": -2.775
         }
     ],
     "subcluster": "Amsterdam"

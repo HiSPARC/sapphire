@@ -1,0 +1,37 @@
+{
+    "active": false,
+    "altitude": 67.45,
+    "cluster": "Amsterdam",
+    "country": "Netherlands",
+    "latitude": 52.356128,
+    "longitude": 4.9505463,
+    "name": "PySPARC test station",
+    "number": 599,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Science Park"
+}

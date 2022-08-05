@@ -1,9 +1,5 @@
 [
     {
-        "name": "Enschede",
-        "number": 7000
-    },
-    {
         "name": "Hengelo",
         "number": 7100
     },
@@ -22,5 +18,13 @@
     {
         "name": "Holten",
         "number": 7500
+    },
+    {
+        "name": "Groenlo",
+        "number": 7600
+    },
+    {
+        "name": "Enschede",
+        "number": 7000
     }
 ]

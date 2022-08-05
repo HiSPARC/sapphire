@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 44.63,
+    "cluster": "Amsterdam",
+    "country": "Netherlands",
+    "latitude": 52.6457582,
+    "longitude": 5.0412459,
+    "name": "dAmpte",
+    "number": 603,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Hoorn"
+}

@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 134.28,
+    "cluster": "Birmingham",
+    "country": "United Kingdom",
+    "latitude": 52.3247442,
+    "longitude": -2.0607443,
+    "name": "South Bromsgrove",
+    "number": 14006,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Birmingham"
+}

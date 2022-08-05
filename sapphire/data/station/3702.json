@@ -1,0 +1,37 @@
+{
+    "active": true,
+    "altitude": 78.54,
+    "cluster": "Leiden",
+    "country": "Netherlands",
+    "latitude": 52.0805204,
+    "longitude": 4.344432,
+    "name": "NWO",
+    "number": 3702,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Den Haag"
+}

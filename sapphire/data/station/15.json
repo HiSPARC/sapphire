@@ -1,0 +1,25 @@
+{
+    "active": true,
+    "altitude": 59.51,
+    "cluster": "Amsterdam",
+    "country": "Netherlands",
+    "latitude": 52.3487407,
+    "longitude": 4.874393,
+    "name": "G. van der Veen",
+    "number": 15,
+    "scintillators": [
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        },
+        {
+            "alpha": null,
+            "beta": null,
+            "height": null,
+            "radius": null
+        }
+    ],
+    "subcluster": "Amsterdam"
+}
