@@ -30,7 +30,7 @@ jobs:
       - run: coverage json
       - uses: codecov/codecov-action@v3
         with:
-          files: .coverage
+          files: coverage.json
 
   flake:
     runs-on: ubuntu-latest
