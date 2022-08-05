@@ -64,6 +64,5 @@ setup(name='hisparc-sapphire',
       install_requires=['numpy', 'scipy', 'tables>=3.3.0', 'progressbar2>=3.7.0'],
       extras_require={
           'dev': ['Sphinx', 'flake8', 'pep8-naming', 'coverage', 'flake8-isort'],
-          'coverage': ['coveralls', 'codecov'],
           'astropy': ["astropy"]},
 )
