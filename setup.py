@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 # set version number and write to sapphire/version.py
-version = '1.7.1'
+version = '2.0.0'
 
 version_py = """\
 # Created by setup.py. Do not edit.
