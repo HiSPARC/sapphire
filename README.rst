@@ -74,7 +74,7 @@ the sapphire repo instead of installing using pip::
 
     $ git clone https://github.com/HiSPARC/sapphire.git
     $ cd sapphire
-    $ python setup.py develop
+    $ pip install -e .[dev]
 
 
 Version release
@@ -90,11 +90,11 @@ last release. Then tag the commit and push it to GitHub::
    $ git tag vX.Y.Z
    $ git push --tags
 
-Then upload the new version to PyPI (this requires the ``wheel`` and ``twine``
+Then upload the new version to PyPI (this requires the ``build``, ``wheel`` and ``twine``
 packages)::
 
-   $ python setup.py sdist bdist_wheel
+   $ python -m build
    $ twine upload dist/hisparc-sapphire-X.Y.Z.tar.gz
-   $ twine upload dist/hisparc_sapphire-X.Y.Z-py2.py3-none-any.whl
+   $ twine upload dist/hisparc_sapphire-X.Y.Z-py3-none-any.whl
 
 The latest version is then available from PyPI.
