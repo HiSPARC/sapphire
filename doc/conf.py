@@ -44,7 +44,7 @@ copyright = f'2009-2018, {AUTHORS}'
 # built documents.
 #
 # The current version.
-version = '1.7.1'
+version = '2.0.0'
 release = version
 
 # List of patterns, relative to source directory, that match files and
