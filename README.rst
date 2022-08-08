@@ -10,8 +10,6 @@ Introduction
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
 .. image:: https://img.shields.io/github/workflow/status/HiSPARC/sapphire/Run%20tests
    :target: https://github.com/HiSPARC/sapphire/actions
-.. image:: https://img.shields.io/codecov/c/github/HiSPARC/sapphire/master
-   :target: https://codecov.io/github/HiSPARC/sapphire
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
 <http://www.hisparc.nl/>`_ Research and Education.  It was created in the
