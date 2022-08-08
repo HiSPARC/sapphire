@@ -36,7 +36,7 @@ Required: Python. pip will take care of dependencies, but installing
 numpy, scipy and pytables from a python distribution is preferred. We use
 miniconda, which includes the conda package manager.
 
-First, `install conda <https://conda.pydata.org/docs/install/quick.html>`_
+First, `install conda <https://docs.conda.io/en/latest/miniconda.html>`_
 and optionally create a virtualenv::
 
     $ conda create --name hisparc python numpy scipy pytables
