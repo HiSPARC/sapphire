@@ -27,10 +27,7 @@ jobs:
       - run: conda install --quiet --yes astropy numpy scipy pytables numba
       - run: pip install -e .[dev]
       - run: make unittests
-      - run: coverage json
-      - uses: codecov/codecov-action@v3
-        with:
-          files: coverage.json
+      - run: coverage report
 
   flake:
     runs-on: ubuntu-latest
