@@ -33,10 +33,6 @@ setup(name='hisparc-sapphire',
           'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'],
       entry_points={
         'console_scripts': [
-            'generate_corsika_overview = sapphire.corsika.generate_corsika_overview:main',
-            'qsub_corsika = sapphire.corsika.qsub_corsika:main',
-            'qsub_store_corsika_data = sapphire.corsika.qsub_store_corsika_data:main',
-            'store_corsika_data = sapphire.corsika.store_corsika_data:main',
             'create_and_store_test_data = sapphire.tests.create_and_store_test_data:main',
             'update_local_data = sapphire.data.update_local_data:main',
             'extend_local_data = sapphire.data.extend_local_data:main']},
