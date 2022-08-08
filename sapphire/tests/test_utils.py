@@ -197,7 +197,3 @@ class WhichTests(unittest.TestCase):
 
         self.assertRaises(Exception, utils.which,
                           'a_very_unlikely_program_name_to_exist_cosmic_ray')
-
-
-if __name__ == '__main__':
-    unittest.main()
