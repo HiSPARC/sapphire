@@ -214,7 +214,3 @@ class DataReductionTests(unittest.TestCase):
                         ((0, 200, 2400), (0, 226)),)  # right far from limit
         for input, expected in combinations:
             self.assertEqual(self.dr.add_padding(*input), expected)
-
-
-if __name__ == '__main__':
-    unittest.main()

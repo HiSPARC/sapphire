@@ -140,7 +140,3 @@ class ParticleDataThinTests(ParticleDataTests):
         setattr(numba.config, 'DISABLE_JIT', 1)
         self.assertAlmostEqual(blocks.particle_data_thin(self.subblock), self.result)
         setattr(numba.config, 'DISABLE_JIT', old_value)
-
-
-if __name__ == '__main__':
-    unittest.main()

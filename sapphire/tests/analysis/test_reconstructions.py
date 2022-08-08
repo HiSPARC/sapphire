@@ -395,7 +395,3 @@ class ReconstructSimulatedCoincidencesTest(unittest.TestCase):
     def get_testdata_path(self, fn):
         dir_path = os.path.dirname(__file__)
         return os.path.join(dir_path, fn)
-
-
-if __name__ == '__main__':
-    unittest.main()

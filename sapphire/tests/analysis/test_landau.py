@@ -28,7 +28,3 @@ class ScintillatorTest(unittest.TestCase):
         self.scin.pdf(0)
         step_size = (self.scin.full_domain[-1] - self.scin.full_domain[-2])
         self.assertAlmostEqual(self.scin.pdf_values.sum() * step_size, 1, 1)
-
-
-if __name__ == '__main__':
-    unittest.main()

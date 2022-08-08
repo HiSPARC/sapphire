@@ -180,7 +180,3 @@ class GPSTimeTests(unittest.TestCase):
         self.assertEqual(clock.process_time('1435708800'), 1435708800)
         with self.assertRaises(RuntimeError):
             clock.process_time('July 1, 1995')
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -187,7 +187,3 @@ class CoincidencesESDDataTests(CoincidencesDataTests):
     def get_testdata_path(self):
         dir_path = os.path.dirname(__file__)
         return os.path.join(dir_path, TEST_DATA_ESD)
-
-
-if __name__ == '__main__':
-    unittest.main()

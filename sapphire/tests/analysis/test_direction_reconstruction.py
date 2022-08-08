@@ -788,7 +788,3 @@ class CurvedRegressionAlgorithm3DTest(unittest.TestCase, CurvedAltitudeAlgorithm
     def setUp(self):
         self.algorithm = direction_reconstruction.CurvedRegressionAlgorithm3D()
         self.algorithm.front = ConeFront()
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -142,7 +142,3 @@ class MockCorsikaQueryTest(unittest.TestCase):
         result = self.cq.perform_query(sentinel.query, iterator=False)
         self.assertEqual(result, self.cq.sims.read_where.return_value)
         self.cq.sims.read_where.assert_called_once_with(sentinel.query)
-
-
-if __name__ == '__main__':
-    unittest.main()

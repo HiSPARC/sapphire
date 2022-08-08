@@ -127,7 +127,3 @@ class ErrorlessSimulationTest(HiSPARCSimulationTest):
     def test_simulate_detector_mips(self):
         self.assertEqual(self.simulation.simulate_detector_mips(1, 0.5), 1)
         self.assertEqual(self.simulation.simulate_detector_mips(2, 0.2), 2)
-
-
-if __name__ == '__main__':
-    unittest.main()

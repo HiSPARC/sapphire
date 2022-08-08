@@ -142,7 +142,3 @@ class DownloadDataTest(unittest.TestCase):
         node = publicdb._get_or_create_node(file, sentinel.group, src_node)
         file.create_vlarray.assert_called_once_with(
             sentinel.group, src_node.name, src_node.atom, src_node.title)
-
-
-if __name__ == '__main__':
-    unittest.main()

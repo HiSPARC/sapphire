@@ -52,7 +52,3 @@ class BaseLdfTest(unittest.TestCase):
         self.assertEqual(self.ldf.calculate_core_distance(10., 0., 0., 0., 0., 0.), 10.)
         self.assertEqual(self.ldf.calculate_core_distance(10., 0., 10., 0., 0., 0.), 0.)
         self.assertEqual(self.ldf.calculate_core_distance(10., 3., 10., 3., 0., 0.), 0.)
-
-
-if __name__ == '__main__':
-    unittest.main()

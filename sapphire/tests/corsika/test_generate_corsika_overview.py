@@ -53,7 +53,3 @@ class GenerateCorsikaOverviewCommandTests(GenerateCorsikaOverviewTests):
         result = subprocess.check_output(self.command, shell=True)
         self.assertEqual(result, b'')
         validate_results(self, self.expected_path, self.destination_path)
-
-
-if __name__ == '__main__':
-    unittest.main()

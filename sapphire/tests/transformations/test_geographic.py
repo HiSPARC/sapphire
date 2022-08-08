@@ -41,7 +41,3 @@ class GeographicTransformationTests(unittest.TestCase):
         msg = f"Tuples differ: {actual} != {expected}"
         for actual_value, expected_value in zip(actual, expected):
             self.assertAlmostEqual(actual_value, expected_value, places=places, msg=msg)
-
-
-if __name__ == '__main__':
-    unittest.main()

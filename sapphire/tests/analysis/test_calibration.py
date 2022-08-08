@@ -379,7 +379,3 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         self.off.read_dt.return_value = 90 * [0.]
         offsets = self.off.determine_station_timing_offset(date, sentinel.station, sentinel.ref_station)
         self.assertEqual(offsets, (nan, nan))
-
-
-if __name__ == '__main__':
-    unittest.main()

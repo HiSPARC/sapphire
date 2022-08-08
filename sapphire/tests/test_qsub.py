@@ -98,7 +98,3 @@ class DeleteScriptTest(unittest.TestCase):
         self.assertFalse(mock_remove.called)
         qsub.delete_script(sentinel.path)
         mock_remove.assert_called_once_with(sentinel.path)
-
-
-if __name__ == '__main__':
-    unittest.main()

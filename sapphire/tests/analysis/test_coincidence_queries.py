@@ -180,7 +180,3 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         mock_network.return_value.station_numbers.assert_called_once_with(cluster=sentinel.cluster)
         mock_events_from.assert_called_once_with(sentinel.coincidences, sentinel.numbers, 2)
         self.assertEqual(result, sentinel.coincidence_events)
-
-
-if __name__ == '__main__':
-    unittest.main()

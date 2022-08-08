@@ -677,7 +677,3 @@ class StaleStationTests(StationTests):
 
     def test_temperature(self):
         self.assertRaises(Exception, self.station.temperature, 2013, 1, 1)
-
-
-if __name__ == '__main__':
-    unittest.main()

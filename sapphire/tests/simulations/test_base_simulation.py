@@ -258,7 +258,3 @@ class BaseSimulationTest(unittest.TestCase):
     @unittest.skip("Does not test this unit")
     def test_init_stores_cluster_in_attrs(self):
         self.assertIs(self.simulation.coincidence_group._v_attrs.cluster, self.cluster)
-
-
-if __name__ == '__main__':
-    unittest.main()

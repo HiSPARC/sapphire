@@ -104,7 +104,3 @@ class StoreThinCorsikaDataCommandTests(StoreCorsikaDataCommandTests,
         super().setUp()
         self.command = STORE_CMD_THIN.format(source=self.source_path,
                                              destination=self.destination_path)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -90,7 +90,3 @@ class RotationMatrixTests(unittest.TestCase):
                                     array(((0, 0, -1), (0, 1, 0), (1, 0, 0))))
         testing.assert_almost_equal(axes.rotation_matrix(pi / 2, 'z'),
                                     array(((0, 1, 0), (-1, 0, 0), (0, 0, 1))))
-
-
-if __name__ == '__main__':
-    unittest.main()

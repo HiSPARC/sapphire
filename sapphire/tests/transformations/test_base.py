@@ -24,7 +24,3 @@ class DecimalSexagesimalTests(unittest.TestCase):
     def test_sexagesimal_to_decimal(self):
         for dec, sexa in self.combinations:
             self.assertEqual(base.sexagesimal_to_decimal(*sexa), dec)
-
-
-if __name__ == '__main__':
-    unittest.main()

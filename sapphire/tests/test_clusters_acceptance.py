@@ -31,7 +31,3 @@ class SimpleClusterTest(unittest.TestCase):
         msg = f"Tuples differ: {str(actual)} != {str(expected)}"
         for actual_value, expected_value in zip(actual, expected):
             self.assertAlmostEqual(actual_value, expected_value, msg=msg)
-
-
-if __name__ == '__main__':
-    unittest.main()

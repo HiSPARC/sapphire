@@ -29,7 +29,3 @@ class GPSTimeUtilTests(unittest.TestCase):
         actual = str(t)
         mock_description.assert_called_once_with()
         self.assertIs(actual, expected)
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -33,7 +33,3 @@ class StoreKascadeDataTests(unittest.TestCase):
         fd, path = tempfile.mkstemp('.h5')
         os.close(fd)
         return path
-
-
-if __name__ == '__main__':
-    unittest.main()

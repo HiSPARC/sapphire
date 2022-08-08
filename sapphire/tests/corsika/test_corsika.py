@@ -87,7 +87,3 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertAlmostEqual(particle[7], 181.484397728)
         particle = next(particles)
         self.assertEqual(corsika.particles.name(int(particle[6])), 'muon_m')
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -49,7 +49,3 @@ class CorsikaParticlesTests(unittest.TestCase):
         for id, name in self.atoms:
             self.assertEqual(particles.name(id), name)
             self.assertEqual(particles.particle_id(name), id)
-
-
-if __name__ == '__main__':
-    unittest.main()

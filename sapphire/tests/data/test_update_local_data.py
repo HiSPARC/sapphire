@@ -39,7 +39,3 @@ class UpdateLocalDataTests(unittest.TestCase):
         update_local_data.update_local_tsv(progress=True)
         self.assertTrue(mock_print.called)
         self.assertTrue(mock_pbar.called)
-
-
-if __name__ == '__main__':
-    unittest.main()

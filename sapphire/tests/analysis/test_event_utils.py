@@ -210,7 +210,3 @@ class GetDetectorIdsTests(unittest.TestCase):
         event.__getitem__.side_effect = lambda name: [10, 100, 40, -1]
         self.assertEqual(event_utils.get_detector_ids(event=event), list(range(3)))
         self.assertEqual(event_utils.get_detector_ids(station=station, event=event), list(range(2)))
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -95,7 +95,3 @@ class SeedsTest(unittest.TestCase):
         mock_template.format.assert_called_with(command=sentinel.command,
                                                 datadir=qsub_store_corsika_data.DATADIR)
         mock_umask.assert_called_once_with(0o02)
-
-
-if __name__ == '__main__':
-    unittest.main()

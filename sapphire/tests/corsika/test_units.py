@@ -65,7 +65,3 @@ class CorsikaUnitsTests(unittest.TestCase):
         self.assertEqual(units.exa, 1e18)
         self.assertEqual(units.zetta, 1e21)
         self.assertEqual(units.yotta, 1e24)
-
-
-if __name__ == '__main__':
-    unittest.main()

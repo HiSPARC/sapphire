@@ -364,7 +364,3 @@ class ProcessSinglesFromSourceTests(ProcessSinglesTests):
         ts = singles_table.col('timestamp')
         unique_ts = array(sorted(set(ts)))
         assert_array_equal(ts, unique_ts)
-
-
-if __name__ == '__main__':
-    unittest.main()

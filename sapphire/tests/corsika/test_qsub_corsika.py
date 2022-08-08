@@ -191,7 +191,3 @@ class MultipleJobsTest(unittest.TestCase):
         self.assertEqual(len(mock_corsika_batch.mock_calls), n * 2)
         self.assertEqual(len(mock_corsika_batch.return_value.run.mock_calls), n)
         self.assertEqual(len(warned), 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

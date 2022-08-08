@@ -650,7 +650,3 @@ class FlattenClusterTests(unittest.TestCase):
         clusters.flatten_cluster(cluster)
         self.assertEqual(station.get_coordinates()[-2], 0)
         self.assertEqual(detector.get_coordinates()[-1], 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

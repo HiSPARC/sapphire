@@ -141,7 +141,3 @@ class GammasTest(unittest.TestCase):
         p = np.array([10e6] * n)
         theta = np.array([1.] * n)  # projected depth would be 126 cm
         self.assertEqual(gammas.simulate_detector_mips_gammas(p, theta), 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

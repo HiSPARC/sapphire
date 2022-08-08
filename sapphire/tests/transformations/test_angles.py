@@ -30,7 +30,3 @@ class DegreeRadianHourTests(unittest.TestCase):
             self.assertAlmostEqual(angles.radians_to_hours(radian), hour)
             self.assertAlmostEqual(angles.hours_to_radians(angles.radians_to_hours(radian)), radian)
             self.assertAlmostEqual(angles.radians_to_hours(angles.hours_to_radians(hour)), hour)
-
-
-if __name__ == '__main__':
-    unittest.main()

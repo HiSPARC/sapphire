@@ -43,7 +43,3 @@ class EllipsLdfAlgorithmTest(unittest.TestCase, BaseAlgorithm):
 
     def setUp(self):
         self.algorithm = core_reconstruction.EllipsLdfAlgorithm()
-
-
-if __name__ == '__main__':
-    unittest.main()

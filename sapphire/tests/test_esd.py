@@ -164,7 +164,3 @@ class ESDTest(unittest.TestCase):
         perform_download_coincidences(output_path)
         validate_results(self, test_data_coincidences_path, output_path)
         os.remove(output_path)
-
-
-if __name__ == '__main__':
-    unittest.main()

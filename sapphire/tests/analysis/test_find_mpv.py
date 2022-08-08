@@ -43,7 +43,3 @@ class FindMostProbableValueInSpectrumTest(unittest.TestCase):
         with self.assertRaises(RuntimeError) as cm:
             fmpv.fit_mpv(111)
         self.assertEqual(str(cm.exception), "Fitted MPV value outside range")
-
-
-if __name__ == '__main__':
-    unittest.main()

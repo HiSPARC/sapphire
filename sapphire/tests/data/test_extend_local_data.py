@@ -13,7 +13,3 @@ class UpdateLocalDataTests(unittest.TestCase):
         mock_net.return_value.station_numbers.return_value = sentinel.numbers
         extend_local_data.update_additional_local_tsv(progress=False)
         mock_sub.assert_called_once_with('eventtime', sentinel.numbers, False)
-
-
-if __name__ == '__main__':
-    unittest.main()

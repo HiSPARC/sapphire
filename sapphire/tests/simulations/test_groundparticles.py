@@ -218,7 +218,3 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.cq.simulations.return_value = []
         result = self.simulation.select_simulation()
         self.assertIsNone(result)
-
-
-if __name__ == '__main__':
-    unittest.main()

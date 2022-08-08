@@ -58,7 +58,3 @@ class NkgLdfSimulationAcceptanceTest(unittest.TestCase):
         perform_nkgldfsimulation(output_path)
         validate_results(self, test_data_nkg, output_path)
         os.remove(output_path)
-
-
-if __name__ == '__main__':
-    unittest.main()
