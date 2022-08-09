@@ -1,5 +1,4 @@
 import os
-import subprocess
 import tempfile
 import unittest
 
@@ -38,18 +37,3 @@ class GenerateCorsikaOverviewTests(unittest.TestCase):
     def get_expected_path(self):
         dir_path = os.path.dirname(__file__)
         return os.path.join(dir_path, TEST_EXPECTED_FILE)
-
-
-class GenerateCorsikaOverviewCommandTests(GenerateCorsikaOverviewTests):
-
-    def setUp(self):
-        self.source_path = self.get_testdata_path()
-        self.expected_path = self.get_expected_path()
-        self.destination_path = self.create_tempfile_path()
-        self.command = STORE_SCRIPT.format(source=self.source_path,
-                                           destination=self.destination_path)
-
-    def test_store_data(self):
-        result = subprocess.check_output(self.command, shell=True)
-        self.assertEqual(result, b'')
-        validate_results(self, self.expected_path, self.destination_path)
