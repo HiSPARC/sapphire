@@ -702,7 +702,7 @@ class Station(API):
         :return: array of timestamps and values.
 
         """
-        columns = ('timestamp', 'master', 'slave', 'master_fpga', 'slave_fpga')
+        columns = ('timestamp', 'primary', 'secondary', 'primary_fpga', 'secondary_fpga')
         path = self.src_urls['electronics'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
@@ -719,7 +719,7 @@ class Station(API):
         else:
             idx = get_active_index(electronics['timestamp'], timestamp)
         electronic = [electronics[idx][field] for field in
-                      ('master', 'slave', 'master_fpga', 'slave_fpga')]
+                      ('primary', 'secondary', 'primary_fpga', 'secondary_fpga')]
         return electronic
 
     @cached_property
