@@ -12,7 +12,7 @@ Introduction
    :target: https://github.com/HiSPARC/sapphire/actions
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
-<http://www.hisparc.nl/>`_ Research and Education.  It was created in the
+<https://www.hisparc.nl/>`_ Research and Education.  It was created in the
 process of completing the PhD research of David Fokkema.  The history of this
 repository contains the complete simulation, analysis and plot generation code
 that formed the basis for David's `thesis

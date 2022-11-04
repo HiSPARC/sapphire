@@ -4,7 +4,7 @@ Tutorial
 ========
 
 |sapphire| simplifies data access, simulations and analysis for the `HiSPARC
-<http://www.hisparc.nl>`_ experiment.  In this tutorial, we'll try to give
+<https://www.hisparc.nl>`_ experiment.  In this tutorial, we'll try to give
 you a feeling for the things you can do with |sapphire|.  How can you
 download data?  How can you analyze this data?  How can you produce
 pulseheight histograms?  How can you calculate the direction of cosmic
@@ -459,7 +459,7 @@ is a great way to do that.  And of course, the venerable histogram is
 still very useful to condense thousands of events into one display.  Pylab
 contains an easy function to do just that: ``hist``.  Let's try to
 recreate a few graphs as seen on the |hisparc| `data display
-<http://data.hisparc.nl/show/stations/501/2012/12/1/>`_::
+<https://data.hisparc.nl/show/stations/501/2012/12/1/>`_::
 
     >>> ph = events.col('pulseheights')
     >>> hist(ph)
