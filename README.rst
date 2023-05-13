@@ -8,7 +8,7 @@ Introduction
    :target: https://pypi.python.org/pypi/hisparc-sapphire/
 .. image:: https://img.shields.io/badge/license-GPLv3-blue
    :target: https://github.com/HiSPARC/sapphire/blob/master/LICENSE
-.. image:: https://img.shields.io/github/workflow/status/HiSPARC/sapphire/Run%20tests
+.. image:: https://img.shields.io/github/actions/workflow/status/HiSPARC/sapphire/tests.yml?branch=master
    :target: https://github.com/HiSPARC/sapphire/actions
 
 SAPPHiRE is a Simulation and Analysis Program Package for `HiSPARC
