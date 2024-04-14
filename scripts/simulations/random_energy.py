@@ -1,4 +1,10 @@
-flux = lambda x: x**-2.7
+import random
+
+from numpy import array
+
+
+def flux(x):
+    return x**-2.7
 
 
 def random_energy(a, b, size=1):
@@ -6,7 +12,7 @@ def random_energy(a, b, size=1):
     y1 = flux(b)
 
     energies = []
-    for i in range(size):
+    for _ in range(size):
         while True:
             x = random.uniform(a, b)
             y = random.uniform(y0, y1)

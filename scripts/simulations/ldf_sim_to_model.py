@@ -1,5 +1,7 @@
 import tables
 
+from pylab import *
+
 
 def plot_ldf_and_models(data, group):
     global binned_densities
