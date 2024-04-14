@@ -1,0 +1,62 @@
+[tool.ruff]
+line-length = 120
+target-version = 'py39'
+
+[tool.ruff.format]
+quote-style = 'single'  # Prefer single quotes, except for triple quotes strings
+
+[tool.ruff.lint]
+select = ['ALL']  # https://docs.astral.sh/ruff/rules/
+ignore = [
+    'ANN',  # No type annotations yet
+    'CPY001',  # Do not require copyright notices
+    'D',  # Ignore docstring checks
+    'E731',  # Allow assigning lambda to variable
+    'EM',  # Allow messages directly in exceptions
+    'ERA001',  # Allow commented code
+    'FBT001',  # Allow positional for boolean arguments
+    'FBT002',  # Allow default value for boolean arguments
+    'PD',  # Not using pandas
+    'PLR0913',  # Allow functions with many arguments
+    'PLR6301',  # Allow not using self in methods
+    'PT',  # Not using pytest
+    'RET504',  # Allow variable assignment before return
+    'SIM108',  # Allow if-else block instead of ternary
+    'T201',  # Allow using print
+    'TID252',  # Allow relative imports
+    'TRY003',  # Specific messages for common exception classes
+]
+
+[tool.ruff.lint.per-file-ignores]
+'sapphire/corsika/units.py' = ['N816']  # Allow mixed case variables
+'sapphire/storage.py' = ['N815']  # Allow mixed case variables
+'sapphire/tests/simulations/test_gammas.py' = ['N806']  # Allow upper case variables
+'sapphire/tests/transformations/test_celestial.py' = ['N806']  # Allow upper case variables
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = 'single'
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+section-order = [
+    'future',
+    'standard-library',
+    'third-party',
+    'extras',
+    'first-party',
+    'local-folder',
+]
+
+[tool.ruff.lint.isort.sections]
+extras = ['artist', 'pylab']
+
+[tool.coverage.run]
+branch = true
+source = [
+    'sapphire',
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+skip_covered = true

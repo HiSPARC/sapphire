@@ -1,15 +1,15 @@
+from pathlib import Path
+
 from setuptools import find_packages, setup
 
 # set version number and write to sapphire/version.py
 version = '2.0.0'
 
-version_py = """\
+version_py = f"""\
 # Created by setup.py. Do not edit.
 __version__ = "{version}"
 """
-with open('sapphire/version.py', 'w') as f:
-    f.write(version_py.format(version=version))
-
+(Path(__file__).parent / 'sapphire/version.py').write_text(version_py)
 
 setup(name='hisparc-sapphire',
       version=version,
@@ -20,7 +20,7 @@ setup(name='hisparc-sapphire',
       author='David Fokkema, Arne de Laat, Tom Kooij, and others',
       author_email='davidf@nikhef.nl, arne@delaat.net',
       description='A framework for the HiSPARC experiment',
-      long_description=open('README.rst').read(),
+      long_description=(Path(__file__).parent / 'README.rst').read_text(),
       keywords=['HiSPARC', 'Nikhef', 'cosmic rays'],
       classifiers=[
           'Intended Audience :: Science/Research',
@@ -57,6 +57,6 @@ setup(name='hisparc-sapphire',
                                  'tests/simulations/test_data/*.h5']},
       install_requires=['numpy', 'scipy', 'tables>=3.3.0', 'progressbar2>=3.7.0'],
       extras_require={
-          'dev': ['Sphinx', 'flake8', 'pep8-naming', 'coverage', 'flake8-isort'],
-          'astropy': ["astropy"]},
+          'dev': ['Sphinx', 'ruff', 'coverage'],
+          'astropy': ['astropy']},
 )

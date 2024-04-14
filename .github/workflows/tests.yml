@@ -30,15 +30,15 @@ jobs:
       - run: make unittests
       - run: coverage report
 
-  flake:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install flake8 flake8-isort pep8-naming
-      - run: make flaketest
+      - run: pip install ruff
+      - run: make linttest
 
   docs:
     if: github.ref == 'refs/heads/master'

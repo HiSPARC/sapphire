@@ -1,16 +1,19 @@
-.PHONY: test unittests flaketest doctest update_data
-
+.PHONY: test
 test: unittests flaketest doctest
 
+.PHONY: unittests
 unittests:
 	coverage run -m unittest
 
-flaketest:
-	flake8 sapphire
+.PHONY: linttest
+linttest:
+	ruff check .
 
+.PHONY: doctest
 doctest:
 	sphinx-build -anW doc doc/_build/html
 
+.PHONY: update_data
 update_data:
 ifeq ($(strip $(shell git status --porcelain | wc -l)), 0)
 	@echo "Updating local data. Creating test data to match local data and committing."
