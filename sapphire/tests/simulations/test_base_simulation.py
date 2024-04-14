@@ -11,7 +11,6 @@ from sapphire.simulations.base import BaseSimulation
 
 
 class BaseSimulationTest(unittest.TestCase):
-
     @patch.object(BaseSimulation, '_prepare_output_tables')
     def setUp(self, mock_method):
         self.mock_prepare_output_tables = mock_method
@@ -20,9 +19,7 @@ class BaseSimulationTest(unittest.TestCase):
         self.output_path = sentinel.output_path
         self.n = sentinel.n
 
-        self.simulation = BaseSimulation(self.cluster, self.data,
-                                         self.output_path, self.n,
-                                         progress=False)
+        self.simulation = BaseSimulation(self.cluster, self.data, self.output_path, self.n, progress=False)
 
     def test_init_sets_attributes(self):
         self.assertIs(self.simulation.cluster, self.cluster)
@@ -36,8 +33,7 @@ class BaseSimulationTest(unittest.TestCase):
     @patch.object(BaseSimulation, '_prepare_coincidence_tables')
     @patch.object(BaseSimulation, '_prepare_station_tables')
     @patch.object(BaseSimulation, '_store_station_index')
-    def test_prepare_output_tables_calls(self, mock_method3, mock_method2,
-                                         mock_method1):
+    def test_prepare_output_tables_calls(self, mock_method3, mock_method2, mock_method1):
         self.simulation._prepare_output_tables()
         mock_method1.assert_called_once_with()
         mock_method2.assert_called_once_with()
@@ -58,8 +54,7 @@ class BaseSimulationTest(unittest.TestCase):
 
         # test store_coincidence called 2nd time with shower_id 1,
         # parameters and events
-        mock_store.assert_called_with(1, sentinel.params2,
-                                      sentinel.events)
+        mock_store.assert_called_with(1, sentinel.params2, sentinel.events)
 
     def test_generate_shower_parameters(self):
         self.simulation.n = 10
@@ -69,29 +64,33 @@ class BaseSimulationTest(unittest.TestCase):
         output = list(output)
         self.assertEqual(len(output), 10)
 
-        expected = {'core_pos': (None, None), 'zenith': None, 'azimuth': None,
-                    'size': None, 'energy': None, 'ext_timestamp': None}
+        expected = {
+            'core_pos': (None, None),
+            'zenith': None,
+            'azimuth': None,
+            'size': None,
+            'energy': None,
+            'ext_timestamp': None,
+        }
         self.assertEqual(output[0], expected)
 
     @patch.object(BaseSimulation, 'simulate_station_response')
     @patch.object(BaseSimulation, 'store_station_observables')
     def test_simulate_events_for_shower(self, mock_store, mock_simulate):
         self.simulation.cluster = Mock()
-        self.simulation.cluster.stations = [sentinel.station1,
-                                            sentinel.station2,
-                                            sentinel.station3]
+        self.simulation.cluster.stations = [sentinel.station1, sentinel.station2, sentinel.station3]
 
-        mock_simulate.side_effect = [(True, sentinel.obs1), (False, None),
-                                     (True, sentinel.obs3)]
+        mock_simulate.side_effect = [(True, sentinel.obs1), (False, None), (True, sentinel.obs3)]
         mock_store.side_effect = [sentinel.index1, sentinel.index2]
-        events = self.simulation.simulate_events_for_shower(
-            sentinel.params)
+        events = self.simulation.simulate_events_for_shower(sentinel.params)
 
         # test simulate_station_response called for each station, with
         # shower parameters
-        expected = [call(sentinel.station1, sentinel.params),
-                    call(sentinel.station2, sentinel.params),
-                    call(sentinel.station3, sentinel.params)]
+        expected = [
+            call(sentinel.station1, sentinel.params),
+            call(sentinel.station2, sentinel.params),
+            call(sentinel.station3, sentinel.params),
+        ]
         self.assertEqual(mock_simulate.call_args_list, expected)
 
         # test store_station_observables called only for triggered
@@ -101,15 +100,13 @@ class BaseSimulationTest(unittest.TestCase):
 
         # test returned events consists of list of station indexes and
         # stored event indexes
-        self.assertEqual(events, [(0, sentinel.index1),
-                                  (2, sentinel.index2)])
+        self.assertEqual(events, [(0, sentinel.index1), (2, sentinel.index2)])
 
     @patch.object(BaseSimulation, 'simulate_all_detectors')
     @patch.object(BaseSimulation, 'simulate_trigger')
     @patch.object(BaseSimulation, 'process_detector_observables')
     @patch.object(BaseSimulation, 'simulate_gps')
-    def test_simulate_station_response(self, mock_gps, mock_process,
-                                       mock_trigger, mock_detectors):
+    def test_simulate_station_response(self, mock_gps, mock_process, mock_trigger, mock_detectors):
         mock_detectors.return_value = sentinel.detector_observables
         mock_trigger.return_value = sentinel.has_triggered
         mock_process.return_value = sentinel.station_observables
@@ -118,40 +115,33 @@ class BaseSimulationTest(unittest.TestCase):
         mock_station = Mock()
         mock_station.detectors = sentinel.detectors
 
-        has_triggered, station_observables = \
-            self.simulation.simulate_station_response(mock_station,
-                                                      sentinel.parameters)
+        has_triggered, station_observables = self.simulation.simulate_station_response(
+            mock_station,
+            sentinel.parameters,
+        )
 
         # Tests
-        mock_detectors.assert_called_once_with(sentinel.detectors,
-                                               sentinel.parameters)
+        mock_detectors.assert_called_once_with(sentinel.detectors, sentinel.parameters)
         mock_trigger.assert_called_once_with(sentinel.detector_observables)
         mock_process.assert_called_once_with(sentinel.detector_observables)
-        mock_gps.assert_called_once_with(sentinel.station_observables,
-                                         sentinel.parameters,
-                                         mock_station)
+        mock_gps.assert_called_once_with(sentinel.station_observables, sentinel.parameters, mock_station)
         self.assertIs(has_triggered, sentinel.has_triggered)
         self.assertIs(station_observables, sentinel.gps_observables)
 
     @patch.object(BaseSimulation, 'simulate_detector_response')
     def test_simulate_all_detectors(self, mock_response):
         detectors = [sentinel.detector1, sentinel.detector2]
-        mock_response.side_effect = [sentinel.observables1,
-                                     sentinel.observables2]
+        mock_response.side_effect = [sentinel.observables1, sentinel.observables2]
 
-        observables = self.simulation.simulate_all_detectors(
-            detectors, sentinel.parameters)
+        observables = self.simulation.simulate_all_detectors(detectors, sentinel.parameters)
 
-        expected = [call(sentinel.detector1, sentinel.parameters),
-                    call(sentinel.detector2, sentinel.parameters)]
+        expected = [call(sentinel.detector1, sentinel.parameters), call(sentinel.detector2, sentinel.parameters)]
         self.assertEqual(mock_response.call_args_list, expected)
 
-        self.assertEqual(observables, [sentinel.observables1,
-                                       sentinel.observables2])
+        self.assertEqual(observables, [sentinel.observables1, sentinel.observables2])
 
     def test_simulate_detector_response(self):
-        observables = self.simulation.simulate_detector_response(Mock(),
-                                                                 Mock())
+        observables = self.simulation.simulate_detector_response(Mock(), Mock())
         self.assertIsInstance(observables, dict)
         self.assertIn('n', observables)
         self.assertIn('t', observables)
@@ -172,17 +162,21 @@ class BaseSimulationTest(unittest.TestCase):
         self.assertIn('nanoseconds', gps_dict)
 
     def test_process_detector_observables(self):
-        detector_observables = [{'n': 1., 't': 2., 'pulseheights': 3.,
-                                 'integrals': 4.},
-                                {'n': 5., 't': 6., 'pulseheights': 7.,
-                                 'integrals': 8.},
-                                {'foo': -999.}]
+        detector_observables = [
+            {'n': 1.0, 't': 2.0, 'pulseheights': 3.0, 'integrals': 4.0},
+            {'n': 5.0, 't': 6.0, 'pulseheights': 7.0, 'integrals': 8.0},
+            {'foo': -999.0},
+        ]
 
-        expected = {'n1': 1., 'n2': 5., 't1': 2., 't2': 6.,
-                    'pulseheights': [3., 7., -1., -1.],
-                    'integrals': [4., 8., -1, -1]}
-        actual = self.simulation.process_detector_observables(
-            detector_observables)
+        expected = {
+            'n1': 1.0,
+            'n2': 5.0,
+            't1': 2.0,
+            't2': 6.0,
+            'pulseheights': [3.0, 7.0, -1.0, -1.0],
+            'integrals': [4.0, 8.0, -1, -1],
+        }
+        actual = self.simulation.process_detector_observables(detector_observables)
 
         self.assertEqual(expected, actual)
 
@@ -192,16 +186,14 @@ class BaseSimulationTest(unittest.TestCase):
         table = station_groups.__getitem__.return_value.events
         table.nrows = 123
 
-        observables = {'key1': 1., 'key2': 2.}
+        observables = {'key1': 1.0, 'key2': 2.0}
         table.colnames = ['key1', 'key2']
-        idx = self.simulation.store_station_observables(
-            sentinel.station_id, observables)
+        idx = self.simulation.store_station_observables(sentinel.station_id, observables)
 
         # tests
         station_groups.__getitem__.assert_called_once_with(sentinel.station_id)
 
-        calls = [call('event_id', table.nrows), call('key2', 2.),
-                 call('key1', 1.)]
+        calls = [call('event_id', table.nrows), call('key2', 2.0), call('key1', 1.0)]
         station_groups.asser_has_calls(calls, any_order=True)
         table.row.append.assert_called_once_with()
         table.flush.assert_called_once_with()
@@ -211,50 +203,53 @@ class BaseSimulationTest(unittest.TestCase):
         station_groups = MagicMock()
         self.simulation.station_groups = station_groups
         table = station_groups.__getitem__.return_value.events
-        observables = {'key1': 1., 'key2': 2.}
+        observables = {'key1': 1.0, 'key2': 2.0}
         table.colnames = ['key1']
 
         with warnings.catch_warnings(record=True) as warned:
             warnings.simplefilter('always')
-            self.simulation.store_station_observables(sentinel.station_id,
-                                                      observables)
+            self.simulation.store_station_observables(sentinel.station_id, observables)
         self.assertEqual(len(warned), 1)
 
-    @unittest.skip("WIP")
+    @unittest.skip('WIP')
     def test_store_coincidence(self, shower_id, shower_parameters, station_events):
         pass
 
-    @unittest.skip("WIP")
+    @unittest.skip('WIP')
     def test_prepare_coincidence_tables(self):
         pass
 
-    @unittest.skip("WIP")
+    @unittest.skip('WIP')
     def test_prepare_station_tables(self):
         pass
 
-    @unittest.skip("WIP")
+    @unittest.skip('WIP')
     def test_store_station_index(self):
         pass
 
-    @unittest.skip("Does not test this unit")
+    @unittest.skip('Does not test this unit')
     def test_init_creates_coincidences_output_group(self):
-        self.data.create_group.assert_any_call(
-            self.output_path, 'coincidences', createparents=True)
+        self.data.create_group.assert_any_call(self.output_path, 'coincidences', createparents=True)
         self.data.create_table.assert_called_with(
-            self.simulation.coincidence_group, 'coincidences', storage.Coincidence)
+            self.simulation.coincidence_group,
+            'coincidences',
+            storage.Coincidence,
+        )
         self.assertEqual(self.data.create_vlarray.call_count, 2)
         self.data.create_vlarray.assert_any_call(
-            self.simulation.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
+            self.simulation.coincidence_group,
+            'c_index',
+            tables.UInt32Col(shape=2),
+        )
 
-    @unittest.skip("Does not test this unit")
+    @unittest.skip('Does not test this unit')
     def test_init_creates_cluster_output_group(self):
-        self.data.create_group.assert_any_call(
-            self.output_path, 'cluster_simulations', createparents=True)
+        self.data.create_group.assert_any_call(self.output_path, 'cluster_simulations', createparents=True)
         # The following tests need a better mock of cluster in order to work.
         # self.data.create_group.assert_any_call(self.simulation.cluster_group, 'station_0')
         # self.data.create_table.assert_any_call(
         #     station_group, 'events', storage.ProcessedHisparcEvent, expectedrows=self.n)
 
-    @unittest.skip("Does not test this unit")
+    @unittest.skip('Does not test this unit')
     def test_init_stores_cluster_in_attrs(self):
         self.assertIs(self.simulation.coincidence_group._v_attrs.cluster, self.cluster)

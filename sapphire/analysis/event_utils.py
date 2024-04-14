@@ -1,4 +1,4 @@
-""" Get data from HiSPARC events
+"""Get data from HiSPARC events
 
 This module contains functions to derive data from HiSPARC events.
 Common tasks for data reconstruction are getting the particle density
@@ -7,11 +7,12 @@ aware of processed events (i.e. reconstructed number of MIPs, arrival
 times and trigger time) and stations.
 
 """
+
 from numpy import nan, nanmean, nanmin
 
 from ..utils import ERR
 
-NO_OFFSET = [0., 0., 0., 0.]
+NO_OFFSET = [0.0, 0.0, 0.0, 0.0]
 
 
 def station_density(event, detector_ids=None, station=None):
@@ -28,8 +29,7 @@ def station_density(event, detector_ids=None, station=None):
     """
     if detector_ids is None:
         detector_ids = get_detector_ids(station, event)
-    p = nanmean(detector_densities(event, detector_ids=detector_ids,
-                                   station=station))
+    p = nanmean(detector_densities(event, detector_ids=detector_ids, station=station))
     return p
 
 
@@ -71,8 +71,7 @@ def detector_density(event, detector_id, station=None):
     return p
 
 
-def station_arrival_time(event, reference_ext_timestamp,
-                         detector_ids=None, offsets=NO_OFFSET, station=None):
+def station_arrival_time(event, reference_ext_timestamp, detector_ids=None, offsets=NO_OFFSET, station=None):
     """Get station arrival time, i.e. first detector hit
 
     Arrival time of first detector hit in the station. The returned time
@@ -96,16 +95,12 @@ def station_arrival_time(event, reference_ext_timestamp,
     if event['t_trigger'] in ERR:
         t = nan
     else:
-        t_first = nanmin(detector_arrival_times(event, detector_ids, offsets,
-                                                station))
-        t = ((int(event['ext_timestamp']) - int(reference_ext_timestamp)) -
-             event['t_trigger'] + t_first)
+        t_first = nanmin(detector_arrival_times(event, detector_ids, offsets, station))
+        t = (int(event['ext_timestamp']) - int(reference_ext_timestamp)) - event['t_trigger'] + t_first
     return t
 
 
-def relative_detector_arrival_times(event, reference_ext_timestamp,
-                                    detector_ids=None, offsets=NO_OFFSET,
-                                    station=None):
+def relative_detector_arrival_times(event, reference_ext_timestamp, detector_ids=None, offsets=NO_OFFSET, station=None):
     """Get relative arrival times for all detectors
 
     :param event: Processed event row.
@@ -124,16 +119,15 @@ def relative_detector_arrival_times(event, reference_ext_timestamp,
     if event['t_trigger'] in ERR:
         t = [nan] * len(detector_ids)
     else:
-        arrival_times = detector_arrival_times(event, detector_ids,
-                                               offsets, station)
-        t = [(int(event['ext_timestamp']) - int(reference_ext_timestamp)) -
-             event['t_trigger'] + arrival_time
-             for arrival_time in arrival_times]
+        arrival_times = detector_arrival_times(event, detector_ids, offsets, station)
+        t = [
+            (int(event['ext_timestamp']) - int(reference_ext_timestamp)) - event['t_trigger'] + arrival_time
+            for arrival_time in arrival_times
+        ]
     return t
 
 
-def detector_arrival_times(event, detector_ids=None, offsets=NO_OFFSET,
-                           station=None):
+def detector_arrival_times(event, detector_ids=None, offsets=NO_OFFSET, station=None):
     """Get corrected arrival times for all detectors
 
     :param event: Processed event row.
@@ -183,8 +177,7 @@ def get_detector_ids(station=None, event=None):
     if station is not None:
         detector_ids = list(range(len(station.detectors)))
     elif event is not None:
-        detector_ids = [i for i, ph in enumerate(event['pulseheights'])
-                        if ph != -1]
+        detector_ids = [i for i, ph in enumerate(event['pulseheights']) if ph != -1]
     else:
         detector_ids = list(range(4))
     return detector_ids

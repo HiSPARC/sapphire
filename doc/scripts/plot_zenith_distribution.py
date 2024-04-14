@@ -13,8 +13,8 @@ def plot_zenith_distribution(data):
     zenith = zenith.compress(-isnan(zenith))
 
     plt.hist(degrees(zenith), bins=linspace(0, 90, 51), histtype='step')
-    plt.xlabel("zenith [deg]")
-    plt.ylabel("count")
+    plt.xlabel('zenith [deg]')
+    plt.ylabel('count')
 
 
 if __name__ == '__main__':

@@ -20,7 +20,6 @@ TEST_DATA_ESD = 'test_data/esd_coincidences.h5'
 
 
 class DetectorTimingTests(unittest.TestCase):
-
     def get_testdata_path(self):
         dir_path = os.path.dirname(__file__)
         return os.path.join(dir_path, TEST_DATA_ESD)
@@ -44,22 +43,22 @@ class DetectorTimingTests(unittest.TestCase):
         dzc = dz / c
 
         # Good result
-        mock_fit.return_value = (1., 2.)
+        mock_fit.return_value = (1.0, 2.0)
         offset, _ = calibration.determine_detector_timing_offset(dt)
-        self.assertEqual(offset, 1.)
+        self.assertEqual(offset, 1.0)
         offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
-        self.assertEqual(offset, 1. + dzc)
+        self.assertEqual(offset, 1.0 + dzc)
 
-        mock_fit.return_value = (-1.5, 5.)
+        mock_fit.return_value = (-1.5, 5.0)
         offset, _ = calibration.determine_detector_timing_offset(dt)
         self.assertEqual(offset, -1.5)
         offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertEqual(offset, -1.5 + dzc)
 
-        mock_fit.return_value = (250., 100.)
+        mock_fit.return_value = (250.0, 100.0)
         offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertTrue(isnan(offset))
-        mock_fit.return_value = (-150., 100.)
+        mock_fit.return_value = (-150.0, 100.0)
         offset, _ = calibration.determine_detector_timing_offset(dt, dz=dz)
         self.assertTrue(isnan(offset))
 
@@ -69,11 +68,10 @@ class DetectorTimingTests(unittest.TestCase):
 
 
 class StationTimingTests(unittest.TestCase):
-
     @patch.object(calibration, 'percentile')
     @patch.object(calibration, 'fit_timing_offset')
     def test_determine_station_timing_offset(self, mock_fit, mock_percentile):
-        mock_percentile.return_value = (-50., 50.)
+        mock_percentile.return_value = (-50.0, 50.0)
         dz = 0.6
         dzc = dz / c
 
@@ -82,23 +80,23 @@ class StationTimingTests(unittest.TestCase):
         self.assertTrue(all(isnan(offset)))
 
         # Good result
-        mock_fit.return_value = (1., 5.)
+        mock_fit.return_value = (1.0, 5.0)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
-        self.assertEqual(offset, 1.)
+        self.assertEqual(offset, 1.0)
         mock_percentile.assert_called_once_with([sentinel.dt], [0.5, 99.5])
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt], dz=dz)
-        self.assertEqual(offset, 1. + dzc)
+        self.assertEqual(offset, 1.0 + dzc)
 
-        mock_fit.return_value = (-1.5, 5.)
+        mock_fit.return_value = (-1.5, 5.0)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertEqual(offset, -1.5)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt], dz=dz)
         self.assertEqual(offset, -1.5 + dzc)
 
-        mock_fit.return_value = (2500., 100.)
+        mock_fit.return_value = (2500.0, 100.0)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertTrue(isnan(offset))
-        mock_fit.return_value = (-1500., 100.)
+        mock_fit.return_value = (-1500.0, 100.0)
         offset, _ = calibration.determine_station_timing_offset([sentinel.dt])
         self.assertTrue(isnan(offset))
 
@@ -108,21 +106,17 @@ class StationTimingTests(unittest.TestCase):
 
 
 class BestReferenceTests(unittest.TestCase):
-
     def test_determine_best_reference(self):
         # Tie
-        filters = array([[True, True, False], [True, False, True],
-                         [False, True, True], [True, True, False]])
+        filters = array([[True, True, False], [True, False, True], [False, True, True], [True, True, False]])
         self.assertEqual(calibration.determine_best_reference(filters), 0)
 
         # 1 has most matches
-        filters = array([[True, False, False], [True, True, True],
-                         [False, False, False], [True, True, False]])
+        filters = array([[True, False, False], [True, True, True], [False, False, False], [True, True, False]])
         self.assertEqual(calibration.determine_best_reference(filters), 1)
 
         # Another winner
-        filters = array([[True, True, False], [True, False, True],
-                         [False, True, True], [True, True, True]])
+        filters = array([[True, True, False], [True, False, True], [False, True, True], [True, True, True]])
         self.assertEqual(calibration.determine_best_reference(filters), 3)
 
         # Not yet support number of detectors
@@ -131,7 +125,6 @@ class BestReferenceTests(unittest.TestCase):
 
 
 class SplitDatetimeRangeTests(unittest.TestCase):
-
     def test_split_range(self):
         # 101 days
         start = date(2016, 1, 1)
@@ -188,7 +181,6 @@ class SplitDatetimeRangeTests(unittest.TestCase):
 
 
 class FitTimingOffsetTests(unittest.TestCase):
-
     def test_fit_timing_offset(self):
         deviations = []
         for _ in range(50):
@@ -208,12 +200,15 @@ class FitTimingOffsetTests(unittest.TestCase):
 
 
 class DetermineStationTimingOffsetsTests(unittest.TestCase):
-
     def setUp(self):
         warnings.filterwarnings('ignore')
         stations = [501, 102, 105, 8001]
-        self.off = calibration.DetermineStationTimingOffsets(stations=stations, data=sentinel.data,
-                                                             progress=sentinel.progress, force_stale=True)
+        self.off = calibration.DetermineStationTimingOffsets(
+            stations=stations,
+            data=sentinel.data,
+            progress=sentinel.progress,
+            force_stale=True,
+        )
 
     def tearDown(self):
         warnings.resetwarnings()
@@ -236,7 +231,7 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         start = datetime(2014, 1, 1)
         end = datetime(2016, 12, 31)
         self.off.read_dt(station, ref_station, start, end)
-        table_path = ('/coincidences/time_deltas/station_%d/station_%d' % (ref_station, station))
+        table_path = '/coincidences/time_deltas/station_%d/station_%d' % (ref_station, station)
         table_name = 'time_deltas'
         self.off.data.get_node.assert_called_once_with(table_path, table_name)
         self.assertTrue(table_mock.read_where.called)
@@ -248,8 +243,12 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
 
     def test_station_pairs_wrong_order(self):
         stations = [105, 102, 8001, 501]
-        self.off = calibration.DetermineStationTimingOffsets(stations=stations, data=sentinel.data,
-                                                             progress=sentinel.progress, force_stale=True)
+        self.off = calibration.DetermineStationTimingOffsets(
+            stations=stations,
+            data=sentinel.data,
+            progress=sentinel.progress,
+            force_stale=True,
+        )
         results = list(self.off.get_station_pairs_within_max_distance())
         self.assertEqual([(102, 105)], results)
 
@@ -271,22 +270,24 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         self.assertAlmostEqual(dz, dz_102_105, places=5)
 
     def test_determine_interval(self):
-        combinations = ((0., 7),
-                        (50., 10),
-                        (200., 57),
-                        (1000., 398))
+        combinations = ((0.0, 7), (50.0, 10), (200.0, 57), (1000.0, 398))
         for r, ref_int in combinations:
             self.assertEqual(self.off._determine_interval(r), ref_int)
 
     def test_get_cuts(self):
-        gps_station = (datetime_to_gps(datetime(2014, 1, 1, 10, 3)),
-                       datetime_to_gps(datetime(2014, 3, 1, 11, 32)))
-        gps_ref_station = (datetime_to_gps(datetime(2014, 1, 5, 0, 1, 1)),
-                           datetime_to_gps(datetime(2014, 3, 5, 3, 34, 4)))
-        elec_station = (datetime_to_gps(datetime(2014, 1, 3, 3, 34, 3)),
-                        datetime_to_gps(datetime(2014, 3, 5, 23, 59, 59)))
-        elec_ref_station = (datetime_to_gps(datetime(2014, 1, 9, 0, 0, 0)),
-                            datetime_to_gps(datetime(2014, 3, 15, 1, 2, 3)))
+        gps_station = (datetime_to_gps(datetime(2014, 1, 1, 10, 3)), datetime_to_gps(datetime(2014, 3, 1, 11, 32)))
+        gps_ref_station = (
+            datetime_to_gps(datetime(2014, 1, 5, 0, 1, 1)),
+            datetime_to_gps(datetime(2014, 3, 5, 3, 34, 4)),
+        )
+        elec_station = (
+            datetime_to_gps(datetime(2014, 1, 3, 3, 34, 3)),
+            datetime_to_gps(datetime(2014, 3, 5, 23, 59, 59)),
+        )
+        elec_ref_station = (
+            datetime_to_gps(datetime(2014, 1, 9, 0, 0, 0)),
+            datetime_to_gps(datetime(2014, 3, 15, 1, 2, 3)),
+        )
         gps_mock = Mock()
         elec_mock = Mock()
 
@@ -308,15 +309,14 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
         self.assertEqual(cuts[-1], datetime(today.year, today.month, today.day))
 
     def test_get_left_and_right_bounds(self):
-        cuts = (datetime(2014, 1, 1),
-                datetime(2015, 1, 1),
-                datetime(2015, 1, 5),
-                datetime(2015, 1, 10))
-        combinations = [(datetime(2015, 1, 1), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 3), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 3).date(), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
-                        (datetime(2015, 1, 5), 7, datetime(2015, 1, 5), datetime(2015, 1, 9)),
-                        (datetime(2015, 1, 10), 7, datetime(2015, 1, 5), datetime(2015, 1, 10))]
+        cuts = (datetime(2014, 1, 1), datetime(2015, 1, 1), datetime(2015, 1, 5), datetime(2015, 1, 10))
+        combinations = [
+            (datetime(2015, 1, 1), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+            (datetime(2015, 1, 3), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+            (datetime(2015, 1, 3).date(), 7, datetime(2015, 1, 1), datetime(2015, 1, 4)),
+            (datetime(2015, 1, 5), 7, datetime(2015, 1, 5), datetime(2015, 1, 9)),
+            (datetime(2015, 1, 10), 7, datetime(2015, 1, 5), datetime(2015, 1, 10)),
+        ]
         for d, days, ref_left, ref_right in combinations:
             left, right = self.off._get_left_and_right_bounds(cuts, d, days)
             self.assertEqual(left, ref_left)
@@ -366,16 +366,16 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
 
         self.off._get_r_dz.return_value = sentinel.r, sentinel.dz
         self.off.determine_first_and_last_date.return_value = (0, 0)
-        self.off.read_dt.return_value = 1000 * [0.]
-        mock_det_offset.return_value = (10., 1.)
+        self.off.read_dt.return_value = 1000 * [0.0]
+        mock_det_offset.return_value = (10.0, 1.0)
 
         offsets = self.off.determine_station_timing_offset(date, sentinel.station, sentinel.ref_station)
 
         self.off._get_r_dz.assert_called_once_with(date, sentinel.station, sentinel.ref_station)
         self.off.determine_first_and_last_date.assert_called_once_with(date, sentinel.station, sentinel.ref_station)
 
-        self.assertEqual(offsets, (10., 1.))
+        self.assertEqual(offsets, (10.0, 1.0))
 
-        self.off.read_dt.return_value = 90 * [0.]
+        self.off.read_dt.return_value = 90 * [0.0]
         offsets = self.off.determine_station_timing_offset(date, sentinel.station, sentinel.ref_station)
         self.assertEqual(offsets, (nan, nan))

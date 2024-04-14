@@ -1,19 +1,19 @@
-""" Store AIRES simulation data in HDF5 file
+"""Store AIRES simulation data in HDF5 file
 
-    This module reads the AIRES binary ground particles file and stores
-    each particle individually in a HDF5 file, using PyTables.  This file
-    can then be used as input for the detector simulation.
+This module reads the AIRES binary ground particles file and stores
+each particle individually in a HDF5 file, using PyTables.  This file
+can then be used as input for the detector simulation.
 
 """
+
 import os
 import os.path
 import sys
 
+import aires
 import tables
 
 from numpy import *
-
-import aires
 
 from sapphire.storage import ShowerParticle
 
@@ -25,12 +25,12 @@ DATA_FILE = 'data.h5'
 def save_particle(row, p, id):
     row['id'] = id
     row['pid'] = p.code
-    row['core_distance'] = 10 ** p.core_distance
+    row['core_distance'] = 10**p.core_distance
     row['polar_angle'] = p.polar_angle
     row['arrival_time'] = p.arrival_time
-    row['energy'] = 10 ** p.energy
-    row['x'] = 10 ** p.core_distance * cos(p.polar_angle)
-    row['y'] = 10 ** p.core_distance * sin(p.polar_angle)
+    row['energy'] = 10**p.energy
+    row['x'] = 10**p.core_distance * cos(p.polar_angle)
+    row['y'] = 10**p.core_distance * sin(p.polar_angle)
     row.append()
 
 
@@ -41,10 +41,10 @@ def store_aires_data(data, group_name, file):
         print('%s already exists, doing nothing' % group_name)
         return
 
-    print(f"Storing AIRES data ({file}) in {group}")
+    print(f'Storing AIRES data ({file}) in {group}')
 
     if not os.path.exists(file):
-        raise RuntimeError("File %s does not exist" % file)
+        raise RuntimeError('File %s does not exist' % file)
     else:
         sim = aires.SimulationData('', file)
 
@@ -52,13 +52,16 @@ def store_aires_data(data, group_name, file):
         shower_group = data.create_group(group, 'shower_%d' % shower_num)
         print(shower_group)
 
-        leptons = data.create_table(shower_group, 'leptons', ShowerParticle,
-                                    'Electrons, positrons, muons and anti-muons')
+        leptons = data.create_table(
+            shower_group,
+            'leptons',
+            ShowerParticle,
+            'Electrons, positrons, muons and anti-muons',
+        )
 
         leptons_row = leptons.row
         for id, p in enumerate(shower.particles()):
-            if p.name == 'muon' or p.name == 'anti-muon' or \
-                p.name == 'electron' or p.name == 'positron':
+            if p.name == 'muon' or p.name == 'anti-muon' or p.name == 'electron' or p.name == 'positron':
                 save_particle(leptons_row, p, id)
         leptons.flush()
 

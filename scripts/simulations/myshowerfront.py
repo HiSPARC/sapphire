@@ -8,7 +8,7 @@ from pylab import *
 
 def get_front_arrival_time(sim, R, dR, theta):
     query = '(R - dR <= core_distance) & (core_distance < R + dR)'
-    c = 3e-1 # m / ns
+    c = 3e-1  # m / ns
 
     t_list = []
     for shower in sim:
@@ -47,13 +47,13 @@ def my_std_t(data, N):
     t = get_front_arrival_time(sim, 30, 5, pi / 8)
     n, bins = histogram(t, bins=linspace(0, 50, 401))
     mct = monte_carlo_timings(n, bins, 10000)
-    print("Monte Carlo:", N)
+    print('Monte Carlo:', N)
 
     mint_list = []
     i = 0
     while i < len(mct):
         try:
-            values = mct[i:i + N]
+            values = mct[i : i + N]
         except IndexError:
             break
         if len(values) == N:
@@ -70,13 +70,13 @@ def my_std_t_for_R(data, N_list, R_list):
         t = get_front_arrival_time(sim, R, 5, pi / 8)
         n, bins = histogram(t, bins=linspace(0, 50, 401))
         mct = monte_carlo_timings(n, bins, 10000)
-        print("Monte Carlo:", N)
+        print('Monte Carlo:', N)
 
         mint_list = []
         i = 0
         while i < len(mct):
             try:
-                values = mct[i:i + N]
+                values = mct[i : i + N]
             except IndexError:
                 break
             if len(values) == N:
@@ -91,13 +91,13 @@ def my_t_draw_something(data, N, num_events):
     t = get_front_arrival_time(sim, 20, 5, pi / 8)
     n, bins = histogram(t, bins=linspace(0, 50, 201))
     mct = monte_carlo_timings(n, bins, num_events * N)
-    print("Monte Carlo:", N)
+    print('Monte Carlo:', N)
 
     mint_list = []
     i = 0
     while i < len(mct):
         try:
-            values = mct[i:i + N]
+            values = mct[i : i + N]
         except IndexError:
             break
         if len(values) == N:
@@ -109,7 +109,11 @@ def my_t_draw_something(data, N, num_events):
 def plot_R():
     graph = GraphArtist(width=r'.45\linewidth')
 
-    n, bins, patches = hist(data.root.simulations.E_1PeV.zenith_22_5.shower_0.coincidences.col('r'), bins=100, histtype='step')
+    n, bins, patches = hist(
+        data.root.simulations.E_1PeV.zenith_22_5.shower_0.coincidences.col('r'),
+        bins=100,
+        histtype='step',
+    )
     graph.histogram(n, bins, linestyle='black!50')
 
     shower = data.root.simulations.E_1PeV.zenith_22_5.shower_0
@@ -118,14 +122,14 @@ def plot_R():
     n, bins, patches = hist(R, bins=100, histtype='step')
     graph.histogram(n, bins)
 
-    xlabel("Core distance [m]")
-    ylabel("Number of events")
+    xlabel('Core distance [m]')
+    ylabel('Number of events')
 
-    print("mean", mean(R))
-    print("median", median(R))
+    print('mean', mean(R))
+    print('median', median(R))
 
-    graph.set_xlabel(r"Core distance [\si{\meter}]")
-    graph.set_ylabel("Number of events")
+    graph.set_xlabel(r'Core distance [\si{\meter}]')
+    graph.set_ylabel('Number of events')
     graph.set_xlimits(min=0)
     graph.set_ylimits(min=0)
     graph.save('plots/SIM-R')
@@ -146,11 +150,11 @@ def plot_arrival_times():
     n, bins, patches = hist(mint, bins=linspace(0, 20, 101), histtype='step')
     graph.histogram(n, bins)
 
-    xlabel("Arrival time [ns]")
-    ylabel("Number of events")
+    xlabel('Arrival time [ns]')
+    ylabel('Number of events')
 
-    graph.set_xlabel(r"Arrival time [\si{\nano\second}]")
-    graph.set_ylabel("Number of events")
+    graph.set_xlabel(r'Arrival time [\si{\nano\second}]')
+    graph.set_ylabel('Number of events')
     graph.set_xlimits(0, 20)
     graph.set_ylimits(min=0)
     graph.save('plots/SIM-T')
@@ -159,7 +163,7 @@ def plot_arrival_times():
 
 
 if __name__ == '__main__':
-    if not 'data' in globals():
+    if 'data' not in globals():
         data = tables.open_file('master-ch4v2.h5')
 
     plot_R()

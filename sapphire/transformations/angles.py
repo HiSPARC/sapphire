@@ -1,9 +1,10 @@
-""" Perform various angle related transformations
+"""Perform various angle related transformations
 
-    Transform between different notations for angles:
-    Degrees, radians and hours.
+Transform between different notations for angles:
+Degrees, radians and hours.
 
 """
+
 from numpy import degrees, radians
 
 
@@ -14,7 +15,7 @@ def hours_to_degrees(angle):
     :return: angle in degrees
 
     """
-    return angle * 15.
+    return angle * 15.0
 
 
 def hours_to_radians(angle):
@@ -34,7 +35,7 @@ def degrees_to_hours(angle):
     :return: angle in decimal hours
 
     """
-    return angle / 15.
+    return angle / 15.0
 
 
 def radians_to_hours(angle):

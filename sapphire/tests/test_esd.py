@@ -20,76 +20,76 @@ from sapphire.tests.validate_results import validate_results
 
 class StaleNetwork(api.Network):
     """api.Network with `force_stale=True` always true"""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.force_stale = True
 
 
 class ESDTest(unittest.TestCase):
-
     def test_create_table(self):
-        description = {'event_id': tables.UInt32Col(pos=0),
-                       'timestamp': tables.Time32Col(pos=1),
-                       'nanoseconds': tables.UInt32Col(pos=2),
-                       'ext_timestamp': tables.UInt64Col(pos=3),
-                       'pulseheights': tables.Int16Col(pos=4, shape=4),
-                       'integrals': tables.Int32Col(pos=5, shape=4),
-                       'n1': tables.Float32Col(pos=6),
-                       'n2': tables.Float32Col(pos=7),
-                       'n3': tables.Float32Col(pos=8),
-                       'n4': tables.Float32Col(pos=9),
-                       't1': tables.Float32Col(pos=10),
-                       't2': tables.Float32Col(pos=11),
-                       't3': tables.Float32Col(pos=12),
-                       't4': tables.Float32Col(pos=13),
-                       't_trigger': tables.Float32Col(pos=14)}
+        description = {
+            'event_id': tables.UInt32Col(pos=0),
+            'timestamp': tables.Time32Col(pos=1),
+            'nanoseconds': tables.UInt32Col(pos=2),
+            'ext_timestamp': tables.UInt64Col(pos=3),
+            'pulseheights': tables.Int16Col(pos=4, shape=4),
+            'integrals': tables.Int32Col(pos=5, shape=4),
+            'n1': tables.Float32Col(pos=6),
+            'n2': tables.Float32Col(pos=7),
+            'n3': tables.Float32Col(pos=8),
+            'n4': tables.Float32Col(pos=9),
+            't1': tables.Float32Col(pos=10),
+            't2': tables.Float32Col(pos=11),
+            't3': tables.Float32Col(pos=12),
+            't4': tables.Float32Col(pos=13),
+            't_trigger': tables.Float32Col(pos=14),
+        }
         file = MagicMock()
         result = esd._create_events_table(file, sentinel.group)
-        file.create_table.assert_called_once_with(sentinel.group, 'events',
-                                                  description,
-                                                  createparents=True)
+        file.create_table.assert_called_once_with(sentinel.group, 'events', description, createparents=True)
         self.assertEqual(result, file.create_table.return_value)
 
     def test_create_weather_table(self):
-        description = {'event_id': tables.UInt32Col(pos=0),
-                       'timestamp': tables.Time32Col(pos=1),
-                       'temp_inside': tables.Float32Col(pos=2),
-                       'temp_outside': tables.Float32Col(pos=3),
-                       'humidity_inside': tables.Int16Col(pos=4),
-                       'humidity_outside': tables.Int16Col(pos=5),
-                       'barometer': tables.Float32Col(pos=6),
-                       'wind_dir': tables.Int16Col(pos=7),
-                       'wind_speed': tables.Int16Col(pos=8),
-                       'solar_rad': tables.Int16Col(pos=9),
-                       'uv': tables.Int16Col(pos=10),
-                       'evapotranspiration': tables.Float32Col(pos=11),
-                       'rain_rate': tables.Float32Col(pos=12),
-                       'heat_index': tables.Int16Col(pos=13),
-                       'dew_point': tables.Float32Col(pos=14),
-                       'wind_chill': tables.Float32Col(pos=15)}
+        description = {
+            'event_id': tables.UInt32Col(pos=0),
+            'timestamp': tables.Time32Col(pos=1),
+            'temp_inside': tables.Float32Col(pos=2),
+            'temp_outside': tables.Float32Col(pos=3),
+            'humidity_inside': tables.Int16Col(pos=4),
+            'humidity_outside': tables.Int16Col(pos=5),
+            'barometer': tables.Float32Col(pos=6),
+            'wind_dir': tables.Int16Col(pos=7),
+            'wind_speed': tables.Int16Col(pos=8),
+            'solar_rad': tables.Int16Col(pos=9),
+            'uv': tables.Int16Col(pos=10),
+            'evapotranspiration': tables.Float32Col(pos=11),
+            'rain_rate': tables.Float32Col(pos=12),
+            'heat_index': tables.Int16Col(pos=13),
+            'dew_point': tables.Float32Col(pos=14),
+            'wind_chill': tables.Float32Col(pos=15),
+        }
         file = MagicMock()
         result = esd._create_weather_table(file, sentinel.group)
-        file.create_table.assert_called_once_with(sentinel.group, 'weather',
-                                                  description,
-                                                  createparents=True)
+        file.create_table.assert_called_once_with(sentinel.group, 'weather', description, createparents=True)
         self.assertEqual(result, file.create_table.return_value)
 
     def test_create_singles_table(self):
-        description = {'event_id': tables.UInt32Col(pos=0),
-                       'timestamp': tables.Time32Col(pos=1),
-                       'mas_ch1_low': tables.Int32Col(pos=2),
-                       'mas_ch1_high': tables.Int32Col(pos=3),
-                       'mas_ch2_low': tables.Int32Col(pos=4),
-                       'mas_ch2_high': tables.Int32Col(pos=5),
-                       'slv_ch1_low': tables.Int32Col(pos=6),
-                       'slv_ch1_high': tables.Int32Col(pos=7),
-                       'slv_ch2_low': tables.Int32Col(pos=8),
-                       'slv_ch2_high': tables.Int32Col(pos=9)}
+        description = {
+            'event_id': tables.UInt32Col(pos=0),
+            'timestamp': tables.Time32Col(pos=1),
+            'mas_ch1_low': tables.Int32Col(pos=2),
+            'mas_ch1_high': tables.Int32Col(pos=3),
+            'mas_ch2_low': tables.Int32Col(pos=4),
+            'mas_ch2_high': tables.Int32Col(pos=5),
+            'slv_ch1_low': tables.Int32Col(pos=6),
+            'slv_ch1_high': tables.Int32Col(pos=7),
+            'slv_ch2_low': tables.Int32Col(pos=8),
+            'slv_ch2_high': tables.Int32Col(pos=9),
+        }
         file = MagicMock()
         result = esd._create_singles_table(file, sentinel.group)
-        file.create_table.assert_called_once_with(sentinel.group, 'singles',
-                                                  description,
-                                                  createparents=True)
+        file.create_table.assert_called_once_with(sentinel.group, 'singles', description, createparents=True)
         self.assertEqual(result, file.create_table.return_value)
 
     def test__first_available_numbered_path(self):
@@ -107,16 +107,13 @@ class ESDTest(unittest.TestCase):
         """Check for Exception for unsupported data types"""
 
         self.assertRaises(ValueError, esd.load_data, None, None, None, 'bad')
-        self.assertRaises(ValueError, esd.download_data, None, None, 501,
-                          type='bad')
+        self.assertRaises(ValueError, esd.download_data, None, None, 501, type='bad')
 
     def test_start_end_values(self):
         """Check for RuntimeError for impossible end=value with start=None"""
 
-        self.assertRaises(RuntimeError, esd.download_data, None, None, 501,
-                          start=None, end='a_value')
-        self.assertRaises(RuntimeError, esd.download_coincidences, None,
-                          start=None, end="a_value")
+        self.assertRaises(RuntimeError, esd.download_data, None, None, 501, start=None, end='a_value')
+        self.assertRaises(RuntimeError, esd.download_coincidences, None, start=None, end='a_value')
 
     def test_load_data_output(self):
         """Load data tsv into hdf5 and verify the output"""
@@ -144,8 +141,7 @@ class ESDTest(unittest.TestCase):
         mock_open_file.assert_called_once_with('data1.h5', 'w')
         mock_download_data.assert_called_once_with(ANY, None, 501, None)
 
-    @unittest.skipUnless(api.API.check_connection(),
-                         "Internet connection required")
+    @unittest.skipUnless(api.API.check_connection(), 'Internet connection required')
     def test_download_data(self):
         """Download data and validate results"""
 
@@ -154,8 +150,7 @@ class ESDTest(unittest.TestCase):
         validate_results(self, test_data_path, output_path)
         os.remove(output_path)
 
-    @unittest.skipUnless(api.API.check_connection(),
-                         "Internet connection required")
+    @unittest.skipUnless(api.API.check_connection(), 'Internet connection required')
     @patch.object(esd.api, 'Network', side_effect=StaleNetwork)
     def test_download_coincidences(self, mock_esd_api_network):
         """Download coincidence data from esd and validate results"""

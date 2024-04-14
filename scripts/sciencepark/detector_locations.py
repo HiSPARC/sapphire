@@ -1,14 +1,10 @@
 """Show Science Park detector locations on OpenStreetMap"""
 
-import numpy as np
-
 import pylab as plt
 
 import sapphire.api
 import sapphire.clusters
 import sapphire.simulations
-
-from sapphire.simulations.ldf import KascadeLdf
 
 DETECTOR_COLORS = ['black', 'r', 'g', 'b']
 
@@ -24,7 +20,7 @@ def get_cluster(stations):
     return cluster
 
 
-def plot_detector_locations(cluster, background_path="backgrounds/ScienceParkMap_0.365.png"):
+def plot_detector_locations(cluster, background_path='backgrounds/ScienceParkMap_0.365.png'):
     plot_scintillators_in_cluster(cluster)
     draw_background_map(background_path)
 
@@ -34,11 +30,9 @@ def plot_scintillators_in_cluster(cluster):
     for station in cluster.stations:
         for i, detector in enumerate(station.detectors):
             detector_x, detector_y = detector.get_xy_coordinates()
-            plt.scatter(detector_x, detector_y, marker='h',
-                        c=DETECTOR_COLORS[i], edgecolor='none', s=25)
+            plt.scatter(detector_x, detector_y, marker='h', c=DETECTOR_COLORS[i], edgecolor='none', s=25)
         station_x, station_y, station_a = station.get_xyalpha_coordinates()
-        plt.scatter(station_x, station_y, marker='o', c='m', edgecolor='none',
-                    s=7)
+        plt.scatter(station_x, station_y, marker='o', c='m', edgecolor='none', s=7)
     plt.title('Science Park detector locations')
     plt.xlabel('Easting (meters)')
     plt.ylabel('Northing (meters)')
@@ -51,11 +45,10 @@ def draw_background_map(background_path):
     bg_scale = 0.365
     bg_width = background.shape[1] * bg_scale
     bg_height = background.shape[0] * bg_scale
-    plt.imshow(background, aspect='equal', alpha=0.5,
-               extent=[-bg_width, bg_width, -bg_height, bg_height])
+    plt.imshow(background, aspect='equal', alpha=0.5, extent=[-bg_width, bg_width, -bg_height, bg_height])
 
 
-if __name__=="__main__":
+if __name__ == '__main__':
     stations = sciencepark_stations()
     cluster = get_cluster(stations)
     plt.figure()

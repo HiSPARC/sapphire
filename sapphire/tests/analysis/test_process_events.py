@@ -74,12 +74,12 @@ class ProcessEventsTests(unittest.TestCase):
         self.assertEqual(self.proc.first_above_threshold(trace, 4), 2)
         self.assertEqual(self.proc.first_above_threshold(trace, 5), -999)
 
-#     @patch.object(process_events.FindMostProbableValueInSpectrum, 'find_mpv')
+    #     @patch.object(process_events.FindMostProbableValueInSpectrum, 'find_mpv')
     def test__process_pulseintegrals(self):
         self.proc.limit = 1
-#         mock_find_mpv.return_value = (-999, False)
+        #         mock_find_mpv.return_value = (-999, False)
         # Because of small data sample fit fails for detector 1
-        self.assertEqual(self.proc._process_pulseintegrals()[0][1], -999.)
+        self.assertEqual(self.proc._process_pulseintegrals()[0][1], -999.0)
         self.assertAlmostEqual(self.proc._process_pulseintegrals()[0][3], 3.98951741969)
         self.proc.limit = None
 
@@ -162,13 +162,28 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         # 2 detectors
         self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400], 900), [2, 2, -999])
         self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 400]), [300, 400], 400), [2, 2, -999])
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400], 550), [1, 2, -999])
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400], 550),
+            [1, 2, -999],
+        )
         # 4 detectors
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400, 500], 900), [2, 2, 2])
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 400]), [300, 400, 500], 400), [2, 2, -999])
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400, 500], 550), [1, 2, 3])
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400, 500], 900),
+            [2, 2, 2],
+        )
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 200, 400]), [300, 400, 500], 400),
+            [2, 2, -999],
+        )
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400, 500], 550),
+            [1, 2, 3],
+        )
         # No signal
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 250, 200, 2000]), [300, 400, 500], 250), [-999, -999, -999])
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 250, 200, 2000]), [300, 400, 500], 250),
+            [-999, -999, -999],
+        )
 
     def test__first_value_above_threshold(self):
         trace = [200, 200, 300, 200]
@@ -251,8 +266,7 @@ class ProcessEventsFromSourceTests(ProcessEventsTests):
         self.source_data = tables.open_file(self.source_path, 'r')
         self.dest_path = self.create_tempfile_path()
         self.dest_data = tables.open_file(self.dest_path, 'a')
-        self.proc = process_events.ProcessEventsFromSource(
-            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
+        self.proc = process_events.ProcessEventsFromSource(self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
 
     def tearDown(self):
         warnings.resetwarnings()
@@ -265,8 +279,7 @@ class ProcessEventsFromSourceTests(ProcessEventsTests):
         self.proc.process_and_store_results()
 
 
-class ProcessEventsFromSourceWithTriggerOffsetTests(ProcessEventsFromSourceTests,
-                                                    ProcessEventsWithTriggerOffsetTests):
+class ProcessEventsFromSourceWithTriggerOffsetTests(ProcessEventsFromSourceTests, ProcessEventsWithTriggerOffsetTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
         self.source_path = self.create_tempfile_from_testdata()
@@ -274,11 +287,17 @@ class ProcessEventsFromSourceWithTriggerOffsetTests(ProcessEventsFromSourceTests
         self.dest_path = self.create_tempfile_path()
         self.dest_data = tables.open_file(self.dest_path, 'a')
         self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
-            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
+            self.source_data,
+            self.dest_data,
+            DATA_GROUP,
+            DATA_GROUP,
+        )
 
 
-class ProcessEventsFromSourceWithTriggerOffsetStationTests(ProcessEventsFromSourceTests,
-                                                           ProcessEventsWithTriggerOffsetTests):
+class ProcessEventsFromSourceWithTriggerOffsetStationTests(
+    ProcessEventsFromSourceTests,
+    ProcessEventsWithTriggerOffsetTests,
+):
     def setUp(self):
         warnings.filterwarnings('ignore')
         self.source_path = self.create_tempfile_from_testdata()
@@ -286,14 +305,19 @@ class ProcessEventsFromSourceWithTriggerOffsetStationTests(ProcessEventsFromSour
         self.dest_path = self.create_tempfile_path()
         self.dest_data = tables.open_file(self.dest_path, 'a')
         self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
-            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP,
-            station=501)
+            self.source_data,
+            self.dest_data,
+            DATA_GROUP,
+            DATA_GROUP,
+            station=501,
+        )
 
     def test__reconstruct_time_from_traces_with_external(self):
         mock_trigger = Mock()
-        mock_trigger.return_value = ([(process_events.ADC_LOW_THRESHOLD,
-                                       process_events.ADC_HIGH_THRESHOLD)] * 4,
-                                     [0, 0, 0, 1])
+        mock_trigger.return_value = (
+            [(process_events.ADC_LOW_THRESHOLD, process_events.ADC_HIGH_THRESHOLD)] * 4,
+            [0, 0, 0, 1],
+        )
         self.proc.station.trigger = mock_trigger
 
         event = self.proc.source[10]
@@ -308,8 +332,7 @@ class ProcessSinglesTests(unittest.TestCase):
         warnings.filterwarnings('ignore')
         self.data_path = self.create_tempfile_from_testdata()
         self.data = tables.open_file(self.data_path, 'a')
-        self.proc = process_events.ProcessSingles(self.data, DATA_GROUP,
-                                                  progress=False)
+        self.proc = process_events.ProcessSingles(self.data, DATA_GROUP, progress=False)
 
     def tearDown(self):
         warnings.resetwarnings()
@@ -347,8 +370,7 @@ class ProcessSinglesFromSourceTests(ProcessSinglesTests):
         self.source_data = tables.open_file(self.source_path, 'r')
         self.dest_path = self.create_tempfile_path()
         self.dest_data = tables.open_file(self.dest_path, 'a')
-        self.proc = process_events.ProcessSinglesFromSource(
-            self.source_data, self.dest_data, DATA_GROUP, '/')
+        self.proc = process_events.ProcessSinglesFromSource(self.source_data, self.dest_data, DATA_GROUP, '/')
 
     def tearDown(self):
         warnings.resetwarnings()

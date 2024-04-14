@@ -38,10 +38,14 @@ class ProcessTimeDeltasTests(unittest.TestCase):
         self.td.pairs = {(sentinel.station1, sentinel.station2), (sentinel.station1, sentinel.station3)}
         self.td.get_detector_offsets()
 
-        self.assertEqual(self.td.detector_timing_offsets,
-                         {sentinel.station1: mock_offsets.detector_timing_offset,
-                          sentinel.station2: mock_offsets.detector_timing_offset,
-                          sentinel.station3: mock_offsets.detector_timing_offset})
+        self.assertEqual(
+            self.td.detector_timing_offsets,
+            {
+                sentinel.station1: mock_offsets.detector_timing_offset,
+                sentinel.station2: mock_offsets.detector_timing_offset,
+                sentinel.station3: mock_offsets.detector_timing_offset,
+            },
+        )
 
     def test_store_time_deltas(self):
         pair = (501, 502)

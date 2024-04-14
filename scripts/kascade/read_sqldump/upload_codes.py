@@ -29,8 +29,7 @@ eventtype_upload_codes = {
     },
     'CFG': {
         '_tablename': 'config',
-        '_blobs': ['CFG_MAS_VERSION', 'CFG_SLV_VERSION', 'CFG_PASSWORD',
-                   'CFG_BUFFER'],
+        '_blobs': ['CFG_MAS_VERSION', 'CFG_SLV_VERSION', 'CFG_PASSWORD', 'CFG_BUFFER'],
         '_has_ext_time': False,
         'CFG_GPS_LAT': 'gps_latitude',
         'CFG_GPS_LONG': 'gps_longitude',

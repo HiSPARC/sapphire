@@ -1,20 +1,21 @@
-""" Landau distribution function
+"""Landau distribution function
 
-    This module computes the Landau distribution, which governs the
-    fluctuations in energy loss of particles travelling through a
-    relatively thin layer of matter.
+This module computes the Landau distribution, which governs the
+fluctuations in energy loss of particles travelling through a
+relatively thin layer of matter.
 
-    Currently, this module only contains functions to calculate the exact
-    function using two integral representations of the defining complex
-    integral.  This should be extended by approximations when the need for
-    doing serious work arises.
+Currently, this module only contains functions to calculate the exact
+function using two integral representations of the defining complex
+integral.  This should be extended by approximations when the need for
+doing serious work arises.
 
-    References are made to Fokkema2012, DOI: 10.3990/1.9789036534383.
+References are made to Fokkema2012, DOI: 10.3990/1.9789036534383.
 
 """
+
 import warnings
 
-from numpy import Inf, arctan, convolve, cos, exp, interp, linspace, log, pi, sin, vectorize
+from numpy import arctan, convolve, cos, exp, inf, interp, linspace, log, pi, sin, vectorize
 from scipy import integrate, stats
 
 
@@ -26,19 +27,20 @@ def pdf(lf):
 
     """
     if lf < -10:
-        return 0.
+        return 0.0
     elif lf < 0:
         sf = exp(-lf - 1)
-        integrant = integrate.quad(pdf_kernel, 0, Inf, args=(sf,))[0]
+        integrant = integrate.quad(pdf_kernel, 0, inf, args=(sf,))[0]
         return 1 / pi * exp(-sf) * integrant
     else:
-        integrant = integrate.quad(pdf_kernel2, 0, Inf, args=(lf,))[0]
+        integrant = integrate.quad(pdf_kernel2, 0, inf, args=(lf,))[0]
         return 1 / pi * integrant
 
 
 def pdf_kernel(y, sf):
-    return (exp(sf / 2 * log(1 + y ** 2 / sf ** 2) - y * arctan(y / sf)) *
-            cos(.5 * y * log(1 + y ** 2 / sf ** 2) - y + sf * arctan(y / sf)))
+    return exp(sf / 2 * log(1 + y**2 / sf**2) - y * arctan(y / sf)) * cos(
+        0.5 * y * log(1 + y**2 / sf**2) - y + sf * arctan(y / sf),
+    )
 
 
 def pdf_kernel2(u, lf):
@@ -47,7 +49,7 @@ def pdf_kernel2(u, lf):
     Fokkema2012, eq 2.13.
 
     """
-    return exp(-lf * u) * u ** -u * sin(pi * u)
+    return exp(-lf * u) * u**-u * sin(pi * u)
 
 
 class Scintillator:
@@ -107,8 +109,7 @@ class Scintillator:
             self.pdf_values = pdf(self.pdf_domain)
             return self.pdf(lf)
 
-    def conv_landau_for_x(self, x, count_scale=1, mev_scale=None,
-                          gauss_scale=None):
+    def conv_landau_for_x(self, x, count_scale=1, mev_scale=None, gauss_scale=None):
         """Landau convolved with Gaussian
 
         Fokkema2012, eq 5.4.
@@ -135,8 +136,7 @@ class Scintillator:
         y = interp(x, x_calc, y_calc)
         return y
 
-    def conv_landau(self, x, count_scale=1, mev_scale=None,
-                    gauss_scale=None):
+    def conv_landau(self, x, count_scale=1, mev_scale=None, gauss_scale=None):
         """Bare-bones convoluted landau function
 
         This thing is fragile.  Use with great care!  First and foremost,
@@ -163,21 +163,17 @@ class Scintillator:
         self.mev_scale = mev_scale
         self.gauss_scale = gauss_scale
 
-        return self._residuals(xdata, ydata, mev_scale, count_scale,
-                               gauss_scale, a, b)
+        return self._residuals(xdata, ydata, mev_scale, count_scale, gauss_scale, a, b)
 
     def constrained_residuals(self, p, xdata, ydata, a, b):
         count_scale = p
         mev_scale = self.mev_scale
         gauss_scale = self.gauss_scale
 
-        return self._residuals(xdata, ydata, mev_scale, count_scale,
-                               gauss_scale, a, b)
+        return self._residuals(xdata, ydata, mev_scale, count_scale, gauss_scale, a, b)
 
-    def _residuals(self, xdata, ydata, mev_scale, count_scale,
-                   gauss_scale, a, b):
-        yfit = self.conv_landau_for_x(xdata, count_scale, mev_scale,
-                                      gauss_scale)
+    def _residuals(self, xdata, ydata, mev_scale, count_scale, gauss_scale, a, b):
+        yfit = self.conv_landau_for_x(xdata, count_scale, mev_scale, gauss_scale)
 
         yfit = yfit.compress((a <= xdata) & (xdata < b))
         ydata = ydata.compress((a <= xdata) & (xdata < b))
@@ -194,7 +190,7 @@ def discrete_convolution(f, g, t):
 
     """
     if abs(min(t) + max(t)) > 1e-6:
-        raise RuntimeError("Range needs to be symmetrical around zero.")
+        raise RuntimeError('Range needs to be symmetrical around zero.')
 
     dt = t[1] - t[0]
     return dt * convolve(f(t), g(t), mode='same')

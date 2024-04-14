@@ -6,6 +6,7 @@ Trainwrecks invite typos and thus many are easily confused about
 UTC/GPS/local time.  No more!
 
 """
+
 import calendar
 import datetime
 import time
@@ -38,7 +39,7 @@ class GPSTime:
             timetuple = datetime_.utctimetuple()
             self._gpstimestamp = calendar.timegm(timetuple)
         else:
-            raise TypeError("Incorrect arguments")
+            raise TypeError('Incorrect arguments')
 
     def gpstimestamp(self):
         """Return the GPS date/time as a timestamp.
@@ -83,4 +84,4 @@ class GPSTime:
         return self.description()
 
     def __repr__(self):
-        return "%s(%d)" % (self.__class__.__name__, self._gpstimestamp)
+        return '%s(%d)' % (self.__class__.__name__, self._gpstimestamp)

@@ -1,26 +1,27 @@
-""" Determine time differences between coincident events
+"""Determine time differences between coincident events
 
-    Determine time delta between coincidence events from station pairs.
+Determine time delta between coincidence events from station pairs.
 
-    Example usage::
+Example usage::
 
-        import datetime
+    import datetime
 
-        import tables
+    import tables
 
-        from sapphire import download_coincidences
-        from sapphire import ProcessTimeDeltas
+    from sapphire import download_coincidences
+    from sapphire import ProcessTimeDeltas
 
-        START = datetime.datetime(2015, 2, 1)
-        END = datetime.datetime(2015, 2, 5)
+    START = datetime.datetime(2015, 2, 1)
+    END = datetime.datetime(2015, 2, 5)
 
-        if __name__ == '__main__':
-            with tables.open_file('data.h5', 'w') as data:
-                download_coincidences(data, start=START, end=END)
-                td = ProcessTimeDeltas(data)
-                td.determine_and_store_time_deltas()
+    if __name__ == '__main__':
+        with tables.open_file('data.h5', 'w') as data:
+            download_coincidences(data, start=START, end=END)
+            td = ProcessTimeDeltas(data)
+            td.determine_and_store_time_deltas()
 
 """
+
 import posixpath
 import re
 
@@ -38,7 +39,6 @@ from .event_utils import station_arrival_time
 
 
 class ProcessTimeDeltas:
-
     """Process HiSPARC event coincidences to obtain time deltas.
 
     Use this to determine arrival time differences between station pairs which
@@ -46,8 +46,7 @@ class ProcessTimeDeltas:
 
     """
 
-    def __init__(self, data, coincidence_group='/coincidences', progress=True,
-                 destination='time_deltas'):
+    def __init__(self, data, coincidence_group='/coincidences', progress=True, destination='time_deltas'):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -86,13 +85,12 @@ class ProcessTimeDeltas:
         """
         s_index = self.cq.s_index
         re_number = re.compile('[0-9]+$')
-        s_numbers = [int(re_number.search(s_path.decode('utf-8')).group())
-                     for s_path in s_index]
+        s_numbers = [int(re_number.search(s_path.decode('utf-8')).group()) for s_path in s_index]
 
         c_index = self.cq.c_index
-        self.pairs = {(s_numbers[s1], s_numbers[s2])
-                      for c_idx in c_index
-                      for s1, s2 in combinations(sorted(c_idx[:, 0]), 2)}
+        self.pairs = {
+            (s_numbers[s1], s_numbers[s2]) for c_idx in c_index for s1, s2 in combinations(sorted(c_idx[:, 0]), 2)
+        }
 
     def get_detector_offsets(self):
         """Retrieve the API detector_timing_offset method for all pairs
@@ -102,8 +100,7 @@ class ProcessTimeDeltas:
 
         """
         station_numbers = {station for pair in self.pairs for station in pair}
-        self.detector_timing_offsets = {sn: Station(sn).detector_timing_offset
-                                        for sn in station_numbers}
+        self.detector_timing_offsets = {sn: Station(sn).detector_timing_offset for sn in station_numbers}
 
     def determine_time_deltas_for_pair(self, ref_station, station):
         """Determine the arrival time differences between two stations.
@@ -118,8 +115,7 @@ class ProcessTimeDeltas:
         previous_ets = 0
 
         coincidences = self.cq.all([ref_station, station], iterator=True)
-        coin_events = self.cq.events_from_stations(coincidences,
-                                                   [ref_station, station])
+        coin_events = self.cq.events_from_stations(coincidences, [ref_station, station])
 
         ref_offsets = self.detector_timing_offsets[ref_station]
         offsets = self.detector_timing_offsets[station]
@@ -146,10 +142,8 @@ class ProcessTimeDeltas:
             event = events[id][1]
             detector_offsets = offsets(event['timestamp'])
 
-            ref_t = station_arrival_time(ref_event, ref_ets, [0, 1, 2, 3],
-                                         ref_detector_offsets)
-            t = station_arrival_time(event, ref_ets, [0, 1, 2, 3],
-                                     detector_offsets)
+            ref_t = station_arrival_time(ref_event, ref_ets, [0, 1, 2, 3], ref_detector_offsets)
+            t = station_arrival_time(event, ref_ets, [0, 1, 2, 3], detector_offsets)
             if isnan(t) or isnan(ref_t):
                 continue
             dt.append(t - ref_t)
@@ -165,20 +159,28 @@ class ProcessTimeDeltas:
             dt_table.remove()
         except tables.NoSuchNodeError:
             pass
-        delta_data = [(ets, int(ets) / 1_000_000_000, int(ets) % 1_000_000_000,
-                       time_delta)
-                      for ets, time_delta in zip(ext_timestamps, time_deltas)]
-        table = self.data.create_table(table_path, 'time_deltas', TimeDelta,
-                                       createparents=True,
-                                       expectedrows=len(delta_data))
+        delta_data = [
+            (ets, int(ets) / 1_000_000_000, int(ets) % 1_000_000_000, time_delta)
+            for ets, time_delta in zip(ext_timestamps, time_deltas)
+        ]
+        table = self.data.create_table(
+            table_path,
+            'time_deltas',
+            TimeDelta,
+            createparents=True,
+            expectedrows=len(delta_data),
+        )
         table.append(delta_data)
         table.flush()
 
     def __repr__(self):
         if not self.data.isopen:
-            return "<finished %s>" % self.__class__.__name__
+            return '<finished %s>' % self.__class__.__name__
         coincidence_group = self.cq.coincidences._v_parent._v_pathname
-        return ("<%s, data: %r, coincidence_group: %r, progress: %r, "
-                "destination: %r>" %
-                (self.__class__.__name__, self.data.filename,
-                 coincidence_group, self.progress, self.destination))
+        return '<%s, data: %r, coincidence_group: %r, progress: %r, destination: %r>' % (
+            self.__class__.__name__,
+            self.data.filename,
+            coincidence_group,
+            self.progress,
+            self.destination,
+        )

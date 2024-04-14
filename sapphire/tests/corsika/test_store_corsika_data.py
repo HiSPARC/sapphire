@@ -14,7 +14,6 @@ STORE_CMD_THIN = STORE_CMD + ' --thin'
 
 
 class StoreCorsikaDataTests(unittest.TestCase):
-
     """Store CORSIKA test using the function directly"""
 
     def setUp(self):
@@ -28,12 +27,16 @@ class StoreCorsikaDataTests(unittest.TestCase):
 
     def test_store_data(self):
         # First with overwrite false
-        self.assertRaises(Exception, store_and_sort_corsika_data,
-                          self.source_path, self.destination_path,
-                          progress=True, thin=self.thin)
+        self.assertRaises(
+            Exception,
+            store_and_sort_corsika_data,
+            self.source_path,
+            self.destination_path,
+            progress=True,
+            thin=self.thin,
+        )
         # Now with overwrite true
-        store_and_sort_corsika_data(self.source_path, self.destination_path,
-                                    overwrite=True, thin=self.thin)
+        store_and_sort_corsika_data(self.source_path, self.destination_path, overwrite=True, thin=self.thin)
         validate_results(self, self.expected_path, self.destination_path)
 
     def create_tempfile_path(self):
@@ -51,7 +54,6 @@ class StoreCorsikaDataTests(unittest.TestCase):
 
 
 class StoreThinCorsikaDataTests(StoreCorsikaDataTests):
-
     """Store thinned CORSIKA test using the function directly"""
 
     def setUp(self):

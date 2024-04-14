@@ -1,17 +1,17 @@
-""" Store CORSIKA simulation data in HDF5 file
+"""Store CORSIKA simulation data in HDF5 file
 
-    This module reads the CORSIKA binary ground particles file and stores
-    each particle individually in a HDF5 file, using PyTables.  This file
-    can then be used as input for the detector simulation.
+This module reads the CORSIKA binary ground particles file and stores
+each particle individually in a HDF5 file, using PyTables.  This file
+can then be used as input for the detector simulation.
 
-    The syntax and options for calling this script can be seen with::
+The syntax and options for calling this script can be seen with::
 
-        $ store_corsika_data --help
+    $ store_corsika_data --help
 
-    For example to convert a CORSIKA file in the current directory called
-    DAT000000 to a HDF5 called corsika.h5 with a progress bar run::
+For example to convert a CORSIKA file in the current directory called
+DAT000000 to a HDF5 called corsika.h5 with a progress bar run::
 
-        $ store_corsika_data --progress DAT000000 corsika.h5
+    $ store_corsika_data --progress DAT000000 corsika.h5
 
 """
 
@@ -44,7 +44,6 @@ class GroundParticles(tables.IsDescription):
 
 
 class ThinnedGroundParticles(GroundParticles):
-
     """Store information about thinned shower particles
 
     .. attribute:: weight
@@ -60,8 +59,7 @@ class ThinnedGroundParticles(GroundParticles):
 def save_particle(row, p):
     """Write the information of a particle into a row"""
 
-    (p_x, p_y, p_z, x, y, t, id, r, hadron_generation, observation_level,
-     phi) = p
+    (p_x, p_y, p_z, x, y, t, id, r, hadron_generation, observation_level, phi) = p
 
     row['particle_id'] = id
     row['r'] = r
@@ -85,14 +83,13 @@ def save_thinned_particle(row, p):
     save_particle(row, p[:-1])
 
 
-def store_and_sort_corsika_data(source, destination, overwrite=False,
-                                progress=False, thin=False):
+def store_and_sort_corsika_data(source, destination, overwrite=False, progress=False, thin=False):
     """First convert the data to HDF5 and create a sorted version"""
 
     if os.path.exists(destination):
         if not overwrite:
             if progress:
-                raise Exception("Destination already exists, doing nothing")
+                raise Exception('Destination already exists, doing nothing')
             return
         else:
             os.remove(destination)
@@ -106,17 +103,15 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
     unsorted = create_tempfile_path(temp_dir)
     temp_path = create_tempfile_path(temp_dir)
 
-    with corsika_reader(source) as corsika_data, \
-            tables.open_file(unsorted, 'a') as hdf_temp:
-        store_corsika_data(corsika_data, hdf_temp, progress=progress,
-                           thin=thin)
+    with corsika_reader(source) as corsika_data, tables.open_file(unsorted, 'a') as hdf_temp:
+        store_corsika_data(corsika_data, hdf_temp, progress=progress, thin=thin)
 
-    with tables.open_file(unsorted, 'r') as hdf_unsorted, \
-            tables.open_file(destination, 'w') as hdf_data, \
-            tables.open_file(temp_path, 'w') as hdf_temp:
-
-        with TableMergeSort('x', hdf_unsorted, hdf_data, hdf_temp,
-                            progress=progress) as mergesort:
+    with (
+        tables.open_file(unsorted, 'r') as hdf_unsorted,
+        tables.open_file(destination, 'w') as hdf_data,
+        tables.open_file(temp_path, 'w') as hdf_temp,
+    ):
+        with TableMergeSort('x', hdf_unsorted, hdf_data, hdf_temp, progress=progress) as mergesort:
             mergesort.sort()
 
             event_header = hdf_unsorted.get_node_attr('/', 'event_header')
@@ -135,8 +130,7 @@ def store_and_sort_corsika_data(source, destination, overwrite=False,
         create_index(hdf_data, progress=progress)
 
 
-def store_corsika_data(source, destination, table_name='groundparticles',
-                       progress=False, thin=False):
+def store_corsika_data(source, destination, table_name='groundparticles', progress=False, thin=False):
     """Store particles from a CORSIKA simulation in a HDF5 file
 
     :param source: CorsikaFile instance of the source DAT file.
@@ -147,7 +141,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
 
     """
     if progress:
-        print("Converting CORSIKA data (%s) to HDF5 format" % source._filename)
+        print('Converting CORSIKA data (%s) to HDF5 format' % source._filename)
     source.check()
 
     if not thin:
@@ -161,9 +155,13 @@ def store_corsika_data(source, destination, table_name='groundparticles',
         n_particles = event.get_end().n_particles_levels
         progress = progress and n_particles > 1
         try:
-            table = destination.create_table('/', table_name, description,
-                                             'All groundparticles',
-                                             expectedrows=n_particles)
+            table = destination.create_table(
+                '/',
+                table_name,
+                description,
+                'All groundparticles',
+                expectedrows=n_particles,
+            )
         except tables.NodeError:
             if progress:
                 print('%s already exists, doing nothing' % table_name)
@@ -171,8 +169,7 @@ def store_corsika_data(source, destination, table_name='groundparticles',
             else:
                 raise
         if progress:
-            pbar = ProgressBar(max_value=n_particles - 1,
-                               widgets=[Percentage(), Bar(), ETA()]).start()
+            pbar = ProgressBar(max_value=n_particles - 1, widgets=[Percentage(), Bar(), ETA()]).start()
 
         particle_row = table.row
         for row, particle in enumerate(event.get_particles()):
@@ -214,8 +211,7 @@ def create_index(hdf_data, table_name='groundparticles', progress=False):
         table.reindex_dirty()
 
 
-def copy_and_sort_node(hdf_temp, hdf_data, table_name='groundparticles',
-                       progress=False):
+def copy_and_sort_node(hdf_temp, hdf_data, table_name='groundparticles', progress=False):
     """Sort the data in the tables by the x column
 
     This speeds up queries to select data based on the x column.
@@ -239,19 +235,14 @@ def create_tempfile_path(temp_dir=None):
 
 def main():
     parser = argparse.ArgumentParser(description='Store CORSIKA data as HDF5.')
-    parser.add_argument('source', help="path of the CORSIKA source file")
-    parser.add_argument('destination',
-                        help="path of the HDF5 destination file")
-    parser.add_argument('--overwrite', action='store_true',
-                        help='overwrite destination file it is already exists')
-    parser.add_argument('--progress', action='store_true',
-                        help='show progressbar during conversion')
-    parser.add_argument('--thin', action='store_true',
-                        help='indicate if thinning was active in CORSIKA')
+    parser.add_argument('source', help='path of the CORSIKA source file')
+    parser.add_argument('destination', help='path of the HDF5 destination file')
+    parser.add_argument('--overwrite', action='store_true', help='overwrite destination file it is already exists')
+    parser.add_argument('--progress', action='store_true', help='show progressbar during conversion')
+    parser.add_argument('--thin', action='store_true', help='indicate if thinning was active in CORSIKA')
     args = parser.parse_args()
 
-    store_and_sort_corsika_data(args.source, args.destination, args.overwrite,
-                                args.progress, args.thin)
+    store_and_sort_corsika_data(args.source, args.destination, args.overwrite, args.progress, args.thin)
 
 
 if __name__ == '__main__':

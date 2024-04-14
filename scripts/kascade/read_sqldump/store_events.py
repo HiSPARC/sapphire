@@ -1,11 +1,6 @@
 import base64
 import calendar
-import datetime
 import logging
-import os.path
-import sys
-
-import tables
 
 import storage
 
@@ -30,14 +25,11 @@ def store_event(datafile, cluster, station_id, event):
     try:
         upload_codes = eventtype_upload_codes[eventtype]
     except KeyError:
-        logger.error('Unknown event type: %s, discarding event' %
-                     eventtype)
+        logger.error('Unknown event type: %s, discarding event' % eventtype)
         return
 
-    parentnode = storage.get_or_create_station_group(datafile, cluster,
-                                                     station_id)
-    table = storage.get_or_create_node(datafile, parentnode,
-                                       upload_codes['_tablename'])
+    parentnode = storage.get_or_create_station_group(datafile, cluster, station_id)
+    table = storage.get_or_create_node(datafile, parentnode, upload_codes['_tablename'])
     blobs = storage.get_or_create_node(datafile, parentnode, 'blobs')
 
     row = table.row
@@ -85,15 +77,11 @@ def store_event(datafile, cluster, station_id, event):
             if key in data:
                 data[key][index] = value
             else:
-                logger.warning('Datatype not known on server side: %s '
-                               '(%s)' % (key, eventtype))
+                logger.warning('Datatype not known on server side: %s (%s)' % (key, eventtype))
+        elif uploadcode in data:
+            data[uploadcode] = value
         else:
-            # uploadcode: EVENTRATE, RED, etc.
-            if uploadcode in data:
-                data[uploadcode] = value
-            else:
-                logger.warning('Datatype not known on server side: %s '
-                               '(%s)' % (uploadcode, eventtype))
+            logger.warning('Datatype not known on server side: %s (%s)' % (uploadcode, eventtype))
 
     # write data values to row
     for key, value in upload_codes.items():

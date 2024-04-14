@@ -9,18 +9,24 @@ from sapphire.utils import pbar
 
 
 class TableMergeSort:
-
-    """ Sort a PyTables HDF5 table either in memory or on-disk """
+    """Sort a PyTables HDF5 table either in memory or on-disk"""
 
     _iterators = []
     _BUFSIZE = 100000
     hdf5_temp = None
 
-    def __init__(self, key, inputfile, outputfile=None, tempfile=None,
-                 tablename='groundparticles', destination=None,
-                 overwrite=False, progress=True):
-
-        """ Initialize the class
+    def __init__(
+        self,
+        key,
+        inputfile,
+        outputfile=None,
+        tempfile=None,
+        tablename='groundparticles',
+        destination=None,
+        overwrite=False,
+        progress=True,
+    ):
+        """Initialize the class
 
         :param key: the name of the column which is to be sorted.
         :param inputfile: PyTables HDF5 input file.
@@ -48,8 +54,7 @@ class TableMergeSort:
                 self.hdf5_out = inputfile
                 self.destination = destination
             else:
-                raise RuntimeError("Must specify either an outputfile or a "
-                                   "destination table")
+                raise RuntimeError('Must specify either an outputfile or a destination table')
         else:
             self.hdf5_out = outputfile
             if destination is not None:
@@ -62,12 +67,9 @@ class TableMergeSort:
             if self.overwrite:
                 self.hd5_out.remove_nove('/', self.destination, recursive=True)
             else:
-                raise RuntimeError("Destination table exists and overwrite "
-                                   "is False")
+                raise RuntimeError('Destination table exists and overwrite is False')
         except tables.NoSuchNodeError:
-            self.outtable = self.hdf5_out.create_table('/', self.destination,
-                                                       self.description,
-                                                       expectedrows=self.nrows)
+            self.outtable = self.hdf5_out.create_table('/', self.destination, self.description, expectedrows=self.nrows)
 
         self._calc_nrows_in_chunk()
 
@@ -79,10 +81,9 @@ class TableMergeSort:
                 self.hdf5_temp = tempfile
             if self.progress:
                 parts = int(len(self.table) / self.nrows_in_chunk) + 1
-                print("On disk mergesort in %d parts." % parts)
-        else:
-            if self.progress:
-                print("Table can be sorted in memory.")
+                print('On disk mergesort in %d parts.' % parts)
+        elif self.progress:
+            print('Table can be sorted in memory.')
 
     def __enter__(self):
         return self
@@ -104,18 +105,15 @@ class TableMergeSort:
         parts = int(nrows / chunk) + 1
         if parts == 1:
             if self.progress:
-                print("Sorting table in memory and writing to disk.")
+                print('Sorting table in memory and writing to disk.')
             self._sort_chunk(self.outtable, 0, nrows)
         else:
             if self.progress:
-                print("Sorting in %d chunks of %d rows:" % (parts, chunk))
+                print('Sorting in %d chunks of %d rows:' % (parts, chunk))
 
-            for idx, start in pbar(enumerate(range(0, nrows, chunk)),
-                                   length=parts, show=self.progress):
+            for idx, start in pbar(enumerate(range(0, nrows, chunk)), length=parts, show=self.progress):
                 table_name = 'temp_table_%d' % idx
-                table = self.hdf5_temp.create_table('/', table_name,
-                                                    self.description,
-                                                    expectedrows=chunk)
+                table = self.hdf5_temp.create_table('/', table_name, self.description, expectedrows=chunk)
                 iterator = self._sort_chunk(table, start, start + chunk)
                 self._iterators.append(iterator)
 
@@ -123,10 +121,9 @@ class TableMergeSort:
             idx = 0
 
             if self.progress:
-                print("Merging:")
+                print('Merging:')
 
-            for keyedrow in pbar(merge(*self._iterators), length=nrows,
-                                 show=self.progress):
+            for keyedrow in pbar(merge(*self._iterators), length=nrows, show=self.progress):
                 x, row = keyedrow
 
                 if idx == self._BUFSIZE:

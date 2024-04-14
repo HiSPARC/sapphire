@@ -1,21 +1,22 @@
-""" Access the Nikhef Stoomboot cluster.
+"""Access the Nikhef Stoomboot cluster.
 
-    .. note::
-        This module is only for use at Nikhef. The Stoomboot cluster is only
-        accessible for Nikhef users.
+.. note::
+    This module is only for use at Nikhef. The Stoomboot cluster is only
+    accessible for Nikhef users.
 
-    Easy to use functions to make use of the Nikhef Stoomboot facilities.
-    This checks the available slots on the requested queue, creates the
-    scripts to submit, submits the jobs, and cleans up afterwards.
+Easy to use functions to make use of the Nikhef Stoomboot facilities.
+This checks the available slots on the requested queue, creates the
+scripts to submit, submits the jobs, and cleans up afterwards.
 
-    Example usage::
+Example usage::
 
-        >>> from sapphire import qsub
-        >>> qsub.check_queue('long')
-        340
-        >>> qsub.submit_job('touch /data/hisparc/test', 'job_1', 'express')
+    >>> from sapphire import qsub
+    >>> qsub.check_queue('long')
+    340
+    >>> qsub.submit_job('touch /data/hisparc/test', 'job_1', 'express')
 
 """
+
 import os
 import subprocess
 

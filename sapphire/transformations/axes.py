@@ -1,4 +1,4 @@
-""" Perform various axes related transformations
+"""Perform various axes related transformations
 
 - Transformation between Cartesian, polar, cylindrical, spherical and compass
   coordinate systems.
@@ -22,6 +22,7 @@ Compass coordinates:
 - z: height above x,y-plane.
 
 """
+
 from numpy import arccos, arctan2, array, cos, degrees, radians, sin, sqrt
 
 

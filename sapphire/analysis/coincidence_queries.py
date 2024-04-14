@@ -8,7 +8,6 @@ from .. import api
 
 
 class CoincidenceQuery:
-
     """Perform queries on an ESD file where coincidences have been analysed.
 
     Functions in this class build and perform queries to easily filter
@@ -47,8 +46,7 @@ class CoincidenceQuery:
             self.data = tables.open_file(data, 'r')
         else:
             self.data = data
-        self.coincidences = self.data.get_node(coincidence_group,
-                                               'coincidences')
+        self.coincidences = self.data.get_node(coincidence_group, 'coincidences')
         self.c_index = self.data.get_node(coincidence_group, 'c_index')
         self.s_index = self.data.get_node(coincidence_group, 's_index')
         self.s_nodes = []
@@ -58,12 +56,10 @@ class CoincidenceQuery:
             except tables.NoSuchNodeError:
                 self.s_nodes.append(None)
         re_number = re.compile('[0-9]+$')
-        self.s_numbers = [int(re_number.search(s_path.decode('utf-8')).group())
-                          for s_path in self.s_index]
+        self.s_numbers = [int(re_number.search(s_path.decode('utf-8')).group()) for s_path in self.s_index]
 
         try:
-            self.reconstructions = self.data.get_node(coincidence_group,
-                                                      'reconstructions')
+            self.reconstructions = self.data.get_node(coincidence_group, 'reconstructions')
             self.reconstructed = True
         except tables.NoSuchNodeError:
             self.reconstructed = False
@@ -137,8 +133,7 @@ class CoincidenceQuery:
         if len(s_columns) < n:
             # No combinations possible because there are to few stations
             return []
-        s_combinations = ['(%s)' % (' & '.join(combo))
-                          for combo in itertools.combinations(s_columns, n)]
+        s_combinations = ['(%s)' % (' & '.join(combo)) for combo in itertools.combinations(s_columns, n)]
         query = '(%s)' % ' | '.join(s_combinations)
         query = self._add_timestamp_filter(query, start, stop)
         filtered_coincidences = self.perform_query(query, iterator)
@@ -222,8 +217,7 @@ class CoincidenceQuery:
             station_number = self.s_numbers[s_idx]
             s_node = self.s_nodes[s_idx]
             if s_node is None:
-                warnings.warn('Missing station group for station id %d. '
-                              'Events from it are excluded.' % s_idx)
+                warnings.warn('Missing station group for station id %d. Events from it are excluded.' % s_idx)
                 continue
             events.append((station_number, s_node.events[e_idx]))
         return events
@@ -242,8 +236,7 @@ class CoincidenceQuery:
             station_number = self.s_numbers[s_idx]
             s_node = self.s_nodes[s_idx]
             if s_node is None:
-                warnings.warn(f'Missing station group for station id {s_idx}.'
-                              'Reconstructions from it are excluded.')
+                warnings.warn(f'Missing station group for station id {s_idx}.' 'Reconstructions from it are excluded.')
                 continue
             rec_table = s_node.reconstructions
             reconstructions.append((station_number, rec_table[e_idx]))
@@ -260,9 +253,11 @@ class CoincidenceQuery:
             reconstruction = self.reconstructions[coincidence['id']]
             return reconstruction
         else:
-            raise Exception('Coincidences are not (properly) reconstructed.'
-                            'Perform reconstructions and reinitialize this '
-                            'class.')
+            raise Exception(
+                'Coincidences are not (properly) reconstructed.'
+                'Perform reconstructions and reinitialize this '
+                'class.',
+            )
 
     def all_events(self, coincidences, n=0):
         """Get all events for the given coincidences.
@@ -272,8 +267,7 @@ class CoincidenceQuery:
         :return: list of events for each coincidence.
 
         """
-        coincidence_events = (self._get_events(coincidence)
-                              for coincidence in coincidences)
+        coincidence_events = (self._get_events(coincidence) for coincidence in coincidences)
         return self.minimum_events_for_coincidence(coincidence_events, n)
 
     def all_reconstructions(self, coincidences, n=0):
@@ -284,8 +278,7 @@ class CoincidenceQuery:
         :return: list of reconstructed events for each coincidence.
 
         """
-        coincidence_recs = (self._get_reconstructions(coincidence)
-                            for coincidence in coincidences)
+        coincidence_recs = (self._get_reconstructions(coincidence) for coincidence in coincidences)
         return self.minimum_events_for_coincidence(coincidence_recs, n)
 
     def minimum_events_for_coincidence(self, coincidences_events, n=2):
@@ -295,9 +288,7 @@ class CoincidenceQuery:
         :param n: minimum number of events per coincidence.
 
         """
-        filtered_coincidences = (coincidence
-                                 for coincidence in coincidences_events
-                                 if len(coincidence) >= n)
+        filtered_coincidences = (coincidence for coincidence in coincidences_events if len(coincidence) >= n)
         return filtered_coincidences
 
     def events_from_stations(self, coincidences, stations, n=2):
@@ -308,10 +299,8 @@ class CoincidenceQuery:
         :return: list of filtered events for each coincidence.
 
         """
-        events_iterator = (self._get_events(coincidence)
-                           for coincidence in coincidences)
-        coincidences_events = (self._events_from_stations(events, stations)
-                               for events in events_iterator)
+        events_iterator = (self._get_events(coincidence) for coincidence in coincidences)
+        coincidences_events = (self._events_from_stations(events, stations) for events in events_iterator)
         return self.minimum_events_for_coincidence(coincidences_events, n)
 
     def reconstructions_from_stations(self, coincidences, stations, n=2):
@@ -322,10 +311,8 @@ class CoincidenceQuery:
         :return: list of filtered reconstructed events for each coincidence.
 
         """
-        reconstructions_iterator = (self._get_reconstructions(coincidence)
-                                    for coincidence in coincidences)
-        coincidences_recs = (self._events_from_stations(recs, stations)
-                             for recs in reconstructions_iterator)
+        reconstructions_iterator = (self._get_reconstructions(coincidence) for coincidence in coincidences)
+        coincidences_recs = (self._events_from_stations(recs, stations) for recs in reconstructions_iterator)
         return self.minimum_events_for_coincidence(coincidences_recs, n)
 
     def _events_from_stations(self, events, stations):
@@ -370,10 +357,6 @@ class CoincidenceQuery:
 
     def __repr__(self):
         try:
-            return "{}({!r}, {!r})".format(
-                self.__class__.__name__,
-                self.data.filename,
-                self.coincidences._v_parent._v_pathname
-            )
+            return f'{self.__class__.__name__}({self.data.filename!r}, {self.coincidences._v_parent._v_pathname!r})'
         except AttributeError:
-            return f"<finished {self.__class__.__name__}>"
+            return f'<finished {self.__class__.__name__}>'

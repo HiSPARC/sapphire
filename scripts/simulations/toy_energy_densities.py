@@ -18,7 +18,7 @@ class ToyMonteCarlo:
         densities = []
         weights = []
         for E in np.linspace(1e13, 1e17, 10000):
-            relative_flux = E ** -2.7
+            relative_flux = E**-2.7
             Ne = 10 ** (np.log10(E) - 15 + 4.8)
             self.ldf = KascadeLdf(Ne)
             min_dens = self.calculate_minimum_density_for_station_at_R(R)
@@ -28,12 +28,11 @@ class ToyMonteCarlo:
         weights = np.array(weights)
         densities = np.array(densities).T
 
-        weighted_densities = (np.sum(weights * densities, axis=1) /
-                              np.sum(weights))
+        weighted_densities = np.sum(weights * densities, axis=1) / np.sum(weights)
         plt.plot(R, weighted_densities)
         plt.yscale('log')
-        plt.ylabel("Min. density [m^{-2}]")
-        plt.xlabel("Core distance [m]")
+        plt.ylabel('Min. density [m^{-2}]')
+        plt.xlabel('Core distance [m]')
         plt.axvline(5.77)
         plt.show()
 
@@ -44,8 +43,7 @@ class ToyMonteCarlo:
     def calculate_densities_for_station_at_R(self, R):
         densities = []
         for detector in self.station.detectors:
-            densities.append(self.calculate_densities_for_detector_at_R(
-                                detector, R))
+            densities.append(self.calculate_densities_for_detector_at_R(detector, R))
         return np.array(densities)
 
     def calculate_densities_for_detector_at_R(self, detector, R):

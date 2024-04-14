@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from itertools import repeat
 from unittest.mock import MagicMock, patch, sentinel
 
 import tables
@@ -11,14 +12,18 @@ TEST_DATA_FILE = '../simulations/test_data/groundparticles_sim.h5'
 
 
 class ReconstructESDEventsTest(unittest.TestCase):
-
     def setUp(self):
         self.data = MagicMock()
         self.station = MagicMock(spec=reconstructions.Station)
         self.rec = reconstructions.ReconstructESDEvents(
-            self.data, sentinel.station_group, self.station,
-            overwrite=sentinel.overwrite, progress=sentinel.progress,
-            verbose=False, destination=sentinel.destination)
+            self.data,
+            sentinel.station_group,
+            self.station,
+            overwrite=sentinel.overwrite,
+            progress=sentinel.progress,
+            verbose=False,
+            destination=sentinel.destination,
+        )
 
     def test_init(self):
         rec = self.rec
@@ -32,7 +37,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.assertEqual(rec.progress, sentinel.progress)
         self.assertFalse(rec.verbose)
         self.assertEqual(rec.destination, sentinel.destination)
-        self.assertEqual(rec.offsets, [0.] * 4)
+        self.assertEqual(rec.offsets, [0.0] * 4)
 
         self.assertEqual(rec.station, self.station)
 
@@ -50,35 +55,51 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.rec.direction.reconstruct_events.return_value = (sentinel.theta, sentinel.phi, sentinel.ids)
         self.rec.reconstruct_directions()
         self.rec.direction.reconstruct_events.assert_called_once_with(
-            self.rec.events, None, self.rec.offsets, self.rec.progress, [])
+            self.rec.events,
+            None,
+            self.rec.offsets,
+            self.rec.progress,
+            [],
+        )
         self.assertEqual(self.rec.theta, sentinel.theta)
         self.assertEqual(self.rec.phi, sentinel.phi)
         self.assertEqual(self.rec.detector_ids, sentinel.ids)
 
         self.rec.reconstruct_directions(sentinel.detector_ids)
         self.rec.direction.reconstruct_events.assert_called_with(
-            self.rec.events, sentinel.detector_ids, self.rec.offsets, self.rec.progress, [])
+            self.rec.events,
+            sentinel.detector_ids,
+            self.rec.offsets,
+            self.rec.progress,
+            [],
+        )
 
     def test_reconstruct_cores(self):
         self.rec.core = MagicMock()
         self.rec.core.reconstruct_events.return_value = (sentinel.core_x, sentinel.core_y)
         self.rec.reconstruct_cores()
-        self.rec.core.reconstruct_events.assert_called_once_with(
-            self.rec.events, None, self.rec.progress, [])
+        self.rec.core.reconstruct_events.assert_called_once_with(self.rec.events, None, self.rec.progress, [])
         self.assertEqual(self.rec.core_x, sentinel.core_x)
         self.assertEqual(self.rec.core_y, sentinel.core_y)
 
         self.rec.reconstruct_cores(sentinel.detector_ids)
         self.rec.core.reconstruct_events.assert_called_with(
-            self.rec.events, sentinel.detector_ids, self.rec.progress, [])
+            self.rec.events,
+            sentinel.detector_ids,
+            self.rec.progress,
+            [],
+        )
 
     def test_prepare_output(self):
         self.rec.events = MagicMock()
         self.rec.events.nrows = sentinel.nrows
         self.rec.prepare_output()
         self.data.create_table.assert_called_once_with(
-            self.rec.station_group, sentinel.destination,
-            reconstructions.ReconstructedEvent, expectedrows=sentinel.nrows)
+            self.rec.station_group,
+            sentinel.destination,
+            reconstructions.ReconstructedEvent,
+            expectedrows=sentinel.nrows,
+        )
         self.assertEqual(self.rec.reconstructions, self.data.create_table.return_value)
         self.assertEqual(self.rec.reconstructions._v_attrs.station, self.station)
 
@@ -90,11 +111,13 @@ class ReconstructESDEventsTest(unittest.TestCase):
         # Overwrite existing
         self.rec.overwrite = True
         self.rec.prepare_output()
-        self.data.remove_node.assert_called_once_with(
-            self.rec.station_group, sentinel.destination, recursive=True)
+        self.data.remove_node.assert_called_once_with(self.rec.station_group, sentinel.destination, recursive=True)
         self.data.create_table.assert_called_with(
-            self.rec.station_group, sentinel.destination,
-            reconstructions.ReconstructedEvent, expectedrows=sentinel.nrows)
+            self.rec.station_group,
+            sentinel.destination,
+            reconstructions.ReconstructedEvent,
+            expectedrows=sentinel.nrows,
+        )
         self.assertEqual(self.rec.reconstructions, self.data.create_table.return_value)
         self.assertEqual(self.rec.reconstructions._v_attrs.station, self.station)
 
@@ -112,8 +135,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
         # no offsets in station object no station_number ->
         #  determine offsets from events
         self.rec.get_detector_offsets()
-        mock_determine_detctor_timing_offets.assert_called_with(
-            sentinel.events, self.station)
+        mock_determine_detctor_timing_offets.assert_called_with(sentinel.events, self.station)
 
         # no offsets in station object and station number -> api.Station
         self.rec.station_number = sentinel.station
@@ -131,24 +153,28 @@ class ReconstructESDEventsTest(unittest.TestCase):
         # _store_reconstruction calls  min(event['n1'], ...).
         # but MagicMock is unordered in python 3!
         # Mock a dict that always returns 42.
-        event.__getitem__.side_effect = lambda x: 42.
+        event.__getitem__.side_effect = repeat(42.0)
         self.rec.reconstructions = MagicMock()
-        self.rec._store_reconstruction(event, sentinel.core_x, sentinel.core_y,
-                                       sentinel.theta, sentinel.phi, [1, 3, 4])
+        self.rec._store_reconstruction(event, sentinel.core_x, sentinel.core_y, sentinel.theta, sentinel.phi, [1, 3, 4])
         self.rec.reconstructions.row.append.assert_called_once_with()
 
 
 class ReconstructESDEventsFromSourceTest(ReconstructESDEventsTest):
-
     def setUp(self):
         self.data = MagicMock()
         self.dest_data = MagicMock()
         self.station = MagicMock(spec=reconstructions.Station)
         self.rec = reconstructions.ReconstructESDEventsFromSource(
-            self.data, self.dest_data, sentinel.station_group,
-            sentinel.dest_group, self.station, overwrite=sentinel.overwrite,
-            progress=sentinel.progress, verbose=False,
-            destination=sentinel.destination)
+            self.data,
+            self.dest_data,
+            sentinel.station_group,
+            sentinel.dest_group,
+            self.station,
+            overwrite=sentinel.overwrite,
+            progress=sentinel.progress,
+            verbose=False,
+            destination=sentinel.destination,
+        )
 
     @unittest.skip('WIP')
     def test_prepare_output(self):
@@ -160,7 +186,6 @@ class ReconstructESDEventsFromSourceTest(ReconstructESDEventsTest):
 
 
 class ReconstructSimulatedEventsTest(unittest.TestCase):
-
     def setUp(self):
         self.data = None
 
@@ -172,24 +197,27 @@ class ReconstructSimulatedEventsTest(unittest.TestCase):
         self.data = MagicMock()
         station = MagicMock(spec=reconstructions.Station)
         rec = reconstructions.ReconstructSimulatedEvents(
-            self.data, sentinel.station_group, station,
-            overwrite=sentinel.overwrite, progress=sentinel.progress,
-            verbose=False, destination=sentinel.destination)
+            self.data,
+            sentinel.station_group,
+            station,
+            overwrite=sentinel.overwrite,
+            progress=sentinel.progress,
+            verbose=False,
+            destination=sentinel.destination,
+        )
         self.assertEqual(rec.station, station)
 
     def test_read_object_from_hdf5(self):
         fn = self.get_testdata_path(TEST_DATA_FILE)
         self.data = tables.open_file(fn, 'r')
         station_group = '/cluster_simulations/station_0'
-        rec = reconstructions.ReconstructSimulatedEvents(
-            self.data, station_group, 0)
+        rec = reconstructions.ReconstructSimulatedEvents(self.data, station_group, 0)
 
         # isinstance does not work on classes that are read from pickles.
         self.assertEqual(rec.station.station_id, 0)
 
         with self.assertRaises(RuntimeError):
-            rec = reconstructions.ReconstructSimulatedEvents(
-                self.data, station_group, -999)
+            rec = reconstructions.ReconstructSimulatedEvents(self.data, station_group, -999)
 
     def get_testdata_path(self, fn):
         dir_path = os.path.dirname(__file__)
@@ -197,16 +225,20 @@ class ReconstructSimulatedEventsTest(unittest.TestCase):
 
 
 class ReconstructESDCoincidencesTest(unittest.TestCase):
-
     @patch.object(reconstructions, 'CoincidenceQuery')
     def setUp(self, mock_cq):
         self.data = MagicMock()
         self.cluster = MagicMock()
         self.cq = mock_cq
         self.rec = reconstructions.ReconstructESDCoincidences(
-            self.data, sentinel.coin_group, overwrite=sentinel.overwrite,
-            progress=sentinel.progress, verbose=False,
-            destination=sentinel.destination, cluster=self.cluster)
+            self.data,
+            sentinel.coin_group,
+            overwrite=sentinel.overwrite,
+            progress=sentinel.progress,
+            verbose=False,
+            destination=sentinel.destination,
+            cluster=self.cluster,
+        )
 
     def test_init(self):
         rec = self.rec
@@ -245,13 +277,12 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.assertEqual(list(self.rec.offsets.keys()), [sentinel.number])
         self.assertEqual(list(self.rec.offsets.values()), [sentinel.station])
 
-        detector = MagicMock(offset=1.)
-        station = MagicMock(number=sentinel.number, gps_offset=2., detectors=[detector],
-                            spec=['gps_offset', 'number'])
+        detector = MagicMock(offset=1.0)
+        station = MagicMock(number=sentinel.number, gps_offset=2.0, detectors=[detector], spec=['gps_offset', 'number'])
         self.rec.cluster.stations = [station]
         self.rec.get_station_timing_offsets()
         self.assertEqual(list(self.rec.offsets.keys()), [sentinel.number])
-        self.assertEqual(list(self.rec.offsets.values()), [[3.]])
+        self.assertEqual(list(self.rec.offsets.values()), [[3.0]])
 
     def test_reconstruct_directions(self):
         self.rec.coincidences = MagicMock()
@@ -260,14 +291,24 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.rec.direction.reconstruct_coincidences.return_value = (sentinel.theta, sentinel.phi, sentinel.nums)
         self.rec.reconstruct_directions()
         self.rec.direction.reconstruct_coincidences.assert_called_once_with(
-            self.rec.cq.all_events.return_value, None, self.rec.offsets, progress=False, initials=[])
+            self.rec.cq.all_events.return_value,
+            None,
+            self.rec.offsets,
+            progress=False,
+            initials=[],
+        )
         self.assertEqual(self.rec.theta, sentinel.theta)
         self.assertEqual(self.rec.phi, sentinel.phi)
         self.assertEqual(self.rec.station_numbers, sentinel.nums)
 
         self.rec.reconstruct_directions(sentinel.nums)
         self.rec.direction.reconstruct_coincidences.assert_called_with(
-            self.rec.cq.all_events.return_value, sentinel.nums, self.rec.offsets, progress=False, initials=[])
+            self.rec.cq.all_events.return_value,
+            sentinel.nums,
+            self.rec.offsets,
+            progress=False,
+            initials=[],
+        )
 
     def test_reconstruct_cores(self):
         self.rec.coincidences = MagicMock()
@@ -276,13 +317,21 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.rec.core.reconstruct_coincidences.return_value = (sentinel.core_x, sentinel.core_y)
         self.rec.reconstruct_cores()
         self.rec.core.reconstruct_coincidences.assert_called_once_with(
-            self.rec.cq.all_events.return_value, None, progress=False, initials=[])
+            self.rec.cq.all_events.return_value,
+            None,
+            progress=False,
+            initials=[],
+        )
         self.assertEqual(self.rec.core_x, sentinel.core_x)
         self.assertEqual(self.rec.core_y, sentinel.core_y)
 
         self.rec.reconstruct_cores(sentinel.nums)
         self.rec.core.reconstruct_coincidences.assert_called_with(
-            self.rec.cq.all_events.return_value, sentinel.nums, progress=False, initials=[])
+            self.rec.cq.all_events.return_value,
+            sentinel.nums,
+            progress=False,
+            initials=[],
+        )
 
     def test_prepare_output(self):
         self.rec.coincidences = MagicMock()
@@ -290,8 +339,11 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.cluster.stations.return_value = []
         self.rec.prepare_output()
         self.data.create_table.assert_called_once_with(
-            self.rec.coincidences_group, sentinel.destination,
-            reconstructions.ReconstructedCoincidence, expectedrows=sentinel.nrows)
+            self.rec.coincidences_group,
+            sentinel.destination,
+            reconstructions.ReconstructedCoincidence,
+            expectedrows=sentinel.nrows,
+        )
         self.assertEqual(self.rec.reconstructions, self.data.create_table.return_value)
         self.assertEqual(self.rec.reconstructions._v_attrs.cluster, self.cluster)
 
@@ -304,11 +356,13 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         # Overwrite existing
         self.rec.overwrite = True
         self.rec.prepare_output()
-        self.data.remove_node.assert_called_once_with(
-            self.rec.coincidences_group, sentinel.destination, recursive=True)
+        self.data.remove_node.assert_called_once_with(self.rec.coincidences_group, sentinel.destination, recursive=True)
         self.data.create_table.assert_called_with(
-            self.rec.coincidences_group, sentinel.destination,
-            reconstructions.ReconstructedCoincidence, expectedrows=sentinel.nrows)
+            self.rec.coincidences_group,
+            sentinel.destination,
+            reconstructions.ReconstructedCoincidence,
+            expectedrows=sentinel.nrows,
+        )
         self.assertEqual(self.rec.reconstructions, self.data.create_table.return_value)
         self.assertEqual(self.rec.reconstructions._v_attrs.cluster, self.cluster)
 
@@ -325,22 +379,22 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.rec.cluster.stations = [station]
 
         self.rec.prepare_output()
-        mock_description.columns.update.assert_called_once_with(
-            {'s1': reconstructions.tables.BoolCol(pos=26)})
+        mock_description.columns.update.assert_called_once_with({'s1': reconstructions.tables.BoolCol(pos=26)})
         self.data.create_table.assert_called_with(
-            self.rec.coincidences_group, sentinel.destination, mock_description,
-            expectedrows=sentinel.nrows)
+            self.rec.coincidences_group,
+            sentinel.destination,
+            mock_description,
+            expectedrows=sentinel.nrows,
+        )
 
     def test__store_reconstruction(self):
         coin = MagicMock()
         self.rec.reconstructions = MagicMock()
-        self.rec._store_reconstruction(coin, sentinel.core_x, sentinel.core_y,
-                                       sentinel.theta, sentinel.phi, [2, 3, 4])
+        self.rec._store_reconstruction(coin, sentinel.core_x, sentinel.core_y, sentinel.theta, sentinel.phi, [2, 3, 4])
         self.rec.reconstructions.row.append.assert_called_once_with()
 
 
 class ReconstructESDCoincidencesFromSourceTest(ReconstructESDCoincidencesTest):
-
     @patch.object(reconstructions, 'CoincidenceQuery')
     def setUp(self, mock_cq):
         self.data = MagicMock()
@@ -348,10 +402,16 @@ class ReconstructESDCoincidencesFromSourceTest(ReconstructESDCoincidencesTest):
         self.cluster = MagicMock()
         self.cq = mock_cq
         self.rec = reconstructions.ReconstructESDCoincidencesFromSource(
-            self.data, self.dest_data, sentinel.coin_group,
-            sentinel.dest_group, overwrite=sentinel.overwrite,
-            progress=sentinel.progress, verbose=False,
-            destination=sentinel.destination, cluster=self.cluster)
+            self.data,
+            self.dest_data,
+            sentinel.coin_group,
+            sentinel.dest_group,
+            overwrite=sentinel.overwrite,
+            progress=sentinel.progress,
+            verbose=False,
+            destination=sentinel.destination,
+            cluster=self.cluster,
+        )
 
     @unittest.skip('WIP')
     def test_prepare_output(self):
@@ -367,7 +427,6 @@ class ReconstructESDCoincidencesFromSourceTest(ReconstructESDCoincidencesTest):
 
 
 class ReconstructSimulatedCoincidencesTest(unittest.TestCase):
-
     def setUp(self):
         self.data = MagicMock()
 
@@ -379,9 +438,14 @@ class ReconstructSimulatedCoincidencesTest(unittest.TestCase):
     def test_cluster_is_object(self, mock_cq):
         cluster = MagicMock()
         rec = reconstructions.ReconstructSimulatedCoincidences(
-            self.data, sentinel.coin_group, overwrite=sentinel.overwrite,
-            progress=sentinel.progress, verbose=False,
-            destination=sentinel.destination, cluster=cluster)
+            self.data,
+            sentinel.coin_group,
+            overwrite=sentinel.overwrite,
+            progress=sentinel.progress,
+            verbose=False,
+            destination=sentinel.destination,
+            cluster=cluster,
+        )
         self.assertEqual(rec.cluster, cluster)
 
     def test_read_object_from_hdf5(self):

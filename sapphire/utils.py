@@ -53,8 +53,7 @@ def pbar(iterable, length=None, show=True, **kwargs):
             pass
 
     if length:
-        pb = ProgressBar(max_value=length,
-                         widgets=[Percentage(), Bar(), ETA()], **kwargs)
+        pb = ProgressBar(max_value=length, widgets=[Percentage(), Bar(), ETA()], **kwargs)
         return pb(iterable)
     else:
         return iterable
@@ -130,7 +129,7 @@ def angle_between(zenith1, azimuth1, zenith2, azimuth2):
     """
     dlat = zenith1 - zenith2
     dlon = azimuth2 - azimuth1
-    a = (sin(dlat / 2) ** 2 + sin(zenith1) * sin(zenith2) * sin(dlon / 2) ** 2)
+    a = sin(dlat / 2) ** 2 + sin(zenith1) * sin(zenith2) * sin(dlon / 2) ** 2
     angle = 2 * arcsin(sqrt(a))
 
     return angle
@@ -143,7 +142,7 @@ def vector_length(x, y, z=0):
     :return: length of vector.
 
     """
-    return sqrt(x ** 2 + y ** 2 + z ** 2)
+    return sqrt(x**2 + y**2 + z**2)
 
 
 def distance_between(x1, y1, x2, y2):
@@ -182,11 +181,11 @@ def memoize(method):
     Source: https://stackoverflow.com/a/29954160/1033535
 
     """
+
     @wraps(method)
     def memoizer(self, *args, **kwargs):
-
         # Prepare and get reference to cache
-        attr = f"_memo_{method.__name__}"
+        attr = f'_memo_{method.__name__}'
         if not hasattr(self, attr):
             setattr(self, attr, {})
         cache = getattr(self, attr)

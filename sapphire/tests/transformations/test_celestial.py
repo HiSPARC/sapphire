@@ -9,39 +9,34 @@ import numpy as np
 from sapphire.transformations import base, celestial, clock
 
 # This is to switch off tests in case astropy is not present
-# Noqa used to silence flake8
+# used to silence flake8
 try:
     import astropy  # noqa : F401
+
     has_astropy = True
 except ImportError:
     has_astropy = False
 
 
 class ZenithAzimuthHorizontalTests(unittest.TestCase):
-
     def setUp(self):
-        self.zenith = (0., pi / 4., pi / 2.)
-        self.altitude = (pi / 2., pi / 4., 0.)
+        self.zenith = (0.0, pi / 4.0, pi / 2.0)
+        self.altitude = (pi / 2.0, pi / 4.0, 0.0)
 
-        self.azimuth = (-pi / 2., 0., pi / 2.)  # -pi
-        self.Azimuth = (-pi, pi / 2., 0.)  # -pi / 2.
+        self.azimuth = (-pi / 2.0, 0.0, pi / 2.0)  # -pi
+        self.Azimuth = (-pi, pi / 2.0, 0.0)  # -pi / 2.
 
     def test_zenithazimuth_to_horizontal(self):
         for zenith, altitude in zip(self.zenith, self.altitude):
-            self.assertEqual(celestial.zenithazimuth_to_horizontal(
-                zenith, 0)[0], altitude)
-            self.assertEqual(celestial.horizontal_to_zenithazimuth(
-                altitude, 0)[0], zenith)
+            self.assertEqual(celestial.zenithazimuth_to_horizontal(zenith, 0)[0], altitude)
+            self.assertEqual(celestial.horizontal_to_zenithazimuth(altitude, 0)[0], zenith)
 
         for azimuth, Azimuth in zip(self.azimuth, self.Azimuth):
-            self.assertEqual(celestial.zenithazimuth_to_horizontal(
-                0, azimuth)[1], Azimuth)
-            self.assertEqual(celestial.horizontal_to_zenithazimuth(
-                0, Azimuth)[1], azimuth)
+            self.assertEqual(celestial.zenithazimuth_to_horizontal(0, azimuth)[1], Azimuth)
+            self.assertEqual(celestial.horizontal_to_zenithazimuth(0, Azimuth)[1], azimuth)
 
 
 class EquatorialTests(unittest.TestCase):
-
     """Accuracy tests for Celestial coordinate transformations.
 
     Use references as tests also used by astropy.
@@ -92,13 +87,12 @@ class EquatorialTests(unittest.TestCase):
         gps = clock.utc_to_gps(utc)
         zenith, azimuth = celestial.horizontal_to_zenithazimuth(
             np.radians(base.sexagesimal_to_decimal(*altitude)),
-            np.radians(base.sexagesimal_to_decimal(*azi)))
-        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude,
-                                                        gps, zenith, azimuth)
+            np.radians(base.sexagesimal_to_decimal(*azi)),
+        )
+        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude, gps, zenith, azimuth)
 
         # Test eq_to_zenaz merely against IDL
-        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(
-            latitude, longitude, gps, ra_expected, dec_expected)
+        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(latitude, longitude, gps, ra_expected, dec_expected)
 
         self.assertAlmostEqual(ra, ra_expected, 1)
         self.assertAlmostEqual(ra, ra_astropy, 1)
@@ -136,11 +130,9 @@ class EquatorialTests(unittest.TestCase):
         # SAPPHiRE
         gps = clock.utc_to_gps(calendar.timegm(utc.utctimetuple()))
         zenith, azimuth = celestial.horizontal_to_zenithazimuth(altitude, azi)
-        ra, dec = celestial.zenithazimuth_to_equatorial(
-            latitude, longitude, gps, zenith, azimuth)
+        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude, gps, zenith, azimuth)
 
-        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(
-            latitude, longitude, gps, ra_expected, dec_expected)
+        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(latitude, longitude, gps, ra_expected, dec_expected)
 
         self.assertAlmostEqual(ra, ra_expected, 2)
         self.assertAlmostEqual(ra, ra_astropy, 2)
@@ -177,13 +169,9 @@ class EquatorialTests(unittest.TestCase):
         # SAPPHiRE
         gps = clock.utc_to_gps(calendar.timegm(utc.utctimetuple()))
         zenith, azimuth = celestial.horizontal_to_zenithazimuth(altitude, azi)
-        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude,
-                                                        gps, zenith, azimuth)
+        ra, dec = celestial.zenithazimuth_to_equatorial(latitude, longitude, gps, zenith, azimuth)
 
-        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(latitude,
-                                                                longitude, gps,
-                                                                ra_expected,
-                                                                dec_expected)
+        zencalc, azcalc = celestial.equatorial_to_zenithazimuth(latitude, longitude, gps, ra_expected, dec_expected)
 
         self.assertAlmostEqual(ra, ra_expected, 3)
         self.assertAlmostEqual(ra, ra_astropy, 3)
@@ -194,7 +182,7 @@ class EquatorialTests(unittest.TestCase):
         self.assertAlmostEqual(azcalc, azimuth, 2)
 
 
-@unittest.skipUnless(has_astropy, "astropy required.")
+@unittest.skipUnless(has_astropy, 'astropy required.')
 class AstropyEquatorialTests(unittest.TestCase):
     """
     This tests the 4 new astropy functions. They should be very close to
@@ -209,30 +197,31 @@ class AstropyEquatorialTests(unittest.TestCase):
         and mute output
         """
         from astropy.utils import iers
+
         iers.conf.auto_download = False
 
     def test_pyephem_htoea(self):
-        """ Check celestial.horizontal_to_equatorial_astropy """
+        """Check celestial.horizontal_to_equatorial_astropy"""
 
         # This is the transform inputs
-        eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
-               3.8662384455822716, -0.31222454326513827),
-              (53.13143508448587, -49.24074935964933, 985619982,
-               3.901575896592809, -0.3926720112815971),
-              (48.02031016860923, -157.4023812557098, 1126251396,
-               3.366278312183976, -1.3610394240813288)]
+        eq = [
+            (-39.34633914878846, -112.2277168069694, 1295503840, 3.8662384455822716, -0.31222454326513827),
+            (53.13143508448587, -49.24074935964933, 985619982, 3.901575896592809, -0.3926720112815971),
+            (48.02031016860923, -157.4023812557098, 1126251396, 3.366278312183976, -1.3610394240813288),
+        ]
 
         # result of pyephem hor->eq/zenaz-> eq
-        efemeq = [(5.620508199785029, -0.3651173667585858),
-                  (5.244630787139936, -0.7866376569183651),
-                  (2.276751381056623, -1.0406498066785745)]
+        efemeq = [
+            (5.620508199785029, -0.3651173667585858),
+            (5.244630787139936, -0.7866376569183651),
+            (2.276751381056623, -1.0406498066785745),
+        ]
 
         htoea_test = []
 
         # Produce horizontal_to_equatorial_astropy results
         for latitude, longitude, gps, az, alt in eq:
-            result = celestial.horizontal_to_equatorial_astropy(
-                latitude, longitude, gps, [(az, alt)])
+            result = celestial.horizontal_to_equatorial_astropy(latitude, longitude, gps, [(az, alt)])
             htoea_test.extend(result)
 
         # Check if all inputs are correct
@@ -243,23 +232,23 @@ class AstropyEquatorialTests(unittest.TestCase):
         """Check celestial.equatorial_to_horizontal_astropy"""
 
         # This is the transform inputs
-        eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
-               3.8662384455822716, -0.31222454326513827),
-              (53.13143508448587, -49.24074935964933, 985619982,
-               3.901575896592809, -0.3926720112815971),
-              (48.02031016860923, -157.4023812557098, 1126251396,
-               3.366278312183976, -1.3610394240813288)]
+        eq = [
+            (-39.34633914878846, -112.2277168069694, 1295503840, 3.8662384455822716, -0.31222454326513827),
+            (53.13143508448587, -49.24074935964933, 985619982, 3.901575896592809, -0.3926720112815971),
+            (48.02031016860923, -157.4023812557098, 1126251396, 3.366278312183976, -1.3610394240813288),
+        ]
         # result of pyephem eq->hor
-        altaz = [(2.175107479095459, -0.19537943601608276),
-                 (5.25273323059082, -0.8308737874031067),
-                 (3.4536221027374268, -0.894329845905304)]
+        altaz = [
+            (2.175107479095459, -0.19537943601608276),
+            (5.25273323059082, -0.8308737874031067),
+            (3.4536221027374268, -0.894329845905304),
+        ]
 
         etoha_test = []
 
         # Produce equatorial_to_horizontal_astropy results
         for latitude, longitude, gps, ra, dec in eq:
-            result = celestial.equatorial_to_horizontal_astropy(
-                latitude, longitude, gps, [(ra, dec)])
+            result = celestial.equatorial_to_horizontal_astropy(latitude, longitude, gps, [(ra, dec)])
 
             etoha_test.extend(result)
 
@@ -272,23 +261,23 @@ class AstropyEquatorialTests(unittest.TestCase):
         """
 
         # This is the transform inputs
-        eq = [(-39.34633914878846, -112.2277168069694, 1295503840,
-               3.8662384455822716, -0.31222454326513827),
-              (53.13143508448587, -49.24074935964933, 985619982,
-               3.901575896592809, -0.3926720112815971),
-              (48.02031016860923, -157.4023812557098, 1126251396,
-               3.366278312183976, -1.3610394240813288)]
+        eq = [
+            (-39.34633914878846, -112.2277168069694, 1295503840, 3.8662384455822716, -0.31222454326513827),
+            (53.13143508448587, -49.24074935964933, 985619982, 3.901575896592809, -0.3926720112815971),
+            (48.02031016860923, -157.4023812557098, 1126251396, 3.366278312183976, -1.3610394240813288),
+        ]
         # result converted for eq->zenaz
-        zenaz = [(1.7661757628109793, -0.6043111523005624),
-                 (2.4016701141980032, 2.6012484033836625),
-                 (2.4651261727002005, -1.8828257759425302)]
+        zenaz = [
+            (1.7661757628109793, -0.6043111523005624),
+            (2.4016701141980032, 2.6012484033836625),
+            (2.4651261727002005, -1.8828257759425302),
+        ]
 
         eqtozenaz_test = []
 
         # Produce equatorial_to_zenithazimuth_astropy results
         for latitude, longitude, gps, ra, dec in eq:
-            result = celestial.equatorial_to_zenithazimuth_astropy(
-                latitude, longitude, gps, [(ra, dec)])
+            result = celestial.equatorial_to_zenithazimuth_astropy(latitude, longitude, gps, [(ra, dec)])
             eqtozenaz_test.extend(result)
 
         # Check if all inputs are correct, cast to numpy array for certainty
@@ -301,24 +290,24 @@ class AstropyEquatorialTests(unittest.TestCase):
         # equatorial inputs from test_pyephem_eqtozenaz transformed into
         # the shape of zenithazimuth coordinates so that they may be used for
         # reverse benchmarking purposes.
-        zeneq = [(-39.34633914878846, -112.2277168069694,
-                  1295503840, 1.8830208700600348, -2.295442118787375),
-                 (53.13143508448587, -49.24074935964933, 985619982,
-                  1.9634683380764937, -2.3307795697979126),
-                 (48.02031016860923, -157.4023812557098, 1126251396,
-                  2.9318357508762256, -1.7954819853890793)]
+        zeneq = [
+            (-39.34633914878846, -112.2277168069694, 1295503840, 1.8830208700600348, -2.295442118787375),
+            (53.13143508448587, -49.24074935964933, 985619982, 1.9634683380764937, -2.3307795697979126),
+            (48.02031016860923, -157.4023812557098, 1126251396, 2.9318357508762256, -1.7954819853890793),
+        ]
 
         # result of pyephem hor->eq/zenaz-> eq
-        efemeq = [(5.620508199785029, -0.3651173667585858),
-                  (5.244630787139936, -0.7866376569183651),
-                  (2.276751381056623, -1.0406498066785745)]
+        efemeq = [
+            (5.620508199785029, -0.3651173667585858),
+            (5.244630787139936, -0.7866376569183651),
+            (2.276751381056623, -1.0406498066785745),
+        ]
 
         zenaztoeq_test = []
 
         # Produce zenithazimuth_to_equatorial_astropy results
         for latitude, longitude, gps, zen, az in zeneq:
-            result = celestial.zenithazimuth_to_equatorial_astropy(
-                latitude, longitude, gps, [(zen, az)])
+            result = celestial.zenithazimuth_to_equatorial_astropy(latitude, longitude, gps, [(zen, az)])
             zenaztoeq_test.extend(result)
 
         # Check if all inputs are correct, cast to numpy array for certainty

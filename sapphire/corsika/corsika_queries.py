@@ -8,7 +8,6 @@ from .particles import name, particle_id
 
 
 class CorsikaQuery:
-
     def __init__(self, data, simulations_group='/simulations'):
         """Setup variables to point to the tables
 
@@ -106,8 +105,7 @@ class CorsikaQuery:
         """
         return {degrees(zenith) for zenith in set(self.sims.col('zenith'))}
 
-    def simulations(self, particle='proton', energy=None, zenith=None,
-                    azimuth=None, iterator=False):
+    def simulations(self, particle='proton', energy=None, zenith=None, azimuth=None, iterator=False):
         """Set of available energies given the requirements
 
         :param particle: primary particle must be this kind, name of particle.
@@ -220,7 +218,5 @@ class CorsikaQuery:
 
     def __repr__(self):
         if not self.data.isopen:
-            return "<finished %s>" % self.__class__.__name__
-        return ("%s(%r, simulations_group=%r)" %
-                (self.__class__.__name__, self.data.filename,
-                 self.sims._v_pathname))
+            return '<finished %s>' % self.__class__.__name__
+        return '%s(%r, simulations_group=%r)' % (self.__class__.__name__, self.data.filename, self.sims._v_pathname)

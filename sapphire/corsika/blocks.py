@@ -10,21 +10,22 @@ Author: Javier Gonzalez
 import math
 import struct
 
-import numpy
+import numpy as np
 
 from . import particles, units
 
 try:
     from numba import jit
 except ImportError:
+
     def jit(func):
         return func
 
 
 # All sizes are in bytes
 
-class Format:
 
+class Format:
     """The binary format information of the file.
 
     As specified in the CORSIKA user manual, Section 10.2.1.
@@ -57,8 +58,7 @@ class Format:
         self.particles_per_subblock = 39
 
         # Full particle sub block
-        self.particles_format = (self.particle_format *
-                                 self.particles_per_subblock)
+        self.particles_format = self.particle_format * self.particles_per_subblock
         self.particles_size = self.particle_size * self.particles_per_subblock
 
     def __repr__(self):
@@ -67,8 +67,8 @@ class Format:
 
 # From here on, things should not depend on the field size as everything is
 
-class RunHeader:
 
+class RunHeader:
     """The run header sub-block
 
     As specified in the CORSIKA user manual, Table 7.
@@ -82,7 +82,7 @@ class RunHeader:
         self.version = subblock[3]
 
         self.observation_levels = subblock[4]
-        self.observation_heights = numpy.array(subblock[5:15]) * units.cm
+        self.observation_heights = np.array(subblock[5:15]) * units.cm
 
         self.spectral_slope = subblock[15]
         self.min_energy = subblock[16] * units.GeV
@@ -96,7 +96,7 @@ class RunHeader:
         self.cutoff_electrons = subblock[22] * units.GeV
         self.cutoff_photons = subblock[23] * units.GeV
 
-        self.C = numpy.array(subblock[24:74])
+        self.C = np.array(subblock[24:74])
 
         self.x_inclined = subblock[74]
         self.y_inclined = subblock[75]
@@ -105,25 +105,25 @@ class RunHeader:
         self.phi_inclined = subblock[78]
 
         self.n_showers = subblock[92]
-        self.CKA = numpy.array(subblock[94:134])
-        self.CETA = numpy.array(subblock[134:139])
-        self.CSTRBA = numpy.array(subblock[139:150])
+        self.CKA = np.array(subblock[94:134])
+        self.CETA = np.array(subblock[134:139])
+        self.CSTRBA = np.array(subblock[139:150])
 
         self.x_scatter_Cherenkov = subblock[247]
         self.y_scatter_Cherenkov = subblock[248]
-        self.atmospheric_layer_boundaries = numpy.array(subblock[249:254])
-        self.a_atmospheric = numpy.array(subblock[254:259])
-        self.b_atmospheric = numpy.array(subblock[259:264])
-        self.c_atmospheric = numpy.array(subblock[264:269])
+        self.atmospheric_layer_boundaries = np.array(subblock[249:254])
+        self.a_atmospheric = np.array(subblock[254:259])
+        self.b_atmospheric = np.array(subblock[259:264])
+        self.c_atmospheric = np.array(subblock[264:269])
         self.NFLAIN = subblock[269]
         self.NFLDIF = subblock[270]
-        self.NFLPIF = numpy.floor(subblock[271] / 100)
+        self.NFLPIF = np.floor(subblock[271] / 100)
         self.NFLPI0 = subblock[271] % 100
-        self.NFRAGM = numpy.floor(subblock[272] / 100)
+        self.NFRAGM = np.floor(subblock[272] / 100)
         self.NFLCHE = subblock[272] % 100
 
     def thickness_to_height(self, thickness):
-        """"Calculate height (m) for given thickness (gramms/cm**2)
+        """ "Calculate height (m) for given thickness (gramms/cm**2)
 
         As specified in the CORSIKA user manual, Appendix D.
 
@@ -174,7 +174,6 @@ class RunHeader:
 
 
 class EventHeader:
-
     """The event header sub-block
 
     As specified in the CORSIKA user manual, Table 8.
@@ -192,7 +191,7 @@ class EventHeader:
         self.first_interaction_altitude = subblock[6] * units.cm
         self.p_x = subblock[7] * units.GeV
         self.p_y = subblock[8] * units.GeV
-        self.p_z = - subblock[9] * units.GeV  # Same direction as axis
+        self.p_z = -subblock[9] * units.GeV  # Same direction as axis
         self.zenith = subblock[10] * units.rad
 
         # CORSIKA coordinate conventions are shown in Figure 1 of the manual.
@@ -203,7 +202,7 @@ class EventHeader:
         # So finally we need to subtract pi/2 rad from the azimuth and
         # normalize its range.
         azimuth_corsika = subblock[11] * units.rad
-        azimuth = azimuth_corsika - (math.pi / 2.)
+        azimuth = azimuth_corsika - (math.pi / 2.0)
         if azimuth >= math.pi:
             self.azimuth = azimuth - (2 * math.pi)
         elif azimuth < -math.pi:
@@ -212,16 +211,14 @@ class EventHeader:
             self.azimuth = azimuth
 
         self.n_seeds = subblock[12]
-        self.seeds = numpy.array(list(zip(subblock[13:41:3],
-                                          subblock[14:42:3],
-                                          subblock[15:43:3])))
+        self.seeds = np.array(list(zip(subblock[13:41:3], subblock[14:42:3], subblock[15:43:3])))
 
         self.run_number = subblock[43]
         self.date_start = subblock[44]
         self.version = subblock[45]
 
         self.n_observation_levels = subblock[46]
-        self.observation_heights = numpy.array(subblock[47:57]) * units.cm
+        self.observation_heights = np.array(subblock[47:57]) * units.cm
 
         self.spectral_slope = subblock[57]
         self.min_energy = subblock[58] * units.GeV
@@ -271,8 +268,8 @@ class EventHeader:
         self.Cherenkov_wavelength_min = subblock[95] * units.nanometer
         self.Cherenkov_wavelength_max = subblock[96] * units.nanometer
         self.uses_of_Cherenkov_event = subblock[97]
-        self.core_x = numpy.array(subblock[98:118]) * units.cm
-        self.core_y = numpy.array(subblock[118:138]) * units.cm
+        self.core_x = np.array(subblock[98:118]) * units.cm
+        self.core_y = np.array(subblock[118:138]) * units.cm
 
         self.flag_SIBYLL = subblock[138]
         self.flag_SIBYLL_cross = subblock[139]
@@ -320,8 +317,7 @@ class EventHeader:
 
     @property
     def hadron_model_high(self):
-        hadron_models_high = {0: 'HDPM', 1: 'VENUS', 2: 'SIBYLL', 3: 'QGSJET',
-                              4: 'DPMJET', 5: 'NEXUS', 6: 'EPOS'}
+        hadron_models_high = {0: 'HDPM', 1: 'VENUS', 2: 'SIBYLL', 3: 'QGSJET', 4: 'DPMJET', 5: 'NEXUS', 6: 'EPOS'}
         return hadron_models_high.get(self.flag_hadron_model_high, 'unknown')
 
     @property
@@ -330,15 +326,16 @@ class EventHeader:
         return computers.get(self.flag_computer, 'unknown')
 
     def __repr__(self):
-        return ('<%s, particle: %r, energy: 10**%.1f eV, zenith: %r deg,'
-                ' azimuth: %r deg>' %
-                (self.__class__.__name__, self.particle,
-                 math.log10(self.energy), math.degrees(self.zenith),
-                 math.degrees(self.azimuth)))
+        return '<%s, particle: %r, energy: 10**%.1f eV, zenith: %r deg, azimuth: %r deg>' % (
+            self.__class__.__name__,
+            self.particle,
+            math.log10(self.energy),
+            math.degrees(self.zenith),
+            math.degrees(self.azimuth),
+        )
 
 
 class RunEnd:
-
     """The run end sub-block
 
     As specified in the CORSIKA user manual, Table 14.
@@ -351,16 +348,10 @@ class RunEnd:
         self.n_events_processed = subblock[2]
 
     def __repr__(self):
-        return '{}(({!r}, {!r}, {!r}))'.format(
-            self.__class__.__name__,
-            self.id,
-            self.run_number,
-            self.n_events_processed
-        )
+        return f'{self.__class__.__name__}(({self.id!r}, {self.run_number!r}, {self.n_events_processed!r}))'
 
 
 class EventEnd:
-
     """The event end sub-block
 
     As specified in the CORSIKA user manual, Table 13.
@@ -378,29 +369,28 @@ class EventEnd:
         self.n_particles_levels = subblock[6]
 
         # NKG output
-        self.NKG_lateral_1_x = numpy.array(subblock[7:28]) / units.cm2
-        self.NKG_lateral_1_y = numpy.array(subblock[28:49]) / units.cm2
-        self.NKG_lateral_1_xy = numpy.array(subblock[49:70]) / units.cm2
-        self.NKG_lateral_1_yx = numpy.array(subblock[70:91]) / units.cm2
+        self.NKG_lateral_1_x = np.array(subblock[7:28]) / units.cm2
+        self.NKG_lateral_1_y = np.array(subblock[28:49]) / units.cm2
+        self.NKG_lateral_1_xy = np.array(subblock[49:70]) / units.cm2
+        self.NKG_lateral_1_yx = np.array(subblock[70:91]) / units.cm2
 
-        self.NKG_lateral_2_x = numpy.array(subblock[91:112]) / units.cm2
-        self.NKG_lateral_2_y = numpy.array(subblock[112:133]) / units.cm2
-        self.NKG_lateral_2_xy = numpy.array(subblock[133:154]) / units.cm2
-        self.NKG_lateral_2_yx = numpy.array(subblock[154:175]) / units.cm2
+        self.NKG_lateral_2_x = np.array(subblock[91:112]) / units.cm2
+        self.NKG_lateral_2_y = np.array(subblock[112:133]) / units.cm2
+        self.NKG_lateral_2_xy = np.array(subblock[133:154]) / units.cm2
+        self.NKG_lateral_2_yx = np.array(subblock[154:175]) / units.cm2
 
-        self.NKG_electron_number = numpy.array(subblock[175:185])
-        self.NKG_pseudo_age = numpy.array(subblock[185:195])
-        self.NKG_electron_distances = numpy.array(subblock[195:205]) * units.cm
-        self.NKG_local_pseudo_age_1 = numpy.array(subblock[205:215])
+        self.NKG_electron_number = np.array(subblock[175:185])
+        self.NKG_pseudo_age = np.array(subblock[185:195])
+        self.NKG_electron_distances = np.array(subblock[195:205]) * units.cm
+        self.NKG_local_pseudo_age_1 = np.array(subblock[205:215])
 
-        self.NKG_level_height_mass = numpy.array(subblock[215:225])
-        self.NKG_level_height_distance = numpy.array(subblock[225:235])
-        self.NKG_distance_bins_local_pseudo_age = \
-            numpy.array(subblock[235:245]) * units.cm
-        self.NKG_local_pseudo_age_2 = numpy.array(subblock[245:255])
+        self.NKG_level_height_mass = np.array(subblock[215:225])
+        self.NKG_level_height_distance = np.array(subblock[225:235])
+        self.NKG_distance_bins_local_pseudo_age = np.array(subblock[235:245]) * units.cm
+        self.NKG_local_pseudo_age_2 = np.array(subblock[245:255])
 
         # Longitudinal distribution
-        self.longitudinal_parameters = numpy.array(subblock[255:261])
+        self.longitudinal_parameters = np.array(subblock[255:261])
         self.chi2_longitudinal_fit = subblock[261]
 
         self.n_photons_output = subblock[262]
@@ -442,11 +432,10 @@ def particle_data(subblock):
     hadron_generation = description // 10 % 100
     observation_level = description % 10
 
-    r = math.sqrt(x ** 2 + y ** 2)
+    r = math.sqrt(x**2 + y**2)
     phi = math.atan2(y, x)
 
-    return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation,
-            observation_level, phi)
+    return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation, observation_level, phi)
 
 
 @jit
@@ -463,7 +452,6 @@ def particle_data_thin(subblock):
 
 
 class ParticleData:
-
     """The particle data sub-block
 
     As specified in the CORSIKA user manual, Table 10.
@@ -471,9 +459,19 @@ class ParticleData:
     """
 
     def __init__(self, subblock):
-        self.p_x, self.p_y, self.p_z, self.x, self.y, self.t, self.id, \
-            self.r, self.hadron_generation, self.observation_level, \
-            self.phi = particle_data(subblock)
+        (
+            self.p_x,
+            self.p_y,
+            self.p_z,
+            self.x,
+            self.y,
+            self.t,
+            self.id,
+            self.r,
+            self.hadron_generation,
+            self.observation_level,
+            self.phi,
+        ) = particle_data(subblock)
 
     @property
     def is_detectable(self):
@@ -498,7 +496,7 @@ class ParticleData:
 
     @property
     def is_cherenkov(self):
-        return 9900 <= self.id
+        return self.id >= 9900
 
     @property
     def atomic_number(self):
@@ -518,13 +516,16 @@ class ParticleData:
             return None
 
     def __repr__(self):
-        return ('<%s, particle: %r, x: %r m, y: %r m, t: %r ns>' %
-                (self.__class__.__name__, self.particle, self.x, self.y,
-                 self.t))
+        return '<%s, particle: %r, x: %r m, y: %r m, t: %r ns>' % (
+            self.__class__.__name__,
+            self.particle,
+            self.x,
+            self.y,
+            self.t,
+        )
 
 
 class CherenkovData:
-
     """The cherenkov photon sub-block
 
     As specified in CORSIKA user manual, Table 11.
@@ -546,8 +547,8 @@ class CherenkovData:
 
 # THIN versions
 
-class FormatThin(Format):
 
+class FormatThin(Format):
     """The format information of the thinned file
 
     As specified in CORSIKA user manual, Section 10.2.2.
@@ -576,13 +577,11 @@ class FormatThin(Format):
         self.particle_size = struct.calcsize(self.particle_format)
 
         # Full particle sub block
-        self.particles_format = (self.particle_format *
-                                 self.particles_per_subblock)
+        self.particles_format = self.particle_format * self.particles_per_subblock
         self.particles_size = self.particle_size * self.particles_per_subblock
 
 
 class ParticleDataThin(ParticleData):
-
     """The thinned particle data sub-block
 
     As specified in the CORSIKA user manual, Table 10.
@@ -590,13 +589,23 @@ class ParticleDataThin(ParticleData):
     """
 
     def __init__(self, subblock):
-        self.p_x, self.p_y, self.p_z, self.x, self.y, self.t, self.id, \
-            self.r, self.hadron_generation, self.observation_level, \
-            self.phi, self.weight = particle_data_thin(subblock)
+        (
+            self.p_x,
+            self.p_y,
+            self.p_z,
+            self.x,
+            self.y,
+            self.t,
+            self.id,
+            self.r,
+            self.hadron_generation,
+            self.observation_level,
+            self.phi,
+            self.weight,
+        ) = particle_data_thin(subblock)
 
 
 class CherenkovDataThin(CherenkovData):
-
     """The thinned cherenkov photon sub-block
 
     As specified in CORSIKA user manual, Table 11.

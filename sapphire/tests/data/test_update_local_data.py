@@ -11,7 +11,6 @@ def fake_pbar(*args, **kwargs):
 
 
 class UpdateLocalDataTests(unittest.TestCase):
-
     @patch.object(update_local_data, 'pbar', side_effect=fake_pbar)
     @patch.object(builtins, 'print')
     @patch.object(update_local_data, 'update_sublevel_json')

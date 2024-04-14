@@ -29,7 +29,6 @@ from .gammas import simulate_detector_mips_gammas
 
 
 class GroundParticlesSimulation(HiSPARCSimulation):
-
     def __init__(self, corsikafile_path, max_core_distance, *args, **kwargs):
         """Simulation initialization
 
@@ -70,10 +69,12 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         event_header = self.corsikafile.get_node_attr('/', 'event_header')
         event_end = self.corsikafile.get_node_attr('/', 'event_end')
-        corsika_parameters = {'zenith': event_header.zenith,
-                              'size': event_end.n_electrons_levels,
-                              'energy': event_header.energy,
-                              'particle': event_header.particle}
+        corsika_parameters = {
+            'zenith': event_header.zenith,
+            'size': event_end.n_electrons_levels,
+            'energy': event_header.energy,
+            'particle': event_header.particle,
+        }
         self.corsika_azimuth = event_header.azimuth
 
         for i in pbar(range(self.n), show=self.progress):
@@ -81,9 +82,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             x, y = self.generate_core_position(r_max)
             shower_azimuth = self.generate_azimuth()
 
-            shower_parameters = {'ext_timestamp': ext_timestamp,
-                                 'core_pos': (x, y),
-                                 'azimuth': shower_azimuth}
+            shower_parameters = {'ext_timestamp': ext_timestamp, 'core_pos': (x, y), 'azimuth': shower_azimuth}
 
             # Subtract CORSIKA shower azimuth from desired shower azimuth
             # make it fit in (-pi, pi] to get rotation angle of the cluster.
@@ -132,10 +131,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
             nz = cos(shower_parameters['zenith'])
             tproj = detector.get_coordinates()[-1] / (c * nz)
             first_signal = particles['t'].min() + detector.offset - tproj
-            observables = {'n': round(mips, 3),
-                           't': self.simulate_adc_sampling(first_signal)}
+            observables = {'n': round(mips, 3), 't': self.simulate_adc_sampling(first_signal)}
         else:
-            observables = {'n': 0., 't': -999}
+            observables = {'n': 0.0, 't': -999}
 
         return observables
 
@@ -147,9 +145,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         # determination of lepton angle of incidence
-        theta = np.arccos(abs(particles['p_z']) /
-                          vector_length(particles['p_x'], particles['p_y'],
-                                        particles['p_z']))
+        theta = np.arccos(abs(particles['p_z']) / vector_length(particles['p_x'], particles['p_y'], particles['p_z']))
         n = len(particles)
         mips = self.simulate_detector_mips(n, theta)
 
@@ -168,18 +164,10 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         n_detectors = len(detector_observables)
-        detectors_low = sum(
-            True for observables in detector_observables
-            if observables['n'] > 0.3
-        )
-        detectors_high = sum(
-            True for observables in detector_observables
-            if observables['n'] > 0.5
-        )
+        detectors_low = sum(True for observables in detector_observables if observables['n'] > 0.3)
+        detectors_high = sum(True for observables in detector_observables if observables['n'] > 0.5)
 
-        if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3):
-            return True
-        elif n_detectors == 2 and detectors_low >= 2:
+        if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3) or n_detectors == 2 and detectors_low >= 2:
             return True
         else:
             return False
@@ -196,23 +184,24 @@ class GroundParticlesSimulation(HiSPARCSimulation):
                  trigger time.
 
         """
-        arrival_times = [station_observables['t%d' % id]
-                         for id in range(1, 5)
-                         if station_observables.get('n%d' % id, -1) > 0]
+        arrival_times = [
+            station_observables['t%d' % id] for id in range(1, 5) if station_observables.get('n%d' % id, -1) > 0
+        ]
 
         if len(arrival_times) > 1:
             trigger_time = sorted(arrival_times)[1]
 
             ext_timestamp = shower_parameters['ext_timestamp']
-            ext_timestamp += int(trigger_time + station.gps_offset +
-                                 self.simulate_gps_uncertainty())
+            ext_timestamp += int(trigger_time + station.gps_offset + self.simulate_gps_uncertainty())
             timestamp = int(ext_timestamp / 1_000_000_000)
             nanoseconds = int(ext_timestamp % 1_000_000_000)
 
-            gps_timestamp = {'ext_timestamp': ext_timestamp,
-                             'timestamp': timestamp,
-                             'nanoseconds': nanoseconds,
-                             't_trigger': trigger_time}
+            gps_timestamp = {
+                'ext_timestamp': ext_timestamp,
+                'timestamp': timestamp,
+                'nanoseconds': nanoseconds,
+                't_trigger': trigger_time,
+            }
             station_observables.update(gps_timestamp)
 
         return station_observables
@@ -238,7 +227,7 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        detector_boundary = sqrt(0.5) / 2.
+        detector_boundary = sqrt(0.5) / 2.0
 
         x, y, z = detector.get_coordinates()
         zenith = shower_parameters['zenith']
@@ -249,10 +238,12 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         xproj = x - z * nxnz
         yproj = y - z * nynz
 
-        query = ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
-                 ' & (particle_id >= 2) & (particle_id <= 6)' %
-                 (xproj - detector_boundary, xproj + detector_boundary,
-                  yproj - detector_boundary, yproj + detector_boundary))
+        query = '(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & (particle_id >= 2) & (particle_id <= 6)' % (
+            xproj - detector_boundary,
+            xproj + detector_boundary,
+            yproj - detector_boundary,
+            yproj + detector_boundary,
+        )
         return self.groundparticles.read_where(query)
 
 
@@ -271,8 +262,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        leptons, gammas = self.get_particles_in_detector(detector,
-                                                         shower_parameters)
+        leptons, gammas = self.get_particles_in_detector(detector, shower_parameters)
         n_leptons = len(leptons)
         n_gammas = len(gammas)
 
@@ -300,8 +290,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         elif n_gammas:
             first_signal = first_gamma + detector.offset
 
-        return {'n': mips_lepton + mips_gamma,
-                't': self.simulate_adc_sampling(first_signal)}
+        return {'n': mips_lepton + mips_gamma, 't': self.simulate_adc_sampling(first_signal)}
 
     def get_particles_in_detector(self, detector, shower_parameters):
         """Get particles that hit a detector.
@@ -321,7 +310,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        detector_boundary = sqrt(.5) / 2.
+        detector_boundary = sqrt(0.5) / 2.0
 
         x, y, z = detector.get_coordinates()
         zenith = shower_parameters['zenith']
@@ -332,20 +321,21 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
         xproj = x - z * nxnz
         yproj = y - z * nynz
 
-        query_leptons = \
-            ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
-             ' & (particle_id >= 2) & (particle_id <= 6)' %
-             (xproj - detector_boundary, xproj + detector_boundary,
-              yproj - detector_boundary, yproj + detector_boundary))
+        query_leptons = '(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & (particle_id >= 2) & (particle_id <= 6)' % (
+            xproj - detector_boundary,
+            xproj + detector_boundary,
+            yproj - detector_boundary,
+            yproj + detector_boundary,
+        )
 
-        query_gammas = \
-            ('(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f)'
-             ' & (particle_id == 1)' %
-             (xproj - detector_boundary, xproj + detector_boundary,
-              yproj - detector_boundary, yproj + detector_boundary))
+        query_gammas = '(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & (particle_id == 1)' % (
+            xproj - detector_boundary,
+            xproj + detector_boundary,
+            yproj - detector_boundary,
+            yproj + detector_boundary,
+        )
 
-        return (self.groundparticles.read_where(query_leptons),
-                self.groundparticles.read_where(query_gammas))
+        return (self.groundparticles.read_where(query_leptons), self.groundparticles.read_where(query_gammas))
 
     def simulate_detector_mips_for_gammas(self, particles):
         """Simulate the detector signal for gammas
@@ -354,12 +344,10 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
                           components of the particle momenta.
 
         """
-        p_gamma = np.sqrt(particles['p_x'] ** 2 + particles['p_y'] ** 2 +
-                          particles['p_z'] ** 2)
+        p_gamma = np.sqrt(particles['p_x'] ** 2 + particles['p_y'] ** 2 + particles['p_z'] ** 2)
 
         # determination of lepton angle of incidence
-        theta = np.arccos(abs(particles['p_z']) /
-                          p_gamma)
+        theta = np.arccos(abs(particles['p_z']) / p_gamma)
 
         mips = simulate_detector_mips_gammas(p_gamma, theta)
 
@@ -367,7 +355,6 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
-
     """More accuratly simulate the detection area of the detectors.
 
     Take the orientation of the detectors into account and use the
@@ -407,12 +394,21 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
         b11, line1, b12 = self.get_line_boundary_eqs(*cproj[0:3])
         b21, line2, b22 = self.get_line_boundary_eqs(*cproj[1:4])
-        query = ("(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & "
-                 "(b11 < %s) & (%s < b12) & (b21 < %s) & (%s < b22) & "
-                 "(particle_id >= 2) & (particle_id <= 6)" %
-                 (xproj - detector_boundary, xproj + detector_boundary,
-                  yproj - detector_boundary, yproj + detector_boundary,
-                  line1, line1, line2, line2))
+        query = (
+            '(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & '
+            '(b11 < %s) & (%s < b12) & (b21 < %s) & (%s < b22) & '
+            '(particle_id >= 2) & (particle_id <= 6)'
+            % (
+                xproj - detector_boundary,
+                xproj + detector_boundary,
+                yproj - detector_boundary,
+                yproj + detector_boundary,
+                line1,
+                line1,
+                line2,
+                line2,
+            )
+        )
 
         return self.groundparticles.read_where(query)
 
@@ -442,7 +438,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
         # Compute the general equation for the lines
         if x0 == x1:
             # line is exactly vertical
-            line = "x"
+            line = 'x'
             b1, b2 = x0, x2
         else:
             # First, compute the slope
@@ -452,7 +448,7 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
             b1 = y0 - a * x0
             b2 = y2 - a * x2
 
-            line = "y - %f * x" % a
+            line = 'y - %f * x' % a
 
         # And order the y-intercepts
         if b1 > b2:
@@ -462,7 +458,6 @@ class DetectorBoundarySimulation(GroundParticlesSimulation):
 
 
 class ParticleCounterSimulation(GroundParticlesSimulation):
-
     """Do not simulate mips, just count the number of particles."""
 
     def simulate_detector_mips(self, n, theta):
@@ -472,7 +467,6 @@ class ParticleCounterSimulation(GroundParticlesSimulation):
 
 
 class FixedCoreDistanceSimulation(GroundParticlesSimulation):
-
     """Shower core at a fixed core distance (from cluster origin).
 
     :param core_distance: distance of shower core to center of cluster.
@@ -493,9 +487,7 @@ class FixedCoreDistanceSimulation(GroundParticlesSimulation):
         return x, y
 
 
-class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,
-                                             GroundParticlesSimulation):
-
+class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation, GroundParticlesSimulation):
     """This simulation does not simulate errors/uncertainties
 
     This results in perfect timing (first particle through detector)
@@ -503,11 +495,8 @@ class GroundParticlesSimulationWithoutErrors(ErrorlessSimulation,
 
     """
 
-    pass
-
 
 class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
-
     """Use multiple CORSIKA simulated air showers in one run.
 
     Simulations will be selected from the set of available showers.
@@ -526,8 +515,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
     # CORSIKA data location at Nikhef
     DATA = '/data/hisparc/corsika/data/{seeds}/corsika.h5'
 
-    def __init__(self, corsikaoverview_path, max_core_distance, min_energy,
-                 max_energy, *args, **kwargs):
+    def __init__(self, corsikaoverview_path, max_core_distance, min_energy, max_energy, *args, **kwargs):
         """Simulation initialization
 
         :param corsikaoverview_path: path to the corsika_overview.h5 file
@@ -545,11 +533,8 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         self.max_core_distance = max_core_distance
         self.min_energy = min_energy
         self.max_energy = max_energy
-        self.available_energies = {e for e in self.cq.all_energies
-                                   if min_energy <= 10 ** e <= max_energy}
-        self.available_zeniths = {e: self.cq.available_parameters('zenith',
-                                                                  energy=e)
-                                  for e in self.available_energies}
+        self.available_energies = {e for e in self.cq.all_energies if min_energy <= 10**e <= max_energy}
+        self.available_zeniths = {e: self.cq.available_parameters('zenith', energy=e) for e in self.available_energies}
 
     def finish(self):
         """Clean-up after simulation"""
@@ -577,10 +562,12 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
             if sim is None:
                 continue
 
-            corsika_parameters = {'zenith': sim['zenith'],
-                                  'size': sim['n_electron'],
-                                  'energy': sim['energy'],
-                                  'particle': sim['particle_id']}
+            corsika_parameters = {
+                'zenith': sim['zenith'],
+                'size': sim['n_electron'],
+                'energy': sim['energy'],
+                'particle': sim['particle_id'],
+            }
             self.corsika_azimuth = sim['azimuth']
 
             seeds = self.cq.seeds([sim])[0]
@@ -596,9 +583,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
                     x, y = self.generate_core_position(r)
                     shower_azimuth = self.generate_azimuth()
 
-                    shower_parameters = {'ext_timestamp': ext_timestamp,
-                                         'core_pos': (x, y),
-                                         'azimuth': shower_azimuth}
+                    shower_parameters = {'ext_timestamp': ext_timestamp, 'core_pos': (x, y), 'azimuth': shower_azimuth}
 
                     # Subtract CORSIKA shower azimuth from desired shower
                     # azimuth to get rotation angle of the cluster.
@@ -619,8 +604,7 @@ class MultipleGroundParticlesSimulation(GroundParticlesSimulation):
         shower_energy = closest_in_list(log10(energy), self.available_energies)
 
         zenith = self.generate_zenith()
-        shower_zenith = closest_in_list(np.degrees(zenith),
-                                        self.available_zeniths[shower_energy])
+        shower_zenith = closest_in_list(np.degrees(zenith), self.available_zeniths[shower_energy])
 
         sims = self.cq.simulations(energy=shower_energy, zenith=shower_zenith)
         if not len(sims):

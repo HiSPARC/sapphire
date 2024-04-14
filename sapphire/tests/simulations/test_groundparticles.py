@@ -14,11 +14,8 @@ self_path = os.path.dirname(__file__)
 
 
 class GroundParticlesSimulationTest(unittest.TestCase):
-
     def setUp(self):
-
-        self.simulation = groundparticles.GroundParticlesSimulation.__new__(
-            groundparticles.GroundParticlesSimulation)
+        self.simulation = groundparticles.GroundParticlesSimulation.__new__(groundparticles.GroundParticlesSimulation)
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
@@ -31,11 +28,12 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         self.corsika_data.close()
 
     def test__prepare_cluster_for_shower(self):
-
         # Combinations of shower parameters and detector after transformations
-        combinations = (((0, 0, 0), (-0, -0, -0)),
-                        ((10, -60, 0), (-10, 60, -0)),
-                        ((10, -60, pi / 2), (60, 10, -pi / 2)))
+        combinations = (
+            ((0, 0, 0), (-0, -0, -0)),
+            ((10, -60, 0), (-10, 60, -0)),
+            ((10, -60, pi / 2), (60, 10, -pi / 2)),
+        )
 
         for input, expected in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
@@ -49,19 +47,17 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         # Combinations of shower parameters and detector after transformations
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = ((0, 0, 0),
-                        (10, -60, 0),
-                        (10, -60, pi / 2))
+        combinations = ((0, 0, 0), (10, -60, 0), (10, -60, pi / 2))
 
         for input in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
             self.simulation.get_particles_in_detector(self.detectors[0], shower_parameters)
             x, y = self.detectors[0].get_xy_coordinates()
-            size = sqrt(.5) / 2.
+            size = sqrt(0.5) / 2.0
             self.simulation.groundparticles.read_where.assert_called_with(
                 '(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & '
-                '(particle_id >= 2) & (particle_id <= 6)' %
-                (x - size, x + size, y - size, y + size))
+                '(particle_id >= 2) & (particle_id <= 6)' % (x - size, x + size, y - size, y + size),
+            )
 
     def test_get_particles(self):
         self.groundparticles = self.corsika_data.root.groundparticles
@@ -69,9 +65,7 @@ class GroundParticlesSimulationTest(unittest.TestCase):
 
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (1, 0, 0, 0)),
-                        ((1, -1, 0), (0, 1, 0, 3)),
-                        ((1, -1, pi / 2), (1, 1, 0, 1)))
+        combinations = (((0, 0, 0), (1, 0, 0, 0)), ((1, -1, 0), (0, 1, 0, 3)), ((1, -1, pi / 2), (1, 1, 0, 1)))
 
         for input, expected in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
@@ -80,10 +74,10 @@ class GroundParticlesSimulationTest(unittest.TestCase):
 
 
 class GroundParticlesGammaSimulationTest(unittest.TestCase):
-
     def setUp(self):
         self.simulation = groundparticles.GroundParticlesGammaSimulation.__new__(
-            groundparticles.GroundParticlesGammaSimulation)
+            groundparticles.GroundParticlesGammaSimulation,
+        )
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
@@ -101,9 +95,11 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
 
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (1, 0, 0, 0), (5, 0, 2, 4)),
-                        ((1, -1, 0), (0, 1, 0, 3), (1, 1, 4, 8)),
-                        ((1, -1, pi / 2), (1, 1, 0, 1), (1, 3, 6, 1)))
+        combinations = (
+            ((0, 0, 0), (1, 0, 0, 0), (5, 0, 2, 4)),
+            ((1, -1, 0), (0, 1, 0, 3), (1, 1, 4, 8)),
+            ((1, -1, pi / 2), (1, 1, 0, 1), (1, 3, 6, 1)),
+        )
 
         for input, n1, n2 in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
@@ -114,10 +110,8 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
 
 
 class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
-
     def setUp(self):
-        self.simulation = groundparticles.DetectorBoundarySimulation.__new__(
-            groundparticles.DetectorBoundarySimulation)
+        self.simulation = groundparticles.DetectorBoundarySimulation.__new__(groundparticles.DetectorBoundarySimulation)
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
@@ -132,8 +126,7 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
         # Combinations of shower parameters and detector after transformations
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = ((0, 0, 0),
-                        (10, -60, 0))
+        combinations = ((0, 0, 0), (10, -60, 0))
 
         for input in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
@@ -144,8 +137,8 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
                 '(x >= %f) & (x <= %f) & (y >= %f) & (y <= %f) & '
                 '(b11 < y - 0.000000 * x) & (y - 0.000000 * x < b12) & '
                 '(b21 < x) & (x < b22) & '
-                '(particle_id >= 2) & (particle_id <= 6)' %
-                (x - size, x + size, y - size, y + size))
+                '(particle_id >= 2) & (particle_id <= 6)' % (x - size, x + size, y - size, y + size),
+            )
 
     def test_get_particles(self):
         self.groundparticles = self.corsika_data.root.groundparticles
@@ -153,9 +146,7 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
 
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (1, 0, 1, 0)),
-                        ((1, -1, 0), (0, 1, 1, 3)),
-                        ((1, -1, pi / 2), (1, 1, 0, 1)))
+        combinations = (((0, 0, 0), (1, 0, 1, 0)), ((1, -1, 0), (0, 1, 1, 3)), ((1, -1, pi / 2), (1, 1, 0, 1)))
 
         for input, expected in combinations:
             self.simulation._prepare_cluster_for_shower(*input)
@@ -163,8 +154,7 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
                 self.assertEqual(len(self.simulation.get_particles_in_detector(d, shower_parameters)), e)
 
     def test_get_line_boundary_eqs(self):
-        combos = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)),
-                  (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
+        combos = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)), (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
 
         for input, expected in combos:
             result = self.simulation.get_line_boundary_eqs(*input)
@@ -172,18 +162,17 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
 
 
 class FixedCoreDistanceSimulationTest(unittest.TestCase):
-
     def test_fixed_core_distance(self):
         r = random.uniform(1e-15, 4000, size=300)
         x, y = groundparticles.FixedCoreDistanceSimulation.generate_core_position(r)
-        testing.assert_allclose(sqrt(x ** 2 + y ** 2), r, 1e-11)
+        testing.assert_allclose(sqrt(x**2 + y**2), r, 1e-11)
 
 
 class MultipleGroundParticlesSimulationTest(unittest.TestCase):
-
     def setUp(self):
         self.simulation = groundparticles.MultipleGroundParticlesSimulation.__new__(
-            groundparticles.MultipleGroundParticlesSimulation)
+            groundparticles.MultipleGroundParticlesSimulation,
+        )
 
         self.simulation.cq = Mock()
         self.simulation.max_core_distance = sentinel.max_core_distance
@@ -201,18 +190,16 @@ class MultipleGroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.select_simulation.return_value = None
         shower_parameters = self.simulation.generate_shower_parameters()
         self.assertRaises(StopIteration, shower_parameters.__next__)
-        self.assertEqual(self.simulation.select_simulation.call_count,
-                         self.simulation.n)
+        self.assertEqual(self.simulation.select_simulation.call_count, self.simulation.n)
 
     def test_select_simulation(self):
         self.simulation.generate_zenith = lambda: 0.27  # 15.5 deg
-        self.simulation.generate_energy = lambda e_min, e_max: 10 ** 16.4
+        self.simulation.generate_energy = lambda e_min, e_max: 10**16.4
         self.simulation.available_energies = set(arange(12, 18, 0.5))
-        self.simulation.available_zeniths = {e: set(arange(0, 60, 7.5))
-                                             for e in self.simulation.available_energies}
+        self.simulation.available_zeniths = {e: set(arange(0, 60, 7.5)) for e in self.simulation.available_energies}
         self.simulation.cq.simulations.return_value = [sentinel.sim]
         result = self.simulation.select_simulation()
-        self.simulation.cq.simulations.assert_called_once_with(energy=16.5, zenith=15.)
+        self.simulation.cq.simulations.assert_called_once_with(energy=16.5, zenith=15.0)
         self.assertEqual(result, sentinel.sim)
 
         self.simulation.cq.simulations.return_value = []

@@ -1,11 +1,12 @@
-""" Fetch raw events and other data from the public database
+"""Fetch raw events and other data from the public database
 
-    This module enables you to access the public database and even the raw
-    event data. This is intended for specialized use only. For most uses, it is
-    faster and more convenient to access the event summary data (ESD) using
-    :mod:`~sapphire.esd`.
+This module enables you to access the public database and even the raw
+event data. This is intended for specialized use only. For most uses, it is
+faster and more convenient to access the event summary data (ESD) using
+:mod:`~sapphire.esd`.
 
 """
+
 import datetime
 import logging
 import os
@@ -62,21 +63,21 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
     server = ServerProxy(get_publicdb_xmlrpc_url())
 
     for t0, t1 in datetimerange(start, end):
-        logger.info(f"{t0} {t1}")
-        logger.info(f"Getting server data URL {t0}")
+        logger.info(f'{t0} {t1}')
+        logger.info(f'Getting server data URL {t0}')
         try:
             url = server.hisparc.get_data_url(station_id, t0, get_blobs)
         except Exception as exc:
-            if re.search("No data", str(exc)):
-                logger.warning(f"No data for {t0}")
+            if re.search('No data', str(exc)):
+                logger.warning(f'No data for {t0}')
                 continue
             else:
                 raise
-        logger.info("Downloading data...")
+        logger.info('Downloading data...')
         tmp_datafile, headers = urlretrieve(url)
-        logger.info("Storing data...")
+        logger.info('Storing data...')
         _store_data(file, group, tmp_datafile, t0, t1)
-        logger.info("Done.")
+        logger.info('Done.')
 
 
 def _store_data(dst_file, dst_group, src_filename, t0, t1):
@@ -102,14 +103,21 @@ def _store_data(dst_file, dst_group, src_filename, t0, t1):
                 for row in node:
                     dst_node.append(row)
 
-            elif node.name in ['events', 'errors', 'config', 'comparator',
-                               'singles', 'satellites', 'weather',
-                               'weather_error', 'weather_config']:
+            elif node.name in [
+                'events',
+                'errors',
+                'config',
+                'comparator',
+                'singles',
+                'satellites',
+                'weather',
+                'weather_error',
+                'weather_config',
+            ]:
                 if t1 is None:
                     cond = 'timestamp >= %d' % datetime_to_gps(t0)
                 else:
-                    cond = ('(%d <= timestamp) & (timestamp <= %d)' %
-                            (datetime_to_gps(t0), datetime_to_gps(t1)))
+                    cond = '(%d <= timestamp) & (timestamp <= %d)' % (datetime_to_gps(t0), datetime_to_gps(t1))
 
                 rows = node.read_where(cond)
 
@@ -214,6 +222,6 @@ def _get_or_create_node(file, group, src_node):
         elif isinstance(src_node, tables.VLArray):
             node = file.create_vlarray(group, src_node.name, src_node.atom, src_node.title)
         else:
-            raise Exception("Unknown node class: %s" % type(src_node))
+            raise Exception('Unknown node class: %s' % type(src_node))
 
     return node

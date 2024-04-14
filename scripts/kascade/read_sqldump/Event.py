@@ -1,12 +1,12 @@
 """
-    This module creates different types of Events that are specified by the subclasses
+This module creates different types of Events that are specified by the subclasses
 """
 
-__author__ = "thevinh"
-__date__ = "$16-sep-2009"
+__author__ = 'thevinh'
+__date__ = '$16-sep-2009'
 
 
-class Event():
+class Event:
     # the instantiation operation
     def __init__(self):
         # init variables here if needed
@@ -16,7 +16,7 @@ class Event():
         self.nanoseconds = 0
         self.export_values = 0
 
-    #--------------------------End of __init__--------------------------#
+    # --------------------------End of __init__--------------------------#
 
     def getEventData(self):
         pass

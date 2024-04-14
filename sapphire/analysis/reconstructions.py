@@ -1,23 +1,24 @@
-""" Reconstruct HiSPARC events and coincidences
+"""Reconstruct HiSPARC events and coincidences
 
-    This module contains classes that can be used to reconstruct
-    HiSPARC events and coincidences. These classes can be used to automate
-    the tasks of reconstructing directions and/or cores.
+This module contains classes that can be used to reconstruct
+HiSPARC events and coincidences. These classes can be used to automate
+the tasks of reconstructing directions and/or cores.
 
-    The classes can reconstruct measured data from the ESD as well as
-    simulated data from :mod:`sapphire.simulations`.
+The classes can reconstruct measured data from the ESD as well as
+simulated data from :mod:`sapphire.simulations`.
 
-    The classes read data stored in HDF5 files and extract station metadata
-    (cluster and detector layout, station and detector offsets) from
-    various sources:
+The classes read data stored in HDF5 files and extract station metadata
+(cluster and detector layout, station and detector offsets) from
+various sources:
 
-    - from the public database using :class:`sapphire.api.Station` objects
-    - from stored or provided :class`sappire.cluster.Station` objects,
-      usually cluster or station layout stored by :mod:`sapphire.simulations`
+- from the public database using :class:`sapphire.api.Station` objects
+- from stored or provided :class`sappire.cluster.Station` objects,
+  usually cluster or station layout stored by :mod:`sapphire.simulations`
 
-     Reconstructed data is stored in HDF5 files.
+ Reconstructed data is stored in HDF5 files.
 
 """
+
 import os
 import warnings
 
@@ -36,7 +37,6 @@ from .direction_reconstruction import CoincidenceDirectionReconstruction, EventD
 
 
 class ReconstructESDEvents:
-
     """Reconstruct events from single stations
 
     Example usage::
@@ -62,10 +62,18 @@ class ReconstructESDEvents:
 
     """
 
-    def __init__(self, data, station_group, station,
-                 overwrite=False, progress=True, verbose=False,
-                 destination='reconstructions',
-                 force_fresh=False, force_stale=False):
+    def __init__(
+        self,
+        data,
+        station_group,
+        station,
+        overwrite=False,
+        progress=True,
+        verbose=False,
+        destination='reconstructions',
+        force_fresh=False,
+        force_stale=False,
+    ):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -92,7 +100,7 @@ class ReconstructESDEvents:
         self.force_fresh = force_fresh
         self.force_stale = force_stale
 
-        self.offsets = [0., 0., 0., 0.]
+        self.offsets = [0.0, 0.0, 0.0, 0.0]
 
         self._get_or_create_station_object(station)
 
@@ -121,13 +129,10 @@ class ReconstructESDEvents:
 
         """
         if len(self.core_x) and len(self.core_y):
-            initials = ({'core_x': x, 'core_y': y}
-                        for x, y in zip(self.core_x, self.core_y))
+            initials = ({'core_x': x, 'core_y': y} for x, y in zip(self.core_x, self.core_y))
         else:
             initials = []
-        angles = self.direction.reconstruct_events(self.events, detector_ids,
-                                                   self.offsets, self.progress,
-                                                   initials)
+        angles = self.direction.reconstruct_events(self.events, detector_ids, self.offsets, self.progress, initials)
         self.theta, self.phi, self.detector_ids = angles
 
     def reconstruct_cores(self, detector_ids=None):
@@ -137,12 +142,10 @@ class ReconstructESDEvents:
 
         """
         if len(self.theta) and len(self.phi):
-            initials = ({'theta': theta, 'phi': phi}
-                        for theta, phi in zip(self.theta, self.phi))
+            initials = ({'theta': theta, 'phi': phi} for theta, phi in zip(self.theta, self.phi))
         else:
             initials = []
-        cores = self.core.reconstruct_events(self.events, detector_ids,
-                                             self.progress, initials)
+        cores = self.core.reconstruct_events(self.events, detector_ids, self.progress, initials)
         self.core_x, self.core_y = cores
 
     def prepare_output(self):
@@ -150,15 +153,17 @@ class ReconstructESDEvents:
 
         if self.destination in self.station_group:
             if self.overwrite:
-                self.data.remove_node(self.station_group, self.destination,
-                                      recursive=True)
+                self.data.remove_node(self.station_group, self.destination, recursive=True)
             else:
-                raise RuntimeError("Reconstructions table already exists for "
-                                   "%s, and overwrite is False" %
-                                   self.station_group)
+                raise RuntimeError(
+                    'Reconstructions table already exists for %s, and overwrite is False' % self.station_group,
+                )
         self.reconstructions = self.data.create_table(
-            self.station_group, self.destination, ReconstructedEvent,
-            expectedrows=self.events.nrows)
+            self.station_group,
+            self.destination,
+            ReconstructedEvent,
+            expectedrows=self.events.nrows,
+        )
         try:
             self.reconstructions._v_attrs.station = self.station
         except tables.HDF5ExtError:
@@ -191,14 +196,15 @@ class ReconstructESDEvents:
                 print('Read detector offsets from station object.')
         except AttributeError:
             if self.station_number is not None:
-                self.offsets = api.Station(self.station_number,
-                                           force_fresh=self.force_fresh,
-                                           force_stale=self.force_stale)
+                self.offsets = api.Station(
+                    self.station_number,
+                    force_fresh=self.force_fresh,
+                    force_stale=self.force_stale,
+                )
                 if self.verbose:
                     print('Reading detector offsets from public database.')
             else:
-                self.offsets = determine_detector_timing_offsets(self.events,
-                                                                 self.station)
+                self.offsets = determine_detector_timing_offsets(self.events, self.station)
                 self.store_offsets()
                 if self.verbose:
                     print('Determined offsets from event data: ', self.offsets)
@@ -208,14 +214,12 @@ class ReconstructESDEvents:
 
         if 'detector_offsets' in self.station_group:
             if self.overwrite:
-                self.data.remove_node(self.station_group.detector_offsets,
-                                      recursive=True)
+                self.data.remove_node(self.station_group.detector_offsets, recursive=True)
             else:
-                raise RuntimeError("Detector offset table already exists for "
-                                   "%s, and overwrite is False" %
-                                   self.station_group)
-        self.detector_offsets = self.data.create_array(
-            self.station_group, 'detector_offsets', self.offsets)
+                raise RuntimeError(
+                    'Detector offset table already exists for %s, and overwrite is False' % self.station_group,
+                )
+        self.detector_offsets = self.data.create_array(self.station_group, 'detector_offsets', self.offsets)
         self.detector_offsets.flush()
 
     def store_reconstructions(self):
@@ -226,14 +230,17 @@ class ReconstructESDEvents:
 
         """
         for event, core_x, core_y, theta, phi, detector_ids in zip_longest(
-                self.events, self.core_x, self.core_y,
-                self.theta, self.phi, self.detector_ids):
-            self._store_reconstruction(event, core_x, core_y, theta, phi,
-                                       detector_ids)
+            self.events,
+            self.core_x,
+            self.core_y,
+            self.theta,
+            self.phi,
+            self.detector_ids,
+        ):
+            self._store_reconstruction(event, core_x, core_y, theta, phi, detector_ids)
         self.reconstructions.flush()
 
-    def _store_reconstruction(self, event, core_x, core_y, theta, phi,
-                              detector_ids):
+    def _store_reconstruction(self, event, core_x, core_y, theta, phi, detector_ids):
         """Store single reconstruction"""
 
         row = self.reconstructions.row
@@ -244,7 +251,7 @@ class ReconstructESDEvents:
         except ValueError:
             # sometimes, all arrival times are -999 or -1, and then
             # detector_ids = []. So min([]) gives a ValueError.
-            row['min_n'] = -999.
+            row['min_n'] = -999.0
         row['x'] = core_x
         row['y'] = core_y
         row['zenith'] = theta
@@ -261,20 +268,27 @@ class ReconstructESDEvents:
                 print('Using object %s for metadata.' % self.station)
         else:
             self.station_number = station
-            cluster = HiSPARCStations([station],
-                                      force_fresh=self.force_fresh,
-                                      force_stale=self.force_stale)
+            cluster = HiSPARCStations([station], force_fresh=self.force_fresh, force_stale=self.force_stale)
             self.station = cluster.get_station(station)
             if self.verbose:
                 print(f'Constructed object {self.station} from public database.')
 
 
 class ReconstructESDEventsFromSource(ReconstructESDEvents):
-
-    def __init__(self, source_data, dest_data, source_group, dest_group,
-                 station, overwrite=False, progress=True, verbose=False,
-                 destination='reconstructions',
-                 force_fresh=False, force_stale=False):
+    def __init__(
+        self,
+        source_data,
+        dest_data,
+        source_group,
+        dest_group,
+        station,
+        overwrite=False,
+        progress=True,
+        verbose=False,
+        destination='reconstructions',
+        force_fresh=False,
+        force_stale=False,
+    ):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -291,8 +305,16 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
 
         """
         super().__init__(
-            source_data, source_group, station, overwrite, progress, verbose,
-            destination, force_fresh, force_stale)
+            source_data,
+            source_group,
+            station,
+            overwrite,
+            progress,
+            verbose,
+            destination,
+            force_fresh,
+            force_stale,
+        )
         self.dest_data = dest_data
         self.dest_group = dest_group
 
@@ -305,12 +327,16 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
             if self.overwrite:
                 self.dest_data.remove_node(dest_path, recursive=True)
             else:
-                raise RuntimeError("Reconstructions table already exists for "
-                                   "%s, and overwrite is False" %
-                                   self.dest_group)
+                raise RuntimeError(
+                    'Reconstructions table already exists for %s, and overwrite is False' % self.dest_group,
+                )
         self.reconstructions = self.dest_data.create_table(
-            self.dest_group, self.destination, ReconstructedEvent,
-            expectedrows=self.events.nrows, createparents=True)
+            self.dest_group,
+            self.destination,
+            ReconstructedEvent,
+            expectedrows=self.events.nrows,
+            createparents=True,
+        )
         try:
             self.reconstructions._v_attrs.station = self.station
         except tables.HDF5ExtError:
@@ -318,7 +344,6 @@ class ReconstructESDEventsFromSource(ReconstructESDEvents):
 
 
 class ReconstructSimulatedEvents(ReconstructESDEvents):
-
     """Reconstruct simulated events from single stations
 
     Simulated events use simulated meta-data (e.g. timing offsets)
@@ -367,8 +392,7 @@ class ReconstructSimulatedEvents(ReconstructESDEvents):
                 cluster = self.data.get_node_attr('/coincidences', 'cluster')
                 self.station = cluster.get_station(station)
                 if self.station is None:
-                    raise RuntimeError('Station %d not found in cluster'
-                                       ' object.' % self.station_number)
+                    raise RuntimeError('Station %d not found in cluster object.' % self.station_number)
                 if self.verbose:
                     print('Read object %s from datafile.' % self.station)
             except (tables.NoSuchNodeError, AttributeError):
@@ -376,7 +400,6 @@ class ReconstructSimulatedEvents(ReconstructESDEvents):
 
 
 class ReconstructESDCoincidences:
-
     """Reconstruct coincidences, e.g. event between multiple stations
 
     Example usage::
@@ -390,10 +413,18 @@ class ReconstructESDCoincidences:
 
     """
 
-    def __init__(self, data, coincidences_group='/coincidences',
-                 overwrite=False, progress=True, verbose=False,
-                 destination='reconstructions', cluster=None,
-                 force_fresh=False, force_stale=False):
+    def __init__(
+        self,
+        data,
+        coincidences_group='/coincidences',
+        overwrite=False,
+        progress=True,
+        verbose=False,
+        destination='reconstructions',
+        cluster=None,
+        force_fresh=False,
+        force_stale=False,
+    ):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -444,15 +475,17 @@ class ReconstructESDCoincidences:
 
         """
         if len(self.core_x) and len(self.core_y):
-            initials = ({'core_x': x, 'core_y': y}
-                        for x, y in zip(self.core_x, self.core_y))
+            initials = ({'core_x': x, 'core_y': y} for x, y in zip(self.core_x, self.core_y))
         else:
             initials = []
-        coincidences = pbar(self.cq.all_coincidences(iterator=True),
-                            length=self.coincidences.nrows, show=self.progress)
+        coincidences = pbar(self.cq.all_coincidences(iterator=True), length=self.coincidences.nrows, show=self.progress)
         angles = self.direction.reconstruct_coincidences(
-            self.cq.all_events(coincidences, n=0), station_numbers,
-            self.offsets, progress=False, initials=initials)
+            self.cq.all_events(coincidences, n=0),
+            station_numbers,
+            self.offsets,
+            progress=False,
+            initials=initials,
+        )
         self.theta, self.phi, self.station_numbers = angles
 
     def reconstruct_cores(self, station_numbers=None):
@@ -462,15 +495,16 @@ class ReconstructESDCoincidences:
 
         """
         if len(self.theta) and len(self.phi):
-            initials = ({'theta': theta, 'phi': phi}
-                        for theta, phi in zip(self.theta, self.phi))
+            initials = ({'theta': theta, 'phi': phi} for theta, phi in zip(self.theta, self.phi))
         else:
             initials = []
-        coincidences = pbar(self.cq.all_coincidences(iterator=True),
-                            length=self.coincidences.nrows, show=self.progress)
+        coincidences = pbar(self.cq.all_coincidences(iterator=True), length=self.coincidences.nrows, show=self.progress)
         cores = self.core.reconstruct_coincidences(
-            self.cq.all_events(coincidences, n=0), station_numbers,
-            progress=False, initials=initials)
+            self.cq.all_events(coincidences, n=0),
+            station_numbers,
+            progress=False,
+            initials=initials,
+        )
         self.core_x, self.core_y = cores
 
     def prepare_output(self):
@@ -478,20 +512,23 @@ class ReconstructESDCoincidences:
 
         if self.destination in self.coincidences_group:
             if self.overwrite:
-                self.data.remove_node(self.coincidences_group,
-                                      self.destination, recursive=True)
+                self.data.remove_node(self.coincidences_group, self.destination, recursive=True)
             else:
-                raise RuntimeError("Reconstructions table already exists for "
-                                   "%s, and overwrite is False" %
-                                   self.coincidences_group)
+                raise RuntimeError(
+                    'Reconstructions table already exists for %s, and overwrite is False' % self.coincidences_group,
+                )
 
-        s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
-                     for p, station in enumerate(self.cluster.stations, 26)}
+        s_columns = {
+            's%d' % station.number: tables.BoolCol(pos=p) for p, station in enumerate(self.cluster.stations, 26)
+        }
         description = ReconstructedCoincidence
         description.columns.update(s_columns)
         self.reconstructions = self.data.create_table(
-            self.coincidences_group, self.destination, description,
-            expectedrows=self.coincidences.nrows)
+            self.coincidences_group,
+            self.destination,
+            description,
+            expectedrows=self.coincidences.nrows,
+        )
         try:
             self.reconstructions._v_attrs.cluster = self.cluster
         except tables.HDF5ExtError:
@@ -507,17 +544,17 @@ class ReconstructESDCoincidences:
 
         """
         try:
-            self.offsets = {station.number: [station.gps_offset + d.offset
-                                             for d in station.detectors]
-                            for station in self.cluster.stations}
+            self.offsets = {
+                station.number: [station.gps_offset + d.offset for d in station.detectors]
+                for station in self.cluster.stations
+            }
             if self.verbose:
                 print('Using timing offsets from cluster object.')
         except AttributeError:
-            self.offsets = {station.number:
-                            api.Station(station.number,
-                                        force_fresh=self.force_fresh,
-                                        force_stale=self.force_stale)
-                            for station in self.cluster.stations}
+            self.offsets = {
+                station.number: api.Station(station.number, force_fresh=self.force_fresh, force_stale=self.force_stale)
+                for station in self.cluster.stations
+            }
             if self.verbose:
                 print('Using timing offsets from public database.')
 
@@ -529,14 +566,17 @@ class ReconstructESDCoincidences:
 
         """
         for coincidence, x, y, theta, phi, station_numbers in zip_longest(
-                self.coincidences, self.core_x, self.core_y,
-                self.theta, self.phi, self.station_numbers):
-            self._store_reconstruction(coincidence, x, y, theta, phi,
-                                       station_numbers)
+            self.coincidences,
+            self.core_x,
+            self.core_y,
+            self.theta,
+            self.phi,
+            self.station_numbers,
+        ):
+            self._store_reconstruction(coincidence, x, y, theta, phi, station_numbers)
         self.reconstructions.flush()
 
-    def _store_reconstruction(self, coincidence, core_x, core_y, theta, phi,
-                              station_numbers):
+    def _store_reconstruction(self, coincidence, core_x, core_y, theta, phi, station_numbers):
         """Store single reconstruction"""
 
         row = self.reconstructions.row
@@ -565,16 +605,11 @@ class ReconstructESDCoincidences:
 
         if cluster is None:
             s_active = self._get_active_stations()
-            cluster = HiSPARCStations(s_active,
-                                      force_fresh=self.force_fresh,
-                                      force_stale=self.force_stale)
+            cluster = HiSPARCStations(s_active, force_fresh=self.force_fresh, force_stale=self.force_stale)
             if self.verbose:
-                print('Constructed cluster %s from public database.'
-                      % self.cluster)
-        else:
-            # TODO: check cluster object isinstance
-            if self.verbose:
-                print('Using cluster %s for metadata.' % self.cluster)
+                print('Constructed cluster %s from public database.' % self.cluster)
+        elif self.verbose:
+            print('Using cluster %s for metadata.' % self.cluster)
         return cluster
 
     def _get_active_stations(self):
@@ -584,8 +619,7 @@ class ReconstructESDCoincidences:
 
         for s_path in self.coincidences_group.s_index:
             try:
-                station_event_table = self.data.get_node(s_path.decode() +
-                                                         '/events')
+                station_event_table = self.data.get_node(s_path.decode() + '/events')
             except tables.NoSuchNodeError:
                 continue
             if not station_event_table.nrows:
@@ -596,11 +630,20 @@ class ReconstructESDCoincidences:
 
 
 class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
-
-    def __init__(self, source_data, dest_data, source_group, dest_group,
-                 overwrite=False, progress=True, verbose=False,
-                 destination='reconstructions', cluster=None,
-                 force_fresh=False, force_stale=False):
+    def __init__(
+        self,
+        source_data,
+        dest_data,
+        source_group,
+        dest_group,
+        overwrite=False,
+        progress=True,
+        verbose=False,
+        destination='reconstructions',
+        cluster=None,
+        force_fresh=False,
+        force_stale=False,
+    ):
         """Initialize the class.
 
         :param data: the PyTables datafile.
@@ -617,8 +660,16 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
 
         """
         super().__init__(
-            source_data, source_group, overwrite, progress, verbose,
-            destination, cluster, force_fresh, force_stale)
+            source_data,
+            source_group,
+            overwrite,
+            progress,
+            verbose,
+            destination,
+            cluster,
+            force_fresh,
+            force_stale,
+        )
         self.dest_data = dest_data
         self.dest_group = dest_group
 
@@ -631,17 +682,22 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
             if self.overwrite:
                 self.dest_data.remove_node(dest_path, recursive=True)
             else:
-                raise RuntimeError("Reconstructions table already exists for "
-                                   "%s, and overwrite is False" %
-                                   self.dest_group)
+                raise RuntimeError(
+                    'Reconstructions table already exists for %s, and overwrite is False' % self.dest_group,
+                )
 
-        s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
-                     for p, station in enumerate(self.cluster.stations, 26)}
+        s_columns = {
+            's%d' % station.number: tables.BoolCol(pos=p) for p, station in enumerate(self.cluster.stations, 26)
+        }
         description = ReconstructedCoincidence
         description.columns.update(s_columns)
         self.reconstructions = self.dest_data.create_table(
-            self.dest_group, self.destination, description,
-            expectedrows=self.coincidences.nrows, createparents=True)
+            self.dest_group,
+            self.destination,
+            description,
+            expectedrows=self.coincidences.nrows,
+            createparents=True,
+        )
         try:
             self.reconstructions._v_attrs.cluster = self.cluster
         except tables.HDF5ExtError:
@@ -649,7 +705,6 @@ class ReconstructESDCoincidencesFromSource(ReconstructESDCoincidences):
 
 
 class ReconstructSimulatedCoincidences(ReconstructESDCoincidences):
-
     """Reconstruct simulated coincidences.
 
     Simulated coincidences use simulated meta-data (e.g. timing offsets)
@@ -687,14 +742,11 @@ class ReconstructSimulatedCoincidences(ReconstructESDCoincidences):
         """
         if cluster is None:
             try:
-                cluster = self.data.get_node_attr(self.coincidences_group,
-                                                  'cluster')
+                cluster = self.data.get_node_attr(self.coincidences_group, 'cluster')
                 if self.verbose:
                     print('Read cluster %s from datafile.' % self.cluster)
             except (tables.NoSuchNodeError, AttributeError):
                 raise RuntimeError('Unable to read cluster object from HDF')
-        else:
-            # TODO: check cluster object
-            if self.verbose:
-                print('Using cluster %s for metadata.' % self.cluster)
+        elif self.verbose:
+            print('Using cluster %s for metadata.' % self.cluster)
         return cluster

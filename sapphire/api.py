@@ -1,26 +1,27 @@
-""" Access the HiSPARC public database API.
+"""Access the HiSPARC public database API.
 
-    This provides easy classes and functions to access the HiSPARC
-    publicdb API. This takes care of the url retrieval and conversion
-    from JSON to Python dictionaries.
+This provides easy classes and functions to access the HiSPARC
+publicdb API. This takes care of the url retrieval and conversion
+from JSON to Python dictionaries.
 
-    Example usage:
+Example usage:
 
-    .. code-block:: python
+.. code-block:: python
 
-        >>> from sapphire import Station
-        >>> stations = [5, 3102, 504, 7101, 8008, 13005]
-        >>> clusters = [Station(station).cluster for station in stations]
-        >>> for station, cluster in zip(stations, clusters):
-        ...     print('Station %d is in cluster %s.' % (station, cluster))
-        Station 5 is in cluster Amsterdam.
-        Station 3102 is in cluster Leiden.
-        Station 504 is in cluster Amsterdam.
-        Station 7101 is in cluster Enschede.
-        Station 8008 is in cluster Eindhoven.
-        Station 13005 is in cluster Bristol.
+    >>> from sapphire import Station
+    >>> stations = [5, 3102, 504, 7101, 8008, 13005]
+    >>> clusters = [Station(station).cluster for station in stations]
+    >>> for station, cluster in zip(stations, clusters):
+    ...     print('Station %d is in cluster %s.' % (station, cluster))
+    Station 5 is in cluster Amsterdam.
+    Station 3102 is in cluster Leiden.
+    Station 504 is in cluster Amsterdam.
+    Station 7101 is in cluster Enschede.
+    Station 8008 is in cluster Eindhoven.
+    Station 13005 is in cluster Bristol.
 
 """
+
 import datetime
 import json
 import logging
@@ -52,7 +53,6 @@ def get_src_base():
 
 
 class API:
-
     """Base API class
 
     This provided the methods to retrieve data from the API. The results
@@ -63,21 +63,21 @@ class API:
     """
 
     urls = {
-        "stations": 'stations/',
-        "stations_in_subcluster": 'subclusters/{subcluster_number}/',
-        "subclusters": 'subclusters/',
-        "subclusters_in_cluster": 'clusters/{cluster_number}/',
-        "clusters": 'clusters/',
-        "clusters_in_country": 'countries/{country_number}/',
-        "countries": 'countries/',
-        "stations_with_data": 'stations/data/{year}/{month}/{day}/',
-        "stations_with_weather": 'stations/weather/{year}/{month}/{day}/',
-        "station_info": 'station/{station_number}/',
-        "has_data": 'station/{station_number}/data/{year}/{month}/{day}/',
-        "has_weather": 'station/{station_number}/weather/{year}/{month}/{day}/',
-        "configuration": 'station/{station_number}/config/{year}/{month}/{day}/',
-        "number_of_events": 'station/{station_number}/num_events/{year}/{month}/{day}/{hour}/',
-        "event_trace": 'station/{station_number}/trace/{ext_timestamp}/'
+        'stations': 'stations/',
+        'stations_in_subcluster': 'subclusters/{subcluster_number}/',
+        'subclusters': 'subclusters/',
+        'subclusters_in_cluster': 'clusters/{cluster_number}/',
+        'clusters': 'clusters/',
+        'clusters_in_country': 'countries/{country_number}/',
+        'countries': 'countries/',
+        'stations_with_data': 'stations/data/{year}/{month}/{day}/',
+        'stations_with_weather': 'stations/weather/{year}/{month}/{day}/',
+        'station_info': 'station/{station_number}/',
+        'has_data': 'station/{station_number}/data/{year}/{month}/{day}/',
+        'has_weather': 'station/{station_number}/weather/{year}/{month}/{day}/',
+        'configuration': 'station/{station_number}/config/{year}/{month}/{day}/',
+        'number_of_events': 'station/{station_number}/num_events/{year}/{month}/{day}/{hour}/',
+        'event_trace': 'station/{station_number}/trace/{ext_timestamp}/',
     }
 
     src_urls = {
@@ -97,7 +97,7 @@ class API:
         'trigger': 'trigger/{station_number}/',
         'layout': 'layout/{station_number}/',
         'detector_timing_offsets': 'detector_timing_offsets/{station_number}/',
-        'station_timing_offsets': 'station_timing_offsets/{station_1}/{station_2}/'
+        'station_timing_offsets': 'station_timing_offsets/{station_1}/{station_2}/',
     }
 
     def __init__(self, force_fresh=False, force_stale=False):
@@ -128,15 +128,15 @@ class API:
             data = json.loads(json_data)
         except Exception:
             if self.force_fresh:
-                raise Exception('Couldn\'t get requested data from server.')
+                raise Exception("Couldn't get requested data from server.")
             localpath = path.join(LOCAL_BASE, urlpath + extsep + 'json')
             try:
                 with open(localpath) as localdata:
                     data = json.load(localdata)
             except Exception:
                 if self.force_stale:
-                    raise Exception('Couldn\'t find requested data locally.')
-                raise Exception('Couldn\'t get requested data from server nor find it locally.')
+                    raise Exception("Couldn't find requested data locally.")
+                raise Exception("Couldn't get requested data from server nor find it locally.")
             if not self.force_stale:
                 warnings.warn('Using local data. Possibly outdated.')
 
@@ -159,7 +159,7 @@ class API:
             tsv_data = self._retrieve_url(urlpath, base=get_src_base())
         except Exception:
             if self.force_fresh:
-                raise Exception('Couldn\'t get requested data from server.')
+                raise Exception("Couldn't get requested data from server.")
             localpath = path.join(LOCAL_BASE, urlpath + extsep + 'tsv')
             try:
                 with warnings.catch_warnings():
@@ -167,15 +167,14 @@ class API:
                     data = genfromtxt(localpath, delimiter='\t', dtype=None, names=names)
             except Exception:
                 if self.force_stale:
-                    raise Exception('Couldn\'t find requested data locally.')
-                raise Exception('Couldn\'t get requested data from server nor find it locally.')
+                    raise Exception("Couldn't find requested data locally.")
+                raise Exception("Couldn't get requested data from server nor find it locally.")
             if not self.force_stale:
                 warnings.warn('Using local data. Possibly outdated.')
         else:
             with warnings.catch_warnings():
                 warnings.filterwarnings('ignore')
-                data = genfromtxt(BytesIO(tsv_data.encode('utf-8')),
-                                  delimiter='\t', dtype=None, names=names)
+                data = genfromtxt(BytesIO(tsv_data.encode('utf-8')), delimiter='\t', dtype=None, names=names)
 
         return atleast_1d(data)
 
@@ -225,11 +224,10 @@ class API:
             raise Exception('You must also specify the day')
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(force_fresh={self.force_fresh}, force_stale={self.force_stale})"
+        return f'{self.__class__.__name__}(force_fresh={self.force_fresh}, force_stale={self.force_stale})'
 
 
 class Network(API):
-
     """Get info about the network (countries/clusters/subclusters/stations)"""
 
     @cached_property
@@ -457,8 +455,7 @@ class Network(API):
             stations = [stations]
 
         for station in stations:
-            data[station] = Station(station, force_fresh=self.force_fresh,
-                                    force_stale=self.force_stale).event_time()
+            data[station] = Station(station, force_fresh=self.force_fresh, force_stale=self.force_stale).event_time()
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
@@ -466,7 +463,7 @@ class Network(API):
         len_array = (last - first) // 3600 + 1
         all_active = ones(len_array)
 
-        for station in data.keys():
+        for station in data:
             is_active = zeros(len_array)
             start_i = (data[station]['timestamp'][0] - first) // 3600
             end_i = start_i + len(data[station])
@@ -488,7 +485,6 @@ class Network(API):
 
 
 class Station(API):
-
     """Access data about a single station"""
 
     def __init__(self, station, force_fresh=False, force_stale=False):
@@ -539,8 +535,12 @@ class Station(API):
         """
         if date is None:
             date = datetime.date.today()
-        path = (self.urls['configuration']
-                .format(station_number=self.station, year=date.year, month=date.month, day=date.day))
+        path = self.urls['configuration'].format(
+            station_number=self.station,
+            year=date.year,
+            month=date.month,
+            day=date.day,
+        )
 
         return self._get_json(path)
 
@@ -558,8 +558,13 @@ class Station(API):
         """
         self.validate_partial_date(year, month, day, hour)
 
-        path = (self.urls['number_of_events']
-                .format(station_number=self.station, year=year, month=month, day=day, hour=hour))
+        path = self.urls['number_of_events'].format(
+            station_number=self.station,
+            year=year,
+            month=month,
+            day=day,
+            hour=hour,
+        )
         return self._get_json(path)
 
     def has_data(self, year='', month='', day=''):
@@ -634,8 +639,7 @@ class Station(API):
 
         """
         columns = ('pulseheight', 'ph1', 'ph2', 'ph3', 'ph4')
-        path = self.src_urls['pulseheight'].format(station_number=self.station,
-                                                   year=year, month=month, day=day)
+        path = self.src_urls['pulseheight'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def pulse_integral(self, year, month, day):
@@ -679,8 +683,7 @@ class Station(API):
 
         """
         columns = ('timestamp', 'air_pressure')
-        path = self.src_urls['barometer'].format(station_number=self.station,
-                                                 year=year, month=month, day=day)
+        path = self.src_urls['barometer'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     def temperature(self, year, month, day):
@@ -691,8 +694,7 @@ class Station(API):
 
         """
         columns = ('timestamp', 'temperature')
-        path = self.src_urls['temperature'].format(station_number=self.station,
-                                                   year=year, month=month, day=day)
+        path = self.src_urls['temperature'].format(station_number=self.station, year=year, month=month, day=day)
         return self._get_tsv(path, names=columns)
 
     @cached_property
@@ -718,8 +720,7 @@ class Station(API):
             idx = -1
         else:
             idx = get_active_index(electronics['timestamp'], timestamp)
-        electronic = [electronics[idx][field] for field in
-                      ('primary', 'secondary', 'primary_fpga', 'secondary_fpga')]
+        electronic = [electronics[idx][field] for field in ('primary', 'secondary', 'primary_fpga', 'secondary_fpga')]
         return electronic
 
     @cached_property
@@ -799,9 +800,11 @@ class Station(API):
             timestamp = process_time(timestamp)
         locations = self.gps_locations
         idx = get_active_index(locations['timestamp'], timestamp)
-        location = {'latitude': locations[idx]['latitude'],
-                    'longitude': locations[idx]['longitude'],
-                    'altitude': locations[idx]['altitude']}
+        location = {
+            'latitude': locations[idx]['latitude'],
+            'longitude': locations[idx]['longitude'],
+            'altitude': locations[idx]['altitude'],
+        }
         return location
 
     @cached_property
@@ -811,10 +814,21 @@ class Station(API):
         :return: array of timestamps and values.
 
         """
-        columns = ('timestamp',
-                   'low1', 'low2', 'low3', 'low4',
-                   'high1', 'high2', 'high3', 'high4',
-                   'n_low', 'n_high', 'and_or', 'external')
+        columns = (
+            'timestamp',
+            'low1',
+            'low2',
+            'low3',
+            'low4',
+            'high1',
+            'high2',
+            'high3',
+            'high4',
+            'n_low',
+            'n_high',
+            'and_or',
+            'external',
+        )
         path = self.src_urls['trigger'].format(station_number=self.station)
         return self._get_tsv(path, names=columns)
 
@@ -830,9 +844,7 @@ class Station(API):
             idx = -1
         else:
             idx = get_active_index(triggers['timestamp'], timestamp)
-        thresholds = [[triggers[idx]['%s%d' % (t, i)]
-                       for t in ('low', 'high')]
-                      for i in range(1, 5)]
+        thresholds = [[triggers[idx]['%s%d' % (t, i)] for t in ('low', 'high')] for i in range(1, 5)]
         trigger = [triggers[idx][t] for t in ('n_low', 'n_high', 'and_or', 'external')]
         return thresholds, trigger
 
@@ -843,11 +855,25 @@ class Station(API):
         :return: array of timestamps and values.
 
         """
-        columns = ('timestamp',
-                   'radius1', 'alpha1', 'height1', 'beta1',
-                   'radius2', 'alpha2', 'height2', 'beta2',
-                   'radius3', 'alpha3', 'height3', 'beta3',
-                   'radius4', 'alpha4', 'height4', 'beta4')
+        columns = (
+            'timestamp',
+            'radius1',
+            'alpha1',
+            'height1',
+            'beta1',
+            'radius2',
+            'alpha2',
+            'height2',
+            'beta2',
+            'radius3',
+            'alpha3',
+            'height3',
+            'beta3',
+            'radius4',
+            'alpha4',
+            'height4',
+            'beta4',
+        )
         base = self.src_urls['layout']
         path = base.format(station_number=self.station)
         return self._get_tsv(path, names=columns)
@@ -864,9 +890,9 @@ class Station(API):
             idx = -1
         else:
             idx = get_active_index(station_layouts['timestamp'], timestamp)
-        station_layout = [[station_layouts[idx]['%s%d' % (c, i)]
-                           for c in ('radius', 'alpha', 'height', 'beta')]
-                          for i in range(1, 5)]
+        station_layout = [
+            [station_layouts[idx]['%s%d' % (c, i)] for c in ('radius', 'alpha', 'height', 'beta')] for i in range(1, 5)
+        ]
         return station_layout
 
     @cached_property
@@ -931,7 +957,7 @@ class Station(API):
 
         """
         if self.station == reference_station:
-            return (0., 0.)
+            return (0.0, 0.0)
 
         station_timing_offsets = self.station_timing_offsets(reference_station)
         if timestamp is None:
@@ -943,5 +969,9 @@ class Station(API):
         return station_timing_offset
 
     def __repr__(self):
-        return ("%s(%d, force_fresh=%s, force_stale=%s)" %
-                (self.__class__.__name__, self.station, self.force_fresh, self.force_stale))
+        return '%s(%d, force_fresh=%s, force_stale=%s)' % (
+            self.__class__.__name__,
+            self.station,
+            self.force_fresh,
+            self.force_stale,
+        )

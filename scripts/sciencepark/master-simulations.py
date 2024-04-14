@@ -2,9 +2,8 @@ import os
 import re
 import warnings
 
-import tables
-
 import store_aires_data
+import tables
 
 from sapphire import clusters
 from sapphire.simulations import GroundParticlesSimulation, QSubSimulation
@@ -14,21 +13,21 @@ N = 100000
 N_CORES = 32
 
 
-class Master(object):
+class Master:
     def __init__(self, data_filename):
         if os.path.exists(data_filename):
-            warnings.warn("%s already exists, some steps are skipped" % data_filename)
+            warnings.warn('%s already exists, some steps are skipped' % data_filename)
         self.data = tables.open_file(data_filename, 'a')
 
     def main(self):
         self.store_shower_data()
         self.do_cluster_simulations()
-        #self.do_energies_simulations()
+        # self.do_energies_simulations()
 
     def store_shower_data(self):
         for angle in [0, 5, 10, 15, 22.5, 30, 35, 45]:
             self.store_1PeV_data_for_angle(angle)
-        #for energy, group_name in [('e14', 'E_100TeV'),
+        # for energy, group_name in [('e14', 'E_100TeV'),
         #                           ('e16', 'E_10PeV')]:
         #    self.store_data_for_energy(energy, group_name)
 
@@ -76,8 +75,8 @@ class Master(object):
 
         try:
             sim = Simulation(*args, **kwargs)
-        except RuntimeError, msg:
-            print msg
+        except RuntimeError as msg:
+            print(msg)
             return
         else:
             sim.run()

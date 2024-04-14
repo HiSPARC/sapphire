@@ -1,32 +1,33 @@
-""" Process HiSPARC events
+"""Process HiSPARC events
 
-    This module can be used analyse data to get observables like arrival
-    times and particle count in each detector for each event.
+This module can be used analyse data to get observables like arrival
+times and particle count in each detector for each event.
 
-    Example usage::
+Example usage::
 
-        import datetime
+    import datetime
 
-        import tables
+    import tables
 
-        from sapphire.publicdb import download_data
-        from sapphire import ProcessEvents
+    from sapphire.publicdb import download_data
+    from sapphire import ProcessEvents
 
-        STATIONS = [501, 503, 506]
-        START = datetime.datetime(2013, 1, 1)
-        END = datetime.datetime(2013, 1, 2)
+    STATIONS = [501, 503, 506]
+    START = datetime.datetime(2013, 1, 1)
+    END = datetime.datetime(2013, 1, 2)
 
 
-        if __name__ == '__main__':
-            station_groups = ['/s%d' % u for u in STATIONS]
+    if __name__ == '__main__':
+        station_groups = ['/s%d' % u for u in STATIONS]
 
-            with tables.open_file('data.h5', 'w') as data:
-                for station, group in zip(STATIONS, station_groups):
-                    download_data(data, group, station, START, END, True)
-                    proc = ProcessEvents(data, group)
-                    proc.process_and_store_results()
+        with tables.open_file('data.h5', 'w') as data:
+            for station, group in zip(STATIONS, station_groups):
+                download_data(data, group, station, START, END, True)
+                proc = ProcessEvents(data, group)
+                proc.process_and_store_results()
 
 """
+
 import operator
 import os
 import warnings
@@ -41,7 +42,7 @@ from .find_mpv import FindMostProbableValueInSpectrum
 from .process_traces import ADC_HIGH_THRESHOLD, ADC_LOW_THRESHOLD, ADC_TIME_PER_SAMPLE
 
 ADC_THRESHOLD = 20  #: Threshold for arrival times, relative to the baseline
-ADC_LIMIT = 2 ** 12
+ADC_LIMIT = 2**12
 
 #: Default trigger for 2-detector station
 #: 2 low and no high, no external
@@ -52,7 +53,6 @@ TRIGGER_4 = (3, 2, True, 0)
 
 
 class ProcessEvents:
-
     """Process HiSPARC events to obtain several observables.
 
     This class can be used to process a set of HiSPARC events and adds a
@@ -83,7 +83,8 @@ class ProcessEvents:
         'n2': tables.Float32Col(pos=18, dflt=-1),
         'n3': tables.Float32Col(pos=19, dflt=-1),
         'n4': tables.Float32Col(pos=20, dflt=-1),
-        't_trigger': tables.Float32Col(pos=21, dflt=-1)}
+        't_trigger': tables.Float32Col(pos=21, dflt=-1),
+    }
 
     def __init__(self, data, group, source=None, progress=True):
         """Initialize the class.
@@ -103,8 +104,7 @@ class ProcessEvents:
         self.progress = progress
         self.limit = None
 
-    def process_and_store_results(self, destination=None, overwrite=False,
-                                  limit=None):
+    def process_and_store_results(self, destination=None, overwrite=False, limit=None):
         """Process events and store the results.
 
         :param destination: name of the table where the results will be
@@ -132,8 +132,7 @@ class ProcessEvents:
         :return: the traces: an array of pulseheight values.
 
         """
-        traces = [list(self._get_trace(idx)) for idx in event['traces']
-                  if idx >= 0]
+        traces = [list(self._get_trace(idx)) for idx in event['traces'] if idx >= 0]
 
         # Make traces follow NumPy conventions
         traces = np.array(traces).T
@@ -171,8 +170,7 @@ class ProcessEvents:
         """Check if the destination is valid"""
 
         if destination == '_events':
-            raise RuntimeError("The _events table is reserved for internal "
-                               "use.  Choose another destination.")
+            raise RuntimeError('The _events table is reserved for internal use.  Choose another destination.')
         elif destination is None:
             destination = 'events'
 
@@ -180,8 +178,7 @@ class ProcessEvents:
         # worry.  Otherwise, destination may not exist or will be overwritten
         if self.source.name != destination:
             if destination in self.group and not overwrite:
-                raise RuntimeError("I will not overwrite previous results "
-                                   "(unless you specify overwrite=True)")
+                raise RuntimeError('I will not overwrite previous results (unless you specify overwrite=True)')
 
         self.destination = destination
 
@@ -198,8 +195,7 @@ class ProcessEvents:
 
         unique_sorted_ids = self._find_unique_row_ids(enumerated_timestamps)
 
-        new_events = self._replace_table_with_selected_rows(events,
-                                                            unique_sorted_ids)
+        new_events = self._replace_table_with_selected_rows(events, unique_sorted_ids)
         self.source = new_events
         self._normalize_event_ids(new_events)
 
@@ -224,8 +220,7 @@ class ProcessEvents:
             the destination table.
 
         """
-        tmptable = self.data.create_table(self.group, 't__events',
-                                          description=table.description)
+        tmptable = self.data.create_table(self.group, 't__events', description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         tmptable.append(selected_rows)
         tmptable.flush()
@@ -262,9 +257,7 @@ class ProcessEvents:
 
         if '_t_events' in self.group:
             self.data.remove_node(self.group, '_t_events')
-        table = self.data.create_table(self.group, '_t_events',
-                                       self.processed_events_description,
-                                       expectedrows=length)
+        table = self.data.create_table(self.group, '_t_events', self.processed_events_description, expectedrows=length)
 
         for _ in range(length):
             table.row.append()
@@ -277,8 +270,7 @@ class ProcessEvents:
         source = self.source
 
         for col in pbar(source.colnames, show=self.progress):
-            table.modify_column(stop=self.limit, colname=col,
-                                column=getattr(source.cols, col)[:self.limit])
+            table.modify_column(stop=self.limit, colname=col, column=getattr(source.cols, col)[: self.limit])
         table.flush()
 
     def _store_results_from_traces(self):
@@ -300,8 +292,7 @@ class ProcessEvents:
         else:
             events = self.source
 
-        timings = self._process_traces_from_event_list(events,
-                                                       length=self.limit)
+        timings = self._process_traces_from_event_list(events, length=self.limit)
         return timings
 
     def _process_traces_from_event_list(self, events, length=None):
@@ -333,9 +324,7 @@ class ProcessEvents:
 
         """
         timings = []
-        for baseline, pulseheight, trace_idx in zip(event['baseline'],
-                                                    event['pulseheights'],
-                                                    event['traces']):
+        for baseline, pulseheight, trace_idx in zip(event['baseline'], event['pulseheights'], event['traces']):
             if pulseheight < 0:
                 # retain -1, -999 status flags in timing
                 timings.append(pulseheight)
@@ -343,11 +332,8 @@ class ProcessEvents:
                 timings.append(-999)
             else:
                 trace = self._get_trace(trace_idx)
-                timings.append(self._reconstruct_time_from_trace(trace,
-                                                                 baseline))
-        timings = [time * ADC_TIME_PER_SAMPLE
-                   if time not in ERR else time
-                   for time in timings]
+                timings.append(self._reconstruct_time_from_trace(trace, baseline))
+        timings = [time * ADC_TIME_PER_SAMPLE if time not in ERR else time for time in timings]
         return timings
 
     def _get_trace(self, idx):
@@ -364,8 +350,7 @@ class ProcessEvents:
         try:
             trace = zlib.decompress(blobs[idx]).decode('utf-8').split(',')
         except zlib.error:
-            trace = (zlib.decompress(blobs[idx][1:-1])
-                     .decode('utf-8').split(','))
+            trace = zlib.decompress(blobs[idx][1:-1]).decode('utf-8').split(',')
         if trace[-1] == '':
             del trace[-1]
         trace = (int(x) for x in trace)
@@ -433,8 +418,7 @@ class ProcessEvents:
             if (detector_integrals < 0).all():
                 all_mpv.append(np.nan)
             else:
-                n, bins = np.histogram(detector_integrals,
-                                       bins=np.linspace(0, 50000, 201))
+                n, bins = np.histogram(detector_integrals, bins=np.linspace(0, 50000, 201))
                 find_mpv = FindMostProbableValueInSpectrum(n, bins)
                 mpv, is_fitted = find_mpv.find_mpv()
                 if is_fitted:
@@ -443,15 +427,12 @@ class ProcessEvents:
                     all_mpv.append(np.nan)
         all_mpv = np.array(all_mpv)
 
-        for event in self.source[:self.limit]:
+        for event in self.source[: self.limit]:
             pulseintegrals = event['integrals']
             # retain -1, -999 status flags
-            pulseintegrals = np.where(pulseintegrals >= 0,
-                                      pulseintegrals / all_mpv,
-                                      pulseintegrals)
+            pulseintegrals = np.where(pulseintegrals >= 0, pulseintegrals / all_mpv, pulseintegrals)
             # if mpv fit failed, value is nan.  Make it -999
-            pulseintegrals = np.where(np.isnan(pulseintegrals), -999,
-                                      pulseintegrals)
+            pulseintegrals = np.where(np.isnan(pulseintegrals), -999, pulseintegrals)
             n_particles.append(pulseintegrals)
 
         return np.array(n_particles)
@@ -467,16 +448,18 @@ class ProcessEvents:
 
     def __repr__(self):
         if not self.data.isopen:
-            return "<finished %s>" % self.__class__.__name__
+            return '<finished %s>' % self.__class__.__name__
         else:
-            return ("%s(%r, %r, source=%r, progress=%r)" %
-                    (self.__class__.__name__, self.data.filename,
-                     self.group._v_pathname, self.source._v_pathname,
-                     self.progress))
+            return '%s(%r, %r, source=%r, progress=%r)' % (
+                self.__class__.__name__,
+                self.data.filename,
+                self.group._v_pathname,
+                self.source._v_pathname,
+                self.progress,
+            )
 
 
 class ProcessIndexedEvents(ProcessEvents):
-
     """Process a subset of events using an index.
 
     This is a subclass of :class:`ProcessEvents`.  Using an index, this
@@ -533,7 +516,6 @@ class ProcessIndexedEvents(ProcessEvents):
 
 
 class ProcessEventsWithLINT(ProcessEvents):
-
     """Process events using LInear INTerpolation for arrival times.
 
     This is a subclass of :class:`ProcessEvents`.  Use a linear
@@ -557,10 +539,10 @@ class ProcessEventsWithLINT(ProcessEvents):
 
         if i == 0:
             value = i
-        elif not i == -999:
+        elif i != -999:
             x0, x1 = i - 1, i
             y0, y1 = trace[x0], trace[x1]
-            value = 1. * (threshold - y0) / (y1 - y0) + x0
+            value = 1.0 * (threshold - y0) / (y1 - y0) + x0
         else:
             value = -999
 
@@ -568,7 +550,6 @@ class ProcessEventsWithLINT(ProcessEvents):
 
 
 class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
-
     """Process a subset of events using LInear INTerpolation.
 
     This is a subclass of :class:`ProcessIndexedEvents` and
@@ -576,11 +557,8 @@ class ProcessIndexedEventsWithLINT(ProcessIndexedEvents, ProcessEventsWithLINT):
 
     """
 
-    pass
-
 
 class ProcessEventsWithoutTraces(ProcessEvents):
-
     """Process events without traces
 
     This is a subclass of :class:`ProcessEvents`.  Processing events
@@ -594,11 +572,8 @@ class ProcessEventsWithoutTraces(ProcessEvents):
     def _store_results_from_traces(self):
         """Fake storing results from traces."""
 
-        pass
-
 
 class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces, ProcessIndexedEvents):
-
     """Process a subset of events without traces
 
     This is a subclass of :class:`ProcessIndexedEvents` and
@@ -610,11 +585,8 @@ class ProcessIndexedEventsWithoutTraces(ProcessEventsWithoutTraces, ProcessIndex
 
     """
 
-    pass
-
 
 class ProcessEventsWithTriggerOffset(ProcessEvents):
-
     """Process events and reconstruct trigger time from traces
 
     The trigger times are stored in the columnt_trigger, they are
@@ -693,8 +665,11 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         low_idx = []
         high_idx = []
         for baseline, pulseheight, trace_idx, trig_thresholds in zip(
-                event['baseline'], event['pulseheights'], event['traces'],
-                self.thresholds):
+            event['baseline'],
+            event['pulseheights'],
+            event['traces'],
+            self.thresholds,
+        ):
             if pulseheight < 0:
                 # Retain -1 and -999 status flags in timing
                 timings.append(pulseheight)
@@ -724,8 +699,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
             trace = self._get_trace(trace_idx)
 
-            t, l, h = self._first_above_thresholds(trace, thresholds,
-                                                   max_signal)
+            t, l, h = self._first_above_thresholds(trace, thresholds, max_signal)
             timings.append(t)
             low_idx.append(l)
             high_idx.append(h)
@@ -733,8 +707,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         t_trigger = self._reconstruct_trigger(low_idx, high_idx)
         timings.append(t_trigger)
 
-        timings = [time * ADC_TIME_PER_SAMPLE if time not in ERR else time
-                   for time in timings]
+        timings = [time * ADC_TIME_PER_SAMPLE if time not in ERR else time for time in timings]
         return timings
 
     @classmethod
@@ -781,8 +754,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                  threshold, and the value.
 
         """
-        return next(((i, x) for i, x in enumerate(trace, t) if x >= threshold),
-                    (-999, 0))
+        return next(((i, x) for i, x in enumerate(trace, t) if x >= threshold), (-999, 0))
 
     def _reconstruct_trigger(self, low_idx, high_idx):
         """Reconstruct the moment of trigger from the threshold info
@@ -798,8 +770,8 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
         if external:
             return -999
 
-        low_idx = sorted(idx for idx in low_idx if not idx == -999)
-        high_idx = sorted(idx for idx in high_idx if not idx == -999)
+        low_idx = sorted(idx for idx in low_idx if idx != -999)
+        high_idx = sorted(idx for idx in high_idx if idx != -999)
 
         if and_or:
             # low or high, which ever is first
@@ -809,39 +781,45 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
                 return high_idx[n_high - 1]
             elif n_low and len(low_idx) >= n_low:
                 return low_idx[n_low - 1]
-        else:
-            if n_low and n_high:
-                # low and high
-                if len(low_idx) >= n_low + n_high and len(high_idx) >= n_high:
-                    return max(low_idx[n_low + n_high - 1], high_idx[n_high - 1])
-            elif n_high:
-                # 0 low and high
-                if len(high_idx) >= n_high:
-                    return high_idx[n_high - 1]
-            elif n_low:
-                # low and 0 high
-                if len(low_idx) >= n_low:
-                    return low_idx[n_low - 1]
+        elif n_low and n_high:
+            # low and high
+            if len(low_idx) >= n_low + n_high and len(high_idx) >= n_high:
+                return max(low_idx[n_low + n_high - 1], high_idx[n_high - 1])
+        elif n_high:
+            # 0 low and high
+            if len(high_idx) >= n_high:
+                return high_idx[n_high - 1]
+        elif n_low:
+            # low and 0 high
+            if len(low_idx) >= n_low:
+                return low_idx[n_low - 1]
 
         return -999
 
     def __repr__(self):
         if not self.data.isopen:
-            return "<finished %s>" % self.__class__.__name__
+            return '<finished %s>' % self.__class__.__name__
         elif self.station is None:
-            return ("%s(%r, %r, source=%r, progress=%r, Station=%r)" %
-                    (self.__class__.__name__, self.data.filename,
-                     self.group._v_pathname, self.source._v_pathname,
-                     self.progress, None))
+            return '%s(%r, %r, source=%r, progress=%r, Station=%r)' % (
+                self.__class__.__name__,
+                self.data.filename,
+                self.group._v_pathname,
+                self.source._v_pathname,
+                self.progress,
+                None,
+            )
         else:
-            return ("%s(%r, %r, source=%r, progress=%r, station=%d)" %
-                    (self.__class__.__name__, self.data.filename,
-                     self.group._v_pathname, self.source._v_pathname,
-                     self.progress, self.station.number))
+            return '%s(%r, %r, source=%r, progress=%r, station=%d)' % (
+                self.__class__.__name__,
+                self.data.filename,
+                self.group._v_pathname,
+                self.source._v_pathname,
+                self.progress,
+                self.station.number,
+            )
 
 
 class ProcessEventsFromSource(ProcessEvents):
-
     """Process HiSPARC events from a different source.
 
     This class is a subclass of ProcessEvents.  The difference is that in
@@ -851,8 +829,7 @@ class ProcessEventsFromSource(ProcessEvents):
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group,
-                 progress=False):
+    def __init__(self, source_file, dest_file, source_group, dest_group, progress=False):
         """Initialize the class.
 
         :param source_file,dest_file: PyTables source and destination files.
@@ -897,7 +874,6 @@ class ProcessEventsFromSource(ProcessEvents):
 
     def _check_destination(self, destination, overwrite):
         """Override method, the destination is empty"""
-        pass
 
     def _replace_table_with_selected_rows(self, table, row_ids):
         """Replace events table with selected rows.
@@ -907,8 +883,7 @@ class ProcessEventsFromSource(ProcessEvents):
             the destination table.
 
         """
-        new_events = self.dest_file.create_table(self.dest_group, '_events',
-                                                 description=table.description)
+        new_events = self.dest_file.create_table(self.dest_group, '_events', description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         new_events.append(selected_rows)
         new_events.flush()
@@ -922,9 +897,12 @@ class ProcessEventsFromSource(ProcessEvents):
         else:
             length = len(self.source)
 
-        table = self.dest_file.create_table(self.dest_group, 'events',
-                                            self.processed_events_description,
-                                            expectedrows=length)
+        table = self.dest_file.create_table(
+            self.dest_group,
+            'events',
+            self.processed_events_description,
+            expectedrows=length,
+        )
 
         for _ in range(length):
             table.row.append()
@@ -943,17 +921,19 @@ class ProcessEventsFromSource(ProcessEvents):
 
     def __repr__(self):
         if not self.source_file.isopen or not self.dest_file.isopen:
-            return f"<finished {self.__class__.__name__}>"
+            return f'<finished {self.__class__.__name__}>'
         else:
-            return ("%s(%r, %r, %r, %r, progress=%r)" %
-                    (self.__class__.__name__, self.source_file.filename,
-                     self.dest_file.filename, self.source_group._v_pathname,
-                     self.dest_group._v_pathname, self.progress))
+            return '%s(%r, %r, %r, %r, progress=%r)' % (
+                self.__class__.__name__,
+                self.source_file.filename,
+                self.dest_file.filename,
+                self.source_group._v_pathname,
+                self.dest_group._v_pathname,
+                self.progress,
+            )
 
 
-class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
-                                               ProcessEventsWithTriggerOffset):
-
+class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource, ProcessEventsWithTriggerOffset):
     """Process events from a different source and find trigger.
 
     This is a subclass of :class:`ProcessEventsFromSource` and
@@ -963,8 +943,7 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
 
     """
 
-    def __init__(self, source_file, dest_file, source_group, dest_group,
-                 station=None, progress=False):
+    def __init__(self, source_file, dest_file, source_group, dest_group, station=None, progress=False):
         """Initialize the class.
 
         :param source_file,dest_file: PyTables source and destination files.
@@ -1001,22 +980,29 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource,
 
     def __repr__(self):
         if not self.source_file.isopen or not self.dest_file.isopen:
-            return "<finished %s>" % self.__class__.__name__
+            return '<finished %s>' % self.__class__.__name__
         elif self.station is None:
-            return ("%s(%r, %r, %r, %r, progress=%r)" %
-                    (self.__class__.__name__, self.source_file.filename,
-                     self.dest_file.filename, self.source_group._v_pathname,
-                     self.dest_group._v_pathname, self.progress))
+            return '%s(%r, %r, %r, %r, progress=%r)' % (
+                self.__class__.__name__,
+                self.source_file.filename,
+                self.dest_file.filename,
+                self.source_group._v_pathname,
+                self.dest_group._v_pathname,
+                self.progress,
+            )
         else:
-            return ("%s(%r, %r, %r, %r, station=%d, progress=%r)" %
-                    (self.__class__.__name__, self.source_file.filename,
-                     self.dest_file.filename, self.source_group._v_pathname,
-                     self.dest_group._v_pathname, self.station.number,
-                     self.progress))
+            return '%s(%r, %r, %r, %r, station=%d, progress=%r)' % (
+                self.__class__.__name__,
+                self.source_file.filename,
+                self.dest_file.filename,
+                self.source_group._v_pathname,
+                self.dest_group._v_pathname,
+                self.station.number,
+                self.progress,
+            )
 
 
 class ProcessDataTable(ProcessEvents):
-
     """Process HiSPARC abstract data table to clean the data.
 
     Abstract data is a PyTables table containing a timestamp for each row.
@@ -1025,6 +1011,7 @@ class ProcessDataTable(ProcessEvents):
     sort the data by timestamp to store it in to a copy of the table.
 
     """
+
     table_name = 'abstract_data'  # overwrite with 'weather' or 'singles'
 
     def process_and_store_results(self, destination=None, overwrite=False, limit=None):
@@ -1062,16 +1049,14 @@ class ProcessDataTable(ProcessEvents):
         """Check if the destination is valid"""
 
         if destination == f'_t_{self.table_name}':
-            raise RuntimeError(f"The _t_{self.table_name} table is for internal use. Choose "
-                               "another destination.")
+            raise RuntimeError(f'The _t_{self.table_name} table is for internal use. Choose ' 'another destination.')
         elif destination is None:
             destination = self.table_name
 
         # If destination == source, source will be overwritten.
         if self.source.name != destination:
             if destination in self.group and not overwrite:
-                raise RuntimeError("I will not overwrite previous results "
-                                   "(unless you specify overwrite=True)")
+                raise RuntimeError('I will not overwrite previous results (unless you specify overwrite=True)')
 
         self.destination = destination
 
@@ -1088,8 +1073,7 @@ class ProcessDataTable(ProcessEvents):
 
         unique_sorted_ids = self._find_unique_row_ids(enumerated_timestamps)
 
-        new_data = self._replace_table_with_selected_rows(data,
-                                                          unique_sorted_ids)
+        new_data = self._replace_table_with_selected_rows(data, unique_sorted_ids)
         self.source = new_data
         self._normalize_event_ids(new_data)
 
@@ -1101,9 +1085,7 @@ class ProcessDataTable(ProcessEvents):
             the destination table.
 
         """
-        tmptable = self.data.create_table(self.group,
-                                          f'_t_{self.table_name}',
-                                          description=table.description)
+        tmptable = self.data.create_table(self.group, f'_t_{self.table_name}', description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         tmptable.append(selected_rows)
         tmptable.flush()
@@ -1112,7 +1094,6 @@ class ProcessDataTable(ProcessEvents):
 
 
 class ProcessDataTableFromSource(ProcessDataTable):
-
     """Process HiSPARC abstract data table from a different source.
 
     This class is a subclass of ProcessDataTable. The difference is that in
@@ -1153,7 +1134,6 @@ class ProcessDataTableFromSource(ProcessDataTable):
 
     def _check_destination(self, destination, overwrite):
         """Override method, the destination should be empty"""
-        pass
 
     def _replace_table_with_selected_rows(self, table, row_ids):
         """Replace data table with selected rows.
@@ -1163,9 +1143,7 @@ class ProcessDataTableFromSource(ProcessDataTable):
             the destination table.
 
         """
-        new_table = self.dest_file.create_table(self.dest_group,
-                                                self.table_name,
-                                                description=table.description)
+        new_table = self.dest_file.create_table(self.dest_group, self.table_name, description=table.description)
         selected_rows = table.read_coordinates(row_ids)
         new_table.append(selected_rows)
         new_table.flush()
@@ -1173,16 +1151,19 @@ class ProcessDataTableFromSource(ProcessDataTable):
 
     def __repr__(self):
         if not self.source_file.isopen or not self.dest_file.isopen:
-            return "<finished %s>" % self.__class__.__name__
+            return '<finished %s>' % self.__class__.__name__
         else:
-            return ("%s(%r, %r, %r, %r, progress=%r)" %
-                    (self.__class__.__name__, self.source_file.filename,
-                     self.dest_file.filename, self.source_group._v_pathname,
-                     self.dest_group._v_pathname, self.progress))
+            return '%s(%r, %r, %r, %r, progress=%r)' % (
+                self.__class__.__name__,
+                self.source_file.filename,
+                self.dest_file.filename,
+                self.source_group._v_pathname,
+                self.dest_group._v_pathname,
+                self.progress,
+            )
 
 
 class ProcessWeather(ProcessDataTable):
-
     """Process HiSPARC weather to clean the data.
 
     This class can be used to process a set of HiSPARC weather, to
@@ -1190,11 +1171,11 @@ class ProcessWeather(ProcessDataTable):
     copy of the weather table.
 
     """
+
     table_name = 'weather'
 
 
 class ProcessWeatherFromSource(ProcessDataTableFromSource):
-
     """Process HiSPARC weather from a different source.
 
     This class behaves like a subclass of ProcessWeather because of a common
@@ -1205,11 +1186,11 @@ class ProcessWeatherFromSource(ProcessDataTableFromSource):
     assumed to be empty.
 
     """
+
     table_name = 'weather'
 
 
 class ProcessSingles(ProcessDataTable):
-
     """Process HiSPARC singles data to clean the data.
 
     This class can be used to process a set of HiSPARC singles data, to
@@ -1217,11 +1198,11 @@ class ProcessSingles(ProcessDataTable):
     copy of the singles data table.
 
     """
+
     table_name = 'singles'
 
 
 class ProcessSinglesFromSource(ProcessDataTableFromSource):
-
     """Process HiSPARC singles data from a different source.
 
     This class behaves like a subclass of ProcessSingles because of a common
@@ -1232,4 +1213,5 @@ class ProcessSinglesFromSource(ProcessDataTableFromSource):
     assumed to be empty.
 
     """
+
     table_name = 'singles'

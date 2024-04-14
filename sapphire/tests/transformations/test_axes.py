@@ -6,7 +6,6 @@ from sapphire.transformations import axes
 
 
 class CoordinateSystemTests(unittest.TestCase):
-
     def setUp(self):
         """Test combinations of coordinates
 
@@ -17,12 +16,18 @@ class CoordinateSystemTests(unittest.TestCase):
             ((0, 0, 0), (0, 0, 0), (0, 0, 0), (0, 0, 0)),
             ((1, 0, 0), (1, pi / 2, 0), (1, 0, 0), (1, 90, 0)),
             ((-1, 0, 0), (1, pi / 2, pi), (1, pi, 0), (1, -90, 0)),
-            ((0, 1, 0), (1, pi / 2, pi / 2.), (1, pi / 2., 0), (1, 0, 0)),
+            ((0, 1, 0), (1, pi / 2, pi / 2.0), (1, pi / 2.0, 0), (1, 0, 0)),
             ((0, -1, 0), (1, pi / 2, -pi / 2), (1, -pi / 2, 0), (1, 180, 0)),
             ((0, 0, 1), (1, 0, 0), (0, 0, 1), (0, 0, 1)),
             ((0, 0, -1), (1, pi, 0), (0, 0, -1), (0, 0, -1)),
             ((1, 1, 1), (sqrt(3), arccos(1 / sqrt(3)), pi / 4), (sqrt(2), pi / 4, 1), (sqrt(2), 45, 1)),
-            ((-1, -1, -1), (sqrt(3), arccos(-1 / sqrt(3)), -pi * 3 / 4), (sqrt(2), -pi * 3 / 4, -1), (sqrt(2), -135, -1)))
+            (
+                (-1, -1, -1),
+                (sqrt(3), arccos(-1 / sqrt(3)), -pi * 3 / 4),
+                (sqrt(2), -pi * 3 / 4, -1),
+                (sqrt(2), -135, -1),
+            ),
+        )
 
     def test_cartesian_to_spherical(self):
         for cartesian, spherical, _, _ in self.combinations:
@@ -58,21 +63,19 @@ class CoordinateSystemTests(unittest.TestCase):
 
 
 class RotateCartesianTests(unittest.TestCase):
-
     def test_rotate_cartesian(self):
-        input = (3., 4., 5.)
+        input = (3.0, 4.0, 5.0)
         x, y, z = input
         self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'x'))
         self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'y'))
         self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'z'))
 
-        testing.assert_almost_equal((3., -5., 4.), axes.rotate_cartesian(x, y, z, pi / 2, 'x'))
-        testing.assert_almost_equal((5., 4., -3.), axes.rotate_cartesian(x, y, z, pi / 2, 'y'))
-        testing.assert_almost_equal((-4., 3., 5.), axes.rotate_cartesian(x, y, z, pi / 2, 'z'))
+        testing.assert_almost_equal((3.0, -5.0, 4.0), axes.rotate_cartesian(x, y, z, pi / 2, 'x'))
+        testing.assert_almost_equal((5.0, 4.0, -3.0), axes.rotate_cartesian(x, y, z, pi / 2, 'y'))
+        testing.assert_almost_equal((-4.0, 3.0, 5.0), axes.rotate_cartesian(x, y, z, pi / 2, 'z'))
 
 
 class RotationMatrixTests(unittest.TestCase):
-
     def test_no_rotation_matrix(self):
         """Check if no rotation is correctly returned"""
 
@@ -84,9 +87,6 @@ class RotationMatrixTests(unittest.TestCase):
     def test_rotation_matrix(self):
         """Rotate by 90 degrees to swap the other two axes"""
 
-        testing.assert_almost_equal(axes.rotation_matrix(pi / 2., 'x'),
-                                    array(((1, 0, 0), (0, 0, 1), (0, -1, 0))))
-        testing.assert_almost_equal(axes.rotation_matrix(pi / 2., 'y'),
-                                    array(((0, 0, -1), (0, 1, 0), (1, 0, 0))))
-        testing.assert_almost_equal(axes.rotation_matrix(pi / 2, 'z'),
-                                    array(((0, 1, 0), (-1, 0, 0), (0, 0, 1))))
+        testing.assert_almost_equal(axes.rotation_matrix(pi / 2.0, 'x'), array(((1, 0, 0), (0, 0, 1), (0, -1, 0))))
+        testing.assert_almost_equal(axes.rotation_matrix(pi / 2.0, 'y'), array(((0, 0, -1), (0, 1, 0), (1, 0, 0))))
+        testing.assert_almost_equal(axes.rotation_matrix(pi / 2, 'z'), array(((0, 1, 0), (-1, 0, 0), (0, 0, 1))))

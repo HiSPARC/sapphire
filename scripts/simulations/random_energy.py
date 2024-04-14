@@ -1,4 +1,4 @@
-flux = lambda x: x ** -2.7
+flux = lambda x: x**-2.7
 
 
 def random_energy(a, b, size=1):

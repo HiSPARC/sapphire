@@ -52,6 +52,7 @@ Modules in this package:
     determine time deltas for station pairs
 
 """
+
 from . import (
     calibration,
     coincidence_queries,
@@ -67,15 +68,17 @@ from . import (
     time_deltas,
 )
 
-__all__ = ['calibration',
-           'coincidence_queries',
-           'coincidences',
-           'core_reconstruction',
-           'direction_reconstruction',
-           'event_utils',
-           'find_mpv',
-           'landau',
-           'process_events',
-           'process_traces',
-           'reconstructions',
-           'time_deltas']
+__all__ = [
+    'calibration',
+    'coincidence_queries',
+    'coincidences',
+    'core_reconstruction',
+    'direction_reconstruction',
+    'event_utils',
+    'find_mpv',
+    'landau',
+    'process_events',
+    'process_traces',
+    'reconstructions',
+    'time_deltas',
+]

@@ -9,7 +9,6 @@ from sapphire.analysis import process_traces
 
 
 class TraceObservablesTests(unittest.TestCase):
-
     def setUp(self):
         trace = [200] * 400 + [500] + [510] + [400] * 10 + [200] * 600 + [400] * 10 + [200]
         trace2 = [203, 199] * 200 + [500] + [510] + [398, 402] * 5 + [203, 199] * 300 + [400] * 10 + [200]
@@ -33,7 +32,6 @@ class TraceObservablesTests(unittest.TestCase):
 
 
 class MeanFilterTests(unittest.TestCase):
-
     def setUp(self):
         self.trace = [[200] * 400 + [500] + [400] * 20 + [200] * 600]
         self.traces = self.trace * 2
@@ -51,15 +49,14 @@ class MeanFilterTests(unittest.TestCase):
     @patch.object(process_traces.MeanFilter, 'filter_trace')
     def test_filter_traces(self, mock_filter_trace):
         mock_filter_trace.return_value = sentinel.filtered_trace
-        self.assertEqual(self.mf.filter_traces(self.traces),
-                         [sentinel.filtered_trace, sentinel.filtered_trace])
+        self.assertEqual(self.mf.filter_traces(self.traces), [sentinel.filtered_trace, sentinel.filtered_trace])
 
     def test_filter_trace(self):
         mock_filter = MagicMock()
         self.mf.filter = mock_filter
-        mock_filter.side_effect = cycle([[sentinel.filtered_even] * 2,
-                                         [sentinel.filtered_odd] * 2,
-                                         [sentinel.filtered_recombined]])
+        mock_filter.side_effect = cycle(
+            [[sentinel.filtered_even] * 2, [sentinel.filtered_odd] * 2, [sentinel.filtered_recombined]],
+        )
         trace_segment = [sentinel.trace_even, sentinel.trace_odd]
 
         filtered_trace = self.mf.filter_trace(trace_segment * 4)
@@ -148,7 +145,6 @@ class MeanFilterTests(unittest.TestCase):
 
 
 class DataReductionTests(unittest.TestCase):
-
     def setUp(self):
         self.dr = process_traces.DataReduction()
 
@@ -161,8 +157,14 @@ class DataReductionTests(unittest.TestCase):
         pre = 400
         post = 300
         baseline = 200
-        trace = ([baseline] * pre + [baseline + 50] + [baseline + 60] * 4 +
-                 [baseline] * 600 + [baseline + 90] * 5 + [baseline] * post)
+        trace = (
+            [baseline] * pre
+            + [baseline + 50]
+            + [baseline + 60] * 4
+            + [baseline] * 600
+            + [baseline + 90] * 5
+            + [baseline] * post
+        )
         traces = array([trace, [baseline] * len(trace)]).T
         reduced_traces = self.dr.reduce_traces(traces, [baseline] * 2)
         r_traces, left = self.dr.reduce_traces(traces, [baseline] * 2, True)
@@ -175,8 +177,14 @@ class DataReductionTests(unittest.TestCase):
         pre = 10
         post = 10
         baseline = 200
-        trace = ([baseline] * pre + [baseline + 50] + [baseline + 60] * 4 +
-                 [baseline] * 600 + [baseline + 90] * 5 + [baseline] * post)
+        trace = (
+            [baseline] * pre
+            + [baseline + 50]
+            + [baseline + 60] * 4
+            + [baseline] * 600
+            + [baseline + 90] * 5
+            + [baseline] * post
+        )
         traces = array([trace, [baseline] * len(trace)]).T
         reduced_traces = self.dr.reduce_traces(traces, [baseline] * 2)
         r_traces, left = self.dr.reduce_traces(traces, [baseline] * 2, True)
@@ -189,8 +197,14 @@ class DataReductionTests(unittest.TestCase):
         pre = 400
         post = 300
         baseline = 200
-        trace = ([baseline] * pre + [baseline + 50] + [baseline + 60] * 4 +
-                 [baseline] * 600 + [baseline + 90] * 5 + [baseline] * post)
+        trace = (
+            [baseline] * pre
+            + [baseline + 50]
+            + [baseline + 60] * 4
+            + [baseline] * 600
+            + [baseline + 90] * 5
+            + [baseline] * post
+        )
         traces = array([trace, [baseline] * len(trace)]).T
         left, right = self.dr.determine_cuts(traces, [baseline] * 2)
         self.assertEqual(left, pre)
@@ -206,11 +220,13 @@ class DataReductionTests(unittest.TestCase):
         self.assertEqual(right, length)
 
     def test_add_padding(self):
-        combinations = (((0, 20), (0, 46)),  # left at limit
-                        ((4, 20), (0, 46)),  # left close to limit
-                        ((50, 2400), (24, 2426)),  # left far from limit
-                        ((50, 2400, 2400), (24, 2400)),  # right at limit
-                        ((50, 2400, 2410), (24, 2410)),  # right close to limit
-                        ((0, 200, 2400), (0, 226)),)  # right far from limit
+        combinations = (
+            ((0, 20), (0, 46)),  # left at limit
+            ((4, 20), (0, 46)),  # left close to limit
+            ((50, 2400), (24, 2426)),  # left far from limit
+            ((50, 2400, 2400), (24, 2400)),  # right at limit
+            ((50, 2400, 2410), (24, 2410)),  # right close to limit
+            ((0, 200, 2400), (0, 226)),
+        )  # right far from limit
         for input, expected in combinations:
             self.assertEqual(self.dr.add_padding(*input), expected)

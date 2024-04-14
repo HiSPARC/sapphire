@@ -1,12 +1,13 @@
-""" Process HiSPARC traces
+"""Process HiSPARC traces
 
-    This module can be used analyse (raw) traces. It implements the same
-    algorithms as are implemented in the HiSPARC DAQ.
+This module can be used analyse (raw) traces. It implements the same
+algorithms as are implemented in the HiSPARC DAQ.
 
-    The :class:`MeanFilter` is meant to mimic the filter in the HiSPARC DAQ.
-    It is reproduced here to make it easy to read the algorithm.
+The :class:`MeanFilter` is meant to mimic the filter in the HiSPARC DAQ.
+It is reproduced here to make it easy to read the algorithm.
 
 """
+
 from functools import cached_property
 
 from numpy import around, convolve, ones, where
@@ -35,7 +36,6 @@ DATA_REDUCTION_PADDING = 26  #: Padding to allow later baseline determination
 
 
 class TraceObservables:
-
     """Reconstruct trace observables
 
     If one wants to reconstruct trace observables from existing data some
@@ -56,8 +56,7 @@ class TraceObservables:
 
     """
 
-    def __init__(self, traces, threshold=ADC_BASELINE_THRESHOLD,
-                 padding=DATA_REDUCTION_PADDING):
+    def __init__(self, traces, threshold=ADC_BASELINE_THRESHOLD, padding=DATA_REDUCTION_PADDING):
         """Initialize the class
 
         :param traces: a NumPy array of traces, ordered such that the first
@@ -89,7 +88,7 @@ class TraceObservables:
         :return: the baseline in ADC count.
 
         """
-        baselines = around(self.traces[:self.padding].mean(axis=0))
+        baselines = around(self.traces[: self.padding].mean(axis=0))
         return baselines.astype('int').tolist() + self.missing
 
     @cached_property
@@ -99,7 +98,7 @@ class TraceObservables:
         :return: the standard deviation in milli ADC count.
 
         """
-        std_dev = around(self.traces[:self.padding].std(axis=0) * 1000)
+        std_dev = around(self.traces[: self.padding].std(axis=0) * 1000)
         return std_dev.astype('int').tolist() + self.missing
 
     @cached_property
@@ -109,7 +108,7 @@ class TraceObservables:
         :return: the pulseheights in ADC count.
 
         """
-        pulseheights = self.traces.max(axis=0) - self.baselines[:self.n]
+        pulseheights = self.traces.max(axis=0) - self.baselines[: self.n]
         return pulseheights.tolist() + self.missing
 
     @cached_property
@@ -122,8 +121,11 @@ class TraceObservables:
 
         """
         threshold = self.threshold
-        integrals = where(self.traces - self.baselines[:self.n] > threshold,
-                          self.traces - self.baselines[:self.n], 0).sum(axis=0)
+        integrals = where(
+            self.traces - self.baselines[: self.n] > threshold,
+            self.traces - self.baselines[: self.n],
+            0,
+        ).sum(axis=0)
         return integrals.tolist() + self.missing
 
     @cached_property
@@ -136,12 +138,12 @@ class TraceObservables:
 
         """
         # Make rough guess at the baseline/threshold to expect
-        if all(b < 100 for b in self.baselines[:self.n]):
+        if all(b < 100 for b in self.baselines[: self.n]):
             peak_threshold = ADC_LOW_THRESHOLD_III - 30
         else:
             peak_threshold = ADC_LOW_THRESHOLD - 200
 
-        traces = self.traces - self.baselines[:self.n]
+        traces = self.traces - self.baselines[: self.n]
 
         n_peaks = []
         for trace in traces.T:
@@ -157,20 +159,18 @@ class TraceObservables:
                         in_peak = True
                         local_maximum = value
                         n_peak += 1
-                else:
-                    if value > local_maximum:
-                        local_maximum = value
-                    elif local_maximum - value > peak_threshold:
-                        # enough signal decrease to be out of peak
-                        in_peak = False
-                        local_minimum = value if value > 0 else 0
+                elif value > local_maximum:
+                    local_maximum = value
+                elif local_maximum - value > peak_threshold:
+                    # enough signal decrease to be out of peak
+                    in_peak = False
+                    local_minimum = value if value > 0 else 0
             n_peaks.append(n_peak)
 
         return n_peaks + self.missing
 
 
 class MeanFilter:
-
     """Filter raw traces
 
     This class replicates the behavior of the Mean_Filter.vi in the HiSPARC
@@ -225,9 +225,7 @@ class MeanFilter:
         filtered_even = self.filter(even_trace)
         filtered_odd = self.filter(odd_trace)
 
-        recombined_trace = [v
-                            for eo in zip(filtered_even, filtered_odd)
-                            for v in eo]
+        recombined_trace = [v for eo in zip(filtered_even, filtered_odd) for v in eo]
         filtered_trace = self.filter(recombined_trace)
         return filtered_trace
 
@@ -283,14 +281,12 @@ class MeanFilter:
 
     def __repr__(self):
         try:
-            return ("%s(use_threshold=%s, threshold=%r)" %
-                    (self.__class__.__name__, True, self.threshold))
+            return '%s(use_threshold=%s, threshold=%r)' % (self.__class__.__name__, True, self.threshold)
         except AttributeError:
-            return f"{self.__class__.__name__}(use_threshold={False})"
+            return f'{self.__class__.__name__}(use_threshold={False})'
 
 
 class DataReduction:
-
     """Data reduce traces
 
     This class replicates the behavior also implemented in the HiSPARC DAQ.
@@ -302,8 +298,7 @@ class DataReduction:
 
     """
 
-    def __init__(self, threshold=ADC_BASELINE_THRESHOLD,
-                 padding=DATA_REDUCTION_PADDING):
+    def __init__(self, threshold=ADC_BASELINE_THRESHOLD, padding=DATA_REDUCTION_PADDING):
         """Initialize the class
 
         :param threshold: value of the threshold to use, in ADC counts.
@@ -326,7 +321,7 @@ class DataReduction:
 
         """
         if baselines is None:
-            baselines = TraceObservables(traces).baselines[:len(traces[0])]
+            baselines = TraceObservables(traces).baselines[: len(traces[0])]
         left, right = self.determine_cuts(traces, baselines)
         left, right = self.add_padding(left, right, len(traces))
         if return_offset:
@@ -346,10 +341,11 @@ class DataReduction:
                  right cross the threshold.
 
         """
-        left = next((i for i, t in enumerate(traces)
-                     if max(t - baselines) > self.threshold), 0)
-        right = len(traces) - next((i for i, t in enumerate(reversed(traces))
-                                    if max(t - baselines) > self.threshold), 0)
+        left = next((i for i, t in enumerate(traces) if max(t - baselines) > self.threshold), 0)
+        right = len(traces) - next(
+            (i for i, t in enumerate(reversed(traces)) if max(t - baselines) > self.threshold),
+            0,
+        )
         return left, right
 
     def add_padding(self, left, right, length=None):

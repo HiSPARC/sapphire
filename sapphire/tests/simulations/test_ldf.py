@@ -7,7 +7,6 @@ from sapphire.simulations import ldf
 
 
 class BaseLdfSimulationTest(unittest.TestCase):
-
     def setUp(self):
         self.simulation = ldf.BaseLdfSimulation
         random.seed(1)
@@ -21,7 +20,6 @@ class BaseLdfSimulationTest(unittest.TestCase):
 
 
 class BaseLdfSimulationWithoutErrorsTest(BaseLdfSimulationTest):
-
     def setUp(self):
         super().setUp()
         self.simulation = ldf.BaseLdfSimulationWithoutErrors
@@ -34,7 +32,6 @@ class BaseLdfSimulationWithoutErrorsTest(BaseLdfSimulationTest):
 
 
 class BaseLdfTest(unittest.TestCase):
-
     def setUp(self):
         self.ldf = ldf.BaseLdf()
 
@@ -48,7 +45,7 @@ class BaseLdfTest(unittest.TestCase):
 
     def test_calculate_core_distance(self):
         # TODO: Add core distances for inclined showers
-        self.assertEqual(self.ldf.calculate_core_distance(0., 0., 0., 0., 0., 0.), 0)
-        self.assertEqual(self.ldf.calculate_core_distance(10., 0., 0., 0., 0., 0.), 10.)
-        self.assertEqual(self.ldf.calculate_core_distance(10., 0., 10., 0., 0., 0.), 0.)
-        self.assertEqual(self.ldf.calculate_core_distance(10., 3., 10., 3., 0., 0.), 0.)
+        self.assertEqual(self.ldf.calculate_core_distance(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), 0)
+        self.assertEqual(self.ldf.calculate_core_distance(10.0, 0.0, 0.0, 0.0, 0.0, 0.0), 10.0)
+        self.assertEqual(self.ldf.calculate_core_distance(10.0, 0.0, 10.0, 0.0, 0.0, 0.0), 0.0)
+        self.assertEqual(self.ldf.calculate_core_distance(10.0, 3.0, 10.0, 3.0, 0.0, 0.0), 0.0)

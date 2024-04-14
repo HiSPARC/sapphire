@@ -4,9 +4,8 @@ from sapphire.transformations import geographic
 
 
 class GeographicTransformationTests(unittest.TestCase):
-
     def setUp(self):
-        self.ref_enu = (0., 0., 0.)
+        self.ref_enu = (0.0, 0.0, 0.0)
         self.ref_lla = (52.35592417, 4.95114402, 56.10234594)
         self.transform = geographic.FromWGS84ToENUTransformation(self.ref_lla)
 
@@ -38,6 +37,6 @@ class GeographicTransformationTests(unittest.TestCase):
         self.assertIsInstance(actual, tuple)
         self.assertIsInstance(expected, tuple)
 
-        msg = f"Tuples differ: {actual} != {expected}"
+        msg = f'Tuples differ: {actual} != {expected}'
         for actual_value, expected_value in zip(actual, expected):
             self.assertAlmostEqual(actual_value, expected_value, places=places, msg=msg)

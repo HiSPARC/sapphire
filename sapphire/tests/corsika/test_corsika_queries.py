@@ -11,7 +11,6 @@ TEST_OVERVIEW_FILE = 'test_data/corsika_overview.h5'
 
 
 class CorsikaQueryTest(unittest.TestCase):
-
     def setUp(self):
         self.cq = corsika_queries.CorsikaQuery(self.get_overview_path())
 
@@ -34,7 +33,7 @@ class CorsikaQueryTest(unittest.TestCase):
 
     def test_all_energies(self):
         energies = list(self.cq.all_energies)
-        assert_allclose(energies, [14.])
+        assert_allclose(energies, [14.0])
 
     def test_all_particles(self):
         particles = self.cq.all_particles
@@ -42,19 +41,19 @@ class CorsikaQueryTest(unittest.TestCase):
 
     def test_all_azimuths(self):
         azimuths = self.cq.all_azimuths
-        self.assertEqual(azimuths, {-90.})
+        self.assertEqual(azimuths, {-90.0})
 
     def test_all_zeniths(self):
         zeniths = self.cq.all_zeniths
-        self.assertEqual(zeniths, {0.})
+        self.assertEqual(zeniths, {0.0})
 
     def test_available_parameters(self):
         result = list(self.cq.available_parameters('energy', particle='proton'))
         assert_allclose(result, [14.0])
-        result = self.cq.available_parameters('particle_id', zenith=0.)
+        result = self.cq.available_parameters('particle_id', zenith=0.0)
         self.assertEqual(result, {'proton'})
-        result = self.cq.available_parameters('zenith', azimuth=-90.)
-        self.assertEqual(result, {0.})
+        result = self.cq.available_parameters('zenith', azimuth=-90.0)
+        self.assertEqual(result, {0.0})
         self.assertRaises(RuntimeError, self.cq.available_parameters, 'zenith', energy=19)
         self.assertRaises(RuntimeError, self.cq.available_parameters, 'zenith', particle='iron')
 
@@ -64,7 +63,6 @@ class CorsikaQueryTest(unittest.TestCase):
 
 
 class MockCorsikaQueryTest(unittest.TestCase):
-
     @patch.object(corsika_queries.tables, 'open_file')
     def setUp(self, mock_open):
         self.mock_open = mock_open
@@ -75,8 +73,7 @@ class MockCorsikaQueryTest(unittest.TestCase):
 
     def test_init(self):
         self.mock_open.assert_called_once_with(self.data_path, 'r')
-        self.mock_open.return_value.get_node.assert_called_once_with(
-            sentinel.simulations_group)
+        self.mock_open.return_value.get_node.assert_called_once_with(sentinel.simulations_group)
 
     @patch.object(corsika_queries.tables, 'open_file')
     def test_init_file(self, mock_open):
@@ -98,14 +95,15 @@ class MockCorsikaQueryTest(unittest.TestCase):
 
         self.cq.all_particles = ['electron']
         self.cq.all_energies = [15.5]
-        result = self.cq.simulations(particle='electron', energy=15.5,
-                                     zenith=0., azimuth=0.)
+        result = self.cq.simulations(particle='electron', energy=15.5, zenith=0.0, azimuth=0.0)
         self.assertEqual(result, sentinel.simulations)
         mock_perform.assert_called_with(
             '(particle_id == 3) & '
             '(abs(log10(energy) - 15.5) < 1e-4) & '
             '(abs(zenith - 0.0) < 1e-4) & '
-            '(abs(azimuth - 0.0) < 1e-4)', False)
+            '(abs(azimuth - 0.0) < 1e-4)',
+            False,
+        )
 
     def test_filter(self):
         filter = self.cq.filter('foo', 123)

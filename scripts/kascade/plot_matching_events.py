@@ -2,13 +2,12 @@ import calendar
 import datetime
 
 import tables
+import utils
 
 from scipy.optimize import curve_fit
 
 from artist import GraphArtist, MultiPlot
 from pylab import *
-
-import utils
 
 from sapphire.kascade import KascadeCoincidences
 
@@ -19,7 +18,7 @@ if USE_TEX:
     rcParams['font.serif'] = 'Computer Modern'
     rcParams['font.sans-serif'] = 'Computer Modern'
     rcParams['font.family'] = 'sans-serif'
-    rcParams['figure.figsize'] = [4 * x for x in (1, 2. / 3)]
+    rcParams['figure.figsize'] = [4 * x for x in (1, 2.0 / 3)]
     rcParams['figure.subplot.left'] = 0.175
     rcParams['figure.subplot.bottom'] = 0.175
     rcParams['font.size'] = 10
@@ -39,19 +38,19 @@ def plot_nearest_neighbors(data, limit=None):
 
     coincidences = KascadeCoincidences(data, hisparc_group, kascade_group, ignore_existing=True)
 
-    #dt_opt = find_optimum_dt(coincidences, p0=-13, limit=1000)
-    #print(dt_opt)
+    # dt_opt = find_optimum_dt(coincidences, p0=-13, limit=1000)
+    # print(dt_opt)
 
     graph = GraphArtist(axis='semilogy')
     styles = iter(['solid', 'dashed', 'dashdotted'])
 
     uncorrelated = None
     figure()
-    #for shift in -12, -13, dt_opt, -14:
+    # for shift in -12, -13, dt_opt, -14:
     for shift in -12, -13, -14:
-        print("Shifting", shift)
+        print('Shifting', shift)
         coincidences.search_coincidences(shift, dtlimit=1, limit=limit)
-        print(".")
+        print('.')
         dts = coincidences.coincidences['dt']
         n, bins, p = hist(abs(dts) / 1e9, bins=linspace(0, 1, 101), histtype='step', label='%.3f s' % shift)
         n = [u if u else 1e-99 for u in n]
@@ -63,14 +62,14 @@ def plot_nearest_neighbors(data, limit=None):
     x = (bins[:-1] + bins[1:]) / 2
     f = lambda x, N, a: N * exp(-a * x)
     popt, pcov = curve_fit(f, x, y)
-    plot(x, f(x, *popt), label=r"$\lambda = %.2f$ Hz" % popt[1])
+    plot(x, f(x, *popt), label=r'$\lambda = %.2f$ Hz' % popt[1])
     graph.plot(x, f(x, *popt), mark=None)
 
     yscale('log')
-    xlabel("Time difference [s]")
-    graph.set_xlabel(r"Time difference [\si{\second}]")
-    ylabel("Counts")
-    graph.set_ylabel("Counts")
+    xlabel('Time difference [s]')
+    graph.set_xlabel(r'Time difference [\si{\second}]')
+    ylabel('Counts')
+    graph.set_ylabel('Counts')
     legend()
     graph.set_ylimits(min=10)
     utils.saveplot()
@@ -79,10 +78,10 @@ def plot_nearest_neighbors(data, limit=None):
 
 def find_optimum_dt(coincidences, p0, delta=1e-3, limit=None):
     dt_new = p0
-    dt_old = Inf
+    dt_old = inf
 
     while abs(dt_new - dt_old) > delta:
-        print("Trying:", dt_new)
+        print('Trying:', dt_new)
         coincidences.search_coincidences(dt_new, dtlimit=1, limit=limit)
         dts = coincidences.coincidences['dt'] / 1e9
 
@@ -112,28 +111,28 @@ def plot_residual_time_differences(data):
 
     figure()
     subplot(121)
-    hist(all_dts / 1e3, bins=arange(-10, 2, .01), histtype='step')
-    title("July 1 - Aug 6, 2008")
-    xlabel("Time difference [us]")
-    ylabel("Counts")
+    hist(all_dts / 1e3, bins=arange(-10, 2, 0.01), histtype='step')
+    title('July 1 - Aug 6, 2008')
+    xlabel('Time difference [us]')
+    ylabel('Counts')
 
     subplot(122)
-    hist(dts / 1e3, bins=arange(-8, -6, .01), histtype='step')
-    title("July 2, 2008")
-    xlabel("Time difference [us]")
+    hist(dts / 1e3, bins=arange(-8, -6, 0.01), histtype='step')
+    title('July 2, 2008')
+    xlabel('Time difference [us]')
     utils.saveplot()
 
     graph = MultiPlot(1, 2, width=r'.45\linewidth')
-    n, bins = histogram(all_dts / 1e3, bins=arange(-10, 2, .01))
+    n, bins = histogram(all_dts / 1e3, bins=arange(-10, 2, 0.01))
     graph.histogram(0, 1, n, bins)
-    graph.set_title(0, 1, "Jul 1 - Aug 6, 2008")
+    graph.set_title(0, 1, 'Jul 1 - Aug 6, 2008')
 
-    n, bins = histogram(dts / 1e3, bins=arange(-8, -6, .01))
+    n, bins = histogram(dts / 1e3, bins=arange(-8, -6, 0.01))
     graph.histogram(0, 0, n, bins)
-    graph.set_title(0, 0, "Jul 2, 2008")
+    graph.set_title(0, 0, 'Jul 2, 2008')
 
-    graph.set_xlabel(r"Time difference [\si{\micro\second}]")
-    graph.set_ylabel("Counts")
+    graph.set_xlabel(r'Time difference [\si{\micro\second}]')
+    graph.set_ylabel('Counts')
     graph.set_ylimits(min=0)
     graph.show_xticklabels_for_all([(0, 0), (0, 1)])
     graph.show_yticklabels_for_all([(0, 0), (0, 1)])

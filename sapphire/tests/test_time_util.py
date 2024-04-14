@@ -23,7 +23,7 @@ class GPSTimeUtilTests(unittest.TestCase):
 
     @patch.object(time_util.GPSTime, 'description')
     def test_str_returns_description(self, mock_description):
-        expected = "Foobar"
+        expected = 'Foobar'
         mock_description.return_value = expected
         t = time_util.GPSTime(2014, 10, 27)
         actual = str(t)

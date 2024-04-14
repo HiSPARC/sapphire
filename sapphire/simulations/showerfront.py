@@ -26,15 +26,13 @@ from .detector import ErrorlessSimulation, HiSPARCSimulation
 
 
 class FlatFrontSimulation(HiSPARCSimulation):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Since the cluster is not rotated detector positions can be cached.
         for station in self.cluster.stations:
             for detector in station.detectors:
-                detector.cylindrical_coordinates = \
-                    detector.get_cylindrical_coordinates()
+                detector.cylindrical_coordinates = detector.get_cylindrical_coordinates()
 
     def generate_shower_parameters(self):
         """Generate shower parameters, i.e. azimuth and zenith angles.
@@ -49,12 +47,14 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         for i in pbar(range(self.n), show=self.progress):
-            shower_parameters = {'ext_timestamp': (1_000_000_000 + i) * 1_000_000_000,
-                                 'azimuth': self.generate_azimuth(),
-                                 'zenith': self.generate_attenuated_zenith(),
-                                 'core_pos': (None, None),
-                                 'size': None,
-                                 'energy': None}
+            shower_parameters = {
+                'ext_timestamp': (1_000_000_000 + i) * 1_000_000_000,
+                'azimuth': self.generate_azimuth(),
+                'zenith': self.generate_attenuated_zenith(),
+                'core_pos': (None, None),
+                'size': None,
+                'energy': None,
+            }
 
             yield shower_parameters
 
@@ -66,9 +66,10 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         arrival_time = self.simulate_adc_sampling(
-            self.get_arrival_time(detector, shower_parameters) +
-            self.simulate_signal_transport_time(1)[0] +
-            detector.offset)
+            self.get_arrival_time(detector, shower_parameters)
+            + self.simulate_signal_transport_time(1)[0]
+            + detector.offset,
+        )
         observables = {'t': arrival_time}
 
         return observables
@@ -92,7 +93,7 @@ class FlatFrontSimulation(HiSPARCSimulation):
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
         r = r1 * cos(phi - phi1) - z1 * tan(theta)
-        cdt = - (r * sin(theta) + z1 / cos(theta))
+        cdt = -(r * sin(theta) + z1 / cos(theta))
         dt = cdt / c
         return dt
 
@@ -114,34 +115,30 @@ class FlatFrontSimulation(HiSPARCSimulation):
         arrival_times = [station_observables['t%d' % id] for id in ids]
         trigger_time = sorted(arrival_times)[1]
 
-        ext_timestamp += int(first_time + trigger_time + station.gps_offset +
-                             self.simulate_gps_uncertainty())
+        ext_timestamp += int(first_time + trigger_time + station.gps_offset + self.simulate_gps_uncertainty())
         timestamp = int(ext_timestamp / 1_000_000_000)
         nanoseconds = int(ext_timestamp % 1_000_000_000)
 
-        gps_timestamp = {'ext_timestamp': ext_timestamp,
-                         'timestamp': timestamp,
-                         'nanoseconds': nanoseconds,
-                         't_trigger': trigger_time}
+        gps_timestamp = {
+            'ext_timestamp': ext_timestamp,
+            'timestamp': timestamp,
+            'nanoseconds': nanoseconds,
+            't_trigger': trigger_time,
+        }
         station_observables.update(gps_timestamp)
 
         return station_observables
 
 
-class FlatFrontSimulationWithoutErrors(ErrorlessSimulation,
-                                       FlatFrontSimulation):
-
+class FlatFrontSimulationWithoutErrors(ErrorlessSimulation, FlatFrontSimulation):
     """This simulation does not simulate errors/uncertainties
 
     This should result in perfect timing for the detectors.
 
     """
 
-    pass
-
 
 class FlatFrontSimulation2D(FlatFrontSimulation):
-
     """This simulation ignores detector altitudes."""
 
     def get_arrival_time(self, detector, shower_parameters):
@@ -162,16 +159,11 @@ class FlatFrontSimulation2D(FlatFrontSimulation):
         return dt
 
 
-class FlatFrontSimulation2DWithoutErrors(FlatFrontSimulation2D,
-                                         FlatFrontSimulationWithoutErrors):
-
+class FlatFrontSimulation2DWithoutErrors(FlatFrontSimulation2D, FlatFrontSimulationWithoutErrors):
     """Ignore altitude of detectors and do not simulate errors."""
-
-    pass
 
 
 class ConeFrontSimulation(FlatFrontSimulation):
-
     """This simulation uses a cone shaped shower front.
 
     The opening angle of the cone is given in the init
@@ -216,12 +208,14 @@ class ConeFrontSimulation(FlatFrontSimulation):
             x, y = self.generate_core_position(r_max)
             azimuth = self.generate_azimuth()
 
-            shower_parameters = {'ext_timestamp': (1_000_000_000 + i) * 1_000_000_000,
-                                 'azimuth': azimuth,
-                                 'zenith': self.generate_attenuated_zenith(),
-                                 'core_pos': (x, y),
-                                 'size': None,
-                                 'energy': self.generate_energy(1e15, 1e17)}
+            shower_parameters = {
+                'ext_timestamp': (1_000_000_000 + i) * 1_000_000_000,
+                'azimuth': azimuth,
+                'zenith': self.generate_attenuated_zenith(),
+                'core_pos': (x, y),
+                'size': None,
+                'energy': self.generate_energy(1e15, 1e17),
+            }
 
             self._prepare_cluster_for_shower(x, y, azimuth)
 
@@ -251,14 +245,13 @@ class ConeFrontSimulation(FlatFrontSimulation):
         phi = shower_parameters['azimuth']
         theta = shower_parameters['zenith']
         r = r1 * cos(phi - phi1) - z * tan(theta)
-        cdt = - (r * sin(theta) + z / cos(theta))
+        cdt = -(r * sin(theta) + z / cos(theta))
 
         nx = sin(theta) * cos(phi)
         ny = sin(theta) * sin(phi)
         nz = cos(theta)
 
-        r_core = sqrt(x ** 2 + y ** 2 + z ** 2 -
-                      (x * nx + y * ny + z * nz) ** 2)
+        r_core = sqrt(x**2 + y**2 + z**2 - (x * nx + y * ny + z * nz) ** 2)
         t_shape = self.delay_at_r(r_core)
         dt = t_shape + (cdt / c)
 
@@ -266,18 +259,16 @@ class ConeFrontSimulation(FlatFrontSimulation):
 
 
 class FlatFront:
-
     """Simple flat shower front"""
 
     def delay_at_r(self, r):
-        return 0.
+        return 0.0
 
     def front_shape(self, r):
-        return 0.
+        return 0.0
 
 
 class ConeFront:
-
     """Simple cone shaped shower front"""
 
     def delay_at_r(self, r):
@@ -294,7 +285,6 @@ class ConeFront:
 
 
 class CorsikaStationFront:
-
     """Shower front shape derrived from CORSIKA simulations on a station.
 
     A set of CORSIKA generated showers were used to determine the median
@@ -331,4 +321,4 @@ class CorsikaStationFront:
         return self._front_shape(r, a, b)
 
     def _front_shape(self, r, a, b):
-        return a * r ** b
+        return a * r**b

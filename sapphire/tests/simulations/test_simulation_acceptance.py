@@ -17,7 +17,6 @@ from .perform_simulation import (
 
 
 class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
-
     def test_simulation_output(self):
         """Perform a simulation and verify the output"""
 
@@ -28,7 +27,6 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
 
 
 class GroundparticlesGammaSimulationAcceptanceTest(unittest.TestCase):
-
     def test_simulation_output(self):
         """Perform a simulation and verify the output"""
 
@@ -39,7 +37,6 @@ class GroundparticlesGammaSimulationAcceptanceTest(unittest.TestCase):
 
 
 class FlatFrontSimulationAcceptanceTest(unittest.TestCase):
-
     def test_simulation_output(self):
         """Perform a simulation and verify the output"""
 
@@ -50,7 +47,6 @@ class FlatFrontSimulationAcceptanceTest(unittest.TestCase):
 
 
 class NkgLdfSimulationAcceptanceTest(unittest.TestCase):
-
     def test_simulation_output(self):
         """Perform a simulation and verify the output"""
 

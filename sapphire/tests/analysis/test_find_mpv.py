@@ -7,7 +7,6 @@ from sapphire.analysis import find_mpv
 
 
 class FindMostProbableValueInSpectrumTest(unittest.TestCase):
-
     def test_failing_fit(self):
         """Check for correct warnings/errors for failing fit"""
 
@@ -19,7 +18,7 @@ class FindMostProbableValueInSpectrumTest(unittest.TestCase):
         first_guess = fmpv.find_first_guess_mpv()
         with self.assertRaises(RuntimeError) as cm:
             fmpv.fit_mpv(first_guess)
-        self.assertEqual(str(cm.exception), "Number of data points not sufficient")
+        self.assertEqual(str(cm.exception), 'Number of data points not sufficient')
 
         # Warning from the find mpv function
         with warnings.catch_warnings(record=True) as w:
@@ -27,7 +26,7 @@ class FindMostProbableValueInSpectrumTest(unittest.TestCase):
             # https://bugs.python.org/issue4180
             if hasattr(find_mpv, '__warningregistry__'):
                 find_mpv.__warningregistry__ = {}
-            warnings.simplefilter("always")
+            warnings.simplefilter('always')
             mpv, is_fitted = fmpv.find_mpv()
         self.assertTrue(issubclass(w[0].category, UserWarning))
         self.assertEqual(mpv, -999)
@@ -42,4 +41,4 @@ class FindMostProbableValueInSpectrumTest(unittest.TestCase):
         fmpv = find_mpv.FindMostProbableValueInSpectrum(n, bins)
         with self.assertRaises(RuntimeError) as cm:
             fmpv.fit_mpv(111)
-        self.assertEqual(str(cm.exception), "Fitted MPV value outside range")
+        self.assertEqual(str(cm.exception), 'Fitted MPV value outside range')
