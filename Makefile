@@ -9,6 +9,10 @@ unittests:
 linttest:
 	ruff check .
 
+.PHONY: lintfix
+lintfix:
+	ruff check --fix-only .
+
 .PHONY: doctest
 doctest:
 	sphinx-build -anW doc doc/_build/html
