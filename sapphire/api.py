@@ -29,7 +29,7 @@ import warnings
 
 from functools import cached_property
 from io import BytesIO
-from os import extsep, path
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
 from urllib.request import urlopen
@@ -41,7 +41,7 @@ from .utils import get_active_index, get_publicdb_base, memoize
 
 logger = logging.getLogger(__name__)
 
-LOCAL_BASE = path.join(path.dirname(__file__), 'data')
+LOCAL_BASE = Path(__file__).parent / 'data'
 
 
 def get_api_base():
@@ -120,7 +120,7 @@ class API:
         """
         urlpath = urlpath.rstrip('/')
         if self.force_fresh and self.force_stale:
-            raise Exception('Can not force fresh and stale simultaneously.')
+            raise ValueError('Can not force fresh and stale simultaneously.')
         try:
             if self.force_stale:
                 raise Exception
@@ -129,9 +129,9 @@ class API:
         except Exception:
             if self.force_fresh:
                 raise Exception("Couldn't get requested data from server.")
-            localpath = path.join(LOCAL_BASE, urlpath + extsep + 'json')
+            localpath = LOCAL_BASE / f'{urlpath}.json'
             try:
-                with open(localpath) as localdata:
+                with localpath.open() as localdata:
                     data = json.load(localdata)
             except Exception:
                 if self.force_stale:
@@ -152,7 +152,7 @@ class API:
         """
         urlpath = urlpath.rstrip('/')
         if self.force_fresh and self.force_stale:
-            raise Exception('Can not force fresh and stale simultaneously.')
+            raise ValueError('Can not force fresh and stale simultaneously.')
         try:
             if self.force_stale:
                 raise Exception
@@ -160,7 +160,7 @@ class API:
         except Exception:
             if self.force_fresh:
                 raise Exception("Couldn't get requested data from server.")
-            localpath = path.join(LOCAL_BASE, urlpath + extsep + 'tsv')
+            localpath = LOCAL_BASE / f'{urlpath}.tsv'
             try:
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
@@ -217,11 +217,11 @@ class API:
     @staticmethod
     def validate_partial_date(year='', month='', day='', hour=''):
         if year == '' and (month != '' or day != '' or hour != ''):
-            raise Exception('You must also specify the year')
+            raise ValueError('You must also specify the year')
         elif month == '' and (day != '' or hour != ''):
-            raise Exception('You must also specify the month')
+            raise ValueError('You must also specify the month')
         elif day == '' and hour != '':
-            raise Exception('You must also specify the day')
+            raise ValueError('You must also specify the day')
 
     def __repr__(self):
         return f'{self.__class__.__name__}(force_fresh={self.force_fresh}, force_stale={self.force_stale})'
@@ -431,11 +431,11 @@ class Network(API):
     @staticmethod
     def validate_numbers(country=None, cluster=None, subcluster=None):
         if country is not None and country % 10000:
-            raise Exception('Invalid country number, must be multiple of 10000.')
+            raise ValueError('Invalid country number, must be multiple of 10000.')
         if cluster is not None and cluster % 1000:
-            raise Exception('Invalid cluster number, must be multiple of 1000.')
+            raise ValueError('Invalid cluster number, must be multiple of 1000.')
         if subcluster is not None and subcluster % 100:
-            raise Exception('Invalid subcluster number, must be multiple of 100.')
+            raise ValueError('Invalid subcluster number, must be multiple of 100.')
 
     def uptime(self, stations, start=None, end=None):
         """Get number of hours for which the given stations have been simultaneously active
@@ -463,11 +463,17 @@ class Network(API):
         len_array = (last - first) // 3600 + 1
         all_active = ones(len_array)
 
+        minimum_events_per_hour = 500
+        maximum_events_per_hour = 5_000
+
         for station in data:
             is_active = zeros(len_array)
             start_i = (data[station]['timestamp'][0] - first) // 3600
             end_i = start_i + len(data[station])
-            is_active[start_i:end_i] = (data[station]['counts'] > 500) & (data[station]['counts'] < 5000)
+            is_active[start_i:end_i] = (
+                (data[station]['counts'] > minimum_events_per_hour)
+                & (data[station]['counts'] < maximum_events_per_hour)
+            )
             all_active = logical_and(all_active, is_active)
 
         # filter start, end
@@ -497,7 +503,7 @@ class Station(API):
 
         """
         if force_fresh and force_stale:
-            raise Exception('Can not force fresh and stale simultaneously.')
+            raise ValueError('Can not force fresh and stale simultaneously.')
         if station not in Network(force_fresh=force_fresh, force_stale=force_stale).station_numbers():
             warnings.warn('Possibly invalid station, or without config.')
         self.force_fresh = force_fresh
@@ -932,7 +938,7 @@ class Station(API):
 
         """
         if reference_station == self.station:
-            raise Exception('Reference station cannot be the same station')
+            raise ValueError('Reference station cannot be the same station')
         if reference_station > self.station:
             station_1, station_2 = self.station, reference_station
             toggle_sign = True

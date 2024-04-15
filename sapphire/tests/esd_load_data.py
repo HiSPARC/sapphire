@@ -2,22 +2,23 @@ import datetime
 import os
 import tempfile
 
+from pathlib import Path
 from urllib.request import urlretrieve
 
 import tables
 
 from sapphire import esd
 
-self_path = os.path.dirname(__file__)
+self_path = Path(__file__).parent
 
-test_data_path = os.path.join(self_path, 'test_data/esd_load_data.h5')
-test_data_coincidences_path = os.path.join(self_path, 'test_data/esd_coincidence_data.h5')
+test_data_path = self_path / 'test_data/esd_load_data.h5'
+test_data_coincidences_path = self_path / 'test_data/esd_coincidence_data.h5'
 
-events_source = os.path.join(self_path, 'test_data/events-s501-20120101.tsv')
-weather_source = os.path.join(self_path, 'test_data/weather-s501-20120101.tsv')
-singles_source = os.path.join(self_path, 'test_data/singles-s501-20170101.tsv')
-lightning_source = os.path.join(self_path, 'test_data/lightning-knmi-20150717.tsv')
-coincidences_source = os.path.join(self_path, 'test_data/coincidences-20160310.tsv')
+events_source = self_path / 'test_data/events-s501-20120101.tsv'
+weather_source = self_path / 'test_data/weather-s501-20120101.tsv'
+singles_source = self_path / 'test_data/singles-s501-20170101.tsv'
+lightning_source = self_path / 'test_data/lightning-knmi-20150717.tsv'
+coincidences_source = self_path / 'test_data/coincidences-20160310.tsv'
 
 
 def create_tempfile_path():

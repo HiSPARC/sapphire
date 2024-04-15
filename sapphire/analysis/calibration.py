@@ -42,22 +42,22 @@ def determine_detector_timing_offsets(events, station=None):
         n_detectors = 4
         z = [0.0, 0.0, 0.0, 0.0]
 
-    for id in range(n_detectors):
-        t.append(events.col('t%d' % (id + 1)))
-        filters.append((events.col('n%d' % (id + 1)) > 0.3) & (t[id] >= 0.0))
+    for detector_id in range(n_detectors):
+        t.append(events.col(f't{detector_id + 1}'))
+        filters.append((events.col('n%d' % (detector_id + 1)) > 0.3) & (t[detector_id] >= 0.0))
 
     if n_detectors == 2:
         ref_id = 1
     else:
         ref_id = determine_best_reference(filters)
 
-    for id in range(n_detectors):
-        if id == ref_id:
-            offsets[id] = 0.0
+    for detector_id in range(n_detectors):
+        if detector_id == ref_id:
+            offsets[detector_id] = 0.0
             continue
-        dt = (t[id] - t[ref_id]).compress(filters[id] & filters[ref_id])
-        dz = z[id] - z[ref_id]
-        offsets[id], _ = determine_detector_timing_offset(dt, dz)
+        dt = (t[detector_id] - t[ref_id]).compress(filters[detector_id] & filters[ref_id])
+        dz = z[detector_id] - z[ref_id]
+        offsets[detector_id], _ = determine_detector_timing_offset(dt, dz)
 
     # If all except reference are nan, make reference nan.
     if sum(isnan(offsets)) == 3:
@@ -134,8 +134,8 @@ class DetermineStationTimingOffsets:
         pair = (ref_station, station)
         table_path = self.time_deltas_group + '/station_%d/station_%d' % pair
         table = self.data.get_node(table_path, 'time_deltas')
-        ts0 = datetime_to_gps(start)  # noqa
-        ts1 = datetime_to_gps(end)  # noqa
+        ts0 = datetime_to_gps(start)  # noqa: F841
+        ts1 = datetime_to_gps(end)  # noqa: F841
         return table.read_where('(timestamp >= ts0) & (timestamp < ts1)', field='delta')
 
     @memoize
@@ -168,7 +168,7 @@ class DetermineStationTimingOffsets:
             )
         }
         today = self._datetime(datetime.now())
-        cuts = sorted(list(cuts) + [today])
+        cuts = sorted([*list(cuts), today])
         return cuts
 
     @memoize
@@ -387,9 +387,9 @@ def determine_best_reference(filters):
     lengths = []
     ids = range(len(filters))
 
-    for id in ids:
-        idx = [j for j in ids if j != id]
-        lengths.append(sum(filters[id] & (filters[idx[0]] | filters[idx[1]] | filters[idx[2]])))
+    for detector_id in ids:
+        idx = [j for j in ids if j != detector_id]
+        lengths.append(sum(filters[detector_id] & (filters[idx[0]] | filters[idx[1]] | filters[idx[2]])))
     return lengths.index(max(lengths))
 
 
