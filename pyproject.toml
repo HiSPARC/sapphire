@@ -9,20 +9,25 @@ quote-style = 'single'  # Prefer single quotes, except for triple quotes strings
 select = ['ALL']  # https://docs.astral.sh/ruff/rules/
 ignore = [
     'ANN',  # No type annotations yet
+    'B028',  # Allow warnings.warn without stacklevel
     'CPY001',  # Do not require copyright notices
     'D',  # Ignore docstring checks
     'DTZ',  # Ignore timezones for datetime
     'E731',  # Allow assigning lambda to variable
     'EM',  # Allow messages directly in exceptions
     'ERA001',  # Allow commented code
+    'F405',  # Allow star imports
     'FBT001',  # Allow positional for boolean arguments
     'FBT002',  # Allow default value for boolean arguments
-    'F405',  # Allow star imports
     'PD',  # Not using pandas
     'PLR0913',  # Allow functions with many arguments
     'PLR6301',  # Allow not using self in methods
     'PT',  # Not using pytest
     'RET504',  # Allow variable assignment before return
+    'RET505',  # Allow elif after return
+    'RET506',  # Allow elif after raise
+    'RET507',  # Allow elif after continue
+    'RET508',  # Allow elif after break
     'SIM108',  # Allow if-else block instead of ternary
     'SLF001',  # Allow accessing private members
     'T201',  # Allow using print
