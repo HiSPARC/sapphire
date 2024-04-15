@@ -101,7 +101,6 @@ from .simulations.showerfront import ConeFrontSimulation, FlatFrontSimulation
 from .tests import run_tests
 from .transformations.celestial import zenithazimuth_to_equatorial
 from .transformations.clock import datetime_to_gps, gps_to_datetime
-from .version import __version__  # noqa
 
 __all__ = [
     'analysis',

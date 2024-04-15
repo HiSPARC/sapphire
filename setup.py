@@ -2,18 +2,9 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-# set version number and write to sapphire/version.py
-version = '2.0.0'
-
-version_py = f"""\
-# Created by setup.py. Do not edit.
-__version__ = "{version}"
-"""
-(Path(__file__).parent / 'sapphire/version.py').write_text(version_py)
-
 setup(
     name='hisparc-sapphire',
-    version=version,
+    version='2.0.0',
     packages=find_packages(),
     url='https://github.com/hisparc/sapphire/',
     bugtrack_url='https://github.com/HiSPARC/sapphire/issues',
