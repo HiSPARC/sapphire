@@ -191,7 +191,7 @@ class API:
             base = get_api_base()
 
         url = urljoin(base, urlpath + '/' if urlpath else '')
-        logging.debug('Getting: ' + url)
+        logging.debug(f'Getting: {url}')
         try:
             result = urlopen(url).read().decode('utf-8')
         except HTTPError as e:
@@ -430,7 +430,7 @@ class Network(API):
 
     @staticmethod
     def validate_numbers(country=None, cluster=None, subcluster=None):
-        if country is not None and country % 10000:
+        if country is not None and country % 10_000:
             raise ValueError('Invalid country number, must be multiple of 10000.')
         if cluster is not None and cluster % 1000:
             raise ValueError('Invalid cluster number, must be multiple of 1000.')
@@ -470,9 +470,8 @@ class Network(API):
             is_active = zeros(len_array)
             start_i = (data[station]['timestamp'][0] - first) // 3600
             end_i = start_i + len(data[station])
-            is_active[start_i:end_i] = (
-                (data[station]['counts'] > minimum_events_per_hour)
-                & (data[station]['counts'] < maximum_events_per_hour)
+            is_active[start_i:end_i] = (data[station]['counts'] > minimum_events_per_hour) & (
+                data[station]['counts'] < maximum_events_per_hour
             )
             all_active = logical_and(all_active, is_active)
 
@@ -752,7 +751,7 @@ class Station(API):
             idx = -1
         else:
             idx = get_active_index(voltages['timestamp'], timestamp)
-        voltage = [voltages[idx]['voltage%d' % i] for i in range(1, 5)]
+        voltage = [voltages[idx][f'voltage{detector_id}'] for detector_id in range(1, 5)]
         return voltage
 
     @cached_property
@@ -778,7 +777,7 @@ class Station(API):
             idx = -1
         else:
             idx = get_active_index(currents['timestamp'], timestamp)
-        current = [currents[idx]['current%d' % i] for i in range(1, 5)]
+        current = [currents[idx][f'current{detector_id}'] for detector_id in range(1, 5)]
         return current
 
     @cached_property
@@ -850,8 +849,10 @@ class Station(API):
             idx = -1
         else:
             idx = get_active_index(triggers['timestamp'], timestamp)
-        thresholds = [[triggers[idx]['%s%d' % (t, i)] for t in ('low', 'high')] for i in range(1, 5)]
-        trigger = [triggers[idx][t] for t in ('n_low', 'n_high', 'and_or', 'external')]
+        thresholds = [
+            [triggers[idx][f'{threshold}{detector_id}'] for threshold in ('low', 'high')] for detector_id in range(1, 5)
+        ]
+        trigger = [triggers[idx][trigger_option] for trigger_option in ('n_low', 'n_high', 'and_or', 'external')]
         return thresholds, trigger
 
     @cached_property
@@ -897,7 +898,8 @@ class Station(API):
         else:
             idx = get_active_index(station_layouts['timestamp'], timestamp)
         station_layout = [
-            [station_layouts[idx]['%s%d' % (c, i)] for c in ('radius', 'alpha', 'height', 'beta')] for i in range(1, 5)
+            [station_layouts[idx][f'{coordinate}{detector_id}'] for coordinate in ('radius', 'alpha', 'height', 'beta')]
+            for detector_id in range(1, 5)
         ]
         return station_layout
 
@@ -925,7 +927,7 @@ class Station(API):
             idx = -1
         else:
             idx = get_active_index(detector_timing_offsets['timestamp'], timestamp)
-        detector_timing_offset = [detector_timing_offsets[idx]['offset%d' % i] for i in range(1, 5)]
+        detector_timing_offset = [detector_timing_offsets[idx][f'offset{detector_id}'] for detector_id in range(1, 5)]
 
         return detector_timing_offset
 

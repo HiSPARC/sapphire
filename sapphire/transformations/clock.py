@@ -62,7 +62,15 @@ def time_to_decimal(time):
     :return: decimal number representing the input time.
 
     """
-    return time.hour + time.minute / 60.0 + time.second / 3600.0 + time.microsecond / 3600000000.0
+    minutes_per_hour = 60
+    seconds_per_hour = 3600
+    microseconds_per_hour = 3600_000_000
+    return (
+        time.hour
+        + time.minute / minutes_per_hour
+        + time.second / seconds_per_hour
+        + time.microsecond / microseconds_per_hour
+    )
 
 
 def decimal_to_time(hours):
@@ -101,7 +109,13 @@ def date_to_juliandate(year, month, day):
         year1 -= 1
         month1 = month + 12
 
-    if year1 > 1582 or (year1 == 1582 and month >= 10 and day >= 15):
+    # Correction for leap years
+    gregorian_year = 1582
+    gregorian_month = 10
+    gregorian_day = 15
+    if year1 > gregorian_year or (
+        year1 == gregorian_year and (month > gregorian_month or (month == gregorian_month and day >= gregorian_day))
+    ):
         a = int(year1 / 100)
         b = 2 - a + int(a / 4)
     else:
@@ -225,7 +239,9 @@ def juliandate_to_utc(juliandate):
     juliandate += 0.5
     jd_frac, jd_int = math.modf(juliandate)
 
-    if jd_int > 2299160:
+    julian_gregorian_transition_date = 2299160
+
+    if jd_int > julian_gregorian_transition_date:
         a = int((jd_int - 1867216.25) / 36524.25)
         b = jd_int + 1 + a - int(a / 4)
     else:
@@ -407,4 +423,4 @@ def process_time(time):
         try:
             return datetime_to_gps(time)
         except Exception:
-            raise RuntimeError('Unable to parse time: ', time)
+            raise RuntimeError('Unable to parse time: {time}')
