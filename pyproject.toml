@@ -1,3 +1,70 @@
+[build-system]
+requires = ['flit_core>=3.9']
+build-backend = 'flit_core.buildapi'
+
+[project]
+name = 'hisparc-sapphire'
+version = '2.0.0'
+description = 'A framework for the HiSPARC experiment'
+readme = 'README.rst'
+requires-python = '>=3.9'
+license = {file = 'LICENSE'}
+authors = [
+    {name = 'Arne de Laat', email = 'arne@delaat.net'},
+    {name = 'David Fokkema'},
+    {name = 'Tom Kooij'},
+]
+maintainers = [
+    {name = 'Arne de Laat', email = 'arne@delaat.net'},
+]
+keywords = [
+    'cosmic rays',
+    'detectors',
+    'astrophysics',
+    'HiSPARC',
+    'Nikhef',
+]
+classifiers = [
+    'Intended Audience :: Education',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python',
+    'Topic :: Education',
+    'Topic :: Scientific/Engineering',
+]
+dependencies = [
+    'numpy',
+    'scipy',
+    'tables>=3.3.0',
+    'progressbar2>=3.7.0',
+]
+
+[project.optional-dependencies]
+dev = [
+    'Sphinx',
+    'coverage==7.4.4',
+    'ruff==0.4.1',
+]
+astropy = [
+    'astropy>=5.0.0',
+]
+publish = [
+    'flit==3.9.0',
+]
+
+[project.urls]
+Homepage = 'https://data.hisparc.nl'
+Documentation = 'https://docs.hisparc.nl/sapphire/'
+Repository = 'https://github.com/hisparc/sapphire/'
+Issues = 'https://github.com/HiSPARC/sapphire/issues'
+
+[project.scripts]
+create_and_store_test_data = 'sapphire.tests.create_and_store_test_data:main'
+update_local_data = 'sapphire.data.update_local_data:main'
+extend_local_data = 'sapphire.data.extend_local_data:main'
+
 [tool.ruff]
 line-length = 120
 target-version = 'py39'
