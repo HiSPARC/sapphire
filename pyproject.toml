@@ -65,6 +65,9 @@ create_and_store_test_data = 'sapphire.tests.create_and_store_test_data:main'
 update_local_data = 'sapphire.data.update_local_data:main'
 extend_local_data = 'sapphire.data.extend_local_data:main'
 
+[tool.flit.module]
+name = 'sapphire'
+
 [tool.ruff]
 line-length = 120
 target-version = 'py39'
