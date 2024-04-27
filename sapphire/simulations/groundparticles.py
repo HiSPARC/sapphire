@@ -481,7 +481,7 @@ class FixedCoreDistanceSimulation(GroundParticlesSimulation):
         :return: Random x, y position on the circle with radius r_max.
 
         """
-        phi = np.random.uniform(-pi, pi)
+        phi = np.random.default_rng().uniform(-pi, pi)
         x = r_max * cos(phi)
         y = r_max * sin(phi)
         return x, y

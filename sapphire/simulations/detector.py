@@ -188,8 +188,8 @@ class HiSPARCSimulation(BaseSimulation):
         :return: Random x, y position in the disc with radius r_max.
 
         """
-        r = sqrt(np.random.uniform(0, r_max**2))
-        phi = np.random.uniform(-pi, pi)
+        r = sqrt(np.random.default_rng().uniform(0, r_max**2))
+        phi = np.random.default_rng().uniform(-pi, pi)
         x = r * cos(phi)
         y = r * sin(phi)
         return x, y
@@ -213,7 +213,7 @@ class HiSPARCSimulation(BaseSimulation):
         :return: random zenith position on a sphere, in radians.
 
         """
-        p = np.random.uniform(cos(max), cos(min))
+        p = np.random.default_rng().uniform(cos(max), cos(min))
         return acos(p)
 
     @classmethod
@@ -255,7 +255,7 @@ class HiSPARCSimulation(BaseSimulation):
         :return: shower azimuth angle, in radians.
 
         """
-        return np.random.uniform(-pi, pi)
+        return np.random.default_rng().uniform(-pi, pi)
 
     @classmethod
     def generate_energy(cls, e_min=1e14, e_max=1e21, alpha=-2.75):

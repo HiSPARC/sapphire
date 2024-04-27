@@ -32,8 +32,8 @@ def monte_carlo_timings(n, bins, size):
 
     t_list = []
     while len(t_list) < size:
-        x = random.uniform(x0, x1)
-        y = random.uniform(y0, y1)
+        x = random.default_rng().uniform(x0, x1)
+        y = random.default_rng().uniform(y0, y1)
         idx = bins.searchsorted(x) - 1
         if y <= n[idx]:
             t_list.append(x)

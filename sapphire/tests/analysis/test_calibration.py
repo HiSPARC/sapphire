@@ -7,8 +7,7 @@ from unittest.mock import MagicMock, Mock, call, patch, sentinel
 
 import tables
 
-from numpy import all, array, isnan, nan, std
-from numpy.random import normal, uniform
+from numpy import all, array, isnan, nan, random, std
 
 from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration
@@ -184,13 +183,13 @@ class FitTimingOffsetTests(unittest.TestCase):
     def test_fit_timing_offset(self):
         deviations = []
         for _ in range(50):
-            center = uniform(-40, 40)
-            sigma = uniform(10, 30)
+            center = random.default_rng().uniform(-40, 40)
+            sigma = random.default_rng().uniform(10, 30)
             n = int(4e4)
             lower = center - 3 * sigma
             upper = center + 3 * sigma
             bins = list(range(int(lower), int(upper), 1))
-            dt = normal(center, sigma, n)
+            dt = random.default_rng().normal(center, sigma, n)
             offset, error = calibration.fit_timing_offset(dt, bins)
             deviations.append((center - offset) / error)
             # Test if determined offset close to the actual center.

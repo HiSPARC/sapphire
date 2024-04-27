@@ -163,7 +163,7 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
 
 class FixedCoreDistanceSimulationTest(unittest.TestCase):
     def test_fixed_core_distance(self):
-        r = random.uniform(1e-15, 4000, size=300)
+        r = random.default_rng().uniform(1e-15, 4000, size=300)
         x, y = groundparticles.FixedCoreDistanceSimulation.generate_core_position(r)
         testing.assert_allclose(sqrt(x**2 + y**2), r, 1e-11)
 

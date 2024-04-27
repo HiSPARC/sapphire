@@ -8,7 +8,7 @@ transformspeeds tests the speed of the new transformations
 """
 
 import datetime
-import random as r
+import random
 import time
 
 import matplotlib.pyplot as plt
@@ -77,7 +77,6 @@ def oldvsnew_diagram():
     refer to him for when something is unclear
     """
     # make random frames, in correct angle range and from utc time 2000-2020
-    frames = []
     # boxes for the four different transformation results
     etoha = []
     etoh = []
@@ -86,16 +85,16 @@ def oldvsnew_diagram():
     straight = lambda x: x  # straight trendline function
 
     # Create the data sets for eq to az
-    for i in range(100):
-        frames.append(
-            (
-                r.uniform(-90, 90),
-                r.uniform(-180, 180),
-                r.randint(946684800, 1577836800),
-                r.uniform(0, 2 * np.pi),
-                r.uniform(-0.5 * np.pi, 0.5 * np.pi),
-            ),
+    frames = [
+        (
+            random.uniform(-90, 90),
+            random.uniform(-180, 180),
+            random.randint(946684800, 1577836800),
+            random.uniform(0, 2 * np.pi),
+            random.uniform(-0.5 * np.pi, 0.5 * np.pi),
         )
+        for _ in range(100)
+    ]
     for i in frames:
         etoha.append(celestial.equatorial_to_zenithazimuth_astropy(i[0], i[1], i[2], [(i[3], i[4])])[0])
         etoh.append(celestial.equatorial_to_zenithazimuth(i[0], i[1], clock.utc_to_gps(i[2]), i[3], i[4]))
@@ -249,11 +248,11 @@ try:
         for i in range(100):
             eq.append(
                 (
-                    r.uniform(-90, 90),
-                    r.uniform(-180, 180),
-                    r.randint(946684800, 1577836800),
-                    r.uniform(0, 2 * np.pi),
-                    r.uniform(-0.5 * np.pi, 0.5 * np.pi),
+                    random.uniform(-90, 90),
+                    random.uniform(-180, 180),
+                    random.randint(946684800, 1577836800),
+                    random.uniform(0, 2 * np.pi),
+                    random.uniform(-0.5 * np.pi, 0.5 * np.pi),
                 ),
             )
         efemeq = []  # store pyephem transformations to equatorial
