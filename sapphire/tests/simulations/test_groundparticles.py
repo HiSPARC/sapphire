@@ -35,8 +35,8 @@ class GroundParticlesSimulationTest(unittest.TestCase):
             ((10, -60, pi / 2), (60, 10, -pi / 2)),
         )
 
-        for input, expected in combinations:
-            self.simulation._prepare_cluster_for_shower(*input)
+        for args, expected in combinations:
+            self.simulation._prepare_cluster_for_shower(*args)
             self.assertAlmostEqual(self.simulation.cluster.x, expected[0])
             self.assertAlmostEqual(self.simulation.cluster.y, expected[1])
             self.assertAlmostEqual(self.simulation.cluster.alpha, expected[2])
@@ -49,8 +49,8 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         self.simulation.corsika_azimuth = 0
         combinations = ((0, 0, 0), (10, -60, 0), (10, -60, pi / 2))
 
-        for input in combinations:
-            self.simulation._prepare_cluster_for_shower(*input)
+        for args in combinations:
+            self.simulation._prepare_cluster_for_shower(*args)
             self.simulation.get_particles_in_detector(self.detectors[0], shower_parameters)
             x, y = self.detectors[0].get_xy_coordinates()
             size = sqrt(0.5) / 2.0
@@ -65,10 +65,14 @@ class GroundParticlesSimulationTest(unittest.TestCase):
 
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (1, 0, 0, 0)), ((1, -1, 0), (0, 1, 0, 3)), ((1, -1, pi / 2), (1, 1, 0, 1)))
+        combinations = (
+            ((0, 0, 0), (1, 0, 0, 0)),
+            ((1, -1, 0), (0, 1, 0, 3)),
+            ((1, -1, pi / 2), (1, 1, 0, 1)),
+        )
 
-        for input, expected in combinations:
-            self.simulation._prepare_cluster_for_shower(*input)
+        for args, expected in combinations:
+            self.simulation._prepare_cluster_for_shower(*args)
             for d, e in zip(self.detectors, expected):
                 self.assertEqual(len(self.simulation.get_particles_in_detector(d, shower_parameters)), e)
 
@@ -101,8 +105,8 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
             ((1, -1, pi / 2), (1, 1, 0, 1), (1, 3, 6, 1)),
         )
 
-        for input, n1, n2 in combinations:
-            self.simulation._prepare_cluster_for_shower(*input)
+        for args, n1, n2 in combinations:
+            self.simulation._prepare_cluster_for_shower(*args)
             for d, n_lep, n_gam in zip(self.detectors, n1, n2):
                 lep, gamma = self.simulation.get_particles_in_detector(d, shower_parameters)
                 self.assertEqual(len(lep), n_lep)
@@ -128,8 +132,8 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
         self.simulation.corsika_azimuth = 0
         combinations = ((0, 0, 0), (10, -60, 0))
 
-        for input in combinations:
-            self.simulation._prepare_cluster_for_shower(*input)
+        for args in combinations:
+            self.simulation._prepare_cluster_for_shower(*args)
             self.simulation.get_particles_in_detector(self.detectors[0], shower_parameters)
             x, y = self.detectors[0].get_xy_coordinates()
             size = 0.6
@@ -146,18 +150,25 @@ class DetectorBoundarySimulationTest(GroundParticlesSimulationTest):
 
         shower_parameters = {'zenith': 0}
         self.simulation.corsika_azimuth = 0
-        combinations = (((0, 0, 0), (1, 0, 1, 0)), ((1, -1, 0), (0, 1, 1, 3)), ((1, -1, pi / 2), (1, 1, 0, 1)))
+        combinations = (
+            ((0, 0, 0), (1, 0, 1, 0)),
+            ((1, -1, 0), (0, 1, 1, 3)),
+            ((1, -1, pi / 2), (1, 1, 0, 1)),
+        )
 
-        for input, expected in combinations:
-            self.simulation._prepare_cluster_for_shower(*input)
+        for args, expected in combinations:
+            self.simulation._prepare_cluster_for_shower(*args)
             for d, e in zip(self.detectors, expected):
                 self.assertEqual(len(self.simulation.get_particles_in_detector(d, shower_parameters)), e)
 
     def test_get_line_boundary_eqs(self):
-        combos = ((((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)), (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)))
+        combinations = (
+            (((0, 0), (1, 1), (0, 2)), (0.0, 'y - 1.000000 * x', 2.0)),
+            (((0, 0), (0, 1), (1, 2)), (0.0, 'x', 1)),
+        )
 
-        for input, expected in combos:
-            result = self.simulation.get_line_boundary_eqs(*input)
+        for args, expected in combinations:
+            result = self.simulation.get_line_boundary_eqs(*args)
             self.assertEqual(result, expected)
 
 

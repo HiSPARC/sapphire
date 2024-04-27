@@ -78,7 +78,7 @@ class CorsikaBlocksThinTests(CorsikaBlocksTests):
 class ParticleDataTests(unittest.TestCase):
     def setUp(self):
         # Input
-        id = 1000
+        particle_id = 1000
         p_x = 2.0  # GeV
         p_y = 1.0  # GeV
         p_z = 10.0  # GeV
@@ -86,7 +86,7 @@ class ParticleDataTests(unittest.TestCase):
         y = 400.0  # cm
         t = 12345678.0  # ns
 
-        self.subblock = (id, p_x, p_y, p_z, x, y, t)
+        self.subblock = (particle_id, p_x, p_y, p_z, x, y, t)
 
         # Output
         p_x *= 1e9  # eV
@@ -97,7 +97,7 @@ class ParticleDataTests(unittest.TestCase):
         r = sqrt(x**2 + y**2)
         phi = atan2(x, -y)
 
-        self.result = (p_x, p_y, -p_z, -y, x, t, id / 1000, r, id / 10 % 100, id % 10, phi)
+        self.result = (p_x, p_y, -p_z, -y, x, t, particle_id / 1000, r, particle_id / 10 % 100, particle_id % 10, phi)
 
     def test_particle_data(self):
         """Verify conversion of particle information by particle_data()"""

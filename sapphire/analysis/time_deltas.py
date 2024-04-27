@@ -132,14 +132,14 @@ class ProcessTimeDeltas:
                 continue
             if events[0][0] == ref_station:
                 ref_id = 0
-                id = 1
+                other_id = 1
             else:
                 ref_id = 1
-                id = 0
+                other_id = 0
 
             ref_event = events[ref_id][1]
             ref_detector_offsets = ref_offsets(ref_event['timestamp'])
-            event = events[id][1]
+            event = events[other_id][1]
             detector_offsets = offsets(event['timestamp'])
 
             ref_t = station_arrival_time(ref_event, ref_ets, [0, 1, 2, 3], ref_detector_offsets)

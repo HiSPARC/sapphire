@@ -139,8 +139,8 @@ def move_tempfile_to_destination(tmp_path, destination):
 def all_seeds(source):
     """Get set of all seeds in the corsika data directory"""
 
-    dirs = glob.glob(os.path.join(source, '*_*'))
-    seeds = [os.path.basename(dir) for dir in dirs]
+    directories = glob.glob(os.path.join(source, '*_*'))
+    seeds = [os.path.basename(directory) for directory in directories]
     return sorted(set(seeds))
 
 

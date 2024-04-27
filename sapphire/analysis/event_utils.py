@@ -45,7 +45,7 @@ def detector_densities(event, detector_ids=None, station=None):
     """
     if detector_ids is None:
         detector_ids = get_detector_ids(station, event)
-    p = [detector_density(event, id, station) for id in detector_ids]
+    p = [detector_density(event, detector_id, station) for detector_id in detector_ids]
     return p
 
 
@@ -140,7 +140,7 @@ def detector_arrival_times(event, detector_ids=None, offsets=NO_OFFSET, station=
     """
     if detector_ids is None:
         detector_ids = get_detector_ids(station, event)
-    t = [detector_arrival_time(event, id, offsets) for id in detector_ids]
+    t = [detector_arrival_time(event, detector_id, offsets) for detector_id in detector_ids]
     return t
 
 

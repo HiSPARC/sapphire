@@ -104,15 +104,15 @@ class FlatFrontSimulation(HiSPARCSimulation):
 
         """
         n_detectors = len(station.detectors)
-        ids = list(range(1, n_detectors + 1))
-        arrival_times = [station_observables['t%d' % id] for id in ids]
+        detector_ids = list(range(1, n_detectors + 1))
+        arrival_times = [station_observables[f't{detector_id}'] for detector_id in detector_ids]
         ext_timestamp = shower_parameters['ext_timestamp']
 
         first_time = sorted(arrival_times)[0]
-        for id in ids:
-            station_observables['t%d' % id] -= first_time
+        for detector_id in detector_ids:
+            station_observables[f't{detector_id}'] -= first_time
 
-        arrival_times = [station_observables['t%d' % id] for id in ids]
+        arrival_times = [station_observables[f't{detector_id}'] for detector_id in detector_ids]
         trigger_time = sorted(arrival_times)[1]
 
         ext_timestamp += int(first_time + trigger_time + station.gps_offset + self.simulate_gps_uncertainty())

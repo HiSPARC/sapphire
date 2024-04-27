@@ -165,8 +165,8 @@ class Detector:
         return corners
 
     def __repr__(self):
-        id = next(i for i, d in enumerate(self.station.detectors) if self is d)
-        return '<%s, id: %d, station: %r>' % (self.__class__.__name__, id, self.station)
+        detector_id = next(i for i, d in enumerate(self.station.detectors) if self is d)
+        return '<%s, id: %d, station: %r>' % (self.__class__.__name__, detector_id, self.station)
 
 
 class Station:
@@ -282,7 +282,7 @@ class Station:
 
         """
         if detector_ids is not None:
-            return sum(self._detectors[id].get_area() for id in detector_ids)
+            return sum(self._detectors[detector_id].get_area() for detector_id in detector_ids)
         else:
             return sum(d.get_area() for d in self._detectors)
 

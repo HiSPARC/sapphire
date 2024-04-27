@@ -31,19 +31,19 @@ class CorsikaParticlesTests(unittest.TestCase):
     def test_particle_ids(self):
         """Verify that the correct names belong to each ID"""
 
-        for id, name in self.pid_name:
-            self.assertEqual(particles.ID[id], name)
+        for particle_id, name in self.pid_name:
+            self.assertEqual(particles.ID[particle_id], name)
 
     def test_conversion_functions(self):
         """Verify that the functions correctly convert back and forth"""
 
-        for id, name in self.pid_name:
-            self.assertEqual(particles.name(id), name)
-            self.assertEqual(particles.particle_id(name), id)
+        for particle_id, name in self.pid_name:
+            self.assertEqual(particles.name(particle_id), name)
+            self.assertEqual(particles.particle_id(name), particle_id)
 
-        for id, name in self.massless_atoms:
-            self.assertEqual(particles.particle_id(name), id)
+        for particle_id, name in self.massless_atoms:
+            self.assertEqual(particles.particle_id(name), particle_id)
 
-        for id, name in self.atoms:
-            self.assertEqual(particles.name(id), name)
-            self.assertEqual(particles.particle_id(name), id)
+        for particle_id, name in self.atoms:
+            self.assertEqual(particles.name(particle_id), name)
+            self.assertEqual(particles.particle_id(name), particle_id)

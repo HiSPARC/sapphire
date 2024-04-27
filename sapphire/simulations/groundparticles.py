@@ -167,10 +167,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         detectors_low = sum(True for observables in detector_observables if observables['n'] > 0.3)
         detectors_high = sum(True for observables in detector_observables if observables['n'] > 0.5)
 
-        if n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3) or n_detectors == 2 and detectors_low >= 2:
-            return True
-        else:
-            return False
+        return (
+            n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3) or n_detectors == 2 and detectors_low >= 2
+        )
 
     def simulate_gps(self, station_observables, shower_parameters, station):
         """Simulate gps timestamp.
@@ -185,7 +184,9 @@ class GroundParticlesSimulation(HiSPARCSimulation):
 
         """
         arrival_times = [
-            station_observables['t%d' % id] for id in range(1, 5) if station_observables.get('n%d' % id, -1) > 0
+            station_observables[f't{detector_id}']
+            for detector_id in range(1, 5)
+            if station_observables.get(f'n{detector_id}', -1) > 0
         ]
 
         if len(arrival_times) > 1:

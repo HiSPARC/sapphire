@@ -247,7 +247,7 @@ class ReconstructESDEvents:
         row['id'] = event['event_id']
         row['ext_timestamp'] = event['ext_timestamp']
         try:
-            row['min_n'] = min(event['n%d' % (id + 1)] for id in detector_ids)
+            row['min_n'] = min(event['n%d' % (detector_id + 1)] for detector_id in detector_ids)
         except ValueError:
             # sometimes, all arrival times are -999 or -1, and then
             # detector_ids = []. So min([]) gives a ValueError.
@@ -256,8 +256,8 @@ class ReconstructESDEvents:
         row['y'] = core_y
         row['zenith'] = theta
         row['azimuth'] = phi
-        for id in detector_ids:
-            row['d%d' % (id + 1)] = True
+        for detector_id in detector_ids:
+            row['d%d' % (detector_id + 1)] = True
         row.append()
 
     def _get_or_create_station_object(self, station):
@@ -265,7 +265,7 @@ class ReconstructESDEvents:
             self.station = station
             self.station_number = None
             if self.verbose:
-                print('Using object %s for metadata.' % self.station)
+                print(f'Using object {self.station} for metadata.')
         else:
             self.station_number = station
             cluster = HiSPARCStations([station], force_fresh=self.force_fresh, force_stale=self.force_stale)

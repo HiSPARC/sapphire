@@ -64,11 +64,11 @@ class CoordinateSystemTests(unittest.TestCase):
 
 class RotateCartesianTests(unittest.TestCase):
     def test_rotate_cartesian(self):
-        input = (3.0, 4.0, 5.0)
-        x, y, z = input
-        self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'x'))
-        self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'y'))
-        self.assertEqual(input, axes.rotate_cartesian(x, y, z, 0, 'z'))
+        initial = (3.0, 4.0, 5.0)
+        x, y, z = initial
+        self.assertEqual(initial, axes.rotate_cartesian(x, y, z, 0, 'x'))
+        self.assertEqual(initial, axes.rotate_cartesian(x, y, z, 0, 'y'))
+        self.assertEqual(initial, axes.rotate_cartesian(x, y, z, 0, 'z'))
 
         testing.assert_almost_equal((3.0, -5.0, 4.0), axes.rotate_cartesian(x, y, z, pi / 2, 'x'))
         testing.assert_almost_equal((5.0, 4.0, -3.0), axes.rotate_cartesian(x, y, z, pi / 2, 'y'))

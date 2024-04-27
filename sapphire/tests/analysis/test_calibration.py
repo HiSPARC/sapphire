@@ -1,8 +1,8 @@
-import os
 import unittest
 import warnings
 
 from datetime import date, datetime
+from pathlib import Path
 from unittest.mock import MagicMock, Mock, call, patch, sentinel
 
 import tables
@@ -20,8 +20,7 @@ TEST_DATA_ESD = 'test_data/esd_coincidences.h5'
 
 class DetectorTimingTests(unittest.TestCase):
     def get_testdata_path(self):
-        dir_path = os.path.dirname(__file__)
-        return os.path.join(dir_path, TEST_DATA_ESD)
+        return Path(__file__).parent / TEST_DATA_ESD
 
     def test_determine_detector_timing_offsets(self):
         with tables.open_file(self.get_testdata_path(), 'r') as data:

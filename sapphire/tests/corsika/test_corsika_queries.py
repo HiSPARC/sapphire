@@ -106,22 +106,22 @@ class MockCorsikaQueryTest(unittest.TestCase):
         )
 
     def test_filter(self):
-        filter = self.cq.filter('foo', 123)
-        self.assertEqual(filter, '(foo == 123)')
+        tables_filter = self.cq.filter('foo', 123)
+        self.assertEqual(tables_filter, '(foo == 123)')
 
     def test_float_filter(self):
-        filter = self.cq.float_filter('foo', 12.3)
-        self.assertEqual(filter, '(abs(foo - 12.3) < 1e-4)')
+        tables_filter = self.cq.float_filter('foo', 12.3)
+        self.assertEqual(tables_filter, '(abs(foo - 12.3) < 1e-4)')
 
     def test_range_filter(self):
-        filter = self.cq.range_filter('foo', 12.3, 14.5)
-        self.assertEqual(filter, '(foo >= 12.3) & (foo <= 14.5)')
-        filter = self.cq.range_filter('foo', 12.3)
-        self.assertEqual(filter, '(foo >= 12.3)')
-        filter = self.cq.range_filter('foo', max=14.5)
-        self.assertEqual(filter, '(foo <= 14.5)')
-        filter = self.cq.range_filter('foo')
-        self.assertEqual(filter, '')
+        tables_filter = self.cq.range_filter('foo', 12.3, 14.5)
+        self.assertEqual(tables_filter, '(foo >= 12.3) & (foo <= 14.5)')
+        tables_filter = self.cq.range_filter('foo', 12.3)
+        self.assertEqual(tables_filter, '(foo >= 12.3)')
+        tables_filter = self.cq.range_filter('foo', max=14.5)
+        self.assertEqual(tables_filter, '(foo <= 14.5)')
+        tables_filter = self.cq.range_filter('foo')
+        self.assertEqual(tables_filter, '')
 
     def test_all_simulations(self):
         result = self.cq.all_simulations()

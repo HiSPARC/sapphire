@@ -228,5 +228,5 @@ class DataReductionTests(unittest.TestCase):
             ((50, 2400, 2410), (24, 2410)),  # right close to limit
             ((0, 200, 2400), (0, 226)),
         )  # right far from limit
-        for input, expected in combinations:
-            self.assertEqual(self.dr.add_padding(*input), expected)
+        for args, expected in combinations:
+            self.assertEqual(self.dr.add_padding(*args), expected)

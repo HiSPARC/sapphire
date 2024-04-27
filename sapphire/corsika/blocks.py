@@ -428,14 +428,14 @@ def particle_data(subblock):
     y = x_corsika
     t = subblock[6] * units.ns  # or z for additional muon info
 
-    id = description // 1000
+    particle_id = description // 1000
     hadron_generation = description // 10 % 100
     observation_level = description % 10
 
     r = math.sqrt(x**2 + y**2)
     phi = math.atan2(y, x)
 
-    return (p_x, p_y, p_z, x, y, t, id, r, hadron_generation, observation_level, phi)
+    return (p_x, p_y, p_z, x, y, t, particle_id, r, hadron_generation, observation_level, phi)
 
 
 @jit

@@ -61,10 +61,10 @@ class EventCoreReconstruction:
             detector_ids = range(4)
 
         self.station.cluster.set_timestamp(event['timestamp'])
-        for id in detector_ids:
-            p_detector = detector_density(event, id, self.station)
+        for detector_id in detector_ids:
+            p_detector = detector_density(event, detector_id, self.station)
             if not isnan(p_detector):
-                dx, dy, dz = self.station.detectors[id].get_coordinates()
+                dx, dy, dz = self.station.detectors[detector_id].get_coordinates()
                 p.append(p_detector)
                 x.append(dx)
                 y.append(dy)
@@ -215,14 +215,13 @@ class CoincidenceCoreReconstructionDetectors(CoincidenceCoreReconstruction):
             return (nan, nan)
 
         for station_number, event in coincidence:
-            if station_numbers is not None:
-                if station_number not in station_numbers:
-                    continue
+            if station_numbers is not None and station_number not in station_numbers:
+                continue
             station = self.cluster.get_station(station_number)
-            for id in range(4):
-                p_detector = detector_density(event, id, station)
+            for detector_id in range(4):
+                p_detector = detector_density(event, detector_id, station)
                 if not isnan(p_detector):
-                    dx, dy, dz = station.detectors[id].get_coordinates()
+                    dx, dy, dz = station.detectors[detector_id].get_coordinates()
                     p.append(p_detector)
                     x.append(dx)
                     y.append(dy)

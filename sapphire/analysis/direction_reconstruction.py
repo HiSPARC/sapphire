@@ -90,10 +90,10 @@ class EventDirectionReconstruction:
         self.station.cluster.set_timestamp(event['timestamp'])
         if isinstance(offsets, Station):
             offsets = offsets.detector_timing_offset(event['timestamp'])
-        for id in detector_ids:
-            t_detector = event_utils.detector_arrival_time(event, id, offsets)
+        for detector_id in detector_ids:
+            t_detector = event_utils.detector_arrival_time(event, detector_id, offsets)
             if not isnan(t_detector):
-                dx, dy, dz = self.station.detectors[id].get_coordinates()
+                dx, dy, dz = self.station.detectors[detector_id].get_coordinates()
                 t.append(t_detector)
                 x.append(dx)
                 y.append(dy)

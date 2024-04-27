@@ -39,8 +39,8 @@ logger = logging.getLogger(__name__)
 def all_seeds():
     """Get set of all seeds in the corsika data directory"""
 
-    dirs = glob.glob(os.path.join(DATADIR, '*_*'))
-    seeds = [os.path.basename(dir) for dir in dirs]
+    directories = glob.glob(os.path.join(DATADIR, '*_*'))
+    seeds = [os.path.basename(directory) for directory in directories]
     return set(seeds)
 
 

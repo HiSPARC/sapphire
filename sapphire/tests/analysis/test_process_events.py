@@ -38,7 +38,7 @@ class ProcessEventsTests(unittest.TestCase):
         ext_timestamps = self.proc.source.col('ext_timestamp')
         enumerated_timestamps = list(enumerate(ext_timestamps))
         enumerated_timestamps.sort(key=operator.itemgetter(1))
-        ids_in = [id for id, _ in enumerated_timestamps]
+        ids_in = [row_id for row_id, _ in enumerated_timestamps]
         ids = self.proc._find_unique_row_ids(enumerated_timestamps)
         self.assertEqual(ids, ids_in)
 

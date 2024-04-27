@@ -230,7 +230,7 @@ class CorsikaBatch:
         """Make CORSIKA steering file"""
 
         input_path = os.path.join(self.get_rundir(), 'input-hisparc')
-        input = INPUT_TEMPLATE.format(
+        input_content = INPUT_TEMPLATE.format(
             seed1=self.seed1,
             seed2=self.seed2,
             particle=self.particle,
@@ -241,7 +241,7 @@ class CorsikaBatch:
             tablesdir=CORSIKADIR,
         )
         with open(input_path, 'w') as input_file:
-            input_file.write(input)
+            input_file.write(input_content)
 
     def create_script(self):
         """Make Stoomboot script file"""
