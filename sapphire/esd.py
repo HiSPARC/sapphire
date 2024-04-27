@@ -123,16 +123,16 @@ def load_data(file, group, tsv_file, type='events'):
     """
     if type == 'events':
         table = _get_or_create_events_table(file, group)
-        read_and_store_class = _read_line_and_store_event_class
+        read_and_store_class = ReadLineAndStoreEventClass
     elif type == 'weather':
         table = _get_or_create_weather_table(file, group)
-        read_and_store_class = _read_line_and_store_weather_class
+        read_and_store_class = ReadLineAndStoreWeatherClass
     elif type == 'singles':
         table = _get_or_create_singles_table(file, group)
-        read_and_store_class = _read_line_and_store_singles_class
+        read_and_store_class = ReadLineAndStoreSinglesClass
     elif type == 'lightning':
         table = _get_or_create_lightning_table(file, group)
-        read_and_store_class = _read_line_and_store_lightning_class
+        read_and_store_class = ReadLineAndStoreLightningClass
     else:
         raise ValueError('Data type not recognized.')
 
@@ -190,19 +190,19 @@ def download_data(file, group, station_number, start=None, end=None, type='event
     if type == 'events':
         url = get_events_url().format(station_number=station_number, query=query)
         table = _get_or_create_events_table(file, group)
-        read_and_store = _read_line_and_store_event_class
+        read_and_store = ReadLineAndStoreEventClass
     elif type == 'weather':
         url = get_weather_url().format(station_number=station_number, query=query)
         table = _get_or_create_weather_table(file, group)
-        read_and_store = _read_line_and_store_weather_class
+        read_and_store = ReadLineAndStoreWeatherClass
     elif type == 'singles':
         url = get_singles_url().format(station_number=station_number, query=query)
         table = _get_or_create_singles_table(file, group)
-        read_and_store = _read_line_and_store_singles_class
+        read_and_store = ReadLineAndStoreSinglesClass
     elif type == 'lightning':
         url = get_lightning_url().format(lightning_type=station_number, query=query)
         table = _get_or_create_lightning_table(file, group)
-        read_and_store = _read_line_and_store_lightning_class
+        read_and_store = ReadLineAndStoreLightningClass
     else:
         raise ValueError('Data type not recognized.')
 
@@ -456,8 +456,8 @@ def _read_or_get_station_groups(file, group):
     else:
         re_number = re.compile('[0-9]+$')
         groups = collections.OrderedDict()
-        for sid, station_group in enumerate(s_index):
-            station_group = station_group.decode()
+        for sid, encoded_station_group in enumerate(s_index):
+            station_group = encoded_station_group.decode()
             station = int(re_number.search(station_group).group())
             groups[station] = {'group': station_group, 's_index': sid}
         return groups
@@ -509,7 +509,10 @@ def _create_coincidences_tables(file, group, station_groups):
 
     # Create coincidences table
     description = storage.Coincidence
-    s_columns = {'s%d' % station: tables.BoolCol(pos=p) for p, station in enumerate(station_groups, 12)}
+    start_position = len(storage.Coincidence.columns) + 1
+    s_columns = {
+        f's{station}': tables.BoolCol(pos=position) for position, station in enumerate(station_groups, start_position)
+    }
     description.columns.update(s_columns)
     coincidences = file.create_table(coin_group, 'coincidences', description, createparents=True)
 
@@ -701,7 +704,7 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups
     for event in coincidence:
         station_number = int(event[1])
         try:
-            row['s%d' % station_number] = True
+            row[f's{station_number}'] = True
             group_path = station_groups[station_number]['group']
         except KeyError:
             # Can not add new column, so user should make a new data file.
@@ -709,7 +712,7 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups
                 f'Unexpected station number: {station_number}, no column and/or station group path available.',
             )
         event_group = _get_or_create_events_table(file, group_path)
-        with _read_line_and_store_event_class(event_group) as writer:
+        with ReadLineAndStoreEventClass(event_group) as writer:
             s_idx = station_groups[station_number]['s_index']
             e_idx = len(event_group)
             c_idx.append((s_idx, e_idx))
@@ -722,7 +725,7 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups
     return int(coincidence[0][4])
 
 
-class _read_line_and_store_event_class:
+class ReadLineAndStoreEventClass:
     """Store lines of event data from the ESD
 
     Use this contextmanager to store events from a TSV file into a PyTables
@@ -802,7 +805,7 @@ class _read_line_and_store_event_class:
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if not self.event_counter % 1000000:
+        if not self.event_counter % 1_000_000:
             self.table.flush()
 
         return int(timestamp)
@@ -811,7 +814,7 @@ class _read_line_and_store_event_class:
         self.table.flush()
 
 
-class _read_line_and_store_weather_class(_read_line_and_store_event_class):
+class ReadLineAndStoreWeatherClass(ReadLineAndStoreEventClass):
     """Store lines of weather data from the ESD"""
 
     def store_line(self, line):
@@ -865,13 +868,13 @@ class _read_line_and_store_weather_class(_read_line_and_store_event_class):
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if not self.event_counter % 1000000:
+        if not self.event_counter % 1_000_000:
             self.table.flush()
 
         return int(timestamp)
 
 
-class _read_line_and_store_singles_class(_read_line_and_store_event_class):
+class ReadLineAndStoreSinglesClass(ReadLineAndStoreEventClass):
     """Store lines of singles data from the ESD"""
 
     def store_line(self, line):
@@ -913,13 +916,13 @@ class _read_line_and_store_singles_class(_read_line_and_store_event_class):
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if not self.event_counter % 1000000:
+        if not self.event_counter % 1_000_000:
             self.table.flush()
 
         return int(timestamp)
 
 
-class _read_line_and_store_lightning_class(_read_line_and_store_event_class):
+class ReadLineAndStoreLightningClass(ReadLineAndStoreEventClass):
     """Store lines of lightning data from the ESD"""
 
     def store_line(self, line):
@@ -946,7 +949,7 @@ class _read_line_and_store_lightning_class(_read_line_and_store_event_class):
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if not self.event_counter % 1000000:
+        if not self.event_counter % 1_000_000:
             self.table.flush()
 
         return int(timestamp)

@@ -56,12 +56,12 @@ class ThinnedGroundParticles(GroundParticles):
     weight = tables.Float32Col(pos=11)
 
 
-def save_particle(row, p):
+def save_particle(row, particle):
     """Write the information of a particle into a row"""
 
-    (p_x, p_y, p_z, x, y, t, id, r, hadron_generation, observation_level, phi) = p
+    (p_x, p_y, p_z, x, y, t, particle_id, r, hadron_generation, observation_level, phi) = particle
 
-    row['particle_id'] = id
+    row['particle_id'] = particle_id
     row['r'] = r
     row['phi'] = phi
     row['x'] = x
@@ -174,9 +174,9 @@ def store_corsika_data(source, destination, table_name='groundparticles', progre
         particle_row = table.row
         for row, particle in enumerate(event.get_particles()):
             save_particle_to_row(particle_row, particle)
-            if progress and not row % 5000:
+            if progress and not row % 5_000:
                 pbar.update(row)
-            if not row % 1000000:
+            if not row % 1_000_000:
                 table.flush()
 
         if progress:

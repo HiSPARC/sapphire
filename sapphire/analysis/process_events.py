@@ -418,7 +418,7 @@ class ProcessEvents:
             if (detector_integrals < 0).all():
                 all_mpv.append(np.nan)
             else:
-                n, bins = np.histogram(detector_integrals, bins=np.linspace(0, 50000, 201))
+                n, bins = np.histogram(detector_integrals, bins=np.linspace(0, 50_000, 201))
                 find_mpv = FindMostProbableValueInSpectrum(n, bins)
                 mpv, is_fitted = find_mpv.find_mpv()
                 if is_fitted:

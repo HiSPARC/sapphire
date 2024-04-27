@@ -106,7 +106,7 @@ def my_t_draw_something(data, N, num_events):
     return mint_list
 
 
-def plot_R():
+def plot_core_distance():
     graph = GraphArtist(width=r'.45\linewidth')
 
     n, bins, patches = hist(
@@ -118,15 +118,15 @@ def plot_R():
 
     shower = data.root.simulations.E_1PeV.zenith_22_5.shower_0
     ids = shower.observables.get_where_list('(n1 >= 1) & (n3 >= 1) & (n4 >= 1)')
-    R = shower.coincidences.read_coordinates(ids, field='r')
+    core_distance = shower.coincidences.read_coordinates(ids, field='r')
     n, bins, patches = hist(R, bins=100, histtype='step')
     graph.histogram(n, bins)
 
     xlabel('Core distance [m]')
     ylabel('Number of events')
 
-    print('mean', mean(R))
-    print('median', median(R))
+    print('mean', mean(core_distance))
+    print('median', median(core_distance))
 
     graph.set_xlabel(r'Core distance [\si{\meter}]')
     graph.set_ylabel('Number of events')
@@ -166,5 +166,5 @@ if __name__ == '__main__':
     if 'data' not in globals():
         data = tables.open_file('master-ch4v2.h5')
 
-    plot_R()
+    plot_core_distance()
     plot_arrival_times()

@@ -115,9 +115,9 @@ def _store_data(dst_file, dst_group, src_filename, t0, t1):
                 'weather_config',
             ]:
                 if t1 is None:
-                    cond = 'timestamp >= %d' % datetime_to_gps(t0)
+                    cond = f'timestamp >= {datetime_to_gps(t0)}'
                 else:
-                    cond = '(%d <= timestamp) & (timestamp <= %d)' % (datetime_to_gps(t0), datetime_to_gps(t1))
+                    cond = f'({datetime_to_gps(t0)} <= timestamp) & (timestamp <= {datetime_to_gps(t1)})'
 
                 rows = node.read_where(cond)
 

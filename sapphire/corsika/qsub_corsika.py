@@ -201,8 +201,8 @@ class CorsikaBatch:
                       each is formatted like this: 'seed1_seed2'
 
         """
-        seed1 = random.randint(1, 900000000)
-        seed2 = random.randint(1, 900000000)
+        seed1 = random.randint(1, 900_000_000)
+        seed2 = random.randint(1, 900_000_000)
         seed = f'{seed1}_{seed2}'
         if seed not in taken:
             self.seed1 = seed1

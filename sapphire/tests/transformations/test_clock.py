@@ -41,12 +41,12 @@ class ModifiedJulianDateTests(unittest.TestCase):
         self.assertEqual(clock.modifiedjd_to_juliandate(0.0), 2400000.5)
 
         for _ in range(5):
-            modifiedjd = random.uniform(0, 5000000)
+            modifiedjd = random.uniform(0, 5_000_000)
             self.assertAlmostEqual(
                 clock.juliandate_to_modifiedjd(clock.modifiedjd_to_juliandate(modifiedjd)),
                 modifiedjd,
             )
-            juliandate = random.uniform(0, 5000000)
+            juliandate = random.uniform(0, 5_000_000)
             self.assertAlmostEqual(
                 clock.modifiedjd_to_juliandate(clock.juliandate_to_modifiedjd(juliandate)),
                 juliandate,

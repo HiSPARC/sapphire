@@ -162,7 +162,7 @@ class Coincidences:
         if self.opened:
             self.data.close()
 
-    def search_and_store_coincidences(self, window=10000):
+    def search_and_store_coincidences(self, window=10_000):
         """Search, process and store coincidences.
 
         This is a semi-automatic method to search for coincidences,
@@ -178,7 +178,7 @@ class Coincidences:
         self.process_events()
         self.store_coincidences()
 
-    def search_coincidences(self, window=10000, shifts=None, limit=None):
+    def search_coincidences(self, window=10_000, shifts=None, limit=None):
         """Search for coincidences.
 
         Search all data in the station_groups for coincidences, and store
@@ -327,7 +327,7 @@ class Coincidences:
         self.observables.flush()
         return event_id
 
-    def _search_coincidences(self, window=10000, shifts=None, limit=None):
+    def _search_coincidences(self, window=10_000, shifts=None, limit=None):
         """Search for coincidences
 
         Search for coincidences in a set of PyTables event tables, optionally
@@ -561,7 +561,7 @@ class CoincidencesESD(Coincidences):
 
     """
 
-    def search_and_store_coincidences(self, window=10000, station_numbers=None):
+    def search_and_store_coincidences(self, window=10_000, station_numbers=None):
         """Search and store coincidences.
 
         This is a semi-automatic method to search for coincidences
@@ -571,7 +571,7 @@ class CoincidencesESD(Coincidences):
         self.search_coincidences(window=window)
         self.store_coincidences(station_numbers=station_numbers)
 
-    def search_coincidences(self, window=10000, shifts=None, limit=None):
+    def search_coincidences(self, window=10_000, shifts=None, limit=None):
         """Search for coincidences.
 
         Search all data in the station_groups for coincidences, and store

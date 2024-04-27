@@ -12,7 +12,7 @@ class TableMergeSort:
     """Sort a PyTables HDF5 table either in memory or on-disk"""
 
     _iterators = []
-    _BUFSIZE = 100000
+    _BUFSIZE = 100_000
     hdf5_temp = None
 
     def __init__(

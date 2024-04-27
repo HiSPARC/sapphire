@@ -31,7 +31,7 @@ class CoincidencesTests(unittest.TestCase):
     @patch.object(coincidences.Coincidences, 'store_coincidences')
     def test_search_and_store_coincidences(self, mock_store, mock_process, mock_search):
         self.c.search_and_store_coincidences()
-        mock_search.assert_called_with(window=10000)
+        mock_search.assert_called_with(window=10_000)
         mock_process.assert_called_with()
         mock_store.assert_called_with()
         self.c.search_and_store_coincidences(sentinel.window)
