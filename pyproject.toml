@@ -71,6 +71,10 @@ name = 'sapphire'
 [tool.ruff]
 line-length = 120
 target-version = 'py39'
+extend-exclude = [
+    'doc/',
+    'scripts/',
+]
 
 [tool.ruff.format]
 quote-style = 'single'  # Prefer single quotes, except for triple quotes strings
