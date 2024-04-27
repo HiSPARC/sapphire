@@ -5,7 +5,7 @@ The module contains some commonly functions and classes.
 """
 
 from bisect import bisect_right
-from contextlib import supppress
+from contextlib import suppress
 from distutils.spawn import find_executable
 from functools import wraps
 from os import environ
@@ -48,7 +48,7 @@ def pbar(iterable, length=None, show=True, **kwargs):
         return iterable
 
     if length is None:
-        with supppress(TypeError):
+        with suppress(TypeError):
             length = len(iterable)
 
     if length:
