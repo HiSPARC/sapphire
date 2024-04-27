@@ -108,6 +108,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 'sapphire/corsika/units.py' = ['N816']  # Allow mixed case variables
 'sapphire/esd.py' = ['A002']  # Some keyword arguments shadow a builtin
+'sapphire/kascade.py' = ['N806']  # Allow non lower case variables to match KASCADE
 'sapphire/storage.py' = ['N815']  # Allow mixed case variables
 'sapphire/tests/simulations/test_gammas.py' = ['N806']  # Allow upper case variables
 'sapphire/tests/transformations/test_celestial.py' = ['N806']  # Allow upper case variables

@@ -8,14 +8,13 @@ import numpy as np
 
 from sapphire.transformations import base, celestial, clock
 
-# This is to switch off tests in case astropy is not present
-# used to silence flake8
 try:
-    import astropy  # noqa : F401
+    import astropy  # noqa: F401
 
-    has_astropy = True
 except ImportError:
-    has_astropy = False
+    astropy_available = False
+else:
+    astropy_available = True
 
 
 class ZenithAzimuthHorizontalTests(unittest.TestCase):
@@ -182,7 +181,7 @@ class EquatorialTests(unittest.TestCase):
         self.assertAlmostEqual(azcalc, azimuth, 2)
 
 
-@unittest.skipUnless(has_astropy, 'astropy required.')
+@unittest.skipUnless(astropy_available, 'astropy required.')
 class AstropyEquatorialTests(unittest.TestCase):
     """
     This tests the 4 new astropy functions. They should be very close to

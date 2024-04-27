@@ -239,7 +239,7 @@ class MeanFilter:
         local_mean = moving_average[3]
         local_mean_rounded = rounded_average[3]
 
-        if all([abs(v - local_mean) <= self.threshold for v in trace[:4]]):
+        if all(abs(v - local_mean) <= self.threshold for v in trace[:4]):
             filtered_trace.extend([local_mean_rounded] * 4)
         else:
             filtered_trace.extend(trace[:4])

@@ -19,6 +19,7 @@ Example usage::
 
 import os
 import subprocess
+import tempfile
 
 from . import utils
 
@@ -83,7 +84,7 @@ def create_script(script, name):
     """Create script as temp file to be run on Stoomboot"""
 
     script_name = f'his_{name}.sh'
-    script_path = os.path.join('/tmp', script_name)
+    script_path = os.path.join(tempfile.gettempdir(), script_name)
 
     with open(script_path, 'w') as script_file:
         script_file.write(script)

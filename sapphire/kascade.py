@@ -148,7 +148,7 @@ class StoreKascadeData:
             Az,
             Size,
             Nmu,
-            He0,  # noqa: N806
+            He0,
             Hmu0,
             He1,
             Hmu1,

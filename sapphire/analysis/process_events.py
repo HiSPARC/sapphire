@@ -699,10 +699,10 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
             trace = self._get_trace(trace_idx)
 
-            t, l, h = self._first_above_thresholds(trace, thresholds, max_signal)
-            timings.append(t)
-            low_idx.append(l)
-            high_idx.append(h)
+            time, low, high = self._first_above_thresholds(trace, thresholds, max_signal)
+            timings.append(time)
+            low_idx.append(low)
+            high_idx.append(high)
 
         t_trigger = self._reconstruct_trigger(low_idx, high_idx)
         timings.append(t_trigger)

@@ -4,6 +4,7 @@ import glob
 import logging
 import os
 import subprocess
+import tempfile
 import textwrap
 
 QUEUE = 'generic'
@@ -93,7 +94,7 @@ def get_script_path(seed):
     """Create path for script"""
 
     script_name = f'sort_{seed}.sh'
-    script_path = os.path.join('/tmp', script_name)
+    script_path = os.path.join(tempfile.gettempdir(), script_name)
     return script_path
 
 
@@ -101,10 +102,10 @@ def create_script(seed):
     """Create script as temp file to run on Stoomboot"""
 
     script_path = get_script_path(seed)
-    input = SCRIPT_TEMPLATE.format(seed=os.path.join(DATADIR, seed))
+    input_content = SCRIPT_TEMPLATE.format(seed=os.path.join(DATADIR, seed))
 
     with open(script_path, 'w') as script:
-        script.write(input)
+        script.write(input_content)
     os.chmod(script_path, 0o774)
 
     return script_path

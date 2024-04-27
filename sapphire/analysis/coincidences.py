@@ -233,10 +233,7 @@ class Coincidences:
         if len(c_index) == 0:
             return
 
-        selected_timestamps = []
-        for coincidence in c_index:
-            for event in coincidence:
-                selected_timestamps.append(timestamps[event])
+        selected_timestamps = [timestamps[event] for coincidence in c_index for event in coincidence]
         full_index = np.array(selected_timestamps)
 
         for station_id, station_group in enumerate(self.station_groups):
