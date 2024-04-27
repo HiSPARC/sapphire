@@ -79,7 +79,10 @@ quote-style = 'single'  # Prefer single quotes, except for triple quotes strings
 select = ['ALL']  # https://docs.astral.sh/ruff/rules/
 ignore = [
     'ANN',  # No type annotations yet
+    'ARG002',  # Allow unused arguments to keep signature equal for similar functions
     'B028',  # Allow warnings.warn without stacklevel
+    'B904',  # Allow skipping causes for exceptions
+    'BLE001',  # Allow catching Exception
     'CPY001',  # Do not require copyright notices
     'D',  # Ignore docstring checks
     'DTZ',  # Ignore timezones for datetime
@@ -90,17 +93,23 @@ ignore = [
     'FBT001',  # Allow positional for boolean arguments
     'FBT002',  # Allow default value for boolean arguments
     'PD',  # Not using pandas
+    'PERF203',  # Allow try-except in loop
     'PLR0913',  # Allow functions with many arguments
     'PLR6301',  # Allow not using self in methods
     'PT',  # Not using pytest
+    'PTH',  # Allow using os.path
     'RET504',  # Allow variable assignment before return
     'RET505',  # Allow elif after return
     'RET506',  # Allow elif after raise
     'RET507',  # Allow elif after continue
     'RET508',  # Allow elif after break
+    'S311',  # Allow using random for non-cryptographic purposes
     'SIM108',  # Allow if-else block instead of ternary
+    'SIM117',  # Allow separate with statements to preserve context
     'SLF001',  # Allow accessing private members
     'T201',  # Allow using print
+    'TD002',  # Allow TODO without author
+    'TD003',  # Allow TODO without issue link
     'TID252',  # Allow relative imports
     'TRY003',  # Specific messages for common exception classes
 ]
