@@ -67,8 +67,8 @@ def download_data(file, group, station_id, start, end, get_blobs=False):
         logger.info(f'Getting server data URL {t0}')
         try:
             url = server.hisparc.get_data_url(station_id, t0, get_blobs)
-        except Exception as exc:
-            if re.search('No data', str(exc)):
+        except Exception as error:
+            if re.search('No data', str(error)):
                 logger.warning(f'No data for {t0}')
                 continue
             else:
@@ -184,7 +184,7 @@ def datetimerange(start, stop):
 
     """
     if start > stop:
-        raise Exception('Start can not be after stop.')
+        raise ValueError('Start can not be after stop.')
     elif start.date() == stop.date():
         yield start, stop
         return
@@ -222,6 +222,6 @@ def _get_or_create_node(file, group, src_node):
         elif isinstance(src_node, tables.VLArray):
             node = file.create_vlarray(group, src_node.name, src_node.atom, src_node.title)
         else:
-            raise Exception('Unknown node class: %s' % type(src_node))
+            raise TypeError(f'Unknown node class: {type(src_node)}')
 
     return node

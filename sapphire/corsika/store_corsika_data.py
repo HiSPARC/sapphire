@@ -89,7 +89,7 @@ def store_and_sort_corsika_data(source, destination, overwrite=False, progress=F
     if os.path.exists(destination):
         if not overwrite:
             if progress:
-                raise Exception('Destination already exists, doing nothing')
+                raise RuntimeError('Destination already exists, doing nothing')
             return
         else:
             os.remove(destination)

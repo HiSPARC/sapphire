@@ -123,20 +123,20 @@ class API:
             raise ValueError('Can not force fresh and stale simultaneously.')
         try:
             if self.force_stale:
-                raise Exception
+                raise ValueError('Should not get data from server')
             json_data = self._retrieve_url(urlpath, base=get_api_base())
             data = json.loads(json_data)
-        except Exception:
+        except Exception as remote_error:
             if self.force_fresh:
-                raise Exception("Couldn't get requested data from server.")
+                raise RuntimeError("Couldn't get requested data from server.") from remote_error
             localpath = LOCAL_BASE / f'{urlpath}.json'
             try:
                 with localpath.open() as localdata:
                     data = json.load(localdata)
-            except Exception:
+            except Exception as local_error:
                 if self.force_stale:
-                    raise Exception("Couldn't find requested data locally.")
-                raise Exception("Couldn't get requested data from server nor find it locally.")
+                    raise RuntimeError("Couldn't find requested data locally.") from local_error
+                raise RuntimeError("Couldn't get requested data from server nor find it locally.") from remote_error
             if not self.force_stale:
                 warnings.warn('Using local data. Possibly outdated.')
 
@@ -155,20 +155,20 @@ class API:
             raise ValueError('Can not force fresh and stale simultaneously.')
         try:
             if self.force_stale:
-                raise Exception
+                raise ValueError('Should not get data from server')
             tsv_data = self._retrieve_url(urlpath, base=get_src_base())
-        except Exception:
+        except Exception as remote_error:
             if self.force_fresh:
-                raise Exception("Couldn't get requested data from server.")
+                raise RuntimeError("Couldn't get requested data from server.") from remote_error
             localpath = LOCAL_BASE / f'{urlpath}.tsv'
             try:
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore')
                     data = genfromtxt(localpath, delimiter='\t', dtype=None, names=names)
-            except Exception:
+            except Exception as local_error:
                 if self.force_stale:
-                    raise Exception("Couldn't find requested data locally.")
-                raise Exception("Couldn't get requested data from server nor find it locally.")
+                    raise RuntimeError("Couldn't find requested data locally.") from local_error
+                raise RuntimeError("Couldn't get requested data from server nor find it locally.") from remote_error
             if not self.force_stale:
                 warnings.warn('Using local data. Possibly outdated.')
         else:
@@ -194,10 +194,10 @@ class API:
         logging.debug(f'Getting: {url}')
         try:
             result = urlopen(url).read().decode('utf-8')
-        except HTTPError as e:
-            raise Exception('A HTTP %d error occured for the url: %s' % (e.code, url))
+        except HTTPError as error:
+            raise RuntimeError(f'A HTTP {error.code} error occured for the url: {url}')
         except URLError:
-            raise Exception('An URL error occured.')
+            raise RuntimeError('An URL error occured.')
 
         return result
 

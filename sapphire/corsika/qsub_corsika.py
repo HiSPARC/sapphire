@@ -309,7 +309,7 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika, progress
 
     available_slots = qsub.check_queue(queue)
     if available_slots <= 0:
-        raise Exception('Submitting no jobs because selected queue is full.')
+        raise RuntimeError('Submitting no jobs because selected queue is full.')
     elif available_slots < n:
         n = available_slots
         warnings.warn(f'Submitting {n} jobs because queue almost full.')

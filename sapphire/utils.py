@@ -5,6 +5,7 @@ The module contains some commonly functions and classes.
 """
 
 from bisect import bisect_right
+from contextlib import supppress
 from distutils.spawn import find_executable
 from functools import wraps
 from os import environ
@@ -47,10 +48,8 @@ def pbar(iterable, length=None, show=True, **kwargs):
         return iterable
 
     if length is None:
-        try:
+        with supppress(TypeError):
             length = len(iterable)
-        except TypeError:
-            pass
 
     if length:
         pb = ProgressBar(max_value=length, widgets=[Percentage(), Bar(), ETA()], **kwargs)
@@ -172,7 +171,7 @@ def which(program):
     """
     path = find_executable(program)
     if not path:
-        raise Exception('The program %s is not available.' % program)
+        raise RuntimeError(f'The program {program} is not available.')
 
 
 def memoize(method):

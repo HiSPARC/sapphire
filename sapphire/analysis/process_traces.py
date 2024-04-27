@@ -72,7 +72,7 @@ class TraceObservables:
         self.n = self.traces.shape[1]
         self.missing = [-1] * (4 - self.n)
         if self.n not in [2, 4]:
-            raise Exception('Unsupported number of detectors')
+            raise ValueError('Unsupported number of detectors')
 
     @cached_property
     def baselines(self):

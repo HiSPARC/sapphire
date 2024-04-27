@@ -74,7 +74,7 @@ def submit_job(script, name, queue, extra=''):
 
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT, shell=True)
     if not result == b'':
-        raise Exception(f'{name} - Error occured: {result}')
+        raise RuntimeError(f'{name} - Error occured: {result}')
 
     delete_script(script_path)
 

@@ -236,13 +236,13 @@ def download_data(file, group, station_number, start=None, end=None, type='event
     if line[0][0] == '#':
         if len(line[0]) == 1:
             # No events recieved, and no success line
-            raise Exception('Failed to download data, no data recieved.')
+            raise ValueError('Failed to download data, no data recieved.')
         else:
             # Successful download because last line is a non-empty comment
             return
     else:
         # Last line is data, report failed download and date/time of last line
-        raise Exception('Failed to complete download, last received data from: %s %s.' % tuple(line[:2]))
+        raise ValueError('Failed to complete download, last received data from: %s %s.' % tuple(line[:2]))
 
 
 def download_lightning(file, group, lightning_type=4, start=None, end=None, progress=True):
@@ -324,13 +324,13 @@ def load_coincidences(file, tsv_file, group=''):
         if line[0][0] == '#':
             if len(line[0]) == 1:
                 # No events to load, and no success line
-                raise Exception('No data to load, source contains no data.')
+                raise ValueError('No data to load, source contains no data.')
             else:
                 # Successful download because last line is a non-empty comment
                 pass
         else:
             # Last line is data, report possible fail and last date/time
-            raise Exception('Source file seems incomplete, last received data from: %s %s.' % tuple(line[2:4]))
+            raise ValueError('Source file seems incomplete, last received data from: %s %s.' % tuple(line[2:4]))
 
         file.flush()
 
@@ -376,7 +376,7 @@ def download_coincidences(file, group='', cluster=None, stations=None, start=Non
         end = start + datetime.timedelta(days=1)
 
     if stations is not None and len(stations) < n:
-        raise Exception('To few stations in query, give at least n.')
+        raise ValueError('To few stations in query, give at least n.')
 
     # build and open url, create tables and set read function
     query = urlencode({'cluster': cluster, 'stations': stations, 'start': start, 'end': end, 'n': n})
@@ -429,13 +429,13 @@ def download_coincidences(file, group='', cluster=None, stations=None, start=Non
     if line[0][0] == '#':
         if len(line[0]) == 1:
             # No events recieved, and no success line
-            raise Exception('Failed to download data, no data recieved.')
+            raise ValueError('Failed to download data, no data recieved.')
         else:
             # Successful download because last line is a non-empty comment
             pass
     else:
         # Last line is data, report failed download and date/time of last line
-        raise Exception('Failed to complete download, last received data from: %s %s.' % tuple(line[2:4]))
+        raise ValueError('Failed to complete download, last received data from: %s %s.' % tuple(line[2:4]))
 
     file.flush()
 
@@ -705,8 +705,8 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups
             group_path = station_groups[station_number]['group']
         except KeyError:
             # Can not add new column, so user should make a new data file.
-            raise Exception(
-                'Unexpected station number: %d, no column and/or station group path available.' % station_number,
+            raise KeyError(
+                f'Unexpected station number: {station_number}, no column and/or station group path available.',
             )
         event_group = _get_or_create_events_table(file, group_path)
         with _read_line_and_store_event_class(event_group) as writer:

@@ -214,7 +214,7 @@ class CorsikaFile:
 
         """
         if self._size % self.format.block_size != 0:
-            raise Exception(f'File "{self._filename}" does not have an integer number ' 'of blocks!')
+            raise ValueError(f'File "{self._filename}" does not have an integer number of blocks!')
         block_size = self.format.block_size
         padding = self.format.block_padding_size
         n_blocks = self._size // block_size
@@ -224,7 +224,7 @@ class CorsikaFile:
             self._file.seek((block + 1) * block_size - padding)
             b = unpack('i', self._file.read(padding))[0]
             if a != b:
-                raise Exception(f'Block #{block} is not right: ({a}, {b})')
+                raise ValueError(f'Block #{block} is not right: ({a}, {b})')
         return True
 
     def get_sub_blocks(self):

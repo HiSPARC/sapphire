@@ -620,7 +620,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
             elif n == 4:
                 self.trigger = TRIGGER_4
             else:
-                raise Exception('No trigger settings available')
+                raise ValueError('No trigger settings available')
         else:
             self.station = Station(station)
 
@@ -798,7 +798,7 @@ class ProcessEventsWithTriggerOffset(ProcessEvents):
 
     def __repr__(self):
         if not self.data.isopen:
-            return '<finished %s>' % self.__class__.__name__
+            return f'<finished {self.__class__.__name__}>'
         elif self.station is None:
             return '%s(%r, %r, source=%r, progress=%r, Station=%r)' % (
                 self.__class__.__name__,
@@ -974,13 +974,13 @@ class ProcessEventsFromSourceWithTriggerOffset(ProcessEventsFromSource, ProcessE
             elif n == 4:
                 self.trigger = TRIGGER_4
             else:
-                raise Exception('No trigger settings available')
+                raise ValueError('No trigger settings available')
         else:
             self.station = Station(station)
 
     def __repr__(self):
         if not self.source_file.isopen or not self.dest_file.isopen:
-            return '<finished %s>' % self.__class__.__name__
+            return f'<finished {self.__class__.__name__}>'
         elif self.station is None:
             return '%s(%r, %r, %r, %r, progress=%r)' % (
                 self.__class__.__name__,
@@ -1049,7 +1049,7 @@ class ProcessDataTable(ProcessEvents):
         """Check if the destination is valid"""
 
         if destination == f'_t_{self.table_name}':
-            raise RuntimeError(f'The _t_{self.table_name} table is for internal use. Choose ' 'another destination.')
+            raise RuntimeError(f'The _t_{self.table_name} table is for internal use. Choose another destination.')
         elif destination is None:
             destination = self.table_name
 
@@ -1151,7 +1151,7 @@ class ProcessDataTableFromSource(ProcessDataTable):
 
     def __repr__(self):
         if not self.source_file.isopen or not self.dest_file.isopen:
-            return '<finished %s>' % self.__class__.__name__
+            return f'<finished {self.__class__.__name__}>'
         else:
             return '%s(%r, %r, %r, %r, progress=%r)' % (
                 self.__class__.__name__,

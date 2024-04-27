@@ -236,7 +236,7 @@ class CoincidenceQuery:
             station_number = self.s_numbers[s_idx]
             s_node = self.s_nodes[s_idx]
             if s_node is None:
-                warnings.warn(f'Missing station group for station id {s_idx}.' 'Reconstructions from it are excluded.')
+                warnings.warn(f'Missing station group for station id {s_idx}. Reconstructions from it are excluded.')
                 continue
             rec_table = s_node.reconstructions
             reconstructions.append((station_number, rec_table[e_idx]))
@@ -253,7 +253,7 @@ class CoincidenceQuery:
             reconstruction = self.reconstructions[coincidence['id']]
             return reconstruction
         else:
-            raise Exception(
+            raise RuntimeError(
                 'Coincidences are not (properly) reconstructed.'
                 'Perform reconstructions and reinitialize this '
                 'class.',

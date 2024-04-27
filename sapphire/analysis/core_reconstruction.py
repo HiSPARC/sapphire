@@ -334,7 +334,7 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
 
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
-            raise Exception('This algorithm requires at least 4 detections.')
+            raise ValueError('This algorithm requires at least 4 detections.')
         if initial is None:
             initial = {}
 
