@@ -20,9 +20,7 @@ test_data_path = os.path.join(self_path, 'test_data/publicdb.h5')
 class DownloadDataTest(unittest.TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)
-
-    def tearDown(self):
-        logging.disable(logging.NOTSET)
+        self.addCleanup(logging.disable, logging.NOTSET)
 
     @patch.object(publicdb, '_store_data')
     @patch.object(publicdb, 'urlretrieve')

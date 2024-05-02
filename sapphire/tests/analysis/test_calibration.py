@@ -200,6 +200,7 @@ class FitTimingOffsetTests(unittest.TestCase):
 class DetermineStationTimingOffsetsTests(unittest.TestCase):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         stations = [501, 102, 105, 8001]
         self.off = calibration.DetermineStationTimingOffsets(
             stations=stations,
@@ -207,9 +208,6 @@ class DetermineStationTimingOffsetsTests(unittest.TestCase):
             progress=sentinel.progress,
             force_stale=True,
         )
-
-    def tearDown(self):
-        warnings.resetwarnings()
 
     def test_init(self):
         self.assertEqual(self.off.progress, sentinel.progress)

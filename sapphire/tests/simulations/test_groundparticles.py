@@ -20,12 +20,10 @@ class GroundParticlesSimulationTest(unittest.TestCase):
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
         self.simulation.corsikafile = self.corsika_data
+        self.addCleanup(self.corsika_data.close)
 
         self.simulation.cluster = SingleDiamondStation()
         self.detectors = self.simulation.cluster.stations[0].detectors
-
-    def tearDown(self):
-        self.corsika_data.close()
 
     def test__prepare_cluster_for_shower(self):
         # Combinations of shower parameters and detector after transformations
@@ -85,13 +83,11 @@ class GroundParticlesGammaSimulationTest(unittest.TestCase):
 
         corsika_data_path = os.path.join(self_path, 'test_data/corsika.h5')
         self.corsika_data = tables.open_file(corsika_data_path, 'r')
+        self.addCleanup(self.corsika_data.close)
         self.simulation.corsikafile = self.corsika_data
 
         self.simulation.cluster = SingleDiamondStation()
         self.detectors = self.simulation.cluster.stations[0].detectors
-
-    def tearDown(self):
-        self.corsika_data.close()
 
     def test_get_particles(self):
         self.groundparticles = self.corsika_data.root.groundparticles

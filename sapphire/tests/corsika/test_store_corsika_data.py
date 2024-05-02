@@ -20,10 +20,8 @@ class StoreCorsikaDataTests(unittest.TestCase):
         self.source_path = self.get_testdata_path()
         self.expected_path = self.get_expected_path()
         self.destination_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.destination_path)
         self.thin = False
-
-    def tearDown(self):
-        os.remove(self.destination_path)
 
     def test_store_data(self):
         # First with overwrite false

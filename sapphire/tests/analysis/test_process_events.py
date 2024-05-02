@@ -21,14 +21,12 @@ DATA_GROUP = '/s501'
 class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessEvents(self.data, DATA_GROUP, progress=False)
-
-    def tearDown(self):
-        warnings.resetwarnings()
-        self.data.close()
-        os.remove(self.data_path)
 
     def test_get_traces_for_event(self):
         event = self.proc.source[0]
@@ -103,7 +101,9 @@ class ProcessIndexedEventsTests(ProcessEventsTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessIndexedEvents(self.data, DATA_GROUP, [0, 10], progress=False)
 
     def test_process_traces(self):
@@ -118,8 +118,11 @@ class ProcessIndexedEventsTests(ProcessEventsTests):
 class ProcessEventsWithLINTTests(ProcessEventsTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessEventsWithLINT(self.data, DATA_GROUP, progress=False)
 
     def test__reconstruct_time_from_traces(self):
@@ -139,8 +142,11 @@ class ProcessEventsWithLINTTests(ProcessEventsTests):
 class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessEventsWithTriggerOffset(self.data, DATA_GROUP, progress=False)
 
     def test__reconstruct_time_from_traces(self):
@@ -262,18 +268,16 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
 class ProcessEventsFromSourceTests(ProcessEventsTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.source_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.source_path)
         self.source_data = tables.open_file(self.source_path, 'r')
+        self.addCleanup(self.source_data.close)
         self.dest_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.dest_path)
         self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.addCleanup(self.dest_data.close)
         self.proc = process_events.ProcessEventsFromSource(self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
-
-    def tearDown(self):
-        warnings.resetwarnings()
-        self.source_data.close()
-        os.remove(self.source_path)
-        self.dest_data.close()
-        os.remove(self.dest_path)
 
     def test_process_and_store_results(self):
         self.proc.process_and_store_results()
@@ -282,10 +286,15 @@ class ProcessEventsFromSourceTests(ProcessEventsTests):
 class ProcessEventsFromSourceWithTriggerOffsetTests(ProcessEventsFromSourceTests, ProcessEventsWithTriggerOffsetTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.source_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.source_path)
         self.source_data = tables.open_file(self.source_path, 'r')
+        self.addCleanup(self.source_data.close)
         self.dest_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.dest_path)
         self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.addCleanup(self.dest_data.close)
         self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
             self.source_data,
             self.dest_data,
@@ -300,10 +309,15 @@ class ProcessEventsFromSourceWithTriggerOffsetStationTests(
 ):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.source_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.source_path)
         self.source_data = tables.open_file(self.source_path, 'r')
+        self.addCleanup(self.source_data.close)
         self.dest_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.dest_path)
         self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.addCleanup(self.dest_data.close)
         self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
             self.source_data,
             self.dest_data,
@@ -330,14 +344,12 @@ class ProcessEventsFromSourceWithTriggerOffsetStationTests(
 class ProcessSinglesTests(unittest.TestCase):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessSingles(self.data, DATA_GROUP, progress=False)
-
-    def tearDown(self):
-        warnings.resetwarnings()
-        self.data.close()
-        os.remove(self.data_path)
 
     def test_process_and_store_results(self):
         self.proc.process_and_store_results()
@@ -366,18 +378,16 @@ class ProcessSinglesTests(unittest.TestCase):
 class ProcessSinglesFromSourceTests(ProcessSinglesTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.source_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.source_path)
         self.source_data = tables.open_file(self.source_path, 'r')
+        self.addCleanup(self.source_data.close)
         self.dest_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.dest_path)
         self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.addCleanup(self.dest_data.close)
         self.proc = process_events.ProcessSinglesFromSource(self.source_data, self.dest_data, DATA_GROUP, '/')
-
-    def tearDown(self):
-        warnings.resetwarnings()
-        self.source_data.close()
-        os.remove(self.source_path)
-        self.dest_data.close()
-        os.remove(self.dest_path)
 
     def test_process_and_store_results(self):
         self.proc.process_and_store_results()

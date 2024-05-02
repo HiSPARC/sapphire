@@ -12,9 +12,7 @@ DATA_FILE = os.path.join(data_file_dir, 'test_data/1_2/DAT000000')
 class CorsikaFileTests(unittest.TestCase):
     def setUp(self):
         self.file = corsika.reader.CorsikaFile(DATA_FILE)
-
-    def tearDown(self):
-        self.file.finish()
+        self.addCleanup(self.file.finish)
 
     def test_validate_file(self):
         """Verify that the data file is valid"""

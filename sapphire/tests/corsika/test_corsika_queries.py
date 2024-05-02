@@ -13,9 +13,7 @@ TEST_OVERVIEW_FILE = 'test_data/corsika_overview.h5'
 class CorsikaQueryTest(unittest.TestCase):
     def setUp(self):
         self.cq = corsika_queries.CorsikaQuery(self.get_overview_path())
-
-    def tearDown(self):
-        self.cq.finish()
+        self.addCleanup(self.cq.finish)
 
     def test_seeds(self):
         result = self.cq.seeds(self.cq.all_simulations())

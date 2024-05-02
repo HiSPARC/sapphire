@@ -18,9 +18,6 @@ class CorsikaBlocksTests(unittest.TestCase):
     def setUp(self):
         self.format = blocks.Format()
 
-    def tearDown(self):
-        pass
-
     def test_validate_block_format(self):
         """Verify that the block format is logical"""
 

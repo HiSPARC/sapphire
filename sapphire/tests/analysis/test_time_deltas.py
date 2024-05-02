@@ -15,12 +15,10 @@ TEST_DATA_FILE = 'test_data/esd_coincidences.h5'
 class ProcessTimeDeltasTests(unittest.TestCase):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.td = time_deltas.ProcessTimeDeltas(self.data, progress=False)
-
-    def tearDown(self):
-        self.data.close()
-        os.remove(self.data_path)
 
     def test_init(self):
         self.assertEqual(self.td.progress, False)

@@ -168,9 +168,7 @@ class CoincidencesESDTests(CoincidencesTests):
 class CoincidencesDataTests(unittest.TestCase):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
-
-    def tearDown(self):
-        os.remove(self.data_path)
+        self.addCleanup(os.remove, self.data_path)
 
     def test_coincidencesesd_output(self):
         with tables.open_file(self.data_path, 'a') as data:

@@ -21,9 +21,9 @@ class GroundparticlesSimulationAcceptanceTest(unittest.TestCase):
         """Perform a simulation and verify the output"""
 
         output_path = create_tempfile_path()
+        self.addCleanup(os.remove, output_path)
         perform_groundparticlessimulation(output_path)
         validate_results(self, test_data_path, output_path)
-        os.remove(output_path)
 
 
 class GroundparticlesGammaSimulationAcceptanceTest(unittest.TestCase):
@@ -31,9 +31,9 @@ class GroundparticlesGammaSimulationAcceptanceTest(unittest.TestCase):
         """Perform a simulation and verify the output"""
 
         output_path = create_tempfile_path()
+        self.addCleanup(os.remove, output_path)
         perform_groundparticlesgammasimulation(output_path)
         validate_results(self, test_data_gamma, output_path)
-        os.remove(output_path)
 
 
 class FlatFrontSimulationAcceptanceTest(unittest.TestCase):
@@ -41,9 +41,9 @@ class FlatFrontSimulationAcceptanceTest(unittest.TestCase):
         """Perform a simulation and verify the output"""
 
         output_path = create_tempfile_path()
+        self.addCleanup(os.remove, output_path)
         perform_flatfrontsimulation(output_path)
         validate_results(self, test_data_flat, output_path)
-        os.remove(output_path)
 
 
 class NkgLdfSimulationAcceptanceTest(unittest.TestCase):
@@ -51,6 +51,6 @@ class NkgLdfSimulationAcceptanceTest(unittest.TestCase):
         """Perform a simulation and verify the output"""
 
         output_path = create_tempfile_path()
+        self.addCleanup(os.remove, output_path)
         perform_nkgldfsimulation(output_path)
         validate_results(self, test_data_nkg, output_path)
-        os.remove(output_path)
