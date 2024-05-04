@@ -46,7 +46,7 @@ def update_local_json(progress=True):
         ('countries', 'clusters_in_country'),
     ]:
         if progress:
-            print('Downloading JSONs: %s' % data_type)
+            print(f'Downloading JSONs: {data_type}')
         update_sublevel_json(arg_type, data_type, progress)
 
 
@@ -57,8 +57,8 @@ def update_local_tsv(progress=True):
 
     for data_type in ['gps', 'trigger', 'layout', 'voltage', 'current', 'electronics', 'detector_timing_offsets']:
         if progress:
-            print('Downloading TSVs: %s' % data_type)
-        update_sublevel_tsv(data_type, station_numbers)
+            print(f'Downloading TSVs: {data_type}')
+        update_sublevel_tsv(data_type, station_numbers, progress=progress)
 
     # GPS and layout data should now be up to date, local data can be used
     with warnings.catch_warnings(record=True):
@@ -66,8 +66,8 @@ def update_local_tsv(progress=True):
 
     for data_type in ['station_timing_offsets']:
         if progress:
-            print('Downloading TSVs: %s' % data_type)
-        update_subsublevel_tsv(data_type, station_numbers, network)
+            print(f'Downloading TSVs: {data_type}')
+        update_subsublevel_tsv(data_type, station_numbers, network, progress=progress)
 
 
 def update_toplevel_json(data_type):
@@ -75,7 +75,7 @@ def update_toplevel_json(data_type):
     try:
         get_and_store_json(url)
     except Exception:
-        print('Failed to get %s data' % data_type)
+        print(f'Failed to get {data_type} data')
 
 
 def update_sublevel_json(arg_type, data_type, progress=True):
@@ -90,7 +90,7 @@ def update_sublevel_json(arg_type, data_type, progress=True):
         numbers = [x['number'] for x in loads(API._retrieve_url(url))]
     except Exception:
         if progress:
-            print('Failed to get %s data' % data_type)
+            print(f'Failed to get {data_type} data')
         return
 
     kwarg = API.urls[data_type].split('/')[1].strip('{}')
