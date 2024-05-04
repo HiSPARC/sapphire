@@ -116,7 +116,7 @@ class MockCorsikaQueryTest(unittest.TestCase):
         self.assertEqual(tables_filter, '(foo >= 12.3) & (foo <= 14.5)')
         tables_filter = self.cq.range_filter('foo', 12.3)
         self.assertEqual(tables_filter, '(foo >= 12.3)')
-        tables_filter = self.cq.range_filter('foo', max=14.5)
+        tables_filter = self.cq.range_filter('foo', max_value=14.5)
         self.assertEqual(tables_filter, '(foo <= 14.5)')
         tables_filter = self.cq.range_filter('foo')
         self.assertEqual(tables_filter, '')

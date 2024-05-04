@@ -186,14 +186,14 @@ class CorsikaQuery:
         """Filter to be in a range
 
         :param key: variable to filter.
-        :param min,max: limits on the value.
+        :param min_value,max_value: limits on the value.
         :return: query.
 
         """
         queries = []
-        if min is not None:
+        if min_value is not None:
             queries.append(f'({key} >= {min_value})')
-        if max is not None:
+        if max_value is not None:
             queries.append(f'({key} <= {max_value})')
         query = ' & '.join(queries)
 
