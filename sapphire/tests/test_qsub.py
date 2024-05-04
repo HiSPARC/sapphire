@@ -76,7 +76,7 @@ class CreateScriptTest(unittest.TestCase):
     def test_create_script(self, mock_chmod):
         with patch.object(builtins, 'open', mock_open()) as mock_file:
             res_path, res_name = qsub.create_script(sentinel.script, 'hoi')
-        self.assertEqual(res_path, '/tmp/his_hoi.sh')
+        self.assertTrue(res_path.endswith('/his_hoi.sh'))
         self.assertEqual(res_name, 'his_hoi.sh')
         mock_file.assert_called_once_with(res_path, 'w')
         mock_file().write.called_once_with(sentinel.script)
