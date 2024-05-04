@@ -78,8 +78,8 @@ class GMSTTests(unittest.TestCase):
 class LSTTests(unittest.TestCase):
     def test_gmst_to_lst(self):
         for _ in range(5):
-            hours = random.default_rng().uniform(0, 23.934)
-            longitude = random.default_rng().uniform(-180, 180)
+            hours = random.uniform(0, 23.934)
+            longitude = random.uniform(-180, 180)
             self.assertAlmostEqual(clock.lst_to_gmst(clock.gmst_to_lst(hours, longitude), longitude), hours)
 
     def test_utc_to_lst_gmst(self):

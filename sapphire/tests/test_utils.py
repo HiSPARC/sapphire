@@ -109,9 +109,9 @@ class GaussTests(unittest.TestCase):
         """Test for arrays of random values"""
 
         size = 10000
-        x, n, mu = random.default_rng().uniform(-100, 100, size=(3, size))
+        x, n, mu = random.uniform(-100, 100, size=(3, size))
         # sigma can not be 0
-        sigma = random.default_rng().uniform(1e-15, 100, size=size)
+        sigma = random.uniform(1e-15, 100, size=size)
         value1 = utils.gauss(x, n, mu, sigma)
         value2 = self.gaussian(x, n, mu, sigma)
         self.assertTrue(all(abs(value1 - value2) < 1e-10))
@@ -124,9 +124,9 @@ class AngleBetweenTests(unittest.TestCase):
         """One of the directions is the Zenith"""
 
         n = 10000
-        zenith = random.default_rng().uniform(0, pi / 2, n)
-        azimuth1 = random.default_rng().uniform(-pi, pi, n)
-        azimuth2 = random.default_rng().uniform(-pi, pi, n)
+        zenith = random.uniform(0, pi / 2, n)
+        azimuth1 = random.uniform(-pi, pi, n)
+        azimuth2 = random.uniform(-pi, pi, n)
         angle = utils.angle_between(zenith, azimuth1, 0, azimuth2)
         self.assertTrue(all(abs(angle - zenith) < 1e-15))
         angle = utils.angle_between(0, azimuth1, zenith, azimuth2)
@@ -136,7 +136,7 @@ class AngleBetweenTests(unittest.TestCase):
         """Both directions at the horizon"""
 
         zenith = pi / 2
-        azimuth = random.default_rng().uniform(-pi, pi, 10000)
+        azimuth = random.uniform(-pi, pi, 10000)
         angle = utils.angle_between(zenith, azimuth, zenith, 0)
         self.assertTrue(all(abs(angle - abs(azimuth)) < 1e-10))
         angle = utils.angle_between(zenith, 0, zenith, azimuth)
@@ -145,16 +145,16 @@ class AngleBetweenTests(unittest.TestCase):
     def test_no_zenith(self):
         """Azimuths are irrelevant when from the Zenith"""
 
-        azimuth1 = random.default_rng().uniform(-pi, pi, 10000)
-        azimuth2 = random.default_rng().uniform(-pi, pi, 10000)
+        azimuth1 = random.uniform(-pi, pi, 10000)
+        azimuth2 = random.uniform(-pi, pi, 10000)
         angle = utils.angle_between(0, azimuth1, 0, azimuth2)
         self.assertTrue(all(angle == 0))
 
     def test_single_values(self):
         """Other tests use arrays, check if single values also work"""
 
-        zenith = random.default_rng().uniform(0, pi / 2)
-        azimuth = random.default_rng().uniform(-pi, pi)
+        zenith = random.uniform(0, pi / 2)
+        azimuth = random.uniform(-pi, pi)
         angle = utils.angle_between(zenith, azimuth, zenith, azimuth)
         self.assertTrue(angle == 0)
 
@@ -169,7 +169,7 @@ class DistanceBetweenTests(unittest.TestCase):
             ((0, 0, 1.6, 0), 1.6),
             ((-1, 0, 1, 0), 2),
             ((-1, 0, -1, 0), 0),
-            ((random.default_rng().uniform(1e-15, 100),) * 4, 0),
+            ((random.uniform(1e-15, 100),) * 4, 0),
             ((-10, -10, 5, 5), sqrt(450)),
         ]
         for coordinates, distance in combinations:
