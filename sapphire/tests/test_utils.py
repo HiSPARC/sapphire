@@ -24,7 +24,7 @@ class PbarTests(unittest.TestCase):
         """Return original generator, not a progressbar"""
 
         generator = (x for x in self.iterable)
-        pb = utils.pbar(generator)
+        pb = utils.pbar(generator, fd=self.output)
         self.assertIsInstance(pb, types.GeneratorType)
         self.assertEqual(list(pb), self.iterable)
 

@@ -20,7 +20,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
             sentinel.station_group,
             self.station,
             overwrite=sentinel.overwrite,
-            progress=sentinel.progress,
+            progress=False,
             verbose=False,
             destination=sentinel.destination,
         )
@@ -34,7 +34,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
         self.assertEqual(rec.events, self.data.get_node.return_value.events)
 
         self.assertEqual(rec.overwrite, sentinel.overwrite)
-        self.assertEqual(rec.progress, sentinel.progress)
+        self.assertFalse(rec.progress)
         self.assertFalse(rec.verbose)
         self.assertEqual(rec.destination, sentinel.destination)
         self.assertEqual(rec.offsets, [0.0] * 4)
@@ -171,7 +171,7 @@ class ReconstructESDEventsFromSourceTest(ReconstructESDEventsTest):
             sentinel.dest_group,
             self.station,
             overwrite=sentinel.overwrite,
-            progress=sentinel.progress,
+            progress=False,
             verbose=False,
             destination=sentinel.destination,
         )
@@ -201,7 +201,7 @@ class ReconstructSimulatedEventsTest(unittest.TestCase):
             sentinel.station_group,
             station,
             overwrite=sentinel.overwrite,
-            progress=sentinel.progress,
+            progress=False,
             verbose=False,
             destination=sentinel.destination,
         )
@@ -234,7 +234,7 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
             self.data,
             sentinel.coin_group,
             overwrite=sentinel.overwrite,
-            progress=sentinel.progress,
+            progress=False,
             verbose=False,
             destination=sentinel.destination,
             cluster=self.cluster,
@@ -249,7 +249,7 @@ class ReconstructESDCoincidencesTest(unittest.TestCase):
         self.assertEqual(rec.coincidences, self.data.get_node.return_value.coincidences)
 
         self.assertEqual(rec.overwrite, sentinel.overwrite)
-        self.assertEqual(rec.progress, sentinel.progress)
+        self.assertFalse(rec.progress)
         self.assertFalse(rec.verbose)
         self.assertEqual(rec.destination, sentinel.destination)
         self.assertEqual(rec.offsets, {})
@@ -407,7 +407,7 @@ class ReconstructESDCoincidencesFromSourceTest(ReconstructESDCoincidencesTest):
             sentinel.coin_group,
             sentinel.dest_group,
             overwrite=sentinel.overwrite,
-            progress=sentinel.progress,
+            progress=False,
             verbose=False,
             destination=sentinel.destination,
             cluster=self.cluster,
@@ -441,7 +441,7 @@ class ReconstructSimulatedCoincidencesTest(unittest.TestCase):
             self.data,
             sentinel.coin_group,
             overwrite=sentinel.overwrite,
-            progress=sentinel.progress,
+            progress=False,
             verbose=False,
             destination=sentinel.destination,
             cluster=cluster,

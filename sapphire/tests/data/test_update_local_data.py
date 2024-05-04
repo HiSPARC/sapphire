@@ -29,7 +29,7 @@ class UpdateLocalDataTests(unittest.TestCase):
     @patch.object(update_local_data, 'HiSPARCNetwork')
     @patch.object(update_local_data, 'update_subsublevel_tsv')
     @patch.object(update_local_data, 'update_sublevel_tsv')
-    def test_update_local_tsv(self, mock_sub, mock_ssub, mock_hnet, mock_net, mock_print, mock_pbar):
+    def test_update_local_tsv(self, mock_sub, mock_ssub, mock_hnet, mock_net, mock_print):
         update_local_data.update_local_tsv(progress=False)
         self.assertTrue(mock_sub.called)
         self.assertTrue(mock_ssub.called)
