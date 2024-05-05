@@ -79,7 +79,7 @@ class CreateScriptTest(unittest.TestCase):
         self.assertTrue(res_path.endswith('/his_hoi.sh'))
         self.assertEqual(res_name, 'his_hoi.sh')
         mock_file.assert_called_once_with(res_path, 'w')
-        mock_file().write.called_once_with(sentinel.script)
+        mock_file().write.assert_called_once_with(sentinel.script)
         mock_chmod.assert_called_once_with(res_path, 0o774)
 
 
