@@ -43,17 +43,17 @@ class CoincidencesTests(unittest.TestCase):
         station1 = Mock()
         station2 = Mock()
         # Station 2 timestamps are not already correctly sorted.
-        station1.col.return_value = [uint64(1400000002000000050), uint64(1400000018000000500)]
-        station2.col.return_value = [uint64(1400000002000000510), uint64(1400000030000000000)][::-1]
+        station1.col.return_value = [uint64(1400000002_000000050), uint64(1400000018_000000500)]
+        station2.col.return_value = [uint64(1400000002_000000510), uint64(1400000030_000000000)][::-1]
         stations = [station1, station2]
         timestamps = self.c._retrieve_timestamps(stations)
         self.assertEqual(
             timestamps,
             [
-                (uint64(1400000002000000050), 0, 0),
-                (uint64(1400000002000000510), 1, 1),
-                (uint64(1400000018000000500), 0, 1),
-                (uint64(1400000030000000000), 1, 0),
+                (uint64(1400000002_000000050), 0, 0),
+                (uint64(1400000002_000000510), 1, 1),
+                (uint64(1400000018_000000500), 0, 1),
+                (uint64(1400000030_000000000), 1, 0),
             ],
         )
         # Shift both
@@ -61,10 +61,10 @@ class CoincidencesTests(unittest.TestCase):
         self.assertEqual(
             timestamps,
             [
-                (uint64(1400000003000000050), 0, 0),
-                (uint64(1400000019000000500), 0, 1),
-                (uint64(1400000019000000510), 1, 1),
-                (uint64(1400000047000000000), 1, 0),
+                (uint64(1400000003_000000050), 0, 0),
+                (uint64(1400000019_000000500), 0, 1),
+                (uint64(1400000019_000000510), 1, 1),
+                (uint64(1400000047_000000000), 1, 0),
             ],
         )
         # Wrong value type shifts
@@ -75,20 +75,20 @@ class CoincidencesTests(unittest.TestCase):
         self.assertEqual(
             timestamps,
             [
-                (uint64(1400000002000000510), 1, 1),
-                (uint64(1400000030000000000), 1, 0),
-                (uint64(1400000112000000050), 0, 0),
-                (uint64(1400000128000000500), 0, 1),
+                (uint64(1400000002_000000510), 1, 1),
+                (uint64(1400000030_000000000), 1, 0),
+                (uint64(1400000112_000000050), 0, 0),
+                (uint64(1400000128_000000500), 0, 1),
             ],
         )
         timestamps = self.c._retrieve_timestamps(stations, shifts=[None, 60])
         self.assertEqual(
             timestamps,
             [
-                (uint64(1400000002000000050), 0, 0),
-                (uint64(1400000018000000500), 0, 1),
-                (uint64(1400000062000000510), 1, 1),
-                (uint64(1400000090000000000), 1, 0),
+                (uint64(1400000002_000000050), 0, 0),
+                (uint64(1400000018_000000500), 0, 1),
+                (uint64(1400000062_000000510), 1, 1),
+                (uint64(1400000090_000000000), 1, 0),
             ],
         )
         # Subsecond shifts
@@ -96,22 +96,22 @@ class CoincidencesTests(unittest.TestCase):
         self.assertEqual(
             timestamps,
             [
-                (uint64(1400000002000000053), 0, 0),
-                (uint64(1400000002000000515), 1, 1),
-                (uint64(1400000018000000503), 0, 1),
-                (uint64(1400000030000000005), 1, 0),
+                (uint64(1400000002_000000053), 0, 0),
+                (uint64(1400000002_000000515), 1, 1),
+                (uint64(1400000018_000000503), 0, 1),
+                (uint64(1400000030_000000005), 1, 0),
             ],
         )
         # Using limits
         timestamps = self.c._retrieve_timestamps(stations, limit=1)
 
         # Check accuracy of comparisons between different types
-        self.assertEqual(timestamps, [(1400000002000000050, 0, 0), (1400000030000000000, 1, 0)])
-        self.assertEqual(timestamps, [(uint64(1400000002000000050), 0, 0), (uint64(1400000030000000000), 1, 0)])
-        self.assertNotEqual(timestamps, [(1400000002000000049, 0, 0), (1400000030000000000, 1, 0)])
-        self.assertNotEqual(timestamps, [(1400000002000000051, 0, 0), (1400000030000000000, 1, 0)])
-        self.assertNotEqual(timestamps, [(uint64(1400000002000000049), 0, 0), (uint64(1400000030000000000), 1, 0)])
-        self.assertNotEqual(timestamps, [(uint64(1400000002000000051), 0, 0), (uint64(1400000030000000001), 1, 0)])
+        self.assertEqual(timestamps, [(1400000002_000000050, 0, 0), (1400000030_000000000, 1, 0)])
+        self.assertEqual(timestamps, [(uint64(1400000002_000000050), 0, 0), (uint64(1400000030_000000000), 1, 0)])
+        self.assertNotEqual(timestamps, [(1400000002_000000049, 0, 0), (1400000030_000000000, 1, 0)])
+        self.assertNotEqual(timestamps, [(1400000002_000000051, 0, 0), (1400000030_000000000, 1, 0)])
+        self.assertNotEqual(timestamps, [(uint64(1400000002_000000049), 0, 0), (uint64(1400000030_000000000), 1, 0)])
+        self.assertNotEqual(timestamps, [(uint64(1400000002_000000051), 0, 0), (uint64(1400000030_000000001), 1, 0)])
 
     def test__do_search_coincidences(self):
         # [(timestamp, station_idx, event_idx), ..]
