@@ -35,10 +35,10 @@ classifiers = [
     'Topic :: Scientific/Engineering',
 ]
 dependencies = [
-    'numpy',
-    'scipy',
-    'tables>=3.3.0',
-    'progressbar2>=3.7.0',
+    'numpy>=1.25.2',
+    'scipy>=1.13.0',
+    'tables>=3.9.2',
+    'progressbar2>=4.4.2',
 ]
 
 [project.optional-dependencies]

@@ -68,8 +68,8 @@ class CoincidencesTests(unittest.TestCase):
             ],
         )
         # Wrong value type shifts
-        self.assertRaises(TypeError, self.c._retrieve_timestamps, stations, shifts=['', ''])
-        self.assertRaises(TypeError, self.c._retrieve_timestamps, stations, shifts=['', 90])
+        self.assertRaises(ValueError, self.c._retrieve_timestamps, stations, shifts=['', ''])
+        self.assertRaises(ValueError, self.c._retrieve_timestamps, stations, shifts=['', 90])
         # Different length shifts
         timestamps = self.c._retrieve_timestamps(stations, shifts=[110])
         self.assertEqual(
@@ -104,10 +104,12 @@ class CoincidencesTests(unittest.TestCase):
         )
         # Using limits
         timestamps = self.c._retrieve_timestamps(stations, limit=1)
+
+        # Check accuracy of comparisons between different types
+        self.assertEqual(timestamps, [(1400000002000000050, 0, 0), (1400000030000000000, 1, 0)])
         self.assertEqual(timestamps, [(uint64(1400000002000000050), 0, 0), (uint64(1400000030000000000), 1, 0)])
-        # This should fail but does not
-        self.assertEqual(timestamps, [(1400000002000000049, 0, 0), (1400000030000000000, 1, 0)])
-        # Using uint64 does work correctly
+        self.assertNotEqual(timestamps, [(1400000002000000049, 0, 0), (1400000030000000000, 1, 0)])
+        self.assertNotEqual(timestamps, [(1400000002000000051, 0, 0), (1400000030000000000, 1, 0)])
         self.assertNotEqual(timestamps, [(uint64(1400000002000000049), 0, 0), (uint64(1400000030000000000), 1, 0)])
         self.assertNotEqual(timestamps, [(uint64(1400000002000000051), 0, 0), (uint64(1400000030000000001), 1, 0)])
 

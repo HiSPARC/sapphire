@@ -81,7 +81,7 @@ class HiSPARCSimulationTest(unittest.TestCase):
         assert_almost_equal(y, 317.2896993591305)
 
     def test_generate_azimuth(self):
-        self.assertEqual(self.simulation.generate_azimuth(), -0.521366120872004)
+        self.assertAlmostEqual(self.simulation.generate_azimuth(), -0.521366120872004)
 
     def test_generate_energy(self):
         self.assertEqual(self.simulation.generate_energy(), 136117213526167.64)
