@@ -385,7 +385,7 @@ class Coincidences:
         # calculate the shifts in nanoseconds and cast them to int.
         # (prevent upcasting timestamps to float64 further on)
         if shifts is not None:
-            shifts = [int(shift * 1e9) if shift is not None else shift for shift in shifts]
+            shifts = [int(shift * 1_000_000_000) if shift is not None else shift for shift in shifts]
 
         timestamps = []
         for s_id, event_table in enumerate(event_tables):

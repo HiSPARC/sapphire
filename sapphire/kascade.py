@@ -215,11 +215,11 @@ class KascadeCoincidences:
 
         # Shift the kascade data instead of the hisparc data. There is less of
         # it, so this is much faster.
-        k['ext_timestamp'] += int(-1e9) * timeshift
+        k['ext_timestamp'] += -1_000_000_000 * timeshift
 
         if dtlimit:
             # dtlimit in ns
-            dtlimit *= 1e9
+            dtlimit *= 1_000_000_000
 
         coinc_dt, coinc_h_idx, coinc_k_idx = [], [], []
 
