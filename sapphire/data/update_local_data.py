@@ -100,7 +100,7 @@ def update_sublevel_json(arg_type, data_type, progress=True):
             get_and_store_json(url.strip('/'))
         except Exception:
             if progress:
-                print('Failed to get %s data for %s %d' % (data_type, arg_type, number))
+                print(f'Failed to get {data_type} data for {arg_type} {number}')
             return
 
 
@@ -118,7 +118,7 @@ def update_sublevel_tsv(data_type, station_numbers, progress=True):
             get_and_store_tsv(url)
         except Exception:
             if progress and data_type != 'layout':
-                print('Failed to get %s for station %d' % (data_type, number))
+                print(f'Failed to get {data_type} for station {number}')
             continue
 
 
@@ -137,7 +137,7 @@ def update_subsublevel_tsv(data_type, station_numbers, network, progress=True):
             get_and_store_tsv(url)
         except Exception:
             if progress:
-                print('Failed to get %s data for station pair %d-%d' % (data_type, number1, number2))
+                print(f'Failed to get {data_type} data for station pair {number1}-{number2}')
 
 
 def get_and_store_json(url):
