@@ -4,7 +4,7 @@ build-backend = 'flit_core.buildapi'
 
 [project]
 name = 'hisparc-sapphire'
-version = '2.0.0'
+version = '3.0.0'
 description = 'A framework for the HiSPARC experiment'
 readme = 'README.rst'
 requires-python = '>=3.9'
