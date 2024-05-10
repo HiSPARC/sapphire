@@ -17,6 +17,7 @@ Example usage::
     >>> sim.run()
 
 """
+
 import warnings
 
 from numpy import arctan2, cos, log10, pi, random, sin, sqrt
@@ -27,9 +28,7 @@ from .detector import ErrorlessSimulation, HiSPARCSimulation
 
 
 class BaseLdfSimulation(HiSPARCSimulation):
-
-    def __init__(self, max_core_distance, min_energy, max_energy, *args,
-                 **kwargs):
+    def __init__(self, max_core_distance, min_energy, max_energy, *args, **kwargs):
         """Simulation initialization
 
         :param max_core_distance: maximum distance of shower core to
@@ -66,12 +65,14 @@ class BaseLdfSimulation(HiSPARCSimulation):
         for i in pbar(range(self.n), show=self.progress):
             energy = self.generate_energy(self.min_energy, self.max_energy)
             size = 10 ** (log10(energy) - 15 + 4.8)
-            shower_parameters = {'ext_timestamp': (giga + i) * giga,
-                                 'azimuth': self.generate_azimuth(),
-                                 'zenith': 0.,
-                                 'core_pos': self.generate_core_position(r),
-                                 'size': size,
-                                 'energy': energy}
+            shower_parameters = {
+                'ext_timestamp': (giga + i) * giga,
+                'azimuth': self.generate_azimuth(),
+                'zenith': 0.0,
+                'core_pos': self.generate_core_position(r),
+                'size': size,
+                'energy': energy,
+            }
 
             yield shower_parameters
 
@@ -85,15 +86,14 @@ class BaseLdfSimulation(HiSPARCSimulation):
         :param shower_parameters: dictionary with the shower parameters.
 
         """
-        n_detected = self.get_num_particles_in_detector(detector,
-                                                        shower_parameters)
+        n_detected = self.get_num_particles_in_detector(detector, shower_parameters)
         theta = shower_parameters['zenith']
 
         if n_detected:
             mips = self.simulate_detector_mips(n_detected, theta)
             observables = {'n': mips}
         else:
-            observables = {'n': 0.}
+            observables = {'n': 0.0}
         return observables
 
     def get_num_particles_in_detector(self, detector, shower_parameters):
@@ -110,13 +110,11 @@ class BaseLdfSimulation(HiSPARCSimulation):
         azimuth = shower_parameters['azimuth']
         size = shower_parameters['size']
 
-        r = self.ldf.calculate_core_distance(x, y, core_x, core_y, zenith,
-                                             azimuth)
+        r = self.ldf.calculate_core_distance(x, y, core_x, core_y, zenith, azimuth)
 
         p_shower = self.ldf.calculate_ldf_value(r, n_electrons=size)
         p_ground = p_shower * cos(zenith)
-        num_particles = self.simulate_particles_for_density(
-            p_ground * detector.get_area())
+        num_particles = self.simulate_particles_for_density(p_ground * detector.get_area())
 
         return num_particles
 
@@ -132,7 +130,6 @@ class BaseLdfSimulation(HiSPARCSimulation):
 
 
 class BaseLdfSimulationWithoutErrors(ErrorlessSimulation, BaseLdfSimulation):
-
     """This simulation does not simulate errors/uncertainties
 
     This should result in perfect particle counting for the detectors.
@@ -147,7 +144,6 @@ class BaseLdfSimulationWithoutErrors(ErrorlessSimulation, BaseLdfSimulation):
 
 
 class NkgLdfSimulation(BaseLdfSimulation):
-
     """Same as the BaseLdfSimulation but uses the NkgLdf as LDF"""
 
     def __init__(self, *args, **kwargs):
@@ -156,16 +152,11 @@ class NkgLdfSimulation(BaseLdfSimulation):
         self.ldf = NkgLdf()
 
 
-class NkgLdfSimulationWithoutErrors(NkgLdfSimulation,
-                                    BaseLdfSimulationWithoutErrors):
-
+class NkgLdfSimulationWithoutErrors(NkgLdfSimulation, BaseLdfSimulationWithoutErrors):
     """Same as the NkgLdfSimulation but without error simulation"""
-
-    pass
 
 
 class KascadeLdfSimulation(BaseLdfSimulation):
-
     """Same as the BaseLdfSimulation but uses the KascadeLdf as LDF"""
 
     def __init__(self, *args, **kwargs):
@@ -174,16 +165,11 @@ class KascadeLdfSimulation(BaseLdfSimulation):
         self.ldf = KascadeLdf()
 
 
-class KascadeLdfSimulationWithoutErrors(KascadeLdfSimulation,
-                                        BaseLdfSimulationWithoutErrors):
-
+class KascadeLdfSimulationWithoutErrors(KascadeLdfSimulation, BaseLdfSimulationWithoutErrors):
     """Same as the KascadeLdfSimulation but without error simulation"""
-
-    pass
 
 
 class EllipsLdfSimulation(BaseLdfSimulation):
-
     """Same as BaseLdfSimulation but uses the EllipsLdF as LDF"""
 
     def __init__(self, *args, **kwargs):
@@ -207,12 +193,14 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         for i in pbar(range(self.n), show=self.progress):
             energy = self.generate_energy(self.min_energy, self.max_energy)
             size = 10 ** (log10(energy) - 15 + 4.8)
-            shower_parameters = {'ext_timestamp': (giga + i) * giga,
-                                 'azimuth': self.generate_azimuth(),
-                                 'zenith': self.generate_zenith(),
-                                 'core_pos': self.generate_core_position(r),
-                                 'size': size,
-                                 'energy': energy}
+            shower_parameters = {
+                'ext_timestamp': (giga + i) * giga,
+                'azimuth': self.generate_azimuth(),
+                'zenith': self.generate_zenith(),
+                'core_pos': self.generate_core_position(r),
+                'size': size,
+                'energy': energy,
+            }
 
             yield shower_parameters
 
@@ -230,18 +218,15 @@ class EllipsLdfSimulation(BaseLdfSimulation):
         azimuth = shower_parameters['azimuth']
         size = shower_parameters['size']
 
-        r, phi = self.ldf.calculate_core_distance_and_angle(x, y, core_x,
-                                                            core_y)
+        r, phi = self.ldf.calculate_core_distance_and_angle(x, y, core_x, core_y)
 
         p_ground = self.ldf.calculate_ldf_value(r, phi, size, zenith, azimuth)
-        num_particles = self.simulate_particles_for_density(
-            p_ground * detector.get_area())
+        num_particles = self.simulate_particles_for_density(p_ground * detector.get_area())
 
         return num_particles
 
 
 class BaseLdf:
-
     """Base LDF class
 
     No particles! Always returns a particle density of 0.
@@ -249,7 +234,7 @@ class BaseLdf:
     """
 
     def calculate_ldf_value(self, r, n_electrons=None, s=None):
-        return 0.
+        return 0.0
 
     def calculate_core_distance(self, x, y, x0, y0, theta, phi):
         """Calculate core distance
@@ -267,19 +252,17 @@ class BaseLdf:
         x = x - x0
         y = y - y0
 
-        return sqrt(x ** 2 + y ** 2 -
-                    (x * cos(phi) + y * sin(phi)) ** 2 * sin(theta) ** 2)
+        return sqrt(x**2 + y**2 - (x * cos(phi) + y * sin(phi)) ** 2 * sin(theta) ** 2)
 
 
 class NkgLdf(BaseLdf):
-
     """The Nishimura-Kamata-Greisen function"""
 
     # shower parameters
     # Age parameter and Moliere radius from Thoudam2012 sec 5.6.
-    _n_electrons = 10 ** 4.8
+    _n_electrons = 10**4.8
     _s = 1.7
-    _r0 = 30.
+    _r0 = 30.0
 
     def __init__(self, n_electrons=None, s=None):
         """NKG LDF setup
@@ -336,8 +319,7 @@ class NkgLdf(BaseLdf):
             c_s = self._c(s)
         r0 = self._r0
 
-        return (n_electrons * c_s * (r / r0) ** (s - 2) *
-                (1 + r / r0) ** (s - 4.5))
+        return n_electrons * c_s * (r / r0) ** (s - 2) * (1 + r / r0) ** (s - 4.5)
 
     def _c(self, s):
         """Part of the LDF
@@ -349,19 +331,17 @@ class NkgLdf(BaseLdf):
 
         """
         r0 = self._r0
-        return (gamma(4.5 - s) /
-                (2 * pi * r0 ** 2 * gamma(s) * gamma(4.5 - 2 * s)))
+        return gamma(4.5 - s) / (2 * pi * r0**2 * gamma(s) * gamma(4.5 - 2 * s))
 
 
 class KascadeLdf(NkgLdf):
-
     """The KASCADE modified NKG function"""
 
     # shower parameters
     # Values from Fokkema2012 sec 7.1.
-    _n_electrons = 10 ** 4.8
+    _n_electrons = 10**4.8
     _s = 0.94  # Shape parameter
-    _r0 = 40.
+    _r0 = 40.0
     _alpha = 1.5
     _beta = 3.6
 
@@ -385,8 +365,7 @@ class KascadeLdf(NkgLdf):
         alpha = self._alpha
         beta = self._beta
 
-        return (n_electrons * c_s * (r / r0) ** (s - alpha) *
-                (1 + r / r0) ** (s - beta))
+        return n_electrons * c_s * (r / r0) ** (s - alpha) * (1 + r / r0) ** (s - beta)
 
     def _c(self, s):
         """Part of the LDF
@@ -400,26 +379,22 @@ class KascadeLdf(NkgLdf):
         r0 = self._r0
         beta = self._beta
         alpha = self._alpha
-        return (gamma(beta - s) /
-                (2 * pi * r0 ** 2 * gamma(s - alpha + 2) *
-                 gamma(alpha + beta - 2 * s - 2)))
+        return gamma(beta - s) / (2 * pi * r0**2 * gamma(s - alpha + 2) * gamma(alpha + beta - 2 * s - 2))
 
 
 class EllipsLdf(KascadeLdf):
-
     """The NKG function modified for leptons and azimuthal asymmetry"""
 
     # shower parameters
     # Values from Montanus, paper to follow.
-    _n_electrons = 10 ** 4.8
-    _s1 = -.5  # Shape parameter
+    _n_electrons = 10**4.8
+    _s1 = -0.5  # Shape parameter
     _s2 = -2.6  # Shape parameter
-    _r0 = 30.
-    _zenith = 0.
-    _azimuth = 0.
+    _r0 = 30.0
+    _zenith = 0.0
+    _azimuth = 0.0
 
-    def __init__(self, n_electrons=None, zenith=None, azimuth=None, s1=None,
-                 s2=None):
+    def __init__(self, n_electrons=None, zenith=None, azimuth=None, s1=None, s2=None):
         if n_electrons is not None:
             self._n_electrons = n_electrons
         if zenith is not None:
@@ -441,8 +416,7 @@ class EllipsLdf(KascadeLdf):
         """
         self._c_s = self._c(self._s1, self._s2)
 
-    def calculate_ldf_value(self, r, phi, n_electrons=None, zenith=None,
-                            azimuth=None):
+    def calculate_ldf_value(self, r, phi, n_electrons=None, zenith=None, azimuth=None):
         """Calculate the LDF value for a given core distance and polar angle
 
         :param r: core distance in m.
@@ -457,8 +431,7 @@ class EllipsLdf(KascadeLdf):
             zenith = self._zenith
         if azimuth is None:
             azimuth = self._azimuth
-        return self.ldf_value(r, phi, n_electrons, zenith, azimuth, self._s1,
-                              self._s2)
+        return self.ldf_value(r, phi, n_electrons, zenith, azimuth, self._s1, self._s2)
 
     def ldf_value(self, r, phi, n_electrons, zenith, azimuth, s1, s2):
         """Calculate the LDF value
@@ -496,8 +469,7 @@ class EllipsLdf(KascadeLdf):
         term2 = 1 + k / r0
         muoncorr = 1 + k / (11.24 * r0)  # See warning in docstring.
         with warnings.catch_warnings(record=True):
-            p = (n_electrons * c_s * cos(zenith) * term1 ** s1 * term2 ** s2 *
-                 muoncorr)
+            p = n_electrons * c_s * cos(zenith) * term1**s1 * term2**s2 * muoncorr
         return p
 
     def _c(self, s1, s2):
@@ -511,8 +483,7 @@ class EllipsLdf(KascadeLdf):
 
         """
         r0 = self._r0
-        return (gamma(-s2) /
-                (2 * pi * r0 ** 2 * gamma(s1 + 2) * gamma(-s1 - s2 - 2)))
+        return gamma(-s2) / (2 * pi * r0**2 * gamma(s1 + 2) * gamma(-s1 - s2 - 2))
 
     def calculate_core_distance_and_angle(self, x, y, x0, y0):
         """Calculate core distance

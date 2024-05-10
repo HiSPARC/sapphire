@@ -1,4 +1,4 @@
-""" Determine calibration values for data
+"""Determine calibration values for data
 
 This module can be used to determine calibration values from data.
 
@@ -6,6 +6,7 @@ Determine timing offsets for detectors and stations to correct arrival times.
 Determine the PMT response curve to correct the detected number of MIPs.
 
 """
+
 from datetime import datetime, timedelta
 from itertools import chain, combinations, tee
 
@@ -39,24 +40,24 @@ def determine_detector_timing_offsets(events, station=None):
         z = [d.get_coordinates()[2] for d in station.detectors]
     else:
         n_detectors = 4
-        z = [0., 0., 0., 0.]
+        z = [0.0, 0.0, 0.0, 0.0]
 
-    for id in range(n_detectors):
-        t.append(events.col('t%d' % (id + 1)))
-        filters.append((events.col('n%d' % (id + 1)) > 0.3) & (t[id] >= 0.))
+    for detector_id in range(n_detectors):
+        t.append(events.col(f't{detector_id + 1}'))
+        filters.append((events.col('n%d' % (detector_id + 1)) > 0.3) & (t[detector_id] >= 0.0))
 
     if n_detectors == 2:
         ref_id = 1
     else:
         ref_id = determine_best_reference(filters)
 
-    for id in range(n_detectors):
-        if id == ref_id:
-            offsets[id] = 0.
+    for detector_id in range(n_detectors):
+        if detector_id == ref_id:
+            offsets[detector_id] = 0.0
             continue
-        dt = (t[id] - t[ref_id]).compress(filters[id] & filters[ref_id])
-        dz = z[id] - z[ref_id]
-        offsets[id], _ = determine_detector_timing_offset(dt, dz)
+        dt = (t[detector_id] - t[ref_id]).compress(filters[detector_id] & filters[ref_id])
+        dz = z[detector_id] - z[ref_id]
+        offsets[detector_id], _ = determine_detector_timing_offset(dt, dz)
 
     # If all except reference are nan, make reference nan.
     if sum(isnan(offsets)) == 3:
@@ -101,9 +102,14 @@ class DetermineStationTimingOffsets:
     # Minimum number of timedeltas required to attempt a fit
     MIN_LEN_DT = 200
 
-    def __init__(self, stations=None, data=None, progress=False,
-                 force_stale=False,
-                 time_deltas_group='/coincidences/time_deltas'):
+    def __init__(
+        self,
+        stations=None,
+        data=None,
+        progress=False,
+        force_stale=False,
+        time_deltas_group='/coincidences/time_deltas',
+    ):
         """Initialize the class
 
         :param stations: list of stations for which to determine offsets.
@@ -118,8 +124,7 @@ class DetermineStationTimingOffsets:
         self.force_stale = force_stale
         self.time_deltas_group = time_deltas_group
         if stations is not None:
-            self.cluster = HiSPARCStations(stations, skip_missing=True,
-                                           force_stale=self.force_stale)
+            self.cluster = HiSPARCStations(stations, skip_missing=True, force_stale=self.force_stale)
         else:
             self.cluster = HiSPARCNetwork(force_stale=self.force_stale)
 
@@ -129,22 +134,19 @@ class DetermineStationTimingOffsets:
         pair = (ref_station, station)
         table_path = self.time_deltas_group + '/station_%d/station_%d' % pair
         table = self.data.get_node(table_path, 'time_deltas')
-        ts0 = datetime_to_gps(start)  # noqa
-        ts1 = datetime_to_gps(end)  # noqa
-        return table.read_where('(timestamp >= ts0) & (timestamp < ts1)',
-                                field='delta')
+        ts0 = datetime_to_gps(start)  # noqa: F841
+        ts1 = datetime_to_gps(end)  # noqa: F841
+        return table.read_where('(timestamp >= ts0) & (timestamp < ts1)', field='delta')
 
     @memoize
     def _get_gps_timestamps(self, station):
         """Get timestamps of station gps changes"""
-        return Station(station,
-                       force_stale=self.force_stale).gps_locations['timestamp']
+        return Station(station, force_stale=self.force_stale).gps_locations['timestamp']
 
     @memoize
     def _get_electronics_timestamps(self, station):
         """Get timestamps of station electronics (hardware) changes"""
-        return Station(station,
-                       force_stale=self.force_stale).electronics['timestamp']
+        return Station(station, force_stale=self.force_stale).electronics['timestamp']
 
     def _get_cuts(self, station, ref_station):
         """Get cuts for determination of offsets
@@ -156,13 +158,17 @@ class DetermineStationTimingOffsets:
         :return: list of datetime objects
 
         """
-        cuts = {self._datetime(gps_to_datetime(ts))
-                for ts in chain(self._get_gps_timestamps(station),
-                                self._get_gps_timestamps(ref_station),
-                                self._get_electronics_timestamps(station),
-                                self._get_electronics_timestamps(ref_station))}
+        cuts = {
+            self._datetime(gps_to_datetime(ts))
+            for ts in chain(
+                self._get_gps_timestamps(station),
+                self._get_gps_timestamps(ref_station),
+                self._get_electronics_timestamps(station),
+                self._get_electronics_timestamps(ref_station),
+            )
+        }
         today = self._datetime(datetime.now())
-        cuts = sorted(list(cuts) + [today])
+        cuts = sorted([*list(cuts), today])
         return cuts
 
     @memoize
@@ -177,7 +183,8 @@ class DetermineStationTimingOffsets:
         self.cluster.set_timestamp(datetime_to_gps(date))
         r, _, dz = self.cluster.calc_rphiz_for_stations(
             self.cluster.get_station(ref_station).station_id,
-            self.cluster.get_station(station).station_id)
+            self.cluster.get_station(station).station_id,
+        )
         return r, dz
 
     def _determine_interval(self, r):
@@ -187,7 +194,7 @@ class DetermineStationTimingOffsets:
         :return: number of days in interval.
 
         """
-        return max(int(r ** 1.2 / 10), 7)
+        return max(int(r**1.2 / 10), 7)
 
     def _get_left_and_right_bounds(self, cuts, date, days):
         """Determine left and right bounds between cuts
@@ -261,8 +268,7 @@ class DetermineStationTimingOffsets:
 
         """
         date = self._datetime(date)
-        left, right = self.determine_first_and_last_date(date, station,
-                                                         ref_station)
+        left, right = self.determine_first_and_last_date(date, station, ref_station)
         r, dz = self._get_r_dz(date, station, ref_station)
         dt = self.read_dt(station, ref_station, left, right)
         if len(dt) < self.MIN_LEN_DT:
@@ -272,8 +278,7 @@ class DetermineStationTimingOffsets:
 
         return s_off, error
 
-    def determine_station_timing_offsets(self, station, ref_station,
-                                         start=None, end=None):
+    def determine_station_timing_offsets(self, station, ref_station, start=None, end=None):
         """Determine the timing offsets between a station pair
 
         :param station: station number.
@@ -291,11 +296,9 @@ class DetermineStationTimingOffsets:
 
         offsets = []
         length = (end - start).days
-        for date, _ in pbar(datetime_range(start, end), show=self.progress,
-                            length=length):
+        for date, _ in pbar(datetime_range(start, end), show=self.progress, length=length):
             ts0 = datetime_to_gps(date)
-            s_off, error = self.determine_station_timing_offset(date, station,
-                                                                ref_station)
+            s_off, error = self.determine_station_timing_offset(date, station, ref_station)
             offsets.append((ts0, s_off, error))
         return offsets
 
@@ -310,8 +313,7 @@ class DetermineStationTimingOffsets:
         station_pairs = self.get_station_pairs_within_max_distance(date)
         offsets = []
         for station, ref_station in station_pairs:
-            s_off, error = self.determine_station_timing_offset(date, station,
-                                                                ref_station)
+            s_off, error = self.determine_station_timing_offset(date, station, ref_station)
             offsets.append((station, ref_station, s_off, error))
         return offsets
 
@@ -364,8 +366,7 @@ def fit_timing_offset(dt, bins):
     x = (bins[:-1] + bins[1:]) / 2
     sigma = sqrt(y + 1)
     try:
-        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0., std(dt)),
-                               sigma=sigma, absolute_sigma=False)
+        popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0.0, std(dt)), sigma=sigma, absolute_sigma=False)
         offset = popt[1]
         width = popt[2]
         offset_error = width / sqrt(sum(y))
@@ -386,10 +387,9 @@ def determine_best_reference(filters):
     lengths = []
     ids = range(len(filters))
 
-    for id in ids:
-        idx = [j for j in ids if j != id]
-        lengths.append(sum(filters[id] & (filters[idx[0]] |
-                                          filters[idx[1]] | filters[idx[2]])))
+    for detector_id in ids:
+        idx = [j for j in ids if j != detector_id]
+        lengths.append(sum(filters[detector_id] & (filters[idx[0]] | filters[idx[1]] | filters[idx[2]])))
     return lengths.index(max(lengths))
 
 

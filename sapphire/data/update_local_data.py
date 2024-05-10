@@ -1,4 +1,4 @@
-""" Update local JSON and TSV data
+"""Update local JSON and TSV data
 
 This script updates the local copies of the JSON and TSV data from the Public
 Database API. If internet is unavailable the :mod:`~sapphire.api` uses these
@@ -39,12 +39,14 @@ def update_local_json(progress=True):
     for data_type in pbar(toplevel_types, show=progress):
         update_toplevel_json(data_type)
 
-    for arg_type, data_type in [('stations', 'station_info'),
-                                ('subclusters', 'stations_in_subcluster'),
-                                ('clusters', 'subclusters_in_cluster'),
-                                ('countries', 'clusters_in_country')]:
+    for arg_type, data_type in [
+        ('stations', 'station_info'),
+        ('subclusters', 'stations_in_subcluster'),
+        ('clusters', 'subclusters_in_cluster'),
+        ('countries', 'clusters_in_country'),
+    ]:
         if progress:
-            print('Downloading JSONs: %s' % data_type)
+            print(f'Downloading JSONs: {data_type}')
         update_sublevel_json(arg_type, data_type, progress)
 
 
@@ -53,11 +55,10 @@ def update_local_tsv(progress=True):
 
     station_numbers = Network().station_numbers()
 
-    for data_type in ['gps', 'trigger', 'layout', 'voltage', 'current',
-                      'electronics', 'detector_timing_offsets']:
+    for data_type in ['gps', 'trigger', 'layout', 'voltage', 'current', 'electronics', 'detector_timing_offsets']:
         if progress:
-            print('Downloading TSVs: %s' % data_type)
-        update_sublevel_tsv(data_type, station_numbers)
+            print(f'Downloading TSVs: {data_type}')
+        update_sublevel_tsv(data_type, station_numbers, progress=progress)
 
     # GPS and layout data should now be up to date, local data can be used
     with warnings.catch_warnings(record=True):
@@ -65,8 +66,8 @@ def update_local_tsv(progress=True):
 
     for data_type in ['station_timing_offsets']:
         if progress:
-            print('Downloading TSVs: %s' % data_type)
-        update_subsublevel_tsv(data_type, station_numbers, network)
+            print(f'Downloading TSVs: {data_type}')
+        update_subsublevel_tsv(data_type, station_numbers, network, progress=progress)
 
 
 def update_toplevel_json(data_type):
@@ -74,7 +75,7 @@ def update_toplevel_json(data_type):
     try:
         get_and_store_json(url)
     except Exception:
-        print('Failed to get %s data' % data_type)
+        print(f'Failed to get {data_type} data')
 
 
 def update_sublevel_json(arg_type, data_type, progress=True):
@@ -89,19 +90,17 @@ def update_sublevel_json(arg_type, data_type, progress=True):
         numbers = [x['number'] for x in loads(API._retrieve_url(url))]
     except Exception:
         if progress:
-            print('Failed to get %s data' % data_type)
+            print(f'Failed to get {data_type} data')
         return
 
     kwarg = API.urls[data_type].split('/')[1].strip('{}')
     for number in pbar(numbers, show=progress):
-        url = API.urls[data_type].format(**{kwarg: number, 'year': '',
-                                            'month': '', 'day': ''})
+        url = API.urls[data_type].format(**{kwarg: number, 'year': '', 'month': '', 'day': ''})
         try:
             get_and_store_json(url.strip('/'))
         except Exception:
             if progress:
-                print('Failed to get %s data for %s %d' %
-                      (data_type, arg_type, number))
+                print('Failed to get %s data for %s %d' % (data_type, arg_type, number))
             return
 
 
@@ -113,8 +112,7 @@ def update_sublevel_tsv(data_type, station_numbers, progress=True):
         pass
 
     for number in pbar(station_numbers, show=progress):
-        url = API.src_urls[data_type].format(station_number=number,
-                                             year='', month='', day='')
+        url = API.src_urls[data_type].format(station_number=number, year='', month='', day='')
         url = url.strip('/') + '/'
         try:
             get_and_store_tsv(url)
@@ -126,8 +124,7 @@ def update_sublevel_tsv(data_type, station_numbers, progress=True):
 
 def update_subsublevel_tsv(data_type, station_numbers, network, progress=True):
     subdir = API.src_urls[data_type].split('/')[0]
-    for number1, number2 in pbar(list(combinations(station_numbers, 2)),
-                                 show=progress):
+    for number1, number2 in pbar(list(combinations(station_numbers, 2)), show=progress):
         distance = network.calc_distance_between_stations(number1, number2)
         if distance is None or distance > 1e3:
             continue
@@ -135,14 +132,12 @@ def update_subsublevel_tsv(data_type, station_numbers, network, progress=True):
             makedirs(path.join(LOCAL_BASE, subdir, str(number1)))
         except OSError:
             pass
-        url = API.src_urls[data_type].format(station_1=number1,
-                                             station_2=number2)
+        url = API.src_urls[data_type].format(station_1=number1, station_2=number2)
         try:
             get_and_store_tsv(url)
         except Exception:
             if progress:
-                print('Failed to get %s data for station pair %d-%d' %
-                      (data_type, number1, number2))
+                print('Failed to get %s data for station pair %d-%d' % (data_type, number1, number2))
 
 
 def get_and_store_json(url):

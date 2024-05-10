@@ -4,6 +4,7 @@ Currently supports conversion between base 10 (decimal) and
 base 60 (sexagesimal).
 
 """
+
 from numpy import modf
 
 
@@ -17,7 +18,7 @@ def decimal_to_sexagesimal(decimal):
     """
     fractional, integral = modf(decimal)
     min_fractional, minutes = modf(fractional * 60)
-    seconds = min_fractional * 60.
+    seconds = min_fractional * 60.0
     return integral.astype(int), minutes.astype(int), seconds
 
 
@@ -33,4 +34,4 @@ def sexagesimal_to_decimal(hd, minutes, seconds):
     :return: decimal hours or degrees.
 
     """
-    return hd + minutes / 60. + seconds / 3600.
+    return hd + minutes / 60.0 + seconds / 3600.0

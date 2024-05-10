@@ -11,18 +11,14 @@ STORE_SCRIPT = 'generate_corsika_overview {source} {destination}'
 
 
 class GenerateCorsikaOverviewTests(unittest.TestCase):
-
     def setUp(self):
         self.source_path = self.get_testdata_path()
         self.expected_path = self.get_expected_path()
         self.destination_path = self.create_tempfile_path()
-
-    def tearDown(self):
-        os.remove(self.destination_path)
+        self.addCleanup(os.remove, self.destination_path)
 
     def test_store_data(self):
-        generate_corsika_overview(source=self.source_path,
-                                  destination=self.destination_path)
+        generate_corsika_overview(source=self.source_path, destination=self.destination_path)
         validate_results(self, self.expected_path, self.destination_path)
 
     def create_tempfile_path(self):

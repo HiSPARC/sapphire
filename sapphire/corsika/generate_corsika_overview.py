@@ -1,16 +1,17 @@
-""" Generate an overview table of the CORSIKA simulations
+"""Generate an overview table of the CORSIKA simulations
 
-    This script will look for all completed and converted CORSIKA
-    simulations in the given data path. Information about each
-    simulation is collected and then summarized in a new h5 file as an
-    overview.
+This script will look for all completed and converted CORSIKA
+simulations in the given data path. Information about each
+simulation is collected and then summarized in a new h5 file as an
+overview.
 
-    The given source path should contain subdirectories named after the
-    seeds used for the simulation in the format ``{seed1}_{seed2}``,
-    e.g. ``821280921_182096636``. These in turn should contain converted
-    CORSIKA simulation results called ``corsika.h5``.
+The given source path should contain subdirectories named after the
+seeds used for the simulation in the format ``{seed1}_{seed2}``,
+e.g. ``821280921_182096636``. These in turn should contain converted
+CORSIKA simulation results called ``corsika.h5``.
 
 """
+
 import argparse
 import glob
 import logging
@@ -121,8 +122,7 @@ def prepare_output(n):
     os.umask(0o02)
     tmp_path = create_tempfile_path()
     overview = tables.open_file(tmp_path, 'w')
-    overview.create_table('/', 'simulations', Simulations,
-                          'Simulations overview', expectedrows=n)
+    overview.create_table('/', 'simulations', Simulations, 'Simulations overview', expectedrows=n)
     return tmp_path, overview
 
 
@@ -139,8 +139,8 @@ def move_tempfile_to_destination(tmp_path, destination):
 def all_seeds(source):
     """Get set of all seeds in the corsika data directory"""
 
-    dirs = glob.glob(os.path.join(source, '*_*'))
-    seeds = [os.path.basename(dir) for dir in dirs]
+    directories = glob.glob(os.path.join(source, '*_*'))
+    seeds = [os.path.basename(directory) for directory in directories]
     return sorted(set(seeds))
 
 
@@ -163,24 +163,21 @@ def generate_corsika_overview(source, destination, progress=False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Generate an overview of '
-                                                 'CORSIKA simulations.')
-    parser.add_argument('source', nargs='?', default=DATA_PATH,
-                        help="directory path containing CORSIKA simulations")
-    parser.add_argument('destination', nargs='?', default=OUTPUT_PATH,
-                        help="path of the HDF5 output file")
-    parser.add_argument('--progress', action='store_true',
-                        help='show progressbar during generation')
-    parser.add_argument('--log', action='store_true',
-                        help='write logs to file, only for use on server')
-    parser.add_argument('--lazy', action='store_true',
-                        help='only run if the overview is outdated')
+    parser = argparse.ArgumentParser(description='Generate an overview of CORSIKA simulations.')
+    parser.add_argument('source', nargs='?', default=DATA_PATH, help='directory path containing CORSIKA simulations')
+    parser.add_argument('destination', nargs='?', default=OUTPUT_PATH, help='path of the HDF5 output file')
+    parser.add_argument('--progress', action='store_true', help='show progressbar during generation')
+    parser.add_argument('--log', action='store_true', help='write logs to file, only for use on server')
+    parser.add_argument('--lazy', action='store_true', help='only run if the overview is outdated')
     args = parser.parse_args()
     if args.log:
-        logging.basicConfig(filename=LOGFILE, filemode='a',
-                            format='%(asctime)s %(name)s %(levelname)s: '
-                                   '%(message)s',
-                            datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+        logging.basicConfig(
+            filename=LOGFILE,
+            filemode='a',
+            format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+            datefmt='%y%m%d_%H%M%S',
+            level=logging.INFO,
+        )
     if args.lazy:
         last_store = os.path.getmtime(args.source)
         last_overview = os.path.getmtime(args.destination)
@@ -188,9 +185,7 @@ def main():
             logger.info('Overview up to date.')
             return
 
-    generate_corsika_overview(source=args.source,
-                              destination=args.destination,
-                              progress=args.progress)
+    generate_corsika_overview(source=args.source, destination=args.destination, progress=args.progress)
 
 
 if __name__ == '__main__':

@@ -1,15 +1,16 @@
-""" Convert CORSIKA stored showers to HDF5 on Stoomboot
+"""Convert CORSIKA stored showers to HDF5 on Stoomboot
 
-    Automatically submits Stoomboot jobs to convert corsika data. The
-    script ``store_corsika_data`` can be used to convert a DAT000000
-    CORSIKA file to a HDF5 file. This script checks our data folder for
-    new or unconverted simulations and creates Stoomboot jobs to perform
-    the conversion.
+Automatically submits Stoomboot jobs to convert corsika data. The
+script ``store_corsika_data`` can be used to convert a DAT000000
+CORSIKA file to a HDF5 file. This script checks our data folder for
+new or unconverted simulations and creates Stoomboot jobs to perform
+the conversion.
 
-    This job is run as a cron job to ensure the simulations remain up to
-    date.
+This job is run as a cron job to ensure the simulations remain up to
+date.
 
 """
+
 import argparse
 import glob
 import logging
@@ -38,8 +39,8 @@ logger = logging.getLogger(__name__)
 def all_seeds():
     """Get set of all seeds in the corsika data directory"""
 
-    dirs = glob.glob(os.path.join(DATADIR, '*_*'))
-    seeds = [os.path.basename(dir) for dir in dirs]
+    directories = glob.glob(os.path.join(DATADIR, '*_*'))
+    seeds = [os.path.basename(directory) for directory in directories]
     return set(seeds)
 
 
@@ -94,8 +95,7 @@ def filter_large_seeds(seeds_todo):
     """Exclude seeds for data files that are to large"""
 
     limit = 70e9  # larger than 70 GB has not been tested yet
-    return {s for s in seeds_todo
-            if os.path.getsize(os.path.join(DATADIR, s, SOURCE_FILE)) < limit}
+    return {s for s in seeds_todo if os.path.getsize(os.path.join(DATADIR, s, SOURCE_FILE)) < limit}
 
 
 def store_command(seed):
@@ -103,9 +103,7 @@ def store_command(seed):
 
     source = os.path.join(DATADIR, seed, SOURCE_FILE)
     destination = os.path.join(DATADIR, seed, DESTINATION_FILE)
-    command = ('{bin_path}python {bin_path}store_corsika_data {source} '
-               '{destination}'.format(bin_path=BIN_PATH, source=source,
-                                      destination=destination))
+    command = f'{BIN_PATH}python {BIN_PATH}store_corsika_data {source} {destination}'
 
     return command
 
@@ -120,7 +118,7 @@ def run(queue):
     n_jobs_to_submit = min(len(seeds), qsub.check_queue(queue), 50)
     extra = ''
     if queue == 'long':
-        extra += " -l walltime=96:00:00"
+        extra += ' -l walltime=96:00:00'
 
     logger.info('Submitting jobs for %d simulations.' % n_jobs_to_submit)
     try:
@@ -136,13 +134,15 @@ def run(queue):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Submit jobs to Stoomboot to '
-                                                 'store CORSIKA data as HDF5.')
-    parser.add_argument('-q', '--queue', metavar='name',
-                        help="name of the Stoomboot queue to use, choose from "
-                             "express, short, generic, and long (default)",
-                        default='long',
-                        choices=['express', 'short', 'generic', 'long'])
+    parser = argparse.ArgumentParser(description='Submit jobs to Stoomboot to store CORSIKA data as HDF5.')
+    parser.add_argument(
+        '-q',
+        '--queue',
+        metavar='name',
+        help='name of the Stoomboot queue to use, choose from express, short, generic, and long (default)',
+        default='long',
+        choices=['express', 'short', 'generic', 'long'],
+    )
     args = parser.parse_args()
     logger.debug('Starting to submit new jobs.')
     run(args.queue)
@@ -151,7 +151,10 @@ def main():
 
 if __name__ == '__main__':
     logging.basicConfig(
-        filename=LOGFILE, filemode='a',
+        filename=LOGFILE,
+        filemode='a',
         format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-        datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+        datefmt='%y%m%d_%H%M%S',
+        level=logging.INFO,
+    )
     main()

@@ -1,0 +1,189 @@
+[build-system]
+requires = ['flit_core>=3.9']
+build-backend = 'flit_core.buildapi'
+
+[project]
+name = 'hisparc-sapphire'
+version = '2.0.0'
+description = 'A framework for the HiSPARC experiment'
+readme = 'README.rst'
+requires-python = '>=3.9'
+license = {file = 'LICENSE'}
+authors = [
+    {name = 'Arne de Laat', email = 'arne@delaat.net'},
+    {name = 'David Fokkema'},
+    {name = 'Tom Kooij'},
+]
+maintainers = [
+    {name = 'Arne de Laat', email = 'arne@delaat.net'},
+]
+keywords = [
+    'cosmic rays',
+    'detectors',
+    'astrophysics',
+    'HiSPARC',
+    'Nikhef',
+    'University of Utah',
+]
+classifiers = [
+    'Intended Audience :: Education',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python',
+    'Topic :: Education',
+    'Topic :: Scientific/Engineering',
+]
+dependencies = [
+    'numpy>=1.25.2',
+    'scipy>=1.13.0',
+    'tables>=3.9.2',
+    'progressbar2>=4.4.2',
+]
+
+[project.optional-dependencies]
+dev = [
+    'Sphinx',
+    'coverage==7.4.4',
+    'ruff==0.4.1',
+]
+astropy = [
+    'astropy>=5.0.0',
+]
+publish = [
+    'flit==3.9.0',
+]
+
+[project.urls]
+Homepage = 'https://data.hisparc.nl'
+Documentation = 'https://docs.hisparc.nl/sapphire/'
+Repository = 'https://github.com/hisparc/sapphire/'
+Issues = 'https://github.com/HiSPARC/sapphire/issues'
+
+[project.scripts]
+create_and_store_test_data = 'sapphire.tests.create_and_store_test_data:main'
+update_local_data = 'sapphire.data.update_local_data:main'
+extend_local_data = 'sapphire.data.extend_local_data:main'
+
+[tool.flit.module]
+name = 'sapphire'
+
+[tool.ruff]
+line-length = 120
+target-version = 'py39'
+extend-exclude = [
+    'doc/',
+    'scripts/',
+]
+
+[tool.ruff.format]
+quote-style = 'single'  # Prefer single quotes, except for triple quotes strings
+
+[tool.ruff.lint]
+select = ['ALL']  # https://docs.astral.sh/ruff/rules/
+ignore = [
+    'ANN',  # No type annotations yet
+    'ARG002',  # Allow unused arguments to keep signature equal for similar functions
+    'B028',  # Allow warnings.warn without stacklevel
+    'B904',  # Allow skipping causes for exceptions
+    'BLE001',  # Allow catching Exception
+    'CPY001',  # Do not require copyright notices
+    'D',  # Ignore docstring checks
+    'DTZ',  # Ignore timezones for datetime
+    'E731',  # Allow assigning lambda to variable
+    'EM',  # Allow messages directly in exceptions
+    'ERA001',  # Allow commented code
+    'F405',  # Allow star imports
+    'FBT001',  # Allow positional for boolean arguments
+    'FBT002',  # Allow default value for boolean arguments
+    'PD',  # Not using pandas
+    'PERF203',  # Allow try-except in loop
+    'PLR0913',  # Allow functions with many arguments
+    'PLR6301',  # Allow not using self in methods
+    'PT',  # Not using pytest
+    'PTH',  # Allow using os.path
+    'RET504',  # Allow variable assignment before return
+    'RET505',  # Allow elif after return
+    'RET506',  # Allow elif after raise
+    'RET507',  # Allow elif after continue
+    'RET508',  # Allow elif after break
+    'S311',  # Allow using random for non-cryptographic purposes
+    'SIM108',  # Allow if-else block instead of ternary
+    'SIM117',  # Allow separate with statements to preserve context
+    'SLF001',  # Allow accessing private members
+    'T201',  # Allow using print
+    'TD002',  # Allow TODO without author
+    'TD003',  # Allow TODO without issue link
+    'TID252',  # Allow relative imports
+    'TRY003',  # Specific messages for common exception classes
+
+    # TODO these still need to be checked (i.e. ignored or fixed)
+    'ARG001',
+    'ARG003',
+    'ARG005',
+    'B018',
+    'C901',
+    'FBT003',
+    'FIX002',
+    'G002',
+    'G004',
+    'NPY002',
+    'PLR0911',
+    'PLR0912',
+    'PLR0915',
+    'PLR2004',
+    'PLW2901',
+    'RET503',
+    'RUF005',
+    'RUF012',
+    'S103',
+    'S108',
+    'S310',
+    'S602',
+    'S603',
+    'S604',
+    'S607',
+    'SIM102',
+    'SIM105',
+    'SIM115',
+    'TRY301',
+    'TRY400',
+    'UP031',
+]
+
+[tool.ruff.lint.per-file-ignores]
+'sapphire/corsika/units.py' = ['N816']  # Allow mixed case variables
+'sapphire/esd.py' = ['A002']  # Some keyword arguments shadow a builtin
+'sapphire/kascade.py' = ['N806']  # Allow non lower case variables to match KASCADE
+'sapphire/storage.py' = ['N815']  # Allow mixed case variables
+'sapphire/tests/simulations/test_gammas.py' = ['N806']  # Allow upper case variables
+'sapphire/tests/transformations/test_celestial.py' = ['N806']  # Allow upper case variables
+
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = 'single'
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+section-order = [
+    'future',
+    'standard-library',
+    'third-party',
+    'extras',
+    'first-party',
+    'local-folder',
+]
+
+[tool.ruff.lint.isort.sections]
+extras = ['artist', 'pylab']
+
+[tool.coverage.run]
+branch = true
+source = [
+    'sapphire',
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+skip_covered = true

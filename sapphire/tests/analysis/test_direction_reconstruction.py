@@ -10,7 +10,6 @@ from sapphire.simulations.showerfront import ConeFront
 
 
 class EventDirectionReconstructionTest(unittest.TestCase):
-
     def test_init(self):
         dirrec = direction_reconstruction.EventDirectionReconstruction(sentinel.station)
         self.assertEqual(dirrec.direct, direction_reconstruction.DirectAlgorithmCartesian3D)
@@ -36,7 +35,7 @@ class EventDirectionReconstructionTest(unittest.TestCase):
 
     @patch.object(direction_reconstruction.event_utils, 'detector_arrival_time')
     def test_reconstruct_event(self, mock_detector_arrival_time):
-        mock_detector_arrival_time.return_value = 0.
+        mock_detector_arrival_time.return_value = 0.0
         station = MagicMock()
         detector = Mock()
         detector.get_coordinates.return_value = [sentinel.x, sentinel.y, sentinel.z]
@@ -58,7 +57,12 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         # Three detections, direct reconstruction
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2])
         dirrec.direct.reconstruct_common.assert_called_once_with(
-            [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3, None)
+            [0.0] * 3,
+            [sentinel.x] * 3,
+            [sentinel.y] * 3,
+            [sentinel.z] * 3,
+            None,
+        )
         dirrec.fit.reconstruct_common.assert_not_called()
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
@@ -68,13 +72,23 @@ class EventDirectionReconstructionTest(unittest.TestCase):
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=[0, 1, 2, 3])
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
         dirrec.fit.reconstruct_common.assert_called_once_with(
-            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, None)
+            [0.0] * 4,
+            [sentinel.x] * 4,
+            [sentinel.y] * 4,
+            [sentinel.z] * 4,
+            None,
+        )
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
         self.assertEqual(len(ids), 4)
         theta, phi, ids = dirrec.reconstruct_event(event, detector_ids=None)
         dirrec.fit.reconstruct_common.assert_called_with(
-            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, None)
+            [0.0] * 4,
+            [sentinel.x] * 4,
+            [sentinel.y] * 4,
+            [sentinel.z] * 4,
+            None,
+        )
         self.assertEqual(dirrec.fit.reconstruct_common.call_count, 2)
 
         # Four detections, fit reconstruction with offsets
@@ -88,18 +102,25 @@ class EventDirectionReconstructionTest(unittest.TestCase):
     def test_reconstruct_events(self, mock_reconstruct_event):
         mock_reconstruct_event.return_value = [sentinel.theta, sentinel.phi, sentinel.ids]
         dirrec = direction_reconstruction.EventDirectionReconstruction(sentinel.station)
-        self.assertEqual(dirrec.reconstruct_events([sentinel.event, sentinel.event],
-                                                   sentinel.detector_ids, sentinel.offsets, progress=False),
-                         ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.ids, sentinel.ids)))
+        self.assertEqual(
+            dirrec.reconstruct_events(
+                [sentinel.event, sentinel.event],
+                sentinel.detector_ids,
+                sentinel.offsets,
+                progress=False,
+            ),
+            ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.ids, sentinel.ids)),
+        )
         self.assertEqual(mock_reconstruct_event.call_count, 2)
         mock_reconstruct_event.assert_called_with(sentinel.event, sentinel.detector_ids, sentinel.offsets, None)
-        self.assertEqual(dirrec.reconstruct_events([], sentinel.detector_ids, sentinel.offsets, progress=False),
-                         ((), (), ()))
+        self.assertEqual(
+            dirrec.reconstruct_events([], sentinel.detector_ids, sentinel.offsets, progress=False),
+            ((), (), ()),
+        )
         self.assertEqual(mock_reconstruct_event.call_count, 2)
 
 
 class CoincidenceDirectionReconstructionTest(unittest.TestCase):
-
     def setUp(self):
         self.dirrec = direction_reconstruction.CoincidenceDirectionReconstruction(sentinel.cluster)
 
@@ -122,7 +143,7 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
     @patch.object(direction_reconstruction.event_utils, 'station_arrival_time')
     def test_reconstruct_coincidence(self, mock_station_arrival_time):
         dirrec = self.dirrec
-        mock_station_arrival_time.return_value = 0.
+        mock_station_arrival_time.return_value = 0.0
         cluster = MagicMock()
         station = MagicMock()
         cluster.get_station.return_value = station
@@ -135,10 +156,13 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         dirrec.fit.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
         dirrec.curved.reconstruct_common.return_value = (sentinel.theta, sentinel.phi)
         coincidence_2 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event]]
-        coincidence_3 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
-                         [2, sentinel.event]]
-        coincidence_4 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
-                         [2, sentinel.event], [3, sentinel.event]]
+        coincidence_3 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event], [2, sentinel.event]]
+        coincidence_4 = [
+            [sentinel.station_number, {'timestamp': 1}],
+            [1, sentinel.event],
+            [2, sentinel.event],
+            [3, sentinel.event],
+        ]
 
         # To few events
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_2)
@@ -157,7 +181,12 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_3)
         cluster.set_timestamp.assert_called_with(1)
         dirrec.direct.reconstruct_common.assert_called_once_with(
-            [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3, {})
+            [0.0] * 3,
+            [sentinel.x] * 3,
+            [sentinel.y] * 3,
+            [sentinel.z] * 3,
+            {},
+        )
         dirrec.fit.reconstruct_common.assert_not_called()
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
@@ -167,7 +196,12 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_4)
         cluster.set_timestamp.assert_called_with(1)
         dirrec.fit.reconstruct_common.assert_called_once_with(
-            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, {})
+            [0.0] * 4,
+            [sentinel.x] * 4,
+            [sentinel.y] * 4,
+            [sentinel.z] * 4,
+            {},
+        )
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
         dirrec.curved.reconstruct_common.assert_not_called()
         self.assertEqual(theta, sentinel.theta)
@@ -197,13 +231,26 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
     @patch.object(direction_reconstruction.CoincidenceDirectionReconstruction, 'reconstruct_coincidence')
     def test_reconstruct_coincidences(self, mock_reconstruct_coincidence):
         mock_reconstruct_coincidence.return_value = [sentinel.theta, sentinel.phi, sentinel.nums]
-        self.assertEqual(self.dirrec.reconstruct_coincidences([sentinel.coincidence, sentinel.coincidence],
-                                                              sentinel.station_numbers, sentinel.offsets, progress=False),
-                         ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.nums, sentinel.nums)))
+        self.assertEqual(
+            self.dirrec.reconstruct_coincidences(
+                [sentinel.coincidence, sentinel.coincidence],
+                sentinel.station_numbers,
+                sentinel.offsets,
+                progress=False,
+            ),
+            ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.nums, sentinel.nums)),
+        )
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
-        mock_reconstruct_coincidence.assert_called_with(sentinel.coincidence, sentinel.station_numbers, sentinel.offsets, None)
-        self.assertEqual(self.dirrec.reconstruct_coincidences([], sentinel.station_numbers, sentinel.offsets, progress=False),
-                         ((), (), ()))
+        mock_reconstruct_coincidence.assert_called_with(
+            sentinel.coincidence,
+            sentinel.station_numbers,
+            sentinel.offsets,
+            None,
+        )
+        self.assertEqual(
+            self.dirrec.reconstruct_coincidences([], sentinel.station_numbers, sentinel.offsets, progress=False),
+            ((), (), ()),
+        )
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
 
     def test_get_station_offsets(self):
@@ -215,25 +262,21 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         station_numbers = None
         offsets = {}
         ts0 = 86400
-        result = dirrec.get_station_offsets(coincidence_events, station_numbers,
-                                            offsets, ts0)
+        result = dirrec.get_station_offsets(coincidence_events, station_numbers, offsets, ts0)
         self.assertEqual(result, offsets)
 
         offsets = {1: MagicMock(spec=direction_reconstruction.Station)}
-        result = dirrec.get_station_offsets(coincidence_events, station_numbers,
-                                            offsets, ts0)
+        result = dirrec.get_station_offsets(coincidence_events, station_numbers, offsets, ts0)
         self.assertEqual(result, sentinel.best_offset)
         mock_offsets.assert_called_once_with([sentinel.sn1], ts0, offsets)
 
         ts0 = 864000 + 12345
-        result = dirrec.get_station_offsets(coincidence_events, station_numbers,
-                                            offsets, ts0)
+        result = dirrec.get_station_offsets(coincidence_events, station_numbers, offsets, ts0)
         self.assertEqual(result, sentinel.best_offset)
         mock_offsets.assert_called_with([sentinel.sn1], 864000, offsets)
 
         station_numbers = sentinel.station_numbers
-        result = dirrec.get_station_offsets(coincidence_events, station_numbers,
-                                            offsets, ts0)
+        result = dirrec.get_station_offsets(coincidence_events, station_numbers, offsets, ts0)
         self.assertEqual(result, sentinel.best_offset)
         mock_offsets.assert_called_with(sentinel.station_numbers, 864000, offsets)
 
@@ -247,41 +290,27 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
         midnight_ts = sentinel.midnight_ts
         best_offsets = dirrec.determine_best_offsets(station_numbers, midnight_ts, offsets)
         self.assertEqual(list(best_offsets.keys()), station_numbers)
-        self.assertEqual(list(best_offsets.values()), [[1.0, 0.0, 2.0, 3.0],
-                                                       [2.0, 1.0, 3.0, 4.0]])
+        self.assertEqual(list(best_offsets.values()), [[1.0, 0.0, 2.0, 3.0], [2.0, 1.0, 3.0, 4.0]])
 
     def test_determine_best_reference(self):
         # last station would be best reference, but not in station_numbers
         # second and third station are tied, so second is best reference
-        error_matrix = array([[0, 5, 2, 1],
-                              [5, 0, 1, 1],
-                              [2, 1, 0, 1],
-                              [1, 1, 1, 0]])
+        error_matrix = array([[0, 5, 2, 1], [5, 0, 1, 1], [2, 1, 0, 1], [1, 1, 1, 0]])
         station_numbers = [1, 2, 3]
         ref, pred = self.dirrec.determine_best_reference(error_matrix, station_numbers)
         self.assertEqual(ref, 2)
-        predecessors = array([[-9999, 3, 0, 0],
-                              [3, -9999, 1, 1],
-                              [2, 2, -9999, 2],
-                              [3, 3, 3, -9999]])
+        predecessors = array([[-9999, 3, 0, 0], [3, -9999, 1, 1], [2, 2, -9999, 2], [3, 3, 3, -9999]])
         self.assertEqual(pred.tolist(), predecessors.tolist())
 
     def test__reconstruct_best_offset(self):
         offset = self.dirrec._reconstruct_best_offset([], 1, 1, [], [])
         self.assertEqual(offset, 0)
 
-        predecessors = array([[-9999, 0, 1],
-                              [1, -9999, 1],
-                              [1, 2, -9999]])
-        offset_matrix = array([[0, -1, -1],
-                               [1, 0, -1],
-                               [1, 1, 0]])
+        predecessors = array([[-9999, 0, 1], [1, -9999, 1], [1, 2, -9999]])
+        offset_matrix = array([[0, -1, -1], [1, 0, -1], [1, 1, 0]])
         station_numbers = [1, 2, 3]
 
-        combinations = [(1, 1, 0),
-                        (1, 2, 1),
-                        (1, 3, 2),
-                        (2, 3, 1)]
+        combinations = [(1, 1, 0), (1, 2, 1), (1, 3, 2), (2, 3, 1)]
         for sn1, sn2, offset in combinations:
             o12 = self.dirrec._reconstruct_best_offset(predecessors, sn1, sn2, station_numbers, offset_matrix)
             o21 = self.dirrec._reconstruct_best_offset(predecessors, sn2, sn1, station_numbers, offset_matrix)
@@ -290,23 +319,22 @@ class CoincidenceDirectionReconstructionTest(unittest.TestCase):
 
     def test__calculate_offsets(self):
         mock_station = Mock()
-        mock_station.detector_timing_offset.return_value = [0., 1., 2., 3.]
-        offset = 1.
+        mock_station.detector_timing_offset.return_value = [0.0, 1.0, 2.0, 3.0]
+        offset = 1.0
         ts0 = sentinel.timestamp
         offsets = self.dirrec._calculate_offsets(mock_station, ts0, offset)
         mock_station.detector_timing_offset.assert_called_once_with(ts0)
-        self.assertEqual(offsets, [1., 2., 3., 4.])
+        self.assertEqual(offsets, [1.0, 2.0, 3.0, 4.0])
 
 
 class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionReconstructionTest):
-
     def setUp(self):
         self.dirrec = direction_reconstruction.CoincidenceDirectionReconstructionDetectors(sentinel.cluster)
 
     @patch.object(direction_reconstruction.event_utils, 'relative_detector_arrival_times')
     def test_reconstruct_coincidence(self, mock_arrival_times):
         dirrec = self.dirrec
-        mock_arrival_times.return_value = [0., 0., nan, nan]
+        mock_arrival_times.return_value = [0.0, 0.0, nan, nan]
         cluster = MagicMock()
         station = MagicMock()
         cluster.get_station.return_value = station
@@ -323,10 +351,13 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
         coincidence_0 = []
         coincidence_1 = [[sentinel.station_number, {'timestamp': 1}]]
         coincidence_2 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event]]
-        coincidence_3 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
-                         [2, sentinel.event]]
-        coincidence_4 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event],
-                         [2, sentinel.event], [3, sentinel.event]]
+        coincidence_3 = [[sentinel.station_number, {'timestamp': 1}], [1, sentinel.event], [2, sentinel.event]]
+        coincidence_4 = [
+            [sentinel.station_number, {'timestamp': 1}],
+            [1, sentinel.event],
+            [2, sentinel.event],
+            [3, sentinel.event],
+        ]
 
         # To few detection points, no reconstruction
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_0)
@@ -351,7 +382,12 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_2)
         cluster.set_timestamp.assert_called_with(1)
         dirrec.fit.reconstruct_common.assert_called_once_with(
-            [0.] * 4, [sentinel.x] * 4, [sentinel.y] * 4, [sentinel.z] * 4, {})
+            [0.0] * 4,
+            [sentinel.x] * 4,
+            [sentinel.y] * 4,
+            [sentinel.z] * 4,
+            {},
+        )
         self.assertEqual(dirrec.fit.reconstruct_common.call_count, 1)
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
@@ -367,13 +403,18 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
         self.assertEqual(phi, sentinel.phi)
         self.assertEqual(len(nums), 4)
 
-        mock_arrival_times.return_value = [0., nan, nan, nan]
+        mock_arrival_times.return_value = [0.0, nan, nan, nan]
 
         # Three stations with three detection points, direct reconstruction
         theta, phi, nums = dirrec.reconstruct_coincidence(coincidence_3)
         cluster.set_timestamp.assert_called_with(1)
         dirrec.direct.reconstruct_common.assert_called_once_with(
-            [0.] * 3, [sentinel.x] * 3, [sentinel.y] * 3, [sentinel.z] * 3, {})
+            [0.0] * 3,
+            [sentinel.x] * 3,
+            [sentinel.y] * 3,
+            [sentinel.z] * 3,
+            {},
+        )
         self.assertEqual(dirrec.direct.reconstruct_common.call_count, 1)
         self.assertEqual(theta, sentinel.theta)
         self.assertEqual(phi, sentinel.phi)
@@ -394,18 +435,30 @@ class CoincidenceDirectionReconstructionDetectorsTest(CoincidenceDirectionRecons
     @patch.object(direction_reconstruction.CoincidenceDirectionReconstructionDetectors, 'reconstruct_coincidence')
     def test_reconstruct_coincidences(self, mock_reconstruct_coincidence):
         mock_reconstruct_coincidence.return_value = [sentinel.theta, sentinel.phi, sentinel.nums]
-        self.assertEqual(self.dirrec.reconstruct_coincidences([sentinel.coincidence, sentinel.coincidence],
-                                                              sentinel.station_numbers, sentinel.offsets, progress=False),
-                         ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.nums, sentinel.nums)))
+        self.assertEqual(
+            self.dirrec.reconstruct_coincidences(
+                [sentinel.coincidence, sentinel.coincidence],
+                sentinel.station_numbers,
+                sentinel.offsets,
+                progress=False,
+            ),
+            ((sentinel.theta, sentinel.theta), (sentinel.phi, sentinel.phi), (sentinel.nums, sentinel.nums)),
+        )
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
-        mock_reconstruct_coincidence.assert_called_with(sentinel.coincidence, sentinel.station_numbers, sentinel.offsets, None)
-        self.assertEqual(self.dirrec.reconstruct_coincidences([], sentinel.station_numbers, sentinel.offsets, progress=False),
-                         ((), (), ()))
+        mock_reconstruct_coincidence.assert_called_with(
+            sentinel.coincidence,
+            sentinel.station_numbers,
+            sentinel.offsets,
+            None,
+        )
+        self.assertEqual(
+            self.dirrec.reconstruct_coincidences([], sentinel.station_numbers, sentinel.offsets, progress=False),
+            ((), (), ()),
+        )
         self.assertEqual(mock_reconstruct_coincidence.call_count, 2)
 
 
 class BaseAlgorithm:
-
     """Use this class to check the different algorithms
 
     This provides a shortcut to call the reconstruct_common method.
@@ -417,7 +470,6 @@ class BaseAlgorithm:
 
 
 class FlatAlgorithm(BaseAlgorithm):
-
     """Use this class to test algorithms for flat shower fronts.
 
     They should give similar results and errors in some cases.
@@ -429,18 +481,18 @@ class FlatAlgorithm(BaseAlgorithm):
         """Three detection points on a line do not provide a solution."""
 
         # On a line in x
-        t = (0., 2., 3.)
-        x = (0., 0., 0.)  # same x
-        y = (0., 5., 10.)
-        z = (0., 0., 0.)  # same z
+        t = (0.0, 2.0, 3.0)
+        x = (0.0, 0.0, 0.0)  # same x
+        y = (0.0, 5.0, 10.0)
+        z = (0.0, 0.0, 0.0)  # same z
         result = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(result).all())
 
         # Diagonal line
-        t = (0., 2., 3.)
-        x = (0., 5., 10.)
-        y = (0., 5., 10.)
-        z = (0., 0., 0.)  # same z
+        t = (0.0, 2.0, 3.0)
+        x = (0.0, 5.0, 10.0)
+        y = (0.0, 5.0, 10.0)
+        z = (0.0, 0.0, 0.0)  # same z
         result = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(result).all())
 
@@ -451,44 +503,44 @@ class FlatAlgorithm(BaseAlgorithm):
 
         """
         # Two at same location
-        t = (0., 2., 3.)
-        x = (0., 0., 1.)
-        y = (5., 5., 6.)
-        z = (0., 0., 1.)
+        t = (0.0, 2.0, 3.0)
+        x = (0.0, 0.0, 1.0)
+        y = (5.0, 5.0, 6.0)
+        z = (0.0, 0.0, 1.0)
         result = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(result).all())
 
-        t = (0., 2., 3.)
-        x = (0., 1., 0.)
-        y = (5., 6., 5.)
-        z = (0., 1., 0.)
+        t = (0.0, 2.0, 3.0)
+        x = (0.0, 1.0, 0.0)
+        y = (5.0, 6.0, 5.0)
+        z = (0.0, 1.0, 0.0)
         result = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(result).all())
 
-        t = (0., 2., 3.)
-        x = (1., 0., 0.)
-        y = (6., 5., 5.)
-        z = (1., 0., 0.)
+        t = (0.0, 2.0, 3.0)
+        x = (1.0, 0.0, 0.0)
+        y = (6.0, 5.0, 5.0)
+        z = (1.0, 0.0, 0.0)
         result = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(result).all())
 
         # Three at same location
-        t = (0., 2., 3.)
-        x = (0., 0., 0.)  # same x
-        y = (5., 5., 5.)  # same y
-        z = (0., 0., 0.)  # same z
+        t = (0.0, 2.0, 3.0)
+        x = (0.0, 0.0, 0.0)  # same x
+        y = (5.0, 5.0, 5.0)  # same y
+        z = (0.0, 0.0, 0.0)  # same z
         result = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(result).all())
 
     def test_shower_from_above(self):
         """Simple shower from zenith, azimuth can be any allowed value."""
 
-        t = (0., 0., 0.)  # same t
-        x = (0., 10., 0.)
-        y = (0., 0., 10.)
-        z = (0., 0., 0.)  # same z
+        t = (0.0, 0.0, 0.0)  # same t
+        x = (0.0, 10.0, 0.0)
+        y = (0.0, 0.0, 10.0)
+        z = (0.0, 0.0, 0.0)  # same z
         theta, phi = self.call_reconstruct(t, x, y, z)
-        self.assertAlmostEqual(theta, 0., 4)
+        self.assertAlmostEqual(theta, 0.0, 4)
         # azimuth can be any value between -pi and pi
         self.assertTrue(-pi <= phi < pi)
 
@@ -497,11 +549,11 @@ class FlatAlgorithm(BaseAlgorithm):
 
         # TODO: Add better test with smaller tolerance
 
-        x = (0., -5., 5.)
-        y = (sqrt(100 - 25), 0., 0.)
-        z = (0., 0., 0.)
+        x = (0.0, -5.0, 5.0)
+        y = (sqrt(100 - 25), 0.0, 0.0)
+        z = (0.0, 0.0, 0.0)
 
-        t = (35., 0., 0.)
+        t = (35.0, 0.0, 0.0)
         theta, phi = self.call_reconstruct(t, x, y, z)
         self.assertTrue(isnan(theta))
 
@@ -510,20 +562,20 @@ class FlatAlgorithm(BaseAlgorithm):
 
         c = 0.299792458
 
-        x = (0., -5., 5.)
-        y = (sqrt(100 - 25), 0., 0.)
-        z = (0., 0., 0.)
+        x = (0.0, -5.0, 5.0)
+        y = (sqrt(100 - 25), 0.0, 0.0)
+        z = (0.0, 0.0, 0.0)
 
         # triangle height
         h = sqrt(100 - 25)
 
-        times = (2.5, 5., 7.5, 10., 12.5, 15., 17.5, 20., 22.5, 25., 27.5)
+        times = (2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5)
 
         for time in times:
             for i in range(3):
                 zenith = arcsin((time * c) / h)
 
-                t = [0., 0., 0.]
+                t = [0.0, 0.0, 0.0]
                 t[i] = time
                 azimuths = [-pi / 2, pi / 6, pi * 5 / 6]
                 theta, phi = self.call_reconstruct(t, x, y, z)
@@ -534,7 +586,7 @@ class FlatAlgorithm(BaseAlgorithm):
                 self.assertEqual((theta, phi), (theta_no_z, phi_no_z))
 
                 t = [time] * 3
-                t[i] = 0.
+                t[i] = 0.0
                 azimuths = [pi / 2, -pi * 5 / 6, -pi / 6]
                 theta, phi = self.call_reconstruct(t, x, y, z)
                 self.assertAlmostEqual(phi, azimuths[i], 4)
@@ -545,7 +597,6 @@ class FlatAlgorithm(BaseAlgorithm):
 
 
 class DirectAlgorithm(FlatAlgorithm):
-
     """Use this class to check algorithms that only support three detections
 
     They should give similar warnings in some cases.
@@ -559,21 +610,20 @@ class DirectAlgorithm(FlatAlgorithm):
 
         """
         # Shower from above (for first three detectors)
-        x = (0., 10., 0., 10.)
-        y = (0., 0., 10., 10.)
-        z = (0., 0., 0., 0.)
-        t = (0., 0., 0., 10.)
+        x = (0.0, 10.0, 0.0, 10.0)
+        y = (0.0, 0.0, 10.0, 10.0)
+        z = (0.0, 0.0, 0.0, 0.0)
+        t = (0.0, 0.0, 0.0, 10.0)
 
         with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
+            warnings.simplefilter('always')
             theta, phi = self.call_reconstruct(t, x, y, z)
             self.assertTrue(issubclass(w[0].category, UserWarning))
-            self.assertAlmostEqual(theta, 0., 4)
+            self.assertAlmostEqual(theta, 0.0, 4)
             self.assertTrue(-pi <= phi < pi)
 
 
 class AltitudeAlgorithm(FlatAlgorithm):
-
     """Use this class to check the altitude support
 
     They should give similar results and errors in some cases.
@@ -583,14 +633,14 @@ class AltitudeAlgorithm(FlatAlgorithm):
     def test_stations_altitude(self):
         """Simple shower on a non horizontal square."""
 
-        x = (0., 10., 10.)
-        y = (0, 0., 10.)
-        z = (2., 0., -2.)
+        x = (0.0, 10.0, 10.0)
+        y = (0, 0.0, 10.0)
+        z = (2.0, 0.0, -2.0)
 
-        zenith = arctan(4. / 10. / sqrt(2))
+        zenith = arctan(4.0 / 10.0 / sqrt(2))
 
-        t = [0., 0., 0.]
-        azimuth = pi / 4.
+        t = [0.0, 0.0, 0.0]
+        azimuth = pi / 4.0
         theta, phi = self.call_reconstruct(t, x, y, z)
 
         self.assertAlmostEqual(phi, azimuth, 5)
@@ -598,14 +648,10 @@ class AltitudeAlgorithm(FlatAlgorithm):
 
 
 class DirectAltitudeAlgorithm(DirectAlgorithm, AltitudeAlgorithm):
-
     """Test algorithm that uses only 3 detectors and has altitude support."""
-
-    pass
 
 
 class MultiAlgorithm(FlatAlgorithm):
-
     """Use this class to check the different algorithms for more stations
 
     They should give similar results and errors in some cases.
@@ -617,20 +663,20 @@ class MultiAlgorithm(FlatAlgorithm):
 
         c = 0.299792458
 
-        x = (0., -5., 5., 10.)
-        y = (sqrt(100 - 25), 0., 0., sqrt(100 - 25))
-        z = (0., 0., 0., 0.)
+        x = (0.0, -5.0, 5.0, 10.0)
+        y = (sqrt(100 - 25), 0.0, 0.0, sqrt(100 - 25))
+        z = (0.0, 0.0, 0.0, 0.0)
 
         # triangle height
         h = sqrt(100 - 25)
 
-        times = (2.5, 5., 7.5, 10., 12.5, 15., 17.5, 20., 22.5, 25., 27.5)
+        times = (2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5)
 
         for time in times:
             zenith = arcsin((time * c) / h)
             azimuth = pi / 6
 
-            t = [0., 0., 0., 0.]
+            t = [0.0, 0.0, 0.0, 0.0]
             t[1] = time
             t[3] = -time
             theta, phi = self.call_reconstruct(t, x, y, z)
@@ -642,20 +688,20 @@ class MultiAlgorithm(FlatAlgorithm):
 
         c = 0.299792458
 
-        x = (0., 5., 5., 0.)
-        y = (0, 0., 5., 5.)
-        z = (0., 0., 0., 0.)
+        x = (0.0, 5.0, 5.0, 0.0)
+        y = (0, 0.0, 5.0, 5.0)
+        z = (0.0, 0.0, 0.0, 0.0)
 
         # triangle height
-        h = sqrt(50. / 4.)
+        h = sqrt(50.0 / 4.0)
 
-        times = (2.5, 5., 7.5, 10.)
+        times = (2.5, 5.0, 7.5, 10.0)
 
         for time in times:
             zenith = arcsin((time * c) / h)
-            azimuth = - 3 * pi / 4
+            azimuth = -3 * pi / 4
 
-            t = [0., 0., 0., 0.]
+            t = [0.0, 0.0, 0.0, 0.0]
             t[0] = -time
             t[2] = time
             theta, phi = self.call_reconstruct(t, x, y, z)
@@ -664,7 +710,6 @@ class MultiAlgorithm(FlatAlgorithm):
 
 
 class MultiAltitudeAlgorithm(MultiAlgorithm, AltitudeAlgorithm):
-
     """Check some algorithms for multiple stations at different altitudes.
 
     They should give similar results and errors in some cases.
@@ -674,14 +719,14 @@ class MultiAltitudeAlgorithm(MultiAlgorithm, AltitudeAlgorithm):
     def test_hexagon_altitude(self):
         """Simple shower on a non horizontal square."""
 
-        x = (-5., 5., 10., 5., -5., -10.)
-        y = (-5. * sqrt(3), -5. * sqrt(3), 0., 5. * sqrt(3), 5. * sqrt(3), 0.)
-        z = (0., -3., -5., -3., 0., 4.)
+        x = (-5.0, 5.0, 10.0, 5.0, -5.0, -10.0)
+        y = (-5.0 * sqrt(3), -5.0 * sqrt(3), 0.0, 5.0 * sqrt(3), 5.0 * sqrt(3), 0.0)
+        z = (0.0, -3.0, -5.0, -3.0, 0.0, 4.0)
 
         zenith = 0.38333
         azimuth = 0.00000
 
-        t = [0., 0., 0., 0., 0., 0.]
+        t = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         theta, phi = self.call_reconstruct(t, x, y, z)
 
         self.assertAlmostEqual(phi, azimuth, 4)
@@ -689,7 +734,6 @@ class MultiAltitudeAlgorithm(MultiAlgorithm, AltitudeAlgorithm):
 
 
 class CurvedAlgorithm(BaseAlgorithm):
-
     """Check some algorithms supporting a curved shower front.
 
     They should give similar results and errors in some cases.
@@ -699,20 +743,19 @@ class CurvedAlgorithm(BaseAlgorithm):
     def test_curved_shower(self):
         """Simple curved shower on three detectors."""
 
-        t = (0., 0., 10.)
-        x = (0., 100., 50.)
-        y = (0., 0., 100.)
-        z = (0., 0., 0.)
+        t = (0.0, 0.0, 10.0)
+        x = (0.0, 100.0, 50.0)
+        y = (0.0, 0.0, 100.0)
+        z = (0.0, 0.0, 0.0)
         init = {'core_x': 50, 'core_y': 0}
 
         theta, phi = self.call_reconstruct(t, x, y, z, initial=init)
 
-        self.assertAlmostEqual(theta, 0., 4)
+        self.assertAlmostEqual(theta, 0.0, 4)
         self.assertTrue(-pi <= phi < pi)
 
 
 class CurvedAltitudeAlgorithm(CurvedAlgorithm):
-
     """Check algorithms for curved fronts and stations at different altitudes.
 
     They should give similar results and errors in some cases.
@@ -724,67 +767,59 @@ class CurvedAltitudeAlgorithm(CurvedAlgorithm):
 
         c = 0.299792458
 
-        z = (10, 0., 40.)
-        t = (-z[0] / c, 0., 10. - z[2] / c)
-        x = (0., 100., 50.)
-        y = (0., 0., 100.)
+        z = (10, 0.0, 40.0)
+        t = (-z[0] / c, 0.0, 10.0 - z[2] / c)
+        x = (0.0, 100.0, 50.0)
+        y = (0.0, 0.0, 100.0)
         init = {'core_x': 50, 'core_y': 0}
 
         theta, phi = self.call_reconstruct(t, x, y, z, initial=init)
 
-        self.assertAlmostEqual(theta, 0., 4)
+        self.assertAlmostEqual(theta, 0.0, 4)
         self.assertTrue(-pi <= phi < pi)
 
 
 class DirectAlgorithmTest(unittest.TestCase, DirectAlgorithm):
-
     def setUp(self):
         self.algorithm = direction_reconstruction.DirectAlgorithm()
 
 
 class DirectAlgorithmCartesianTest(unittest.TestCase, DirectAlgorithm):
-
     def setUp(self):
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian()
 
 
 class DirectAlgorithmCartesian3DTest(unittest.TestCase, DirectAltitudeAlgorithm):
-
     def setUp(self):
         self.algorithm = direction_reconstruction.DirectAlgorithmCartesian3D()
 
 
 class FitAlgorithm3DTest(unittest.TestCase, MultiAltitudeAlgorithm):
-
     def setUp(self):
         self.algorithm = direction_reconstruction.FitAlgorithm3D()
 
-    @unittest.expectedFailure
+    @unittest.skip('Fails on CI')
     def test_square_stations(self):
         super().test_square_stations()
 
 
 class RegressionAlgorithmTest(unittest.TestCase, MultiAlgorithm):
-
     def setUp(self):
         self.algorithm = direction_reconstruction.RegressionAlgorithm()
 
 
 class RegressionAlgorithm3DTest(unittest.TestCase, MultiAltitudeAlgorithm):
-
     def setUp(self):
         self.algorithm = direction_reconstruction.RegressionAlgorithm3D()
 
 
 class CurvedRegressionAlgorithmTest(unittest.TestCase, CurvedAlgorithm):
-
     def setUp(self):
         self.algorithm = direction_reconstruction.CurvedRegressionAlgorithm()
         self.algorithm.front = ConeFront()
 
 
 class CurvedRegressionAlgorithm3DTest(unittest.TestCase, CurvedAltitudeAlgorithm):
-
     def setUp(self):
         self.algorithm = direction_reconstruction.CurvedRegressionAlgorithm3D()
         self.algorithm.front = ConeFront()

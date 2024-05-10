@@ -54,20 +54,18 @@ class APITests(unittest.TestCase):
     def test__get_tsv(self, mock_urlopen):
         mock_urlopen.return_value.read.return_value = b'1297956608\t52.3414237\t4.8807081\t43.32'
         self.api.force_fresh = True
-        self.assertEqual(self.api._get_tsv('gps/2/').tolist(),
-                         [(1297956608, 52.3414237, 4.8807081, 43.32)])
+        self.assertEqual(self.api._get_tsv('gps/2/').tolist(), [(1297956608, 52.3414237, 4.8807081, 43.32)])
 
         mock_urlopen.return_value.read.side_effect = URLError('no interwebs!')
         self.assertRaises(Exception, self.api._get_tsv, 'gps/2/')
         self.api.force_fresh = False
         self.assertRaises(Exception, self.api._get_tsv, 'gps/0/')
         with warnings.catch_warnings(record=True) as warned:
-            self.assertEqual(self.api._get_tsv('gps/2/').tolist()[0],
-                             (1297953008, 52.3414237, 4.8807081, 43.32))
+            self.assertEqual(self.api._get_tsv('gps/2/').tolist()[0], (1297953008, 52.3414237, 4.8807081, 43.32))
         self.assertEqual(len(warned), 1)
 
 
-@unittest.skipUnless(api.API.check_connection(), "Internet connection required")
+@unittest.skipUnless(api.API.check_connection(), 'Internet connection required')
 class APITestsLive(unittest.TestCase):
     def setUp(self):
         self.api = api.API()
@@ -81,7 +79,7 @@ class APITestsLive(unittest.TestCase):
         self.assertIsInstance(json, dict)
 
 
-@unittest.skipUnless(api.API.check_connection(), "Internet connection required")
+@unittest.skipUnless(api.API.check_connection(), 'Internet connection required')
 class NetworkTests(unittest.TestCase):
     def setUp(self):
         self.network = api.Network(force_fresh=True, force_stale=False)
@@ -91,29 +89,34 @@ class NetworkTests(unittest.TestCase):
     @patch.object(api.Network, 'clusters')
     @patch.object(api.Network, 'subclusters')
     @patch.object(api.Network, 'stations')
-    def test_nested_network(self, mock_stations, mock_subcluster,
-                            mock_clusters, mock_countries):
-        mock_countries.return_value = [{'name': sentinel.country_name,
-                                        'number': sentinel.country_number}]
-        mock_clusters.return_value = [{'name': sentinel.cluster_name,
-                                       'number': sentinel.cluster_number}]
-        mock_subcluster.return_value = [{'name': sentinel.subcluster_name,
-                                         'number': sentinel.subcluster_number}]
-        mock_stations.return_value = [{'name': sentinel.station_name,
-                                       'number': sentinel.station_number}]
+    def test_nested_network(self, mock_stations, mock_subcluster, mock_clusters, mock_countries):
+        mock_countries.return_value = [{'name': sentinel.country_name, 'number': sentinel.country_number}]
+        mock_clusters.return_value = [{'name': sentinel.cluster_name, 'number': sentinel.cluster_number}]
+        mock_subcluster.return_value = [{'name': sentinel.subcluster_name, 'number': sentinel.subcluster_number}]
+        mock_stations.return_value = [{'name': sentinel.station_name, 'number': sentinel.station_number}]
         nested_network = self.network.nested_network()
-        self.assertEqual(nested_network,
-                         [{'clusters': [
-                           {'subclusters': [
-                            {'stations': [
-                             {'name': sentinel.station_name,
-                              'number': sentinel.station_number}],
-                             'name': sentinel.subcluster_name,
-                             'number': sentinel.subcluster_number}],
+        self.assertEqual(
+            nested_network,
+            [
+                {
+                    'clusters': [
+                        {
+                            'subclusters': [
+                                {
+                                    'stations': [{'name': sentinel.station_name, 'number': sentinel.station_number}],
+                                    'name': sentinel.subcluster_name,
+                                    'number': sentinel.subcluster_number,
+                                },
+                            ],
                             'name': sentinel.cluster_name,
-                            'number': sentinel.cluster_number}],
-                           'name': sentinel.country_name,
-                           'number': sentinel.country_number}])
+                            'number': sentinel.cluster_number,
+                        },
+                    ],
+                    'name': sentinel.country_name,
+                    'number': sentinel.country_number,
+                },
+            ],
+        )
 
     def test_lazy_countries(self):
         self.laziness_of_method('countries')
@@ -152,43 +155,37 @@ class NetworkTests(unittest.TestCase):
         self.assertRaises(Exception, self.network.subclusters, cluster=bad_number)
 
     def test_country_numbers(self):
-        self.network._all_countries = [{'number': sentinel.number1},
-                                       {'number': sentinel.number2}]
-        self.assertEqual(self.network.country_numbers(),
-                         [sentinel.number1, sentinel.number2])
+        self.network._all_countries = [{'number': sentinel.number1}, {'number': sentinel.number2}]
+        self.assertEqual(self.network.country_numbers(), [sentinel.number1, sentinel.number2])
 
     @patch.object(api.Network, 'clusters')
     @patch.object(api.Network, 'validate_numbers')
     def test_cluster_numbers(self, mock_validate, mock_clusters):
-        mock_clusters.return_value = [{'number': sentinel.number1},
-                                      {'number': sentinel.number2}]
-        self.assertEqual(self.network.cluster_numbers(sentinel.country),
-                         [sentinel.number1, sentinel.number2])
+        mock_clusters.return_value = [{'number': sentinel.number1}, {'number': sentinel.number2}]
+        self.assertEqual(self.network.cluster_numbers(sentinel.country), [sentinel.number1, sentinel.number2])
         mock_clusters.assert_called_once_with(country=sentinel.country)
 
     @patch.object(api.Network, 'subclusters')
     @patch.object(api.Network, 'validate_numbers')
     def test_subcluster_numbers(self, mock_validate, mock_subclusters):
-        mock_subclusters.return_value = [{'number': sentinel.number1},
-                                         {'number': sentinel.number2}]
-        self.assertEqual(self.network.subcluster_numbers(sentinel.country,
-                                                         sentinel.cluster),
-                         [sentinel.number1, sentinel.number2])
-        mock_subclusters.assert_called_once_with(country=sentinel.country,
-                                                 cluster=sentinel.cluster)
+        mock_subclusters.return_value = [{'number': sentinel.number1}, {'number': sentinel.number2}]
+        self.assertEqual(
+            self.network.subcluster_numbers(sentinel.country, sentinel.cluster),
+            [sentinel.number1, sentinel.number2],
+        )
+        mock_subclusters.assert_called_once_with(country=sentinel.country, cluster=sentinel.cluster)
 
     @patch.object(api.Network, 'stations')
     @patch.object(api.Network, 'validate_numbers')
     def test_station_numbers(self, mock_validate, mock_stations):
-        mock_stations.return_value = [{'number': sentinel.number1},
-                                      {'number': sentinel.number2}]
-        station_numbers = self.network.station_numbers(sentinel.country,
-                                                       sentinel.cluster,
-                                                       sentinel.subcluster)
+        mock_stations.return_value = [{'number': sentinel.number1}, {'number': sentinel.number2}]
+        station_numbers = self.network.station_numbers(sentinel.country, sentinel.cluster, sentinel.subcluster)
         self.assertEqual(station_numbers, [sentinel.number1, sentinel.number2])
-        mock_stations.assert_called_once_with(country=sentinel.country,
-                                              cluster=sentinel.cluster,
-                                              subcluster=sentinel.subcluster)
+        mock_stations.assert_called_once_with(
+            country=sentinel.country,
+            cluster=sentinel.cluster,
+            subcluster=sentinel.subcluster,
+        )
 
     @patch.object(api.Network, '_retrieve_url')
     def test_station_numbers_disconnected(self, mock_retrieve_url):
@@ -259,36 +256,26 @@ class NetworkTests(unittest.TestCase):
     def test_uptime(self, mock_urlopen):
         # datetime(2014,1,1) 2 days on, 2 days off, 1 day on
         sn = b'[{"name": "foo", "number": 501}, {"name": "bar", "number": 502}]'
-        event_time_1 = str.encode('1388534400\t2000.\n'
-                                  '1388538000\t2000.\n'
-                                  '1388541600\t12.\n'
-                                  '1388545200\t125.\n'
-                                  '1388548800\t3000.\n')
+        event_time_1 = str.encode(
+            '1388534400\t2000.\n1388538000\t2000.\n1388541600\t12.\n1388545200\t125.\n1388548800\t3000.\n',
+        )
         # datetime(2014,1,1) 2 days off, 3 days on
-        event_time_2 = str.encode('1388534400\t50.\n'
-                                  '1388538000\t20.\n'
-                                  '1388541600\t2000.\n'
-                                  '1388545200\t2000.\n'
-                                  '1388548800\t3000.\n')
+        event_time_2 = str.encode(
+            '1388534400\t50.\n1388538000\t20.\n1388541600\t2000.\n1388545200\t2000.\n1388548800\t3000.\n',
+        )
         # station 1
         mock_urlopen.return_value.read.side_effect = [sn, event_time_1] * 4
         self.assertEqual(self.network.uptime([501]), 3)
-        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
-                         end=datetime(2014, 1, 1, 2)), 2)
-        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
-                         end=datetime(2014, 1, 2)), 3)
-        self.assertEqual(self.network.uptime([501], start=datetime(2013, 1, 1),
-                         end=datetime(2013, 1, 2)), 0)
+        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1), end=datetime(2014, 1, 1, 2)), 2)
+        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1), end=datetime(2014, 1, 2)), 3)
+        self.assertEqual(self.network.uptime([501], start=datetime(2013, 1, 1), end=datetime(2013, 1, 2)), 0)
         # station 2
         mock_urlopen.return_value.read.side_effect = [sn, event_time_2] * 3
         self.assertEqual(self.network.uptime([501]), 3)
-        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
-                         end=datetime(2014, 1, 1, 2)), 0)
-        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1),
-                         end=datetime(2014, 1, 2)), 3)
+        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1), end=datetime(2014, 1, 1, 2)), 0)
+        self.assertEqual(self.network.uptime([501], start=datetime(2014, 1, 1), end=datetime(2014, 1, 2)), 3)
         # two stations together
-        mock_urlopen.return_value.read.side_effect = [sn, event_time_1,
-                                                      sn, event_time_2]
+        mock_urlopen.return_value.read.side_effect = [sn, event_time_1, sn, event_time_2]
         self.assertEqual(self.network.uptime([501, 502]), 1)
 
     def laziness_of_method(self, method):
@@ -303,7 +290,6 @@ class NetworkTests(unittest.TestCase):
 
 
 class StaleNetworkTests(NetworkTests):
-
     """Tests using local data
 
     Overwrite tests using data not available locally.
@@ -331,16 +317,19 @@ class StaleNetworkTests(NetworkTests):
     def test_coincidence_number(self):
         self.assertRaises(Exception, self.network.coincidence_number, 2013, 1, 1)
 
-    @unittest.skipIf(has_extended_local_data('eventtime/%d/' % STATION),
-                     "Local data is extended")
+    @unittest.skipIf(has_extended_local_data('eventtime/%d/' % STATION), 'Local data is extended')
     def test_uptime(self):
         self.assertRaises(Exception, self.network.uptime, [501])
-        self.assertRaises(Exception, self.network.uptime, [501],
-                          start=datetime(2014, 1, 1),
-                          end=datetime(2014, 1, 1, 2))
+        self.assertRaises(
+            Exception,
+            self.network.uptime,
+            [501],
+            start=datetime(2014, 1, 1),
+            end=datetime(2014, 1, 1, 2),
+        )
 
 
-@unittest.skipUnless(api.API.check_connection(), "Internet connection required")
+@unittest.skipUnless(api.API.check_connection(), 'Internet connection required')
 class StationTests(unittest.TestCase):
     def setUp(self):
         self.station = api.Station(STATION, force_fresh=True, force_stale=False)
@@ -355,7 +344,7 @@ class StationTests(unittest.TestCase):
     def test_bad_station_number(self, mock_station_numbers):
         mock_station_numbers.return_value = [501, 502, 503]
         with warnings.catch_warnings(record=True) as warned:
-            warnings.simplefilter("always")
+            warnings.simplefilter('always')
             api.Station(1)
         self.assertEqual(len(warned), 1)
 
@@ -370,8 +359,7 @@ class StationTests(unittest.TestCase):
 
     def test_config(self):
         self.assertEqual(self.station.config()['detnum'], 501)
-        self.assertAlmostEqual(self.station.config(
-            date(2011, 1, 1))['mas_ch1_current'], 7.54901960784279)
+        self.assertAlmostEqual(self.station.config(date(2011, 1, 1))['mas_ch1_current'], 7.54901960784279)
 
     def test_num_events(self):
         self.assertIsInstance(self.station.n_events(2004), int)
@@ -421,10 +409,11 @@ class StationTests(unittest.TestCase):
     @patch.object(api, 'urlopen')
     def test_event_trace(self, mock_urlopen):
         def make_trace(start, end):
-            """ return a trace (type bytes) to mock urlopen """
+            """return a trace (type bytes) to mock urlopen"""
             trace = '[%s]' % ', '.join(str(v) for v in range(start, end))
             return_value = '[%s]' % ', '.join(4 * [trace])
             return return_value.encode()
+
         mock_urlopen.return_value.read.return_value = make_trace(0, 11)
         self.assertEqual(self.station.event_trace(1378771205, 571920029)[3][9], 9)
         mock_urlopen.return_value.read.return_value = make_trace(200, 211)
@@ -472,14 +461,12 @@ class StationTests(unittest.TestCase):
 
         data2 = self.station.voltages[0]
         data = self.station.voltage(0)  # 1970-1-1
-        self.assertEqual(data, [data2['voltage1'], data2['voltage2'],
-                                data2['voltage3'], data2['voltage4']])
+        self.assertEqual(data, [data2['voltage1'], data2['voltage2'], data2['voltage3'], data2['voltage4']])
 
         data2 = self.station.voltages[-1]
         data1 = self.station.voltage(FUTURE)
         data = self.station.voltage()
-        self.assertEqual(data1, [data2['voltage1'], data2['voltage2'],
-                                 data2['voltage3'], data2['voltage4']])
+        self.assertEqual(data1, [data2['voltage1'], data2['voltage2'], data2['voltage3'], data2['voltage4']])
         self.assertEqual(data, data1)
 
     def test_laziness_currents(self):
@@ -518,8 +505,21 @@ class StationTests(unittest.TestCase):
         self.laziness_of_attribute('station_layouts')
 
     def test_triggers(self):
-        names = ('timestamp', 'low1', 'low2', 'low3', 'low4', 'high1', 'high2',
-                 'high3', 'high4', 'n_low', 'n_high', 'and_or', 'external')
+        names = (
+            'timestamp',
+            'low1',
+            'low2',
+            'low3',
+            'low4',
+            'high1',
+            'high2',
+            'high3',
+            'high4',
+            'n_low',
+            'n_high',
+            'and_or',
+            'external',
+        )
         data = self.station.triggers
         self.assertEqual(data.dtype.names, names)
 
@@ -535,11 +535,25 @@ class StationTests(unittest.TestCase):
         self.laziness_of_attribute('triggers')
 
     def test_station_layouts(self):
-        names = ('timestamp',
-                 'radius1', 'alpha1', 'height1', 'beta1',
-                 'radius2', 'alpha2', 'height2', 'beta2',
-                 'radius3', 'alpha3', 'height3', 'beta3',
-                 'radius4', 'alpha4', 'height4', 'beta4')
+        names = (
+            'timestamp',
+            'radius1',
+            'alpha1',
+            'height1',
+            'beta1',
+            'radius2',
+            'alpha2',
+            'height2',
+            'beta2',
+            'radius3',
+            'alpha3',
+            'height3',
+            'beta3',
+            'radius4',
+            'alpha4',
+            'height4',
+            'beta4',
+        )
         data = self.station.station_layouts
         self.assertEqual(data.dtype.names, names)
 
@@ -602,7 +616,7 @@ class StationTests(unittest.TestCase):
 
         # Zero offset to self
         data = self.station.station_timing_offset(STATION)
-        self.assertEqual(data, (0., 0.))
+        self.assertEqual(data, (0.0, 0.0))
 
     def laziness_of_attribute(self, attribute):
         with patch.object(api.API, '_get_tsv') as mock_get_tsv:
@@ -626,7 +640,6 @@ class StationTests(unittest.TestCase):
 
 
 class StaleStationTests(StationTests):
-
     """Tests using local data
 
     Overwrite tests using data not available locally.
@@ -658,7 +671,7 @@ class StaleStationTests(StationTests):
 
     @patch.object(api, 'urlopen')
     def test_event_trace(self, mock_urlopen):
-        trace = '[%s]' % ', '.join(str(v) for v in range(0, 11))
+        trace = '[%s]' % ', '.join(str(v) for v in range(11))
         mock_urlopen.return_value.read.return_value = '[%s]' % ', '.join(4 * [trace])
         self.assertRaises(Exception, self.station.event_trace, 1378771205, 571920029)
         self.assertRaises(Exception, self.station.event_trace, 1378771205, 571920029, raw=True)

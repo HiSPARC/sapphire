@@ -7,15 +7,16 @@ from sapphire.transformations import angles
 
 
 class DegreeRadianHourTests(unittest.TestCase):
-
     def setUp(self):
         x = random.random()
         # (degrees, radians, hours)
-        self.combinations = ((0., 0., 0.),
-                             (15., pi / 12., 1.),
-                             (90., pi / 2., 6.),
-                             (180., pi, 12.),
-                             (360. * x, 2 * pi * x, 24. * x))
+        self.combinations = (
+            (0.0, 0.0, 0.0),
+            (15.0, pi / 12.0, 1.0),
+            (90.0, pi / 2.0, 6.0),
+            (180.0, pi, 12.0),
+            (360.0 * x, 2 * pi * x, 24.0 * x),
+        )
 
     def test_hours_to_degrees(self):
         for degree, _, hour in self.combinations:

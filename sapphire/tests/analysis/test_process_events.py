@@ -21,14 +21,12 @@ DATA_GROUP = '/s501'
 class ProcessEventsTests(unittest.TestCase):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessEvents(self.data, DATA_GROUP, progress=False)
-
-    def tearDown(self):
-        warnings.resetwarnings()
-        self.data.close()
-        os.remove(self.data_path)
 
     def test_get_traces_for_event(self):
         event = self.proc.source[0]
@@ -38,7 +36,7 @@ class ProcessEventsTests(unittest.TestCase):
         ext_timestamps = self.proc.source.col('ext_timestamp')
         enumerated_timestamps = list(enumerate(ext_timestamps))
         enumerated_timestamps.sort(key=operator.itemgetter(1))
-        ids_in = [id for id, _ in enumerated_timestamps]
+        ids_in = [row_id for row_id, _ in enumerated_timestamps]
         ids = self.proc._find_unique_row_ids(enumerated_timestamps)
         self.assertEqual(ids, ids_in)
 
@@ -74,12 +72,12 @@ class ProcessEventsTests(unittest.TestCase):
         self.assertEqual(self.proc.first_above_threshold(trace, 4), 2)
         self.assertEqual(self.proc.first_above_threshold(trace, 5), -999)
 
-#     @patch.object(process_events.FindMostProbableValueInSpectrum, 'find_mpv')
+    #     @patch.object(process_events.FindMostProbableValueInSpectrum, 'find_mpv')
     def test__process_pulseintegrals(self):
         self.proc.limit = 1
-#         mock_find_mpv.return_value = (-999, False)
+        #         mock_find_mpv.return_value = (-999, False)
         # Because of small data sample fit fails for detector 1
-        self.assertEqual(self.proc._process_pulseintegrals()[0][1], -999.)
+        self.assertEqual(self.proc._process_pulseintegrals()[0][1], -999.0)
         self.assertAlmostEqual(self.proc._process_pulseintegrals()[0][3], 3.98951741969)
         self.proc.limit = None
 
@@ -103,7 +101,9 @@ class ProcessIndexedEventsTests(ProcessEventsTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessIndexedEvents(self.data, DATA_GROUP, [0, 10], progress=False)
 
     def test_process_traces(self):
@@ -118,8 +118,11 @@ class ProcessIndexedEventsTests(ProcessEventsTests):
 class ProcessEventsWithLINTTests(ProcessEventsTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessEventsWithLINT(self.data, DATA_GROUP, progress=False)
 
     def test__reconstruct_time_from_traces(self):
@@ -139,8 +142,11 @@ class ProcessEventsWithLINTTests(ProcessEventsTests):
 class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.proc = process_events.ProcessEventsWithTriggerOffset(self.data, DATA_GROUP, progress=False)
 
     def test__reconstruct_time_from_traces(self):
@@ -162,13 +168,28 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
         # 2 detectors
         self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400], 900), [2, 2, -999])
         self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 400]), [300, 400], 400), [2, 2, -999])
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400], 550), [1, 2, -999])
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400], 550),
+            [1, 2, -999],
+        )
         # 4 detectors
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400, 500], 900), [2, 2, 2])
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 200, 400]), [300, 400, 500], 400), [2, 2, -999])
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400, 500], 550), [1, 2, 3])
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 200, 900]), [300, 400, 500], 900),
+            [2, 2, 2],
+        )
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 200, 400]), [300, 400, 500], 400),
+            [2, 2, -999],
+        )
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 350, 450, 550]), [300, 400, 500], 550),
+            [1, 2, 3],
+        )
         # No signal
-        self.assertEqual(self.proc._first_above_thresholds((x for x in [200, 250, 200, 2000]), [300, 400, 500], 250), [-999, -999, -999])
+        self.assertEqual(
+            self.proc._first_above_thresholds((x for x in [200, 250, 200, 2000]), [300, 400, 500], 250),
+            [-999, -999, -999],
+        )
 
     def test__first_value_above_threshold(self):
         trace = [200, 200, 300, 200]
@@ -247,53 +268,70 @@ class ProcessEventsWithTriggerOffsetTests(ProcessEventsTests):
 class ProcessEventsFromSourceTests(ProcessEventsTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.source_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.source_path)
         self.source_data = tables.open_file(self.source_path, 'r')
+        self.addCleanup(self.source_data.close)
         self.dest_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.dest_path)
         self.dest_data = tables.open_file(self.dest_path, 'a')
-        self.proc = process_events.ProcessEventsFromSource(
-            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
-
-    def tearDown(self):
-        warnings.resetwarnings()
-        self.source_data.close()
-        os.remove(self.source_path)
-        self.dest_data.close()
-        os.remove(self.dest_path)
+        self.addCleanup(self.dest_data.close)
+        self.proc = process_events.ProcessEventsFromSource(self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
 
     def test_process_and_store_results(self):
         self.proc.process_and_store_results()
 
 
-class ProcessEventsFromSourceWithTriggerOffsetTests(ProcessEventsFromSourceTests,
-                                                    ProcessEventsWithTriggerOffsetTests):
+class ProcessEventsFromSourceWithTriggerOffsetTests(ProcessEventsFromSourceTests, ProcessEventsWithTriggerOffsetTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.source_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.source_path)
         self.source_data = tables.open_file(self.source_path, 'r')
+        self.addCleanup(self.source_data.close)
         self.dest_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.dest_path)
         self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.addCleanup(self.dest_data.close)
         self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
-            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP)
+            self.source_data,
+            self.dest_data,
+            DATA_GROUP,
+            DATA_GROUP,
+        )
 
 
-class ProcessEventsFromSourceWithTriggerOffsetStationTests(ProcessEventsFromSourceTests,
-                                                           ProcessEventsWithTriggerOffsetTests):
+class ProcessEventsFromSourceWithTriggerOffsetStationTests(
+    ProcessEventsFromSourceTests,
+    ProcessEventsWithTriggerOffsetTests,
+):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.source_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.source_path)
         self.source_data = tables.open_file(self.source_path, 'r')
+        self.addCleanup(self.source_data.close)
         self.dest_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.dest_path)
         self.dest_data = tables.open_file(self.dest_path, 'a')
+        self.addCleanup(self.dest_data.close)
         self.proc = process_events.ProcessEventsFromSourceWithTriggerOffset(
-            self.source_data, self.dest_data, DATA_GROUP, DATA_GROUP,
-            station=501)
+            self.source_data,
+            self.dest_data,
+            DATA_GROUP,
+            DATA_GROUP,
+            station=501,
+        )
 
     def test__reconstruct_time_from_traces_with_external(self):
         mock_trigger = Mock()
-        mock_trigger.return_value = ([(process_events.ADC_LOW_THRESHOLD,
-                                       process_events.ADC_HIGH_THRESHOLD)] * 4,
-                                     [0, 0, 0, 1])
+        mock_trigger.return_value = (
+            [(process_events.ADC_LOW_THRESHOLD, process_events.ADC_HIGH_THRESHOLD)] * 4,
+            [0, 0, 0, 1],
+        )
         self.proc.station.trigger = mock_trigger
 
         event = self.proc.source[10]
@@ -306,15 +344,12 @@ class ProcessEventsFromSourceWithTriggerOffsetStationTests(ProcessEventsFromSour
 class ProcessSinglesTests(unittest.TestCase):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
-        self.proc = process_events.ProcessSingles(self.data, DATA_GROUP,
-                                                  progress=False)
-
-    def tearDown(self):
-        warnings.resetwarnings()
-        self.data.close()
-        os.remove(self.data_path)
+        self.addCleanup(self.data.close)
+        self.proc = process_events.ProcessSingles(self.data, DATA_GROUP, progress=False)
 
     def test_process_and_store_results(self):
         self.proc.process_and_store_results()
@@ -343,19 +378,16 @@ class ProcessSinglesTests(unittest.TestCase):
 class ProcessSinglesFromSourceTests(ProcessSinglesTests):
     def setUp(self):
         warnings.filterwarnings('ignore')
+        self.addCleanup(warnings.resetwarnings)
         self.source_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.source_path)
         self.source_data = tables.open_file(self.source_path, 'r')
+        self.addCleanup(self.source_data.close)
         self.dest_path = self.create_tempfile_path()
+        self.addCleanup(os.remove, self.dest_path)
         self.dest_data = tables.open_file(self.dest_path, 'a')
-        self.proc = process_events.ProcessSinglesFromSource(
-            self.source_data, self.dest_data, DATA_GROUP, '/')
-
-    def tearDown(self):
-        warnings.resetwarnings()
-        self.source_data.close()
-        os.remove(self.source_path)
-        self.dest_data.close()
-        os.remove(self.dest_path)
+        self.addCleanup(self.dest_data.close)
+        self.proc = process_events.ProcessSinglesFromSource(self.source_data, self.dest_data, DATA_GROUP, '/')
 
     def test_process_and_store_results(self):
         self.proc.process_and_store_results()

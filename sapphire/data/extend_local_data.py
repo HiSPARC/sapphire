@@ -1,4 +1,4 @@
-""" Add more local JSON and TSV data
+"""Add more local JSON and TSV data
 
 Add additional local data, to be used by :mod:`~sapphire.api` if internet is
 unavailable. The use of local data can also be forced to skip calls to the
@@ -17,6 +17,7 @@ To make the script show information about what it will do add the help flag::
     $ extend_local_data --help
 
 """
+
 import argparse
 
 from ..api import Network

@@ -7,7 +7,6 @@ from sapphire.corsika import qsub_store_corsika_data
 
 
 class SeedsTest(unittest.TestCase):
-
     @patch.object(qsub_store_corsika_data.glob, 'glob')
     def test_all_seeds(self, mock_glob):
         mock_glob.return_value = ['/data/123_456', '/data/234_567']
@@ -31,7 +30,7 @@ class SeedsTest(unittest.TestCase):
 
         # Empty set if log not available
         with patch.object(builtins, 'open', mock_open()) as mock_file:
-            mock_file.side_effect = IOError('no log!')
+            mock_file.side_effect = OSError('no log!')
             seeds = qsub_store_corsika_data.seeds_in_queue()
         mock_file.assert_called_with(qsub_store_corsika_data.QUEUED_SEEDS)
         self.assertEqual(seeds, set())
@@ -67,9 +66,12 @@ class SeedsTest(unittest.TestCase):
         tmp = qsub_store_corsika_data.DATADIR
         qsub_store_corsika_data.DATADIR = '/data'
         command = qsub_store_corsika_data.store_command('123_456')
-        self.assertEqual(command, '/data/hisparc/env/miniconda/envs/corsika/bin/python '
-                                  '/data/hisparc/env/miniconda/envs/corsika/bin/store_corsika_data '
-                                  '/data/123_456/DAT000000 /data/123_456/corsika.h5')
+        self.assertEqual(
+            command,
+            '/data/hisparc/env/miniconda/envs/corsika/bin/python '
+            '/data/hisparc/env/miniconda/envs/corsika/bin/store_corsika_data '
+            '/data/123_456/DAT000000 /data/123_456/corsika.h5',
+        )
         qsub_store_corsika_data.DATADIR = tmp
 
     @patch.object(qsub_store_corsika_data.os.path, 'getsize')
@@ -80,8 +82,17 @@ class SeedsTest(unittest.TestCase):
     @patch.object(qsub_store_corsika_data.qsub, 'submit_job')
     @patch.object(qsub_store_corsika_data, 'append_queued_seeds')
     @patch.object(qsub_store_corsika_data, 'SCRIPT_TEMPLATE')
-    def test_run(self, mock_template, mock_append, mock_submit, mock_store,
-                 mock_check, mock_get_seeds, mock_umask, mock_size):
+    def test_run(
+        self,
+        mock_template,
+        mock_append,
+        mock_submit,
+        mock_store,
+        mock_check,
+        mock_get_seeds,
+        mock_umask,
+        mock_size,
+    ):
         seeds = {'123_456', '234_567'}
         mock_size.return_value = 12355
         mock_get_seeds.return_value = seeds.copy()
@@ -92,6 +103,5 @@ class SeedsTest(unittest.TestCase):
         for seed in seeds:
             mock_submit.assert_any_call(sentinel.script, seed, sentinel.queue, '')
             mock_append.assert_any_call([seed])
-        mock_template.format.assert_called_with(command=sentinel.command,
-                                                datadir=qsub_store_corsika_data.DATADIR)
+        mock_template.format.assert_called_with(command=sentinel.command, datadir=qsub_store_corsika_data.DATADIR)
         mock_umask.assert_called_once_with(0o02)

@@ -5,6 +5,7 @@
 This script tests the process of searching for coincidences.
 
 """
+
 import datetime
 
 import tables
@@ -28,6 +29,6 @@ if __name__ == '__main__':
     coincidences.search_and_store_coincidences()
 
     # This is the manual method
-    #coincidences.search_coincidences()
-    #coincidences.process_events(overwrite=True)
-    #coincidences.store_coincidences()
+    # coincidences.search_coincidences()
+    # coincidences.process_events(overwrite=True)
+    # coincidences.store_coincidences()

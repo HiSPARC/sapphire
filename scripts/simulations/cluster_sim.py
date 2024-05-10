@@ -1,11 +1,11 @@
-""" HiSPARC detector simulation
+"""HiSPARC detector simulation
 
-    This simulation takes an Extended Air Shower simulation ground
-    particles file and uses that to simulate numerous showers hitting a
-    HiSPARC detector station.  Only data of one shower is used, but by
-    randomly selecting points on the ground as the position of a station,
-    the effect of the same shower hitting various positions around the
-    station is simulated.
+This simulation takes an Extended Air Shower simulation ground
+particles file and uses that to simulate numerous showers hitting a
+HiSPARC detector station.  Only data of one shower is used, but by
+randomly selecting points on the ground as the position of a station,
+the effect of the same shower hitting various positions around the
+station is simulated.
 
 """
 
@@ -13,11 +13,10 @@ import os.path
 import sys
 import textwrap
 
+import clusters
 import tables
 
-import clusters
-
-from simulations import GroundParticlesSimulation, QSubSimulation
+from simulations import GroundParticlesSimulation
 
 DATAFILE = 'data.h5'
 
@@ -29,10 +28,14 @@ if __name__ == '__main__':
         data = tables.open_file(DATAFILE, 'a')
 
     if '/simulations' in data:
-        print
-        print textwrap.dedent("""\
+        print()
+        print(
+            textwrap.dedent(
+                """\
             WARNING: previous simulations exist and will be overwritten
-            Continue? (answer 'yes'; anything else will exit)""")
+            Continue? (answer 'yes'; anything else will exit)""",
+            ),
+        )
         try:
             inp = raw_input()
         except KeyboardInterrupt:
@@ -41,16 +44,18 @@ if __name__ == '__main__':
         if inp.lower() == 'yes':
             data.remove_node('/simulations', recursive=True)
         else:
-            print
-            print "Aborting!"
+            print()
+            print('Aborting!')
             sys.exit(1)
 
     sim = 'E_1PeV/zenith_0'
     cluster = clusters.SimpleCluster()
-    simulation = GroundParticlesSimulation(cluster, data,
-                                           os.path.join('/showers', sim,
-                                                        'leptons'),
-                                           os.path.join('/simulations',
-                                                        sim),
-                                           R=100, N=100)
+    simulation = GroundParticlesSimulation(
+        cluster,
+        data,
+        os.path.join('/showers', sim, 'leptons'),
+        os.path.join('/simulations', sim),
+        R=100,
+        N=100,
+    )
     simulation.run()

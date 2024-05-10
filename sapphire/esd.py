@@ -1,17 +1,18 @@
-""" Fetch events and other data from the event summary data (ESD).
+"""Fetch events and other data from the event summary data (ESD).
 
-    This module enables you to access the event summary data.
+This module enables you to access the event summary data.
 
-    If you are in a real hurry and know what you're doing (and took the
-    time to read this far), you can call the :func:`quick_download`
-    function like this::
+If you are in a real hurry and know what you're doing (and took the
+time to read this far), you can call the :func:`quick_download`
+function like this::
 
-        >>> from sapphire import quick_download
-        >>> data = quick_download(501)
+    >>> from sapphire import quick_download
+    >>> data = quick_download(501)
 
-    For regular use, look up :func:`download_data`.
+For regular use, look up :func:`download_data`.
 
 """
+
 import calendar
 import collections
 import csv
@@ -122,18 +123,18 @@ def load_data(file, group, tsv_file, type='events'):
     """
     if type == 'events':
         table = _get_or_create_events_table(file, group)
-        read_and_store_class = _read_line_and_store_event_class
+        read_and_store_class = ReadLineAndStoreEventClass
     elif type == 'weather':
         table = _get_or_create_weather_table(file, group)
-        read_and_store_class = _read_line_and_store_weather_class
+        read_and_store_class = ReadLineAndStoreWeatherClass
     elif type == 'singles':
         table = _get_or_create_singles_table(file, group)
-        read_and_store_class = _read_line_and_store_singles_class
+        read_and_store_class = ReadLineAndStoreSinglesClass
     elif type == 'lightning':
         table = _get_or_create_lightning_table(file, group)
-        read_and_store_class = _read_line_and_store_lightning_class
+        read_and_store_class = ReadLineAndStoreLightningClass
     else:
-        raise ValueError("Data type not recognized.")
+        raise ValueError('Data type not recognized.')
 
     with open(tsv_file, 'rb') as data:
         reader = csv.reader(iterdecode(data, 'utf-8'), delimiter='\t')
@@ -189,21 +190,21 @@ def download_data(file, group, station_number, start=None, end=None, type='event
     if type == 'events':
         url = get_events_url().format(station_number=station_number, query=query)
         table = _get_or_create_events_table(file, group)
-        read_and_store = _read_line_and_store_event_class
+        read_and_store = ReadLineAndStoreEventClass
     elif type == 'weather':
         url = get_weather_url().format(station_number=station_number, query=query)
         table = _get_or_create_weather_table(file, group)
-        read_and_store = _read_line_and_store_weather_class
+        read_and_store = ReadLineAndStoreWeatherClass
     elif type == 'singles':
         url = get_singles_url().format(station_number=station_number, query=query)
         table = _get_or_create_singles_table(file, group)
-        read_and_store = _read_line_and_store_singles_class
+        read_and_store = ReadLineAndStoreSinglesClass
     elif type == 'lightning':
         url = get_lightning_url().format(lightning_type=station_number, query=query)
         table = _get_or_create_lightning_table(file, group)
-        read_and_store = _read_line_and_store_lightning_class
+        read_and_store = ReadLineAndStoreLightningClass
     else:
-        raise ValueError("Data type not recognized.")
+        raise ValueError('Data type not recognized.')
 
     try:
         data = urlopen(url)
@@ -217,7 +218,7 @@ def download_data(file, group, station_number, start=None, end=None, type='event
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
     if progress:
-        pbar = ProgressBar(max_value=1., widgets=[Percentage(), Bar(), ETA()]).start()
+        pbar = ProgressBar(max_value=1.0, widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in tsv as they come streaming in
     prev_update = time.time()
@@ -226,8 +227,8 @@ def download_data(file, group, station_number, start=None, end=None, type='event
         for line in reader:
             timestamp = writer.store_line(line)
             # update progressbar every 0.5 seconds
-            if progress and time.time() - prev_update > 0.5 and not timestamp == 0.:
-                pbar.update((1. * timestamp - t_start) / t_delta)
+            if progress and time.time() - prev_update > 0.5 and timestamp != 0.0:
+                pbar.update((1.0 * timestamp - t_start) / t_delta)
                 prev_update = time.time()
     if progress:
         pbar.finish()
@@ -235,13 +236,13 @@ def download_data(file, group, station_number, start=None, end=None, type='event
     if line[0][0] == '#':
         if len(line[0]) == 1:
             # No events recieved, and no success line
-            raise Exception('Failed to download data, no data recieved.')
+            raise ValueError('Failed to download data, no data recieved.')
         else:
             # Successful download because last line is a non-empty comment
             return
     else:
         # Last line is data, report failed download and date/time of last line
-        raise Exception('Failed to complete download, last received data from: %s %s.' % tuple(line[:2]))
+        raise ValueError('Failed to complete download, last received data from: %s %s.' % tuple(line[:2]))
 
 
 def download_lightning(file, group, lightning_type=4, start=None, end=None, progress=True):
@@ -269,7 +270,7 @@ def download_lightning(file, group, lightning_type=4, start=None, end=None, prog
         group = '/l%d' % lightning_type
 
     if lightning_type not in range(6):
-        raise ValueError("Invalid lightning type.")
+        raise ValueError('Invalid lightning type.')
 
     download_data(file, group, lightning_type, start=start, end=end, type='lightning', progress=progress)
 
@@ -323,20 +324,18 @@ def load_coincidences(file, tsv_file, group=''):
         if line[0][0] == '#':
             if len(line[0]) == 1:
                 # No events to load, and no success line
-                raise Exception('No data to load, source contains no data.')
+                raise ValueError('No data to load, source contains no data.')
             else:
                 # Successful download because last line is a non-empty comment
                 pass
         else:
             # Last line is data, report possible fail and last date/time
-            raise Exception('Source file seems incomplete, last received data '
-                            'from: %s %s.' % tuple(line[2:4]))
+            raise ValueError('Source file seems incomplete, last received data from: %s %s.' % tuple(line[2:4]))
 
         file.flush()
 
 
-def download_coincidences(file, group='', cluster=None, stations=None,
-                          start=None, end=None, n=2, progress=True):
+def download_coincidences(file, group='', cluster=None, stations=None, start=None, end=None, n=2, progress=True):
     """Download event summary data coincidences
 
     :param file: PyTables datafile handler.
@@ -377,7 +376,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
         end = start + datetime.timedelta(days=1)
 
     if stations is not None and len(stations) < n:
-        raise Exception('To few stations in query, give at least n.')
+        raise ValueError('To few stations in query, give at least n.')
 
     # build and open url, create tables and set read function
     query = urlencode({'cluster': cluster, 'stations': stations, 'start': start, 'end': end, 'n': n})
@@ -397,7 +396,7 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     t_end = calendar.timegm(end.utctimetuple())
     t_delta = t_end - t_start
     if progress:
-        pbar = ProgressBar(max_value=1., widgets=[Percentage(), Bar(), ETA()]).start()
+        pbar = ProgressBar(max_value=1.0, widgets=[Percentage(), Bar(), ETA()]).start()
 
     # loop over lines in tsv as they come streaming in, keep temporary
     # lists until a full coincidence is in.
@@ -414,8 +413,8 @@ def download_coincidences(file, group='', cluster=None, stations=None,
             # Full coincidence has been received, store it.
             timestamp = _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups)
             # update progressbar every 0.5 seconds
-            if progress and time.time() - prev_update > 0.5 and not timestamp == 0.:
-                pbar.update((1. * timestamp - t_start) / t_delta)
+            if progress and time.time() - prev_update > 0.5 and timestamp != 0.0:
+                pbar.update((1.0 * timestamp - t_start) / t_delta)
                 prev_update = time.time()
             coincidence = [line]
             current_coincidence = int(line[0])
@@ -430,14 +429,13 @@ def download_coincidences(file, group='', cluster=None, stations=None,
     if line[0][0] == '#':
         if len(line[0]) == 1:
             # No events recieved, and no success line
-            raise Exception('Failed to download data, no data recieved.')
+            raise ValueError('Failed to download data, no data recieved.')
         else:
             # Successful download because last line is a non-empty comment
             pass
     else:
         # Last line is data, report failed download and date/time of last line
-        raise Exception('Failed to complete download, last received data '
-                        'from: %s %s.' % tuple(line[2:4]))
+        raise ValueError('Failed to complete download, last received data from: %s %s.' % tuple(line[2:4]))
 
     file.flush()
 
@@ -458,8 +456,8 @@ def _read_or_get_station_groups(file, group):
     else:
         re_number = re.compile('[0-9]+$')
         groups = collections.OrderedDict()
-        for sid, station_group in enumerate(s_index):
-            station_group = station_group.decode()
+        for sid, encoded_station_group in enumerate(s_index):
+            station_group = encoded_station_group.decode()
             station = int(re_number.search(station_group).group())
             groups[station] = {'group': station_group, 's_index': sid}
         return groups
@@ -481,9 +479,10 @@ def _get_station_groups(group):
     for cluster in clusters:
         stations = network.station_numbers(cluster=cluster['number'])
         for station in stations:
-            groups[station] = {'group': ('%s/hisparc/cluster_%s/station_%d' %
-                                         (group, cluster['name'].lower(), station)),
-                               's_index': s_index}
+            groups[station] = {
+                'group': ('%s/hisparc/cluster_%s/station_%d' % (group, cluster['name'].lower(), station)),
+                's_index': s_index,
+            }
             s_index += 1
     return groups
 
@@ -510,8 +509,10 @@ def _create_coincidences_tables(file, group, station_groups):
 
     # Create coincidences table
     description = storage.Coincidence
-    s_columns = {'s%d' % station: tables.BoolCol(pos=p)
-                 for p, station in enumerate(station_groups, 12)}
+    start_position = len(storage.Coincidence.columns) + 1
+    s_columns = {
+        f's{station}': tables.BoolCol(pos=position) for position, station in enumerate(station_groups, start_position)
+    }
     description.columns.update(s_columns)
     coincidences = file.create_table(coin_group, 'coincidences', description, createparents=True)
 
@@ -546,21 +547,23 @@ def _create_events_table(file, group):
                   exist.
 
     """
-    description = {'event_id': tables.UInt32Col(pos=0),
-                   'timestamp': tables.Time32Col(pos=1),
-                   'nanoseconds': tables.UInt32Col(pos=2),
-                   'ext_timestamp': tables.UInt64Col(pos=3),
-                   'pulseheights': tables.Int16Col(pos=4, shape=4),
-                   'integrals': tables.Int32Col(pos=5, shape=4),
-                   'n1': tables.Float32Col(pos=6),
-                   'n2': tables.Float32Col(pos=7),
-                   'n3': tables.Float32Col(pos=8),
-                   'n4': tables.Float32Col(pos=9),
-                   't1': tables.Float32Col(pos=10),
-                   't2': tables.Float32Col(pos=11),
-                   't3': tables.Float32Col(pos=12),
-                   't4': tables.Float32Col(pos=13),
-                   't_trigger': tables.Float32Col(pos=14)}
+    description = {
+        'event_id': tables.UInt32Col(pos=0),
+        'timestamp': tables.Time32Col(pos=1),
+        'nanoseconds': tables.UInt32Col(pos=2),
+        'ext_timestamp': tables.UInt64Col(pos=3),
+        'pulseheights': tables.Int16Col(pos=4, shape=4),
+        'integrals': tables.Int32Col(pos=5, shape=4),
+        'n1': tables.Float32Col(pos=6),
+        'n2': tables.Float32Col(pos=7),
+        'n3': tables.Float32Col(pos=8),
+        'n4': tables.Float32Col(pos=9),
+        't1': tables.Float32Col(pos=10),
+        't2': tables.Float32Col(pos=11),
+        't3': tables.Float32Col(pos=12),
+        't4': tables.Float32Col(pos=13),
+        't_trigger': tables.Float32Col(pos=14),
+    }
 
     return file.create_table(group, 'events', description, createparents=True)
 
@@ -585,22 +588,24 @@ def _create_weather_table(file, group):
                   exist.
 
     """
-    description = {'event_id': tables.UInt32Col(pos=0),
-                   'timestamp': tables.Time32Col(pos=1),
-                   'temp_inside': tables.Float32Col(pos=2),
-                   'temp_outside': tables.Float32Col(pos=3),
-                   'humidity_inside': tables.Int16Col(pos=4),
-                   'humidity_outside': tables.Int16Col(pos=5),
-                   'barometer': tables.Float32Col(pos=6),
-                   'wind_dir': tables.Int16Col(pos=7),
-                   'wind_speed': tables.Int16Col(pos=8),
-                   'solar_rad': tables.Int16Col(pos=9),
-                   'uv': tables.Int16Col(pos=10),
-                   'evapotranspiration': tables.Float32Col(pos=11),
-                   'rain_rate': tables.Float32Col(pos=12),
-                   'heat_index': tables.Int16Col(pos=13),
-                   'dew_point': tables.Float32Col(pos=14),
-                   'wind_chill': tables.Float32Col(pos=15)}
+    description = {
+        'event_id': tables.UInt32Col(pos=0),
+        'timestamp': tables.Time32Col(pos=1),
+        'temp_inside': tables.Float32Col(pos=2),
+        'temp_outside': tables.Float32Col(pos=3),
+        'humidity_inside': tables.Int16Col(pos=4),
+        'humidity_outside': tables.Int16Col(pos=5),
+        'barometer': tables.Float32Col(pos=6),
+        'wind_dir': tables.Int16Col(pos=7),
+        'wind_speed': tables.Int16Col(pos=8),
+        'solar_rad': tables.Int16Col(pos=9),
+        'uv': tables.Int16Col(pos=10),
+        'evapotranspiration': tables.Float32Col(pos=11),
+        'rain_rate': tables.Float32Col(pos=12),
+        'heat_index': tables.Int16Col(pos=13),
+        'dew_point': tables.Float32Col(pos=14),
+        'wind_chill': tables.Float32Col(pos=15),
+    }
 
     return file.create_table(group, 'weather', description, createparents=True)
 
@@ -625,16 +630,18 @@ def _create_singles_table(file, group):
                   exist.
 
     """
-    description = {'event_id': tables.UInt32Col(pos=0),
-                   'timestamp': tables.Time32Col(pos=1),
-                   'mas_ch1_low': tables.Int32Col(pos=2),
-                   'mas_ch1_high': tables.Int32Col(pos=3),
-                   'mas_ch2_low': tables.Int32Col(pos=4),
-                   'mas_ch2_high': tables.Int32Col(pos=5),
-                   'slv_ch1_low': tables.Int32Col(pos=6),
-                   'slv_ch1_high': tables.Int32Col(pos=7),
-                   'slv_ch2_low': tables.Int32Col(pos=8),
-                   'slv_ch2_high': tables.Int32Col(pos=9)}
+    description = {
+        'event_id': tables.UInt32Col(pos=0),
+        'timestamp': tables.Time32Col(pos=1),
+        'mas_ch1_low': tables.Int32Col(pos=2),
+        'mas_ch1_high': tables.Int32Col(pos=3),
+        'mas_ch2_low': tables.Int32Col(pos=4),
+        'mas_ch2_high': tables.Int32Col(pos=5),
+        'slv_ch1_low': tables.Int32Col(pos=6),
+        'slv_ch1_high': tables.Int32Col(pos=7),
+        'slv_ch2_low': tables.Int32Col(pos=8),
+        'slv_ch2_high': tables.Int32Col(pos=9),
+    }
 
     return file.create_table(group, 'singles', description, createparents=True)
 
@@ -659,13 +666,15 @@ def _create_lightning_table(file, group):
                   exist.
 
     """
-    description = {'event_id': tables.UInt32Col(pos=0),
-                   'timestamp': tables.Time32Col(pos=1),
-                   'nanoseconds': tables.UInt32Col(pos=2),
-                   'ext_timestamp': tables.UInt64Col(pos=3),
-                   'latitude': tables.Float32Col(pos=4),
-                   'longitude': tables.Float32Col(pos=5),
-                   'current': tables.Float32Col(pos=6)}
+    description = {
+        'event_id': tables.UInt32Col(pos=0),
+        'timestamp': tables.Time32Col(pos=1),
+        'nanoseconds': tables.UInt32Col(pos=2),
+        'ext_timestamp': tables.UInt64Col(pos=3),
+        'latitude': tables.Float32Col(pos=4),
+        'longitude': tables.Float32Col(pos=5),
+        'current': tables.Float32Col(pos=6),
+    }
 
     return file.create_table(group, 'lightning', description, createparents=True)
 
@@ -695,14 +704,15 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups
     for event in coincidence:
         station_number = int(event[1])
         try:
-            row['s%d' % station_number] = True
+            row[f's{station_number}'] = True
             group_path = station_groups[station_number]['group']
         except KeyError:
             # Can not add new column, so user should make a new data file.
-            raise Exception('Unexpected station number: %d, no column and/or '
-                            'station group path available.' % station_number)
+            raise KeyError(
+                f'Unexpected station number: {station_number}, no column and/or station group path available.',
+            )
         event_group = _get_or_create_events_table(file, group_path)
-        with _read_line_and_store_event_class(event_group) as writer:
+        with ReadLineAndStoreEventClass(event_group) as writer:
             s_idx = station_groups[station_number]['s_index']
             e_idx = len(event_group)
             c_idx.append((s_idx, e_idx))
@@ -715,8 +725,7 @@ def _read_lines_and_store_coincidence(file, c_group, coincidence, station_groups
     return int(coincidence[0][4])
 
 
-class _read_line_and_store_event_class:
-
+class ReadLineAndStoreEventClass:
     """Store lines of event data from the ESD
 
     Use this contextmanager to store events from a TSV file into a PyTables
@@ -743,12 +752,34 @@ class _read_line_and_store_event_class:
         """
         # ignore comment lines
         if line[0][0] == '#':
-            return 0.
+            return 0.0
 
         # break up TSV line
-        (date, time_str, timestamp, nanoseconds, ph1, ph2, ph3, ph4, int1,
-         int2, int3, int4, n1, n2, n3, n4, t1, t2, t3, t4, t_trigger, zenith,
-         azimuth) = line[:23]
+        (
+            date,
+            time_str,
+            timestamp,
+            nanoseconds,
+            ph1,
+            ph2,
+            ph3,
+            ph4,
+            int1,
+            int2,
+            int3,
+            int4,
+            n1,
+            n2,
+            n3,
+            n4,
+            t1,
+            t2,
+            t3,
+            t4,
+            t_trigger,
+            zenith,
+            azimuth,
+        ) = line[:23]
 
         row = self.table.row
 
@@ -774,7 +805,7 @@ class _read_line_and_store_event_class:
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if not self.event_counter % 1000000:
+        if not self.event_counter % 1_000_000:
             self.table.flush()
 
         return int(timestamp)
@@ -783,21 +814,34 @@ class _read_line_and_store_event_class:
         self.table.flush()
 
 
-class _read_line_and_store_weather_class(_read_line_and_store_event_class):
-
+class ReadLineAndStoreWeatherClass(ReadLineAndStoreEventClass):
     """Store lines of weather data from the ESD"""
 
     def store_line(self, line):
         # ignore comment lines
         if line[0][0] == '#':
-            return 0.
+            return 0.0
 
         # break up TSV line
-        (date, time, timestamp, temperature_inside, temperature_outside,
-         humidity_inside, humidity_outside, atmospheric_pressure,
-         wind_direction, wind_speed, solar_radiation, uv_index,
-         evapotranspiration, rain_rate, heat_index, dew_point,
-         wind_chill) = line
+        (
+            date,
+            time,
+            timestamp,
+            temperature_inside,
+            temperature_outside,
+            humidity_inside,
+            humidity_outside,
+            atmospheric_pressure,
+            wind_direction,
+            wind_speed,
+            solar_radiation,
+            uv_index,
+            evapotranspiration,
+            rain_rate,
+            heat_index,
+            dew_point,
+            wind_chill,
+        ) = line
 
         row = self.table.row
 
@@ -824,25 +868,34 @@ class _read_line_and_store_weather_class(_read_line_and_store_event_class):
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if not self.event_counter % 1000000:
+        if not self.event_counter % 1_000_000:
             self.table.flush()
 
         return int(timestamp)
 
 
-class _read_line_and_store_singles_class(_read_line_and_store_event_class):
-
+class ReadLineAndStoreSinglesClass(ReadLineAndStoreEventClass):
     """Store lines of singles data from the ESD"""
 
     def store_line(self, line):
         # ignore comment lines
         if line[0][0] == '#':
-            return 0.
+            return 0.0
 
         # break up TSV line
-        (date, time, timestamp,
-         mas_ch1_low, mas_ch1_high, mas_ch2_low, mas_ch2_high,
-         slv_ch1_low, slv_ch1_high, slv_ch2_low, slv_ch2_high) = line
+        (
+            date,
+            time,
+            timestamp,
+            mas_ch1_low,
+            mas_ch1_high,
+            mas_ch2_low,
+            mas_ch2_high,
+            slv_ch1_low,
+            slv_ch1_high,
+            slv_ch2_low,
+            slv_ch2_high,
+        ) = line
 
         row = self.table.row
 
@@ -863,20 +916,19 @@ class _read_line_and_store_singles_class(_read_line_and_store_event_class):
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if not self.event_counter % 1000000:
+        if not self.event_counter % 1_000_000:
             self.table.flush()
 
         return int(timestamp)
 
 
-class _read_line_and_store_lightning_class(_read_line_and_store_event_class):
-
+class ReadLineAndStoreLightningClass(ReadLineAndStoreEventClass):
     """Store lines of lightning data from the ESD"""
 
     def store_line(self, line):
         # ignore comment lines
         if line[0][0] == '#':
-            return 0.
+            return 0.0
 
         # break up TSV line
         (date, time_str, timestamp, nanoseconds, latitude, longitude, current) = line[:7]
@@ -897,7 +949,7 @@ class _read_line_and_store_lightning_class(_read_line_and_store_event_class):
 
         self.event_counter += 1
         # force flush every 1e6 rows to free buffers
-        if not self.event_counter % 1000000:
+        if not self.event_counter % 1_000_000:
             self.table.flush()
 
         return int(timestamp)

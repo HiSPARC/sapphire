@@ -2,22 +2,23 @@ import datetime
 import os
 import tempfile
 
+from pathlib import Path
 from urllib.request import urlretrieve
 
 import tables
 
 from sapphire import esd
 
-self_path = os.path.dirname(__file__)
+self_path = Path(__file__).parent
 
-test_data_path = os.path.join(self_path, 'test_data/esd_load_data.h5')
-test_data_coincidences_path = os.path.join(self_path, 'test_data/esd_coincidence_data.h5')
+test_data_path = self_path / 'test_data/esd_load_data.h5'
+test_data_coincidences_path = self_path / 'test_data/esd_coincidence_data.h5'
 
-events_source = os.path.join(self_path, 'test_data/events-s501-20120101.tsv')
-weather_source = os.path.join(self_path, 'test_data/weather-s501-20120101.tsv')
-singles_source = os.path.join(self_path, 'test_data/singles-s501-20170101.tsv')
-lightning_source = os.path.join(self_path, 'test_data/lightning-knmi-20150717.tsv')
-coincidences_source = os.path.join(self_path, 'test_data/coincidences-20160310.tsv')
+events_source = self_path / 'test_data/events-s501-20120101.tsv'
+weather_source = self_path / 'test_data/weather-s501-20120101.tsv'
+singles_source = self_path / 'test_data/singles-s501-20170101.tsv'
+lightning_source = self_path / 'test_data/lightning-knmi-20150717.tsv'
+coincidences_source = self_path / 'test_data/coincidences-20160310.tsv'
 
 
 def create_tempfile_path():
@@ -81,16 +82,26 @@ def create_and_store_test_data():
 
     perform_esd_download_data(test_data_path)
     perform_download_coincidences(test_data_coincidences_path)
-    urlretrieve(esd.get_weather_url().format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
-                weather_source)
-    urlretrieve(esd.get_events_url().format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
-                events_source)
-    urlretrieve(esd.get_singles_url().format(station_number=501, query='start=2017-01-01&end=2017-01-01+00:10:00'),
-                singles_source)
-    urlretrieve(esd.get_lightning_url().format(lightning_type=4, query='start=2015-07-17&end=2015-07-17+00:10:00'),
-                lightning_source)
-    urlretrieve(esd.get_coincidences_url().format(query='start=2016-03-10&end=2016-03-10+00:01:00&stations=501,+510&n=2'),
-                coincidences_source)
+    urlretrieve(
+        esd.get_weather_url().format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
+        weather_source,
+    )
+    urlretrieve(
+        esd.get_events_url().format(station_number=501, query='start=2012-01-01&end=2012-01-01+00:01:00'),
+        events_source,
+    )
+    urlretrieve(
+        esd.get_singles_url().format(station_number=501, query='start=2017-01-01&end=2017-01-01+00:10:00'),
+        singles_source,
+    )
+    urlretrieve(
+        esd.get_lightning_url().format(lightning_type=4, query='start=2015-07-17&end=2015-07-17+00:10:00'),
+        lightning_source,
+    )
+    urlretrieve(
+        esd.get_coincidences_url().format(query='start=2016-03-10&end=2016-03-10+00:01:00&stations=501,+510&n=2'),
+        coincidences_source,
+    )
 
 
 if __name__ == '__main__':

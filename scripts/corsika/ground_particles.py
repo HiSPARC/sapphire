@@ -6,17 +6,16 @@ from sapphire import corsika
 
 
 def plot_ground(x, y, eventheader, title='Ground particles'):
-    size = 200.
+    size = 200.0
     plt.figure(figsize=(9, 9))
-    plt.scatter(x, y, c='r', s=2., edgecolors='none')
+    plt.scatter(x, y, c='r', s=2.0, edgecolors='none')
     plt.axis('equal')
     plt.axis([-size, size, -size, size])
     plt.xlabel('x [m]')
     plt.ylabel('y [m]')
     plt.title(title)
-#     plt.savefig('/Users/arne/Dropbox/hisparc/Plots/Corsika/scatter_em.pdf')
+    #     plt.savefig('/Users/arne/Dropbox/hisparc/Plots/Corsika/scatter_em.pdf')
     plt.show()
-    return
 
 
 def main():
@@ -31,8 +30,7 @@ def main():
                 x.append(particle.x)
                 y.append(particle.y)
         event_header = event.get_header()
-        title = ('Ground particles, Primary: %s, E = %1.0e eV' %
-                 (event_header.particle, event_header.energy))
+        title = 'Ground particles, Primary: %s, E = %1.0e eV' % (event_header.particle, event_header.energy)
         plot_ground(x, y, event_header, title=title)
 
 

@@ -12,9 +12,7 @@ DATA_FILE = os.path.join(data_file_dir, 'test_data/1_2/DAT000000')
 class CorsikaFileTests(unittest.TestCase):
     def setUp(self):
         self.file = corsika.reader.CorsikaFile(DATA_FILE)
-
-    def tearDown(self):
-        self.file.finish()
+        self.addCleanup(self.file.finish)
 
     def test_validate_file(self):
         """Verify that the data file is valid"""
@@ -28,7 +26,7 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertIsInstance(header, corsika.blocks.RunHeader)
         self.assertEqual(header.id, b'RUNH')
         self.assertAlmostEqual(header.version, 7.4, 4)
-        for h in [10., 5000., 30000., 50000., 110000.]:
+        for h in [10.0, 5000.0, 30000.0, 50000.0, 110000.0]:
             t = header.height_to_thickness(h)
             self.assertAlmostEqual(header.thickness_to_height(t), h, 8)
 
@@ -58,7 +56,7 @@ class CorsikaFileTests(unittest.TestCase):
         self.assertEqual(header.id, b'EVTH')
         self.assertEqual(corsika.particles.name(header.particle_id), 'proton')
         self.assertEqual(header.energy, 1e14)
-        self.assertEqual(header.azimuth, -pi / 2.)
+        self.assertEqual(header.azimuth, -pi / 2.0)
         self.assertEqual(header.zenith, 0.0)
         self.assertEqual(header.hadron_model_high, 'QGSJET')
 

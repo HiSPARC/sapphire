@@ -1,67 +1,67 @@
-""" Read CORSIKA data files.
+"""Read CORSIKA data files.
 
-    This provides functionality to read CORSIKA output
-    files with `Python <www.python.org>`_. It provides the following main
-    classes:
+This provides functionality to read CORSIKA output
+files with `Python <www.python.org>`_. It provides the following main
+classes:
 
-    * :class:`~sapphire.corsika.reader.CorsikaFile`: The file class provides a
-      generator over all events in the file.
-    * :class:`~sapphire.corsika.reader.CorsikaEvent`: The event class that
-      provides a generator over all particles at ground.
+* :class:`~sapphire.corsika.reader.CorsikaFile`: The file class provides a
+  generator over all events in the file.
+* :class:`~sapphire.corsika.reader.CorsikaEvent`: The event class that
+  provides a generator over all particles at ground.
 
-    and the following classes that correspond to the sub-blocks defined in
-    the CORSIKA manual:
+and the following classes that correspond to the sub-blocks defined in
+the CORSIKA manual:
 
-    * :class:`~sapphire.corsika.blocks.RunHeader`
-    * :class:`~sapphire.corsika.blocks.RunEnd`
-    * :class:`~sapphire.corsika.blocks.EventHeader`
-    * :class:`~sapphire.corsika.blocks.EventEnd`
-    * :class:`~sapphire.corsika.blocks.ParticleData`
-    * :class:`~sapphire.corsika.blocks.CherenkovData`
+* :class:`~sapphire.corsika.blocks.RunHeader`
+* :class:`~sapphire.corsika.blocks.RunEnd`
+* :class:`~sapphire.corsika.blocks.EventHeader`
+* :class:`~sapphire.corsika.blocks.EventEnd`
+* :class:`~sapphire.corsika.blocks.ParticleData`
+* :class:`~sapphire.corsika.blocks.CherenkovData`
 
-    Additionally version for thinned showers are available:
+Additionally version for thinned showers are available:
 
-    * :class:`CorsikaFileThin`
-    * :class:`~sapphire.corsika.blocks.ParticleDataThin`
-    * :class:`~sapphire.corsika.blocks.CherenkovDataThin`
-
-
-    Issues
-    ======
-
-    This module does not handle platform dependent issues such as byte
-    ordering (endianness) and field size. This was the result of an
-    afternoon hack and has only been tested with files generated using
-    32 bit CORSIKA files on a linux system compiled with gfortran.
-
-    * **Field Size**: According to the CORSIKA user manual section 10.2
-      all quantities are written as single precision real numbers
-      independently of 32-bit or 64-bit, so each field in the file
-      should be 4 bytes long.
-    * **Endianness**: There is no check for byte ordering. It can be added
-      using Python's `struct module
-      <http://docs.python.org/library/struct.html#struct-alignment>`_.
-    * **Special Particles**: This module currently ignores all special
-      (book-keeping) particles like for muon additional information and
-      history.
+* :class:`CorsikaFileThin`
+* :class:`~sapphire.corsika.blocks.ParticleDataThin`
+* :class:`~sapphire.corsika.blocks.CherenkovDataThin`
 
 
-    More Info
-    =========
+Issues
+======
 
-    For short information on fortran unformatted binary files, take a look
-    at http://paulbourke.net/dataformats/reading/
+This module does not handle platform dependent issues such as byte
+ordering (endianness) and field size. This was the result of an
+afternoon hack and has only been tested with files generated using
+32 bit CORSIKA files on a linux system compiled with gfortran.
 
-    For detailed information on the CORSIKA format, check the 'Outputs'
-    chapter in the CORSIKA user manual. In particular, check the 'Normal
-    Particle Output' section.
+* **Field Size**: According to the CORSIKA user manual section 10.2
+  all quantities are written as single precision real numbers
+  independently of 32-bit or 64-bit, so each field in the file
+  should be 4 bytes long.
+* **Endianness**: There is no check for byte ordering. It can be added
+  using Python's `struct module
+  <http://docs.python.org/library/struct.html#struct-alignment>`_.
+* **Special Particles**: This module currently ignores all special
+  (book-keeping) particles like for muon additional information and
+  history.
 
 
-    Authors
-    =======
+More Info
+=========
 
-    - Javier Gonzalez
-    - Arne de Laat <adelaat@nikhef.nl>
+For short information on fortran unformatted binary files, take a look
+at http://paulbourke.net/dataformats/reading/
+
+For detailed information on the CORSIKA format, check the 'Outputs'
+chapter in the CORSIKA user manual. In particular, check the 'Normal
+Particle Output' section.
+
+
+Authors
+=======
+
+- Javier Gonzalez
+- Arne de Laat <adelaat@nikhef.nl>
 
 """
 
@@ -139,8 +139,7 @@ class CorsikaEvent:
         :yield: each particle in the event
 
         """
-        for sub_block_index in self._raw_file._subblocks_indices(
-                self._header_index, self._end_index):
+        for sub_block_index in self._raw_file._subblocks_indices(self._header_index, self._end_index):
             for particle in self._raw_file._get_particles(sub_block_index):
                 particle_type = particle[6]
                 observation_level = particle[9]
@@ -160,16 +159,10 @@ class CorsikaEvent:
                 yield particle
 
     def __repr__(self):
-        return "{}({!r}, {!r}, {!r})".format(
-            self.__class__.__name__,
-            self._raw_file,
-            self._header_index,
-            self._end_index
-        )
+        return f'{self.__class__.__name__}({self._raw_file!r}, {self._header_index!r}, {self._end_index!r})'
 
 
 class CorsikaFile:
-
     """CORSIKA output file handler
 
     This class will probide an interface for CORSIKA output files.
@@ -201,7 +194,7 @@ class CorsikaFile:
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback):
         self.finish()
 
     def check(self):
@@ -221,8 +214,7 @@ class CorsikaFile:
 
         """
         if self._size % self.format.block_size != 0:
-            raise Exception('File "{name}" does not have an integer number '
-                            'of blocks!'.format(name=self._filename))
+            raise ValueError(f'File "{self._filename}" does not have an integer number of blocks!')
         block_size = self.format.block_size
         padding = self.format.block_padding_size
         n_blocks = self._size // block_size
@@ -232,8 +224,7 @@ class CorsikaFile:
             self._file.seek((block + 1) * block_size - padding)
             b = unpack('i', self._file.read(padding))[0]
             if a != b:
-                raise Exception('Block #{block} is not right: ({head}, {tail})'
-                                .format(block=block, head=a, tail=b))
+                raise ValueError(f'Block #{block} is not right: ({a}, {b})')
         return True
 
     def get_sub_blocks(self):
@@ -247,11 +238,10 @@ class CorsikaFile:
         subblock_size = self.format.subblock_size
         n_blocks = self._size / block_size
         for b in range(0, n_blocks * block_size, block_size):
-            for s in range(0, self.format.subblocks_per_block):
+            for s in range(self.format.subblocks_per_block):
                 pos = b + s * subblock_size + self.format.block_padding_size
                 self._file.seek(pos)
-                yield unpack(self.format.subblock_format,
-                             self._file.read(subblock_size))
+                yield unpack(self.format.subblock_format, self._file.read(subblock_size))
 
     def get_header(self):
         """Get the Run header
@@ -310,10 +300,11 @@ class CorsikaFile:
         subblock_size = self.format.subblock_size
         n_blocks = self._size // block_size
         for b in range(0, n_blocks * block_size, block_size):
-            for s in range(0, self.format.subblocks_per_block):
+            for s in range(self.format.subblocks_per_block):
                 pos = b + s * subblock_size + self.format.block_padding_size
-                if ((min_sub_block is not None and pos <= min_sub_block) or
-                        (max_sub_block is not None and pos >= max_sub_block)):
+                if (min_sub_block is not None and pos <= min_sub_block) or (
+                    max_sub_block is not None and pos >= max_sub_block
+                ):
                     continue
                 yield pos
 
@@ -376,8 +367,7 @@ class CorsikaFile:
         """Get subblock of particles from the contents as tuples"""
 
         unpacked_particles = self._unpack_particles(word)
-        particles = zip(*[iter(unpacked_particles)] *
-                        self.format.fields_per_particle)
+        particles = zip(*[iter(unpacked_particles)] * self.format.fields_per_particle)
         return (particle_data(particle) for particle in particles)
 
     def _unpack_subblock(self, word):
@@ -387,8 +377,7 @@ class CorsikaFile:
 
         """
         self._file.seek(word)
-        return unpack(self.format.subblock_format,
-                      self._file.read(self.format.subblock_size))
+        return unpack(self.format.subblock_format, self._file.read(self.format.subblock_size))
 
     def _unpack_particle(self, word):
         """Unpack a particle block
@@ -397,8 +386,7 @@ class CorsikaFile:
 
         """
         self._file.seek(word)
-        return unpack(self.format.particle_format,
-                      self._file.read(self.format.particle_size))
+        return unpack(self.format.particle_format, self._file.read(self.format.particle_size))
 
     def _unpack_particles(self, word):
         """Unpack a particles subblock
@@ -407,15 +395,13 @@ class CorsikaFile:
 
         """
         self._file.seek(word)
-        return unpack(self.format.particles_format,
-                      self._file.read(self.format.particles_size))
+        return unpack(self.format.particles_format, self._file.read(self.format.particles_size))
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self._filename!r})"
+        return f'{self.__class__.__name__}({self._filename!r})'
 
 
 class CorsikaFileThin(CorsikaFile):
-
     """CORSIKA thinned output file handler
 
     Same as the unthinned output handler, but with support for
@@ -447,6 +433,5 @@ class CorsikaFileThin(CorsikaFile):
         """Get subblock of thinned particles from the contents as tuples"""
 
         unpacked_particles = self._unpack_particles(word)
-        particles = zip(*[iter(unpacked_particles)] *
-                        self.format.fields_per_particle)
+        particles = zip(*[iter(unpacked_particles)] * self.format.fields_per_particle)
         return (particle_data_thin(particle) for particle in particles)

@@ -1,9 +1,10 @@
-""" Convert unsorted CORSIKA HDF5 to sorted HDF5 using Stoomboot"""
+"""Convert unsorted CORSIKA HDF5 to sorted HDF5 using Stoomboot"""
 
 import glob
 import logging
 import os
 import subprocess
+import tempfile
 import textwrap
 
 QUEUE = 'generic'
@@ -21,9 +22,13 @@ SCRIPT_TEMPLATE = textwrap.dedent("""\
     # To alleviate Stoomboot, make sure the job is not to short.
     sleep $[ ( $RANDOM % 60 ) + 60 ]""")
 
-logging.basicConfig(filename=LOGFILE, filemode='a',
-                    format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-                    datefmt='%y%m%d_%H%M%S', level=logging.INFO)
+logging.basicConfig(
+    filename=LOGFILE,
+    filemode='a',
+    format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+    datefmt='%y%m%d_%H%M%S',
+    level=logging.INFO,
+)
 logger = logging.getLogger('qsub_store_corsika_data')
 
 
@@ -85,12 +90,11 @@ def get_seeds_todo():
     return seeds.difference(processed).difference(queued)
 
 
-
 def get_script_path(seed):
     """Create path for script"""
 
     script_name = f'sort_{seed}.sh'
-    script_path = os.path.join('/tmp', script_name)
+    script_path = os.path.join(tempfile.gettempdir(), script_name)
     return script_path
 
 
@@ -98,10 +102,10 @@ def create_script(seed):
     """Create script as temp file to run on Stoomboot"""
 
     script_path = get_script_path(seed)
-    input = SCRIPT_TEMPLATE.format(seed=os.path.join(DATADIR, seed))
+    input_content = SCRIPT_TEMPLATE.format(seed=os.path.join(DATADIR, seed))
 
     with open(script_path, 'w') as script:
-        script.write(input)
+        script.write(input_content)
     os.chmod(script_path, 0o774)
 
     return script_path
@@ -119,13 +123,10 @@ def submit_job(seed):
 
     script_path = create_script(seed)
 
-    qsub = ('qsub -q {queue} -V -z -j oe -N {name} {script}'
-            .format(queue=QUEUE, name=os.path.basename(script_path),
-                    script=script_path))
+    qsub = f'qsub -q {QUEUE} -V -z -j oe -N {os.path.basename(script_path)} {script_path}'
 
-    result = subprocess.check_output(qsub, stderr=subprocess.STDOUT,
-                                     shell=True)
-    if not result == '':
+    result = subprocess.check_output(qsub, stderr=subprocess.STDOUT, shell=True)
+    if result != '':
         msg = f'{seed} - Error occured: {result}'
         logger.error(msg)
         raise Exception(msg)
@@ -142,16 +143,14 @@ def check_queue():
 
     """
     queued = f'qstat {QUEUE} | grep [RQ] | wc -l'
-    user_queued = ('qstat -u $USER {queue} | grep [RQ] | wc -l'
-                   .format(queue=QUEUE))
+    user_queued = f'qstat -u $USER {QUEUE} | grep [RQ] | wc -l'
     n_queued = int(subprocess.check_output(queued, shell=True))
     n_queued_user = int(subprocess.check_output(user_queued, shell=True))
     max_queue = 4000
     max_queue_user = 2000
     keep_free = 50
 
-    return min(max_queue - n_queued,
-               max_queue_user - n_queued_user) - keep_free
+    return min(max_queue - n_queued, max_queue_user - n_queued_user) - keep_free
 
 
 def run():

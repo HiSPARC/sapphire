@@ -6,20 +6,20 @@ transformations and the new ones against pyephem.
 
 transformspeeds tests the speed of the new transformations
 """
+
 import datetime
-import random as r
+import random
 import time
 
-import numpy as np
-
 import matplotlib.pyplot as plt
+import numpy as np
 
 from sapphire.transformations import celestial, clock
 from sapphire.utils import angle_between
 
 
 def transformspeeds():
-    print("Running speeds for 100.000 transformations of the astropy functions:")
+    print('Running speeds for 100.000 transformations of the astropy functions:')
     a = np.array([(0, 0)] * 100000)
 
     t0 = time.clock()
@@ -36,7 +36,7 @@ def transformspeeds():
     celestial.zenithazimuth_to_equatorial_astropy(0, 0, 1_000_000_000, a)
     t4 = time.clock() - t0
 
-    print("EQ->HO, EQ-> ZA, HO->EQ, ZA->EQ runtimes:")
+    print('EQ->HO, EQ-> ZA, HO->EQ, ZA->EQ runtimes:')
 
     print(t1, t2, t3, t4)
 
@@ -56,7 +56,7 @@ def angle_between_horizontal(azimuth1, altitude1, azimuth2, altitude2):
     zenith2, azimuth2 = celestial.horizontal_to_zenithazimuth(altitude2, azimuth2)
     dlat = zenith1 - zenith2
     dlon = azimuth2 - azimuth1
-    a = (np.sin(dlat / 2) ** 2 + np.sin(zenith1) * np.sin(zenith2) * np.sin(dlon / 2) ** 2)
+    a = np.sin(dlat / 2) ** 2 + np.sin(zenith1) * np.sin(zenith2) * np.sin(dlon / 2) ** 2
     angle = 2 * np.arcsin(np.sqrt(a))
 
     return angle
@@ -77,28 +77,37 @@ def oldvsnew_diagram():
     refer to him for when something is unclear
     """
     # make random frames, in correct angle range and from utc time 2000-2020
-    frames = []
     # boxes for the four different transformation results
     etoha = []
     etoh = []
     htoe = []
     htoea = []
-    straight = lambda x : x # straight trendline function
+    straight = lambda x: x  # straight trendline function
 
     # Create the data sets for eq to az
-    for i in range(100):
-        frames.append((r.uniform(-90, 90),
-                       r.uniform(-180,180),
-                       r.randint(946684800,1577836800),
-                       r.uniform(0, 2 * np.pi),
-                       r.uniform(-0.5 * np.pi, 0.5 * np.pi)))
+    frames = [
+        (
+            random.uniform(-90, 90),
+            random.uniform(-180, 180),
+            random.randint(946684800, 1577836800),
+            random.uniform(0, 2 * np.pi),
+            random.uniform(-0.5 * np.pi, 0.5 * np.pi),
+        )
+        for _ in range(100)
+    ]
     for i in frames:
         etoha.append(celestial.equatorial_to_zenithazimuth_astropy(i[0], i[1], i[2], [(i[3], i[4])])[0])
         etoh.append(celestial.equatorial_to_zenithazimuth(i[0], i[1], clock.utc_to_gps(i[2]), i[3], i[4]))
     # Data sets for hor to eq
     for i in frames:
-        htoe.append(celestial.horizontal_to_equatorial(i[0],
-        clock.utc_to_lst(datetime.datetime.utcfromtimestamp(i[2]), i[1]), i[4], i[3]))
+        htoe.append(
+            celestial.horizontal_to_equatorial(
+                i[0],
+                clock.utc_to_lst(datetime.datetime.utcfromtimestamp(i[2]), i[1]),
+                i[4],
+                i[3],
+            ),
+        )
         htoea.extend(celestial.horizontal_to_equatorial_astropy(i[0], i[1], i[2], [(i[3], i[4])]))
 
     # Make figs eq -> zenaz
@@ -108,7 +117,7 @@ def oldvsnew_diagram():
     zenrange = [0, np.pi]
     plt.subplot(211)
     plt.title('Zenith')
-    plt.axis(zenrange*2)
+    plt.axis(zenrange * 2)
     plt.xlabel('New (Astropy)')
     plt.ylabel('Old')
 
@@ -119,18 +128,18 @@ def oldvsnew_diagram():
     plt.subplot(212)
     plt.title('Azimuth')
     azrange = [-np.pi, np.pi]
-    plt.axis(azrange*2)
+    plt.axis(azrange * 2)
     plt.xlabel('New (Astropy)')
     plt.ylabel('Old')
     # Make figure and add 1:1 trendline
     plt.plot([co[1] for co in etoha], [co[1] for co in etoh], 'b.', azrange, straight(azrange), '-')
-    plt.tight_layout() # Prevent titles merging
+    plt.tight_layout()  # Prevent titles merging
     plt.subplots_adjust(top=0.85)
 
     # Make histogram of differences
     plt.figure(2)
     # Take diff. and convert to arcsec
-    nieuw = (np.array(etoh) - np.array(etoha))
+    nieuw = np.array(etoh) - np.array(etoha)
     nieuw *= 360 * 3600 / (2 * np.pi)
 
     plt.hist([i[0] for i in nieuw], bins=20)
@@ -147,8 +156,7 @@ def oldvsnew_diagram():
     # Make histogram of differences using the absolute distance in arcsec
     # this graph has no wrapping issues
     plt.figure(7)
-    nieuw = np.array([angle_between(etoh[i][0], etoh[i][1], etoha[i][0], etoha[i][1])
-                      for i in range(len(etoh))])
+    nieuw = np.array([angle_between(etoh[i][0], etoh[i][1], etoha[i][0], etoha[i][1]) for i in range(len(etoh))])
     nieuw *= 360 * 3600 / (2 * np.pi)
     plt.hist(nieuw, bins=20)
     plt.title('ZEN+AZ Old-New Error (equatorial_to_zenithazimuth)')
@@ -182,7 +190,7 @@ def oldvsnew_diagram():
     # Make histogram of differences
     plt.figure(5)
     # Take diff. and convert to arcsec
-    nieuw = (np.array(htoe) - np.array(htoea))
+    nieuw = np.array(htoe) - np.array(htoea)
     nieuw *= 360 * 3600 / (2 * np.pi)
     plt.hist([i[1] for i in nieuw], bins=20)
     plt.title('Declination Old-New Error (horizontal_to_equatorial)')
@@ -191,7 +199,7 @@ def oldvsnew_diagram():
 
     plt.figure(6)
     # Take diff. and convert to arcsec
-    nieuw = (np.array(htoe) - np.array(htoea))
+    nieuw = np.array(htoe) - np.array(htoea)
     nieuw *= 360 * 3600 / (2 * np.pi)
     plt.hist([i[0] for i in nieuw], bins=20)
     plt.title('Right Ascension Old-New Error (horizontal_to_equatorial)')
@@ -201,8 +209,9 @@ def oldvsnew_diagram():
     # Make histogram of differences using the absolute distance in arcsec
     # this graph has no wrapping issues
     plt.figure(8)
-    nieuw = np.array([angle_between_horizontal(htoe[i][0], htoe[i][1], htoea[i][0], htoea[i][1])
-                      for i in range(len(htoe))])
+    nieuw = np.array(
+        [angle_between_horizontal(htoe[i][0], htoe[i][1], htoea[i][0], htoea[i][1]) for i in range(len(htoe))],
+    )
     # Take diff. and convert to arcsec
     nieuw /= 2 / np.pi * 360 * 3600
     plt.hist(nieuw, bins=20)
@@ -211,13 +220,13 @@ def oldvsnew_diagram():
     plt.ylabel('Counts')
 
     plt.show()
-    return
 
 
 try:
     # This try-except block contains a pyephem accuracy benchmarking function.
     # It uses this structure to accommodate people without pyephem.
     import ephem
+
     def pyephem_comp():
         """
         This function compares the values from transformations done by our
@@ -235,17 +244,21 @@ try:
         """
         # Set up randoms equatorial J2000 bodies
         # that we will convert the RAs/Decs of.
-        eq = [] # random frames to use
+        eq = []  # random frames to use
         for i in range(100):
-            eq.append((r.uniform(-90, 90),
-                       r.uniform(-180, 180),
-                       r.randint(946684800, 1577836800),
-                       r.uniform(0, 2 * np.pi),
-                       r.uniform(-0.5 * np.pi, 0.5 * np.pi)))
-        efemeq = [] # store pyephem transformations to equatorial
-        altaz = [] # store pyephem transformations to altaz (horizontal)
-        htoea = [] # store astropy transformations to equatorial
-        etoha = [] # store astropy transformations to horizontal (altaz)
+            eq.append(
+                (
+                    random.uniform(-90, 90),
+                    random.uniform(-180, 180),
+                    random.randint(946684800, 1577836800),
+                    random.uniform(0, 2 * np.pi),
+                    random.uniform(-0.5 * np.pi, 0.5 * np.pi),
+                ),
+            )
+        efemeq = []  # store pyephem transformations to equatorial
+        altaz = []  # store pyephem transformations to altaz (horizontal)
+        htoea = []  # store astropy transformations to equatorial
+        etoha = []  # store astropy transformations to horizontal (altaz)
         for latitude, longitude, utc, ra, dec in eq:
             # Calculate altaz
             # Set observer for each case
@@ -253,7 +266,7 @@ try:
             obs.lat = str(latitude)
             obs.lon = str(longitude)
             obs.date = datetime.datetime.utcfromtimestamp(utc)
-            obs.pressure = 0 # Crucial to prevent refraction correction!
+            obs.pressure = 0  # Crucial to prevent refraction correction!
 
             # Set body for each case
             coord = ephem.FixedBody()
@@ -266,7 +279,7 @@ try:
             altaz.append((float(coord.az), float(coord.alt)))
 
             # Also calculate efemeq using eq
-            result = obs.radec_of(ra, dec) # This is of course not ra,dec but
+            result = obs.radec_of(ra, dec)  # This is of course not ra,dec but
             # actually az, alt.
 
             efemeq.append((float(result[0]), float(result[1])))
@@ -300,7 +313,7 @@ try:
         # DEC correlation subplot
         plt.subplot(212)
         plt.title('DEC')
-        plt.axis(altdecrange*2)
+        plt.axis(altdecrange * 2)
         plt.xlabel('Pyephem DEC (rad)')
         plt.ylabel('Astropy DEC (rad)')
 
@@ -315,7 +328,7 @@ try:
         plt.figure(2)
         plt.title('RA Error Altaz->(Astropy/Pyephem)->RA,DEC')
 
-        nieuw = (np.array(htoea) - np.array(efemeq))
+        nieuw = np.array(htoea) - np.array(efemeq)
         # Get differences in arcsec
         nieuw *= 360 * 3600 / (2 * np.pi)
 
@@ -339,7 +352,7 @@ try:
         # Altitude
         plt.subplot(211)
         plt.title('Altitude')
-        plt.axis(altdecrange*2)
+        plt.axis(altdecrange * 2)
         plt.xlabel('Pyephem Altitude (rad)')
         plt.ylabel('Astropy Altitude (rad')
 
@@ -349,7 +362,7 @@ try:
         # Azimuth
         plt.subplot(212)
         plt.title('Azimuth')
-        plt.axis(azrarange*2)
+        plt.axis(azrarange * 2)
         plt.xlabel('Pyephem Azimuth (rad)')
         plt.ylabel('Astropy Azimuth (rad)')
 
@@ -362,7 +375,7 @@ try:
         # Alt error histogram
         plt.figure(5)
         plt.title('Altitude Error RA,DEC->(pyephem/astropy)->Altaz')
-        nieuw = (np.array(etoha) - np.array(altaz))
+        nieuw = np.array(etoha) - np.array(altaz)
         nieuw *= 360 * 3600 / (2 * np.pi)
         plt.hist([co[1] for co in nieuw], bins=20)
 
@@ -381,8 +394,9 @@ try:
         # these graphs have no wrapping issues
 
         plt.figure(7)
-        nieuw = np.array([angle_between_horizontal(altaz[i][0], altaz[i][1], etoha[i][0], etoha[i][1])
-                          for i in range(len(etoha))])
+        nieuw = np.array(
+            [angle_between_horizontal(altaz[i][0], altaz[i][1], etoha[i][0], etoha[i][1]) for i in range(len(etoha))],
+        )
         nieuw *= 360 * 3600 / (2 * np.pi)
         plt.hist(nieuw, bins=20)
         plt.title('Alt+Azi Error RA,DEC->(pyephem/astropy)->Altaz')
@@ -390,8 +404,9 @@ try:
         plt.ylabel('Counts')
 
         plt.figure(8)
-        nieuw = np.array([angle_between_horizontal(efemeq[i][0], efemeq[i][1], htoea[i][0], htoea[i][1])
-                          for i in range(len(htoea))])
+        nieuw = np.array(
+            [angle_between_horizontal(efemeq[i][0], efemeq[i][1], htoea[i][0], htoea[i][1]) for i in range(len(htoea))],
+        )
         # Take difference and convert to arcsec
         nieuw *= 360 * 3600 / (2 * np.pi)
 
@@ -406,4 +421,4 @@ try:
 except ImportError:
     # Pyephem is not required so there is a case for when it is not present
     def pyephem_comp():
-        print("Pyephem not present; no comparisons will be done")
+        print('Pyephem not present; no comparisons will be done')

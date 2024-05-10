@@ -1,15 +1,15 @@
-""" Read and store KASCADE data.
+"""Read and store KASCADE data.
 
-    Read data files provided by the KASCADE collaboration and store them
-    in a format compatible with HiSPARC data.
+Read data files provided by the KASCADE collaboration and store them
+in a format compatible with HiSPARC data.
 
-    This module contains the following class:
+This module contains the following class:
 
-    :class:`StoreKascadeData`
-        Read and store KASCADE data files.
+:class:`StoreKascadeData`
+    Read and store KASCADE data files.
 
-    :class:`KascadeCoincidences`
-        Find HiSPARC and KASCADE events that belong together.
+:class:`KascadeCoincidences`
+    Find HiSPARC and KASCADE events that belong together.
 
 """
 
@@ -25,8 +25,7 @@ from .transformations import clock
 
 
 class StoreKascadeData:
-    def __init__(self, data, kascade_filename, kascade_path='/kascade',
-                 hisparc_path=None, force=False, progress=True):
+    def __init__(self, data, kascade_filename, kascade_path='/kascade', hisparc_path=None, force=False, progress=True):
         """Initialize the class.
 
         :param data: the PyTables datafile
@@ -47,12 +46,11 @@ class StoreKascadeData:
 
         if kascade_path in data:
             if not force:
-                raise RuntimeError(f"Cancelling data storage; {kascade_path} already exists")
+                raise RuntimeError(f'Cancelling data storage; {kascade_path} already exists')
             else:
                 data.remove_node(kascade_path, recursive=True)
 
-        self.kascade = data.create_table(kascade_path, 'events', KascadeEvent,
-                                         "KASCADE events", createparents=True)
+        self.kascade = data.create_table(kascade_path, 'events', KascadeEvent, 'KASCADE events', createparents=True)
         self.kascade_filename = kascade_filename
 
     def read_and_store_data(self):
@@ -70,15 +68,15 @@ class StoreKascadeData:
                 start = clock.gps_to_utc(min(timestamps)) - 5
                 stop = clock.gps_to_utc(max(timestamps)) + 5
             except IndexError:
-                raise RuntimeError("HiSPARC event table is empty")
+                raise RuntimeError('HiSPARC event table is empty')
 
             if self.progress:
-                print(f"Processing data from {time.ctime(start)} to {time.ctime(stop)}")
+                print(f'Processing data from {time.ctime(start)} to {time.ctime(stop)}')
         else:
             start = None
             stop = None
             if self.progress:
-                print("Processing all data")
+                print('Processing all data')
 
         self._process_events_in_range(start, stop)
 
@@ -138,8 +136,29 @@ class StoreKascadeData:
         tablerow = self.kascade.row
 
         # read all columns into KASCADE-named variables
-        (Irun, Ieve, Gt, Mmn, EnergyArray, Xc, Yc, Ze, Az, Size, Nmu, He0,  # noqa: N806
-            Hmu0, He1, Hmu1, He2, Hmu2, He3, Hmu3, T200, P200) = data
+        (
+            Irun,
+            Ieve,
+            Gt,
+            Mmn,
+            EnergyArray,
+            Xc,
+            Yc,
+            Ze,
+            Az,
+            Size,
+            Nmu,
+            He0,
+            Hmu0,
+            He1,
+            Hmu1,
+            He2,
+            Hmu2,
+            He3,
+            Hmu3,
+            T200,
+            P200,
+        ) = data
 
         tablerow['run_id'] = Irun
         tablerow['event_id'] = Ieve
@@ -168,7 +187,7 @@ class KascadeCoincidences:
 
         if 'c_index' in self.kascade_group:
             if not overwrite and not ignore_existing:
-                raise RuntimeError("I found existing coincidences stored in the KASCADE group")
+                raise RuntimeError('I found existing coincidences stored in the KASCADE group')
             elif overwrite:
                 data.remove_node(kascade_group, 'c_index')
 
@@ -196,11 +215,11 @@ class KascadeCoincidences:
 
         # Shift the kascade data instead of the hisparc data. There is less of
         # it, so this is much faster.
-        k['ext_timestamp'] += int(-1e9) * timeshift
+        k['ext_timestamp'] += -1_000_000_000 * timeshift
 
         if dtlimit:
             # dtlimit in ns
-            dtlimit *= 1e9
+            dtlimit *= 1_000_000_000
 
         coinc_dt, coinc_h_idx, coinc_k_idx = [], [], []
 
@@ -215,7 +234,7 @@ class KascadeCoincidences:
         if limit:
             max_k_idx = k_idx + limit - 1
         else:
-            max_k_idx = np.Inf
+            max_k_idx = np.inf
 
         while k_idx <= max_k_idx:
             # Try to get the timestamps of the kascade event and the
@@ -257,8 +276,7 @@ class KascadeCoincidences:
             # one.
             k_idx += 1
 
-        self.coincidences = np.rec.fromarrays(
-            [coinc_dt, coinc_h_idx, coinc_k_idx], names='dt, h_idx, k_idx')
+        self.coincidences = np.rec.fromarrays([coinc_dt, coinc_h_idx, coinc_k_idx], names='dt, h_idx, k_idx')
 
     def store_coincidences(self):
         self.data.create_table(self.kascade_group, 'c_index', self.coincidences)
@@ -273,7 +291,6 @@ class KascadeCoincidences:
     def _get_sorted_id_and_timestamp_array(self, group):
         timestamps = group.events.col('ext_timestamp')
         ids = group.events.col('event_id')
-        data = np.rec.fromarrays([ids, timestamps],
-                                 names='event_id, ext_timestamp')
+        data = np.rec.fromarrays([ids, timestamps], names='event_id, ext_timestamp')
         data.sort(order='ext_timestamp')
         return data

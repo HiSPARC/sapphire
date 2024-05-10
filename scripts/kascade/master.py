@@ -11,7 +11,7 @@ from sapphire.analysis.direction_reconstruction import KascadeDirectionReconstru
 from sapphire.kascade import KascadeCoincidences, StoreKascadeData
 
 
-class Master(object):
+class Master:
     hisparc_group = '/hisparc/cluster_kascade/station_601'
     kascade_group = '/kascade'
 
@@ -35,19 +35,18 @@ class Master(object):
 
         if 'cluster' not in group._v_attrs:
             cluster = clusters.SingleStation()
-            cluster.set_xyalpha_coordinates(65., 20.82, pi)
+            cluster.set_xyalpha_coordinates(65.0, 20.82, pi)
 
             group._v_attrs.cluster = cluster
 
     def read_and_store_kascade_data(self):
         """Read KASCADE data into analysis file"""
 
-        print("Reading KASCADE data")
+        print('Reading KASCADE data')
 
         try:
-            kascade = StoreKascadeData(self.data, self.kascade_filename,
-                                       self.kascade_group, self.hisparc_group)
-        except RuntimeError, msg:
+            kascade = StoreKascadeData(self.data, self.kascade_filename, self.kascade_group, self.hisparc_group)
+        except RuntimeError as msg:
             print(msg)
             return
         else:
@@ -59,18 +58,18 @@ class Master(object):
 
         try:
             coincidences = KascadeCoincidences(self.data, hisparc, kascade)
-        except RuntimeError, msg:
+        except RuntimeError as msg:
             print(msg)
             return
         else:
-            print("Searching for coincidences")
+            print('Searching for coincidences')
             coincidences.search_coincidences(timeshift=-13.180220188, dtlimit=1e-3)
-            print("Storing coincidences")
+            print('Storing coincidences')
             coincidences.store_coincidences()
-            print("Done.")
+            print('Done.')
 
     def process_events(self, process_cls, destination=None):
-        print("Processing HiSPARC events")
+        print('Processing HiSPARC events')
 
         c_index = self.data.get_node(self.kascade_group, 'c_index')
         index = c_index.col('h_idx')
@@ -78,12 +77,12 @@ class Master(object):
         process = process_cls(self.data, self.hisparc_group, index)
         try:
             process.process_and_store_results(destination)
-        except RuntimeError, msg:
+        except RuntimeError as msg:
             print(msg)
             return
 
     def reconstruct_direction(self, source, destination, correct_offsets=False):
-        print("Reconstructing shower directions")
+        print('Reconstructing shower directions')
 
         offsets = None
         if correct_offsets:
@@ -91,8 +90,8 @@ class Master(object):
             offsets = process.determine_detector_timing_offsets()
 
         try:
-            reconstruction = KascadeDirectionReconstruction(self.data, destination, min_n134=0.)
-        except RuntimeError, msg:
+            reconstruction = KascadeDirectionReconstruction(self.data, destination, min_n134=0.0)
+        except RuntimeError as msg:
             print(msg)
             return
         else:

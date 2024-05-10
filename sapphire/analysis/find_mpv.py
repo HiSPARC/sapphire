@@ -4,6 +4,7 @@
    find the most probable value in a HiSPARC spectrum
 
 """
+
 import warnings
 
 from scipy.optimize import curve_fit
@@ -62,7 +63,7 @@ class FindMostProbableValueInSpectrum:
         try:
             mpv = self.fit_mpv(first_guess)
         except RuntimeError:
-            warnings.warn("Fit failed")
+            warnings.warn('Fit failed')
             return -999, False
         else:
             return mpv, True
@@ -101,7 +102,7 @@ class FindMostProbableValueInSpectrum:
 
         # calculate position of most probable value
         idx_mpv = idx_right_max + idx_greatest_decrease + left_idx
-        mpv = (bins[idx_mpv] + bins[idx_mpv + 1]) / 2.
+        mpv = (bins[idx_mpv] + bins[idx_mpv + 1]) / 2.0
 
         return mpv
 
@@ -123,11 +124,11 @@ class FindMostProbableValueInSpectrum:
         """
         n, bins = self.n, self.bins
 
-        bins_x = (bins[:-1] + bins[1:]) / 2.
+        bins_x = (bins[:-1] + bins[1:]) / 2.0
 
         # calculate fit domain
-        left = (1. - width_factor) * first_guess
-        right = (1. + width_factor) * first_guess
+        left = (1.0 - width_factor) * first_guess
+        right = (1.0 + width_factor) * first_guess
 
         # bracket histogram data
         x = bins_x.compress((left <= bins_x) & (bins_x < right))
@@ -136,16 +137,15 @@ class FindMostProbableValueInSpectrum:
         # sanity check: number of data points must be at least equal to
         # the number of fit parameters
         if len(x) < 3:
-            raise RuntimeError("Number of data points not sufficient")
+            raise RuntimeError('Number of data points not sufficient')
 
         # fit to a normal distribution
-        popt, pcov = curve_fit(gauss, x, y,
-                               p0=(y.max(), first_guess, first_guess))
+        popt, pcov = curve_fit(gauss, x, y, p0=(y.max(), first_guess, first_guess))
         mpv = popt[1]
 
         # sanity check: if MPV is outside domain, the MIP peak was not
         # bracketed correctly
         if mpv < x[0] or mpv > x[-1]:
-            raise RuntimeError("Fitted MPV value outside range")
+            raise RuntimeError('Fitted MPV value outside range')
 
         return mpv

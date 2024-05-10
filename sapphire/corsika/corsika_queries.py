@@ -8,7 +8,6 @@ from .particles import name, particle_id
 
 
 class CorsikaQuery:
-
     def __init__(self, data, simulations_group='/simulations'):
         """Setup variables to point to the tables
 
@@ -106,8 +105,7 @@ class CorsikaQuery:
         """
         return {degrees(zenith) for zenith in set(self.sims.col('zenith'))}
 
-    def simulations(self, particle='proton', energy=None, zenith=None,
-                    azimuth=None, iterator=False):
+    def simulations(self, particle='proton', energy=None, zenith=None, azimuth=None, iterator=False):
         """Set of available energies given the requirements
 
         :param particle: primary particle must be this kind, name of particle.
@@ -184,19 +182,19 @@ class CorsikaQuery:
 
         return query
 
-    def range_filter(self, key, min=None, max=None):
+    def range_filter(self, key, min_value=None, max_value=None):
         """Filter to be in a range
 
         :param key: variable to filter.
-        :param min,max: limits on the value.
+        :param min_value,max_value: limits on the value.
         :return: query.
 
         """
         queries = []
-        if min is not None:
-            queries.append(f'({key} >= {min})')
-        if max is not None:
-            queries.append(f'({key} <= {max})')
+        if min_value is not None:
+            queries.append(f'({key} >= {min_value})')
+        if max_value is not None:
+            queries.append(f'({key} <= {max_value})')
         query = ' & '.join(queries)
 
         return query
@@ -220,7 +218,5 @@ class CorsikaQuery:
 
     def __repr__(self):
         if not self.data.isopen:
-            return "<finished %s>" % self.__class__.__name__
-        return ("%s(%r, simulations_group=%r)" %
-                (self.__class__.__name__, self.data.filename,
-                 self.sims._v_pathname))
+            return '<finished %s>' % self.__class__.__name__
+        return '%s(%r, simulations_group=%r)' % (self.__class__.__name__, self.data.filename, self.sims._v_pathname)

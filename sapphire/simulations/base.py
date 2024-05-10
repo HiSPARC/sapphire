@@ -20,6 +20,7 @@ Example usage::
     >>> sim.run()
 
 """
+
 import random
 import warnings
 
@@ -32,7 +33,6 @@ from ..utils import pbar
 
 
 class BaseSimulation:
-
     """Base class for simulations.
 
     :param cluster: :class:`~sapphire.clusters.BaseCluster` instance.
@@ -45,8 +45,7 @@ class BaseSimulation:
 
     """
 
-    def __init__(self, cluster, data, output_path='/', n=1, seed=None,
-                 progress=True):
+    def __init__(self, cluster, data, output_path='/', n=1, seed=None, progress=True):
         self.cluster = cluster
         self.data = data
         self.output_path = output_path
@@ -76,22 +75,21 @@ class BaseSimulation:
     def run(self):
         """Run the simulations."""
 
-        for (shower_id, shower_parameters) in enumerate(
-                self.generate_shower_parameters()):
-
+        for shower_id, shower_parameters in enumerate(self.generate_shower_parameters()):
             station_events = self.simulate_events_for_shower(shower_parameters)
-            self.store_coincidence(shower_id, shower_parameters,
-                                   station_events)
+            self.store_coincidence(shower_id, shower_parameters, station_events)
 
     def generate_shower_parameters(self):
         """Generate shower parameters like core position, energy, etc."""
 
-        shower_parameters = {'core_pos': (None, None),
-                             'zenith': None,
-                             'azimuth': None,
-                             'size': None,
-                             'energy': None,
-                             'ext_timestamp': None}
+        shower_parameters = {
+            'core_pos': (None, None),
+            'zenith': None,
+            'azimuth': None,
+            'size': None,
+            'energy': None,
+            'ext_timestamp': None,
+        }
 
         for _ in pbar(range(self.n), show=self.progress):
             yield shower_parameters
@@ -101,26 +99,19 @@ class BaseSimulation:
 
         station_events = []
         for station_id, station in enumerate(self.cluster.stations):
-            has_triggered, station_observables = \
-                self.simulate_station_response(station,
-                                               shower_parameters)
+            has_triggered, station_observables = self.simulate_station_response(station, shower_parameters)
             if has_triggered:
-                event_index = \
-                    self.store_station_observables(station_id,
-                                                   station_observables)
+                event_index = self.store_station_observables(station_id, station_observables)
                 station_events.append((station_id, event_index))
         return station_events
 
     def simulate_station_response(self, station, shower_parameters):
         """Simulate station response to a shower."""
 
-        detector_observables = self.simulate_all_detectors(
-            station.detectors, shower_parameters)
+        detector_observables = self.simulate_all_detectors(station.detectors, shower_parameters)
         has_triggered = self.simulate_trigger(detector_observables)
-        station_observables = \
-            self.process_detector_observables(detector_observables)
-        station_observables = self.simulate_gps(station_observables,
-                                                shower_parameters, station)
+        station_observables = self.process_detector_observables(detector_observables)
+        station_observables = self.simulate_gps(station_observables, shower_parameters, station)
 
         return has_triggered, station_observables
 
@@ -133,8 +124,7 @@ class BaseSimulation:
         """
         detector_observables = []
         for detector in detectors:
-            observables = self.simulate_detector_response(detector,
-                                                          shower_parameters)
+            observables = self.simulate_detector_response(detector, shower_parameters)
             detector_observables.append(observables)
 
         return detector_observables
@@ -149,7 +139,7 @@ class BaseSimulation:
 
         """
         # implement this!
-        observables = {'n': 0., 't': -999}
+        observables = {'n': 0.0, 't': -999}
 
         return observables
 
@@ -179,8 +169,7 @@ class BaseSimulation:
                  like n1, n2, n3, etc.
 
         """
-        station_observables = {'pulseheights': 4 * [-1.],
-                               'integrals': 4 * [-1.]}
+        station_observables = {'pulseheights': 4 * [-1.0], 'integrals': 4 * [-1.0]}
 
         for detector_id, observables in enumerate(detector_observables, 1):
             for key, value in observables.items():
@@ -215,8 +204,7 @@ class BaseSimulation:
 
         return events_table.nrows - 1
 
-    def store_coincidence(self, shower_id, shower_parameters,
-                          station_events):
+    def store_coincidence(self, shower_id, shower_parameters, station_events):
         """Store coincidence.
 
         Store the information to find events of different stations
@@ -246,16 +234,14 @@ class BaseSimulation:
             row['s%d' % station.number] = True
             station_group = self.station_groups[station_id]
             event = station_group.events[event_index]
-            timestamps.append((event['ext_timestamp'], event['timestamp'],
-                               event['nanoseconds']))
+            timestamps.append((event['ext_timestamp'], event['timestamp'], event['nanoseconds']))
 
         try:
             first_timestamp = sorted(timestamps)[0]
         except IndexError:
             first_timestamp = (0, 0, 0)
 
-        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
-            first_timestamp
+        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = first_timestamp
         row.append()
         self.coincidences.flush()
 
@@ -270,27 +256,23 @@ class BaseSimulation:
         This makes it easy to link events detected by multiple stations.
 
         """
-        self.coincidence_group = self.data.create_group(self.output_path,
-                                                        'coincidences',
-                                                        createparents=True)
+        self.coincidence_group = self.data.create_group(self.output_path, 'coincidences', createparents=True)
         try:
             self.coincidence_group._v_attrs.cluster = self.cluster
         except tables.HDF5ExtError:
             warnings.warn('Unable to store cluster object, to large for HDF.')
 
         description = storage.Coincidence
-        s_columns = {'s%d' % station.number: tables.BoolCol(pos=p)
-                     for p, station in enumerate(self.cluster.stations, 12)}
+        s_columns = {
+            's%d' % station.number: tables.BoolCol(pos=p) for p, station in enumerate(self.cluster.stations, 12)
+        }
         description.columns.update(s_columns)
 
-        self.coincidences = self.data.create_table(
-            self.coincidence_group, 'coincidences', description)
+        self.coincidences = self.data.create_table(self.coincidence_group, 'coincidences', description)
 
-        self.c_index = self.data.create_vlarray(
-            self.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
+        self.c_index = self.data.create_vlarray(self.coincidence_group, 'c_index', tables.UInt32Col(shape=2))
 
-        self.s_index = self.data.create_vlarray(
-            self.coincidence_group, 's_index', tables.VLStringAtom())
+        self.s_index = self.data.create_vlarray(self.coincidence_group, 's_index', tables.VLStringAtom())
 
     def _prepare_station_tables(self):
         """Create the groups and events table to store the observables
@@ -299,17 +281,12 @@ class BaseSimulation:
         :param station: a :class:`sapphire.clusters.Station` object
 
         """
-        self.cluster_group = self.data.create_group(self.output_path,
-                                                    'cluster_simulations',
-                                                    createparents=True)
+        self.cluster_group = self.data.create_group(self.output_path, 'cluster_simulations', createparents=True)
         self.station_groups = []
         for station in self.cluster.stations:
-            station_group = self.data.create_group(self.cluster_group,
-                                                   'station_%d' %
-                                                   station.number)
+            station_group = self.data.create_group(self.cluster_group, 'station_%d' % station.number)
             description = ProcessEvents.processed_events_description
-            self.data.create_table(station_group, 'events', description,
-                                   expectedrows=self.n)
+            self.data.create_table(station_group, 'events', description, expectedrows=self.n)
             self.station_groups.append(station_group)
 
     def _store_station_index(self):
@@ -321,7 +298,10 @@ class BaseSimulation:
 
     def __repr__(self):
         if not self.data.isopen:
-            return "<finished %s>" % self.__class__.__name__
-        return ('<%s, cluster: %r, data: %r, output_path: %r>' %
-                (self.__class__.__name__, self.cluster, self.data.filename,
-                 self.output_path))
+            return '<finished %s>' % self.__class__.__name__
+        return '<%s, cluster: %r, data: %r, output_path: %r>' % (
+            self.__class__.__name__,
+            self.cluster,
+            self.data.filename,
+            self.output_path,
+        )

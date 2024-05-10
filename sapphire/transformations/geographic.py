@@ -1,9 +1,10 @@
-""" Perform various coordinate transformations
+"""Perform various coordinate transformations
 
-    This module performs various coordinate transformations, based on some
-    well-known formulas.
+This module performs various coordinate transformations, based on some
+well-known formulas.
 
 """
+
 from math import atan2, cos, degrees, radians, sin, sqrt
 
 from numpy import array
@@ -17,18 +18,18 @@ class WGS84Datum:
     editors have gone over them to make sure they are correct.
 
     """
+
     # Defining constants
-    a = 6378137.
+    a = 6378137.0
     f = 1 / 298.257223563
 
     # Derived constants
     b = a * (1 - f)
-    e = sqrt(2 * f - f ** 2)
+    e = sqrt(2 * f - f**2)
     eprime = sqrt(f * (2 - f) / (1 - f) ** 2)
 
 
 class FromWGS84ToENUTransformation:
-
     """Convert between various geographic coordinate systems
 
     This class converts coordinates between LLA, ENU, and ECEF.
@@ -89,11 +90,11 @@ class FromWGS84ToENUTransformation:
         b = self.geode.b
         e = self.geode.e
 
-        n = a / sqrt(1 - e ** 2 * sin(latitude) ** 2)
+        n = a / sqrt(1 - e**2 * sin(latitude) ** 2)
 
         x = (n + altitude) * cos(latitude) * cos(longitude)
         y = (n + altitude) * cos(latitude) * sin(longitude)
-        z = (b ** 2 / a ** 2 * n + altitude) * sin(latitude)
+        z = (b**2 / a**2 * n + altitude) * sin(latitude)
 
         return x, y, z
 
@@ -117,13 +118,12 @@ class FromWGS84ToENUTransformation:
         e = self.geode.e
         eprime = self.geode.eprime
 
-        p = sqrt(x ** 2 + y ** 2)
+        p = sqrt(x**2 + y**2)
         th = atan2(a * z, b * p)
 
         longitude = atan2(y, x)
-        latitude = atan2((z + eprime ** 2 * b * sin(th) ** 3),
-                         (p - e ** 2 * a * cos(th) ** 3))
-        n = a / sqrt(1 - e ** 2 * sin(latitude) ** 2)
+        latitude = atan2((z + eprime**2 * b * sin(th) ** 3), (p - e**2 * a * cos(th) ** 3))
+        n = a / sqrt(1 - e**2 * sin(latitude) ** 2)
         altitude = p / cos(latitude) - n
 
         return degrees(latitude), degrees(longitude), altitude
@@ -149,10 +149,13 @@ class FromWGS84ToENUTransformation:
         lat = radians(latitude)
         lon = radians(longitude)
 
-        transformation = array([
-            [           -sin(lon),             cos(lon),       0.],  # noqa
-            [-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat)],
-            [ cos(lat) * cos(lon),  cos(lat) * sin(lon), sin(lat)]])  # noqa
+        transformation = array(
+            [
+                [-sin(lon), cos(lon), 0.0],
+                [-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat)],
+                [cos(lat) * cos(lon), cos(lat) * sin(lon), sin(lat)],
+            ],
+        )
 
         coordinates = array([x - xr, y - yr, z - zr])
 
@@ -174,14 +177,17 @@ class FromWGS84ToENUTransformation:
         lat = radians(latitude)
         lon = radians(longitude)
 
-        transformation = array([
-            [-sin(lon), -sin(lat) * cos(lon), cos(lat) * cos(lon)],
-            [ cos(lon), -sin(lat) * sin(lon), cos(lat) * sin(lon)],  # noqa
-            [       0.,             cos(lat),            sin(lat)]])  # noqa
+        transformation = array(
+            [
+                [-sin(lon), -sin(lat) * cos(lon), cos(lat) * cos(lon)],
+                [cos(lon), -sin(lat) * sin(lon), cos(lat) * sin(lon)],
+                [0.0, cos(lat), sin(lat)],
+            ],
+        )
 
         x, y, z = transformation.dot(array(coordinates))
 
         return x + xr, y + yr, z + zr
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.ref_lla!r})"
+        return f'{self.__class__.__name__}({self.ref_lla!r})'

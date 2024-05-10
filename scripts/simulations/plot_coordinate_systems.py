@@ -1,6 +1,6 @@
-from pylab import *
-
 import utils
+
+from pylab import *
 
 
 def plot_coordinate_systems():
@@ -37,7 +37,7 @@ def transform_coordinates(x, y, alpha):
     xp, yp, alphap = [], [], []
 
     for u, v, w in zip(x, y, alpha):
-        r = sqrt(u ** 2 + v ** 2)
+        r = sqrt(u**2 + v**2)
         phi = arctan2(v, u)
 
         phi += pi - w
@@ -91,7 +91,7 @@ def generate_random_coordinates_in_circle(R, N=100):
     while len(x) < N:
         u, v = uniform(-10, 10, 2)
 
-        if u ** 2 + v ** 2 <= R ** 2:
+        if u**2 + v**2 <= R**2:
             x.append(u)
             y.append(v)
             alpha.append(uniform(-pi, pi))

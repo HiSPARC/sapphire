@@ -11,7 +11,6 @@ from sapphire import utils
 
 
 class PbarTests(unittest.TestCase):
-
     def setUp(self):
         self.iterable = list(range(10))
         self.output = StringIO()
@@ -25,7 +24,7 @@ class PbarTests(unittest.TestCase):
         """Return original generator, not a progressbar"""
 
         generator = (x for x in self.iterable)
-        pb = utils.pbar(generator)
+        pb = utils.pbar(generator, fd=self.output)
         self.assertIsInstance(pb, types.GeneratorType)
         self.assertEqual(list(pb), self.iterable)
 
@@ -50,7 +49,6 @@ class PbarTests(unittest.TestCase):
 
 
 class InBaseTests(unittest.TestCase):
-
     def test_ceil(self):
         self.assertEqual(utils.ceil_in_base(2.4, 2.5), 2.5)
         self.assertEqual(utils.ceil_in_base(0.1, 2.5), 2.5)
@@ -75,7 +73,6 @@ class InBaseTests(unittest.TestCase):
 
 
 class ActiveIndexTests(unittest.TestCase):
-
     def test_get_active_index(self):
         """Test if the bisection returns the correct index
 
@@ -86,29 +83,27 @@ class ActiveIndexTests(unittest.TestCase):
           equal or less than the timestamp
 
         """
-        timestamps = [1., 2., 3., 4.]
+        timestamps = [1.0, 2.0, 3.0, 4.0]
 
-        for idx, ts in [(0, 0.), (0, 1.), (0, 1.5), (1, 2.), (1, 2.1), (3, 4.),
-                        (3, 5.)]:
+        for idx, ts in [(0, 0.0), (0, 1.0), (0, 1.5), (1, 2.0), (1, 2.1), (3, 4.0), (3, 5.0)]:
             self.assertEqual(utils.get_active_index(timestamps, ts), idx)
 
 
 class GaussTests(unittest.TestCase):
-
     """Test against explicit Gaussian"""
 
     def gaussian(self, x, n, mu, sigma):
-        return n * exp(-(x - mu) ** 2. / (2. * sigma ** 2)) / (sigma * sqrt(2 * pi))
+        return n * exp(-((x - mu) ** 2.0) / (2.0 * sigma**2)) / (sigma * sqrt(2 * pi))
 
     def test_gauss(self):
-        x, n, mu, sigma = (1., 1., 0., 1.)
+        x, n, mu, sigma = (1.0, 1.0, 0.0, 1.0)
         self.assertEqual(utils.gauss(x, n, mu, sigma), self.gaussian(x, n, mu, sigma))
-        n = 2.
+        n = 2.0
         self.assertEqual(utils.gauss(x, n, mu, sigma), self.gaussian(x, n, mu, sigma))
-        sigma = 2.
+        sigma = 2.0
         self.assertEqual(utils.gauss(x, n, mu, sigma), self.gaussian(x, n, mu, sigma))
         x = 1e5
-        self.assertEqual(utils.gauss(x, n, mu, sigma), 0.)
+        self.assertEqual(utils.gauss(x, n, mu, sigma), 0.0)
 
     def test_gauss_array(self):
         """Test for arrays of random values"""
@@ -123,7 +118,6 @@ class GaussTests(unittest.TestCase):
 
 
 class AngleBetweenTests(unittest.TestCase):
-
     """Check opening angle between two directions"""
 
     def test_zeniths(self):
@@ -166,17 +160,18 @@ class AngleBetweenTests(unittest.TestCase):
 
 
 class DistanceBetweenTests(unittest.TestCase):
-
     """Check distance between two (x, y) cartesian coordinates"""
 
     def test_distances(self):
         """Check if distances are correctly calculated"""
 
-        combinations = [((0, 0, 1.6, 0), 1.6),
-                        ((-1, 0, 1, 0), 2),
-                        ((-1, 0, -1, 0), 0),
-                        ((random.uniform(1e-15, 100),) * 4, 0),
-                        ((-10, -10, 5, 5), sqrt(450))]
+        combinations = [
+            ((0, 0, 1.6, 0), 1.6),
+            ((-1, 0, 1, 0), 2),
+            ((-1, 0, -1, 0), 0),
+            ((random.uniform(1e-15, 100),) * 4, 0),
+            ((-10, -10, 5, 5), sqrt(450)),
+        ]
         for coordinates, distance in combinations:
             self.assertEqual(utils.distance_between(*coordinates), distance)
             # same result if the coordinates and x, y are swapped
@@ -184,7 +179,6 @@ class DistanceBetweenTests(unittest.TestCase):
 
 
 class WhichTests(unittest.TestCase):
-
     """Check if which works"""
 
     def test_which(self):
@@ -195,5 +189,4 @@ class WhichTests(unittest.TestCase):
     def test_non_existent_program(self):
         """Check for error for non-existent program"""
 
-        self.assertRaises(Exception, utils.which,
-                          'a_very_unlikely_program_name_to_exist_cosmic_ray')
+        self.assertRaises(Exception, utils.which, 'a_very_unlikely_program_name_to_exist_cosmic_ray')

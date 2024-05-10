@@ -1,4 +1,4 @@
-""" Defines units in terms of HiSPARC standard units
+"""Defines units in terms of HiSPARC standard units
 
 You should use the units defined in this file whenever you
 have a dimensional quantity in your code.  For example:
@@ -86,7 +86,7 @@ zetta = 1e21
 yotta = 1e24
 
 # Length [L]
-meter = 1.
+meter = 1.0
 meter2 = meter * meter
 meter3 = meter * meter * meter
 
@@ -135,11 +135,11 @@ km2 = kilometer2
 km3 = kilometer3
 
 # Angle
-radian = 1.
+radian = 1.0
 milliradian = milli * radian
-degree = (3.14159265358979323846 / 180.) * radian
+degree = (3.14159265358979323846 / 180.0) * radian
 
-steradian = 1.
+steradian = 1.0
 
 # symbols
 rad = radian
@@ -148,7 +148,7 @@ sr = steradian
 deg = degree
 
 # Time [T]
-nanosecond = 1.
+nanosecond = 1.0
 nanosecond2 = nanosecond * nanosecond
 second = giga * nanosecond
 millisecond = milli * second
@@ -158,7 +158,7 @@ minute = 60 * second
 hour = 60 * minute
 day = 24 * hour
 
-hertz = 1. / second
+hertz = 1.0 / second
 kilohertz = kilo * hertz
 megahertz = mega * hertz
 
@@ -168,12 +168,12 @@ s = second
 ms = millisecond
 
 # Electric charge [Q]
-eplus = 1.  # positron charge
+eplus = 1.0  # positron charge
 eSI = 1.602176462e-19  # positron charge in coulomb
 coulomb = eplus / eSI  # coulomb = 6.24150e18 * eplus
 
 # Energy [E]
-electronvolt = 1.
+electronvolt = 1.0
 megaelectronvolt = mega * electronvolt
 kiloelectronvolt = kilo * electronvolt
 gigaelectronvolt = giga * electronvolt
@@ -252,20 +252,20 @@ kilogauss = kilo * gauss
 henry = weber / ampere  # henry = 1.60217e-7 * MeV * (ns / eplus) ** 2
 
 # Temperature
-kelvin = 1.
+kelvin = 1.0
 
 # Amount of substance
-mole = 1.
+mole = 1.0
 
 # Activity [T^-1]
-becquerel = 1. / second
+becquerel = 1.0 / second
 curie = 3.7e10 * becquerel
 
 # Absorbed dose [L^2][T^-2]
 gray = joule / kilogram
 
 # Luminous intensity [I]
-candela = 1.
+candela = 1.0
 
 # Luminous flux [I]
 lumen = candela * steradian

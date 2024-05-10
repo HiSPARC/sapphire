@@ -1,19 +1,19 @@
-""" Define HiSPARC detectors, stations and clusters.
+"""Define HiSPARC detectors, stations and clusters.
 
-    The :class:`BaseCluster` defines a HiSPARC cluster consisting of one or
-    more stations.  The :class:`Station` defines a HiSPARC station,
-    consisting of one or more :class:`Detector` objects.
+The :class:`BaseCluster` defines a HiSPARC cluster consisting of one or
+more stations.  The :class:`Station` defines a HiSPARC station,
+consisting of one or more :class:`Detector` objects.
 
-    To easily create a cluster object for a specific set of real HiSPARC
-    stations the :class:`HiSPARCStations` can be used, for example::
+To easily create a cluster object for a specific set of real HiSPARC
+stations the :class:`HiSPARCStations` can be used, for example::
 
-    >>> from sapphire import HiSPARCStations
-    >>> cluster = HiSPARCStations([102, 104, 105], force_stale=True)
+>>> from sapphire import HiSPARCStations
+>>> cluster = HiSPARCStations([102, 104, 105], force_stale=True)
 
-    The use of ``force_stale`` forces the use of local data, which
-    is much faster to load than data from the server.
+The use of ``force_stale`` forces the use of local data, which
+is much faster to load than data from the server.
 
-    These cluster objects are mainly used by simulations and reconstructions.
+These cluster objects are mainly used by simulations and reconstructions.
 
 """
 
@@ -31,7 +31,7 @@ from .utils import distance_between, get_active_index
 class Detector:
     """A HiSPARC detector"""
 
-    _detector_size = (.5, 1.)
+    _detector_size = (0.5, 1.0)
 
     def __init__(self, station, position, orientation='UD', detector_timestamps=None):
         """Initialize detector
@@ -51,27 +51,26 @@ class Detector:
         if detector_timestamps is None:
             detector_timestamps = [0]
         self.station = station
-        if hasattr(position[0], "__len__"):
+        if hasattr(position[0], '__len__'):
             self.x = position[0]
             self.y = position[1]
-            self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
+            self.z = position[2] if len(position) == 3 else [0.0] * len(self.x)
         else:
             self.x = [position[0]]
             self.y = [position[1]]
-            self.z = [position[2]] if len(position) == 3 else [0.]
+            self.z = [position[2]] if len(position) == 3 else [0.0]
         if isinstance(orientation, str) and orientation == 'UD':
             self.orientation = [0] * len(self.x)
         elif isinstance(orientation, str) and orientation == 'LR':
             self.orientation = [pi / 2] * len(self.x)
+        elif hasattr(orientation, '__len__'):
+            self.orientation = orientation
         else:
-            if hasattr(orientation, "__len__"):
-                self.orientation = orientation
-            else:
-                self.orientation = [orientation]
+            self.orientation = [orientation]
         if len(detector_timestamps) == len(self.x):
             self.timestamps = detector_timestamps
         else:
-            raise Exception('Number of timestamps must equal number of postions')
+            raise ValueError('Number of timestamps must equal number of postions')
         self.index = -1
 
     def _update_timestamp(self, timestamp):
@@ -161,14 +160,13 @@ class Detector:
         # cluster frame
         sina = sin(alpha_station)
         cosa = cos(alpha_station)
-        corners = [(x_station + xc * cosa - yc * sina, y_station + xc * sina + yc * cosa)
-                   for xc, yc in corners]
+        corners = [(x_station + xc * cosa - yc * sina, y_station + xc * sina + yc * cosa) for xc, yc in corners]
 
         return corners
 
     def __repr__(self):
-        id = next(i for i, d in enumerate(self.station.detectors) if self is d)
-        return "<%s, id: %d, station: %r>" % (self.__class__.__name__, id, self.station)
+        detector_id = next(i for i, d in enumerate(self.station.detectors) if self is d)
+        return '<%s, id: %d, station: %r>' % (self.__class__.__name__, detector_id, self.station)
 
 
 class Station:
@@ -176,9 +174,17 @@ class Station:
 
     _detectors = None
 
-    def __init__(self, cluster, station_id, position, angle=None,
-                 detectors=None, station_timestamps=None,
-                 detector_timestamps=None, number=None):
+    def __init__(
+        self,
+        cluster,
+        station_id,
+        position,
+        angle=None,
+        detectors=None,
+        station_timestamps=None,
+        detector_timestamps=None,
+        number=None,
+    ):
         """Initialize station
 
         :param cluster: cluster this station is a part of
@@ -208,17 +214,17 @@ class Station:
             detector_timestamps = [0]
         self.cluster = cluster
         self.station_id = station_id
-        if hasattr(position[0], "__len__"):
+        if hasattr(position[0], '__len__'):
             self.x = position[0]
             self.y = position[1]
-            self.z = position[2] if len(position) == 3 else [0.] * len(self.x)
+            self.z = position[2] if len(position) == 3 else [0.0] * len(self.x)
         else:
             self.x = [position[0]]
             self.y = [position[1]]
-            self.z = [position[2]] if len(position) == 3 else [0.]
+            self.z = [position[2]] if len(position) == 3 else [0.0]
         if angle is None:
-            self.angle = [0.] * len(self.x)
-        elif hasattr(angle, "__len__"):
+            self.angle = [0.0] * len(self.x)
+        elif hasattr(angle, '__len__'):
             self.angle = angle
         else:
             self.angle = [angle]
@@ -227,15 +233,14 @@ class Station:
         if len(station_timestamps) == len(self.x):
             self.timestamps = station_timestamps
         else:
-            raise Exception('Number of timestamps must equal number of postions')
+            raise ValueError('Number of timestamps must equal number of postions')
 
         if detectors is None:
             # detector positions for a standard station
             station_size = 10
             a = station_size / 2
             b = a * sqrt(3)
-            detectors = [((0, b, 0), 'UD'), ((0, b / 3, 0), 'UD'),
-                         ((-a, 0, 0), 'LR'), ((a, 0, 0), 'LR')]
+            detectors = [((0, b, 0), 'UD'), ((0, b / 3, 0), 'UD'), ((-a, 0, 0), 'LR'), ((a, 0, 0), 'LR')]
 
         for position, orientation in detectors:
             self._add_detector(position, orientation, detector_timestamps)
@@ -277,7 +282,7 @@ class Station:
 
         """
         if detector_ids is not None:
-            return sum(self._detectors[id].get_area() for id in detector_ids)
+            return sum(self._detectors[detector_id].get_area() for detector_id in detector_ids)
         else:
             return sum(d.get_area() for d in self._detectors)
 
@@ -334,9 +339,9 @@ class Station:
 
         transform = geographic.FromWGS84ToENUTransformation(lla)
         latitude, longitude, altitude = transform.enu_to_lla(enu)
-        latitude = latitude if abs(latitude) > 1e-7 else 0.
-        longitude = longitude if abs(longitude) > 1e-7 else 0.
-        altitude = altitude if abs(altitude) > 1e-7 else 0.
+        latitude = latitude if abs(latitude) > 1e-7 else 0.0
+        longitude = longitude if abs(longitude) > 1e-7 else 0.0
+        altitude = altitude if abs(altitude) > 1e-7 else 0.0
 
         return latitude, longitude, altitude
 
@@ -380,8 +385,12 @@ class Station:
         return x0, y0, z0
 
     def __repr__(self):
-        return ("<%s, id: %d, number: %d, cluster: %r>" %
-                (self.__class__.__name__, self.station_id, self.number, self.cluster))
+        return '<%s, id: %d, number: %d, cluster: %r>' % (
+            self.__class__.__name__,
+            self.station_id,
+            self.number,
+            self.cluster,
+        )
 
 
 class BaseCluster:
@@ -400,7 +409,7 @@ class BaseCluster:
         """
         self.x = position[0]
         self.y = position[1]
-        self.z = position[2] if len(position) == 3 else 0.
+        self.z = position[2] if len(position) == 3 else 0.0
         self.alpha = angle
         self.lla = lla
         # Set initial timestamp in the future to use latest positions
@@ -417,9 +426,15 @@ class BaseCluster:
         for station in self.stations:
             station._update_timestamp(self._timestamp)
 
-    def _add_station(self, position, angle=None, detectors=None,
-                     station_timestamps=None, detector_timestamps=None,
-                     number=None):
+    def _add_station(
+        self,
+        position,
+        angle=None,
+        detectors=None,
+        station_timestamps=None,
+        detector_timestamps=None,
+        number=None,
+    ):
         """Add a station to the cluster
 
         :param position: x,y,z position of the station relative to
@@ -454,9 +469,9 @@ class BaseCluster:
             self._stations = []
 
         station_id = len(self._stations)
-        self._stations.append(Station(self, station_id, position, angle,
-                                      detectors, station_timestamps,
-                                      detector_timestamps, number))
+        self._stations.append(
+            Station(self, station_id, position, angle, detectors, station_timestamps, detector_timestamps, number),
+        )
 
     def set_center_off_mass_at_origin(self):
         """Set the cluster center of mass to (0, 0, 0)"""
@@ -584,9 +599,7 @@ class BaseCluster:
             absolute coordinate system
 
         """
-        x, y, z = zip(*[detector.get_coordinates()
-                      for station in self.stations
-                      for detector in station.detectors])
+        x, y, z = zip(*[detector.get_coordinates() for station in self.stations for detector in station.detectors])
 
         x0 = np.nanmean(x)
         y0 = np.nanmean(y)
@@ -640,11 +653,10 @@ class BaseCluster:
         return self._distance(*xy)
 
     def __repr__(self):
-        return "<%s>" % self.__class__.__name__
+        return '<%s>' % self.__class__.__name__
 
 
 class CompassStations(BaseCluster):
-
     """Add detectors to stations using compass coordinates
 
     Compass coordinates consist of r, alpha, z, beta. These define
@@ -656,8 +668,7 @@ class CompassStations(BaseCluster):
 
     """
 
-    def _add_station(self, position, detectors, station_timestamps=None,
-                     detector_timestamps=None, number=None):
+    def _add_station(self, position, detectors, station_timestamps=None, detector_timestamps=None, number=None):
         """Add a station to the cluster
 
         :param position: x,y,z coordinates of the station relative
@@ -691,15 +702,12 @@ class CompassStations(BaseCluster):
             ...                      number=104)
 
         """
-        detectors = [(axes.compass_to_cartesian(r, alpha, z), np.radians(beta))
-                     for r, alpha, z, beta in detectors]
+        detectors = [(axes.compass_to_cartesian(r, alpha, z), np.radians(beta)) for r, alpha, z, beta in detectors]
 
-        super()._add_station(
-            position, None, detectors, station_timestamps, detector_timestamps, number)
+        super()._add_station(position, None, detectors, station_timestamps, detector_timestamps, number)
 
 
 class SimpleCluster(BaseCluster):
-
     """Define a simple cluster containing four stations
 
     :param size: This value is the distance between the three outer stations.
@@ -751,7 +759,6 @@ class SingleTwoDetectorStation(BaseCluster):
 
 
 class SingleDiamondStation(BaseCluster):
-
     """Define a cluster containing a single diamond shaped station
 
     Detectors 1, 3 and 4 are in the usual position for a 4 detector
@@ -766,14 +773,12 @@ class SingleDiamondStation(BaseCluster):
         station_size = 10
         a = station_size / 2
         b = a * sqrt(3)
-        detectors = [((0., b, 0), 'UD'), ((a * 2, b, 0), 'UD'),
-                     ((-a, 0., 0), 'LR'), ((a, 0., 0), 'LR')]
+        detectors = [((0.0, b, 0), 'UD'), ((a * 2, b, 0), 'UD'), ((-a, 0.0, 0), 'LR'), ((a, 0.0, 0), 'LR')]
 
         self._add_station((0, 0, 0), 0, detectors)
 
 
 class HiSPARCStations(CompassStations):
-
     """A cluster containing any real station from the HiSPARC network
 
     The gps position and number of detectors are taken from the API.
@@ -830,8 +835,7 @@ class HiSPARCStations(CompassStations):
             try:
                 detectors = station_info.station_layouts
                 fields = ('radius', 'alpha', 'height', 'beta')
-                razbs = [[detectors['%s%d' % (field, i)] for field in fields]
-                         for i in range(1, n_detectors + 1)]
+                razbs = [[detectors['%s%d' % (field, i)] for field in fields] for i in range(1, n_detectors + 1)]
                 detector_ts = detectors['timestamp']
             except Exception:
                 missing_detectors.append(station)
@@ -842,7 +846,7 @@ class HiSPARCStations(CompassStations):
                     d = 10 / sqrt(3)
                     razbs = [(d, 0, 0, 0), (0, 0, 0, 0), (d, -120, 0, 90), (d, 120, 0, 90)]
                 else:
-                    raise RuntimeError("Detector count unknown for station %d." % station)
+                    raise RuntimeError('Detector count unknown for station %d.' % station)
                 detector_ts = [0]
 
             self._add_station(enu, razbs, station_ts, detector_ts, station)
@@ -850,18 +854,19 @@ class HiSPARCStations(CompassStations):
         self.set_center_off_mass_at_origin()
 
         if len(missing_gps):
-            warnings.warn('Could not get GPS location for stations: %s. '
-                          'Those stations are excluded.' % str(missing_gps))
+            warnings.warn(
+                'Could not get GPS location for stations: %s. Those stations are excluded.' % str(missing_gps),
+            )
         if len(missing_detectors):
-            warnings.warn('Could not get detector layout for stations %s, '
-                          'defaults will be used!' % str(missing_detectors))
+            warnings.warn(
+                'Could not get detector layout for stations %s, defaults will be used!' % str(missing_detectors),
+            )
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({[s.number for s in self.stations]!r})"
+        return f'{self.__class__.__name__}({[s.number for s in self.stations]!r})'
 
 
 class ScienceParkCluster(HiSPARCStations):
-
     """A cluster containing stations from the Science Park subcluster
 
     :param stations: A list of station numbers to include. Only stations
@@ -870,8 +875,7 @@ class ScienceParkCluster(HiSPARCStations):
 
     """
 
-    def __init__(self, stations=None, skip_missing=False, force_fresh=False,
-                 force_stale=False):
+    def __init__(self, stations=None, skip_missing=False, force_fresh=False, force_stale=False):
         if stations is None:
             network = api.Network(force_fresh, force_stale)
             stations = [sn for sn in network.station_numbers(subcluster=500) if sn != 507]
@@ -881,7 +885,6 @@ class ScienceParkCluster(HiSPARCStations):
 
 
 class HiSPARCNetwork(HiSPARCStations):
-
     """A cluster containing all station from the HiSPARC network"""
 
     def __init__(self, force_fresh=False, force_stale=False):
@@ -891,7 +894,7 @@ class HiSPARCNetwork(HiSPARCStations):
         super().__init__(stations, skip_missing, force_fresh, force_stale)
 
     def __repr__(self):
-        return "<%s>" % self.__class__.__name__
+        return '<%s>' % self.__class__.__name__
 
 
 def flatten_cluster(cluster):
@@ -904,6 +907,6 @@ def flatten_cluster(cluster):
 
     """
     for station in cluster.stations:
-        station.z = [0.] * len(station.z)
+        station.z = [0.0] * len(station.z)
         for detector in station.detectors:
-            detector.z = [0.] * len(detector.z)
+            detector.z = [0.0] * len(detector.z)

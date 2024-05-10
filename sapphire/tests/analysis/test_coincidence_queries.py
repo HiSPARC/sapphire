@@ -6,22 +6,22 @@ from sapphire.analysis import coincidence_queries
 
 
 class BaseCoincidenceQueryTest(unittest.TestCase):
-
     @patch.object(coincidence_queries.tables, 'open_file')
     def setUp(self, mock_open_file):
         self.mock_open_file = mock_open_file
         self.data_path = sentinel.data_path
         self.coincidences_group = sentinel.coincidences_group
 
-        self.cq = coincidence_queries.CoincidenceQuery(
-            self.data_path, self.coincidences_group)
+        self.cq = coincidence_queries.CoincidenceQuery(self.data_path, self.coincidences_group)
 
     def test_init_opens_file_and_gets_nodes(self):
         self.mock_open_file.assert_called_once_with(self.data_path, 'r')
-        expected = [call(self.coincidences_group, 'coincidences'),
-                    call(self.coincidences_group, 'c_index'),
-                    call(self.coincidences_group, 's_index'),
-                    call(self.coincidences_group, 'reconstructions')]
+        expected = [
+            call(self.coincidences_group, 'coincidences'),
+            call(self.coincidences_group, 'c_index'),
+            call(self.coincidences_group, 's_index'),
+            call(self.coincidences_group, 'reconstructions'),
+        ]
         call_list = self.mock_open_file.return_value.get_node.call_args_list
         self.assertEqual(call_list, expected)
 
@@ -70,8 +70,7 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         n = 2
         self.cq.at_least(sentinel.stations, n)
         mock_columns.assert_called_once_with(sentinel.stations)
-        mock_query.assert_called_once_with('((s501 & s502) | (s501 & s503) | '
-                                           '(s502 & s503))', False)
+        mock_query.assert_called_once_with('((s501 & s502) | (s501 & s503) | (s502 & s503))', False)
 
     @patch.object(coincidence_queries.CoincidenceQuery, 'perform_query')
     def test_timerange(self, mock_query):
@@ -153,8 +152,7 @@ class BaseCoincidenceQueryTest(unittest.TestCase):
         # mock_minimum.assert_called_once_with([sentinel.coincidence_events])
 
     def test__events_from_stations(self):
-        events = ([sentinel.station1, sentinel.event1],
-                  [sentinel.station2, sentinel.event2])
+        events = ([sentinel.station1, sentinel.event1], [sentinel.station2, sentinel.event2])
         stations = [sentinel.station2]
         result = self.cq._events_from_stations(events, stations)
         self.assertEqual(result, [[sentinel.station2, sentinel.event2]])

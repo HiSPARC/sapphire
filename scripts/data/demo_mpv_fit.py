@@ -4,6 +4,7 @@ Get the pulseintegral data from all stations with data yesterday.
 Fit the MPV and show the results
 
 """
+
 import datetime
 import warnings
 
@@ -26,17 +27,15 @@ def main():
     for station in station_ids:
         plt.figure()
         for did in range(Station(station).n_detectors()):
-            n, bins = get_histogram_for_station_on_date(station, yesterday,
-                                                        did)
+            n, bins = get_histogram_for_station_on_date(station, yesterday, did)
             find_mpv = FindMostProbableValueInSpectrum(n, bins)
             mpv, is_fitted = find_mpv.find_mpv()
 
-            plt.plot((bins[:-1] + bins[1:]) / 2., n, c=COLORS[did])
+            plt.plot((bins[:-1] + bins[1:]) / 2.0, n, c=COLORS[did])
             lines = ['dotted', 'solid']
-            plt.axvline(mpv + did * (bins[1] - bins[0]) / 20.,
-                        c=COLORS[did], ls=lines[is_fitted])
+            plt.axvline(mpv + did * (bins[1] - bins[0]) / 20.0, c=COLORS[did], ls=lines[is_fitted])
             plt.title(station)
-            plt.xlim(0, bins[len(bins)/2])
+            plt.xlim(0, bins[len(bins) / 2])
             plt.yscale('log')
 
 

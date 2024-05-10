@@ -13,6 +13,7 @@ Currently this only works for data files where coincidences have been
 stored by :class:`sapphire.analysis.coincidences.CoincidencesESD`
 
 """
+
 import csv
 
 import tables
@@ -39,8 +40,7 @@ def data_to_csv(destination, source, coincidences_group):
         s_numbers = [s_group.split('_')[-1] for s_group in s_index[:]]
 
     csvwriter.writerow(coincidences.colnames)
-    csvwriter.writerow(['station_number'] +
-                       source.getNode(s_index[0]).events.colnames)
+    csvwriter.writerow(['station_number'] + source.getNode(s_index[0]).events.colnames)
 
     for coincidence in coincidences[:]:
         csvwriter.writerow(coincidence)
@@ -50,7 +50,7 @@ def data_to_csv(destination, source, coincidences_group):
             csvwriter.writerow([s_numbers[s_idx]] + list(event))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Path to the csv file to be created.
     destination = 'data.csv'
 

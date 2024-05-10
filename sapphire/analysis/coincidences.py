@@ -1,35 +1,36 @@
-""" Search for coincidences between HiSPARC stations
+"""Search for coincidences between HiSPARC stations
 
-    This module can be used to search for coincidences between several
-    HiSPARC stations. To skip this and directly download coincidences
-    use :func:`~sapphire.esd.download_coincidences`, this is slightly
-    less flexible because you can not choose the coincidence window.
+This module can be used to search for coincidences between several
+HiSPARC stations. To skip this and directly download coincidences
+use :func:`~sapphire.esd.download_coincidences`, this is slightly
+less flexible because you can not choose the coincidence window.
 
-    For regular usage, download events from the ESD and use the
-    :class:`CoincidencesESD` class. Example usage::
+For regular usage, download events from the ESD and use the
+:class:`CoincidencesESD` class. Example usage::
 
-        import datetime
+    import datetime
 
-        import tables
+    import tables
 
-        from sapphire import CoincidencesESD, download_data
+    from sapphire import CoincidencesESD, download_data
 
-        STATIONS = [501, 503, 506]
-        START = datetime.datetime(2013, 1, 1)
-        END = datetime.datetime(2013, 1, 2)
+    STATIONS = [501, 503, 506]
+    START = datetime.datetime(2013, 1, 1)
+    END = datetime.datetime(2013, 1, 2)
 
 
-        if __name__ == '__main__':
-            station_groups = ['/s%d' % u for u in STATIONS]
+    if __name__ == '__main__':
+        station_groups = ['/s%d' % u for u in STATIONS]
 
-            data = tables.open_file('data.h5', 'w')
-            for station, group in zip(STATIONS, station_groups):
-                download_data(data, group, station, START, END)
+        data = tables.open_file('data.h5', 'w')
+        for station, group in zip(STATIONS, station_groups):
+            download_data(data, group, station, START, END)
 
-            coin = CoincidencesESD(data, '/coincidences', station_groups)
-            coin.search_and_store_coincidences()
+        coin = CoincidencesESD(data, '/coincidences', station_groups)
+        coin.search_and_store_coincidences()
 
 """
+
 import os.path
 
 import numpy as np
@@ -112,8 +113,7 @@ class Coincidences:
 
     """
 
-    def __init__(self, data, coincidence_group, station_groups,
-                 overwrite=False, progress=True):
+    def __init__(self, data, coincidence_group, station_groups, overwrite=False, progress=True):
         """Initialize the class.
 
         :param data: either a PyTables file or path to a HDF5 file.
@@ -139,12 +139,11 @@ class Coincidences:
                 if overwrite:
                     self.data.remove_node(coincidence_group, recursive=True)
                 else:
-                    raise RuntimeError("Group %s already exists in datafile, "
-                                       "and overwrite is False" %
-                                       coincidence_group)
+                    raise RuntimeError(
+                        'Group %s already exists in datafile, and overwrite is False' % coincidence_group,
+                    )
             head, tail = os.path.split(coincidence_group)
-            self.coincidence_group = self.data.create_group(head, tail,
-                                                            createparents=True)
+            self.coincidence_group = self.data.create_group(head, tail, createparents=True)
         self.station_groups = station_groups
 
         self.trig_threshold = 0.5
@@ -163,7 +162,7 @@ class Coincidences:
         if self.opened:
             self.data.close()
 
-    def search_and_store_coincidences(self, window=10000):
+    def search_and_store_coincidences(self, window=10_000):
         """Search, process and store coincidences.
 
         This is a semi-automatic method to search for coincidences,
@@ -179,7 +178,7 @@ class Coincidences:
         self.process_events()
         self.store_coincidences()
 
-    def search_coincidences(self, window=10000, shifts=None, limit=None):
+    def search_coincidences(self, window=10_000, shifts=None, limit=None):
         """Search for coincidences.
 
         Search all data in the station_groups for coincidences, and store
@@ -208,14 +207,10 @@ class Coincidences:
             events.
 
         """
-        c_index, timestamps = \
-            self._search_coincidences(window, shifts, limit)
+        c_index, timestamps = self._search_coincidences(window, shifts, limit)
         timestamps = np.array(timestamps, dtype=np.uint64)
-        self.data.create_array(self.coincidence_group, '_src_timestamps',
-                               timestamps)
-        src_c_index = self.data.create_vlarray(self.coincidence_group,
-                                               '_src_c_index',
-                                               tables.UInt32Atom())
+        self.data.create_array(self.coincidence_group, '_src_timestamps', timestamps)
+        src_c_index = self.data.create_vlarray(self.coincidence_group, '_src_c_index', tables.UInt32Atom())
         for coincidence in c_index:
             src_c_index.append(coincidence)
 
@@ -238,29 +233,24 @@ class Coincidences:
         if len(c_index) == 0:
             return
 
-        selected_timestamps = []
-        for coincidence in c_index:
-            for event in coincidence:
-                selected_timestamps.append(timestamps[event])
+        selected_timestamps = [timestamps[event] for coincidence in c_index for event in coincidence]
         full_index = np.array(selected_timestamps)
 
         for station_id, station_group in enumerate(self.station_groups):
             station_group = self.data.get_node(station_group)
-            selected = full_index.compress(full_index[:, 1] == station_id,
-                                           axis=0)
+            selected = full_index.compress(full_index[:, 1] == station_id, axis=0)
             index = selected[:, 2]
 
             if 'blobs' in station_group:
                 if self.progress:
-                    print("Processing coincidence events with traces")
+                    print('Processing coincidence events with traces')
                 processor = process_events.ProcessIndexedEventsWithLINT
             else:
                 if self.progress:
-                    print("Processing coincidence events without traces")
+                    print('Processing coincidence events without traces')
                 processor = process_events.ProcessIndexedEventsWithoutTraces
 
-            process = processor(self.data, station_group, index,
-                                progress=self.progress)
+            process = processor(self.data, station_group, index, progress=self.progress)
             process.process_and_store_results(overwrite=overwrite)
 
     def store_coincidences(self):
@@ -272,19 +262,13 @@ class Coincidences:
 
         """
         self.c_index = []
-        self.coincidences = self.data.create_table(self.coincidence_group,
-                                                   'coincidences',
-                                                   storage.Coincidence)
-        self.observables = self.data.create_table(self.coincidence_group,
-                                                  'observables',
-                                                  storage.EventObservables)
+        self.coincidences = self.data.create_table(self.coincidence_group, 'coincidences', storage.Coincidence)
+        self.observables = self.data.create_table(self.coincidence_group, 'observables', storage.EventObservables)
 
-        for coincidence in pbar(self.coincidence_group._src_c_index,
-                                show=self.progress):
+        for coincidence in pbar(self.coincidence_group._src_c_index, show=self.progress):
             self._store_coincidence(coincidence)
 
-        c_index = self.data.create_vlarray(self.coincidence_group, 'c_index',
-                                           tables.UInt32Col())
+        c_index = self.data.create_vlarray(self.coincidence_group, 'c_index', tables.UInt32Col())
         for coincidence in self.c_index:
             c_index.append(coincidence)
         c_index.flush()
@@ -311,21 +295,17 @@ class Coincidences:
 
             group = self.data.get_node(self.station_groups[station_id])
             event = group.events[event_index]
-            idx = self._store_event_in_observables(event, coincidence_id,
-                                                   station_id)
+            idx = self._store_event_in_observables(event, coincidence_id, station_id)
             observables_idx.append(idx)
-            timestamps.append((event['ext_timestamp'], event['timestamp'],
-                               event['nanoseconds']))
+            timestamps.append((event['ext_timestamp'], event['timestamp'], event['nanoseconds']))
 
         first_timestamp = sorted(timestamps)[0]
-        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
-            first_timestamp
+        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = first_timestamp
         row.append()
         self.c_index.append(observables_idx)
         self.coincidences.flush()
 
-    def _store_event_in_observables(self, event, coincidence_id,
-                                    station_id):
+    def _store_event_in_observables(self, event, coincidence_id, station_id):
         """Store a single event in the observables table."""
 
         row = self.observables.row
@@ -333,8 +313,7 @@ class Coincidences:
         row['id'] = event_id
 
         row['station_id'] = station_id
-        for key in ('timestamp', 'nanoseconds', 'ext_timestamp',
-                    'n1', 'n2', 'n3', 'n4', 't1', 't2', 't3', 't4'):
+        for key in ('timestamp', 'nanoseconds', 'ext_timestamp', 'n1', 'n2', 'n3', 'n4', 't1', 't2', 't3', 't4'):
             row[key] = event[key]
 
         signals = [event[key] for key in ('n1', 'n2', 'n3', 'n4')]
@@ -345,7 +324,7 @@ class Coincidences:
         self.observables.flush()
         return event_id
 
-    def _search_coincidences(self, window=10000, shifts=None, limit=None):
+    def _search_coincidences(self, window=10_000, shifts=None, limit=None):
         """Search for coincidences
 
         Search for coincidences in a set of PyTables event tables, optionally
@@ -376,8 +355,7 @@ class Coincidences:
         for station_group in self.station_groups:
             station_group = self.data.get_node(station_group)
             if 'events' in station_group:
-                event_tables.append(self.data.get_node(station_group,
-                                                       'events'))
+                event_tables.append(self.data.get_node(station_group, 'events'))
 
         timestamps = self._retrieve_timestamps(event_tables, shifts, limit)
         coincidences = self._do_search_coincidences(timestamps, window)
@@ -407,20 +385,17 @@ class Coincidences:
         # calculate the shifts in nanoseconds and cast them to int.
         # (prevent upcasting timestamps to float64 further on)
         if shifts is not None:
-            shifts = [int(shift * 1e9) if shift is not None else shift
-                      for shift in shifts]
+            shifts = [int(shift * 1_000_000_000) if shift is not None else shift for shift in shifts]
 
         timestamps = []
         for s_id, event_table in enumerate(event_tables):
-            ts = [(x, s_id, j) for j, x in
-                  enumerate(event_table.col('ext_timestamp')[:limit])]
+            ts = [(x, s_id, j) for j, x in enumerate(event_table.col('ext_timestamp')[:limit])]
             try:
                 # shift data. carefully avoid upcasting (we're adding two
                 # ints, which is an int, and casting that back to uint64. if
                 # we're not careful, an intermediate value will be a float64,
                 # which doesn't hold the precision to store nanoseconds.
-                ts = [(np.uint64(int(x) + shifts[i]), i, j)
-                      for x, i, j in ts]
+                ts = [(np.uint64(int(x) + shifts[i]), i, j) for x, i, j in ts]
             except (TypeError, IndexError):
                 # shift is None or doesn't exist
                 pass
@@ -455,11 +430,9 @@ class Coincidences:
         prev_coincidence = []
 
         if self.progress and len(timestamps):
-            pbar = ProgressBar(max_value=len(timestamps),
-                               widgets=[Percentage(), Bar(), ETA()]).start()
+            pbar = ProgressBar(max_value=len(timestamps), widgets=[Percentage(), Bar(), ETA()]).start()
 
         for i in range(len(timestamps)):
-
             # build coincidence, starting with the current timestamp
             c = [i]
             t0 = timestamps[i][0]
@@ -476,8 +449,7 @@ class Coincidences:
             # if we have more than one event in the coincidence, save it
             if len(c) > 1:
                 # is this coincidence part of the previous coincidence?
-                is_part_of_prev = np.array([u in prev_coincidence
-                                            for u in c]).all()
+                is_part_of_prev = np.array([u in prev_coincidence for u in c]).all()
                 if not is_part_of_prev:
                     # no, so it's a new one
                     coincidences.append(c)
@@ -493,16 +465,25 @@ class Coincidences:
 
     def __repr__(self):
         if not self.data.isopen:
-            return "<finished %s>" % self.__class__.__name__
+            return '<finished %s>' % self.__class__.__name__
         try:
-            return ("%s(%r, %r, %r, overwrite=%r, progress=%r)" %
-                    (self.__class__.__name__, self.data.filename,
-                     self.coincidences._v_parent._v_pathname,
-                     self.station_groups, self.overwrite, self.progress))
+            return '%s(%r, %r, %r, overwrite=%r, progress=%r)' % (
+                self.__class__.__name__,
+                self.data.filename,
+                self.coincidences._v_parent._v_pathname,
+                self.station_groups,
+                self.overwrite,
+                self.progress,
+            )
         except AttributeError:
-            return ("%s(%r, %r, %r, overwrite=%r, progress=%r)" %
-                    (self.__class__.__name__, self.data.filename,
-                     None, self.station_groups, self.overwrite, self.progress))
+            return '%s(%r, %r, %r, overwrite=%r, progress=%r)' % (
+                self.__class__.__name__,
+                self.data.filename,
+                None,
+                self.station_groups,
+                self.overwrite,
+                self.progress,
+            )
 
 
 class CoincidencesESD(Coincidences):
@@ -577,8 +558,7 @@ class CoincidencesESD(Coincidences):
 
     """
 
-    def search_and_store_coincidences(self, window=10000,
-                                      station_numbers=None):
+    def search_and_store_coincidences(self, window=10_000, station_numbers=None):
         """Search and store coincidences.
 
         This is a semi-automatic method to search for coincidences
@@ -588,7 +568,7 @@ class CoincidencesESD(Coincidences):
         self.search_coincidences(window=window)
         self.store_coincidences(station_numbers=station_numbers)
 
-    def search_coincidences(self, window=10000, shifts=None, limit=None):
+    def search_coincidences(self, window=10_000, shifts=None, limit=None):
         """Search for coincidences.
 
         Search all data in the station_groups for coincidences, and store
@@ -637,21 +617,21 @@ class CoincidencesESD(Coincidences):
         n_coincidences = len(self._src_c_index)
         if station_numbers is not None:
             if len(station_numbers) != len(self.station_groups):
-                raise RuntimeError(
-                    "Number of station numbers must equal number of groups.")
+                raise RuntimeError('Number of station numbers must equal number of groups.')
             self.station_numbers = station_numbers
-            s_columns = {'s%d' % number: tables.BoolCol(pos=p)
-                         for p, number in enumerate(station_numbers, 12)}
+            s_columns = {'s%d' % number: tables.BoolCol(pos=p) for p, number in enumerate(station_numbers, 12)}
         else:
             self.station_numbers = None
-            s_columns = {'s%d' % n: tables.BoolCol(pos=(n + 12))
-                         for n, _ in enumerate(self.station_groups)}
+            s_columns = {'s%d' % n: tables.BoolCol(pos=(n + 12)) for n, _ in enumerate(self.station_groups)}
 
         description = storage.Coincidence
         description.columns.update(s_columns)
         self.coincidences = self.data.create_table(
-            self.coincidence_group, 'coincidences', description,
-            expectedrows=n_coincidences)
+            self.coincidence_group,
+            'coincidences',
+            description,
+            expectedrows=n_coincidences,
+        )
 
         self.c_index = []
 
@@ -659,15 +639,21 @@ class CoincidencesESD(Coincidences):
             self._store_coincidence(coincidence)
 
         c_index = self.data.create_vlarray(
-            self.coincidence_group, 'c_index', tables.UInt32Col(shape=2),
-            expectedrows=n_coincidences)
+            self.coincidence_group,
+            'c_index',
+            tables.UInt32Col(shape=2),
+            expectedrows=n_coincidences,
+        )
         for observables_idx in pbar(self.c_index, show=self.progress):
             c_index.append(observables_idx)
         c_index.flush()
 
         s_index = self.data.create_vlarray(
-            self.coincidence_group, 's_index', tables.VLStringAtom(),
-            expectedrows=len(self.station_groups))
+            self.coincidence_group,
+            's_index',
+            tables.VLStringAtom(),
+            expectedrows=len(self.station_groups),
+        )
         for station_group in self.station_groups:
             s_index.append(station_group.encode('utf-8'))
         s_index.flush()
@@ -699,12 +685,10 @@ class CoincidencesESD(Coincidences):
             group = self.data.get_node(self.station_groups[station_id])
             event = group.events[event_index]
             observables_idx.append((station_id, event_index))
-            timestamps.append((event['ext_timestamp'], event['timestamp'],
-                               event['nanoseconds']))
+            timestamps.append((event['ext_timestamp'], event['timestamp'], event['nanoseconds']))
 
         first_timestamp = sorted(timestamps)[0]
-        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = \
-            first_timestamp
+        row['ext_timestamp'], row['timestamp'], row['nanoseconds'] = first_timestamp
         row.append()
         self.c_index.append(observables_idx)
         self.coincidences.flush()
@@ -736,8 +720,7 @@ def get_events(data, stations, coincidence, timestamps, get_raw_traces=False):
         process = process_events.ProcessEvents(data, stations[station])
         event = process.source[index]
         if not get_raw_traces:
-            baseline = np.where(event['baseline'] != -999, event['baseline'],
-                                200)[np.where(event['traces'] >= 0)]
+            baseline = np.where(event['baseline'] != -999, event['baseline'], 200)[np.where(event['traces'] >= 0)]
             # transpose to get expected format
             traces = (process.get_traces_for_event(event) - baseline).T
         else:

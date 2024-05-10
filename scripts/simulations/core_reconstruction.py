@@ -1,12 +1,7 @@
-import os
-import sys
-
-from itertools import combinations
-
 import numpy as np
 import tables
+import utils
 
-from scipy import optimize
 from scipy.misc import comb
 from scipy.stats import scoreatpercentile
 
@@ -14,9 +9,6 @@ import pylab as plt
 
 from pylab import *
 
-import utils
-
-from sapphire import storage
 from sapphire.analysis.core_reconstruction import *
 from sapphire.simulations import ldf
 
@@ -29,7 +21,7 @@ if USE_TEX:
     rcParams['font.serif'] = 'Computer Modern'
     rcParams['font.sans-serif'] = 'Computer Modern'
     rcParams['font.family'] = 'sans-serif'
-    rcParams['figure.figsize'] = [4 * x for x in (1, 2. / 3)]
+    rcParams['figure.figsize'] = [4 * x for x in (1, 2.0 / 3)]
     rcParams['figure.subplot.left'] = 0.175
     rcParams['figure.subplot.bottom'] = 0.175
     rcParams['font.size'] = 10
@@ -48,9 +40,7 @@ def do_reconstruction_plots(table):
 
 Pnil = lambda x: exp(-0.5 * x)
 Pp = lambda x: 1 - Pnil(x)
-Ptrig = lambda x: comb(4, 2) * Pp(x) ** 2 * Pnil(x) ** 2 + \
-                  comb(4, 3) * Pp(x) ** 3 * Pnil(x) + \
-                  comb(4, 4) * Pp(x) ** 4
+Ptrig = lambda x: comb(4, 2) * Pp(x) ** 2 * Pnil(x) ** 2 + comb(4, 3) * Pp(x) ** 3 * Pnil(x) + comb(4, 4) * Pp(x) ** 4
 
 
 def plot_N_reconstructions_vs_R(table):
@@ -87,15 +77,15 @@ def plot_N_reconstructions_vs_R(table):
     x = array(x)
     y = array(y)
 
-    plot(x, y, label="sim")
+    plot(x, y, label='sim')
 
     kldf = ldf.KascadeLdf()
     dens = kldf.calculate_ldf_value(x)
 
-    plot(x, Ptrig(dens), label="calc")
+    plot(x, Ptrig(dens), label='calc')
     legend()
-    xlabel("Core distance [m]")
-    ylabel("Reconstruction efficiency")
+    xlabel('Core distance [m]')
+    ylabel('Reconstruction efficiency')
     utils.saveplot()
 
 
@@ -122,8 +112,8 @@ def plot_core_pos_uncertainty_vs_R(table):
     fill_between(x, d25, d75, color='0.75')
     plot(x, d50, 'o-', color='black')
 
-    xlabel("Core distance [m]")
-    ylabel("Core position uncertainty [m]")
+    xlabel('Core distance [m]')
+    ylabel('Core position uncertainty [m]')
     utils.saveplot()
 
 
@@ -134,12 +124,12 @@ def plot_shower_size_hist(table):
 
     hist(log10(reconstructed), bins=200, histtype='step')
     reference_shower_size = table[0]['reference_shower_size']
-    if reference_shower_size == 0.:
-        reference_shower_size = 10 ** 4.8
+    if reference_shower_size == 0.0:
+        reference_shower_size = 10**4.8
     axvline(log10(reference_shower_size))
 
-    xlabel("log shower size")
-    ylabel("count")
+    xlabel('log shower size')
+    ylabel('count')
     utils.saveplot()
 
 
@@ -153,29 +143,29 @@ def plot_scatter_reconstructed_core(table, N=None):
     station = table.attrs.cluster.stations[0]
     subplot(121)
     x, y = table.col('reference_core_pos')[:N].T
-    #scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
+    # scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
     plot(x, y, ',', c='b', markeredgecolor='b', zorder=1)
     for detector in station.detectors:
         x, y = detector.get_xy_coordinates()
         plt.scatter(x, y, c='r', s=20, edgecolor='none', zorder=2)
-    xlabel("Distance [m]")
-    ylabel("Distance [m]")
+    xlabel('Distance [m]')
+    ylabel('Distance [m]')
     xlim(-60, 60)
     ylim(-60, 60)
-    title("simulated")
+    title('simulated')
 
     subplot(122)
     x, y = table.col('reconstructed_core_pos')[:N].T
-    #scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
+    # scatter(x, y, c='b', s=1, edgecolor='none', zorder=1)
     plot(x, y, ',', c='b', markeredgecolor='b', zorder=1)
     for detector in station.detectors:
         x, y = detector.get_xy_coordinates()
         plt.scatter(x, y, c='r', s=20, edgecolor='none', zorder=2)
-    xlabel("Distance [m]")
-    ylabel("Distance [m]")
+    xlabel('Distance [m]')
+    ylabel('Distance [m]')
     xlim(-60, 60)
     ylim(-60, 60)
-    title("reconstructed")
+    title('reconstructed')
 
     utils.saveplot()
 
@@ -204,31 +194,35 @@ if __name__ == '__main__':
         c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20')
         c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
-        c = CoreReconstruction(data, '/reconstructions/poisson_gauss_20_nonull', solver=CorePositionSolverWithoutNullMeasurements(ldf.KascadeLdf()))
+        c = CoreReconstruction(
+            data,
+            '/reconstructions/poisson_gauss_20_nonull',
+            solver=CorePositionSolverWithoutNullMeasurements(ldf.KascadeLdf()),
+        )
         c.reconstruct_core_positions('/ldfsim/poisson_gauss_20')
 
-        #c = CoreReconstruction(data, '/reconstructions/ground_gauss_20')
-        #c.reconstruct_core_positions('/groundsim/zenith_0/shower_0')
+        # c = CoreReconstruction(data, '/reconstructions/ground_gauss_20')
+        # c.reconstruct_core_positions('/groundsim/zenith_0/shower_0')
 
-    utils.set_prefix("COR-")
+    utils.set_prefix('COR-')
 
-    utils.set_suffix("-EXACT")
+    utils.set_suffix('-EXACT')
     do_reconstruction_plots(data.root.reconstructions.exact)
 
-    utils.set_suffix("-GAUSS_10")
+    utils.set_suffix('-GAUSS_10')
     do_reconstruction_plots(data.root.reconstructions.gauss_10)
 
-    utils.set_suffix("-GAUSS_20")
+    utils.set_suffix('-GAUSS_20')
     do_reconstruction_plots(data.root.reconstructions.gauss_20)
 
-    utils.set_suffix("-POISSON")
+    utils.set_suffix('-POISSON')
     do_reconstruction_plots(data.root.reconstructions.poisson)
 
-    utils.set_suffix("-POISSON-GAUSS_20")
+    utils.set_suffix('-POISSON-GAUSS_20')
     do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20)
 
-    utils.set_suffix("-POISSON-GAUSS_20_NONULL")
+    utils.set_suffix('-POISSON-GAUSS_20_NONULL')
     do_reconstruction_plots(data.root.reconstructions.poisson_gauss_20_nonull)
 
-    #utils.set_suffix("-GROUND-GAUSS_20")
-    #do_reconstruction_plots(data.root.reconstructions.ground_gauss_20)
+    # utils.set_suffix("-GROUND-GAUSS_20")
+    # do_reconstruction_plots(data.root.reconstructions.ground_gauss_20)

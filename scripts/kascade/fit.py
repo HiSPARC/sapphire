@@ -8,8 +8,8 @@ from pylab import *
 
 def frac_bins(low, high, binsize, nbins=1):
     binsize = binsize * nbins
-    low = low - .5 * binsize
-    high = ceil((high - low) / binsize) * binsize + low + .5 * binsize
+    low = low - 0.5 * binsize
+    high = ceil((high - low) / binsize) * binsize + low + 0.5 * binsize
     return arange(low, high, binsize)
 
 
@@ -22,20 +22,22 @@ def fit_gauss_to_timings(events, timing_data):
         dt = []
         for t, c in zip(timing_data, events):
             ph = c['pulseheights']
-            if min([ph[i], ph[j]]) / 350. >= 2.:
+            if min([ph[i], ph[j]]) / 350.0 >= 2.0:
                 dt.append(t[i] - t[j])
-        n, bins, patches = hist(dt, bins=frac_bins(-40, 40, 2.5),
-                                histtype='step', label="detector %d - %d"
-                                % (i + 1, j + 1))
+        n, bins, patches = hist(
+            dt,
+            bins=frac_bins(-40, 40, 2.5),
+            histtype='step',
+            label='detector %d - %d' % (i + 1, j + 1),
+        )
         b = [(u + v) / 2 for u, v in zip(bins[:-1], bins[1:])]
         popt, pcov = curve_fit(gauss, b, n)
         x = linspace(-40, 40, 100)
-        plot(x, gauss(x, *popt), label="mu: {:.2f}, sigma: {:.2f}".format(popt[1],
-                                                                  popt[2]))
+        plot(x, gauss(x, *popt), label=f'mu: {popt[1]:.2f}, sigma: {popt[2]:.2f}')
     legend(prop={'size': 'small'})
     title("Delta t's for D >= 2.")
-    xlabel("Time (ns)")
-    ylabel("Count")
+    xlabel('Time (ns)')
+    ylabel('Count')
 
 
 if __name__ == '__main__':

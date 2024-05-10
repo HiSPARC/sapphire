@@ -8,16 +8,14 @@ from sapphire.corsika import qsub_corsika
 
 
 class CorsikaBatchTest(unittest.TestCase):
-
     def setUp(self):
         self.cb = qsub_corsika.CorsikaBatch()
 
     @patch.object(qsub_corsika.particles, 'particle_id')
     def test_init(self, mock_particles):
         mock_particles.return_value = sentinel.particle_id
-        cb = qsub_corsika.CorsikaBatch(16, sentinel.particle, sentinel.zenith,
-                                       30, sentinel.queue, sentinel.corsika)
-        self.assertEqual(cb.energy_pre, 1.)
+        cb = qsub_corsika.CorsikaBatch(16, sentinel.particle, sentinel.zenith, 30, sentinel.queue, sentinel.corsika)
+        self.assertEqual(cb.energy_pre, 1.0)
         self.assertEqual(cb.energy_pow, 7)
         mock_particles.assert_called_once_with(sentinel.particle)
         self.assertEqual(cb.particle, sentinel.particle_id)
@@ -53,14 +51,16 @@ class CorsikaBatchTest(unittest.TestCase):
         mock_rundir.return_value = '/data/123_456/'
         mock_create_script.return_value = sentinel.script
         self.cb.submit_job()
-        mock_submit_job.assert_called_once_with(sentinel.script, 'cor_123_456',
-                                                'generic', '-d /data/123_456/')
+        mock_submit_job.assert_called_once_with(sentinel.script, 'cor_123_456', 'generic', '-d /data/123_456/')
         # Check addition of walltime argument for long queue
         self.cb.queue = 'long'
         self.cb.submit_job()
-        mock_submit_job.assert_called_with(sentinel.script, 'cor_123_456',
-                                           'long',
-                                           '-d /data/123_456/ -l walltime=96:00:00')
+        mock_submit_job.assert_called_with(
+            sentinel.script,
+            'cor_123_456',
+            'long',
+            '-d /data/123_456/ -l walltime=96:00:00',
+        )
 
     @patch.object(qsub_corsika.os, 'listdir')
     def test_taken_seeds(self, mock_listdir):
@@ -116,16 +116,23 @@ class CorsikaBatchTest(unittest.TestCase):
 
 
 class MultipleJobsTest(unittest.TestCase):
-
     @patch.object(qsub_corsika.qsub, 'check_queue')
     def test_no_available_slots(self, mock_check_queue):
         """No slots available on queue"""
 
         mock_check_queue.return_value = 0
-        self.assertRaises(Exception, qsub_corsika.multiple_jobs, sentinel.n,
-                          sentinel.energy, sentinel.particle, sentinel.zenith,
-                          sentinel.azimuth, sentinel.queue, sentinel.corsika,
-                          progress=False)
+        self.assertRaises(
+            Exception,
+            qsub_corsika.multiple_jobs,
+            sentinel.n,
+            sentinel.energy,
+            sentinel.particle,
+            sentinel.zenith,
+            sentinel.azimuth,
+            sentinel.queue,
+            sentinel.corsika,
+            progress=False,
+        )
         mock_check_queue.assert_called_once_with(sentinel.queue)
 
     @patch.object(qsub_corsika, 'CorsikaBatch')
@@ -135,15 +142,25 @@ class MultipleJobsTest(unittest.TestCase):
 
         mock_check_queue.return_value = 1
         with warnings.catch_warnings(record=True) as warned:
-            qsub_corsika.multiple_jobs(2, sentinel.energy, sentinel.particle,
-                                       sentinel.zenith, sentinel.azimuth,
-                                       sentinel.queue, sentinel.corsika,
-                                       progress=False)
+            qsub_corsika.multiple_jobs(
+                2,
+                sentinel.energy,
+                sentinel.particle,
+                sentinel.zenith,
+                sentinel.azimuth,
+                sentinel.queue,
+                sentinel.corsika,
+                progress=False,
+            )
         mock_check_queue.assert_called_once_with(sentinel.queue)
         mock_corsika_batch.assert_called_once_with(
-            energy=sentinel.energy, particle=sentinel.particle,
-            zenith=sentinel.zenith, azimuth=sentinel.azimuth,
-            queue=sentinel.queue, corsika=sentinel.corsika)
+            energy=sentinel.energy,
+            particle=sentinel.particle,
+            zenith=sentinel.zenith,
+            azimuth=sentinel.azimuth,
+            queue=sentinel.queue,
+            corsika=sentinel.corsika,
+        )
         mock_corsika_batch.return_value.run.assert_called_once_with()
         self.assertEqual(len(warned), 1)
 
@@ -154,15 +171,25 @@ class MultipleJobsTest(unittest.TestCase):
 
         mock_check_queue.return_value = 2
         with warnings.catch_warnings(record=True) as warned:
-            qsub_corsika.multiple_jobs(3, sentinel.energy, sentinel.particle,
-                                       sentinel.zenith, sentinel.azimuth,
-                                       sentinel.queue, sentinel.corsika,
-                                       progress=False)
+            qsub_corsika.multiple_jobs(
+                3,
+                sentinel.energy,
+                sentinel.particle,
+                sentinel.zenith,
+                sentinel.azimuth,
+                sentinel.queue,
+                sentinel.corsika,
+                progress=False,
+            )
         mock_check_queue.assert_called_once_with(sentinel.queue)
         mock_corsika_batch.assert_called_with(
-            energy=sentinel.energy, particle=sentinel.particle,
-            zenith=sentinel.zenith, azimuth=sentinel.azimuth,
-            queue=sentinel.queue, corsika=sentinel.corsika)
+            energy=sentinel.energy,
+            particle=sentinel.particle,
+            zenith=sentinel.zenith,
+            azimuth=sentinel.azimuth,
+            queue=sentinel.queue,
+            corsika=sentinel.corsika,
+        )
         mock_corsika_batch.return_value.run.assert_called_with()
         # This is twice as often because it includes the calls to run()
         self.assertEqual(len(mock_corsika_batch.mock_calls), 4)
@@ -177,15 +204,25 @@ class MultipleJobsTest(unittest.TestCase):
         mock_check_queue.return_value = 50
         n = 10
         with warnings.catch_warnings(record=True) as warned:
-            qsub_corsika.multiple_jobs(n, sentinel.energy, sentinel.particle,
-                                       sentinel.zenith, sentinel.azimuth,
-                                       sentinel.queue, sentinel.corsika,
-                                       progress=False)
+            qsub_corsika.multiple_jobs(
+                n,
+                sentinel.energy,
+                sentinel.particle,
+                sentinel.zenith,
+                sentinel.azimuth,
+                sentinel.queue,
+                sentinel.corsika,
+                progress=False,
+            )
         mock_check_queue.assert_called_once_with(sentinel.queue)
         mock_corsika_batch.assert_called_with(
-            energy=sentinel.energy, particle=sentinel.particle,
-            zenith=sentinel.zenith, azimuth=sentinel.azimuth,
-            queue=sentinel.queue, corsika=sentinel.corsika)
+            energy=sentinel.energy,
+            particle=sentinel.particle,
+            zenith=sentinel.zenith,
+            azimuth=sentinel.azimuth,
+            queue=sentinel.queue,
+            corsika=sentinel.corsika,
+        )
         mock_corsika_batch.return_value.run.assert_called_with()
         # This is twice as often because it includes the calls to run()
         self.assertEqual(len(mock_corsika_batch.mock_calls), n * 2)

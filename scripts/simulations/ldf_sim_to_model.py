@@ -1,6 +1,6 @@
-from itertools import izip
-
 import tables
+
+from pylab import *
 
 
 def plot_ldf_and_models(data, group):
@@ -14,8 +14,8 @@ def plot_ldf_and_models(data, group):
     # plot ldf from ground particles
     R = particles[:]['core_distance']
     N, hbins = histogram(R, bins)
-    area = [pi * (v ** 2 - u ** 2) for u, v in zip(bins[:-1], bins[1:])]
-    loglog(x, N / area, label="full")
+    area = [pi * (v**2 - u**2) for u, v in zip(bins[:-1], bins[1:])]
+    loglog(x, N / area, label='full')
 
     # plot ldf from observables
     observables = data.root.simulations.E_1PeV.zenith_0.observables
@@ -24,10 +24,10 @@ def plot_ldf_and_models(data, group):
     n2 = observables[:]['n2']
     n3 = observables[:]['n3']
     n4 = observables[:]['n4']
-    density = (n1 + n2 + n3 + n4) / 2.
+    density = (n1 + n2 + n3 + n4) / 2.0
 
-    R_within_limits = R.compress((R < bins[-1]) & (R >= bins[0]))
-    density_within_R_limits = density.compress((R < bins[-1]) & (R >= bins[0]))
+    R_within_limits = R.compress((bins[-1] > R) & (bins[0] <= R))
+    density_within_R_limits = density.compress((bins[-1] > R) & (bins[0] <= R))
 
     idxs = searchsorted(bins, R_within_limits) - 1
     binned_densities = [[] for i in range(len(bins) - 1)]
@@ -35,11 +35,11 @@ def plot_ldf_and_models(data, group):
         binned_densities[idx].append(value)
     y = [mean(u) for u in binned_densities]
     y_err = [std(u) for u in binned_densities]
-    errorbar(x, y, y_err, label="measured")
+    errorbar(x, y, y_err, label='measured')
 
-    xlabel("Core distance [m]")
-    ylabel("Particle density [m^{-2}]")
-    title("Full and measured LDF (E = 1 PeV)")
+    xlabel('Core distance [m]')
+    ylabel('Particle density [m^{-2}]')
+    title('Full and measured LDF (E = 1 PeV)')
     legend()
 
 
@@ -63,13 +63,13 @@ def plot_ldf_ldf(data, group):
             n2 = observables['n2']
             n3 = observables['n3']
             n4 = observables['n4']
-            density.append((n1 + n2 + n3 + n4) / 2.)
+            density.append((n1 + n2 + n3 + n4) / 2.0)
 
     R = array(R)
     density = array(density)
 
-    R_within_limits = R.compress((R < bins[-1]) & (R >= bins[0]))
-    density_within_R_limits = density.compress((R < bins[-1]) & (R >= bins[0]))
+    R_within_limits = R.compress((bins[-1] > R) & (bins[0] <= R))
+    density_within_R_limits = density.compress((bins[-1] > R) & (bins[0] <= R))
 
     idxs = searchsorted(bins, R_within_limits) - 1
     binned_densities = [[] for i in range(len(bins) - 1)]
@@ -77,7 +77,7 @@ def plot_ldf_ldf(data, group):
         binned_densities[idx].append(value)
     y = [mean(u) for u in binned_densities]
     y_err = [std(u) for u in binned_densities]
-    errorbar(x, y, y_err, label="measured ldf_sim")
+    errorbar(x, y, y_err, label='measured ldf_sim')
     legend()
 
 

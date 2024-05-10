@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import sys
 
 from sapphire import corsika
 
@@ -15,4 +14,4 @@ for event in cors_file.get_events():
     for particle in event.get_particles():
         count += 1
 
-    print(count, " particles")
+    print(count, ' particles')

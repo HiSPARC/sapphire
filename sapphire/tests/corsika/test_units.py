@@ -5,20 +5,19 @@ from sapphire.corsika import units
 
 
 class CorsikaUnitsTests(unittest.TestCase):
-
     def test_base_units(self):
         """Verify that the correct units are one"""
 
-        self.assertEqual(units.meter, 1.)
+        self.assertEqual(units.meter, 1.0)
         self.assertEqual(units.m, units.meter)
-        self.assertEqual(units.nanosecond, 1.)
+        self.assertEqual(units.nanosecond, 1.0)
         self.assertEqual(units.ns, units.nanosecond)
-        self.assertEqual(units.electronvolt, 1.)
+        self.assertEqual(units.electronvolt, 1.0)
         self.assertEqual(units.eV, units.electronvolt)
-        self.assertEqual(units.radian, 1.)
+        self.assertEqual(units.radian, 1.0)
         self.assertEqual(units.rad, units.radian)
-        self.assertEqual(units.eplus, 1.)
-        self.assertEqual(units.volt, 1.)
+        self.assertEqual(units.eplus, 1.0)
+        self.assertEqual(units.volt, 1.0)
         self.assertEqual(units.volt, units.electronvolt / units.eplus)
 
     def test_corsika_units(self):
@@ -33,13 +32,13 @@ class CorsikaUnitsTests(unittest.TestCase):
         self.assertEqual(units.second, units.giga * units.ns)
         self.assertEqual(units.s, units.second)
         self.assertEqual(units.EeV, units.exa * units.eV)
-        self.assertEqual(units.degree, (math.pi / 180.) * units.rad)
+        self.assertEqual(units.degree, (math.pi / 180.0) * units.rad)
         self.assertEqual(units.joule, units.eV / units.eSI)
         self.assertEqual(units.joule, units.eV / units.eSI)
-        self.assertEqual(units.gram, units.peta * units.joule * units.ns ** 2 / units.m ** 2)
+        self.assertEqual(units.gram, units.peta * units.joule * units.ns**2 / units.m**2)
         self.assertEqual(units.g, units.gram)
 
-        self.assertEqual(units.tesla, units.giga * units.volt * units.ns / units.m ** 2)
+        self.assertEqual(units.tesla, units.giga * units.volt * units.ns / units.m**2)
 
     def test_prefixes(self):
         """Verify the values of the prefixes"""

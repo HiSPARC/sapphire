@@ -1,18 +1,18 @@
-""" Core reconstruction
+"""Core reconstruction
 
-    This module contains two classes that can be used to reconstruct
-    HiSPARC events and coincidences. The classes know how to extract the
-    relevant information from the station and event or cluster and
-    coincidence. Various algorithms which do the reconstruction are also
-    defined here. The algorithms require positions and particle densties to
-    do the reconstruction.
+This module contains two classes that can be used to reconstruct
+HiSPARC events and coincidences. The classes know how to extract the
+relevant information from the station and event or cluster and
+coincidence. Various algorithms which do the reconstruction are also
+defined here. The algorithms require positions and particle densties to
+do the reconstruction.
 
-    Each algorithm has a :meth:`~BaseCoreAlgorithm.reconstruct_common`
-    method which always requires particle denisties, x, and y positions
-    and optionally z positions and previous reconstruction results. The
-    data is then prepared for the algorithm and passed to
-    the :meth:`~CenterMassAlgorithm.reconstruct` method which returns the
-    reconstructed x and y coordinates.
+Each algorithm has a :meth:`~BaseCoreAlgorithm.reconstruct_common`
+method which always requires particle denisties, x, and y positions
+and optionally z positions and previous reconstruction results. The
+data is then prepared for the algorithm and passed to
+the :meth:`~CenterMassAlgorithm.reconstruct` method which returns the
+reconstructed x and y coordinates.
 
 """
 
@@ -28,7 +28,6 @@ from .event_utils import detector_density, station_density
 
 
 class EventCoreReconstruction:
-
     """Reconstruct core for station events
 
     This class is aware of 'events' and 'stations'.  Initialize this class
@@ -62,23 +61,21 @@ class EventCoreReconstruction:
             detector_ids = range(4)
 
         self.station.cluster.set_timestamp(event['timestamp'])
-        for id in detector_ids:
-            p_detector = detector_density(event, id, self.station)
+        for detector_id in detector_ids:
+            p_detector = detector_density(event, detector_id, self.station)
             if not isnan(p_detector):
-                dx, dy, dz = self.station.detectors[id].get_coordinates()
+                dx, dy, dz = self.station.detectors[detector_id].get_coordinates()
                 p.append(p_detector)
                 x.append(dx)
                 y.append(dy)
                 z.append(dz)
         if len(p) >= 3:
-            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z,
-                                                               initial)
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z, initial)
         else:
             core_x, core_y = (nan, nan)
         return core_x, core_y
 
-    def reconstruct_events(self, events, detector_ids=None, progress=True,
-                           initials=None):
+    def reconstruct_events(self, events, detector_ids=None, progress=True, initials=None):
         """Reconstruct events
 
         :param events: the events table for the station from an ESD data
@@ -95,8 +92,7 @@ class EventCoreReconstruction:
 
         events = pbar(events, show=progress)
         events_init = zip_longest(events, initials)
-        cores = [self.reconstruct_event(event, detector_ids, initial)
-                 for event, initial in events_init]
+        cores = [self.reconstruct_event(event, detector_ids, initial) for event, initial in events_init]
         if len(cores):
             core_x, core_y = zip(*cores)
         else:
@@ -104,12 +100,10 @@ class EventCoreReconstruction:
         return core_x, core_y
 
     def __repr__(self):
-        return ("<%s, station: %r, estimator: %r>" %
-                (self.__class__.__name__, self.station, self.estimator))
+        return '<%s, station: %r, estimator: %r>' % (self.__class__.__name__, self.station, self.estimator)
 
 
 class CoincidenceCoreReconstruction:
-
     """Reconstruct core for coincidences
 
     This class is aware of 'coincidences' and 'clusters'.  Initialize
@@ -124,8 +118,7 @@ class CoincidenceCoreReconstruction:
         self.estimator = CenterMassAlgorithm
         self.cluster = cluster
 
-    def reconstruct_coincidence(self, coincidence, station_numbers=None,
-                                initial=None):
+    def reconstruct_coincidence(self, coincidence, station_numbers=None, initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
@@ -158,14 +151,12 @@ class CoincidenceCoreReconstruction:
                 z.append(sz)
 
         if len(p) >= 3:
-            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z,
-                                                               initial)
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z, initial)
         else:
             core_x, core_y = (nan, nan)
         return core_x, core_y
 
-    def reconstruct_coincidences(self, coincidences, station_numbers=None,
-                                 progress=True, initials=None):
+    def reconstruct_coincidences(self, coincidences, station_numbers=None, progress=True, initials=None):
         """Reconstruct all coincidences
 
         :param coincidences: a list of coincidences, each consisting of
@@ -183,9 +174,9 @@ class CoincidenceCoreReconstruction:
 
         coincidences = pbar(coincidences, show=progress)
         coin_init = zip_longest(coincidences, initials)
-        cores = [self.reconstruct_coincidence(coincidence, station_numbers,
-                                              initial)
-                 for coincidence, initial in coin_init]
+        cores = [
+            self.reconstruct_coincidence(coincidence, station_numbers, initial) for coincidence, initial in coin_init
+        ]
         if len(cores):
             core_x, core_y = list(zip(*cores))
         else:
@@ -193,13 +184,10 @@ class CoincidenceCoreReconstruction:
         return core_x, core_y
 
     def __repr__(self):
-        return ("<%s, cluster: %r, estimator: %r>" %
-                (self.__class__.__name__, self.cluster, self.estimator))
+        return '<%s, cluster: %r, estimator: %r>' % (self.__class__.__name__, self.cluster, self.estimator)
 
 
-class CoincidenceCoreReconstructionDetectors(
-        CoincidenceCoreReconstruction):
-
+class CoincidenceCoreReconstructionDetectors(CoincidenceCoreReconstruction):
     """Reconstruct core for coincidences using each detector
 
     Instead of using the average station particle density this class
@@ -207,8 +195,7 @@ class CoincidenceCoreReconstructionDetectors(
 
     """
 
-    def reconstruct_coincidence(self, coincidence, station_numbers=None,
-                                initial=None):
+    def reconstruct_coincidence(self, coincidence, station_numbers=None, initial=None):
         """Reconstruct a single coincidence
 
         :param coincidence: a coincidence list consisting of
@@ -228,29 +215,26 @@ class CoincidenceCoreReconstructionDetectors(
             return (nan, nan)
 
         for station_number, event in coincidence:
-            if station_numbers is not None:
-                if station_number not in station_numbers:
-                    continue
+            if station_numbers is not None and station_number not in station_numbers:
+                continue
             station = self.cluster.get_station(station_number)
-            for id in range(4):
-                p_detector = detector_density(event, id, station)
+            for detector_id in range(4):
+                p_detector = detector_density(event, detector_id, station)
                 if not isnan(p_detector):
-                    dx, dy, dz = station.detectors[id].get_coordinates()
+                    dx, dy, dz = station.detectors[detector_id].get_coordinates()
                     p.append(p_detector)
                     x.append(dx)
                     y.append(dy)
                     z.append(dz)
 
         if len(p) >= 3:
-            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z,
-                                                               initial)
+            core_x, core_y = self.estimator.reconstruct_common(p, x, y, z, initial)
         else:
             core_x, core_y = (nan, nan)
         return core_x, core_y
 
 
 class BaseCoreAlgorithm:
-
     """No actual core reconstruction algorithm
 
     Simply returns (nan, nan) as core.
@@ -282,7 +266,6 @@ class BaseCoreAlgorithm:
 
 
 class CenterMassAlgorithm(BaseCoreAlgorithm):
-
     """Simple core estimator
 
     Estimates the core by center of mass of the measurements.
@@ -324,7 +307,6 @@ class CenterMassAlgorithm(BaseCoreAlgorithm):
 
 
 class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
-
     """Core estimator
 
     To the densities in 3 stations correspond 2 possible cores. The line
@@ -351,7 +333,7 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
 
         """
         if len(p) < 4 or len(x) < 4 or len(y) < 4:
-            raise Exception('This algorithm requires at least 4 detections.')
+            raise ValueError('This algorithm requires at least 4 detections.')
         if initial is None:
             initial = {}
 
@@ -371,8 +353,8 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
         linelist0 = []
         linelist1 = []
         for zero, one, two in subsets:
-            pp = (phit[zero] / phit[one]) ** (2. / m)
-            qq = (phit[zero] / phit[two]) ** (2. / m)
+            pp = (phit[zero] / phit[one]) ** (2.0 / m)
+            qq = (phit[zero] / phit[two]) ** (2.0 / m)
             if pp == 1:
                 pp = 1.000001
             if qq == 1:
@@ -399,8 +381,7 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
             linelist0.append(-e / f)
             linelist1.append((a * e + b * f + g * k) / f)
 
-        newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z,
-                                                            initial)
+        newx, newy = CenterMassAlgorithm.reconstruct_common(p, x, y, z, initial)
         subsets = combinations(statindex, 2)
 
         xpointlist = []
@@ -419,13 +400,11 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
                 xpointlist.append(xint)
                 ypointlist.append(yint)
 
-        subxplist, subyplist = cls.select_newlist(
-            newx, newy, xpointlist, ypointlist, 120.)
+        subxplist, subyplist = cls.select_newlist(newx, newy, xpointlist, ypointlist, 120.0)
         if len(subxplist) > 3:
             newx = mean(subxplist)
             newy = mean(subyplist)
-            subxplist, subyplist = cls.select_newlist(
-                newx, newy, xpointlist, ypointlist, 100.)
+            subxplist, subyplist = cls.select_newlist(newx, newy, xpointlist, ypointlist, 100.0)
         if len(subxplist) > 2:
             newx = mean(subxplist)
             newy = mean(subyplist)
@@ -448,7 +427,6 @@ class AverageIntersectionAlgorithm(BaseCoreAlgorithm):
 
 
 class EllipsLdfAlgorithm(BaseCoreAlgorithm):
-
     """Simple core estimator
 
     Estimates the core by center of mass of the measurements.
@@ -469,8 +447,8 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
         """
         if initial is None:
             initial = {}
-        theta = initial.get('theta', 0.)
-        phi = initial.get('phi', 0.)
+        theta = initial.get('theta', 0.0)
+        phi = initial.get('phi', 0.0)
         return cls.reconstruct(p, x, y, theta, phi)[:2]
 
     @classmethod
@@ -484,22 +462,41 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
 
         """
         xcmass, ycmass = CenterMassAlgorithm.reconstruct_common(p, x, y)
-        chi2best = 10 ** 99
+        chi2best = 10**99
         xbest = xcmass
         ybest = ycmass
-        factorbest = 1.
-        gridsize = 5.
+        factorbest = 1.0
+        gridsize = 5.0
         xbest1, ybest1, chi2best1, factorbest1 = cls.selectbest(
-            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
+            p,
+            x,
+            y,
+            xbest,
+            ybest,
+            factorbest,
+            chi2best,
+            gridsize,
+            theta,
+            phi,
+        )
 
-        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x,
-                                                                         y)
-        chi2best = 10 ** 99
+        xlines, ylines = AverageIntersectionAlgorithm.reconstruct_common(p, x, y)
+        chi2best = 10**99
         xbest = xcmass
         ybest = ycmass
-        factorbest = 1.
+        factorbest = 1.0
         xbest2, ybest2, chi2best2, factorbest2 = cls.selectbest(
-            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
+            p,
+            x,
+            y,
+            xbest,
+            ybest,
+            factorbest,
+            chi2best,
+            gridsize,
+            theta,
+            phi,
+        )
 
         if chi2best1 < chi2best2:
             chi2best = chi2best1
@@ -512,17 +509,26 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
             ybest = ybest2
             factorbest = factorbest2
 
-        gridsize = 2.
+        gridsize = 2.0
         core_x, core_y, chi2best, factorbest = cls.selectbest(
-            p, x, y, xbest, ybest, factorbest, chi2best, gridsize, theta, phi)
+            p,
+            x,
+            y,
+            xbest,
+            ybest,
+            factorbest,
+            chi2best,
+            gridsize,
+            theta,
+            phi,
+        )
 
         size = factorbest * ldf.EllipsLdf._n_electrons
 
         return core_x, core_y, chi2best, size
 
     @staticmethod
-    def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize,
-                   theta, phi):
+    def selectbest(p, x, y, xstart, ystart, factorbest, chi2best, gridsize, theta, phi):
         """selects the best core position in grid around (xstart, ystart).
 
         :param p: detector particle density in m^-2.
@@ -540,22 +546,21 @@ class EllipsLdfAlgorithm(BaseCoreAlgorithm):
                 ytry = ystart + (i - 20) * gridsize
                 xstations = array(x)
                 ystations = array(y)
-                r, angle = a.calculate_core_distance_and_angle(
-                    xstations, ystations, xtry, ytry)
+                r, angle = a.calculate_core_distance_and_angle(xstations, ystations, xtry, ytry)
                 rho = a.calculate_ldf_value(r, angle)
 
-                mmdivk = 0.
-                m = 0.
-                k = 0.
+                mmdivk = 0.0
+                m = 0.0
+                k = 0.0
 
                 for i, j in zip(p, rho):
-                    mmdivk += 1. * i * i / j
+                    mmdivk += 1.0 * i * i / j
                     m += i
                     k += j
 
                 sizefactor = sqrt(mmdivk / k)
                 with warnings.catch_warnings(record=True):
-                    chi2 = 2. * (sizefactor * k - m)
+                    chi2 = 2.0 * (sizefactor * k - m)
                 if chi2 < chi2best:
                     factorbest = sizefactor
                     xbest = xtry

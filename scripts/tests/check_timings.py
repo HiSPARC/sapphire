@@ -10,6 +10,7 @@ The code is fixed now and this test makes sure you're actually using the
 new code.
 
 """
+
 import numpy as np
 import tables
 
@@ -28,9 +29,9 @@ def main():
 
     # Get timings from trace
     process = process_events.ProcessEvents(data, '/')
-    t0 = process._reconstruct_time_from_trace(trace, 0.)
+    t0 = process._reconstruct_time_from_trace(trace, 0.0)
     process = process_events.ProcessEventsWithLINT(data, '/')
-    t1 = process._reconstruct_time_from_trace(trace, 0.)
+    t1 = process._reconstruct_time_from_trace(trace, 0.0)
     t0 /= 2.5e-9
     t1 /= 2.5e-9
     print(t0, t1)

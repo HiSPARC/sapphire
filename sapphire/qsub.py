@@ -1,23 +1,25 @@
-""" Access the Nikhef Stoomboot cluster.
+"""Access the Nikhef Stoomboot cluster.
 
-    .. note::
-        This module is only for use at Nikhef. The Stoomboot cluster is only
-        accessible for Nikhef users.
+.. note::
+    This module is only for use at Nikhef. The Stoomboot cluster is only
+    accessible for Nikhef users.
 
-    Easy to use functions to make use of the Nikhef Stoomboot facilities.
-    This checks the available slots on the requested queue, creates the
-    scripts to submit, submits the jobs, and cleans up afterwards.
+Easy to use functions to make use of the Nikhef Stoomboot facilities.
+This checks the available slots on the requested queue, creates the
+scripts to submit, submits the jobs, and cleans up afterwards.
 
-    Example usage::
+Example usage::
 
-        >>> from sapphire import qsub
-        >>> qsub.check_queue('long')
-        340
-        >>> qsub.submit_job('touch /data/hisparc/test', 'job_1', 'express')
+    >>> from sapphire import qsub
+    >>> qsub.check_queue('long')
+    340
+    >>> qsub.submit_job('touch /data/hisparc/test', 'job_1', 'express')
 
 """
+
 import os
 import subprocess
+import tempfile
 
 from . import utils
 
@@ -73,7 +75,7 @@ def submit_job(script, name, queue, extra=''):
 
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT, shell=True)
     if not result == b'':
-        raise Exception(f'{name} - Error occured: {result}')
+        raise RuntimeError(f'{name} - Error occured: {result}')
 
     delete_script(script_path)
 
@@ -82,7 +84,7 @@ def create_script(script, name):
     """Create script as temp file to be run on Stoomboot"""
 
     script_name = f'his_{name}.sh'
-    script_path = os.path.join('/tmp', script_name)
+    script_path = os.path.join(tempfile.gettempdir(), script_name)
 
     with open(script_path, 'w') as script_file:
         script_file.write(script)

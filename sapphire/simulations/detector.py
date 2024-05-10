@@ -3,6 +3,7 @@
 These are some common simulations for HiSPARC detectors.
 
 """
+
 import warnings
 
 from math import acos, cos, pi, sin, sqrt
@@ -15,7 +16,6 @@ from .base import BaseSimulation
 
 
 class HiSPARCSimulation(BaseSimulation):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -103,12 +103,11 @@ class HiSPARCSimulation(BaseSimulation):
         """
         numbers = np.random.random(n)
         if n < 20:
-            dt = np.array([2.5507 + 2.39885 * number if number < 0.39377 else
-                           1.56764 + 4.89536 * number for number in numbers])
+            dt = np.array(
+                [2.5507 + 2.39885 * number if number < 0.39377 else 1.56764 + 4.89536 * number for number in numbers],
+            )
         else:
-            dt = np.where(numbers < 0.39377,
-                          2.5507 + 2.39885 * numbers,
-                          1.56764 + 4.89536 * numbers)
+            dt = np.where(numbers < 0.39377, 2.5507 + 2.39885 * numbers, 1.56764 + 4.89536 * numbers)
         return dt
 
     @classmethod
@@ -144,7 +143,7 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         # Limit cos theta to maximum length though the detector.
-        min_costheta = 2. / 112.
+        min_costheta = 2.0 / 112.0
         costheta = np.cos(theta)
         if isinstance(costheta, float):
             costheta = max(costheta, min_costheta)
@@ -167,13 +166,9 @@ class HiSPARCSimulation(BaseSimulation):
             if not isinstance(costheta, float):
                 mips = sum(mips)
         else:
-            mips = np.where(y < 0.3394,
-                            (0.48 + 0.8583 * np.sqrt(y)) / costheta,
-                            (0.73 + 0.7366 * y) / costheta)
-            mips = np.where(y < 0.4344, mips,
-                            (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta)
-            mips = np.where(y < 0.9041, mips,
-                            (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
+            mips = np.where(y < 0.3394, (0.48 + 0.8583 * np.sqrt(y)) / costheta, (0.73 + 0.7366 * y) / costheta)
+            mips = np.where(y < 0.4344, mips, (1.7752 - 1.0336 * np.sqrt(0.9267 - y)) / costheta)
+            mips = np.where(y < 0.9041, mips, (2.28 - 2.1316 * np.sqrt(1 - y)) / costheta)
             mips = sum(mips)
         warnings.resetwarnings()
         return mips
@@ -193,14 +188,14 @@ class HiSPARCSimulation(BaseSimulation):
         :return: Random x, y position in the disc with radius r_max.
 
         """
-        r = sqrt(np.random.uniform(0, r_max ** 2))
+        r = sqrt(np.random.uniform(0, r_max**2))
         phi = np.random.uniform(-pi, pi)
         x = r * cos(phi)
         y = r * sin(phi)
         return x, y
 
     @classmethod
-    def generate_zenith(cls, min=0, max=pi / 3.):
+    def generate_zenith(cls, min_value=0, max_value=pi / 3.0):
         """Generate a random zenith
 
         Generate a random zenith for a uniform distribution on a sphere.
@@ -218,7 +213,7 @@ class HiSPARCSimulation(BaseSimulation):
         :return: random zenith position on a sphere, in radians.
 
         """
-        p = np.random.uniform(cos(max), cos(min))
+        p = np.random.uniform(cos(max_value), cos(min_value))
         return acos(p)
 
     @classmethod
@@ -249,7 +244,7 @@ class HiSPARCSimulation(BaseSimulation):
         :return: zenith with corresponding cumulative probability, in radians.
 
         """
-        return acos((1 - p) ** (1 / 8.))
+        return acos((1 - p) ** (1 / 8.0))
 
     @classmethod
     def generate_azimuth(cls):
@@ -277,44 +272,36 @@ class HiSPARCSimulation(BaseSimulation):
 
         """
         x = np.random.random()
-        a1 = alpha + 1.
-        energy = (e_min ** a1 + x * (e_max ** a1 - e_min ** a1)) ** (1 / a1)
+        a1 = alpha + 1.0
+        energy = (e_min**a1 + x * (e_max**a1 - e_min**a1)) ** (1 / a1)
         return energy
 
 
 class ErrorlessSimulation(HiSPARCSimulation):
-
     @classmethod
     def simulate_detector_offsets(cls, n_detectors):
-
-        return [0.] * n_detectors
+        return [0.0] * n_detectors
 
     @classmethod
     def simulate_detector_offset(cls):
-
-        return 0.
+        return 0.0
 
     @classmethod
     def simulate_station_offset(cls):
-
-        return 0.
+        return 0.0
 
     @classmethod
     def simulate_gps_uncertainty(cls):
-
-        return 0.
+        return 0.0
 
     @classmethod
     def simulate_adc_sampling(cls, t):
-
         return t
 
     @classmethod
     def simulate_signal_transport_time(cls, n=1):
-
-        return np.array([0.] * n)
+        return np.array([0.0] * n)
 
     @classmethod
     def simulate_detector_mips(cls, n, theta):
-
         return n

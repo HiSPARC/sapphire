@@ -30,9 +30,7 @@ This package contains modules for working with CORSIKA simulations:
     convert values in units used by CORSIKA to HiSPARC units
 
 """
+
 from . import corsika_queries, particles, reader, units
 
-__all__ = ['corsika_queries',
-           'particles',
-           'reader',
-           'units']
+__all__ = ['corsika_queries', 'particles', 'reader', 'units']

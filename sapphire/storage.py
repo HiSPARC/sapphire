@@ -1,14 +1,14 @@
-""" PyTables table descriptions for data storage
+"""PyTables table descriptions for data storage
 
-    This module contains the table descriptions used by the detector
-    simulation to store intermediate and final data in a HDF5 file.
+This module contains the table descriptions used by the detector
+simulation to store intermediate and final data in a HDF5 file.
 
 """
+
 import tables
 
 
 class EventObservables(tables.IsDescription):
-
     """Store information about the observables of an event.
 
     The observables are described for each station independently.  So, for each
@@ -40,6 +40,7 @@ class EventObservables(tables.IsDescription):
         number of detectors with at least one particle
 
     """
+
     id = tables.UInt32Col()
     station_id = tables.UInt8Col()
     timestamp = tables.Time32Col()
@@ -63,7 +64,6 @@ class EventObservables(tables.IsDescription):
 
 
 class Coincidence(tables.IsDescription):
-
     """Store information about a coincidence of stations within a cluster.
 
     An extensive air shower can trigger multiple stations, resulting in a set
@@ -123,6 +123,7 @@ class Coincidence(tables.IsDescription):
         The primary particle energy of the (simulated) shower.
 
     """
+
     id = tables.UInt32Col(pos=0)
     timestamp = tables.Time32Col(pos=1)
     nanoseconds = tables.UInt32Col(pos=2)
@@ -138,7 +139,6 @@ class Coincidence(tables.IsDescription):
 
 
 class TimeDelta(tables.IsDescription):
-
     """Store time differences"""
 
     ext_timestamp = tables.UInt64Col(pos=0)
@@ -148,7 +148,6 @@ class TimeDelta(tables.IsDescription):
 
 
 class ReconstructedCoincidence(tables.IsDescription):
-
     """Store information about reconstructed coincidences"""
 
     id = tables.UInt32Col(pos=1)
@@ -177,7 +176,6 @@ class ReconstructedCoincidence(tables.IsDescription):
 
 
 class ReconstructedEvent(ReconstructedCoincidence):
-
     """Store information about reconstructed events
 
     .. attribute:: id
@@ -198,7 +196,6 @@ class ReconstructedEvent(ReconstructedCoincidence):
 
 
 class KascadeEvent(tables.IsDescription):
-
     """Store events from KASCADE"""
 
     run_id = tables.IntCol(pos=0)
@@ -220,7 +217,6 @@ class KascadeEvent(tables.IsDescription):
 
 
 class ReconstructedKascadeEvent(tables.IsDescription):
-
     """Store information about reconstructed events"""
 
     # r, phi is core position

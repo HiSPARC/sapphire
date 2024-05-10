@@ -15,12 +15,10 @@ TEST_DATA_FILE = 'test_data/esd_coincidences.h5'
 class ProcessTimeDeltasTests(unittest.TestCase):
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
+        self.addCleanup(os.remove, self.data_path)
         self.data = tables.open_file(self.data_path, 'a')
+        self.addCleanup(self.data.close)
         self.td = time_deltas.ProcessTimeDeltas(self.data, progress=False)
-
-    def tearDown(self):
-        self.data.close()
-        os.remove(self.data_path)
 
     def test_init(self):
         self.assertEqual(self.td.progress, False)
@@ -38,18 +36,22 @@ class ProcessTimeDeltasTests(unittest.TestCase):
         self.td.pairs = {(sentinel.station1, sentinel.station2), (sentinel.station1, sentinel.station3)}
         self.td.get_detector_offsets()
 
-        self.assertEqual(self.td.detector_timing_offsets,
-                         {sentinel.station1: mock_offsets.detector_timing_offset,
-                          sentinel.station2: mock_offsets.detector_timing_offset,
-                          sentinel.station3: mock_offsets.detector_timing_offset})
+        self.assertEqual(
+            self.td.detector_timing_offsets,
+            {
+                sentinel.station1: mock_offsets.detector_timing_offset,
+                sentinel.station2: mock_offsets.detector_timing_offset,
+                sentinel.station3: mock_offsets.detector_timing_offset,
+            },
+        )
 
     def test_store_time_deltas(self):
         pair = (501, 502)
         node_path = '/coincidences/time_deltas/station_%d/station_%d' % pair
         self.assertRaises(Exception, self.data.get_node, node_path, 'time_deltas')
-        self.td.store_time_deltas([12345678987654321], [2.5], pair)
+        self.td.store_time_deltas([12345678_987654321], [2.5], pair)
         stored_data = self.data.get_node(node_path, 'time_deltas')
-        self.assertEqual(list(stored_data[0]), [12345678987654321, 12345678, 987654321, 2.5])
+        self.assertEqual(list(stored_data[0]), [12345678_987654321, 12345678, 987654321, 2.5])
 
     def create_tempfile_from_testdata(self):
         tmp_path = self.create_tempfile_path()

@@ -26,7 +26,8 @@ export_values = {
         ('N', 'TR1', 'mas_tr1'),
         ('N', 'TR2', 'mas_tr2'),
         ('N', 'TR3', 'slv_tr1'),
-        ('N', 'TR4', 'slv_tr2')],
+        ('N', 'TR4', 'slv_tr2'),
+    ],
     'ERR': [('N', 'ERRMSG', 'error_message')],
     'CFG': [
         ('N', 'CFG_GPS_LAT', 'cfg_gps_latitude'),
@@ -115,11 +116,13 @@ export_values = {
         ('N', 'CFG_SLV_CH1COMPGAIN', 'cfg_slv_ch1_comp_gain'),
         ('N', 'CFG_SLV_CH1COMPOFF', 'cfg_slv_ch1_comp_offset'),
         ('N', 'CFG_SLV_CH2COMPGAIN', 'cfg_slv_ch2_comp_gain'),
-        ('N', 'CFG_SLV_CH2COMPOFF', 'cfg_slv_ch2_comp_offset')],
+        ('N', 'CFG_SLV_CH2COMPOFF', 'cfg_slv_ch2_comp_offset'),
+    ],
     'CMP': [
         ('N', 'CMP_DEVICE', 'cmp_device'),
         ('N', 'CMP_COMPARATOR', 'cmp_comparator'),
-        ('N', 'CMP_COUNT', 'cmp_count_over_threshold')],
+        ('N', 'CMP_COUNT', 'cmp_count_over_threshold'),
+    ],
     'WTR': [
         ('N', 'WTR_TEMP_INSIDE', 'tempInside'),
         ('N', 'WTR_TEMP_OUTSIDE', 'tempOutside'),
@@ -134,5 +137,6 @@ export_values = {
         ('N', 'WTR_RAIN_RATE', 'rainRate'),
         ('Y', 'WTR_HEAT_INDEX', 'heatIndex'),
         ('Y', 'WTR_DEW_POINT', 'dewPoint'),
-        ('Y', 'WTR_WIND_CHILL', 'windChill')],
+        ('Y', 'WTR_WIND_CHILL', 'windChill'),
+    ],
 }

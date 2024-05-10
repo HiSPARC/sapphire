@@ -17,7 +17,6 @@ TEST_DATA_ESD = 'test_data/esd_coincidences.h5'
 
 
 class CoincidencesTests(unittest.TestCase):
-
     @patch.object(coincidences.tables, 'open_file')
     def setUp(self, mock_open_file):
         self.mock_open_file = mock_open_file
@@ -32,7 +31,7 @@ class CoincidencesTests(unittest.TestCase):
     @patch.object(coincidences.Coincidences, 'store_coincidences')
     def test_search_and_store_coincidences(self, mock_store, mock_process, mock_search):
         self.c.search_and_store_coincidences()
-        mock_search.assert_called_with(window=10000)
+        mock_search.assert_called_with(window=10_000)
         mock_process.assert_called_with()
         mock_store.assert_called_with()
         self.c.search_and_store_coincidences(sentinel.window)
@@ -44,53 +43,88 @@ class CoincidencesTests(unittest.TestCase):
         station1 = Mock()
         station2 = Mock()
         # Station 2 timestamps are not already correctly sorted.
-        station1.col.return_value = [uint64(1400000002000000050), uint64(1400000018000000500)]
-        station2.col.return_value = [uint64(1400000002000000510), uint64(1400000030000000000)][::-1]
+        station1.col.return_value = [uint64(1400000002_000000050), uint64(1400000018_000000500)]
+        station2.col.return_value = [uint64(1400000002_000000510), uint64(1400000030_000000000)][::-1]
         stations = [station1, station2]
         timestamps = self.c._retrieve_timestamps(stations)
-        self.assertEqual(timestamps,
-                         [(uint64(1400000002000000050), 0, 0), (uint64(1400000002000000510), 1, 1),
-                          (uint64(1400000018000000500), 0, 1), (uint64(1400000030000000000), 1, 0)])
+        self.assertEqual(
+            timestamps,
+            [
+                (uint64(1400000002_000000050), 0, 0),
+                (uint64(1400000002_000000510), 1, 1),
+                (uint64(1400000018_000000500), 0, 1),
+                (uint64(1400000030_000000000), 1, 0),
+            ],
+        )
         # Shift both
         timestamps = self.c._retrieve_timestamps(stations, shifts=[1, 17])
-        self.assertEqual(timestamps,
-                         [(uint64(1400000003000000050), 0, 0), (uint64(1400000019000000500), 0, 1),
-                          (uint64(1400000019000000510), 1, 1), (uint64(1400000047000000000), 1, 0)])
+        self.assertEqual(
+            timestamps,
+            [
+                (uint64(1400000003_000000050), 0, 0),
+                (uint64(1400000019_000000500), 0, 1),
+                (uint64(1400000019_000000510), 1, 1),
+                (uint64(1400000047_000000000), 1, 0),
+            ],
+        )
         # Wrong value type shifts
-        self.assertRaises(TypeError, self.c._retrieve_timestamps, stations, shifts=['', ''])
-        self.assertRaises(TypeError, self.c._retrieve_timestamps, stations, shifts=['', 90])
+        self.assertRaises(ValueError, self.c._retrieve_timestamps, stations, shifts=['', ''])
+        self.assertRaises(ValueError, self.c._retrieve_timestamps, stations, shifts=['', 90])
         # Different length shifts
         timestamps = self.c._retrieve_timestamps(stations, shifts=[110])
-        self.assertEqual(timestamps,
-                         [(uint64(1400000002000000510), 1, 1), (uint64(1400000030000000000), 1, 0),
-                          (uint64(1400000112000000050), 0, 0), (uint64(1400000128000000500), 0, 1)])
+        self.assertEqual(
+            timestamps,
+            [
+                (uint64(1400000002_000000510), 1, 1),
+                (uint64(1400000030_000000000), 1, 0),
+                (uint64(1400000112_000000050), 0, 0),
+                (uint64(1400000128_000000500), 0, 1),
+            ],
+        )
         timestamps = self.c._retrieve_timestamps(stations, shifts=[None, 60])
-        self.assertEqual(timestamps,
-                         [(uint64(1400000002000000050), 0, 0), (uint64(1400000018000000500), 0, 1),
-                          (uint64(1400000062000000510), 1, 1), (uint64(1400000090000000000), 1, 0)])
+        self.assertEqual(
+            timestamps,
+            [
+                (uint64(1400000002_000000050), 0, 0),
+                (uint64(1400000018_000000500), 0, 1),
+                (uint64(1400000062_000000510), 1, 1),
+                (uint64(1400000090_000000000), 1, 0),
+            ],
+        )
         # Subsecond shifts
         timestamps = self.c._retrieve_timestamps(stations, shifts=[3e-9, 5e-9])
-        self.assertEqual(timestamps,
-                         [(uint64(1400000002000000053), 0, 0), (uint64(1400000002000000515), 1, 1),
-                          (uint64(1400000018000000503), 0, 1), (uint64(1400000030000000005), 1, 0)])
+        self.assertEqual(
+            timestamps,
+            [
+                (uint64(1400000002_000000053), 0, 0),
+                (uint64(1400000002_000000515), 1, 1),
+                (uint64(1400000018_000000503), 0, 1),
+                (uint64(1400000030_000000005), 1, 0),
+            ],
+        )
         # Using limits
         timestamps = self.c._retrieve_timestamps(stations, limit=1)
-        self.assertEqual(timestamps,
-                         [(uint64(1400000002000000050), 0, 0), (uint64(1400000030000000000), 1, 0)])
-        # This should fail but does not
-        self.assertEqual(timestamps,
-                         [(1400000002000000049, 0, 0), (1400000030000000000, 1, 0)])
-        # Using uint64 does work correctly
-        self.assertNotEqual(timestamps,
-                            [(uint64(1400000002000000049), 0, 0), (uint64(1400000030000000000), 1, 0)])
-        self.assertNotEqual(timestamps,
-                            [(uint64(1400000002000000051), 0, 0), (uint64(1400000030000000001), 1, 0)])
+
+        # Check accuracy of comparisons between different types
+        self.assertEqual(timestamps, [(1400000002_000000050, 0, 0), (1400000030_000000000, 1, 0)])
+        self.assertEqual(timestamps, [(uint64(1400000002_000000050), 0, 0), (uint64(1400000030_000000000), 1, 0)])
+        self.assertNotEqual(timestamps, [(1400000002_000000049, 0, 0), (1400000030_000000000, 1, 0)])
+        self.assertNotEqual(timestamps, [(1400000002_000000051, 0, 0), (1400000030_000000000, 1, 0)])
+        self.assertNotEqual(timestamps, [(uint64(1400000002_000000049), 0, 0), (uint64(1400000030_000000000), 1, 0)])
+        self.assertNotEqual(timestamps, [(uint64(1400000002_000000051), 0, 0), (uint64(1400000030_000000001), 1, 0)])
 
     def test__do_search_coincidences(self):
         # [(timestamp, station_idx, event_idx), ..]
-        timestamps = [(uint64(0), 0, 0), (uint64(0), 1, 0), (uint64(10), 1, 1),
-                      (uint64(15), 2, 0), (uint64(100), 1, 2), (uint64(200), 2, 1),
-                      (uint64(250), 0, 1), (uint64(251), 0, 2)]
+        timestamps = [
+            (uint64(0), 0, 0),
+            (uint64(0), 1, 0),
+            (uint64(10), 1, 1),
+            (uint64(15), 2, 0),
+            (uint64(100), 1, 2),
+            (uint64(200), 2, 1),
+            (uint64(250), 0, 1),
+            (uint64(251), 0, 2),
+        ]
 
         c = self.c._do_search_coincidences(timestamps, window=6)
         expected_coincidences = [[0, 1], [2, 3], [6, 7]]
@@ -106,7 +140,6 @@ class CoincidencesTests(unittest.TestCase):
 
 
 class CoincidencesESDTests(CoincidencesTests):
-
     @patch.object(coincidences.tables, 'open_file')
     def setUp(self, mock_open_file):
         self.mock_open_file = mock_open_file
@@ -135,19 +168,14 @@ class CoincidencesESDTests(CoincidencesTests):
 
 
 class CoincidencesDataTests(unittest.TestCase):
-
     def setUp(self):
         self.data_path = self.create_tempfile_from_testdata()
-
-    def tearDown(self):
-        os.remove(self.data_path)
+        self.addCleanup(os.remove, self.data_path)
 
     def test_coincidencesesd_output(self):
         with tables.open_file(self.data_path, 'a') as data:
             with patch('sapphire.analysis.process_events.ProcessIndexedEventsWithoutTraces'):
-                c = coincidences.Coincidences(data, '/coincidences',
-                                              ['/station_501', '/station_502'],
-                                              progress=False)
+                c = coincidences.Coincidences(data, '/coincidences', ['/station_501', '/station_502'], progress=False)
                 c.search_and_store_coincidences()
 
         validate_results(self, self.get_testdata_path(), self.data_path)
@@ -174,12 +202,9 @@ class CoincidencesDataTests(unittest.TestCase):
 
 
 class CoincidencesESDDataTests(CoincidencesDataTests):
-
     def test_coincidencesesd_output(self):
         with tables.open_file(self.data_path, 'a') as data:
-            c = coincidences.CoincidencesESD(data, '/coincidences',
-                                             ['/station_501', '/station_502'],
-                                             progress=False)
+            c = coincidences.CoincidencesESD(data, '/coincidences', ['/station_501', '/station_502'], progress=False)
             self.assertRaises(RuntimeError, c.search_and_store_coincidences, station_numbers=[501])
             c.search_and_store_coincidences(station_numbers=[501, 502])
         validate_results(self, self.get_testdata_path(), self.data_path)

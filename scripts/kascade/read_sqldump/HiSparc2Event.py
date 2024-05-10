@@ -1,7 +1,7 @@
-""" Process HiSPARC messages from a buffer
-    This module processes messages from buffer database and
-    gets out all available data. This data is stored in a data which
-    can then be uploaded to the eventwarehouse.
+"""Process HiSPARC messages from a buffer
+This module processes messages from buffer database and
+gets out all available data. This data is stored in a data which
+can then be uploaded to the eventwarehouse.
 """
 
 import base64
@@ -14,9 +14,9 @@ from Event import Event
 
 class HiSparc2Event(Event):
     def __init__(self, message):
-        """ Initialization
-            First, determine message type from the argument. Then, check if
-            this might be a legacy message. Proceed to unpack the message.
+        """Initialization
+        First, determine message type from the argument. Then, check if
+        this might be a legacy message. Proceed to unpack the message.
         """
 
         # invoke constructor of parent class
@@ -25,12 +25,12 @@ class HiSparc2Event(Event):
         # get the message field in the message table
         self.message = message[1]
 
-    #--------------------------End of __init__--------------------------#
+    # --------------------------End of __init__--------------------------#
 
     def unpackMessage(self):
         pass
 
-    #--------------------------End of unpackMessage--------------------------#
+    # --------------------------End of unpackMessage--------------------------#
 
     def parseMessage(self):
         self.unpackMessage()
@@ -40,14 +40,14 @@ class HiSparc2Event(Event):
 
         return self.getEventData()
 
-    #--------------------------End of parseMessage--------------------------#
+    # --------------------------End of parseMessage--------------------------#
 
     def getEventData(self):
-        """    Get all event data necessary for an upload.
-            This function parses the export_values variable declared in the EventExportValues
-            and figures out what data to collect for an
-            upload to the eventwarehouse. It returns a list of
-            dictionaries, one for each data element.
+        """Get all event data necessary for an upload.
+        This function parses the export_values variable declared in the EventExportValues
+        and figures out what data to collect for an
+        upload to the eventwarehouse. It returns a list of
+        dictionaries, one for each data element.
         """
 
         eventdata = []
@@ -58,11 +58,11 @@ class HiSparc2Event(Event):
             try:
                 data = self.__getattribute__(value[2])
             except AttributeError:
-                #if not self.version == 21:
-                    # This is not a legacy message. Therefore, it should
-                    # contain all exported variables, but alas, it
-                    # apparently doesn't.
-                    #print 'I missed this variable: ', value[2]
+                # if not self.version == 21:
+                # This is not a legacy message. Therefore, it should
+                # contain all exported variables, but alas, it
+                # apparently doesn't.
+                # print('I missed this variable: ', value[2])
                 continue
 
             if data_uploadcode in ['TR1', 'TR2', 'TR3', 'TR4']:
@@ -72,41 +72,42 @@ class HiSparc2Event(Event):
                 # blobvalues are base64-decoded.
                 data = base64.b64encode(data)
 
-            eventdata.append({
-                "calculated": is_calculated,
-                "data_uploadcode": data_uploadcode,
-                "data": data,
-            })
+            eventdata.append(
+                {
+                    'calculated': is_calculated,
+                    'data_uploadcode': data_uploadcode,
+                    'data': data,
+                },
+            )
 
         return eventdata
 
-    #--------------------------End of getEventData--------------------------#
+    # --------------------------End of getEventData--------------------------#
 
     def unpackSeqMessage(self, fmt=None):
-        """    Sequentially unpack message with a format
-            This method is used to read from the same buffer multiple times,
-            sequentially. A private variable will keep track of the current
-            offset. This is more convenient than keeping track of it yourself
-            multiple times, or hardcoding offsets.
+        """Sequentially unpack message with a format
+        This method is used to read from the same buffer multiple times,
+        sequentially. A private variable will keep track of the current
+        offset. This is more convenient than keeping track of it yourself
+        multiple times, or hardcoding offsets.
         """
         if not fmt:
             # This is an initialization call
             self._struct_offset = 0
-            return
+            return None
 
         if fmt == 'LVstring':
             # Request for a labview string. That is, first a long for the
             # length, then the string itself.
-            length, = self.unpackSeqMessage('>L')
-            fmt = ">%ds" % length
+            (length,) = self.unpackSeqMessage('>L')
+            fmt = '>%ds' % length
 
         # For debugging, keeping track of trailing bytes
-        #print len(self.message[self._struct_offset:]), struct.calcsize(fmt)
+        # print(len(self.message[self._struct_offset:]), struct.calcsize(fmt))
 
-        data = struct.unpack_from(fmt, self.message,
-                                  offset=self._struct_offset)
+        data = struct.unpack_from(fmt, self.message, offset=self._struct_offset)
         self._struct_offset += struct.calcsize(fmt)
 
         return data
 
-    #--------------------------End of unpackSeqMessage--------------------------#
+    # --------------------------End of unpackSeqMessage--------------------------#

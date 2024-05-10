@@ -1,4 +1,4 @@
-""" Time transformations
+"""Time transformations
 
 This handles all the wibbly wobbly timey wimey stuff.
 Such as easy conversions between different time systems.
@@ -23,6 +23,7 @@ apwlib.convert
 https://github.com/adrn/apwlib
 
 """
+
 import calendar
 import datetime
 import math
@@ -32,24 +33,26 @@ from time import strptime
 from . import angles, base
 
 #: Dates of leap second introductions.
-LEAP_SECONDS = (('January 1, 2017', 18),
-                ('July 1, 2015', 17),
-                ('July 1, 2012', 16),
-                ('January 1, 2009', 15),
-                ('January 1, 2006', 14),
-                ('January 1, 1999', 13),
-                ('July 1, 1997', 12),
-                ('January 1, 1996', 11),
-                ('July 1, 1994', 10),
-                ('July 1, 1993', 9),
-                ('July 1, 1992', 8),
-                ('January 1, 1991', 7),
-                ('January 1, 1990', 6),
-                ('January 1, 1988', 5),
-                ('July 1, 1985', 4),
-                ('July 1, 1983', 3),
-                ('July 1, 1982', 2),
-                ('July 1, 1981', 1))
+LEAP_SECONDS = (
+    ('January 1, 2017', 18),
+    ('July 1, 2015', 17),
+    ('July 1, 2012', 16),
+    ('January 1, 2009', 15),
+    ('January 1, 2006', 14),
+    ('January 1, 1999', 13),
+    ('July 1, 1997', 12),
+    ('January 1, 1996', 11),
+    ('July 1, 1994', 10),
+    ('July 1, 1993', 9),
+    ('July 1, 1992', 8),
+    ('January 1, 1991', 7),
+    ('January 1, 1990', 6),
+    ('January 1, 1988', 5),
+    ('July 1, 1985', 4),
+    ('July 1, 1983', 3),
+    ('July 1, 1982', 2),
+    ('July 1, 1981', 1),
+)
 
 
 def time_to_decimal(time):
@@ -59,8 +62,15 @@ def time_to_decimal(time):
     :return: decimal number representing the input time.
 
     """
-    return (time.hour + time.minute / 60. + time.second / 3600. +
-            time.microsecond / 3600000000.)
+    minutes_per_hour = 60
+    seconds_per_hour = 3600
+    microseconds_per_hour = 3600_000_000
+    return (
+        time.hour
+        + time.minute / minutes_per_hour
+        + time.second / seconds_per_hour
+        + time.microsecond / microseconds_per_hour
+    )
 
 
 def decimal_to_time(hours):
@@ -99,7 +109,13 @@ def date_to_juliandate(year, month, day):
         year1 -= 1
         month1 = month + 12
 
-    if year1 > 1582 or (year1 == 1582 and month >= 10 and day >= 15):
+    # Correction for leap years
+    gregorian_year = 1582
+    gregorian_month = 10
+    gregorian_day = 15
+    if year1 > gregorian_year or (
+        year1 == gregorian_year and (month > gregorian_month or (month == gregorian_month and day >= gregorian_day))
+    ):
         a = int(year1 / 100)
         b = 2 - a + int(a / 4)
     else:
@@ -123,7 +139,7 @@ def datetime_to_juliandate(dt):
 
     """
     juliandate = date_to_juliandate(dt.year, dt.month, dt.day)
-    decimal_time = time_to_decimal(dt.time()) / 24.
+    decimal_time = time_to_decimal(dt.time()) / 24.0
     return juliandate + decimal_time
 
 
@@ -166,16 +182,15 @@ def juliandate_to_gmst(juliandate):
 
     """
     jd0 = int(juliandate - 0.5) + 0.5  # Julian Date of previous midnight
-    h = (juliandate - jd0) * 24.  # Hours since mightnight
+    h = (juliandate - jd0) * 24.0  # Hours since mightnight
     # Days since J2000 (Julian Date 2451545.)
-    d0 = jd0 - 2451545.
-    d = juliandate - 2451545.
-    t = d / 36525.  # Centuries since J2000
+    d0 = jd0 - 2451545.0
+    d = juliandate - 2451545.0
+    t = d / 36525.0  # Centuries since J2000
 
-    gmst = (6.697374558 + 0.06570982441908 * d0 + 1.00273790935 * h +
-            0.000026 * t * t)
+    gmst = 6.697374558 + 0.06570982441908 * d0 + 1.00273790935 * h + 0.000026 * t * t
 
-    return gmst % 24.
+    return gmst % 24.0
 
 
 def utc_to_gmst(dt):
@@ -201,8 +216,8 @@ def gmst_to_utc(dt):
     """
     jd = date_to_juliandate(dt.year, dt.month, dt.day)
 
-    d = jd - 2451545.
-    t = d / 36525.
+    d = jd - 2451545.0
+    t = d / 36525.0
     t0 = 6.697374558 + (2400.051336 * t) + (0.000025862 * t * t)
     t0 %= 24
 
@@ -211,8 +226,7 @@ def gmst_to_utc(dt):
 
     time = decimal_to_time(ut)
 
-    return dt.replace(hour=time.hour, minute=time.minute, second=time.seconds,
-                      microsecond=time.microsecond)
+    return dt.replace(hour=time.hour, minute=time.minute, second=time.seconds, microsecond=time.microsecond)
 
 
 def juliandate_to_utc(juliandate):
@@ -225,7 +239,9 @@ def juliandate_to_utc(juliandate):
     juliandate += 0.5
     jd_frac, jd_int = math.modf(juliandate)
 
-    if jd_int > 2299160:
+    julian_gregorian_transition_date = 2299160
+
+    if jd_int > julian_gregorian_transition_date:
         a = int((jd_int - 1867216.25) / 36524.25)
         b = jd_int + 1 + a - int(a / 4)
     else:
@@ -322,8 +338,7 @@ def gps_to_utc(timestamp):
     :return: UTC timestamp in seconds.
 
     """
-    offset = next((seconds for date, seconds in LEAP_SECONDS
-                   if timestamp >= utc_from_string(date)), 0)
+    offset = next((seconds for date, seconds in LEAP_SECONDS if timestamp >= utc_from_string(date)), 0)
     return timestamp - offset
 
 
@@ -334,8 +349,7 @@ def utc_to_gps(timestamp):
     :return: GPS timestamp in seconds.
 
     """
-    offset = next((seconds for date, seconds in LEAP_SECONDS
-                   if timestamp >= utc_from_string(date)), 0)
+    offset = next((seconds for date, seconds in LEAP_SECONDS if timestamp >= utc_from_string(date)), 0)
     return timestamp + offset
 
 
@@ -409,4 +423,4 @@ def process_time(time):
         try:
             return datetime_to_gps(time)
         except Exception:
-            raise RuntimeError('Unable to parse time: ', time)
+            raise RuntimeError('Unable to parse time: {time}')

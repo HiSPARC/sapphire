@@ -11,7 +11,6 @@ def fake_pbar(*args, **kwargs):
 
 
 class UpdateLocalDataTests(unittest.TestCase):
-
     @patch.object(update_local_data, 'pbar', side_effect=fake_pbar)
     @patch.object(builtins, 'print')
     @patch.object(update_local_data, 'update_sublevel_json')
@@ -25,17 +24,15 @@ class UpdateLocalDataTests(unittest.TestCase):
         self.assertTrue(mock_print.called)
         self.assertTrue(mock_pbar.called)
 
-    @patch.object(update_local_data, 'pbar', side_effect=fake_pbar)
     @patch.object(builtins, 'print')
     @patch.object(update_local_data, 'Network')
     @patch.object(update_local_data, 'HiSPARCNetwork')
     @patch.object(update_local_data, 'update_subsublevel_tsv')
     @patch.object(update_local_data, 'update_sublevel_tsv')
-    def test_update_local_tsv(self, mock_sub, mock_ssub, mock_hnet, mock_net, mock_print, mock_pbar):
+    def test_update_local_tsv(self, mock_sub, mock_ssub, mock_hnet, mock_net, mock_print):
         update_local_data.update_local_tsv(progress=False)
         self.assertTrue(mock_sub.called)
         self.assertTrue(mock_ssub.called)
         self.assertFalse(mock_print.called)
         update_local_data.update_local_tsv(progress=True)
         self.assertTrue(mock_print.called)
-        self.assertTrue(mock_pbar.called)
