@@ -186,7 +186,7 @@ how to find it.
 .. note:: When you run this check from *inside* the top-level |sapphire|
           code directory, it will always return successfully.  The reason
           for this is that Python also checks the current working
-          directory for packges.  *So, run this check from e.g. your home
+          directory for packages.  *So, run this check from e.g. your home
           directory.*
 
 Start a Python session.  You can use a launcher of some type (e.g. the one

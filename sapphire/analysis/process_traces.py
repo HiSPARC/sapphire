@@ -62,7 +62,7 @@ class TraceObservables:
         :param traces: a NumPy array of traces, ordered such that the first
                        element is the first sample of each trace.
         :param threshold: value of the threshold to use, in ADC counts.
-        :param padding: number of samples which should be usuable to determine
+        :param padding: number of samples which should be useable to determine
                         the baseline.
 
         """

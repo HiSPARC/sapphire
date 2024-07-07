@@ -127,7 +127,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
 
     @patch.object(reconstructions.api, 'Station')
     @patch.object(reconstructions, 'determine_detector_timing_offsets')
-    def test_get_detector_offsets(self, mock_determine_detctor_timing_offets, mock_station):
+    def test_get_detector_offsets(self, mock_determine_detctor_timing_offsets, mock_station):
         mock_station.return_value = sentinel.station
         self.rec.events = sentinel.events
         self.rec.station.detectors = [None, None]
@@ -135,7 +135,7 @@ class ReconstructESDEventsTest(unittest.TestCase):
         # no offsets in station object no station_number ->
         #  determine offsets from events
         self.rec.get_detector_offsets()
-        mock_determine_detctor_timing_offets.assert_called_with(sentinel.events, self.station)
+        mock_determine_detctor_timing_offsets.assert_called_with(sentinel.events, self.station)
 
         # no offsets in station object and station number -> api.Station
         self.rec.station_number = sentinel.station

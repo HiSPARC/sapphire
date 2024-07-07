@@ -44,7 +44,7 @@ class ProcessEventsTests(unittest.TestCase):
         ids = self.proc._find_unique_row_ids(enumerated_timestamps)
         self.assertEqual(ids, [0, 3])
 
-        # Must be sorted by timestamp or the result will be differenct.
+        # Must be sorted by timestamp or the result will be different.
         enumerated_timestamps = [(0, 1), (3, 2), (1, 1), (2, 2)]
         ids = self.proc._find_unique_row_ids(enumerated_timestamps)
         self.assertNotEqual(ids, [0, 3])

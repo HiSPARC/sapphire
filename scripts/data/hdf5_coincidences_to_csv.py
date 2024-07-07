@@ -3,8 +3,8 @@
 """Convert a HDF5 file with coincidences to csv
 
 Use this script to convert a HDF5 data file with events and coincidences
-to csv. The output will contain a coincidence row followed by N (numbe
-rof events in the coincidence) event rows.
+to csv. The output will contain a coincidence row followed by N (number
+of events in the coincidence) event rows.
 
 The output will contain two header rows, first the header for the
 coincidence rows, followed by the header for the event rows.

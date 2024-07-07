@@ -105,7 +105,7 @@ class API:
 
         :param force_fresh,force_stale: if either of these is set to True the
             data must either loaded from server or from local data. Be default
-            fresh data is prefered, but falls back to local data.
+            fresh data is preferred, but falls back to local data.
 
         """
         self.force_fresh = force_fresh
@@ -195,9 +195,9 @@ class API:
         try:
             result = urlopen(url).read().decode('utf-8')
         except HTTPError as error:
-            raise RuntimeError(f'A HTTP {error.code} error occured for the url: {url}')
+            raise RuntimeError(f'A HTTP {error.code} error occurred for the url: {url}')
         except URLError:
-            raise RuntimeError('An URL error occured.')
+            raise RuntimeError('An URL error occurred.')
 
         return result
 
@@ -246,7 +246,7 @@ class Network(API):
         return self._all_countries
 
     def country_numbers(self):
-        """Same as countries but only retuns a list of country numbers"""
+        """Same as countries but only returns a list of country numbers"""
 
         countries = self.countries()
         return [country['number'] for country in countries]
@@ -275,7 +275,7 @@ class Network(API):
         return clusters
 
     def cluster_numbers(self, country=None):
-        """Same as clusters but only retuns a list of cluster numbers"""
+        """Same as clusters but only returns a list of cluster numbers"""
 
         self.validate_numbers(country)
         clusters = self.clusters(country=country)
@@ -313,7 +313,7 @@ class Network(API):
         return subclusters
 
     def subcluster_numbers(self, country=None, cluster=None):
-        """Same as subclusters but only retuns a list of subcluster numbers"""
+        """Same as subclusters but only returns a list of subcluster numbers"""
 
         self.validate_numbers(country, cluster)
         subclusters = self.subclusters(country=country, cluster=cluster)
@@ -361,7 +361,7 @@ class Network(API):
         return stations
 
     def station_numbers(self, country=None, cluster=None, subcluster=None):
-        """Same as stations but only retuns a list of station numbers"""
+        """Same as stations but only returns a list of station numbers"""
 
         stations = self.stations(country=country, cluster=cluster, subcluster=subcluster)
         return [station['number'] for station in stations]
@@ -577,7 +577,7 @@ class Station(API):
 
         :param year,month,day: the date for which to check. It is
             possible to be less specific.
-        :return: boolean, indicating wether the station had air shower
+        :return: boolean, indicating whether the station had air shower
             data on the date.
 
         """
@@ -591,7 +591,7 @@ class Station(API):
 
         :param year,month,day: the date for which to check. It is
             possible to be less specific.
-        :return: boolean, indicating wether the station had weather data
+        :return: boolean, indicating whether the station had weather data
             on the date.
 
         """

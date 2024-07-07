@@ -54,7 +54,7 @@ the |sapphire| module::
 
     >>> import sapphire
 
-There will be no output if everything is succesful.  It is easy to get
+There will be no output if everything is successful.  It is easy to get
 some help from inside the Python terminal.  Just say::
 
     >>> help(sapphire)
@@ -424,7 +424,7 @@ Or, indeed::
     >>> gpstime.gpstimestamp()
     1354320000
 
-It is now easy to select events occuring between 12:00 and 13:00 hours GPS
+It is now easy to select events occurring between 12:00 and 13:00 hours GPS
 time on December 2, 2012::
 
     >>> t0 = sapphire.time_util.GPSTime(2012, 12, 2, 12).gpstimestamp()
@@ -815,7 +815,7 @@ and not the offsets from the public database.
 Reconstructing ESD coinicdences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Coincidences can be reconstructed analoguous to ESD Events::
+Coincidences can be reconstructed analogous to ESD Events::
 
     >>> import tables
     >>> from sapphire import ReconstructESDCoincidences
@@ -839,4 +839,4 @@ Reconstructing simulated coincidences
 
 The ``ReconstructESDCoincidences`` class can reconstruct simulated
 coincidences, using the cluster objects stored by the simulation class
-in the datafile analoguous to ``ReconstructESDEvents``.
+in the datafile analogous to ``ReconstructESDEvents``.

@@ -30,7 +30,7 @@ class StoreKascadeData:
 
         :param data: the PyTables datafile
         :param hisparc_path: path to the group containing HiSPARC station data.
-        :param kascade_path: path of group where KASCADE data wil be stored.
+        :param kascade_path: path of group where KASCADE data will be stored.
         :param kascade_filename: filename of the KASCADE data source.
         :param force: overwrite existing KASCADE group if it already exists.
         :param progress: if True progress info will be shown.

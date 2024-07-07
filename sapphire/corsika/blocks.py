@@ -288,7 +288,7 @@ class EventHeader:
         self.cone_inner_angle = subblock[152] * units.rad
         self.cone_outer_angle = subblock[153] * units.rad
 
-        self.transistion_energy_high_low = subblock[154] * units.GeV
+        self.transition_energy_high_low = subblock[154] * units.GeV
         self.flag_skimming_incidence = subblock[155]
         self.altitude_horizontal_shower_axis = subblock[156] * units.cm
         self.starting_height = subblock[157] * units.cm

@@ -49,17 +49,17 @@ class FromWGS84ToENUTransformation:
         self.ref_ecef = self.lla_to_ecef(ref_llacoordinates)
 
     def transform(self, coordinates):
-        """Transfrom WGS84 coordinates to ENU coordinates"""
+        """Transform WGS84 coordinates to ENU coordinates"""
 
         return self.lla_to_enu(coordinates)
 
     def lla_to_enu(self, coordinates):
-        """Transfrom WGS84 coordinates to ENU coordinates"""
+        """Transform WGS84 coordinates to ENU coordinates"""
 
         return self.ecef_to_enu(self.lla_to_ecef(coordinates))
 
     def enu_to_lla(self, coordinates):
-        """Transfrom WGS84 coordinates to ENU coordinates"""
+        """Transform WGS84 coordinates to ENU coordinates"""
 
         return self.ecef_to_lla(self.enu_to_ecef(coordinates))
 

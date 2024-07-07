@@ -609,7 +609,7 @@ class StationTests(unittest.TestCase):
         self.assertAlmostEqual(offset, -alt_offset)
         self.assertAlmostEqual(error, alt_error)
 
-        # Test omitting timestamp results in lastest offset
+        # Test omitting timestamp results in latest offset
         data = self.station.station_timing_offset(ALT_STATION, FUTURE)
         data2 = self.station.station_timing_offset(ALT_STATION)
         assert_equal(data, data2)

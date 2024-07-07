@@ -70,7 +70,7 @@ class Detector:
         if len(detector_timestamps) == len(self.x):
             self.timestamps = detector_timestamps
         else:
-            raise ValueError('Number of timestamps must equal number of postions')
+            raise ValueError('Number of timestamps must equal number of positions')
         self.index = -1
 
     def _update_timestamp(self, timestamp):
@@ -233,7 +233,7 @@ class Station:
         if len(station_timestamps) == len(self.x):
             self.timestamps = station_timestamps
         else:
-            raise ValueError('Number of timestamps must equal number of postions')
+            raise ValueError('Number of timestamps must equal number of positions')
 
         if detectors is None:
             # detector positions for a standard station

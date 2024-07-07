@@ -235,8 +235,8 @@ def download_data(file, group, station_number, start=None, end=None, type='event
 
     if line[0][0] == '#':
         if len(line[0]) == 1:
-            # No events recieved, and no success line
-            raise ValueError('Failed to download data, no data recieved.')
+            # No events received, and no success line
+            raise ValueError('Failed to download data, no data received.')
         else:
             # Successful download because last line is a non-empty comment
             return
@@ -428,8 +428,8 @@ def download_coincidences(file, group='', cluster=None, stations=None, start=Non
 
     if line[0][0] == '#':
         if len(line[0]) == 1:
-            # No events recieved, and no success line
-            raise ValueError('Failed to download data, no data recieved.')
+            # No events received, and no success line
+            raise ValueError('Failed to download data, no data received.')
         else:
             # Successful download because last line is a non-empty comment
             pass

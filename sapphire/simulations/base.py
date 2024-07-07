@@ -1,7 +1,7 @@
 """Perform simulations of air showers on a cluster of stations
 
 This base class can be subclassed to provide various kinds of
-simulations. These simulations will inherit the base functionallity from
+simulations. These simulations will inherit the base functionality from
 this class, including the creation of event and coincidence tables to
 store the results, which will look similar to regular HiSPARC data, such
 that the same reconstruction analysis can be applied to both.

@@ -94,7 +94,7 @@ class HiSPARCSimulation(BaseSimulation):
 
         Distribution based on Fokkema2012 sec 4.2, figure 4.3
 
-        Be careful when editting this function, be sure to check both
+        Be careful when editing this function, be sure to check both
         the single and vectorized part.
 
         :param n: number of times to simulate
@@ -126,13 +126,13 @@ class HiSPARCSimulation(BaseSimulation):
         distribution is used below.
 
         The statistics can be simulated by taking a random number y between
-        0 and 1, and convert it to a signal s in MIP using the probablity
+        0 and 1, and convert it to a signal s in MIP using the probability
         distribution.
 
         Montanus2014: J.C.M. Montanus, The Landau distribution,
                       Internal note (Nikhef), 22 may 2014
 
-        Be careful when editting this function, be sure to check both
+        Be careful when editing this function, be sure to check both
         the single and vectorized part.
 
         :param n: number of particles.
@@ -204,7 +204,7 @@ class HiSPARCSimulation(BaseSimulation):
 
         Source: http://mathworld.wolfram.com/SpherePointPicking.html
 
-        This fuction does not account for attenuation due to the extra path
+        This function does not account for attenuation due to the extra path
         length, nor for the reduced effective surface of the detectors due to
         the angle. CORSIKA simulated showers already contain the atmospheric
         attenuation and precise positions for each particle.
@@ -237,7 +237,7 @@ class HiSPARCSimulation(BaseSimulation):
     def inverse_zenith_probability(cls, p):
         """Inverse cumulative probability distribution for zenith
 
-        Derrived from Schultheiss "The acceptancy of the HiSPARC Network",
+        Derived from Schultheiss "The acceptancy of the HiSPARC Network",
         (internal note), eq 2.4 from Rossi.
 
         :param p: probability value between 0 and 1.

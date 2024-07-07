@@ -127,7 +127,7 @@ def submit_job(seed):
 
     result = subprocess.check_output(qsub, stderr=subprocess.STDOUT, shell=True)
     if result != '':
-        msg = f'{seed} - Error occured: {result}'
+        msg = f'{seed} - Error occurred: {result}'
         logger.error(msg)
         raise Exception(msg)
 

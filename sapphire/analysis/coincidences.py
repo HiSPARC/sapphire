@@ -331,7 +331,7 @@ class Coincidences:
         shifting the data in time.  This is necessary when one wants to
         compare the timestamps of stations who use a different time (as in
         GPS, UTC or local time).  This function searches for events which
-        occured almost at the same time and thus might be the result of an
+        occurred almost at the same time and thus might be the result of an
         extended air shower.
 
         :param window: the time window in nanoseconds which will be searched
@@ -410,7 +410,7 @@ class Coincidences:
         """Search for coincidences in a set of timestamps
 
         Given a set of timestamps, search for coincidences.  That is, search
-        for events which occured almost at the same time and thus might be the
+        for events which occurred almost at the same time and thus might be the
         result of an extended air shower.
 
         :param timestamps: a list of tuples (timestamp, station_idx,

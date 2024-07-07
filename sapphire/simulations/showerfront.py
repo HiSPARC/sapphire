@@ -285,7 +285,7 @@ class ConeFront:
 
 
 class CorsikaStationFront:
-    """Shower front shape derrived from CORSIKA simulations on a station.
+    """Shower front shape derived from CORSIKA simulations on a station.
 
     A set of CORSIKA generated showers were used to determine the median
     detected arrival time in a 4-detector station as a function of core

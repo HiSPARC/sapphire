@@ -40,7 +40,7 @@ def compton_energy_transfer(gamma_energy):
     (within kinematic bounds) is returned.
 
     :param gamma_energy: photon energy [MeV].
-    :return: transfered energy [MeV].
+    :return: transferred energy [MeV].
 
     """
     edge = compton_edge(gamma_energy)
@@ -129,7 +129,7 @@ def simulate_detector_mips_gammas(p, theta):
         elif depth_compton < depth_pair:
             # Compton scattering
 
-            # kinetic energy transfered to electron by compton scattering
+            # kinetic energy transferred to electron by compton scattering
             energy_deposit = compton_energy_transfer(energy) / MIP
             max_deposit = max_energy_deposit_in_mips(depth_compton, scintillator_depth)
             mips += min(max_deposit, energy_deposit)

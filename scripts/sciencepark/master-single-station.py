@@ -183,7 +183,7 @@ class Master:
             reconstruction.reconstruct_angles('/coincidences')
 
     def determine_detector_offsets(self):
-        print('Determing detector offsets...')
+        print('Determining detector offsets...')
         for station_id, station_group in enumerate(self.station_groups):
             process = ProcessEvents(self.data, station_group)
             offsets = process.determine_detector_timing_offsets()

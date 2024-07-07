@@ -356,7 +356,7 @@ class GroundParticlesGammaSimulation(GroundParticlesSimulation):
 
 
 class DetectorBoundarySimulation(GroundParticlesSimulation):
-    """More accuratly simulate the detection area of the detectors.
+    """More accurately simulate the detection area of the detectors.
 
     Take the orientation of the detectors into account and use the
     exact detector boundaries. This requires a slightly more complex

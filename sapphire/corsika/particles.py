@@ -42,7 +42,7 @@ def name(particle_id):
 
 
 def particle_id(name):
-    """Get the CORSIKA particle code for a partice name
+    """Get the CORSIKA particle code for a particle name
 
     :param name: name of the particle/atom, for atoms the mass
                  (neutrons + protons) can be appended to the name.

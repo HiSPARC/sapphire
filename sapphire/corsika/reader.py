@@ -209,7 +209,7 @@ class CorsikaFile:
         This function only checks if there is an integer number of
         blocks in the file and if the header and end are equal.
 
-        Here would be the place to dynamically check for endiannes and
+        Here would be the place to dynamically check for endianness and
         field size.
 
         """

@@ -107,7 +107,7 @@ class CorsikaBatch:
                    common choices: 0, 7.5, 15, 22.5, 30, 37.5, 45 and 52.5.
     :param azimuth: azimuth angle of the primary particle (in degrees),
                     common choices: 0, 45, 90, 135, 180, 225, 270 and 315.
-    :param queue: choose a queue to sumbit the job to:
+    :param queue: choose a queue to submit the job to:
                   express - max 10 minutes, max 2 jobs
                   short - max 4 hours, max 1000 jobs
                   generic - max 24 hours, max 500 jobs
@@ -279,7 +279,7 @@ class CorsikaBatch:
 
 
 def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika, progress=True):
-    """Use this to sumbit multiple jobs to Stoomboot
+    """Use this to submit multiple jobs to Stoomboot
 
     :param n: Number of jobs to submit
     :param energy: log10(E[eV]) energy of primary particle
@@ -289,7 +289,7 @@ def multiple_jobs(n, energy, particle, zenith, azimuth, queue, corsika, progress
     :param azimuth: Azimuth angle in degrees of the primary particle
     :param queue: Stoomboot queue to submit to
     :param corsika: Name of the CORSIKA executable to use
-    :param progress: if True print an overview of the chosen paramters and
+    :param progress: if True print an overview of the chosen parameters and
                      show a progressbar of the job submission progress.
 
     """
