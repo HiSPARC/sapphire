@@ -304,8 +304,8 @@ class Network(API):
             subclusters = []
             path = self.urls['clusters_in_country'].format(country_number=country)
             clusters = self._get_json(path)
-            for cluster in clusters:
-                path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster['number'])
+            for cluster_json in clusters:
+                path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster_json['number'])
                 subclusters.extend(self._get_json(path))
         else:
             path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster)
@@ -342,18 +342,18 @@ class Network(API):
             stations = []
             path = self.urls['clusters_in_country'].format(country_number=country)
             clusters = self._get_json(path)
-            for cluster in clusters:
-                path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster['number'])
+            for cluster_json in clusters:
+                path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster_json['number'])
                 subclusters = self._get_json(path)
-                for subcluster in subclusters:
-                    path = self.urls['stations_in_subcluster'].format(subcluster_number=subcluster['number'])
+                for subcluster_json in subclusters:
+                    path = self.urls['stations_in_subcluster'].format(subcluster_number=subcluster_json['number'])
                     stations.extend(self._get_json(path))
         elif cluster is not None:
             stations = []
             path = self.urls['subclusters_in_cluster'].format(cluster_number=cluster)
             subclusters = self._get_json(path)
-            for subcluster in subclusters:
-                path = self.urls['stations_in_subcluster'].format(subcluster_number=subcluster['number'])
+            for subcluster_json in subclusters:
+                path = self.urls['stations_in_subcluster'].format(subcluster_number=subcluster_json['number'])
                 stations.extend(self._get_json(path))
         elif subcluster is not None:
             path = self.urls['stations_in_subcluster'].format(subcluster_number=subcluster)

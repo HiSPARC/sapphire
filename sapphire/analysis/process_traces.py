@@ -153,7 +153,7 @@ class TraceObservables:
             for value in trace:
                 if not in_peak:
                     if value < local_minimum:
-                        local_minimum = value if value > 0 else 0
+                        local_minimum = max(0, value)
                     elif value - local_minimum > peak_threshold:
                         # enough signal over local minimum to be in a peak
                         in_peak = True
@@ -164,7 +164,7 @@ class TraceObservables:
                 elif local_maximum - value > peak_threshold:
                     # enough signal decrease to be out of peak
                     in_peak = False
-                    local_minimum = value if value > 0 else 0
+                    local_minimum = max(0, value)
             n_peaks.append(n_peak)
 
         return n_peaks + self.missing
@@ -367,7 +367,7 @@ class DataReduction:
         """
         left = left - self.padding
         right = right + self.padding
-        left = left if left > 0 else 0
+        left = max(0, left)
         if length is not None:
-            right = right if right < length else length
+            right = max(length, right)
         return left, right

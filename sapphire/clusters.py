@@ -242,8 +242,8 @@ class Station:
             b = a * sqrt(3)
             detectors = [((0, b, 0), 'UD'), ((0, b / 3, 0), 'UD'), ((-a, 0, 0), 'LR'), ((a, 0, 0), 'LR')]
 
-        for position, orientation in detectors:
-            self._add_detector(position, orientation, detector_timestamps)
+        for detector_position, orientation in detectors:
+            self._add_detector(detector_position, orientation, detector_timestamps)
         self.index = -1
 
     def _update_timestamp(self, timestamp):

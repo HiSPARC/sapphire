@@ -1385,10 +1385,7 @@ def logic_checks(t, x, y, z):
 
     # discard reconstruction if the largest of the smallest angles of each
     # triangle is smaller than 0.1 rad (5.73 degrees)
-    if largest_of_smallest_angles < 0.1:
-        return False
-
-    return True
+    return largest_of_smallest_angles >= 0.1
 
 
 def warning_only_three():
