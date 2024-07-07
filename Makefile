@@ -8,10 +8,14 @@ unittests:
 .PHONY: linttest
 linttest:
 	ruff check .
+	ruff format --check .
 
 .PHONY: lintfix
 lintfix:
 	ruff check --fix-only .
+	ruff format .
+	ruff check --fix-only .
+	ruff format .
 
 .PHONY: doctest
 doctest:
