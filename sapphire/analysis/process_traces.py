@@ -369,5 +369,5 @@ class DataReduction:
         right = right + self.padding
         left = max(0, left)
         if length is not None:
-            right = max(length, right)
+            right = min(length, right)
         return left, right
