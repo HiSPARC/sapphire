@@ -98,7 +98,7 @@ class EventDirectionReconstruction:
                 x.append(dx)
                 y.append(dy)
                 z.append(dz)
-                ids.append(id)
+                ids.append(detector_id)
         if len(t) == 3:
             theta, phi = self.direct.reconstruct_common(t, x, y, z, initial)
         elif len(t) > 3:
