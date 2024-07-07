@@ -38,7 +38,7 @@ class SeedsTest(unittest.TestCase):
     def test_write_queued_seeds(self):
         mock_file = mock_open()
         seeds = {'123_456', '234_567'}
-        with patch.object(builtins, 'open', mock_open()):
+        with patch.object(builtins, 'open', mock_file):
             qsub_store_corsika_data.write_queued_seeds(seeds)
         mock_file.assert_called_once_with(qsub_store_corsika_data.QUEUED_SEEDS, 'w')
         mock_file().write.assert_called_once_with('\n'.join(seeds))
