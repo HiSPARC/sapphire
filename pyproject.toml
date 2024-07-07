@@ -46,7 +46,7 @@ dependencies = [
 dev = [
     'Sphinx',
     'coverage==7.4.4',
-    'ruff==0.4.1',
+    'ruff==0.5.1',
 ]
 astropy = [
     'astropy>=5.0.0',
