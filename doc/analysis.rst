@@ -19,4 +19,5 @@ Data analysis
    analysis/process_events
    analysis/process_traces
    analysis/reconstructions
+   analysis/signal_calibration
    analysis/time_deltas

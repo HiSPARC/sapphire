@@ -15,7 +15,7 @@ Modules in this package:
 ------------------------
 
 :mod:`~sapphire.analysis.calibration`
-    determine calibration values
+    determine timing calibration values
 
 :mod:`~sapphire.analysis.coincidence_queries`
     filter coincidences analysed with
@@ -48,6 +48,9 @@ Modules in this package:
 :mod:`~sapphire.analysis.reconstructions`
     perform shower reconstructions
 
+:mod:`~sapphire.analysis.signal_calibration`
+    determine signal calibration values
+
 :mod:`~sapphire.analysis.time_deltas`
     determine time deltas for station pairs
 
@@ -65,6 +68,7 @@ from . import (
     process_events,
     process_traces,
     reconstructions,
+    signal_calibration,
     time_deltas,
 )
 
@@ -80,5 +84,6 @@ __all__ = [
     'process_events',
     'process_traces',
     'reconstructions',
+    'signal_calibration',
     'time_deltas',
 ]
