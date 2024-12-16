@@ -50,9 +50,8 @@ jobs:
         with:
           python-version: '3.11'
           auto-update-conda: true
-      - run: conda install --quiet --yes astropy numpy scipy pytables numba
-      - run: pip install -e .[dev]
-      - run: pip install Sphinx
+      - run: conda install --quiet --yes hdf5
+      - run: pip install -e .[astropy,dev]
       - run: make doctest
       - uses: peaceiris/actions-gh-pages@v4.0.0
         with:
