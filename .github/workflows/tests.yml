@@ -25,8 +25,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           auto-update-conda: true
-      - run: conda install --quiet --yes astropy numpy scipy pytables numba
-      - run: pip install -e .[dev]
+      - run: conda install --quiet --yes hdf5
+      - run: pip install -e .[astropy,dev]
       - run: make unittests
       - run: coverage report
 
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - run: pip install ruff
       - run: make linttest
 
