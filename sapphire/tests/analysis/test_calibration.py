@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock, call, patch, sentinel
 
 import tables
 
-from numpy import all, array, isnan, nan, random, std
+from numpy import array, isnan, nan, random, std
 
 from sapphire import HiSPARCNetwork, HiSPARCStations
 from sapphire.analysis import calibration
@@ -33,8 +33,9 @@ class DetectorTimingTests(unittest.TestCase):
     @patch.object(calibration, 'fit_timing_offset')
     def test_determine_detector_timing_offset(self, mock_fit):
         # Empty list
-        offset = calibration.determine_detector_timing_offset(array([]))
-        self.assertTrue(all(isnan(offset)))
+        offset, error = calibration.determine_detector_timing_offset(array([]))
+        self.assertTrue(isnan(offset))
+        self.assertTrue(isnan(error))
 
         dt = array([-10, 0, 10])
         dz = 0.6
@@ -74,8 +75,9 @@ class StationTimingTests(unittest.TestCase):
         dzc = dz / c
 
         # Empty list
-        offset = calibration.determine_station_timing_offset([])
-        self.assertTrue(all(isnan(offset)))
+        offset, error = calibration.determine_station_timing_offset([])
+        self.assertTrue(isnan(offset))
+        self.assertTrue(isnan(error))
 
         # Good result
         mock_fit.return_value = (1.0, 5.0)

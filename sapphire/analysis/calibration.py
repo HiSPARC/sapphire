@@ -10,7 +10,7 @@ Determine the PMT response curve to correct the detected number of MIPs.
 from datetime import datetime, timedelta
 from itertools import chain, combinations, tee
 
-from numpy import abs, arange, histogram, isnan, linspace, nan, percentile, sqrt, std, sum
+from numpy import absolute, arange, histogram, isnan, linspace, nan, percentile, sqrt, std
 from scipy.optimize import curve_fit
 
 from ..api import Station
@@ -60,7 +60,7 @@ def determine_detector_timing_offsets(events, station=None):
         offsets[detector_id], _ = determine_detector_timing_offset(dt, dz)
 
     # If all except reference are nan, make reference nan.
-    if sum(isnan(offsets)) == 3:
+    if sum(isnan(offset) for offset in offsets) == 3:
         offsets = [nan, nan, nan, nan]
 
     # Try to make detector 2 the reference point, if it is not nan.
@@ -80,8 +80,8 @@ def determine_detector_timing_offset(dt, dz=0):
              the error of the mean.
 
     """
-    dt_filter = abs(dt + dz / c) < 100
-    if not sum(dt_filter):
+    dt_filter = absolute(dt + dz / c) < 100
+    if not dt_filter.sum():
         return nan, nan
     p = round_in_base(percentile(dt.compress(dt_filter), [0.5, 99.5]), 2.5)
     bins = arange(p[0] + 1.25, p[1], 2.5)
@@ -369,7 +369,7 @@ def fit_timing_offset(dt, bins):
         popt, pcov = curve_fit(gauss, x, y, p0=(len(dt), 0.0, std(dt)), sigma=sigma, absolute_sigma=False)
         offset = popt[1]
         width = popt[2]
-        offset_error = width / sqrt(sum(y))
+        offset_error = width / sqrt(y.sum())
     except (RuntimeError, TypeError):
         offset, offset_error = nan, nan
     return offset, offset_error
@@ -389,7 +389,7 @@ def determine_best_reference(filters):
 
     for detector_id in ids:
         idx = [j for j in ids if j != detector_id]
-        lengths.append(sum(filters[detector_id] & (filters[idx[0]] | filters[idx[1]] | filters[idx[2]])))
+        lengths.append((filters[detector_id] & (filters[idx[0]] | filters[idx[1]] | filters[idx[2]])).sum())
     return lengths.index(max(lengths))
 
 
