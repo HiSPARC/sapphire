@@ -50,11 +50,11 @@ you covered.
 Miniconda is the package manager used by the Anaconda distribution.
 Installation instructions can be found at
 https://conda.pydata.org/docs/install/quick.html. After installation, install
-the following packages::
+the following package::
 
-    $ conda install matplotlib scipy pytables
+    $ conda install --channel conda-forge hdf5
 
-This is enough to simply install |sapphire| using Pip (see below).
+After this is should be possible to simply install |sapphire| using Pip (see below).
 
 
 Minimal installation (OS-specific)
