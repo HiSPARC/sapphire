@@ -449,13 +449,14 @@ class Network(API):
         :returns: number of hours with simultaneous data.
 
         """
-        data = {}
 
         if not hasattr(stations, '__len__'):
             stations = [stations]
 
-        for station in stations:
-            data[station] = Station(station, force_fresh=self.force_fresh, force_stale=self.force_stale).event_time()
+        data = {
+            station: Station(station, force_fresh=self.force_fresh, force_stale=self.force_stale).event_time()
+            for station in stations
+        }
 
         first = min(values['timestamp'][0] for values in data.values())
         last = max(values['timestamp'][-1] for values in data.values())
@@ -466,12 +467,12 @@ class Network(API):
         minimum_events_per_hour = 500
         maximum_events_per_hour = 5_000
 
-        for station in data:
+        for event_time_data in data.values():
             is_active = zeros(len_array)
-            start_i = (data[station]['timestamp'][0] - first) // 3600
-            end_i = start_i + len(data[station])
-            is_active[start_i:end_i] = (data[station]['counts'] > minimum_events_per_hour) & (
-                data[station]['counts'] < maximum_events_per_hour
+            start_i = (event_time_data['timestamp'][0] - first) // 3600
+            end_i = start_i + len(event_time_data)
+            is_active[start_i:end_i] = (event_time_data['counts'] > minimum_events_per_hour) & (
+                event_time_data['counts'] < maximum_events_per_hour
             )
             all_active = logical_and(all_active, is_active)
 

@@ -10,7 +10,7 @@ from distutils.spawn import find_executable
 from functools import wraps
 from os import environ
 
-from numpy import arcsin, ceil, floor, pi, round, sin, sqrt
+from numpy import arcsin, around, ceil, floor, pi, sin, sqrt
 from progressbar import ETA, Bar, Percentage, ProgressBar
 from scipy.stats import norm
 
@@ -73,7 +73,7 @@ def floor_in_base(value, base):
 def round_in_base(value, base):
     """Get nearest multiple of base to the value"""
 
-    return base * round(value / base)
+    return base * around(value / base)
 
 
 def closest_in_list(value, items):

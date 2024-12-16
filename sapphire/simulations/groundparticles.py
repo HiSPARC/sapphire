@@ -167,8 +167,8 @@ class GroundParticlesSimulation(HiSPARCSimulation):
         detectors_low = sum(True for observables in detector_observables if observables['n'] > 0.3)
         detectors_high = sum(True for observables in detector_observables if observables['n'] > 0.5)
 
-        return (
-            n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3) or n_detectors == 2 and detectors_low >= 2
+        return (n_detectors == 4 and (detectors_high >= 2 or detectors_low >= 3)) or (
+            n_detectors == 2 and detectors_low >= 2
         )
 
     def simulate_gps(self, station_observables, shower_parameters, station):

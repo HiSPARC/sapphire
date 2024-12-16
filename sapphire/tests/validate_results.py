@@ -2,8 +2,8 @@
 
 import tables
 
-from numpy import all, array
-from numpy.testing import assert_array_almost_equal
+from numpy import array
+from numpy.testing import assert_array_almost_equal, assert_equal
 
 
 def validate_results(test, expected_path, actual_path):
@@ -92,7 +92,7 @@ def validate_vlarrays(test, expected_node, actual_node):
         f"VLArrays '{expected_node._v_pathname}' do not have the same shape.",
     )
     for expected_array, actual_array in zip(expected_node, actual_node):
-        test.assertTrue(all(expected_array == actual_array), f"VLArrays '{expected_node._v_pathname}' do not match.")
+        assert_equal(actual_array, expected_array, f"VLArrays '{expected_node._v_pathname}' do not match.")
 
 
 def validate_arrays(test, expected_node, actual_node):
@@ -103,8 +103,9 @@ def validate_arrays(test, expected_node, actual_node):
         actual_node.shape,
         f"Arrays '{expected_node._v_pathname}' do not have the same shape.",
     )
-    test.assertTrue(
-        all(array(expected_node.read()) == array(actual_node.read())),
+    assert_equal(
+        array(actual_node.read()),
+        array(expected_node.read()),
         f"Arrays '{expected_node._v_pathname}' do not match.",
     )
 
