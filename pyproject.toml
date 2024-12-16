@@ -7,7 +7,7 @@ name = 'hisparc-sapphire'
 version = '3.1.0'
 description = 'A framework for the HiSPARC experiment'
 readme = 'README.rst'
-requires-python = '>=3.9'
+requires-python = '>=3.10'
 license = {file = 'LICENSE'}
 authors = [
     {name = 'Arne de Laat', email = 'arne@delaat.net'},
