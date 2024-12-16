@@ -25,4 +25,4 @@ This package contains modules for performing simulations:
 
 from . import base, detector, gammas, groundparticles, ldf, showerfront
 
-__all__ = ['base', 'detector', 'groundparticles', 'ldf', 'showerfront', 'gammas']
+__all__ = ['base', 'detector', 'gammas', 'groundparticles', 'ldf', 'showerfront']
