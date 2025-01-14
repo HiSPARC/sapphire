@@ -3,10 +3,10 @@
 The module contains some commonly functions and classes.
 
 """
+import shutil
 
 from bisect import bisect_right
 from contextlib import suppress
-from distutils.spawn import find_executable
 from functools import wraps
 from os import environ
 
@@ -169,7 +169,7 @@ def which(program):
     :param program: name or program to check for, e.g. 'wget'.
 
     """
-    path = find_executable(program)
+    path = shutil.which(program)
     if not path:
         raise RuntimeError(f'The program {program} is not available.')
 
