@@ -52,7 +52,7 @@ astropy = [
     'astropy>=5.0.0',
 ]
 publish = [
-    'flit==3.10.1',
+    'flit==3.11.0',
 ]
 
 [project.urls]
