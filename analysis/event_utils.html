@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Get signal and timing values from events &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MPV fit" href="find_mpv.html" />
+    <link rel="prev" title="Reconstruction of EAS direction" href="direction_reconstruction.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="find_mpv.html" title="MPV fit"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="direction_reconstruction.html" title="Reconstruction of EAS direction"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" accesskey="U">Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Get signal and timing values from events</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.analysis.event_utils">
+<span id="get-signal-and-timing-values-from-events"></span><h1>Get signal and timing values from events<a class="headerlink" href="#module-sapphire.analysis.event_utils" title="Link to this heading">¶</a></h1>
+<p>Get data from HiSPARC events</p>
+<p>This module contains functions to derive data from HiSPARC events.
+Common tasks for data reconstruction are getting the particle density
+and shower arrival time in detectors or a station. These functions are
+aware of processed events (i.e. reconstructed number of MIPs, arrival
+times and trigger time) and stations.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.event_utils.station_density">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.event_utils.</span></span><span class="sig-name descname"><span class="pre">station_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.event_utils.station_density" title="Link to this definition">¶</a></dt>
+<dd><p>Get particle density in a station</p>
+<p>Detectors with error values will be ignored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – Processed event row.</p></li>
+<li><p><strong>detector_ids</strong> – list of detectors ids to consider. If None, the
+detectors in the station object will be used.</p></li>
+<li><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>average density over the chosen detectors.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.event_utils.detector_densities">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.event_utils.</span></span><span class="sig-name descname"><span class="pre">detector_densities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.event_utils.detector_densities" title="Link to this definition">¶</a></dt>
+<dd><p>Get particle density in station detectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – Processed event row.</p></li>
+<li><p><strong>detector_ids</strong> – list of detectors ids for which to get particle
+densities.</p></li>
+<li><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>density in each chosen detector.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.event_utils.detector_density">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.event_utils.</span></span><span class="sig-name descname"><span class="pre">detector_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.event_utils.detector_density" title="Link to this definition">¶</a></dt>
+<dd><p>Get particle density in station detector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – Processed event row.</p></li>
+<li><p><strong>detector_id</strong> – detector id for which to get particle density.</p></li>
+<li><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> object, used to
+determine the detector size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>density in the chosen detector.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.event_utils.station_arrival_time">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.event_utils.</span></span><span class="sig-name descname"><span class="pre">station_arrival_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_ext_timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.event_utils.station_arrival_time" title="Link to this definition">¶</a></dt>
+<dd><p>Get station arrival time, i.e. first detector hit</p>
+<p>Arrival time of first detector hit in the station. The returned time
+is relative to reference_ext_timestamp, because floats do not have
+enough precision to represent large timestamps in nanoseconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – Processed event row.</p></li>
+<li><p><strong>reference_ext_timestamp</strong> – reference extended timestamp (in ns).
+The returned station arrival time will be relative to this timestamp.
+Often best to use the timestamp of the first event in a coincidence.</p></li>
+<li><p><strong>detector_ids</strong> – list of detectors ids for which to consider.</p></li>
+<li><p><strong>offsets</strong> – list of detector time offsets.</p></li>
+<li><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> object, used to
+determine the number of detectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>shower arrival time of the station relative to the
+reference timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.event_utils.relative_detector_arrival_times">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.event_utils.</span></span><span class="sig-name descname"><span class="pre">relative_detector_arrival_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_ext_timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.event_utils.relative_detector_arrival_times" title="Link to this definition">¶</a></dt>
+<dd><p>Get relative arrival times for all detectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – Processed event row.</p></li>
+<li><p><strong>reference_ext_timestamp</strong> – reference extended timestamp (in ns).
+The returned station arrival time will be relative to this timestamp.
+Often best to use the timestamp of the first event in a coincidence.</p></li>
+<li><p><strong>detector_ids</strong> – list of detectors ids for which to get arrival times.</p></li>
+<li><p><strong>offsets</strong> – list of detector time offsets.</p></li>
+<li><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> object, used to
+determine the number of detectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of shower arrival times relative to the given reference.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.event_utils.detector_arrival_times">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.event_utils.</span></span><span class="sig-name descname"><span class="pre">detector_arrival_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.event_utils.detector_arrival_times" title="Link to this definition">¶</a></dt>
+<dd><p>Get corrected arrival times for all detectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – Processed event row.</p></li>
+<li><p><strong>detector_ids</strong> – list of detectors ids for which to get arrival times.</p></li>
+<li><p><strong>offsets</strong> – list of detector time offsets.</p></li>
+<li><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> object, used to
+determine the number of detectors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of shower arrival times relative to the start of the trace.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.event_utils.detector_arrival_time">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.event_utils.</span></span><span class="sig-name descname"><span class="pre">detector_arrival_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0]</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.event_utils.detector_arrival_time" title="Link to this definition">¶</a></dt>
+<dd><p>Get corrected arrival time for a detector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – Event row.</p></li>
+<li><p><strong>detector_id</strong> – detector id for which to get arrival times.</p></li>
+<li><p><strong>offsets</strong> – list of detector time offsets.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>arrival time corrected by the offset.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.event_utils.get_detector_ids">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.event_utils.</span></span><span class="sig-name descname"><span class="pre">get_detector_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.event_utils.get_detector_ids" title="Link to this definition">¶</a></dt>
+<dd><p>Determine the detector ids based on the station object or event data</p>
+<p>Returns a list of detectors that should be present.</p>
+<p>Note: Event based determination might not work for simulated data,
+since it currently does not simulate pulseheights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – Event row.</p></li>
+<li><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of detector_ids.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Get signal and timing values from events</a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.event_utils.station_density"><code class="docutils literal notranslate"><span class="pre">station_density()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.event_utils.detector_densities"><code class="docutils literal notranslate"><span class="pre">detector_densities()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.event_utils.detector_density"><code class="docutils literal notranslate"><span class="pre">detector_density()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.event_utils.station_arrival_time"><code class="docutils literal notranslate"><span class="pre">station_arrival_time()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.event_utils.relative_detector_arrival_times"><code class="docutils literal notranslate"><span class="pre">relative_detector_arrival_times()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.event_utils.detector_arrival_times"><code class="docutils literal notranslate"><span class="pre">detector_arrival_times()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.event_utils.detector_arrival_time"><code class="docutils literal notranslate"><span class="pre">detector_arrival_time()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.event_utils.get_detector_ids"><code class="docutils literal notranslate"><span class="pre">get_detector_ids()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="direction_reconstruction.html"
+                          title="previous chapter">Reconstruction of EAS direction</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="find_mpv.html"
+                          title="next chapter">MPV fit</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="find_mpv.html" title="MPV fit"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="direction_reconstruction.html" title="Reconstruction of EAS direction"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" >Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Get signal and timing values from events</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

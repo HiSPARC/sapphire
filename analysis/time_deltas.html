@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Time deltas &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="HiSPARC API" href="../api.html" />
+    <link rel="prev" title="Detector signal calibration" href="signal_calibration.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api.html" title="HiSPARC API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="signal_calibration.html" title="Detector signal calibration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" accesskey="U">Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Time deltas</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.analysis.time_deltas">
+<span id="time-deltas"></span><h1>Time deltas<a class="headerlink" href="#module-sapphire.analysis.time_deltas" title="Link to this heading">¶</a></h1>
+<p>Determine time differences between coincident events</p>
+<p>Determine time delta between coincidence events from station pairs.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_coincidences</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessTimeDeltas</span>
+
+<span class="n">START</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2015</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2015</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;data.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">download_coincidences</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">START</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">END</span><span class="p">)</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">ProcessTimeDeltas</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">td</span><span class="o">.</span><span class="n">determine_and_store_time_deltas</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.time_deltas.ProcessTimeDeltas">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.time_deltas.</span></span><span class="sig-name descname"><span class="pre">ProcessTimeDeltas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coincidence_group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/coincidences'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'time_deltas'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC event coincidences to obtain time deltas.</p>
+<p>Use this to determine arrival time differences between station pairs which
+have coincident events.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile.</p></li>
+<li><p><strong>coincidence_group</strong> – path to the coincidences group.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while determining and
+storing offsets.</p></li>
+<li><p><strong>destination</strong> – group name for the time_deltas, as subgroup of
+the coincidence_group.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_and_store_time_deltas">
+<span class="sig-name descname"><span class="pre">determine_and_store_time_deltas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_and_store_time_deltas" title="Link to this definition">¶</a></dt>
+<dd><p>Find station pairs, determine time deltas, and store the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_and_store_time_deltas_for_pairs">
+<span class="sig-name descname"><span class="pre">determine_and_store_time_deltas_for_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_and_store_time_deltas_for_pairs" title="Link to this definition">¶</a></dt>
+<dd><p>Determine time deltas for all pairs and store the results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.time_deltas.ProcessTimeDeltas.find_station_pairs">
+<span class="sig-name descname"><span class="pre">find_station_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.find_station_pairs" title="Link to this definition">¶</a></dt>
+<dd><p>Find all unique station pairs which are in a coincidence together</p>
+<p>Assumes the stations in the s_index are sorted by station number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.time_deltas.ProcessTimeDeltas.get_detector_offsets">
+<span class="sig-name descname"><span class="pre">get_detector_offsets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.get_detector_offsets" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve the API detector_timing_offset method for all pairs</p>
+<p>The detector_timing_offset methods accept a single timestamp as
+argument, and return the detector offsets for this timestamp.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_time_deltas_for_pair">
+<span class="sig-name descname"><span class="pre">determine_time_deltas_for_pair</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_station</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_time_deltas_for_pair" title="Link to this definition">¶</a></dt>
+<dd><p>Determine the arrival time differences between two stations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ref_station</strong><strong>,</strong><strong>station</strong> – station numbers.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>extended timestamp of the first event and time difference,
+t - t_ref. Not corrected for altitude differences.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.time_deltas.ProcessTimeDeltas.store_time_deltas">
+<span class="sig-name descname"><span class="pre">store_time_deltas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ext_timestamps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_deltas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pair</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.store_time_deltas" title="Link to this definition">¶</a></dt>
+<dd><p>Store determined dt values</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Time deltas</a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas"><code class="docutils literal notranslate"><span class="pre">ProcessTimeDeltas</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_and_store_time_deltas"><code class="docutils literal notranslate"><span class="pre">ProcessTimeDeltas.determine_and_store_time_deltas()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_and_store_time_deltas_for_pairs"><code class="docutils literal notranslate"><span class="pre">ProcessTimeDeltas.determine_and_store_time_deltas_for_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.find_station_pairs"><code class="docutils literal notranslate"><span class="pre">ProcessTimeDeltas.find_station_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.get_detector_offsets"><code class="docutils literal notranslate"><span class="pre">ProcessTimeDeltas.get_detector_offsets()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.determine_time_deltas_for_pair"><code class="docutils literal notranslate"><span class="pre">ProcessTimeDeltas.determine_time_deltas_for_pair()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.time_deltas.ProcessTimeDeltas.store_time_deltas"><code class="docutils literal notranslate"><span class="pre">ProcessTimeDeltas.store_time_deltas()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="signal_calibration.html"
+                          title="previous chapter">Detector signal calibration</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../api.html"
+                          title="next chapter">HiSPARC API</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../api.html" title="HiSPARC API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="signal_calibration.html" title="Detector signal calibration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" >Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Time deltas</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

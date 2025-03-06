@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>CORSIKA Reader &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Store CORSIKA data as HDF5" href="store_corsika_data.html" />
+    <link rel="prev" title="Convert CORSIKA simulations on Stoomboot" href="qsub_store_corsika_data.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="store_corsika_data.html" title="Store CORSIKA data as HDF5"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="qsub_store_corsika_data.html" title="Convert CORSIKA simulations on Stoomboot"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" accesskey="U">CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CORSIKA Reader</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.corsika.reader">
+<span id="corsika-reader"></span><h1>CORSIKA Reader<a class="headerlink" href="#module-sapphire.corsika.reader" title="Link to this heading">¶</a></h1>
+<p>Read CORSIKA data files.</p>
+<p>This provides functionality to read CORSIKA output
+files with <a class="reference external" href="www.python.org">Python</a>. It provides the following main
+classes:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile" title="sapphire.corsika.reader.CorsikaFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">CorsikaFile</span></code></a>: The file class provides a
+generator over all events in the file.</p></li>
+<li><p><a class="reference internal" href="#sapphire.corsika.reader.CorsikaEvent" title="sapphire.corsika.reader.CorsikaEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">CorsikaEvent</span></code></a>: The event class that
+provides a generator over all particles at ground.</p></li>
+</ul>
+<p>and the following classes that correspond to the sub-blocks defined in
+the CORSIKA manual:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="blocks.html#sapphire.corsika.blocks.RunHeader" title="sapphire.corsika.blocks.RunHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunHeader</span></code></a></p></li>
+<li><p><a class="reference internal" href="blocks.html#sapphire.corsika.blocks.RunEnd" title="sapphire.corsika.blocks.RunEnd"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunEnd</span></code></a></p></li>
+<li><p><a class="reference internal" href="blocks.html#sapphire.corsika.blocks.EventHeader" title="sapphire.corsika.blocks.EventHeader"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventHeader</span></code></a></p></li>
+<li><p><a class="reference internal" href="blocks.html#sapphire.corsika.blocks.EventEnd" title="sapphire.corsika.blocks.EventEnd"><code class="xref py py-class docutils literal notranslate"><span class="pre">EventEnd</span></code></a></p></li>
+<li><p><a class="reference internal" href="blocks.html#sapphire.corsika.blocks.ParticleData" title="sapphire.corsika.blocks.ParticleData"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParticleData</span></code></a></p></li>
+<li><p><a class="reference internal" href="blocks.html#sapphire.corsika.blocks.CherenkovData" title="sapphire.corsika.blocks.CherenkovData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CherenkovData</span></code></a></p></li>
+</ul>
+<p>Additionally version for thinned showers are available:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFileThin" title="sapphire.corsika.reader.CorsikaFileThin"><code class="xref py py-class docutils literal notranslate"><span class="pre">CorsikaFileThin</span></code></a></p></li>
+<li><p><a class="reference internal" href="blocks.html#sapphire.corsika.blocks.ParticleDataThin" title="sapphire.corsika.blocks.ParticleDataThin"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParticleDataThin</span></code></a></p></li>
+<li><p><a class="reference internal" href="blocks.html#sapphire.corsika.blocks.CherenkovDataThin" title="sapphire.corsika.blocks.CherenkovDataThin"><code class="xref py py-class docutils literal notranslate"><span class="pre">CherenkovDataThin</span></code></a></p></li>
+</ul>
+<section id="issues">
+<h2>Issues<a class="headerlink" href="#issues" title="Link to this heading">¶</a></h2>
+<p>This module does not handle platform dependent issues such as byte
+ordering (endianness) and field size. This was the result of an
+afternoon hack and has only been tested with files generated using
+32 bit CORSIKA files on a linux system compiled with gfortran.</p>
+<ul class="simple">
+<li><p><strong>Field Size</strong>: According to the CORSIKA user manual section 10.2
+all quantities are written as single precision real numbers
+independently of 32-bit or 64-bit, so each field in the file
+should be 4 bytes long.</p></li>
+<li><p><strong>Endianness</strong>: There is no check for byte ordering. It can be added
+using Python’s <a class="reference external" href="http://docs.python.org/library/struct.html#struct-alignment">struct module</a>.</p></li>
+<li><p><strong>Special Particles</strong>: This module currently ignores all special
+(book-keeping) particles like for muon additional information and
+history.</p></li>
+</ul>
+</section>
+<section id="more-info">
+<h2>More Info<a class="headerlink" href="#more-info" title="Link to this heading">¶</a></h2>
+<p>For short information on fortran unformatted binary files, take a look
+at <a class="reference external" href="http://paulbourke.net/dataformats/reading/">http://paulbourke.net/dataformats/reading/</a></p>
+<p>For detailed information on the CORSIKA format, check the ‘Outputs’
+chapter in the CORSIKA user manual. In particular, check the ‘Normal
+Particle Output’ section.</p>
+</section>
+<section id="authors">
+<h2>Authors<a class="headerlink" href="#authors" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Javier Gonzalez</p></li>
+<li><p>Arne de Laat &lt;<a class="reference external" href="mailto:adelaat&#37;&#52;&#48;nikhef&#46;nl">adelaat<span>&#64;</span>nikhef<span>&#46;</span>nl</a>&gt;</p></li>
+</ul>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.corsika.reader.</span></span><span class="sig-name descname"><span class="pre">CorsikaEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaEvent" title="Link to this definition">¶</a></dt>
+<dd><p>CorsikaEvent constructor</p>
+<p>The user never calls this. The CorsikaFile does.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>raw_file</strong> – <a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile" title="sapphire.corsika.reader.CorsikaFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">CorsikaFile</span></code></a> object.</p></li>
+<li><p><strong>header_index</strong> – index where the event header starts.</p></li>
+<li><p><strong>end_index</strong> – index where the event end starts.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaEvent.get_header">
+<span class="sig-name descname"><span class="pre">get_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaEvent.get_header" title="Link to this definition">¶</a></dt>
+<dd><p>Get the Event Header</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>an instance of EventHeader</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaEvent.get_end">
+<span class="sig-name descname"><span class="pre">get_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaEvent.get_end" title="Link to this definition">¶</a></dt>
+<dd><p>Get the Event end sub-block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>an instance of EventEnd</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaEvent.get_particles">
+<span class="sig-name descname"><span class="pre">get_particles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaEvent.get_particles" title="Link to this definition">¶</a></dt>
+<dd><p>Generator over particles in the event.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This generator filters out additional muon information and
+all particles at observation levels other than 1.</p>
+</div>
+<p>Use like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">get_particles</span><span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Yield<span class="colon">:</span></dt>
+<dd class="field-odd"><p>each particle in the event</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaFile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.corsika.reader.</span></span><span class="sig-name descname"><span class="pre">CorsikaFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaFile" title="Link to this definition">¶</a></dt>
+<dd><p>CORSIKA output file handler</p>
+<p>This class will probide an interface for CORSIKA output files.
+Allowing you go get at the events and particles in the file.
+This class is meant for unthinned simulations.</p>
+<p>CorsikaFile constructor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Param<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the filemame of the CORSIKA data file</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaFile.finish">
+<span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaFile.finish" title="Link to this definition">¶</a></dt>
+<dd><p>Close the opened CORSIKA data file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaFile.check">
+<span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaFile.check" title="Link to this definition">¶</a></dt>
+<dd><p>Check DAT file format</p>
+<p>Some basic sanity checks.</p>
+<p>Fortran unformatted files are written in ‘blocks’. Each block
+has a header and end. They both contain the same
+information: the number of bytes in the block.</p>
+<p>This function only checks if there is an integer number of
+blocks in the file and if the header and end are equal.</p>
+<p>Here would be the place to dynamically check for endianness and
+field size.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaFile.get_sub_blocks">
+<span class="sig-name descname"><span class="pre">get_sub_blocks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaFile.get_sub_blocks" title="Link to this definition">¶</a></dt>
+<dd><p>Get the sub-blocks in the file.</p>
+<p>Normally one would not need this function but it is here because
+I have used it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaFile.get_header">
+<span class="sig-name descname"><span class="pre">get_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaFile.get_header" title="Link to this definition">¶</a></dt>
+<dd><p>Get the Run header</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>an instance of RunHeader</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaFile.get_end">
+<span class="sig-name descname"><span class="pre">get_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaFile.get_end" title="Link to this definition">¶</a></dt>
+<dd><p>Get the Run end</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>an instance of RunEnd</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaFile.get_events">
+<span class="sig-name descname"><span class="pre">get_events</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaFile.get_events" title="Link to this definition">¶</a></dt>
+<dd><p>Generator over the Events in the file</p>
+<p>This method is a generator over the events in the file.
+Use it like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">my_file</span><span class="o">.</span><span class="n">get_events</span><span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.corsika.reader.CorsikaFileThin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.corsika.reader.</span></span><span class="sig-name descname"><span class="pre">CorsikaFileThin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.reader.CorsikaFileThin" title="Link to this definition">¶</a></dt>
+<dd><p>CORSIKA thinned output file handler</p>
+<p>Same as the unthinned output handler, but with support for
+the different format, particles also have the weight property.
+This class is meant for thinned simulations.</p>
+<p>CorsikaFileThin constructor</p>
+<p>It takes a filename as argument</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">CORSIKA Reader</a><ul>
+<li><a class="reference internal" href="#issues">Issues</a></li>
+<li><a class="reference internal" href="#more-info">More Info</a></li>
+<li><a class="reference internal" href="#authors">Authors</a></li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaEvent"><code class="docutils literal notranslate"><span class="pre">CorsikaEvent</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaEvent.get_header"><code class="docutils literal notranslate"><span class="pre">CorsikaEvent.get_header()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaEvent.get_end"><code class="docutils literal notranslate"><span class="pre">CorsikaEvent.get_end()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaEvent.get_particles"><code class="docutils literal notranslate"><span class="pre">CorsikaEvent.get_particles()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile"><code class="docutils literal notranslate"><span class="pre">CorsikaFile</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile.finish"><code class="docutils literal notranslate"><span class="pre">CorsikaFile.finish()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile.check"><code class="docutils literal notranslate"><span class="pre">CorsikaFile.check()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile.get_sub_blocks"><code class="docutils literal notranslate"><span class="pre">CorsikaFile.get_sub_blocks()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile.get_header"><code class="docutils literal notranslate"><span class="pre">CorsikaFile.get_header()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile.get_end"><code class="docutils literal notranslate"><span class="pre">CorsikaFile.get_end()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFile.get_events"><code class="docutils literal notranslate"><span class="pre">CorsikaFile.get_events()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.corsika.reader.CorsikaFileThin"><code class="docutils literal notranslate"><span class="pre">CorsikaFileThin</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="qsub_store_corsika_data.html"
+                          title="previous chapter">Convert CORSIKA simulations on Stoomboot</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="store_corsika_data.html"
+                          title="next chapter">Store CORSIKA data as HDF5</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="store_corsika_data.html" title="Store CORSIKA data as HDF5"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="qsub_store_corsika_data.html" title="Convert CORSIKA simulations on Stoomboot"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" >CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CORSIKA Reader</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

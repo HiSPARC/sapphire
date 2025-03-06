@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Query coincidences from a datafile &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Search for coincidences between HiSPARC stations" href="coincidences.html" />
+    <link rel="prev" title="Data timing and signal calibration" href="calibration.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coincidences.html" title="Search for coincidences between HiSPARC stations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="calibration.html" title="Data timing and signal calibration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" accesskey="U">Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Query coincidences from a datafile</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.analysis.coincidence_queries">
+<span id="query-coincidences-from-a-datafile"></span><h1>Query coincidences from a datafile<a class="headerlink" href="#module-sapphire.analysis.coincidence_queries" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.coincidence_queries.</span></span><span class="sig-name descname"><span class="pre">CoincidenceQuery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coincidence_group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/coincidences'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery" title="Link to this definition">¶</a></dt>
+<dd><p>Perform queries on an ESD file where coincidences have been analysed.</p>
+<p>Functions in this class build and perform queries to easily filter
+coincidences based on station participation and station
+organization. This assumes coincidences have been analysed using
+<a class="reference internal" href="coincidences.html#sapphire.analysis.coincidences.CoincidencesESD" title="sapphire.analysis.coincidences.CoincidencesESD"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoincidencesESD</span></code></a>.</p>
+<p>First initiate the class so it can get the correct tables, then get
+coincidences using one of the functions (all_coincidences, any, all,
+at_least), then get the events for these coincidences using other
+functions (all_events, events_from_[stations, subcluster, cluster]).</p>
+<p>An exception will occur when you include a station in a query that
+does not occur in the datafile.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">CoincidenceQuery</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cq</span> <span class="o">=</span> <span class="n">CoincidenceQuery</span><span class="p">(</span><span class="s1">&#39;2013_8_1.h5&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coincidences</span> <span class="o">=</span> <span class="n">cq</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="mi">501</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">],</span> <span class="n">iterator</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">events</span> <span class="o">=</span> <span class="n">cq</span><span class="o">.</span><span class="n">all_events</span><span class="p">(</span><span class="n">coincidences</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">specific_events</span> <span class="o">=</span> <span class="n">cq</span><span class="o">.</span><span class="n">events_from_stations</span><span class="p">(</span><span class="n">coincidences</span><span class="p">,</span>
+<span class="gp">... </span>                                         <span class="p">[</span><span class="mi">501</span><span class="p">,</span> <span class="mi">502</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">504</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cq</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Setup variables to point to the tables</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – either a PyTables file or path to a HDF5 file.</p></li>
+<li><p><strong>coincidence_group</strong> – path to the coincidences group.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.finish">
+<span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.finish" title="Link to this definition">¶</a></dt>
+<dd><p>Clean-up after using</p>
+<p>Do not use if you opened the file yourself and still intent to
+use it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.all_coincidences">
+<span class="sig-name descname"><span class="pre">all_coincidences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.all_coincidences" title="Link to this definition">¶</a></dt>
+<dd><p>Get all coincidences</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>all coincidences.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.any">
+<span class="sig-name descname"><span class="pre">any</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.any" title="Link to this definition">¶</a></dt>
+<dd><p>Filter for coincidences that contain any of the given stations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stations</strong> – list of stations from which any need to be in
+a coincidence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>coincidences matching the query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.all">
+<span class="sig-name descname"><span class="pre">all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.all" title="Link to this definition">¶</a></dt>
+<dd><p>Filter for coincidences that contain all of the given stations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stations</strong> – list of stations which all need to be in a
+coincidence.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>coincidences matching the query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.at_least">
+<span class="sig-name descname"><span class="pre">at_least</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.at_least" title="Link to this definition">¶</a></dt>
+<dd><p>Filter coincidences to contain at least n of the given stations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stations</strong> – list of stations from which any at least n of
+any combinations need to be in a coincidence.</p></li>
+<li><p><strong>n</strong> – minimum number of given stations to be in a coincidence.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>coincidences matching the query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.timerange">
+<span class="sig-name descname"><span class="pre">timerange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.timerange" title="Link to this definition">¶</a></dt>
+<dd><p>Query based on timestamps</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – timestamp from which to look for coincidences.</p></li>
+<li><p><strong>stop</strong> – end timestamp for coincidences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>coincidences within the specified timerange.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.perform_query">
+<span class="sig-name descname"><span class="pre">perform_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.perform_query" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a query on the coincidences table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>query</strong> – a valid PyTables query string for the coincidences
+table.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>coincidences matching the query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.all_events">
+<span class="sig-name descname"><span class="pre">all_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.all_events" title="Link to this definition">¶</a></dt>
+<dd><p>Get all events for the given coincidences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidences</strong> – list of coincidence rows.</p></li>
+<li><p><strong>n</strong> – minimum number of events per coincidence.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of events for each coincidence.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.all_reconstructions">
+<span class="sig-name descname"><span class="pre">all_reconstructions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.all_reconstructions" title="Link to this definition">¶</a></dt>
+<dd><p>Get all reconstructed events for the given coincidences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidences</strong> – list of coincidence rows.</p></li>
+<li><p><strong>n</strong> – minimum number of events per coincidence.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of reconstructed events for each coincidence.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.minimum_events_for_coincidence">
+<span class="sig-name descname"><span class="pre">minimum_events_for_coincidence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidences_events</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.minimum_events_for_coincidence" title="Link to this definition">¶</a></dt>
+<dd><p>Filter coincidences to only include those with at least n events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidences_events</strong> – list of events for each coincidence.</p></li>
+<li><p><strong>n</strong> – minimum number of events per coincidence.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.events_from_stations">
+<span class="sig-name descname"><span class="pre">events_from_stations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.events_from_stations" title="Link to this definition">¶</a></dt>
+<dd><p>Only get events for specific stations for coincidences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidences</strong> – list of coincidence rows.</p></li>
+<li><p><strong>stations</strong> – list of station numbers to filter events for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of filtered events for each coincidence.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.reconstructions_from_stations">
+<span class="sig-name descname"><span class="pre">reconstructions_from_stations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.reconstructions_from_stations" title="Link to this definition">¶</a></dt>
+<dd><p>Only get reconstructions for specific stations for coincidences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidences</strong> – list of coincidence rows.</p></li>
+<li><p><strong>stations</strong> – list of station numbers to filter events for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of filtered reconstructed events for each coincidence.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.events_in_subcluster">
+<span class="sig-name descname"><span class="pre">events_in_subcluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subcluster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.events_in_subcluster" title="Link to this definition">¶</a></dt>
+<dd><p>Filter to only events from stations in a specific subcluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidences</strong> – list of events for each coincidence.</p></li>
+<li><p><strong>subcluster</strong> – subcluster number to filter events for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuples of station numbers and events for matched events.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.coincidence_queries.CoincidenceQuery.events_in_cluster">
+<span class="sig-name descname"><span class="pre">events_in_cluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.events_in_cluster" title="Link to this definition">¶</a></dt>
+<dd><p>Filter to only events from stations in a specific subcluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidences</strong> – list of events for each coincidence.</p></li>
+<li><p><strong>cluster</strong> – cluster number to filter events for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuples of station numbers and events for matched events.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Query coincidences from a datafile</a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.finish"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.finish()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.all_coincidences"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.all_coincidences()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.any"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.any()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.all"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.all()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.at_least"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.at_least()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.timerange"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.timerange()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.perform_query"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.perform_query()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.all_events"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.all_events()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.all_reconstructions"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.all_reconstructions()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.minimum_events_for_coincidence"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.minimum_events_for_coincidence()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.events_from_stations"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.events_from_stations()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.reconstructions_from_stations"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.reconstructions_from_stations()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.events_in_subcluster"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.events_in_subcluster()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.coincidence_queries.CoincidenceQuery.events_in_cluster"><code class="docutils literal notranslate"><span class="pre">CoincidenceQuery.events_in_cluster()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="calibration.html"
+                          title="previous chapter">Data timing and signal calibration</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="coincidences.html"
+                          title="next chapter">Search for coincidences between HiSPARC stations</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="coincidences.html" title="Search for coincidences between HiSPARC stations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="calibration.html" title="Data timing and signal calibration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" >Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Query coincidences from a datafile</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

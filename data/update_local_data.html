@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Update default local data with latest data from Publicdb &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Event Summary Data" href="../esd.html" />
+    <link rel="prev" title="Download additional local data" href="extend_local_data.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../esd.html" title="Event Summary Data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="extend_local_data.html" title="Download additional local data"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../data.html" accesskey="U">Updating and extending local data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Update default local data with latest data from Publicdb</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.data.update_local_data">
+<span id="update-default-local-data-with-latest-data-from-publicdb"></span><h1>Update default local data with latest data from Publicdb<a class="headerlink" href="#module-sapphire.data.update_local_data" title="Link to this heading">¶</a></h1>
+<p>Update local JSON and TSV data</p>
+<p>This script updates the local copies of the JSON and TSV data from the Public
+Database API. If internet is unavailable the <a class="reference internal" href="../api.html#module-sapphire.api" title="sapphire.api"><code class="xref py py-mod docutils literal notranslate"><span class="pre">api</span></code></a> uses these
+files. The use of local data can also be forced to skip calls to the server or
+prevented to require fresh data from the server.</p>
+<p>Not all available data is included by default because then the SAPPHiRE package
+would become to large. It is possible to add those files after installation.</p>
+<p>This can be run by simply running the installed script from the command line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ update_local_data
+</pre></div>
+</div>
+<p>To make the script show information about what it will do add the help flag:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ update_local_data --help
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.update_local_json">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">update_local_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.update_local_json" title="Link to this definition">¶</a></dt>
+<dd><p>Get cluster organisation and basic station JSON data</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.update_local_tsv">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">update_local_tsv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.update_local_tsv" title="Link to this definition">¶</a></dt>
+<dd><p>Get configuration and calibration TSV data for all stations</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.update_toplevel_json">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">update_toplevel_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.update_toplevel_json" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.update_sublevel_json">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">update_sublevel_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.update_sublevel_json" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.update_sublevel_tsv">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">update_sublevel_tsv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_numbers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.update_sublevel_tsv" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.update_subsublevel_tsv">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">update_subsublevel_tsv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_numbers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.update_subsublevel_tsv" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.get_and_store_json">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">get_and_store_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.get_and_store_json" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.get_and_store_tsv">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">get_and_store_tsv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.get_and_store_tsv" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.data.update_local_data.main">
+<span class="sig-prename descclassname"><span class="pre">sapphire.data.update_local_data.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.data.update_local_data.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Update default local data with latest data from Publicdb</a><ul>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.update_local_json"><code class="docutils literal notranslate"><span class="pre">update_local_json()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.update_local_tsv"><code class="docutils literal notranslate"><span class="pre">update_local_tsv()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.update_toplevel_json"><code class="docutils literal notranslate"><span class="pre">update_toplevel_json()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.update_sublevel_json"><code class="docutils literal notranslate"><span class="pre">update_sublevel_json()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.update_sublevel_tsv"><code class="docutils literal notranslate"><span class="pre">update_sublevel_tsv()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.update_subsublevel_tsv"><code class="docutils literal notranslate"><span class="pre">update_subsublevel_tsv()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.get_and_store_json"><code class="docutils literal notranslate"><span class="pre">get_and_store_json()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.get_and_store_tsv"><code class="docutils literal notranslate"><span class="pre">get_and_store_tsv()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.data.update_local_data.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="extend_local_data.html"
+                          title="previous chapter">Download additional local data</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../esd.html"
+                          title="next chapter">Event Summary Data</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../esd.html" title="Event Summary Data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="extend_local_data.html" title="Download additional local data"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../data.html" >Updating and extending local data</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Update default local data with latest data from Publicdb</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Example scripts &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Example scripts</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="example-scripts">
+<h1>Example scripts<a class="headerlink" href="#example-scripts" title="Link to this heading">¶</a></h1>
+<p>In this chapter we’ll discuss some scripts showing common examples of how to download and analyse data. We’ll start with a short discussion of the general layout of such scripts and how to run them interactively. Then, we’ll continue with examples for some common tasks.</p>
+<section id="first-some-tips-and-tricks">
+<h2>First, some tips and tricks<a class="headerlink" href="#first-some-tips-and-tricks" title="Link to this heading">¶</a></h2>
+<section id="the-not-in-globals-trick">
+<h3>The <code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">in</span> <span class="pre">globals()</span></code> trick<a class="headerlink" href="#the-not-in-globals-trick" title="Link to this heading">¶</a></h3>
+<p>A simple script downloading data for a single day can look like:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">simple-download.py</span><a class="headerlink" href="#id1" title="Link to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">esd</span>
+
+<span class="n">DATAFILE</span> <span class="o">=</span> <span class="s1">&#39;data.h5&#39;</span>
+<span class="n">START</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">DATAFILE</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">esd</span><span class="o">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;/s501&#39;</span><span class="p">,</span> <span class="mi">501</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>This script can be run from the command line like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python &lt;name_of_script.py&gt;
+</pre></div>
+</div>
+<p>Every time you run the script, the old data will be removed and new data will be downloaded. Except that the data is probably unchanged. What a waste of time and bandwidth! If you do <em>not</em> run this from the command line you can run into trouble. For example, the second time you run the script from an IPython console, you can run into an exception:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">run</span> <span class="n">simple</span><span class="o">-</span><span class="n">download</span><span class="o">.</span><span class="n">py</span>
+<span class="go">100%|################################################################|Time: 5.22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">run</span> <span class="n">simple</span><span class="o">-</span><span class="n">download</span><span class="o">.</span><span class="n">py</span>
+<span class="gt">Traceback (most recent call last):</span>
+  File <span class="nb">&quot;/Users/david/work/HiSPARC/software/sapphire/doc/scripts/simple-download.py&quot;</span>, line <span class="m">10</span>, in <span class="n">&lt;module&gt;</span>
+<span class="w">    </span><span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">DATAFILE</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+  File <span class="nb">&quot;/Users/david/anaconda/lib/python2.7/site-packages/tables/file.py&quot;</span>, line <span class="m">315</span>, in <span class="n">open_file</span>
+<span class="w">    </span><span class="s2">&quot;close it before reopening in write mode.&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+<span class="hll"><span class="gr">ValueError</span>: <span class="n">The file &#39;data.h5&#39; is already opened.  Please close it before reopening in write mode.</span>
+</span></pre></div>
+</div>
+<p>The second time the script is run, the file is already opened. The script, however, does not know that. You can close the file at the end of your script, but then you don’t have access to the file from the interactive console. It is very useful to run the script, keep the file open, and be able to inspect the file and any variables created by the script. The console has access to all variables declared by the script, but by default the script is not allowed to know about any variables defined in the console. In other words, the script <em>cannot</em> know about the opened file. This is fixed by running the script with the <code class="docutils literal notranslate"><span class="pre">-i</span></code> option:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="n">simple</span><span class="o">-</span><span class="n">download</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The script still does not check for opened files. To do this, one can use the <code class="docutils literal notranslate"><span class="pre">globals()</span></code> function. This will return a dictionary containing all variables in the global scope. If <code class="docutils literal notranslate"><span class="pre">data</span></code> is defined, then <code class="docutils literal notranslate"><span class="pre">'data'</span></code> will be present in that dictionary. We can check for that:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">simple-download-with-globals.py</span><a class="headerlink" href="#id2" title="Link to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">esd</span>
+
+<span class="n">DATAFILE</span> <span class="o">=</span> <span class="s1">&#39;data.h5&#39;</span>
+<span class="n">START</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="hll">
+</span><span class="hll">
+</span><span class="hll"><span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+</span>    <span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">DATAFILE</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">esd</span><span class="o">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;/s501&#39;</span><span class="p">,</span> <span class="mi">501</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now, the script can be rerun multiple times:</p>
+<div class="highlight-pycon notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="n">simple</span><span class="o">-</span><span class="n">download</span><span class="o">-</span><span class="k">with</span><span class="o">-</span><span class="nb">globals</span><span class="o">.</span><span class="n">py</span>
+<span class="go">100%|################################################################|Time: 5.29</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="n">simple</span><span class="o">-</span><span class="n">download</span><span class="o">-</span><span class="k">with</span><span class="o">-</span><span class="nb">globals</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p>The second time the script is run, it does nothing. This <em>is</em> useful, because we can include stuff that needs to be rerun <em>after</em> the <code class="docutils literal notranslate"><span class="pre">if</span></code>-statement.</p>
+</section>
+<section id="the-not-in-data-trick">
+<h3>The <code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">in</span> <span class="pre">data</span></code> trick<a class="headerlink" href="#the-not-in-data-trick" title="Link to this heading">¶</a></h3>
+<p>Every time we run the previous script from the command-line, or start a new IPython console, the script still overwrites the data file with ‘new’ data. We need something more! In addition to checking if the file is already opened, the script needs to check if the data is already present in the file. If it is, the script should do nothing. It is important to open the file in <em>append</em> mode, not in <em>write</em> mode. If you do the latter, the file is overwritten the moment you open it. The script becomes:</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">simple-download-with-checks.py</span><a class="headerlink" href="#id3" title="Link to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">esd</span>
+
+<span class="n">DATAFILE</span> <span class="o">=</span> <span class="s1">&#39;data.h5&#39;</span>
+<span class="n">START</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+<span class="hll">    <span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">DATAFILE</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+</span><span class="hll">
+</span><span class="k">if</span> <span class="s1">&#39;/s501&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+    <span class="n">esd</span><span class="o">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;/s501&#39;</span><span class="p">,</span> <span class="mi">501</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="the-if-name-main-trick">
+<h3>The <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">'__main__'</span></code> trick<a class="headerlink" href="#the-if-name-main-trick" title="Link to this heading">¶</a></h3>
+<p>Finally, most scripts of any decent size include a weird-looking line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+   <span class="n">do_something</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This is very useful, in fact! A small script invariably grows to a larger size. Most probably, you’ll write a few functions that are useful elsewhere. If they are, you can import them from a new script. That, however, causes problems if you did not include the lines above. For example, take this script:</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">is_useful.py</span><a class="headerlink" href="#id4" title="Link to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">square</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">square</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">square</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">square</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<p>This script defines a function to calculate the squares of numbers. We use it to print the squared of the numbers 1, 2, and 3. Now, we want to print the square of 16:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">is_useful</span><span class="w"> </span><span class="kn">import</span> <span class="n">square</span>
+<span class="go">1 2 3</span>
+<span class="go">1 4 9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">square</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+<span class="go">256</span>
+</pre></div>
+</div>
+<p>What happened? When we import a module, the code <em>inside</em> that module is run as well. We don’t want that. When we <em>run</em> a script, the special variable <code class="docutils literal notranslate"><span class="pre">__name__</span></code> is equal to <code class="docutils literal notranslate"><span class="pre">'__main__'</span></code>. When we <em>import</em> a script, the variable is equal to the name of the module, and <em>not</em> equal to <code class="docutils literal notranslate"><span class="pre">'__main__'</span></code>. So, we can check for that:</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">is_useful_and_importable.py</span><a class="headerlink" href="#id5" title="Link to this code">¶</a></div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">square</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">square</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">square</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">square</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<p>If we run the script stand-alone, we get the expected result:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="o">%</span><span class="n">run</span> <span class="n">is_useful_and_importable</span><span class="o">.</span><span class="n">py</span>
+<span class="go">1 2 3</span>
+<span class="go">1 4 9</span>
+</pre></div>
+</div>
+<p>But we can now also import the script without any unintended side effects:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">is_useful_and_importable</span><span class="w"> </span><span class="kn">import</span> <span class="n">square</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">square</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+<span class="go">256</span>
+</pre></div>
+</div>
+<p>It is good practice to always include the <code class="docutils literal notranslate"><span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">'__main__'</span></code> check.</p>
+</section>
+</section>
+<section id="common-tasks">
+<h2>Common tasks<a class="headerlink" href="#common-tasks" title="Link to this heading">¶</a></h2>
+<section id="download-event-summary-data-for-a-few-stations">
+<h3>Download event summary data for a few stations<a class="headerlink" href="#download-event-summary-data-for-a-few-stations" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">esd</span>
+
+<span class="n">DATAFILE</span> <span class="o">=</span> <span class="s1">&#39;data.h5&#39;</span>
+<span class="n">STATIONS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">501</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">506</span><span class="p">]</span>
+<span class="n">START</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">DATAFILE</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">STATIONS</span><span class="p">:</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="s1">&#39;/s</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">station</span>
+        <span class="k">if</span> <span class="n">group</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">esd</span><span class="o">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="download-coincidences-for-a-few-stations">
+<h3>Download coincidences for a few stations<a class="headerlink" href="#download-coincidences-for-a-few-stations" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">esd</span>
+
+<span class="n">DATAFILE</span> <span class="o">=</span> <span class="s1">&#39;data.h5&#39;</span>
+<span class="n">STATIONS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">501</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">506</span><span class="p">]</span>
+<span class="n">START</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">DATAFILE</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;/coincidences&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">esd</span><span class="o">.</span><span class="n">download_coincidences</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stations</span><span class="o">=</span><span class="n">STATIONS</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">START</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">END</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="download-and-reconstruct-directions-for-coincidences">
+<h3>Download and reconstruct directions for coincidences<a class="headerlink" href="#download-and-reconstruct-directions-for-coincidences" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">esd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire.analysis</span><span class="w"> </span><span class="kn">import</span> <span class="n">reconstructions</span>
+
+<span class="n">DATAFILE</span> <span class="o">=</span> <span class="s1">&#39;data.h5&#39;</span>
+<span class="n">STATIONS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">501</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">506</span><span class="p">]</span>
+<span class="n">START</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">DATAFILE</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;/coincidences&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">esd</span><span class="o">.</span><span class="n">download_coincidences</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">stations</span><span class="o">=</span><span class="n">STATIONS</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">START</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">END</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;/reconstructions&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">rec</span> <span class="o">=</span> <span class="n">reconstructions</span><span class="o">.</span><span class="n">ReconstructESDCoincidences</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">rec</span><span class="o">.</span><span class="n">reconstruct_and_store</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="plot-zenith-angle-distribution">
+<h3>Plot zenith angle distribution<a class="headerlink" href="#plot-zenith-angle-distribution" title="Link to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pylab</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_zenith_distribution</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">coincidences</span><span class="o">.</span><span class="n">reconstructions</span>
+
+    <span class="c1"># get all zenith values</span>
+    <span class="n">zenith</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;zenith&#39;</span><span class="p">)</span>
+
+    <span class="c1"># remove all NaNs.</span>
+    <span class="n">zenith</span> <span class="o">=</span> <span class="n">zenith</span><span class="o">.</span><span class="n">compress</span><span class="p">(</span><span class="o">-</span><span class="n">isnan</span><span class="p">(</span><span class="n">zenith</span><span class="p">))</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">degrees</span><span class="p">(</span><span class="n">zenith</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">51</span><span class="p">),</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;zenith [deg]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">():</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;data.h5&#39;</span><span class="p">)</span>
+
+    <span class="n">plot_zenith_distribution</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Example scripts</a><ul>
+<li><a class="reference internal" href="#first-some-tips-and-tricks">First, some tips and tricks</a><ul>
+<li><a class="reference internal" href="#the-not-in-globals-trick">The <code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">in</span> <span class="pre">globals()</span></code> trick</a></li>
+<li><a class="reference internal" href="#the-not-in-data-trick">The <code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">in</span> <span class="pre">data</span></code> trick</a></li>
+<li><a class="reference internal" href="#the-if-name-main-trick">The <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">'__main__'</span></code> trick</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-tasks">Common tasks</a><ul>
+<li><a class="reference internal" href="#download-event-summary-data-for-a-few-stations">Download event summary data for a few stations</a></li>
+<li><a class="reference internal" href="#download-coincidences-for-a-few-stations">Download coincidences for a few stations</a></li>
+<li><a class="reference internal" href="#download-and-reconstruct-directions-for-coincidences">Download and reconstruct directions for coincidences</a></li>
+<li><a class="reference internal" href="#plot-zenith-angle-distribution">Plot zenith angle distribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="tutorial.html"
+                          title="previous chapter">Tutorial</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="configuration.html"
+                          title="next chapter">Configuration</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="configuration.html" title="Configuration"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Example scripts</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

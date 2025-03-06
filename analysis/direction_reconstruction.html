@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Reconstruction of EAS direction &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Get signal and timing values from events" href="event_utils.html" />
+    <link rel="prev" title="Reconstruction of EAS core and size" href="core_reconstruction.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="event_utils.html" title="Get signal and timing values from events"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="core_reconstruction.html" title="Reconstruction of EAS core and size"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" accesskey="U">Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Reconstruction of EAS direction</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.analysis.direction_reconstruction">
+<span id="reconstruction-of-eas-direction"></span><h1>Reconstruction of EAS direction<a class="headerlink" href="#module-sapphire.analysis.direction_reconstruction" title="Link to this heading">¶</a></h1>
+<p>Direction reconstruction</p>
+<p>This module contains two classes that can be used to reconstruct
+HiSPARC events and coincidences. The classes know how to extract the
+relevant information from the station and event or cluster and
+coincidence. Various algorithms which do the reconstruction are also
+defined here. The algorithms require positions and arrival times to
+do the reconstruction.</p>
+<p>Each algorithm has a <a class="reference internal" href="#sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct_common" title="sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct_common"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reconstruct_common()</span></code></a>
+method which always requires arrival times, x, and y positions and
+optionally z positions and previous reconstruction results. The data
+is then prepared for the algorithm and passed to
+the <a class="reference internal" href="#sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct" title="sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reconstruct()</span></code></a> method which returns the
+reconstructed theta and phi coordinates.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.EventDirectionReconstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">EventDirectionReconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.EventDirectionReconstruction" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct direction for station events</p>
+<p>This class is aware of ‘events’ and ‘stations’.  Initialize this class
+with a ‘station’ and you can reconstruct events using
+<a class="reference internal" href="#sapphire.analysis.direction_reconstruction.EventDirectionReconstruction.reconstruct_event" title="sapphire.analysis.direction_reconstruction.EventDirectionReconstruction.reconstruct_event"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reconstruct_event()</span></code></a>. To use other algorithms overwrite the
+<code class="docutils literal notranslate"><span class="pre">direct</span></code> and <code class="docutils literal notranslate"><span class="pre">fit</span></code> attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> object.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.EventDirectionReconstruction.reconstruct_event">
+<span class="sig-name descname"><span class="pre">reconstruct_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.EventDirectionReconstruction.reconstruct_event" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct a single event</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> – an event (e.g. from an events table), or any
+dictionary-like object containing the keys necessary for
+reconstructing the direction of a shower (e.g. arrival times).</p></li>
+<li><p><strong>detector_ids</strong> – list of the detectors to use for
+reconstruction. The detector ids are 0-based, unlike the
+column names in the esd data.</p></li>
+<li><p><strong>offsets</strong> – time offsets for each detector or a
+<a class="reference internal" href="../api.html#sapphire.api.Station" title="sapphire.api.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">Station</span></code></a> object.</p></li>
+<li><p><strong>initial</strong> – dictionary with already fitted shower parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta, phi, and detector ids.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.EventDirectionReconstruction.reconstruct_events">
+<span class="sig-name descname"><span class="pre">reconstruct_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">events</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0,</span> <span class="pre">0.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.EventDirectionReconstruction.reconstruct_events" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct events</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>events</strong> – the events table for the station from an ESD data file.</p></li>
+<li><p><strong>detector_ids</strong> – detectors to use for the reconstructions.</p></li>
+<li><p><strong>offsets</strong> – time offsets for each detector or a
+<a class="reference internal" href="../api.html#sapphire.api.Station" title="sapphire.api.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">Station</span></code></a> object.</p></li>
+<li><p><strong>progress</strong> – if True show a progress bar while reconstructing.</p></li>
+<li><p><strong>initials</strong> – list of dictionaries with already reconstructed shower
+parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of theta, phi, and detector ids.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">CoincidenceDirectionReconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct direction for coincidences</p>
+<p>This class is aware of ‘coincidences’ and ‘clusters’.  Initialize
+this class with a ‘cluster’ and you can reconstruct a coincidence
+using <a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.reconstruct_coincidence" title="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.reconstruct_coincidence"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reconstruct_coincidence()</span></code></a>. To use other algorithms
+overwrite the <code class="docutils literal notranslate"><span class="pre">direct</span></code>,``fit``, and <code class="docutils literal notranslate"><span class="pre">curved</span></code> attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cluster</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.BaseCluster" title="sapphire.clusters.BaseCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCluster</span></code></a> object.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.reconstruct_coincidence">
+<span class="sig-name descname"><span class="pre">reconstruct_coincidence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidence_events</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_numbers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.reconstruct_coincidence" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct a single coincidence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidence_events</strong> – a coincidence list consisting of three
+or more (station_number, event) tuples.</p></li>
+<li><p><strong>station_numbers</strong> – list of station numbers, to only use
+events from those stations.</p></li>
+<li><p><strong>offsets</strong> – a dictionary of either lists of detector timing
+offsets or <a class="reference internal" href="../api.html#sapphire.api.Station" title="sapphire.api.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">Station</span></code></a> objects for each station.</p></li>
+<li><p><strong>initial</strong> – dictionary with already fitted shower parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of theta, phi, and station numbers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.reconstruct_coincidences">
+<span class="sig-name descname"><span class="pre">reconstruct_coincidences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_numbers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.reconstruct_coincidences" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct all coincidences</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidences</strong> – a list of coincidence events, each consisting
+of three or more (station_number, event) tuples.</p></li>
+<li><p><strong>station_numbers</strong> – list of station numbers, to only use
+events from those stations.</p></li>
+<li><p><strong>offsets</strong> – dictionary with detector offsets for each station.
+These detector offsets should be relative to one
+detector from a specific station.</p></li>
+<li><p><strong>progress</strong> – if True show a progress bar while reconstructing.</p></li>
+<li><p><strong>initials</strong> – list of dictionaries with already reconstructed shower
+parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of theta, phi, and station numbers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.get_station_offsets">
+<span class="sig-name descname"><span class="pre">get_station_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidence_events</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_numbers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.get_station_offsets" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.determine_best_offsets">
+<span class="sig-name descname"><span class="pre">determine_best_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station_numbers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">midnight_ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.determine_best_offsets" title="Link to this definition">¶</a></dt>
+<dd><p>Determine best combined station and detector offsets</p>
+<p>Check which station is best used as reference. Allow offsets via
+other stations, intermediate stations are used if it reduces the
+offset error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>station_numbers</strong> – list of stations in the coincidence or also
+other stations can are allow to be the
+reference station.</p></li>
+<li><p><strong>midnight_ts</strong> – timestamp of midnight before the coincidence.</p></li>
+<li><p><strong>offsets</strong> – a dictionary of <a class="reference internal" href="../api.html#sapphire.api.Station" title="sapphire.api.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">Station</span></code></a> objects
+for each station.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>combined detector and station offsets for given station,
+relative to the reference station.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.determine_best_reference">
+<span class="sig-name descname"><span class="pre">determine_best_reference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_numbers</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.determine_best_reference" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstructionDetectors">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">CoincidenceDirectionReconstructionDetectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstructionDetectors" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct direction for coincidences using each detector</p>
+<p>Instead of only the first arrival time per station this class
+uses the arrival time in each detector for the reconstruction.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstructionDetectors.reconstruct_coincidence">
+<span class="sig-name descname"><span class="pre">reconstruct_coincidence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coincidence_events</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_numbers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstructionDetectors.reconstruct_coincidence" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct a single coincidence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>coincidence_events</strong> – a coincidence list consisting of one
+or more (station_number, event) tuples.</p></li>
+<li><p><strong>station_numbers</strong> – list of station numbers, to only use
+events from those stations.</p></li>
+<li><p><strong>offsets</strong> – dictionary with detector offsets for each station.
+These detector offsets should be relative to one
+detector from a specific station.</p></li>
+<li><p><strong>initial</strong> – dictionary with already fitted shower parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of theta, phi, and station numbers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">BaseDirectionAlgorithm</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm" title="Link to this definition">¶</a></dt>
+<dd><p>No actual direction reconstruction algorithm</p>
+<p>Simply returns (nan, nan) as direction.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct_common">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct shower angles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – detector arrival time in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong> – positions of detectors in m.</p></li>
+<li><p><strong>z</strong> – height of detectors in m.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>reconstructed theta and phi angles.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct shower angles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>reconstructed theta and phi angles.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">DirectAlgorithm</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles using direct analytical formula.</p>
+<p>This implements the equations derived in Fokkema2012 sec 4.2.
+(DOI: 10.3990/1.9789036534383)</p>
+<p>This algorithm assumes each detector is at the same altitude.</p>
+<p>Note! The detectors are 0-based.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm.reconstruct_common">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 detections</p>
+<p>This function converts the coordinates to be suitable for the
+algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times in detector 0, 1 and 2 in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong> – positions of detector 0, 1 and 2 in m.</p></li>
+<li><p><strong>z</strong> – height of detectors 0, 1 and 2 is ignored.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions is ignored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm.reconstruct">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 detections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt#</strong> – arrival times in detector 1 and 2 relative to
+detector 0 in ns (!).</p></li>
+<li><p><strong>r#</strong><strong>,</strong><strong>phi#</strong> – position of detector 1 and 2 relative to
+detector 0 in m and radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta as given by Fokkema2012 eq 4.14,
+phi as given by Fokkema2012 eq 4.13.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_theta1_errorsq">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rel_theta1_errorsq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_theta1_errorsq" title="Link to this definition">¶</a></dt>
+<dd><p>Fokkema2012, eq 4.23</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_theta2_errorsq">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rel_theta2_errorsq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_theta2_errorsq" title="Link to this definition">¶</a></dt>
+<dd><p>Fokkema2012, eq 4.23</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_phi_errorsq">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rel_phi_errorsq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_phi_errorsq" title="Link to this definition">¶</a></dt>
+<dd><p>Fokkema2012, eq 4.22</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt0">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dphi_dt0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt0" title="Link to this definition">¶</a></dt>
+<dd><p>Fokkema2012, eq 4.19</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt1">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dphi_dt1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt1" title="Link to this definition">¶</a></dt>
+<dd><p>Fokkema2012, eq 4.20</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt2">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dphi_dt2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt2" title="Link to this definition">¶</a></dt>
+<dd><p>Fokkema2012, eq 4.21</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">DirectAlgorithmCartesian</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles using direct analytical formula.</p>
+<p>This implements the equations derived in Montanus2014.
+“Direction reconstruction of cosmic air showers with
+detectorstations at different altitudes”</p>
+<p>Here the 2D version is used, assuming each detector is at the same
+altitude.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian.reconstruct_common">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 detections</p>
+<p>This function converts the coordinates to be suitable for the
+algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times in detector 0, 1 and 2 in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong> – positions of detector 0, 1 and 2 in m.</p></li>
+<li><p><strong>z</strong> – height of detectors 0, 1 and 2 is ignored.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions is ignored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian.reconstruct">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 detections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt#</strong> – arrival times in detector 1 and 2 relative to
+detector 0 in ns.</p></li>
+<li><p><strong>dx#</strong><strong>,</strong><strong>dy#</strong> – position of detector 1 and 2 relative to
+detector 0 in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta as given by Montanus2014 eq 27,
+phi as given by Montanus2014 eq 26.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">DirectAlgorithmCartesian3D</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles using direct analytical formula.</p>
+<p>This implements the equations derived in Montanus2014.
+“Direction reconstruction of cosmic air showers with
+detectorstations at different altitudes”</p>
+<p>Here the 3D version is used, assuming each detector is at the same
+altitude.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D.reconstruct_common">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 detections</p>
+<p>This function converts the coordinates to be suitable for the
+algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times in detector 0, 1 and 2 in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of detector 0, 1 and 2 in m.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions is ignored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D.reconstruct">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 detections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt#</strong> – arrival times in detector 1 and 2 relative to
+detector 0 in ns.</p></li>
+<li><p><strong>dx#</strong><strong>,</strong><strong>dy#</strong><strong>,</strong><strong>dz#</strong> – position of detector 1 and 2 relative to
+detector 0 in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta as given by Montanus2014 eq 24,
+phi as given by Montanus2014 eq 22.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.SphereAlgorithm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">SphereAlgorithm</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.SphereAlgorithm" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct the direction in equatorial coordinates</p>
+<p>Note: currently incompatible with the other algorithms!</p>
+<p>This class uses a different coordinate systems than the other
+algorithms. The location input is in ECEF coordinates and a
+timestamp is required to connect the direction to the equatorial
+coordinates.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.SphereAlgorithm.reconstruct_equatorial">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct_equatorial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.SphereAlgorithm.reconstruct_equatorial" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstructs the source in the Equatorial Coordinate System.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – An array with three arrival times in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – arrays with the ECEF locations of the
+three detectors / stations in meters.</p></li>
+<li><p><strong>timestamp</strong> – The UTC timestamp of the coincidence in s.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>declination and right ascension of the source. The
+apparent location of the cosmic ray source in the
+Equatorial Coordinate System.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.SphereAlgorithm.interaction_curve">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">interaction_curve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.SphereAlgorithm.interaction_curve" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the curve of possible primary interactions</p>
+<p>This uses the arrival times in three detectors. The algorithm is
+based on location calculations used for LORAN, DECCA, RACAL, GPS
+as described by N.G. Schultheiss 2012</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – arrays with the orthogonal coordinates of the three
+detection points in m.</p></li>
+<li><p><strong>t</strong> – arrival times of the detectors in ns.</p></li>
+<li><p><strong>t_int</strong> – interaction time in ns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>parameters x_int, y_int, z_int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.FitAlgorithm3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">FitAlgorithm3D</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.FitAlgorithm3D.reconstruct_common">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 or more detections</p>
+<p>This function converts the arguments to be suitable for the
+algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times of the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m. The height
+for all detectors will be set to 0 if not given.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions is ignored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.FitAlgorithm3D.reconstruct">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles for many detections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t#</strong> – arrival times in the detectors in ns.</p></li>
+<li><p><strong>x#</strong><strong>,</strong><strong>y#</strong><strong>,</strong><strong>z#</strong> – position of the detectors in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta as given by Montanus2014 eq 21,
+phi as given by Montanus2014 eq 22.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.FitAlgorithm3D.constraint_normal_vector">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">constraint_normal_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D.constraint_normal_vector" title="Link to this definition">¶</a></dt>
+<dd><p>This should be equal to zero</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.FitAlgorithm3D.best_fit">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">best_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_xyz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D.best_fit" title="Link to this definition">¶</a></dt>
+<dd><p>The function to be minimized to find the direction</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_xyz</strong> – list containing the unit vector.</p></li>
+<li><p><strong>dt</strong> – list of relative arrival times in the detectors in ns.</p></li>
+<li><p><strong>dx</strong><strong>,</strong><strong>dy</strong><strong>,</strong><strong>dz</strong> – list of relative detector positions in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>least sum of squares as in Montanus2014, eq 36</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.RegressionAlgorithm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">RegressionAlgorithm</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles using an analytical regression formula.</p>
+<p>This implements the equations as for ISVHECRI (Montanus 2014).
+“Direction reconstruction of cosmic air showers with
+three or more detectorstations in a horizontal (for the
+moment) plane”</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.RegressionAlgorithm.reconstruct_common">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 or more detections</p>
+<p>This function converts the arguments to be suitable for the
+algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times of the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m. The height
+is ignored.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions is ignored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.RegressionAlgorithm.reconstruct">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles for many detections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times in the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong> – positions of the detectors in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta as derived by Montanus2014,
+phi as derived by Montanus2014.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">RegressionAlgorithm3D</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles by iteratively applying a regression formula.</p>
+<p>This implements the equations as recently derived (Montanus 2014).
+“Direction reconstruction of cosmic air showers with
+three or more detectorstations at arbitrary altitudes”</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.MAX_ITERATIONS">
+<span class="sig-name descname"><span class="pre">MAX_ITERATIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000</span></em><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.MAX_ITERATIONS" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.reconstruct_common">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 or more detections</p>
+<p>This function converts the arguments to be suitable for the
+algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times of the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m. The height
+for all detectors will be set to 0 if not given.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions is ignored.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.reconstruct">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles for many detections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times in the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta as derived by Montanus2014,
+phi as derived by Montanus2014.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">CurvedMixin</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedMixin" title="Link to this definition">¶</a></dt>
+<dd><p>Provide methods to estimate the time delay due to front curvature</p>
+<p>Given a core location, detector position, and shower angle the radial core
+distance can be determined, which can be used to determine the expected
+time delay.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedMixin.time_delay">
+<span class="sig-name descname"><span class="pre">time_delay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedMixin.time_delay" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedMixin.radial_core_distance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">radial_core_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedMixin.radial_core_distance" title="Link to this definition">¶</a></dt>
+<dd><p>Determine the radial core distance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m.</p></li>
+<li><p><strong>core_x</strong><strong>,</strong><strong>core_y</strong> – core position at z = 0 in m.</p></li>
+<li><p><strong>theta</strong><strong>,</strong><strong>phi</strong> – reconstructed shower direction.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>radial core distance in m.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">CurvedRegressionAlgorithm</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles taking the shower front curvature into account.</p>
+<p>Take the shower front curvature into account. Assumes knowledge about the
+shower core position.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.MAX_ITERATIONS">
+<span class="sig-name descname"><span class="pre">MAX_ITERATIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000</span></em><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.MAX_ITERATIONS" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.reconstruct_common">
+<span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 or more detections</p>
+<p>This function converts the arguments to be suitable for the
+algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times of the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m.  The height
+is ignored.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions, including core position.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles for many detections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times in the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong> – positions of the detectors in m.</p></li>
+<li><p><strong>core_x</strong><strong>,</strong><strong>core_y</strong> – core position at z = 0 in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta as derived by Montanus2014,
+phi as derived by Montanus2014.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">CurvedRegressionAlgorithm3D</span></span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles accounting for front curvature and detector altitudes</p>
+<p>Take the shower front curvature and different detector heights into
+account. Assumes knowledge about the shower core position.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.MAX_ITERATIONS">
+<span class="sig-name descname"><span class="pre">MAX_ITERATIONS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000</span></em><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.MAX_ITERATIONS" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.reconstruct_common">
+<span class="sig-name descname"><span class="pre">reconstruct_common</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.reconstruct_common" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles from 3 or more detections</p>
+<p>This function converts the arguments to be suitable for the
+algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times of the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m. The height
+for all detectors will be set to 0 if not given.</p></li>
+<li><p><strong>initial</strong> – dictionary containing values from previous
+reconstructions, including core position.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.reconstruct" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct angles for many detections</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times in the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m.</p></li>
+<li><p><strong>core_x</strong><strong>,</strong><strong>core_y</strong> – core position at z = 0 in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>theta as derived by Montanus2014,
+phi as derived by Montanus2014.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.logic_checks">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">logic_checks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.logic_checks" title="Link to this definition">¶</a></dt>
+<dd><p>Check for impossible reconstructions</p>
+<p>Criteria:</p>
+<ul class="simple">
+<li><p>No two detectors are at the same position.</p></li>
+<li><p>Time difference between two detections should be less than distance / c.</p></li>
+<li><p>All detectors on a line is bad.</p></li>
+</ul>
+<p>To fix:</p>
+<ul class="simple">
+<li><p>Time difference can still be to large in cases where a different
+distance becomes relevant.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – arrival times in the detectors in ns.</p></li>
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – positions of the detectors in m.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the checks pass, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.direction_reconstruction.warning_only_three">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.direction_reconstruction.</span></span><span class="sig-name descname"><span class="pre">warning_only_three</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.direction_reconstruction.warning_only_three" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Reconstruction of EAS direction</a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.EventDirectionReconstruction"><code class="docutils literal notranslate"><span class="pre">EventDirectionReconstruction</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.EventDirectionReconstruction.reconstruct_event"><code class="docutils literal notranslate"><span class="pre">EventDirectionReconstruction.reconstruct_event()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.EventDirectionReconstruction.reconstruct_events"><code class="docutils literal notranslate"><span class="pre">EventDirectionReconstruction.reconstruct_events()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction"><code class="docutils literal notranslate"><span class="pre">CoincidenceDirectionReconstruction</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.reconstruct_coincidence"><code class="docutils literal notranslate"><span class="pre">CoincidenceDirectionReconstruction.reconstruct_coincidence()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.reconstruct_coincidences"><code class="docutils literal notranslate"><span class="pre">CoincidenceDirectionReconstruction.reconstruct_coincidences()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.get_station_offsets"><code class="docutils literal notranslate"><span class="pre">CoincidenceDirectionReconstruction.get_station_offsets()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.determine_best_offsets"><code class="docutils literal notranslate"><span class="pre">CoincidenceDirectionReconstruction.determine_best_offsets()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstruction.determine_best_reference"><code class="docutils literal notranslate"><span class="pre">CoincidenceDirectionReconstruction.determine_best_reference()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstructionDetectors"><code class="docutils literal notranslate"><span class="pre">CoincidenceDirectionReconstructionDetectors</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CoincidenceDirectionReconstructionDetectors.reconstruct_coincidence"><code class="docutils literal notranslate"><span class="pre">CoincidenceDirectionReconstructionDetectors.reconstruct_coincidence()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm"><code class="docutils literal notranslate"><span class="pre">BaseDirectionAlgorithm</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">BaseDirectionAlgorithm.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.BaseDirectionAlgorithm.reconstruct"><code class="docutils literal notranslate"><span class="pre">BaseDirectionAlgorithm.reconstruct()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.reconstruct"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm.reconstruct()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_theta1_errorsq"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm.rel_theta1_errorsq()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_theta2_errorsq"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm.rel_theta2_errorsq()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.rel_phi_errorsq"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm.rel_phi_errorsq()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt0"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm.dphi_dt0()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt1"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm.dphi_dt1()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithm.dphi_dt2"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithm.dphi_dt2()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithmCartesian</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithmCartesian.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian.reconstruct"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithmCartesian.reconstruct()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithmCartesian3D</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithmCartesian3D.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.DirectAlgorithmCartesian3D.reconstruct"><code class="docutils literal notranslate"><span class="pre">DirectAlgorithmCartesian3D.reconstruct()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.SphereAlgorithm"><code class="docutils literal notranslate"><span class="pre">SphereAlgorithm</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.SphereAlgorithm.reconstruct_equatorial"><code class="docutils literal notranslate"><span class="pre">SphereAlgorithm.reconstruct_equatorial()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.SphereAlgorithm.interaction_curve"><code class="docutils literal notranslate"><span class="pre">SphereAlgorithm.interaction_curve()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D"><code class="docutils literal notranslate"><span class="pre">FitAlgorithm3D</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">FitAlgorithm3D.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D.reconstruct"><code class="docutils literal notranslate"><span class="pre">FitAlgorithm3D.reconstruct()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D.constraint_normal_vector"><code class="docutils literal notranslate"><span class="pre">FitAlgorithm3D.constraint_normal_vector()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.FitAlgorithm3D.best_fit"><code class="docutils literal notranslate"><span class="pre">FitAlgorithm3D.best_fit()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm"><code class="docutils literal notranslate"><span class="pre">RegressionAlgorithm</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">RegressionAlgorithm.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm.reconstruct"><code class="docutils literal notranslate"><span class="pre">RegressionAlgorithm.reconstruct()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D"><code class="docutils literal notranslate"><span class="pre">RegressionAlgorithm3D</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.MAX_ITERATIONS"><code class="docutils literal notranslate"><span class="pre">RegressionAlgorithm3D.MAX_ITERATIONS</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">RegressionAlgorithm3D.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.RegressionAlgorithm3D.reconstruct"><code class="docutils literal notranslate"><span class="pre">RegressionAlgorithm3D.reconstruct()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedMixin"><code class="docutils literal notranslate"><span class="pre">CurvedMixin</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedMixin.time_delay"><code class="docutils literal notranslate"><span class="pre">CurvedMixin.time_delay()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedMixin.radial_core_distance"><code class="docutils literal notranslate"><span class="pre">CurvedMixin.radial_core_distance()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm"><code class="docutils literal notranslate"><span class="pre">CurvedRegressionAlgorithm</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.MAX_ITERATIONS"><code class="docutils literal notranslate"><span class="pre">CurvedRegressionAlgorithm.MAX_ITERATIONS</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">CurvedRegressionAlgorithm.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm.reconstruct"><code class="docutils literal notranslate"><span class="pre">CurvedRegressionAlgorithm.reconstruct()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D"><code class="docutils literal notranslate"><span class="pre">CurvedRegressionAlgorithm3D</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.MAX_ITERATIONS"><code class="docutils literal notranslate"><span class="pre">CurvedRegressionAlgorithm3D.MAX_ITERATIONS</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.reconstruct_common"><code class="docutils literal notranslate"><span class="pre">CurvedRegressionAlgorithm3D.reconstruct_common()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.CurvedRegressionAlgorithm3D.reconstruct"><code class="docutils literal notranslate"><span class="pre">CurvedRegressionAlgorithm3D.reconstruct()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.logic_checks"><code class="docutils literal notranslate"><span class="pre">logic_checks()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.direction_reconstruction.warning_only_three"><code class="docutils literal notranslate"><span class="pre">warning_only_three()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="core_reconstruction.html"
+                          title="previous chapter">Reconstruction of EAS core and size</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="event_utils.html"
+                          title="next chapter">Get signal and timing values from events</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="event_utils.html" title="Get signal and timing values from events"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="core_reconstruction.html" title="Reconstruction of EAS core and size"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" >Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Reconstruction of EAS direction</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

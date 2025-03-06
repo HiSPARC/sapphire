@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Simulations based on time structure of EAS shower fronts &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Simulation of detector response due to gammas" href="gammas.html" />
+    <link rel="prev" title="Simulations based on theoretical models of EAS lateral distributions" href="ldf.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gammas.html" title="Simulation of detector response due to gammas"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="ldf.html" title="Simulations based on theoretical models of EAS lateral distributions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../simulations.html" accesskey="U">Simulation of the detection of EAS events</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulations based on time structure of EAS shower fronts</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.simulations.showerfront">
+<span id="simulations-based-on-time-structure-of-eas-shower-fronts"></span><h1>Simulations based on time structure of EAS shower fronts<a class="headerlink" href="#module-sapphire.simulations.showerfront" title="Link to this heading">¶</a></h1>
+<p>Perform simple simulations for timing</p>
+<p>Throw a simulated shower front on a cluster from various angles.
+Simulate just the arrival times.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">FlatFrontSimulation</span><span class="p">,</span> <span class="n">ScienceParkCluster</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;/tmp/test_showerfront_simulation.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">ScienceParkCluster</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span> <span class="o">=</span> <span class="n">FlatFrontSimulation</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.showerfront.</span></span><span class="sig-name descname"><span class="pre">FlatFrontSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulation" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulation.generate_shower_parameters">
+<span class="sig-name descname"><span class="pre">generate_shower_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulation.generate_shower_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Generate shower parameters, i.e. azimuth and zenith angles.</p>
+<p>For this groundparticles simulation, only the shower core position
+and rotation angle of the shower are generated.  Do <em>not</em>
+interpret these parameters as the position of the cluster, or the
+rotation of the cluster!  Interpret them as <em>shower</em> parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary with shower parameters: core_pos
+(x, y-tuple) and azimuth.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulation.simulate_detector_response">
+<span class="sig-name descname"><span class="pre">simulate_detector_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulation.simulate_detector_response" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate detector response to a shower.</p>
+<p>Return the arrival time of shower front passing the center of
+the detector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulation.get_arrival_time">
+<span class="sig-name descname"><span class="pre">get_arrival_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulation.get_arrival_time" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate arrival time</p>
+<p>Assumes a flat shower front and core position to be
+the center of the cluster.</p>
+<p>Equation based on Fokkema2012 sec 4.2, eq 4.9.
+With additions to account for altitude.
+(DOI: 10.3990/1.9789036534383)
+The directional vector c * dt should be negative,
+not apparent in Fokkema2012 fig 4.4.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Shower front arrival time in ns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulation.simulate_gps">
+<span class="sig-name descname"><span class="pre">simulate_gps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station_observables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulation.simulate_gps" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate gps timestamp</p>
+<p>Ensure that all detector arrival times are positive.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulationWithoutErrors">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.showerfront.</span></span><span class="sig-name descname"><span class="pre">FlatFrontSimulationWithoutErrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulationWithoutErrors" title="Link to this definition">¶</a></dt>
+<dd><p>This simulation does not simulate errors/uncertainties</p>
+<p>This should result in perfect timing for the detectors.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulation2D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.showerfront.</span></span><span class="sig-name descname"><span class="pre">FlatFrontSimulation2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulation2D" title="Link to this definition">¶</a></dt>
+<dd><p>This simulation ignores detector altitudes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulation2D.get_arrival_time">
+<span class="sig-name descname"><span class="pre">get_arrival_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulation2D.get_arrival_time" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate arrival time</p>
+<p>Ignore detector altitudes</p>
+<p>Equation based on Fokkema2012 sec 4.2, eq 4.9.
+(DOI: 10.3990/1.9789036534383)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFrontSimulation2DWithoutErrors">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.showerfront.</span></span><span class="sig-name descname"><span class="pre">FlatFrontSimulation2DWithoutErrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFrontSimulation2DWithoutErrors" title="Link to this definition">¶</a></dt>
+<dd><p>Ignore altitude of detectors and do not simulate errors.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.ConeFrontSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.showerfront.</span></span><span class="sig-name descname"><span class="pre">ConeFrontSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_core_distance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.ConeFrontSimulation" title="Link to this definition">¶</a></dt>
+<dd><p>This simulation uses a cone shaped shower front.</p>
+<p>The opening angle of the cone is given in the init</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConeFrontSimulation</span><span class="p">,</span> <span class="n">ScienceParkCluster</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;/tmp/test_showerfront_simulation.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">ScienceParkCluster</span><span class="p">()</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span> <span class="o">=</span> <span class="n">ConeFrontSimulation</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Calculate arrival time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cone_angle</strong> – half of the opening angle of the cone.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.ConeFrontSimulation.generate_shower_parameters">
+<span class="sig-name descname"><span class="pre">generate_shower_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.ConeFrontSimulation.generate_shower_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Generate shower parameters</p>
+<p>For this cone-shaped showerfront, the core position, the azimuth
+and zenith angle of the shower are generated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary with shower parameters: core_pos
+(x, y-tuple), azimuth and zenith.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.ConeFrontSimulation.get_arrival_time">
+<span class="sig-name descname"><span class="pre">get_arrival_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.ConeFrontSimulation.get_arrival_time" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate arrival time</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFront">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.showerfront.</span></span><span class="sig-name descname"><span class="pre">FlatFront</span></span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFront" title="Link to this definition">¶</a></dt>
+<dd><p>Simple flat shower front</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFront.delay_at_r">
+<span class="sig-name descname"><span class="pre">delay_at_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFront.delay_at_r" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.FlatFront.front_shape">
+<span class="sig-name descname"><span class="pre">front_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.FlatFront.front_shape" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.ConeFront">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.showerfront.</span></span><span class="sig-name descname"><span class="pre">ConeFront</span></span><a class="headerlink" href="#sapphire.simulations.showerfront.ConeFront" title="Link to this definition">¶</a></dt>
+<dd><p>Simple cone shaped shower front</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.ConeFront.delay_at_r">
+<span class="sig-name descname"><span class="pre">delay_at_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.ConeFront.delay_at_r" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.ConeFront.front_shape">
+<span class="sig-name descname"><span class="pre">front_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.ConeFront.front_shape" title="Link to this definition">¶</a></dt>
+<dd><p>Delay of the showerfront relative to flat as function of distance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong> – distance to the shower core in shower frame.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>delay time of shower front.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.CorsikaStationFront">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.showerfront.</span></span><span class="sig-name descname"><span class="pre">CorsikaStationFront</span></span><a class="headerlink" href="#sapphire.simulations.showerfront.CorsikaStationFront" title="Link to this definition">¶</a></dt>
+<dd><p>Shower front shape derived from CORSIKA simulations on a station.</p>
+<p>A set of CORSIKA generated showers were used to determine the median
+detected arrival time in a 4-detector station as a function of core
+distance.</p>
+<p>At large core distances the detection probability decreases and the
+arrival time becomes less accurate.</p>
+<p>Currently only support for energies between 1e15 and 1e17 eV.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.CorsikaStationFront.delay_at_r">
+<span class="sig-name descname"><span class="pre">delay_at_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e+16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proton'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.CorsikaStationFront.delay_at_r" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.showerfront.CorsikaStationFront.front_shape">
+<span class="sig-name descname"><span class="pre">front_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proton'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.showerfront.CorsikaStationFront.front_shape" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Simulations based on time structure of EAS shower fronts</a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulation"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulation.generate_shower_parameters"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulation.generate_shower_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulation.simulate_detector_response"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulation.simulate_detector_response()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulation.get_arrival_time"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulation.get_arrival_time()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulation.simulate_gps"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulation.simulate_gps()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulationWithoutErrors"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulationWithoutErrors</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulation2D"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulation2D</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulation2D.get_arrival_time"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulation2D.get_arrival_time()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFrontSimulation2DWithoutErrors"><code class="docutils literal notranslate"><span class="pre">FlatFrontSimulation2DWithoutErrors</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.ConeFrontSimulation"><code class="docutils literal notranslate"><span class="pre">ConeFrontSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.ConeFrontSimulation.generate_shower_parameters"><code class="docutils literal notranslate"><span class="pre">ConeFrontSimulation.generate_shower_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.ConeFrontSimulation.get_arrival_time"><code class="docutils literal notranslate"><span class="pre">ConeFrontSimulation.get_arrival_time()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFront"><code class="docutils literal notranslate"><span class="pre">FlatFront</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFront.delay_at_r"><code class="docutils literal notranslate"><span class="pre">FlatFront.delay_at_r()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.FlatFront.front_shape"><code class="docutils literal notranslate"><span class="pre">FlatFront.front_shape()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.ConeFront"><code class="docutils literal notranslate"><span class="pre">ConeFront</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.ConeFront.delay_at_r"><code class="docutils literal notranslate"><span class="pre">ConeFront.delay_at_r()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.ConeFront.front_shape"><code class="docutils literal notranslate"><span class="pre">ConeFront.front_shape()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.CorsikaStationFront"><code class="docutils literal notranslate"><span class="pre">CorsikaStationFront</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.CorsikaStationFront.delay_at_r"><code class="docutils literal notranslate"><span class="pre">CorsikaStationFront.delay_at_r()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.showerfront.CorsikaStationFront.front_shape"><code class="docutils literal notranslate"><span class="pre">CorsikaStationFront.front_shape()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="ldf.html"
+                          title="previous chapter">Simulations based on theoretical models of EAS lateral distributions</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="gammas.html"
+                          title="next chapter">Simulation of detector response due to gammas</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="gammas.html" title="Simulation of detector response due to gammas"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="ldf.html" title="Simulations based on theoretical models of EAS lateral distributions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../simulations.html" >Simulation of the detection of EAS events</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulations based on time structure of EAS shower fronts</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

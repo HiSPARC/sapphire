@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Event Summary Data &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="KASCADE data" href="kascade.html" />
+    <link rel="prev" title="Update default local data with latest data from Publicdb" href="data/update_local_data.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kascade.html" title="KASCADE data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="data/update_local_data.html" title="Update default local data with latest data from Publicdb"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Event Summary Data</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.esd">
+<span id="event-summary-data"></span><h1>Event Summary Data<a class="headerlink" href="#module-sapphire.esd" title="Link to this heading">¶</a></h1>
+<p>Fetch events and other data from the event summary data (ESD).</p>
+<p>This module enables you to access the event summary data.</p>
+<p>If you are in a real hurry and know what you’re doing (and took the
+time to read this far), you can call the <a class="reference internal" href="#sapphire.esd.quick_download" title="sapphire.esd.quick_download"><code class="xref py py-func docutils literal notranslate"><span class="pre">quick_download()</span></code></a>
+function like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">quick_download</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">quick_download</span><span class="p">(</span><span class="mi">501</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For regular use, look up <a class="reference internal" href="#sapphire.esd.download_data" title="sapphire.esd.download_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_data()</span></code></a>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.get_base_url">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">get_base_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.get_base_url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.get_events_url">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">get_events_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.get_events_url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.get_weather_url">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">get_weather_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.get_weather_url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.get_singles_url">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">get_singles_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.get_singles_url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.get_lightning_url">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">get_lightning_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.get_lightning_url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.get_coincidences_url">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">get_coincidences_url</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.get_coincidences_url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.quick_download">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">quick_download</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.quick_download" title="Link to this definition">¶</a></dt>
+<dd><p>Quickly download some data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>station_number</strong> – The HiSPARC station number.</p></li>
+<li><p><strong>date</strong> – the date for which to get data (datetime.datetime
+instance), passed unchanged to the <a class="reference internal" href="#sapphire.esd.download_data" title="sapphire.esd.download_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_data()</span></code></a> as
+:param start:.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>handle to an open PyTables file.</p>
+</dd>
+</dl>
+<p>Everything is handled by this function, including file creation.
+Expect no frills: you just get yesterday’s data.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">sapphire.esd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">sapphire</span><span class="o">.</span><span class="n">esd</span><span class="o">.</span><span class="n">quick_download</span><span class="p">(</span><span class="mi">501</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="go">data1.h5 (File) u&#39;&#39;</span>
+<span class="go">Last modif.: &#39;Mon Jun  9 22:03:50 2014&#39;</span>
+<span class="go">Object Tree:</span>
+<span class="go">/ (RootGroup) u&#39;&#39;</span>
+<span class="go">/s501 (Group) u&#39;&#39;</span>
+<span class="go">/s501/events (Table(58898,)) &#39;&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.load_data">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tsv_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'events'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.load_data" title="Link to this definition">¶</a></dt>
+<dd><p>Load downloaded event summary data into PyTables file.</p>
+<p>If you’ve previously downloaded event summary data from the HiSPARC Public
+Database in TSV format, you can load them into a PyTables
+file using this method. The result is equal to directly downloading data
+using <a class="reference internal" href="#sapphire.esd.download_data" title="sapphire.esd.download_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_data()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> – the PyTables datafile handler.</p></li>
+<li><p><strong>group</strong> – the PyTables destination group, which need not exist.</p></li>
+<li><p><strong>tsv_file</strong> – path to the tsv file downloaded from the HiSPARC Public Database.</p></li>
+<li><p><strong>type</strong> – the datatype to load, either ‘events’, ‘weather’, ‘singles’, or ‘lightning’.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">sapphire.esd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;data.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sapphire</span><span class="o">.</span><span class="n">esd</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;/s501&#39;</span><span class="p">,</span> <span class="s1">&#39;events-s501-20130910.tsv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.download_data">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">download_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'events'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.download_data" title="Link to this definition">¶</a></dt>
+<dd><p>Download event summary data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> – the PyTables datafile handler.</p></li>
+<li><p><strong>group</strong> – the PyTables destination group, which need not exist.</p></li>
+<li><p><strong>station_number</strong> – The HiSPARC station number for which to get data.</p></li>
+<li><p><strong>start</strong> – a datetime instance defining the start of the search interval.</p></li>
+<li><p><strong>end</strong> – a datetime instance defining the end of the search interval.</p></li>
+<li><p><strong>type</strong> – the datatype to download, either ‘events’, ‘weather’, or ‘singles’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while downloading.</p></li>
+</ul>
+</dd>
+</dl>
+<p>If group is None, use ‘/s&lt;station_number&gt;’ as a default.</p>
+<p>The start and stop parameters may both be None.  In that case,
+yesterday’s data is downloaded.  If only end is None, a single day’s
+worth of data is downloaded, starting at the datetime specified with
+start.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">sapphire.esd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;data.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sapphire</span><span class="o">.</span><span class="n">esd</span><span class="o">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;/s501&#39;</span><span class="p">,</span> <span class="mi">501</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.download_lightning">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">download_lightning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lightning_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.download_lightning" title="Link to this definition">¶</a></dt>
+<dd><p>Download KNMI lightning data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> – the PyTables datafile handler.</p></li>
+<li><p><strong>group</strong> – the PyTables destination group, which need not exist.</p></li>
+<li><p><strong>lightning_type</strong> – type of lightning, see list below for the possible type codes.</p></li>
+<li><p><strong>start</strong> – a datetime instance defining the start of the search interval.</p></li>
+<li><p><strong>end</strong> – a datetime instance defining the end of the search interval.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while downloading.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Lightning types:</p>
+<blockquote>
+<div><p>0 - Single-point
+1 - Cloud-cloud
+2 - Cloud-cloud mid
+3 - Cloud-cloud end
+4 - Cloud-ground (default)
+5 - Cloud-ground return</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.load_coincidences">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">load_coincidences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tsv_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.load_coincidences" title="Link to this definition">¶</a></dt>
+<dd><p>Load downloaded event summary data into PyTables file.</p>
+<p>If you’ve previously downloaded coincidence data from the HiSPARC Public
+Database in TSV format, you can load them into a PyTables
+file using this method. The result is equal to directly downloading data
+using <a class="reference internal" href="#sapphire.esd.download_coincidences" title="sapphire.esd.download_coincidences"><code class="xref py py-func docutils literal notranslate"><span class="pre">download_coincidences()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> – the PyTables datafile handler.</p></li>
+<li><p><strong>tsv_file</strong> – path to the tsv file downloaded from the HiSPARC
+Public Database containing coincidences.</p></li>
+<li><p><strong>group</strong> – the PyTables destination group, which need not exist.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">sapphire.esd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;coincidences.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sapphire</span><span class="o">.</span><span class="n">esd</span><span class="o">.</span><span class="n">load_coincidences</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;coincidences-20151130.tsv&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.esd.download_coincidences">
+<span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">download_coincidences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.download_coincidences" title="Link to this definition">¶</a></dt>
+<dd><p>Download event summary data coincidences</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file</strong> – PyTables datafile handler.</p></li>
+<li><p><strong>group</strong> – path of destination group, which need not exist yet.</p></li>
+<li><p><strong>cluster</strong> – HiSPARC cluster name for which to get data.</p></li>
+<li><p><strong>stations</strong> – a list of HiSPARC station numbers for which to get data.</p></li>
+<li><p><strong>start</strong> – a datetime instance defining the start of the search interval.</p></li>
+<li><p><strong>end</strong> – a datetime instance defining the end of the search interval.</p></li>
+<li><p><strong>n</strong> – the minimum number of events in the coincidence.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The start and end parameters may both be None.  In that case,
+yesterday’s data is downloaded.  If only end is None, a single day’s
+worth of data is downloaded, starting at the datetime specified with
+start.</p>
+<p>Optionally either a cluster or stations can be defined to limit the
+results to include only events from those stations.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">sapphire.esd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;data_coincidences.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sapphire</span><span class="o">.</span><span class="n">esd</span><span class="o">.</span><span class="n">download_coincidences</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">cluster</span><span class="o">=</span><span class="s1">&#39;Aarhus&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">start</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">end</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.esd.ReadLineAndStoreEventClass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">ReadLineAndStoreEventClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.ReadLineAndStoreEventClass" title="Link to this definition">¶</a></dt>
+<dd><p>Store lines of event data from the ESD</p>
+<p>Use this contextmanager to store events from a TSV file into a PyTables
+table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>table</strong> – a PyTables Table object in which to store the data.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.esd.ReadLineAndStoreEventClass.store_line">
+<span class="sig-name descname"><span class="pre">store_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.ReadLineAndStoreEventClass.store_line" title="Link to this definition">¶</a></dt>
+<dd><p>Store a single line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>line</strong> – the line to store as a tuple of strings (one element per column).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>timestamp of the stored event, or 0 if the given line was a
+comment line starting with a ‘#’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.esd.ReadLineAndStoreWeatherClass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">ReadLineAndStoreWeatherClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.ReadLineAndStoreWeatherClass" title="Link to this definition">¶</a></dt>
+<dd><p>Store lines of weather data from the ESD</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.esd.ReadLineAndStoreWeatherClass.store_line">
+<span class="sig-name descname"><span class="pre">store_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.ReadLineAndStoreWeatherClass.store_line" title="Link to this definition">¶</a></dt>
+<dd><p>Store a single line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>line</strong> – the line to store as a tuple of strings (one element per column).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>timestamp of the stored event, or 0 if the given line was a
+comment line starting with a ‘#’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.esd.ReadLineAndStoreSinglesClass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">ReadLineAndStoreSinglesClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.ReadLineAndStoreSinglesClass" title="Link to this definition">¶</a></dt>
+<dd><p>Store lines of singles data from the ESD</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.esd.ReadLineAndStoreSinglesClass.store_line">
+<span class="sig-name descname"><span class="pre">store_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.ReadLineAndStoreSinglesClass.store_line" title="Link to this definition">¶</a></dt>
+<dd><p>Store a single line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>line</strong> – the line to store as a tuple of strings (one element per column).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>timestamp of the stored event, or 0 if the given line was a
+comment line starting with a ‘#’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.esd.ReadLineAndStoreLightningClass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.esd.</span></span><span class="sig-name descname"><span class="pre">ReadLineAndStoreLightningClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.ReadLineAndStoreLightningClass" title="Link to this definition">¶</a></dt>
+<dd><p>Store lines of lightning data from the ESD</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.esd.ReadLineAndStoreLightningClass.store_line">
+<span class="sig-name descname"><span class="pre">store_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.esd.ReadLineAndStoreLightningClass.store_line" title="Link to this definition">¶</a></dt>
+<dd><p>Store a single line</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>line</strong> – the line to store as a tuple of strings (one element per column).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>timestamp of the stored event, or 0 if the given line was a
+comment line starting with a ‘#’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Event Summary Data</a><ul>
+<li><a class="reference internal" href="#sapphire.esd.get_base_url"><code class="docutils literal notranslate"><span class="pre">get_base_url()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.get_events_url"><code class="docutils literal notranslate"><span class="pre">get_events_url()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.get_weather_url"><code class="docutils literal notranslate"><span class="pre">get_weather_url()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.get_singles_url"><code class="docutils literal notranslate"><span class="pre">get_singles_url()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.get_lightning_url"><code class="docutils literal notranslate"><span class="pre">get_lightning_url()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.get_coincidences_url"><code class="docutils literal notranslate"><span class="pre">get_coincidences_url()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.quick_download"><code class="docutils literal notranslate"><span class="pre">quick_download()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.load_data"><code class="docutils literal notranslate"><span class="pre">load_data()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.download_data"><code class="docutils literal notranslate"><span class="pre">download_data()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.download_lightning"><code class="docutils literal notranslate"><span class="pre">download_lightning()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.load_coincidences"><code class="docutils literal notranslate"><span class="pre">load_coincidences()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.download_coincidences"><code class="docutils literal notranslate"><span class="pre">download_coincidences()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.esd.ReadLineAndStoreEventClass"><code class="docutils literal notranslate"><span class="pre">ReadLineAndStoreEventClass</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.esd.ReadLineAndStoreEventClass.store_line"><code class="docutils literal notranslate"><span class="pre">ReadLineAndStoreEventClass.store_line()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.esd.ReadLineAndStoreWeatherClass"><code class="docutils literal notranslate"><span class="pre">ReadLineAndStoreWeatherClass</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.esd.ReadLineAndStoreWeatherClass.store_line"><code class="docutils literal notranslate"><span class="pre">ReadLineAndStoreWeatherClass.store_line()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.esd.ReadLineAndStoreSinglesClass"><code class="docutils literal notranslate"><span class="pre">ReadLineAndStoreSinglesClass</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.esd.ReadLineAndStoreSinglesClass.store_line"><code class="docutils literal notranslate"><span class="pre">ReadLineAndStoreSinglesClass.store_line()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.esd.ReadLineAndStoreLightningClass"><code class="docutils literal notranslate"><span class="pre">ReadLineAndStoreLightningClass</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.esd.ReadLineAndStoreLightningClass.store_line"><code class="docutils literal notranslate"><span class="pre">ReadLineAndStoreLightningClass.store_line()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="data/update_local_data.html"
+                          title="previous chapter">Update default local data with latest data from Publicdb</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="kascade.html"
+                          title="next chapter">KASCADE data</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="kascade.html" title="KASCADE data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="data/update_local_data.html" title="Update default local data with latest data from Publicdb"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Event Summary Data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

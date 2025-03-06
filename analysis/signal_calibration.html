@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Detector signal calibration &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Time deltas" href="time_deltas.html" />
+    <link rel="prev" title="Reconstructions" href="reconstructions.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="time_deltas.html" title="Time deltas"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reconstructions.html" title="Reconstructions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" accesskey="U">Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Detector signal calibration</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.analysis.signal_calibration">
+<span id="detector-signal-calibration"></span><h1>Detector signal calibration<a class="headerlink" href="#module-sapphire.analysis.signal_calibration" title="Link to this heading">¶</a></h1>
+<p>Determine signal calibration values for data</p>
+<p>This module can be used to determine signal calibration values from data.</p>
+<p>Determine the PMT response curve to correct the detected number of MIPs.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.signal_calibration.linear">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.signal_calibration.</span></span><span class="sig-name descname"><span class="pre">linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.signal_calibration.linear" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate a linear function at point x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – x coordinate at which to evaluate the function.</p></li>
+<li><p><strong>slope</strong> – slope of the line.</p></li>
+<li><p><strong>intercept</strong> – y-intercept at x = 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the y value at x, given the slope and intercept.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.signal_calibration.inverse_linear">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.signal_calibration.</span></span><span class="sig-name descname"><span class="pre">inverse_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.signal_calibration.inverse_linear" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the inverse linear function for value y</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – value y.</p></li>
+<li><p><strong>slope</strong> – slope of the line.</p></li>
+<li><p><strong>intercept</strong> – y-intercept at x = 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the x coordinate for value y, given the slope and intercept.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.signal_calibration.log_linear">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.signal_calibration.</span></span><span class="sig-name descname"><span class="pre">log_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.signal_calibration.log_linear" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate a linear function in log-log space at point x</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – x coordinate at which to evaluate the function.</p></li>
+<li><p><strong>slope</strong> – slope of the line.</p></li>
+<li><p><strong>intercept</strong> – log10 y-intercept at x = 1 (log10 1 = 0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the y value at x, given the slope and intercept.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.signal_calibration.linear_intersection">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.signal_calibration.</span></span><span class="sig-name descname"><span class="pre">linear_intersection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slope_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept_2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.signal_calibration.linear_intersection" title="Link to this definition">¶</a></dt>
+<dd><p>The x coordinate at which the two linear lines intersect</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slope1</strong> – slope of the first line.</p></li>
+<li><p><strong>intercept1</strong> – y-intercept at x = 0 of the first line.</p></li>
+<li><p><strong>slope2</strong> – slope of the second line.</p></li>
+<li><p><strong>intercept2</strong> – y-intercept at x = 0 of the second line.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>x coordinate of the intersection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.signal_calibration.linear_circle_linear">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.signal_calibration.</span></span><span class="sig-name descname"><span class="pre">linear_circle_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_high</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept_high</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.signal_calibration.linear_circle_linear" title="Link to this definition">¶</a></dt>
+<dd><p>Two linear lines connected by a circle segment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – x coordinate at which to evaluate the function.</p></li>
+<li><p><strong>radius</strong> – radius of the cricle connecting the lines.</p></li>
+<li><p><strong>slope_low</strong> – the slope of the lower (low x) linear line.</p></li>
+<li><p><strong>intercept_low</strong> – the y-intercept of the lower (low x) linear line.</p></li>
+<li><p><strong>slope_high</strong> – the slope of the upper (high x) linear line.</p></li>
+<li><p><strong>intercept_high</strong> – the y-intercept of the upper (high x) linear line.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the y value at x.</p>
+</dd>
+</dl>
+<p>The center of the circle is given by (center_x, center_y)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.signal_calibration.xy_circle_linear">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.signal_calibration.</span></span><span class="sig-name descname"><span class="pre">xy_circle_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_high</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept_high</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.signal_calibration.xy_circle_linear" title="Link to this definition">¶</a></dt>
+<dd><p>An x=y and a linear line connected by a circle segment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – x coordinate at which to evaluate the function.</p></li>
+<li><p><strong>radius</strong> – radius of the cricle connecting the lines.</p></li>
+<li><p><strong>slope_high</strong> – the slope of the upper (high x) linear line.</p></li>
+<li><p><strong>intercept_high</strong> – the y-intercept of the upper (high x) linear line.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the y value at x.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.signal_calibration.loglog_xy_circle_linear">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.signal_calibration.</span></span><span class="sig-name descname"><span class="pre">loglog_xy_circle_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_high</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept_high</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.signal_calibration.loglog_xy_circle_linear" title="Link to this definition">¶</a></dt>
+<dd><p>As <cite>xy_circle_linear</cite> but in log-log space</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.analysis.signal_calibration.loglog_linear_circle_linear">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.signal_calibration.</span></span><span class="sig-name descname"><span class="pre">loglog_linear_circle_linear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept_low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope_high</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept_high</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.signal_calibration.loglog_linear_circle_linear" title="Link to this definition">¶</a></dt>
+<dd><p>As <cite>linear_circle_linear</cite> but in log-log space</p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Detector signal calibration</a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.signal_calibration.linear"><code class="docutils literal notranslate"><span class="pre">linear()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.signal_calibration.inverse_linear"><code class="docutils literal notranslate"><span class="pre">inverse_linear()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.signal_calibration.log_linear"><code class="docutils literal notranslate"><span class="pre">log_linear()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.signal_calibration.linear_intersection"><code class="docutils literal notranslate"><span class="pre">linear_intersection()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.signal_calibration.linear_circle_linear"><code class="docutils literal notranslate"><span class="pre">linear_circle_linear()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.signal_calibration.xy_circle_linear"><code class="docutils literal notranslate"><span class="pre">xy_circle_linear()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.signal_calibration.loglog_xy_circle_linear"><code class="docutils literal notranslate"><span class="pre">loglog_xy_circle_linear()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.signal_calibration.loglog_linear_circle_linear"><code class="docutils literal notranslate"><span class="pre">loglog_linear_circle_linear()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="reconstructions.html"
+                          title="previous chapter">Reconstructions</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="time_deltas.html"
+                          title="next chapter">Time deltas</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="time_deltas.html" title="Time deltas"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reconstructions.html" title="Reconstructions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" >Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Detector signal calibration</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Conversion between different angle notations &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Conversion between axes coordinate systems" href="axes.html" />
+    <link rel="prev" title="Coordinate and time transformations" href="../transformations.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="axes.html" title="Conversion between axes coordinate systems"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../transformations.html" title="Coordinate and time transformations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" accesskey="U">Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Conversion between different angle notations</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.transformations.angles">
+<span id="conversion-between-different-angle-notations"></span><h1>Conversion between different angle notations<a class="headerlink" href="#module-sapphire.transformations.angles" title="Link to this heading">¶</a></h1>
+<p>Perform various angle related transformations</p>
+<p>Transform between different notations for angles:
+Degrees, radians and hours.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.angles.hours_to_degrees">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.angles.</span></span><span class="sig-name descname"><span class="pre">hours_to_degrees</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.angles.hours_to_degrees" title="Link to this definition">¶</a></dt>
+<dd><p>Converts decimal hours to degrees</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>hours</strong> – angle in decimal hours</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>angle in degrees</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.angles.hours_to_radians">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.angles.</span></span><span class="sig-name descname"><span class="pre">hours_to_radians</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.angles.hours_to_radians" title="Link to this definition">¶</a></dt>
+<dd><p>Converts decimal hours to radians</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>hours</strong> – angle in decimal hours</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>angle in radians</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.angles.degrees_to_hours">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.angles.</span></span><span class="sig-name descname"><span class="pre">degrees_to_hours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.angles.degrees_to_hours" title="Link to this definition">¶</a></dt>
+<dd><p>Converts degrees to decimal hours</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>angle</strong> – angle in degrees</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>angle in decimal hours</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.angles.radians_to_hours">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.angles.</span></span><span class="sig-name descname"><span class="pre">radians_to_hours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.angles.radians_to_hours" title="Link to this definition">¶</a></dt>
+<dd><p>Converts degrees to decimal hours</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>angle</strong> – angle in degrees</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>angle in decimal hours</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Conversion between different angle notations</a><ul>
+<li><a class="reference internal" href="#sapphire.transformations.angles.hours_to_degrees"><code class="docutils literal notranslate"><span class="pre">hours_to_degrees()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.angles.hours_to_radians"><code class="docutils literal notranslate"><span class="pre">hours_to_radians()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.angles.degrees_to_hours"><code class="docutils literal notranslate"><span class="pre">degrees_to_hours()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.angles.radians_to_hours"><code class="docutils literal notranslate"><span class="pre">radians_to_hours()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../transformations.html"
+                          title="previous chapter">Coordinate and time transformations</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="axes.html"
+                          title="next chapter">Conversion between axes coordinate systems</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="axes.html" title="Conversion between axes coordinate systems"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../transformations.html" title="Coordinate and time transformations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" >Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Conversion between different angle notations</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

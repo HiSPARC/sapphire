@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Processing of HiSPARC traces &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reconstructions" href="reconstructions.html" />
+    <link rel="prev" title="Processing of HiSPARC events" href="process_events.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reconstructions.html" title="Reconstructions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="process_events.html" title="Processing of HiSPARC events"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" accesskey="U">Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Processing of HiSPARC traces</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.analysis.process_traces">
+<span id="processing-of-hisparc-traces"></span><h1>Processing of HiSPARC traces<a class="headerlink" href="#module-sapphire.analysis.process_traces" title="Link to this heading">¶</a></h1>
+<p>Process HiSPARC traces</p>
+<p>This module can be used analyse (raw) traces. It implements the same
+algorithms as are implemented in the HiSPARC DAQ.</p>
+<p>The <a class="reference internal" href="#sapphire.analysis.process_traces.MeanFilter" title="sapphire.analysis.process_traces.MeanFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">MeanFilter</span></code></a> is meant to mimic the filter in the HiSPARC DAQ.
+It is reproduced here to make it easy to read the algorithm.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.PRE_TRIGGER">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">PRE_TRIGGER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">400</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.PRE_TRIGGER" title="Link to this definition">¶</a></dt>
+<dd><p>Default pre trigger window, i.e. 1000 ns</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.TRIGGER">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">TRIGGER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">600</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.TRIGGER" title="Link to this definition">¶</a></dt>
+<dd><p>Default trigger window, i.e. 1500 ns</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.POST_TRIGGER">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">POST_TRIGGER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1400</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.POST_TRIGGER" title="Link to this definition">¶</a></dt>
+<dd><p>Default post trigger window, i.e. 3500 ns</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.ADC_FILTER_THRESHOLD">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">ADC_FILTER_THRESHOLD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.ADC_FILTER_THRESHOLD" title="Link to this definition">¶</a></dt>
+<dd><p>Default Mean filter threshold of -6 mV</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.ADC_BASELINE_THRESHOLD">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">ADC_BASELINE_THRESHOLD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">17</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.ADC_BASELINE_THRESHOLD" title="Link to this definition">¶</a></dt>
+<dd><p>Default Baseline threshold of -10 mV</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.ADC_LOW_THRESHOLD">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">ADC_LOW_THRESHOLD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">253</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.ADC_LOW_THRESHOLD" title="Link to this definition">¶</a></dt>
+<dd><p>Default low ADC threshold for HiSPARC II</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.ADC_HIGH_THRESHOLD">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">ADC_HIGH_THRESHOLD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">323</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.ADC_HIGH_THRESHOLD" title="Link to this definition">¶</a></dt>
+<dd><p>Default high ADC threshold for HiSPARC II</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.ADC_LOW_THRESHOLD_III">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">ADC_LOW_THRESHOLD_III</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">82</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.ADC_LOW_THRESHOLD_III" title="Link to this definition">¶</a></dt>
+<dd><p>Default low ADC threshold for HiSPARC III</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.ADC_HIGH_THRESHOLD_III">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">ADC_HIGH_THRESHOLD_III</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">150</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.ADC_HIGH_THRESHOLD_III" title="Link to this definition">¶</a></dt>
+<dd><p>Default high ADC threshold for HiSPARC III</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.DATA_REDUCTION_PADDING">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">DATA_REDUCTION_PADDING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">26</span></em><a class="headerlink" href="#sapphire.analysis.process_traces.DATA_REDUCTION_PADDING" title="Link to this definition">¶</a></dt>
+<dd><p>Padding to allow later baseline determination</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.TraceObservables">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">TraceObservables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">26</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.TraceObservables" title="Link to this definition">¶</a></dt>
+<dd><p>Reconstruct trace observables</p>
+<p>If one wants to reconstruct trace observables from existing data some
+caveats apply. If the station applied the Mean Filter the trace values
+will no longer match the raw values used to determine the observables
+on the station. Additionally, if data reduction was active the trace
+may be missing samples without a significant signal, this complicates
+the determination of the baseline. Moreover, data reduction uses the
+ADC_BASELINE_THRESHOLD to determine what signals to keep, so tiny pulses
+may be removed making it impossible to reconstruct tiny pulseheights.</p>
+<p>The (default) value of ADC_BASELINE_THRESHOLD is different for the
+HiSPARC DAQ prior to v4 and also for PySPARC. Those use 25 ADC as
+threshold.</p>
+<p>Each returned list contains at least 4 elements, if there are less than
+4 traces the list is padded with the code for missing detectors: -1.</p>
+<p>Initialize the class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>traces</strong> – a NumPy array of traces, ordered such that the first
+element is the first sample of each trace.</p></li>
+<li><p><strong>threshold</strong> – value of the threshold to use, in ADC counts.</p></li>
+<li><p><strong>padding</strong> – number of samples which should be useable to determine
+the baseline.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.TraceObservables.baselines">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">baselines</span></span><a class="headerlink" href="#sapphire.analysis.process_traces.TraceObservables.baselines" title="Link to this definition">¶</a></dt>
+<dd><p>Mean value of the first part of the trace</p>
+<p>This does not perfectly match the implementation in the DAQ which
+is more complicated, this does provide the correct value in most
+cases, or is off by 1 in most other.</p>
+<p>Usually this value is either around 200 or 30, depending on the used
+version of the DAQ.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the baseline in ADC count.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.TraceObservables.std_dev">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_dev</span></span><a class="headerlink" href="#sapphire.analysis.process_traces.TraceObservables.std_dev" title="Link to this definition">¶</a></dt>
+<dd><p>Standard deviation of the first part of the trace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the standard deviation in milli ADC count.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.TraceObservables.pulseheights">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pulseheights</span></span><a class="headerlink" href="#sapphire.analysis.process_traces.TraceObservables.pulseheights" title="Link to this definition">¶</a></dt>
+<dd><p>Maximum peak to baseline value in trace</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the pulseheights in ADC count.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.TraceObservables.integrals">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">integrals</span></span><a class="headerlink" href="#sapphire.analysis.process_traces.TraceObservables.integrals" title="Link to this definition">¶</a></dt>
+<dd><p>Integral of trace for all values over threshold</p>
+<p>The threshold is defined by ADC_BASELINE_THRESHOLD</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the pulse integral in ADC count * sample.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.TraceObservables.n_peaks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_peaks</span></span><a class="headerlink" href="#sapphire.analysis.process_traces.TraceObservables.n_peaks" title="Link to this definition">¶</a></dt>
+<dd><p>Number of peaks in the trace</p>
+<p>The peak threshold is defined by ADC_LOW_THRESHOLD</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the pulse integral in ADC count * sample.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.MeanFilter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">MeanFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.MeanFilter" title="Link to this definition">¶</a></dt>
+<dd><p>Filter raw traces</p>
+<p>This class replicates the behavior of the Mean_Filter.vi in the HiSPARC
+DAQ. A sawtooth-like pattern may be visible in traces due to ADC
+misalignment and the synchronization pulse (?). This filter removes such
+small oscillations but keeps significant pulses.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is a destructive algorithm which removes important information
+from the data.</p>
+</div>
+<p>Verified, by eye, with the LabView VI and Bachelor thesis Oostenbrugge2014.</p>
+<p>Initialize the class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>use_threshold</strong> – use a threshold when filtering traces.</p></li>
+<li><p><strong>threshold</strong> – value of the threshold to use.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.MeanFilter.filter_traces">
+<span class="sig-name descname"><span class="pre">filter_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_traces</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.MeanFilter.filter_traces" title="Link to this definition">¶</a></dt>
+<dd><p>Apply the mean filter to multiple traces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>raw_traces</strong> – list of raw event traces.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>filtered traces.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.MeanFilter.filter_trace">
+<span class="sig-name descname"><span class="pre">filter_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raw_trace</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.MeanFilter.filter_trace" title="Link to this definition">¶</a></dt>
+<dd><p>Apply the mean filter to a single trace</p>
+<p>First separate the even and odd ADC traces, filter each separately.
+Then recombine them and pass the entire trace through the filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>raw_trace</strong> – raw event trace.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>filtered trace.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.MeanFilter.mean_filter_with_threshold">
+<span class="sig-name descname"><span class="pre">mean_filter_with_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.MeanFilter.mean_filter_with_threshold" title="Link to this definition">¶</a></dt>
+<dd><p>The mean filter in case use_threshold is True</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.MeanFilter.mean_filter_without_threshold">
+<span class="sig-name descname"><span class="pre">mean_filter_without_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.MeanFilter.mean_filter_without_threshold" title="Link to this definition">¶</a></dt>
+<dd><p>The mean filter in case use_threshold is False</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.DataReduction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_traces.</span></span><span class="sig-name descname"><span class="pre">DataReduction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">26</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.DataReduction" title="Link to this definition">¶</a></dt>
+<dd><p>Data reduce traces</p>
+<p>This class replicates the behavior also implemented in the HiSPARC DAQ.
+The threshold and padding values used by the DAQ may be slightly
+different, but these should closely match the defaults.</p>
+<p>The default padding of 25 samples matches the number of samples used by
+the <a class="reference internal" href="#sapphire.analysis.process_traces.TraceObservables" title="sapphire.analysis.process_traces.TraceObservables"><code class="xref py py-class docutils literal notranslate"><span class="pre">TraceObservables</span></code></a> to determine the baseline.</p>
+<p>Initialize the class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>threshold</strong> – value of the threshold to use, in ADC counts.</p></li>
+<li><p><strong>padding</strong> – number of samples to keep around the determined cuts.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.DataReduction.reduce_traces">
+<span class="sig-name descname"><span class="pre">reduce_traces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.DataReduction.reduce_traces" title="Link to this definition">¶</a></dt>
+<dd><p>Apply data reduction to the given traces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>traces</strong> – a NumPy array of traces, ordered such that the first
+element is the first sample of each trace.</p></li>
+<li><p><strong>baselines</strong> – list of baselines for the traces, if None the
+baselines will be determined using <a class="reference internal" href="#sapphire.analysis.process_traces.TraceObservables" title="sapphire.analysis.process_traces.TraceObservables"><code class="xref py py-class docutils literal notranslate"><span class="pre">TraceObservables</span></code></a>.</p></li>
+<li><p><strong>return_offset</strong> – if True the left cut will also be returned.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>data reduced traces, including the left cut if return_offset
+is True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.DataReduction.determine_cuts">
+<span class="sig-name descname"><span class="pre">determine_cuts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">traces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">baselines</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.DataReduction.determine_cuts" title="Link to this definition">¶</a></dt>
+<dd><p>Determine the left and right cuts for an event</p>
+<p>Note that this does not include the padding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>traces</strong> – a NumPy array of traces, ordered such that the first
+element is the first sample of each trace.</p></li>
+<li><p><strong>baselines</strong> – list of baselines for the traces.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>indices into traces where the first signals from left and
+right cross the threshold.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_traces.DataReduction.add_padding">
+<span class="sig-name descname"><span class="pre">add_padding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">left</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_traces.DataReduction.add_padding" title="Link to this definition">¶</a></dt>
+<dd><p>Add padding around the cuts to allow later baseline determination</p>
+<p>The right value may be larger than the length of the traces if length
+is not given. This is only an issues if the actual value is of
+interest, because:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">][:</span><span class="mi">6</span><span class="p">]</span>
+<span class="go">[1, 2, 3]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>left</strong><strong>,</strong><strong>right</strong> – the left and right cuts from <a class="reference internal" href="#sapphire.analysis.process_traces.DataReduction.determine_cuts" title="sapphire.analysis.process_traces.DataReduction.determine_cuts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">determine_cuts()</span></code></a>.</p></li>
+<li><p><strong>length</strong> – optionally the length of the list can be given to
+prevent the right cut to be larger than the maximum
+length of the trace, this is not required.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>indices into traces where to cut the trace.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Processing of HiSPARC traces</a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.PRE_TRIGGER"><code class="docutils literal notranslate"><span class="pre">PRE_TRIGGER</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.TRIGGER"><code class="docutils literal notranslate"><span class="pre">TRIGGER</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.POST_TRIGGER"><code class="docutils literal notranslate"><span class="pre">POST_TRIGGER</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.ADC_FILTER_THRESHOLD"><code class="docutils literal notranslate"><span class="pre">ADC_FILTER_THRESHOLD</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.ADC_BASELINE_THRESHOLD"><code class="docutils literal notranslate"><span class="pre">ADC_BASELINE_THRESHOLD</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.ADC_LOW_THRESHOLD"><code class="docutils literal notranslate"><span class="pre">ADC_LOW_THRESHOLD</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.ADC_HIGH_THRESHOLD"><code class="docutils literal notranslate"><span class="pre">ADC_HIGH_THRESHOLD</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.ADC_LOW_THRESHOLD_III"><code class="docutils literal notranslate"><span class="pre">ADC_LOW_THRESHOLD_III</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.ADC_HIGH_THRESHOLD_III"><code class="docutils literal notranslate"><span class="pre">ADC_HIGH_THRESHOLD_III</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.DATA_REDUCTION_PADDING"><code class="docutils literal notranslate"><span class="pre">DATA_REDUCTION_PADDING</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.TraceObservables"><code class="docutils literal notranslate"><span class="pre">TraceObservables</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.TraceObservables.baselines"><code class="docutils literal notranslate"><span class="pre">TraceObservables.baselines</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.TraceObservables.std_dev"><code class="docutils literal notranslate"><span class="pre">TraceObservables.std_dev</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.TraceObservables.pulseheights"><code class="docutils literal notranslate"><span class="pre">TraceObservables.pulseheights</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.TraceObservables.integrals"><code class="docutils literal notranslate"><span class="pre">TraceObservables.integrals</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.TraceObservables.n_peaks"><code class="docutils literal notranslate"><span class="pre">TraceObservables.n_peaks</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.MeanFilter"><code class="docutils literal notranslate"><span class="pre">MeanFilter</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.MeanFilter.filter_traces"><code class="docutils literal notranslate"><span class="pre">MeanFilter.filter_traces()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.MeanFilter.filter_trace"><code class="docutils literal notranslate"><span class="pre">MeanFilter.filter_trace()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.MeanFilter.mean_filter_with_threshold"><code class="docutils literal notranslate"><span class="pre">MeanFilter.mean_filter_with_threshold()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.MeanFilter.mean_filter_without_threshold"><code class="docutils literal notranslate"><span class="pre">MeanFilter.mean_filter_without_threshold()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.DataReduction"><code class="docutils literal notranslate"><span class="pre">DataReduction</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.DataReduction.reduce_traces"><code class="docutils literal notranslate"><span class="pre">DataReduction.reduce_traces()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.DataReduction.determine_cuts"><code class="docutils literal notranslate"><span class="pre">DataReduction.determine_cuts()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_traces.DataReduction.add_padding"><code class="docutils literal notranslate"><span class="pre">DataReduction.add_padding()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="process_events.html"
+                          title="previous chapter">Processing of HiSPARC events</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="reconstructions.html"
+                          title="next chapter">Reconstructions</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reconstructions.html" title="Reconstructions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="process_events.html" title="Processing of HiSPARC events"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" >Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Processing of HiSPARC traces</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>MPV fit &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Landau distribution" href="landau.html" />
+    <link rel="prev" title="Get signal and timing values from events" href="event_utils.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="landau.html" title="Landau distribution"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="event_utils.html" title="Get signal and timing values from events"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" accesskey="U">Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">MPV fit</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.analysis.find_mpv">
+<span id="mpv-fit"></span><h1>MPV fit<a class="headerlink" href="#module-sapphire.analysis.find_mpv" title="Link to this heading">¶</a></h1>
+<p>Find the most probable value in a HiSPARC spectrum.</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum" title="sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum"><code class="xref py py-class docutils literal notranslate"><span class="pre">FindMostProbableValueInSpectrum</span></code></a></dt><dd><p>find the most probable value in a HiSPARC spectrum</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.find_mpv.</span></span><span class="sig-name descname"><span class="pre">FindMostProbableValueInSpectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum" title="Link to this definition">¶</a></dt>
+<dd><p>Find the most probable value (MPV) in a HiSPARC spectrum.</p>
+<p>This is a fast algorithm to find the MPV value in a HiSPARC spectrum.
+The MPV value indicates the position of the minimum-ionizing particles
+(MIP) peak.  The algorithm makes some assumptions about the shape of
+the spectrum:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>the spectrum includes the gamma peak (left-most part of
+spectrum) which has more counts per bin than the MIP peak.</p></li>
+<li><p>ignoring the gamma peak, the MIP peak can be bracketed on the
+left by the numerically largest bin-to-bin increase in the
+number of counts.</p></li>
+<li><p>the MIP peak can be approximated by a normal distribution.</p></li>
+</ul>
+</div></blockquote>
+<p>Public methods:</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_mpv" title="sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_mpv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_mpv()</span></code></a></dt><dd><p>Find the most probable value</p>
+</dd>
+<dt><a class="reference internal" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_first_guess_mpv" title="sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_first_guess_mpv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">find_first_guess_mpv()</span></code></a></dt><dd><p>Make a first guess of the most probable value</p>
+</dd>
+<dt><a class="reference internal" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.fit_mpv" title="sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.fit_mpv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit_mpv()</span></code></a></dt><dd><p>Based on a first guess, fit the MIP peak to obtain the MPV</p>
+</dd>
+</dl>
+<p>Initialize the class instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong><strong>,</strong><strong>bins</strong> – histogram counts and bins, as obtained using
+<code class="docutils literal notranslate"><span class="pre">numpy.histogram</span></code>.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_mpv">
+<span class="sig-name descname"><span class="pre">find_mpv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_mpv" title="Link to this definition">¶</a></dt>
+<dd><p>Find the most probable value.</p>
+<p>First perform a first guess, then use that value to fit the MIP
+peak.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return mpv<span class="colon">:</span></dt>
+<dd class="field-odd"><p>best guess of the most probable value.</p>
+</dd>
+<dt class="field-even">Return boolean is_fitted<span class="colon">:</span></dt>
+<dd class="field-even"><p>indicates if the fit was successful.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_first_guess_mpv">
+<span class="sig-name descname"><span class="pre">find_first_guess_mpv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_first_guess_mpv" title="Link to this definition">¶</a></dt>
+<dd><p>First guess of most probable value.</p>
+<p>The algorithm is fast and simple. The following steps are
+performed:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>From the left: find the greatest value and cut off all data
+to the left of that maximum.  We now assume the first
+datapoint to be the maximum of the gamma peak.</p></li>
+<li><p>From the right: find the location of the greatest decrease
+from bin to bin.  We assume that this value is where the MIP
+peak dips before joining the gamma peak.</p></li>
+<li><p>Find the maximum <em>to the right</em> of this value.  We assume
+this to be the approximate location of the MIP peak.</p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Return mpv<span class="colon">:</span></dt>
+<dd class="field-odd"><p>first guess of the most probable value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.fit_mpv">
+<span class="sig-name descname"><span class="pre">fit_mpv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first_guess</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.fit_mpv" title="Link to this definition">¶</a></dt>
+<dd><p>Fit a normal distribution to the MIP peak to obtain the MPV.</p>
+<p>A normal distribution is fitted to the spectrum in a restricted
+domain around the first guess value.  The width of the domain can
+be adjusted by the width_factor parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>first_guess</strong> – approximate location of the most probable
+value.</p></li>
+<li><p><strong>width_factor</strong> – float in the range [0., 1.] to indicate the
+width of the fit domain.  The domain is given by
+<code class="docutils literal notranslate"><span class="pre">[(1.</span> <span class="pre">-</span> <span class="pre">width_factor)</span> <span class="pre">*</span> <span class="pre">first_guess,</span> <span class="pre">(1.</span> <span class="pre">+</span> <span class="pre">width_factor)</span> <span class="pre">*</span>
+<span class="pre">first_guess]</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return mpv<span class="colon">:</span></dt>
+<dd class="field-even"><p>mpv value obtained from the fit.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">MPV fit</a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum"><code class="docutils literal notranslate"><span class="pre">FindMostProbableValueInSpectrum</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_mpv"><code class="docutils literal notranslate"><span class="pre">FindMostProbableValueInSpectrum.find_mpv()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.find_first_guess_mpv"><code class="docutils literal notranslate"><span class="pre">FindMostProbableValueInSpectrum.find_first_guess_mpv()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.find_mpv.FindMostProbableValueInSpectrum.fit_mpv"><code class="docutils literal notranslate"><span class="pre">FindMostProbableValueInSpectrum.fit_mpv()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="event_utils.html"
+                          title="previous chapter">Get signal and timing values from events</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="landau.html"
+                          title="next chapter">Landau distribution</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="landau.html" title="Landau distribution"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="event_utils.html" title="Get signal and timing values from events"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" >Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">MPV fit</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Processing of HiSPARC events &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Processing of HiSPARC traces" href="process_traces.html" />
+    <link rel="prev" title="Landau distribution" href="landau.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="process_traces.html" title="Processing of HiSPARC traces"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="landau.html" title="Landau distribution"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" accesskey="U">Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Processing of HiSPARC events</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.analysis.process_events">
+<span id="processing-of-hisparc-events"></span><h1>Processing of HiSPARC events<a class="headerlink" href="#module-sapphire.analysis.process_events" title="Link to this heading">¶</a></h1>
+<p>Process HiSPARC events</p>
+<p>This module can be used analyse data to get observables like arrival
+times and particle count in each detector for each event.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire.publicdb</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessEvents</span>
+
+<span class="n">STATIONS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">501</span><span class="p">,</span> <span class="mi">503</span><span class="p">,</span> <span class="mi">506</span><span class="p">]</span>
+<span class="n">START</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2013</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">station_groups</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;/s</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">u</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">STATIONS</span><span class="p">]</span>
+
+    <span class="k">with</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;data.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">station</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">STATIONS</span><span class="p">,</span> <span class="n">station_groups</span><span class="p">):</span>
+            <span class="n">download_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="n">ProcessEvents</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">group</span><span class="p">)</span>
+            <span class="n">proc</span><span class="o">.</span><span class="n">process_and_store_results</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ADC_THRESHOLD">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ADC_THRESHOLD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#sapphire.analysis.process_events.ADC_THRESHOLD" title="Link to this definition">¶</a></dt>
+<dd><p>Threshold for arrival times, relative to the baseline</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.TRIGGER_2">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">TRIGGER_2</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(2,</span> <span class="pre">0,</span> <span class="pre">False,</span> <span class="pre">0)</span></em><a class="headerlink" href="#sapphire.analysis.process_events.TRIGGER_2" title="Link to this definition">¶</a></dt>
+<dd><p>Default trigger for 2-detector station
+2 low and no high, no external</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.TRIGGER_4">
+<span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">TRIGGER_4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(3,</span> <span class="pre">2,</span> <span class="pre">True,</span> <span class="pre">0)</span></em><a class="headerlink" href="#sapphire.analysis.process_events.TRIGGER_4" title="Link to this definition">¶</a></dt>
+<dd><p>Default trigger for 4-detector station
+3 low or 2 high, no external</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEvents">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessEvents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEvents" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC events to obtain several observables.</p>
+<p>This class can be used to process a set of HiSPARC events and adds a
+few observables like particle arrival time and number of particles in
+the detector to a copy of the event table.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEvents.processed_events_description">
+<span class="sig-name descname"><span class="pre">processed_events_description</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'baseline':</span> <span class="pre">Int16Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.int16(-1),</span> <span class="pre">pos=6),</span> <span class="pre">'data_reduction':</span> <span class="pre">BoolCol(shape=(),</span> <span class="pre">dflt=np.False_,</span> <span class="pre">pos=4),</span> <span class="pre">'event_id':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=0),</span> <span class="pre">'event_rate':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=12),</span> <span class="pre">'ext_timestamp':</span> <span class="pre">UInt64Col(shape=(),</span> <span class="pre">dflt=np.uint64(0),</span> <span class="pre">pos=3),</span> <span class="pre">'integrals':</span> <span class="pre">Int32Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.int32(-1),</span> <span class="pre">pos=10),</span> <span class="pre">'n1':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=17),</span> <span class="pre">'n2':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=18),</span> <span class="pre">'n3':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=19),</span> <span class="pre">'n4':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=20),</span> <span class="pre">'n_peaks':</span> <span class="pre">Int16Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.int16(-1),</span> <span class="pre">pos=8),</span> <span class="pre">'nanoseconds':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=2),</span> <span class="pre">'pulseheights':</span> <span class="pre">Int16Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.int16(-1),</span> <span class="pre">pos=9),</span> <span class="pre">'std_dev':</span> <span class="pre">Int16Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.int16(-1),</span> <span class="pre">pos=7),</span> <span class="pre">'t1':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=13),</span> <span class="pre">'t2':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=14),</span> <span class="pre">'t3':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=15),</span> <span class="pre">'t4':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=16),</span> <span class="pre">'t_trigger':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(-1.0),</span> <span class="pre">pos=21),</span> <span class="pre">'timestamp':</span> <span class="pre">Time32Col(shape=(),</span> <span class="pre">dflt=np.int32(0),</span> <span class="pre">pos=1),</span> <span class="pre">'traces':</span> <span class="pre">Int32Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.int32(-1),</span> <span class="pre">pos=11),</span> <span class="pre">'trigger_pattern':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=5)}</span></em><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEvents.processed_events_description" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEvents.process_and_store_results">
+<span class="sig-name descname"><span class="pre">process_and_store_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEvents.process_and_store_results" title="Link to this definition">¶</a></dt>
+<dd><p>Process events and store the results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>destination</strong> – name of the table where the results will be
+written.  The default, None, corresponds to ‘events’.</p></li>
+<li><p><strong>overwrite</strong> – if True, overwrite previously obtained results.</p></li>
+<li><p><strong>limit</strong> – the maximum number of events that will be stored.
+The default, None, corresponds to no limit.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEvents.get_traces_for_event">
+<span class="sig-name descname"><span class="pre">get_traces_for_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEvents.get_traces_for_event" title="Link to this definition">¶</a></dt>
+<dd><p>Return the traces from an event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>event</strong> – a row from the events table.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the traces: an array of pulseheight values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEvents.get_traces_for_event_index">
+<span class="sig-name descname"><span class="pre">get_traces_for_event_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEvents.get_traces_for_event_index" title="Link to this definition">¶</a></dt>
+<dd><p>Return the traces from event #idx.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>idx</strong> – the index number of the event.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the traces: an array of pulseheight values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEvents.process_traces">
+<span class="sig-name descname"><span class="pre">process_traces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEvents.process_traces" title="Link to this definition">¶</a></dt>
+<dd><p>Process traces to yield pulse timing information.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEvents.first_above_threshold">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">first_above_threshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEvents.first_above_threshold" title="Link to this definition">¶</a></dt>
+<dd><p>Find the first element in the list equal or above threshold</p>
+<p>If no element matches the condition -999 will be returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trace</strong> – iterable trace.</p></li>
+<li><p><strong>threshold</strong> – value the trace has to be greater or equal to.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>index in trace where a value is greater or equal to
+threshold.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessIndexedEvents">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessIndexedEvents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessIndexedEvents" title="Link to this definition">¶</a></dt>
+<dd><p>Process a subset of events using an index.</p>
+<p>This is a subclass of <a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents" title="sapphire.analysis.process_events.ProcessEvents"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessEvents</span></code></a>.  Using an index, this
+class will only process a subset of events, thus saving time.  For
+example, this class can only process events making up a coincidence.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>indexes</strong> – a list of indexes into the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessIndexedEvents.process_traces">
+<span class="sig-name descname"><span class="pre">process_traces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessIndexedEvents.process_traces" title="Link to this definition">¶</a></dt>
+<dd><p>Process traces to yield pulse timing information.</p>
+<p>This method makes use of the indexes to build a list of events.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessIndexedEvents.get_traces_for_indexed_event_index">
+<span class="sig-name descname"><span class="pre">get_traces_for_indexed_event_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessIndexedEvents.get_traces_for_indexed_event_index" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEventsWithLINT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessEventsWithLINT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEventsWithLINT" title="Link to this definition">¶</a></dt>
+<dd><p>Process events using LInear INTerpolation for arrival times.</p>
+<p>This is a subclass of <a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents" title="sapphire.analysis.process_events.ProcessEvents"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessEvents</span></code></a>.  Use a linear
+interpolation method to determine the arrival times of particles.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessIndexedEventsWithLINT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessIndexedEventsWithLINT</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessIndexedEventsWithLINT" title="Link to this definition">¶</a></dt>
+<dd><p>Process a subset of events using LInear INTerpolation.</p>
+<p>This is a subclass of <a class="reference internal" href="#sapphire.analysis.process_events.ProcessIndexedEvents" title="sapphire.analysis.process_events.ProcessIndexedEvents"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessIndexedEvents</span></code></a> and
+<a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsWithLINT" title="sapphire.analysis.process_events.ProcessEventsWithLINT"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessEventsWithLINT</span></code></a>.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>indexes</strong> – a list of indexes into the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEventsWithoutTraces">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessEventsWithoutTraces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEventsWithoutTraces" title="Link to this definition">¶</a></dt>
+<dd><p>Process events without traces</p>
+<p>This is a subclass of <a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents" title="sapphire.analysis.process_events.ProcessEvents"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessEvents</span></code></a>.  Processing events
+without considering traces will invalidate the arrival time
+information.  However, for some analyses it is not necessary to obtain
+this information.  Ignoring the traces will then greatly decrease
+processing time and data size.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessIndexedEventsWithoutTraces">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessIndexedEventsWithoutTraces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessIndexedEventsWithoutTraces" title="Link to this definition">¶</a></dt>
+<dd><p>Process a subset of events without traces</p>
+<p>This is a subclass of <a class="reference internal" href="#sapphire.analysis.process_events.ProcessIndexedEvents" title="sapphire.analysis.process_events.ProcessIndexedEvents"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessIndexedEvents</span></code></a> and
+<a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsWithoutTraces" title="sapphire.analysis.process_events.ProcessEventsWithoutTraces"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessEventsWithoutTraces</span></code></a>.  Processing events without
+considering traces will invalidate the arrival time information.
+However, for some analyses it is not necessary to obtain this
+information.  Ignoring the traces will then greatly decrease
+processing time and data size.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>indexes</strong> – a list of indexes into the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEventsWithTriggerOffset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessEventsWithTriggerOffset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEventsWithTriggerOffset" title="Link to this definition">¶</a></dt>
+<dd><p>Process events and reconstruct trigger time from traces</p>
+<p>The trigger times are stored in the columnt_trigger, they are
+relative to the start of traces, just like the t# columns.</p>
+<p>If no trigger can be found, possibly due to the data filter,
+a value of -999 will be entered.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+<li><p><strong>station</strong> – station number of station to which the data belongs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEventsFromSource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessEventsFromSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEventsFromSource" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC events from a different source.</p>
+<p>This class is a subclass of ProcessEvents.  The difference is that in
+this class, the source and destination are assumed to be different
+files.  This also means that the source is untouched (no renaming of
+original event tables) and the destination is assumed to be empty.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_file</strong><strong>,</strong><strong>dest_file</strong> – PyTables source and destination files.</p></li>
+<li><p><strong>source_group</strong><strong>,</strong><strong>dest_group</strong> – the pathname of the source and
+destination group.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessEventsFromSourceWithTriggerOffset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessEventsFromSourceWithTriggerOffset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessEventsFromSourceWithTriggerOffset" title="Link to this definition">¶</a></dt>
+<dd><p>Process events from a different source and find trigger.</p>
+<p>This is a subclass of <a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsFromSource" title="sapphire.analysis.process_events.ProcessEventsFromSource"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessEventsFromSource</span></code></a> and
+<a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsWithTriggerOffset" title="sapphire.analysis.process_events.ProcessEventsWithTriggerOffset"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessEventsWithTriggerOffset</span></code></a>.  Processing events and
+finding the trigger time in the traces. And storing the results in a
+different file than the source.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_file</strong><strong>,</strong><strong>dest_file</strong> – PyTables source and destination files.</p></li>
+<li><p><strong>source_group</strong><strong>,</strong><strong>dest_group</strong> – the pathname of the source and
+destination group.</p></li>
+<li><p><strong>station</strong> – station number of station to which the data belongs.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessDataTable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessDataTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessDataTable" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC abstract data table to clean the data.</p>
+<p>Abstract data is a PyTables table containing a timestamp for each row.
+Weather and singles data are examples of such tables. This class can be
+used to process a set of abstract HiSPARC data, to remove duplicates and
+sort the data by timestamp to store it in to a copy of the table.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessDataTable.table_name">
+<span class="sig-name descname"><span class="pre">table_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'abstract_data'</span></em><a class="headerlink" href="#sapphire.analysis.process_events.ProcessDataTable.table_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessDataTable.process_and_store_results">
+<span class="sig-name descname"><span class="pre">process_and_store_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessDataTable.process_and_store_results" title="Link to this definition">¶</a></dt>
+<dd><p>Process table and store the results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>destination</strong> – name of the table where the results will be
+written.  The default, None, corresponds to the value stored
+in self.table_name.</p></li>
+<li><p><strong>overwrite</strong> – if True, overwrite previously obtained results.</p></li>
+<li><p><strong>limit</strong> – the maximum number of records that will be stored.
+The default, None, corresponds to no limit.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessDataTableFromSource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessDataTableFromSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessDataTableFromSource" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC abstract data table from a different source.</p>
+<p>This class is a subclass of ProcessDataTable. The difference is that in
+this class, the source and destination are assumed to be different
+files.  This also means that the source is untouched (no renaming of
+original event tables) and the destination is assumed to be empty.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_file</strong><strong>,</strong><strong>dest_file</strong> – PyTables source and destination files.</p></li>
+<li><p><strong>source_group</strong><strong>,</strong><strong>dest_group</strong> – the pathname of the source and
+destination group.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessWeather">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessWeather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessWeather" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC weather to clean the data.</p>
+<p>This class can be used to process a set of HiSPARC weather, to
+remove duplicates and sort the data by timestamp to store it in to a
+copy of the weather table.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessWeather.table_name">
+<span class="sig-name descname"><span class="pre">table_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'weather'</span></em><a class="headerlink" href="#sapphire.analysis.process_events.ProcessWeather.table_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessWeatherFromSource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessWeatherFromSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessWeatherFromSource" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC weather from a different source.</p>
+<p>This class behaves like a subclass of ProcessWeather because of a common
+ancestor (ProcessDataTable). The difference between this class
+and ProcessWeather is that in this class, the source and destination are
+assumed to be different files. This also means that the source is
+untouched (no renaming of original event tables) and the destination is
+assumed to be empty.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_file</strong><strong>,</strong><strong>dest_file</strong> – PyTables source and destination files.</p></li>
+<li><p><strong>source_group</strong><strong>,</strong><strong>dest_group</strong> – the pathname of the source and
+destination group.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessWeatherFromSource.table_name">
+<span class="sig-name descname"><span class="pre">table_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'weather'</span></em><a class="headerlink" href="#sapphire.analysis.process_events.ProcessWeatherFromSource.table_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessSingles">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessSingles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessSingles" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC singles data to clean the data.</p>
+<p>This class can be used to process a set of HiSPARC singles data, to
+remove duplicates and sort the data by timestamp to store it in to a
+copy of the singles data table.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>group</strong> – the group containing the station data.  In normal
+cases, this is simply the group containing the events table.</p></li>
+<li><p><strong>source</strong> – the name of the events table.  Default: None,
+meaning the default name ‘events’.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessSingles.table_name">
+<span class="sig-name descname"><span class="pre">table_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'singles'</span></em><a class="headerlink" href="#sapphire.analysis.process_events.ProcessSingles.table_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessSinglesFromSource">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.analysis.process_events.</span></span><span class="sig-name descname"><span class="pre">ProcessSinglesFromSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.analysis.process_events.ProcessSinglesFromSource" title="Link to this definition">¶</a></dt>
+<dd><p>Process HiSPARC singles data from a different source.</p>
+<p>This class behaves like a subclass of ProcessSingles because of a common
+ancestor (ProcessDataTable). The difference between this class
+and ProcessSingles is that in this class, the source and destination are
+assumed to be different files. This also means that the source is
+untouched (no renaming of original event tables) and the destination is
+assumed to be empty.</p>
+<p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_file</strong><strong>,</strong><strong>dest_file</strong> – PyTables source and destination files.</p></li>
+<li><p><strong>source_group</strong><strong>,</strong><strong>dest_group</strong> – the pathname of the source and
+destination group.</p></li>
+<li><p><strong>progress</strong> – if True show a progressbar while copying and
+processing events.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.analysis.process_events.ProcessSinglesFromSource.table_name">
+<span class="sig-name descname"><span class="pre">table_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'singles'</span></em><a class="headerlink" href="#sapphire.analysis.process_events.ProcessSinglesFromSource.table_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Processing of HiSPARC events</a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ADC_THRESHOLD"><code class="docutils literal notranslate"><span class="pre">ADC_THRESHOLD</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.TRIGGER_2"><code class="docutils literal notranslate"><span class="pre">TRIGGER_2</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.TRIGGER_4"><code class="docutils literal notranslate"><span class="pre">TRIGGER_4</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents"><code class="docutils literal notranslate"><span class="pre">ProcessEvents</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents.processed_events_description"><code class="docutils literal notranslate"><span class="pre">ProcessEvents.processed_events_description</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents.process_and_store_results"><code class="docutils literal notranslate"><span class="pre">ProcessEvents.process_and_store_results()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents.get_traces_for_event"><code class="docutils literal notranslate"><span class="pre">ProcessEvents.get_traces_for_event()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents.get_traces_for_event_index"><code class="docutils literal notranslate"><span class="pre">ProcessEvents.get_traces_for_event_index()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents.process_traces"><code class="docutils literal notranslate"><span class="pre">ProcessEvents.process_traces()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEvents.first_above_threshold"><code class="docutils literal notranslate"><span class="pre">ProcessEvents.first_above_threshold()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessIndexedEvents"><code class="docutils literal notranslate"><span class="pre">ProcessIndexedEvents</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessIndexedEvents.process_traces"><code class="docutils literal notranslate"><span class="pre">ProcessIndexedEvents.process_traces()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessIndexedEvents.get_traces_for_indexed_event_index"><code class="docutils literal notranslate"><span class="pre">ProcessIndexedEvents.get_traces_for_indexed_event_index()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsWithLINT"><code class="docutils literal notranslate"><span class="pre">ProcessEventsWithLINT</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessIndexedEventsWithLINT"><code class="docutils literal notranslate"><span class="pre">ProcessIndexedEventsWithLINT</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsWithoutTraces"><code class="docutils literal notranslate"><span class="pre">ProcessEventsWithoutTraces</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessIndexedEventsWithoutTraces"><code class="docutils literal notranslate"><span class="pre">ProcessIndexedEventsWithoutTraces</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsWithTriggerOffset"><code class="docutils literal notranslate"><span class="pre">ProcessEventsWithTriggerOffset</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsFromSource"><code class="docutils literal notranslate"><span class="pre">ProcessEventsFromSource</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessEventsFromSourceWithTriggerOffset"><code class="docutils literal notranslate"><span class="pre">ProcessEventsFromSourceWithTriggerOffset</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessDataTable"><code class="docutils literal notranslate"><span class="pre">ProcessDataTable</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessDataTable.table_name"><code class="docutils literal notranslate"><span class="pre">ProcessDataTable.table_name</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessDataTable.process_and_store_results"><code class="docutils literal notranslate"><span class="pre">ProcessDataTable.process_and_store_results()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessDataTableFromSource"><code class="docutils literal notranslate"><span class="pre">ProcessDataTableFromSource</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessWeather"><code class="docutils literal notranslate"><span class="pre">ProcessWeather</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessWeather.table_name"><code class="docutils literal notranslate"><span class="pre">ProcessWeather.table_name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessWeatherFromSource"><code class="docutils literal notranslate"><span class="pre">ProcessWeatherFromSource</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessWeatherFromSource.table_name"><code class="docutils literal notranslate"><span class="pre">ProcessWeatherFromSource.table_name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessSingles"><code class="docutils literal notranslate"><span class="pre">ProcessSingles</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessSingles.table_name"><code class="docutils literal notranslate"><span class="pre">ProcessSingles.table_name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessSinglesFromSource"><code class="docutils literal notranslate"><span class="pre">ProcessSinglesFromSource</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.analysis.process_events.ProcessSinglesFromSource.table_name"><code class="docutils literal notranslate"><span class="pre">ProcessSinglesFromSource.table_name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="landau.html"
+                          title="previous chapter">Landau distribution</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="process_traces.html"
+                          title="next chapter">Processing of HiSPARC traces</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="process_traces.html" title="Processing of HiSPARC traces"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="landau.html" title="Landau distribution"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../analysis.html" >Data analysis</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Processing of HiSPARC events</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

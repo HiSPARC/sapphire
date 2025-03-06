@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>GPS date/time utility functions &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Coordinate and time transformations" href="transformations.html" />
+    <link rel="prev" title="Test installation" href="tests.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transformations.html" title="Coordinate and time transformations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="Test installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">GPS date/time utility functions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.time_util">
+<span id="gps-date-time-utility-functions"></span><h1>GPS date/time utility functions<a class="headerlink" href="#module-sapphire.time_util" title="Link to this heading">¶</a></h1>
+<p>Convert UTC/GPS/local time.</p>
+<p>The class in this module is intended to save you from typing trainwrecks
+just to convert GPS timestamps to GPS date/time and vice versa.
+Trainwrecks invite typos and thus many are easily confused about
+UTC/GPS/local time.  No more!</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.time_util.GPSTime">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.time_util.</span></span><span class="sig-name descname"><span class="pre">GPSTime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.time_util.GPSTime" title="Link to this definition">¶</a></dt>
+<dd><p>Date/time utility class.</p>
+<p>Initialize the class</p>
+<p>The arguments to the __init__ method can take different forms.
+First, it can take year, month, day, hour, minutes, seconds
+arguments.  The year, month and day are mandatory, while hour,
+minutes, seconds default to zero.</p>
+<p>If the argument is a single number, this is interpreted as a
+Unix-like timestamp, in GPS time.</p>
+<p>Examples specifying the exact same time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GPSTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">GPSTime</span><span class="p">(</span><span class="mi">1354320000</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.time_util.GPSTime.gpstimestamp">
+<span class="sig-name descname"><span class="pre">gpstimestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.time_util.GPSTime.gpstimestamp" title="Link to this definition">¶</a></dt>
+<dd><p>Return the GPS date/time as a timestamp.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gpstime</span> <span class="o">=</span> <span class="n">GPSTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gpstime</span><span class="o">.</span><span class="n">gpstimestamp</span><span class="p">()</span>
+<span class="go">1354320000</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.time_util.GPSTime.description">
+<span class="sig-name descname"><span class="pre">description</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.time_util.GPSTime.description" title="Link to this definition">¶</a></dt>
+<dd><p>Return the GPS date/time as a string.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gpstime</span> <span class="o">=</span> <span class="n">GPSTime</span><span class="p">(</span><span class="mi">1354320000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gpstime</span><span class="o">.</span><span class="n">description</span><span class="p">()</span>
+<span class="go">&#39;Sat Dec  1 00:00:00 2012&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.time_util.GPSTime.datetime">
+<span class="sig-name descname"><span class="pre">datetime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.time_util.GPSTime.datetime" title="Link to this definition">¶</a></dt>
+<dd><p>Return the GPS date/time as a <code class="docutils literal notranslate"><span class="pre">datetime.datetime</span></code> instance.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gpstime</span> <span class="o">=</span> <span class="n">GPSTime</span><span class="p">(</span><span class="mi">1354320000</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gpstime</span><span class="o">.</span><span class="n">datetime</span><span class="p">()</span>
+<span class="go">datetime.datetime(2012, 12, 1, 0, 0)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">GPS date/time utility functions</a><ul>
+<li><a class="reference internal" href="#sapphire.time_util.GPSTime"><code class="docutils literal notranslate"><span class="pre">GPSTime</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.time_util.GPSTime.gpstimestamp"><code class="docutils literal notranslate"><span class="pre">GPSTime.gpstimestamp()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.time_util.GPSTime.description"><code class="docutils literal notranslate"><span class="pre">GPSTime.description()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.time_util.GPSTime.datetime"><code class="docutils literal notranslate"><span class="pre">GPSTime.datetime()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="tests.html"
+                          title="previous chapter">Test installation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="transformations.html"
+                          title="next chapter">Coordinate and time transformations</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transformations.html" title="Coordinate and time transformations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="Test installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">GPS date/time utility functions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

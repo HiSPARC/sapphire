@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Conversion between axes coordinate systems &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Conversion between different bases" href="base.html" />
+    <link rel="prev" title="Conversion between different angle notations" href="angles.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="base.html" title="Conversion between different bases"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="angles.html" title="Conversion between different angle notations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" accesskey="U">Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Conversion between axes coordinate systems</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.transformations.axes">
+<span id="conversion-between-axes-coordinate-systems"></span><h1>Conversion between axes coordinate systems<a class="headerlink" href="#module-sapphire.transformations.axes" title="Link to this heading">¶</a></h1>
+<p>Perform various axes related transformations</p>
+<ul class="simple">
+<li><p>Transformation between Cartesian, polar, cylindrical, spherical and compass
+coordinate systems.</p></li>
+<li><p>Create a rotation matrix for rotations around a certain axis.</p></li>
+</ul>
+<p>Cartesian coordinates: x, y, z axes.</p>
+<p>Spherical coordinates:
+- r: length of vector.
+- theta: angle of the vector to the z-axis.
+- phi: angle of vector to the x-axis in x,y-plane, rotating counterclockwise.</p>
+<p>Cylindrical and polar coordinates:
+- r: length of vector in x,y-plane.
+- phi: angle of vector to the x-axis in x,y-plane, rotating counterclockwise.
+- z: height above x,y-plane.</p>
+<p>Compass coordinates:
+- r: length of vector in x,y-plane.
+- alpha: angle of vector to the y-axis in x,y-plane, rotating clockwise.
+- z: height above x,y-plane.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.cartesian_to_spherical">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">cartesian_to_spherical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.cartesian_to_spherical" title="Link to this definition">¶</a></dt>
+<dd><p>Converts Cartesian coordinates into spherical coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – Cartesian coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of spherical coordinates (r, theta, phi),
+with theta and phi in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.cartesian_to_cylindrical">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">cartesian_to_cylindrical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.cartesian_to_cylindrical" title="Link to this definition">¶</a></dt>
+<dd><p>Converts Cartesian coordinates into cylindrical coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – Cartesian coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of cylindrical coordinates (r, phi, z), with
+phi in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.cartesian_to_polar">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">cartesian_to_polar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.cartesian_to_polar" title="Link to this definition">¶</a></dt>
+<dd><p>Converts Cartesian coordinates into polar coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong><strong>,</strong><strong>y</strong> – Cartesian coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of polar coordinates (r, phi), with phi in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.cartesian_to_compass">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">cartesian_to_compass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.cartesian_to_compass" title="Link to this definition">¶</a></dt>
+<dd><p>Converts Cartesian coordinates into compass coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – Cartesian coordinates.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of compass coordinates (r, alpha, z),
+with alpha in degrees.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.spherical_to_cartesian">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">spherical_to_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.spherical_to_cartesian" title="Link to this definition">¶</a></dt>
+<dd><p>Convert spherical coordinates into Cartesian coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong><strong>,</strong><strong>theta</strong><strong>,</strong><strong>phi</strong> – spherical coordinates, with theta and phi in radians.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of Cartesian coordinates (x, y, z).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.cylindrical_to_cartesian">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">cylindrical_to_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.cylindrical_to_cartesian" title="Link to this definition">¶</a></dt>
+<dd><p>Convert cylindrical coordinates into Cartesian coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong><strong>,</strong><strong>phi</strong><strong>,</strong><strong>z</strong> – cylindrical coordinates, with phi in radians.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of Cartesian coordinates (x, y, z).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.polar_to_cartesian">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">polar_to_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.polar_to_cartesian" title="Link to this definition">¶</a></dt>
+<dd><p>Convert polar coordinates into Cartesian coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong><strong>,</strong><strong>phi</strong> – polar coordinates, with phi in radians.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of Cartesian coordinates (x, y).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.compass_to_cartesian">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">compass_to_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.compass_to_cartesian" title="Link to this definition">¶</a></dt>
+<dd><p>Converts compass coordinates into Cartesian coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong><strong>,</strong><strong>alpha</strong><strong>,</strong><strong>z</strong> – compass coordinates, with alpha in degrees.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of Cartesian coordinates (x, y, z).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.rotate_cartesian">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">rotate_cartesian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.rotate_cartesian" title="Link to this definition">¶</a></dt>
+<dd><p>Rotate Cartesian coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – Cartesian coordinates.</p></li>
+<li><p><strong>angle</strong> – amount of rotation in radians.</p></li>
+<li><p><strong>axis</strong> – the axis to rotate around, either <code class="docutils literal notranslate"><span class="pre">'x',</span> <span class="pre">'y',</span> <span class="pre">'z'</span></code>,
+or a (x,y,z) tuple specifying the axis to rotate about.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple of Cartesian coordinates (x, y, z).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.axes.rotation_matrix">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.axes.</span></span><span class="sig-name descname"><span class="pre">rotation_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.axes.rotation_matrix" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a rotation matrix around an axis</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> – amount of rotation in radians.</p></li>
+<li><p><strong>axis</strong> – the axis to rotate around, either <code class="docutils literal notranslate"><span class="pre">'x',</span> <span class="pre">'y',</span> <span class="pre">'z'</span></code>,
+or a (x,y,z) tuple specifying the axis to rotate about.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>unitary rotation matrix.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Conversion between axes coordinate systems</a><ul>
+<li><a class="reference internal" href="#sapphire.transformations.axes.cartesian_to_spherical"><code class="docutils literal notranslate"><span class="pre">cartesian_to_spherical()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.cartesian_to_cylindrical"><code class="docutils literal notranslate"><span class="pre">cartesian_to_cylindrical()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.cartesian_to_polar"><code class="docutils literal notranslate"><span class="pre">cartesian_to_polar()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.cartesian_to_compass"><code class="docutils literal notranslate"><span class="pre">cartesian_to_compass()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.spherical_to_cartesian"><code class="docutils literal notranslate"><span class="pre">spherical_to_cartesian()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.cylindrical_to_cartesian"><code class="docutils literal notranslate"><span class="pre">cylindrical_to_cartesian()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.polar_to_cartesian"><code class="docutils literal notranslate"><span class="pre">polar_to_cartesian()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.compass_to_cartesian"><code class="docutils literal notranslate"><span class="pre">compass_to_cartesian()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.rotate_cartesian"><code class="docutils literal notranslate"><span class="pre">rotate_cartesian()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.axes.rotation_matrix"><code class="docutils literal notranslate"><span class="pre">rotation_matrix()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="angles.html"
+                          title="previous chapter">Conversion between different angle notations</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="base.html"
+                          title="next chapter">Conversion between different bases</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="base.html" title="Conversion between different bases"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="angles.html" title="Conversion between different angle notations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" >Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Conversion between axes coordinate systems</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

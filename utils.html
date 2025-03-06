@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Common utility functions &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Transformations between geographic coordinate systems" href="transformations/geographic.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transformations/geographic.html" title="Transformations between geographic coordinate systems"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Common utility functions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.utils">
+<span id="common-utility-functions"></span><h1>Common utility functions<a class="headerlink" href="#module-sapphire.utils" title="Link to this heading">¶</a></h1>
+<p>Utilities</p>
+<p>The module contains some commonly functions and classes.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.utils.ERR">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">ERR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[-1,</span> <span class="pre">-999]</span></em><a class="headerlink" href="#sapphire.utils.ERR" title="Link to this definition">¶</a></dt>
+<dd><p>Error values used to indicate missing or bad data.
+Code -999 is used if the reconstruction of a quantity failed.
+Code -1 is used if that detector/sensor is not present.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.utils.c">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">c</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.299792458</span></em><a class="headerlink" href="#sapphire.utils.c" title="Link to this definition">¶</a></dt>
+<dd><p>Speed of light in vacuum in m / ns.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.get_publicdb_base">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">get_publicdb_base</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.get_publicdb_base" title="Link to this definition">¶</a></dt>
+<dd><p>Get the HiSPARC Public Database base URL</p>
+<p>This can be configured by setting the PUBLICDB_BASE environment
+variable to the desired URL.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.pbar">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">pbar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.pbar" title="Link to this definition">¶</a></dt>
+<dd><p>Get a new progressbar with our default widgets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iterable</strong> – the iterable over which will be looped.</p></li>
+<li><p><strong>length</strong> – in case iterable is a generator, this should be its
+expected length.</p></li>
+<li><p><strong>show</strong> – boolean, if False simply return the iterable.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a new iterable which iterates over the same elements as
+the input, but shows a progressbar if possible.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.ceil_in_base">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">ceil_in_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.ceil_in_base" title="Link to this definition">¶</a></dt>
+<dd><p>Get nearest multiple of base above the value</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.floor_in_base">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">floor_in_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.floor_in_base" title="Link to this definition">¶</a></dt>
+<dd><p>Get nearest multiple of base below the value</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.round_in_base">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">round_in_base</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.round_in_base" title="Link to this definition">¶</a></dt>
+<dd><p>Get nearest multiple of base to the value</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.closest_in_list">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">closest_in_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">items</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.closest_in_list" title="Link to this definition">¶</a></dt>
+<dd><p>Get nearest item from a list of items to the value</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.get_active_index">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">get_active_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.get_active_index" title="Link to this definition">¶</a></dt>
+<dd><p>Get the index where the value fits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> – sorted list of values (e.g. list of timestamps).</p></li>
+<li><p><strong>value</strong> – value for which to find the position (e.g. a timestamp).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>index into the values list.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.gauss">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">gauss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.gauss" title="Link to this definition">¶</a></dt>
+<dd><p>Gaussian distribution</p>
+<p>To be used for fitting where the integral is not 1.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.norm_angle">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">norm_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.norm_angle" title="Link to this definition">¶</a></dt>
+<dd><p>Normalize an angle to the range [-pi, pi)</p>
+<p>We use the range from -pi upto but not including pi to represent
+angles.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.angle_between">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">angle_between</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zenith1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zenith2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.angle_between" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the angle between two (zenith, azimuth) coordinates</p>
+<p>Using the haversine formula,
+from: <a class="reference external" href="https://www.movable-type.co.uk/scripts/latlong.html">https://www.movable-type.co.uk/scripts/latlong.html</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zenith#</strong> – Zenith parts of the coordinates, in radians (0, pi/2).</p></li>
+<li><p><strong>azimuth#</strong> – Azimuth parts of the coordinates, in radians (-pi, pi).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Angle between the two coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.vector_length">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">vector_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.vector_length" title="Link to this definition">¶</a></dt>
+<dd><p>Length of a vector given by (x, y, z) coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong><strong>,</strong><strong>y</strong><strong>,</strong><strong>z</strong> – vector components.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>length of vector.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.distance_between">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">distance_between</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.distance_between" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the distance between two (x, y) coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x#</strong> – x parts of the coordinates.</p></li>
+<li><p><strong>y#</strong> – y parts of the coordinates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>distance between the two coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.make_relative">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">make_relative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.make_relative" title="Link to this definition">¶</a></dt>
+<dd><p>Make first element the origin and make rest relative to it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.which">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">which</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.which" title="Link to this definition">¶</a></dt>
+<dd><p>Check if a command line program is available</p>
+<p>An Exception is raised if the program is not available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>program</strong> – name or program to check for, e.g. ‘wget’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.utils.memoize">
+<span class="sig-prename descclassname"><span class="pre">sapphire.utils.</span></span><span class="sig-name descname"><span class="pre">memoize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.utils.memoize" title="Link to this definition">¶</a></dt>
+<dd><p>Memoisation cache decorator</p>
+<p>Source: <a class="reference external" href="https://stackoverflow.com/a/29954160/1033535">https://stackoverflow.com/a/29954160/1033535</a></p>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Common utility functions</a><ul>
+<li><a class="reference internal" href="#sapphire.utils.ERR"><code class="docutils literal notranslate"><span class="pre">ERR</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.c"><code class="docutils literal notranslate"><span class="pre">c</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.get_publicdb_base"><code class="docutils literal notranslate"><span class="pre">get_publicdb_base()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.pbar"><code class="docutils literal notranslate"><span class="pre">pbar()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.ceil_in_base"><code class="docutils literal notranslate"><span class="pre">ceil_in_base()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.floor_in_base"><code class="docutils literal notranslate"><span class="pre">floor_in_base()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.round_in_base"><code class="docutils literal notranslate"><span class="pre">round_in_base()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.closest_in_list"><code class="docutils literal notranslate"><span class="pre">closest_in_list()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.get_active_index"><code class="docutils literal notranslate"><span class="pre">get_active_index()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.gauss"><code class="docutils literal notranslate"><span class="pre">gauss()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.norm_angle"><code class="docutils literal notranslate"><span class="pre">norm_angle()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.angle_between"><code class="docutils literal notranslate"><span class="pre">angle_between()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.vector_length"><code class="docutils literal notranslate"><span class="pre">vector_length()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.distance_between"><code class="docutils literal notranslate"><span class="pre">distance_between()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.make_relative"><code class="docutils literal notranslate"><span class="pre">make_relative()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.which"><code class="docutils literal notranslate"><span class="pre">which()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.utils.memoize"><code class="docutils literal notranslate"><span class="pre">memoize()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="transformations/geographic.html"
+                          title="previous chapter">Transformations between geographic coordinate systems</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transformations/geographic.html" title="Transformations between geographic coordinate systems"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Common utility functions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

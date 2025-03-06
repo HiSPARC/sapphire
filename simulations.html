@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Simulation of the detection of EAS events &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Simulation base classes" href="simulations/base.html" />
+    <link rel="prev" title="Nikhef Stoomboot facilities" href="qsub.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simulations/base.html" title="Simulation base classes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="qsub.html" title="Nikhef Stoomboot facilities"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulation of the detection of EAS events</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="simulation-of-the-detection-of-eas-events">
+<h1>Simulation of the detection of EAS events<a class="headerlink" href="#simulation-of-the-detection-of-eas-events" title="Link to this heading">¶</a></h1>
+<p>Simulations are built up from several components. First the cluster needs to
+be defined. This can be a set of real stations or imaginary detectors. Then
+systematic detector and station errors are generated. Next a generator for
+shower properties is used to determine the properties of each shower (energy
+and direction). Then for each detector the shower particles that hit it are
+selected. For each of these the actual detected signal strength and arrival
+times (detector effects) are determined. Then the trigger conditions are
+checked to see if the station triggered. If it did an event will be stored for
+that station. This includes a GPS timestamp and the detector observables
+(particle count and arrival time of first particle). Finally for each shower a
+‘coincidence’ will be stored, even if it was not detected by any station. The
+coincidence stores the parameters of the shower.</p>
+<p id="module-sapphire.simulations">Perform common simulation tasks.</p>
+<p>This package contains modules for performing simulations:</p>
+<dl class="simple">
+<dt><a class="reference internal" href="simulations/base.html#module-sapphire.simulations.base" title="sapphire.simulations.base"><code class="xref py py-mod docutils literal notranslate"><span class="pre">base</span></code></a></dt><dd><p>base simulations class that provides the framework for simulations</p>
+</dd>
+<dt><a class="reference internal" href="simulations/detector.html#module-sapphire.simulations.detector" title="sapphire.simulations.detector"><code class="xref py py-mod docutils literal notranslate"><span class="pre">detector</span></code></a></dt><dd><p>simulate the response of the HiSPARC detectors</p>
+</dd>
+<dt><a class="reference internal" href="simulations/groundparticles.html#module-sapphire.simulations.groundparticles" title="sapphire.simulations.groundparticles"><code class="xref py py-mod docutils literal notranslate"><span class="pre">groundparticles</span></code></a></dt><dd><p>perform simulations using CORSIKA ground particles as input</p>
+</dd>
+<dt><a class="reference internal" href="simulations/ldf.html#module-sapphire.simulations.ldf" title="sapphire.simulations.ldf"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ldf</span></code></a></dt><dd><p>perform simulations using lateral distribution functions for particle
+densities</p>
+</dd>
+<dt><a class="reference internal" href="simulations/showerfront.html#module-sapphire.simulations.showerfront" title="sapphire.simulations.showerfront"><code class="xref py py-mod docutils literal notranslate"><span class="pre">showerfront</span></code></a></dt><dd><p>simple simulations of a shower front</p>
+</dd>
+<dt><a class="reference internal" href="simulations/gammas.html#module-sapphire.simulations.gammas" title="sapphire.simulations.gammas"><code class="xref py py-mod docutils literal notranslate"><span class="pre">gammas</span></code></a></dt><dd><p>simulation of detector response due to gammas</p>
+</dd>
+</dl>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="qsub.html"
+                          title="previous chapter">Nikhef Stoomboot facilities</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="simulations/base.html"
+                          title="next chapter">Simulation base classes</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simulations/base.html" title="Simulation base classes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="qsub.html" title="Nikhef Stoomboot facilities"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulation of the detection of EAS events</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

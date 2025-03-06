@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>HiSPARC API &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="HiSPARC clusters" href="clusters.html" />
+    <link rel="prev" title="Time deltas" href="analysis/time_deltas.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clusters.html" title="HiSPARC clusters"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="analysis/time_deltas.html" title="Time deltas"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">HiSPARC API</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.api">
+<span id="hisparc-api"></span><h1>HiSPARC API<a class="headerlink" href="#module-sapphire.api" title="Link to this heading">¶</a></h1>
+<p>Access the HiSPARC public database API.</p>
+<p>This provides easy classes and functions to access the HiSPARC
+publicdb API. This takes care of the url retrieval and conversion
+from JSON to Python dictionaries.</p>
+<p>Example usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">Station</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stations</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3102</span><span class="p">,</span> <span class="mi">504</span><span class="p">,</span> <span class="mi">7101</span><span class="p">,</span> <span class="mi">8008</span><span class="p">,</span> <span class="mi">13005</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clusters</span> <span class="o">=</span> <span class="p">[</span><span class="n">Station</span><span class="p">(</span><span class="n">station</span><span class="p">)</span><span class="o">.</span><span class="n">cluster</span> <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">station</span><span class="p">,</span> <span class="n">cluster</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">stations</span><span class="p">,</span> <span class="n">clusters</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Station </span><span class="si">%d</span><span class="s1"> is in cluster </span><span class="si">%s</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">cluster</span><span class="p">))</span>
+<span class="go">Station 5 is in cluster Amsterdam.</span>
+<span class="go">Station 3102 is in cluster Leiden.</span>
+<span class="go">Station 504 is in cluster Amsterdam.</span>
+<span class="go">Station 7101 is in cluster Enschede.</span>
+<span class="go">Station 8008 is in cluster Eindhoven.</span>
+<span class="go">Station 13005 is in cluster Bristol.</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.api.get_api_base">
+<span class="sig-prename descclassname"><span class="pre">sapphire.api.</span></span><span class="sig-name descname"><span class="pre">get_api_base</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.get_api_base" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.api.get_src_base">
+<span class="sig-prename descclassname"><span class="pre">sapphire.api.</span></span><span class="sig-name descname"><span class="pre">get_src_base</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.get_src_base" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.api.API">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.api.</span></span><span class="sig-name descname"><span class="pre">API</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force_fresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_stale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.API" title="Link to this definition">¶</a></dt>
+<dd><p>Base API class</p>
+<p>This provided the methods to retrieve data from the API. The results
+are converted from JSON data to Python objects (dict/list/etc).
+Support is also provided for the retrieval of Source TSV data, which
+is returned as NumPy arrays.</p>
+<p>Initialize API class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_fresh</strong><strong>,</strong><strong>force_stale</strong> – if either of these is set to True the
+data must either loaded from server or from local data. Be default
+fresh data is preferred, but falls back to local data.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.api.API.urls">
+<span class="sig-name descname"><span class="pre">urls</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'clusters':</span> <span class="pre">'clusters/',</span> <span class="pre">'clusters_in_country':</span> <span class="pre">'countries/{country_number}/',</span> <span class="pre">'configuration':</span> <span class="pre">'station/{station_number}/config/{year}/{month}/{day}/',</span> <span class="pre">'countries':</span> <span class="pre">'countries/',</span> <span class="pre">'event_trace':</span> <span class="pre">'station/{station_number}/trace/{ext_timestamp}/',</span> <span class="pre">'has_data':</span> <span class="pre">'station/{station_number}/data/{year}/{month}/{day}/',</span> <span class="pre">'has_weather':</span> <span class="pre">'station/{station_number}/weather/{year}/{month}/{day}/',</span> <span class="pre">'number_of_events':</span> <span class="pre">'station/{station_number}/num_events/{year}/{month}/{day}/{hour}/',</span> <span class="pre">'station_info':</span> <span class="pre">'station/{station_number}/',</span> <span class="pre">'stations':</span> <span class="pre">'stations/',</span> <span class="pre">'stations_in_subcluster':</span> <span class="pre">'subclusters/{subcluster_number}/',</span> <span class="pre">'stations_with_data':</span> <span class="pre">'stations/data/{year}/{month}/{day}/',</span> <span class="pre">'stations_with_weather':</span> <span class="pre">'stations/weather/{year}/{month}/{day}/',</span> <span class="pre">'subclusters':</span> <span class="pre">'subclusters/',</span> <span class="pre">'subclusters_in_cluster':</span> <span class="pre">'clusters/{cluster_number}/'}</span></em><a class="headerlink" href="#sapphire.api.API.urls" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.api.API.src_urls">
+<span class="sig-name descname"><span class="pre">src_urls</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'azimuth':</span> <span class="pre">'azimuth/{station_number}/{year}/{month}/{day}/',</span> <span class="pre">'barometer':</span> <span class="pre">'barometer/{station_number}/{year}/{month}/{day}/',</span> <span class="pre">'coincidencenumber':</span> <span class="pre">'coincidencenumber/{year}/{month}/{day}/',</span> <span class="pre">'coincidencetime':</span> <span class="pre">'coincidencetime/{year}/{month}/{day}/',</span> <span class="pre">'current':</span> <span class="pre">'current/{station_number}/',</span> <span class="pre">'detector_timing_offsets':</span> <span class="pre">'detector_timing_offsets/{station_number}/',</span> <span class="pre">'electronics':</span> <span class="pre">'electronics/{station_number}/',</span> <span class="pre">'eventtime':</span> <span class="pre">'eventtime/{station_number}/{year}/{month}/{day}/',</span> <span class="pre">'gps':</span> <span class="pre">'gps/{station_number}/',</span> <span class="pre">'integral':</span> <span class="pre">'pulseintegral/{station_number}/{year}/{month}/{day}/',</span> <span class="pre">'layout':</span> <span class="pre">'layout/{station_number}/',</span> <span class="pre">'pulseheight':</span> <span class="pre">'pulseheight/{station_number}/{year}/{month}/{day}/',</span> <span class="pre">'station_timing_offsets':</span> <span class="pre">'station_timing_offsets/{station_1}/{station_2}/',</span> <span class="pre">'temperature':</span> <span class="pre">'temperature/{station_number}/{year}/{month}/{day}/',</span> <span class="pre">'trigger':</span> <span class="pre">'trigger/{station_number}/',</span> <span class="pre">'voltage':</span> <span class="pre">'voltage/{station_number}/',</span> <span class="pre">'zenith':</span> <span class="pre">'zenith/{station_number}/{year}/{month}/{day}/'}</span></em><a class="headerlink" href="#sapphire.api.API.src_urls" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.API.check_connection">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.API.check_connection" title="Link to this definition">¶</a></dt>
+<dd><p>Open the API man page URL to test the connection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>boolean indicating the internet status</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.API.validate_partial_date">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">validate_partial_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hour</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.API.validate_partial_date" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.api.Network">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.api.</span></span><span class="sig-name descname"><span class="pre">Network</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force_fresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_stale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network" title="Link to this definition">¶</a></dt>
+<dd><p>Get info about the network (countries/clusters/subclusters/stations)</p>
+<p>Initialize API class</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>force_fresh</strong><strong>,</strong><strong>force_stale</strong> – if either of these is set to True the
+data must either loaded from server or from local data. Be default
+fresh data is preferred, but falls back to local data.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.countries">
+<span class="sig-name descname"><span class="pre">countries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.countries" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of countries</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>all countries in the region</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.country_numbers">
+<span class="sig-name descname"><span class="pre">country_numbers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.country_numbers" title="Link to this definition">¶</a></dt>
+<dd><p>Same as countries but only returns a list of country numbers</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.clusters">
+<span class="sig-name descname"><span class="pre">clusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.clusters" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of clusters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>country</strong> – the number of the country for which to get all
+clusters.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>all clusters in the region</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.cluster_numbers">
+<span class="sig-name descname"><span class="pre">cluster_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.cluster_numbers" title="Link to this definition">¶</a></dt>
+<dd><p>Same as clusters but only returns a list of cluster numbers</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.subclusters">
+<span class="sig-name descname"><span class="pre">subclusters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.subclusters" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of subclusters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>country</strong><strong>,</strong><strong>cluster</strong> – the number of the region for which to get
+the subclusters it contains, only one or none should
+be specified.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>all subclusters in the region</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.subcluster_numbers">
+<span class="sig-name descname"><span class="pre">subcluster_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.subcluster_numbers" title="Link to this definition">¶</a></dt>
+<dd><p>Same as subclusters but only returns a list of subcluster numbers</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.stations">
+<span class="sig-name descname"><span class="pre">stations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subcluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.stations" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of stations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>country</strong><strong>,</strong><strong>cluster</strong><strong>,</strong><strong>subcluster</strong> – the number of the region
+for which to get all stations, only one or none should
+be specified.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>all stations in the region</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.station_numbers">
+<span class="sig-name descname"><span class="pre">station_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subcluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.station_numbers" title="Link to this definition">¶</a></dt>
+<dd><p>Same as stations but only returns a list of station numbers</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.nested_network">
+<span class="sig-name descname"><span class="pre">nested_network</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.nested_network" title="Link to this definition">¶</a></dt>
+<dd><p>Get a nested list of the full network</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.stations_with_data">
+<span class="sig-name descname"><span class="pre">stations_with_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.stations_with_data" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of stations with data on the specified date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to check. It is
+possible to be less specific.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>all stations with data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.stations_with_weather">
+<span class="sig-name descname"><span class="pre">stations_with_weather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.stations_with_weather" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of stations with weather data on the specified date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to check. It is
+possible to be less specific.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>all stations with weather data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.coincidence_time">
+<span class="sig-name descname"><span class="pre">coincidence_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.coincidence_time" title="Link to this definition">¶</a></dt>
+<dd><p>Get the coincidences per hour histogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the histogram.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of bins and counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.coincidence_number">
+<span class="sig-name descname"><span class="pre">coincidence_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.coincidence_number" title="Link to this definition">¶</a></dt>
+<dd><p>Get the number of stations in coincidence histogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the histogram.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of bins and counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.validate_numbers">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">validate_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subcluster</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.validate_numbers" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Network.uptime">
+<span class="sig-name descname"><span class="pre">uptime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Network.uptime" title="Link to this definition">¶</a></dt>
+<dd><p>Get number of hours for which the given stations have been simultaneously active</p>
+<p>Using hourly eventrate data the number of hours in which the given
+stations all had data is determined. Only hours in which each station
+had a reasonable eventrate are counted, to exclude likely bad data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stations</strong> – station number or a list of station numbers.</p></li>
+<li><p><strong>start</strong><strong>,</strong><strong>end</strong> – start, end timestamp.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>number of hours with simultaneous data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.api.Station">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.api.</span></span><span class="sig-name descname"><span class="pre">Station</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_fresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_stale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station" title="Link to this definition">¶</a></dt>
+<dd><p>Access data about a single station</p>
+<p>Initialize station</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>station</strong> – station number.</p></li>
+<li><p><strong>force_fresh</strong> – set to True to require data to be fresh from the server.</p></li>
+<li><p><strong>force_stale</strong> – set to True to require data to be taken from local
+data, not valid for all methods.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.api.Station.info">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><a class="headerlink" href="#sapphire.api.Station.info" title="Link to this definition">¶</a></dt>
+<dd><p>Get general station info</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.country">
+<span class="sig-name descname"><span class="pre">country</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.country" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.cluster">
+<span class="sig-name descname"><span class="pre">cluster</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.cluster" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.subcluster">
+<span class="sig-name descname"><span class="pre">subcluster</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.subcluster" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.n_detectors">
+<span class="sig-name descname"><span class="pre">n_detectors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.n_detectors" title="Link to this definition">¶</a></dt>
+<dd><p>Get the number of detectors in this station</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.config">
+<span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.config" title="Link to this definition">¶</a></dt>
+<dd><p>Get station config</p>
+<p>Retrieve either the latest, or a config for a specific date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>date</strong> – date object for which to get the config</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the full config for the station</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.n_events">
+<span class="sig-name descname"><span class="pre">n_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hour</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.n_events" title="Link to this definition">¶</a></dt>
+<dd><p>Get number of events</p>
+<p>Note that it is possible to give only the year to get the total
+number of events in that year. If both year and month are given,
+the total events in that month are returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong><strong>,</strong><strong>hour</strong> – the date and time for which to
+get the number. It is possible to be less specific.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the number of events recorded by the station on date.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.has_data">
+<span class="sig-name descname"><span class="pre">has_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.has_data" title="Link to this definition">¶</a></dt>
+<dd><p>Check for HiSPARC data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to check. It is
+possible to be less specific.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>boolean, indicating whether the station had air shower
+data on the date.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.has_weather">
+<span class="sig-name descname"><span class="pre">has_weather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.has_weather" title="Link to this definition">¶</a></dt>
+<dd><p>Check for weather data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to check. It is
+possible to be less specific.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>boolean, indicating whether the station had weather data
+on the date.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.event_trace">
+<span class="sig-name descname"><span class="pre">event_trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nanoseconds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.event_trace" title="Link to this definition">¶</a></dt>
+<dd><p>Get the traces for a specific event</p>
+<p>The exact timestamp and nanoseconds for the event have to be
+given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamp</strong><strong>,</strong><strong>nanoseconds</strong> – the extended timestamp for which
+to get the traces.</p></li>
+<li><p><strong>raw</strong> – get the raw trace, without the subtracted baselines.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>an array with the traces for each detector in ADCcounts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.event_time">
+<span class="sig-name descname"><span class="pre">event_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.event_time" title="Link to this definition">¶</a></dt>
+<dd><p>Get the number of events per hour histogram</p>
+<p>If no date is given the full event time histogram for this station
+will be returned. That means for the entire time this station has
+collected data.</p>
+<p>This data (the full histogram) can made available locally using
+the <cite>extend_local_data</cite> command.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the histogram.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of bins and counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.pulse_height">
+<span class="sig-name descname"><span class="pre">pulse_height</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.pulse_height" title="Link to this definition">¶</a></dt>
+<dd><p>Get the pulseheight histogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the histogram.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of bins and counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.pulse_integral">
+<span class="sig-name descname"><span class="pre">pulse_integral</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.pulse_integral" title="Link to this definition">¶</a></dt>
+<dd><p>Get the pulseintegral histogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the histogram.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of bins and counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.azimuth">
+<span class="sig-name descname"><span class="pre">azimuth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.azimuth" title="Link to this definition">¶</a></dt>
+<dd><p>Get the azimuth histogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the histogram.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of bins and counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.zenith">
+<span class="sig-name descname"><span class="pre">zenith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.zenith" title="Link to this definition">¶</a></dt>
+<dd><p>Get the zenith histogram</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the histogram.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of bins and counts.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.barometer">
+<span class="sig-name descname"><span class="pre">barometer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.barometer" title="Link to this definition">¶</a></dt>
+<dd><p>Get the barometer dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the dataset.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.temperature">
+<span class="sig-name descname"><span class="pre">temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.temperature" title="Link to this definition">¶</a></dt>
+<dd><p>Get the temperature dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>year</strong><strong>,</strong><strong>month</strong><strong>,</strong><strong>day</strong> – the date for which to get the dataset.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.api.Station.electronics">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">electronics</span></span><a class="headerlink" href="#sapphire.api.Station.electronics" title="Link to this definition">¶</a></dt>
+<dd><p>Get the electronics version data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.electronic">
+<span class="sig-name descname"><span class="pre">electronic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.electronic" title="Link to this definition">¶</a></dt>
+<dd><p>Get electronics version data for specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – timestamp for which the values are valid.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of values for given timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.api.Station.voltages">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">voltages</span></span><a class="headerlink" href="#sapphire.api.Station.voltages" title="Link to this definition">¶</a></dt>
+<dd><p>Get the PMT voltage data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.voltage">
+<span class="sig-name descname"><span class="pre">voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.voltage" title="Link to this definition">¶</a></dt>
+<dd><p>Get PMT voltage data for specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – timestamp for which the values are valid.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of values for given timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.api.Station.currents">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">currents</span></span><a class="headerlink" href="#sapphire.api.Station.currents" title="Link to this definition">¶</a></dt>
+<dd><p>Get the PMT current data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.current">
+<span class="sig-name descname"><span class="pre">current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.current" title="Link to this definition">¶</a></dt>
+<dd><p>Get PMT current data for specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – timestamp for which the values are valid.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of values for given timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.api.Station.gps_locations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gps_locations</span></span><a class="headerlink" href="#sapphire.api.Station.gps_locations" title="Link to this definition">¶</a></dt>
+<dd><p>Get the GPS location data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.gps_location">
+<span class="sig-name descname"><span class="pre">gps_location</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.gps_location" title="Link to this definition">¶</a></dt>
+<dd><p>Get GPS location for specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – optional timestamp or datetime object for which
+the values are valid.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dictionary with the values for given timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.api.Station.triggers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">triggers</span></span><a class="headerlink" href="#sapphire.api.Station.triggers" title="Link to this definition">¶</a></dt>
+<dd><p>Get the trigger config data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.trigger">
+<span class="sig-name descname"><span class="pre">trigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.trigger" title="Link to this definition">¶</a></dt>
+<dd><p>Get trigger config for specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – timestamp for which the values are valid.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>thresholds and trigger values for given timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.api.Station.station_layouts">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">station_layouts</span></span><a class="headerlink" href="#sapphire.api.Station.station_layouts" title="Link to this definition">¶</a></dt>
+<dd><p>Get the station layout data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.station_layout">
+<span class="sig-name descname"><span class="pre">station_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.station_layout" title="Link to this definition">¶</a></dt>
+<dd><p>Get station layout data for specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – timestamp for which the values are valid.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of coordinates for given timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.api.Station.detector_timing_offsets">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">detector_timing_offsets</span></span><a class="headerlink" href="#sapphire.api.Station.detector_timing_offsets" title="Link to this definition">¶</a></dt>
+<dd><p>Get the detector timing offsets data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.detector_timing_offset">
+<span class="sig-name descname"><span class="pre">detector_timing_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.detector_timing_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Get detector timing offset data for specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – timestamp for which the values are valid.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of values for given timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.station_timing_offsets">
+<span class="sig-name descname"><span class="pre">station_timing_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_station</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.station_timing_offsets" title="Link to this definition">¶</a></dt>
+<dd><p>Get the station timing offset relative to reference_station</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reference_station</strong> – reference station</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>array of timestamps and values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.api.Station.station_timing_offset">
+<span class="sig-name descname"><span class="pre">station_timing_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reference_station</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.api.Station.station_timing_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Get station timing offset data for specific timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reference_station</strong> – reference station</p></li>
+<li><p><strong>timestamp</strong> – timestamp for which the value is valid.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the offset and error for given timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">HiSPARC API</a><ul>
+<li><a class="reference internal" href="#sapphire.api.get_api_base"><code class="docutils literal notranslate"><span class="pre">get_api_base()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.get_src_base"><code class="docutils literal notranslate"><span class="pre">get_src_base()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.API"><code class="docutils literal notranslate"><span class="pre">API</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.api.API.urls"><code class="docutils literal notranslate"><span class="pre">API.urls</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.API.src_urls"><code class="docutils literal notranslate"><span class="pre">API.src_urls</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.API.check_connection"><code class="docutils literal notranslate"><span class="pre">API.check_connection()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.API.validate_partial_date"><code class="docutils literal notranslate"><span class="pre">API.validate_partial_date()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.api.Network"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.api.Network.countries"><code class="docutils literal notranslate"><span class="pre">Network.countries()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.country_numbers"><code class="docutils literal notranslate"><span class="pre">Network.country_numbers()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.clusters"><code class="docutils literal notranslate"><span class="pre">Network.clusters()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.cluster_numbers"><code class="docutils literal notranslate"><span class="pre">Network.cluster_numbers()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.subclusters"><code class="docutils literal notranslate"><span class="pre">Network.subclusters()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.subcluster_numbers"><code class="docutils literal notranslate"><span class="pre">Network.subcluster_numbers()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.stations"><code class="docutils literal notranslate"><span class="pre">Network.stations()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.station_numbers"><code class="docutils literal notranslate"><span class="pre">Network.station_numbers()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.nested_network"><code class="docutils literal notranslate"><span class="pre">Network.nested_network()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.stations_with_data"><code class="docutils literal notranslate"><span class="pre">Network.stations_with_data()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.stations_with_weather"><code class="docutils literal notranslate"><span class="pre">Network.stations_with_weather()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.coincidence_time"><code class="docutils literal notranslate"><span class="pre">Network.coincidence_time()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.coincidence_number"><code class="docutils literal notranslate"><span class="pre">Network.coincidence_number()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.validate_numbers"><code class="docutils literal notranslate"><span class="pre">Network.validate_numbers()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Network.uptime"><code class="docutils literal notranslate"><span class="pre">Network.uptime()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.api.Station"><code class="docutils literal notranslate"><span class="pre">Station</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.api.Station.info"><code class="docutils literal notranslate"><span class="pre">Station.info</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.country"><code class="docutils literal notranslate"><span class="pre">Station.country()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.cluster"><code class="docutils literal notranslate"><span class="pre">Station.cluster()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.subcluster"><code class="docutils literal notranslate"><span class="pre">Station.subcluster()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.n_detectors"><code class="docutils literal notranslate"><span class="pre">Station.n_detectors()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.config"><code class="docutils literal notranslate"><span class="pre">Station.config()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.n_events"><code class="docutils literal notranslate"><span class="pre">Station.n_events()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.has_data"><code class="docutils literal notranslate"><span class="pre">Station.has_data()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.has_weather"><code class="docutils literal notranslate"><span class="pre">Station.has_weather()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.event_trace"><code class="docutils literal notranslate"><span class="pre">Station.event_trace()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.event_time"><code class="docutils literal notranslate"><span class="pre">Station.event_time()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.pulse_height"><code class="docutils literal notranslate"><span class="pre">Station.pulse_height()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.pulse_integral"><code class="docutils literal notranslate"><span class="pre">Station.pulse_integral()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.azimuth"><code class="docutils literal notranslate"><span class="pre">Station.azimuth()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.zenith"><code class="docutils literal notranslate"><span class="pre">Station.zenith()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.barometer"><code class="docutils literal notranslate"><span class="pre">Station.barometer()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.temperature"><code class="docutils literal notranslate"><span class="pre">Station.temperature()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.electronics"><code class="docutils literal notranslate"><span class="pre">Station.electronics</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.electronic"><code class="docutils literal notranslate"><span class="pre">Station.electronic()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.voltages"><code class="docutils literal notranslate"><span class="pre">Station.voltages</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.voltage"><code class="docutils literal notranslate"><span class="pre">Station.voltage()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.currents"><code class="docutils literal notranslate"><span class="pre">Station.currents</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.current"><code class="docutils literal notranslate"><span class="pre">Station.current()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.gps_locations"><code class="docutils literal notranslate"><span class="pre">Station.gps_locations</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.gps_location"><code class="docutils literal notranslate"><span class="pre">Station.gps_location()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.triggers"><code class="docutils literal notranslate"><span class="pre">Station.triggers</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.trigger"><code class="docutils literal notranslate"><span class="pre">Station.trigger()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.station_layouts"><code class="docutils literal notranslate"><span class="pre">Station.station_layouts</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.station_layout"><code class="docutils literal notranslate"><span class="pre">Station.station_layout()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.detector_timing_offsets"><code class="docutils literal notranslate"><span class="pre">Station.detector_timing_offsets</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.detector_timing_offset"><code class="docutils literal notranslate"><span class="pre">Station.detector_timing_offset()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.station_timing_offsets"><code class="docutils literal notranslate"><span class="pre">Station.station_timing_offsets()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.api.Station.station_timing_offset"><code class="docutils literal notranslate"><span class="pre">Station.station_timing_offset()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="analysis/time_deltas.html"
+                          title="previous chapter">Time deltas</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="clusters.html"
+                          title="next chapter">HiSPARC clusters</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clusters.html" title="HiSPARC clusters"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="analysis/time_deltas.html" title="Time deltas"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">HiSPARC API</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

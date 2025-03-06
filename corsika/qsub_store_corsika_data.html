@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Convert CORSIKA simulations on Stoomboot &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CORSIKA Reader" href="reader.html" />
+    <link rel="prev" title="CORSIKA on Stoomboot" href="qsub_corsika.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reader.html" title="CORSIKA Reader"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="qsub_corsika.html" title="CORSIKA on Stoomboot"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" accesskey="U">CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Convert CORSIKA simulations on Stoomboot</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.corsika.qsub_store_corsika_data">
+<span id="convert-corsika-simulations-on-stoomboot"></span><h1>Convert CORSIKA simulations on Stoomboot<a class="headerlink" href="#module-sapphire.corsika.qsub_store_corsika_data" title="Link to this heading">¶</a></h1>
+<p>Convert CORSIKA stored showers to HDF5 on Stoomboot</p>
+<p>Automatically submits Stoomboot jobs to convert corsika data. The
+script <code class="docutils literal notranslate"><span class="pre">store_corsika_data</span></code> can be used to convert a DAT000000
+CORSIKA file to a HDF5 file. This script checks our data folder for
+new or unconverted simulations and creates Stoomboot jobs to perform
+the conversion.</p>
+<p>This job is run as a cron job to ensure the simulations remain up to
+date.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.all_seeds">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">all_seeds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.all_seeds" title="Link to this definition">¶</a></dt>
+<dd><p>Get set of all seeds in the corsika data directory</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.seeds_processed">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">seeds_processed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.seeds_processed" title="Link to this definition">¶</a></dt>
+<dd><p>Get the seeds of simulations for which the h5 is already created</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.seeds_in_queue">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">seeds_in_queue</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.seeds_in_queue" title="Link to this definition">¶</a></dt>
+<dd><p>Get set of seeds already queued to be processed</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.write_queued_seeds">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">write_queued_seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seeds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.write_queued_seeds" title="Link to this definition">¶</a></dt>
+<dd><p>Write queued seeds to file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.append_queued_seeds">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">append_queued_seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seeds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.append_queued_seeds" title="Link to this definition">¶</a></dt>
+<dd><p>Add seed to the queued seeds file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.get_seeds_todo">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">get_seeds_todo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.get_seeds_todo" title="Link to this definition">¶</a></dt>
+<dd><p>Get seeds to be processed</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.filter_large_seeds">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">filter_large_seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seeds_todo</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.filter_large_seeds" title="Link to this definition">¶</a></dt>
+<dd><p>Exclude seeds for data files that are to large</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.store_command">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">store_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.store_command" title="Link to this definition">¶</a></dt>
+<dd><p>Write queued seeds to file</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.run">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.run" title="Link to this definition">¶</a></dt>
+<dd><p>Get list of seeds to process, then submit jobs to process them</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_store_corsika_data.main">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_store_corsika_data.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Convert CORSIKA simulations on Stoomboot</a><ul>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.all_seeds"><code class="docutils literal notranslate"><span class="pre">all_seeds()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.seeds_processed"><code class="docutils literal notranslate"><span class="pre">seeds_processed()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.seeds_in_queue"><code class="docutils literal notranslate"><span class="pre">seeds_in_queue()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.write_queued_seeds"><code class="docutils literal notranslate"><span class="pre">write_queued_seeds()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.append_queued_seeds"><code class="docutils literal notranslate"><span class="pre">append_queued_seeds()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.get_seeds_todo"><code class="docutils literal notranslate"><span class="pre">get_seeds_todo()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.filter_large_seeds"><code class="docutils literal notranslate"><span class="pre">filter_large_seeds()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.store_command"><code class="docutils literal notranslate"><span class="pre">store_command()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_store_corsika_data.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="qsub_corsika.html"
+                          title="previous chapter">CORSIKA on Stoomboot</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="reader.html"
+                          title="next chapter">CORSIKA Reader</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reader.html" title="CORSIKA Reader"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="qsub_corsika.html" title="CORSIKA on Stoomboot"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" >CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Convert CORSIKA simulations on Stoomboot</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

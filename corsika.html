@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>CORSIKA simulations &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CORSIKA Blocks" href="corsika/blocks.html" />
+    <link rel="prev" title="HiSPARC clusters" href="clusters.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="corsika/blocks.html" title="CORSIKA Blocks"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clusters.html" title="HiSPARC clusters"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CORSIKA simulations</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="corsika-simulations">
+<h1>CORSIKA simulations<a class="headerlink" href="#corsika-simulations" title="Link to this heading">¶</a></h1>
+<p><a class="reference external" href="https://web.ikp.kit.edu/corsika/">CORSIKA</a> is an Air Shower
+Simulation Program. To be used for detailed simulation of
+extensive air showers initiated by high-energy cosmic-ray particles.</p>
+<p>This module makes it easy to work with CORSIKA output, it was
+original written by Javier Gonzalez and adapted for <a class="reference external" href="www.hisparc.nl">HiSPARC</a> by Arne de Laat.</p>
+<p>This documentation sometimes refers to the CORSIKA users manual, this
+users manual can be found here <a class="reference external" href="https://www.ikp.kit.edu/corsika/70.php">CORSIKA User’s Guide</a></p>
+<p>In addition to reading CORSIKA output, functionally is provided to
+easily submit many CORSIKA jobs to the Nikhef batch facility
+(Stoomboot).</p>
+<section id="module-sapphire.corsika">
+<span id="corsika-module"></span><h2>CORSIKA Module<a class="headerlink" href="#module-sapphire.corsika" title="Link to this heading">¶</a></h2>
+<p>Process CORSIKA simulation data.</p>
+<p>This package contains modules for working with CORSIKA simulations:</p>
+<dl class="simple">
+<dt><a class="reference internal" href="corsika/blocks.html#module-sapphire.corsika.blocks" title="sapphire.corsika.blocks"><code class="xref py py-mod docutils literal notranslate"><span class="pre">blocks</span></code></a></dt><dd><p>classes for the block and subblocks in CORSIKA data</p>
+</dd>
+<dt><a class="reference internal" href="corsika/corsika_queries.html#module-sapphire.corsika.corsika_queries" title="sapphire.corsika.corsika_queries"><code class="xref py py-mod docutils literal notranslate"><span class="pre">corsika_queries</span></code></a></dt><dd><p>select CORSIKA showers from a corsika overview</p>
+</dd>
+<dt><a class="reference internal" href="corsika/generate_corsika_overview.html#module-sapphire.corsika.generate_corsika_overview" title="sapphire.corsika.generate_corsika_overview"><code class="xref py py-mod docutils literal notranslate"><span class="pre">generate_corsika_overview</span></code></a></dt><dd><p>generate an overview table of available CORSIKA simulations</p>
+</dd>
+<dt><a class="reference internal" href="corsika/particles.html#module-sapphire.corsika.particles" title="sapphire.corsika.particles"><code class="xref py py-mod docutils literal notranslate"><span class="pre">particles</span></code></a></dt><dd><p>convert CORSIKA particle codes to common names</p>
+</dd>
+<dt><a class="reference internal" href="corsika/qsub_corsika.html#module-sapphire.corsika.qsub_corsika" title="sapphire.corsika.qsub_corsika"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qsub_corsika</span></code></a></dt><dd><p>submit CORSIKA simulations to the Nikhef Stoomboot facility</p>
+</dd>
+<dt><a class="reference internal" href="corsika/qsub_store_corsika_data.html#module-sapphire.corsika.qsub_store_corsika_data" title="sapphire.corsika.qsub_store_corsika_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qsub_store_corsika_data</span></code></a></dt><dd><p>submit store CORSIKA jobs to the Nikhef Stoomboot facility</p>
+</dd>
+<dt><a class="reference internal" href="corsika/reader.html#module-sapphire.corsika.reader" title="sapphire.corsika.reader"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reader</span></code></a></dt><dd><p>read CORSIKA data files into Python</p>
+</dd>
+<dt><a class="reference internal" href="corsika/store_corsika_data.html#module-sapphire.corsika.store_corsika_data" title="sapphire.corsika.store_corsika_data"><code class="xref py py-mod docutils literal notranslate"><span class="pre">store_corsika_data</span></code></a></dt><dd><p>convert CORSIKA data files to HDF5 files</p>
+</dd>
+<dt><a class="reference internal" href="corsika/units.html#module-sapphire.corsika.units" title="sapphire.corsika.units"><code class="xref py py-mod docutils literal notranslate"><span class="pre">units</span></code></a></dt><dd><p>convert values in units used by CORSIKA to HiSPARC units</p>
+</dd>
+</dl>
+</section>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">CORSIKA simulations</a><ul>
+<li><a class="reference internal" href="#module-sapphire.corsika">CORSIKA Module</a></li>
+<li><a class="reference internal" href="#contents">Contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="clusters.html"
+                          title="previous chapter">HiSPARC clusters</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="corsika/blocks.html"
+                          title="next chapter">CORSIKA Blocks</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="corsika/blocks.html" title="CORSIKA Blocks"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clusters.html" title="HiSPARC clusters"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CORSIKA simulations</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

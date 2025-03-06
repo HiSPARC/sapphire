@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Transformations between geographic coordinate systems &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Common utility functions" href="../utils.html" />
+    <link rel="prev" title="Time conversion functions" href="clock.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../utils.html" title="Common utility functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clock.html" title="Time conversion functions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" accesskey="U">Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Transformations between geographic coordinate systems</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.transformations.geographic">
+<span id="transformations-between-geographic-coordinate-systems"></span><h1>Transformations between geographic coordinate systems<a class="headerlink" href="#module-sapphire.transformations.geographic" title="Link to this heading">¶</a></h1>
+<p>Perform various coordinate transformations</p>
+<p>This module performs various coordinate transformations, based on some
+well-known formulas.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.WGS84Datum">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.transformations.geographic.</span></span><span class="sig-name descname"><span class="pre">WGS84Datum</span></span><a class="headerlink" href="#sapphire.transformations.geographic.WGS84Datum" title="Link to this definition">¶</a></dt>
+<dd><p>Definition of the WGS84 datum</p>
+<p>These definitions are taken from
+<a class="reference external" href="https://en.wikipedia.org/wiki/Geodetic_system">https://en.wikipedia.org/wiki/Geodetic_system</a>, believing that enough
+editors have gone over them to make sure they are correct.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.WGS84Datum.a">
+<span class="sig-name descname"><span class="pre">a</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6378137.0</span></em><a class="headerlink" href="#sapphire.transformations.geographic.WGS84Datum.a" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.WGS84Datum.f">
+<span class="sig-name descname"><span class="pre">f</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0033528106647474805</span></em><a class="headerlink" href="#sapphire.transformations.geographic.WGS84Datum.f" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.WGS84Datum.b">
+<span class="sig-name descname"><span class="pre">b</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6356752.314245179</span></em><a class="headerlink" href="#sapphire.transformations.geographic.WGS84Datum.b" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.WGS84Datum.e">
+<span class="sig-name descname"><span class="pre">e</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.08181919084262149</span></em><a class="headerlink" href="#sapphire.transformations.geographic.WGS84Datum.e" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.WGS84Datum.eprime">
+<span class="sig-name descname"><span class="pre">eprime</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.08209443794969568</span></em><a class="headerlink" href="#sapphire.transformations.geographic.WGS84Datum.eprime" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.transformations.geographic.</span></span><span class="sig-name descname"><span class="pre">FromWGS84ToENUTransformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ref_llacoordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation" title="Link to this definition">¶</a></dt>
+<dd><p>Convert between various geographic coordinate systems</p>
+<p>This class converts coordinates between LLA, ENU, and ECEF.</p>
+<p>Initialize the transformation object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ref_llacoordinates</strong> – reference latitude, longitude, and altitude
+coordinates. These are used as origin for ENU coordinates.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation.geode">
+<span class="sig-name descname"><span class="pre">geode</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;sapphire.transformations.geographic.WGS84Datum</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.geode" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.transform" title="Link to this definition">¶</a></dt>
+<dd><p>Transform WGS84 coordinates to ENU coordinates</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation.lla_to_enu">
+<span class="sig-name descname"><span class="pre">lla_to_enu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.lla_to_enu" title="Link to this definition">¶</a></dt>
+<dd><p>Transform WGS84 coordinates to ENU coordinates</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation.enu_to_lla">
+<span class="sig-name descname"><span class="pre">enu_to_lla</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.enu_to_lla" title="Link to this definition">¶</a></dt>
+<dd><p>Transform WGS84 coordinates to ENU coordinates</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation.lla_to_ecef">
+<span class="sig-name descname"><span class="pre">lla_to_ecef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.lla_to_ecef" title="Link to this definition">¶</a></dt>
+<dd><p>Convert from LLA coordinates to ECEF coordinates</p>
+<p>LLA: Latitude, Longitude, Altitude
+ECEF: Earth-Centered, Earth-Fixed</p>
+<p>The conversion formulas are taken from
+<a class="reference external" href="https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#From_geodetic_to_ECEF_coordinates">https://en.wikipedia.org/wiki/Geographic_coordinate_conversion#From_geodetic_to_ECEF_coordinates</a>
+but slightly reworked.</p>
+<p>Mind that the input is expected to be in degrees, as is standard in
+coordinate notation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coordinates</strong> – tuple of latitude, longitude (both in degrees)
+and altitude (in meters).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ECEF coordinates (in meters).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation.ecef_to_lla">
+<span class="sig-name descname"><span class="pre">ecef_to_lla</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.ecef_to_lla" title="Link to this definition">¶</a></dt>
+<dd><p>Convert from ECEF coordinates to LLA coordinates</p>
+<p>ECEF: Earth-Centered, Earth-Fixed
+LLA: Latitude, Longitude, Altitude</p>
+<p>The conversion formulas are taken from
+<a class="reference external" href="https://gist.github.com/klucar/1536054">https://gist.github.com/klucar/1536054</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coordinates</strong> – tuple of X, Y, and Z (in meters).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>latitude, longitude (in degrees) and altitude (in meters).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation.ecef_to_enu">
+<span class="sig-name descname"><span class="pre">ecef_to_enu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.ecef_to_enu" title="Link to this definition">¶</a></dt>
+<dd><p>Convert from ECEF coordinates to ENU coordinates</p>
+<p>ECEF: Earth-Centered, Earth-Fixed
+ENU: East, North, Up</p>
+<p>The conversion formulas are taken from
+<a class="reference external" href="https://en.wikipedia.org/wiki/Geodetic_system#From_ECEF_to_ENU">https://en.wikipedia.org/wiki/Geodetic_system#From_ECEF_to_ENU</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coordinates</strong> – a tuple containing the ECEF coordinates (in meters)
+of the point to transform</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>east, north, and up (in meters).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.transformations.geographic.FromWGS84ToENUTransformation.enu_to_ecef">
+<span class="sig-name descname"><span class="pre">enu_to_ecef</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.enu_to_ecef" title="Link to this definition">¶</a></dt>
+<dd><p>Convert from ENU coordinates to ECEF coordinates</p>
+<p>ENU: East, North, Up
+ECEF: Earth-Centered, Earth-Fixed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coordinates</strong> – a tuple containing the ENU coordinates (in meters).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ECEF coordinates (in meters).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Transformations between geographic coordinate systems</a><ul>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.WGS84Datum"><code class="docutils literal notranslate"><span class="pre">WGS84Datum</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.WGS84Datum.a"><code class="docutils literal notranslate"><span class="pre">WGS84Datum.a</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.WGS84Datum.f"><code class="docutils literal notranslate"><span class="pre">WGS84Datum.f</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.WGS84Datum.b"><code class="docutils literal notranslate"><span class="pre">WGS84Datum.b</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.WGS84Datum.e"><code class="docutils literal notranslate"><span class="pre">WGS84Datum.e</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.WGS84Datum.eprime"><code class="docutils literal notranslate"><span class="pre">WGS84Datum.eprime</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.geode"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation.geode</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.transform"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation.transform()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.lla_to_enu"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation.lla_to_enu()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.enu_to_lla"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation.enu_to_lla()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.lla_to_ecef"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation.lla_to_ecef()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.ecef_to_lla"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation.ecef_to_lla()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.ecef_to_enu"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation.ecef_to_enu()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.geographic.FromWGS84ToENUTransformation.enu_to_ecef"><code class="docutils literal notranslate"><span class="pre">FromWGS84ToENUTransformation.enu_to_ecef()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="clock.html"
+                          title="previous chapter">Time conversion functions</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../utils.html"
+                          title="next chapter">Common utility functions</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../utils.html" title="Common utility functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clock.html" title="Time conversion functions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" >Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Transformations between geographic coordinate systems</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

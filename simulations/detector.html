@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Detector simulations &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Simulations based on Monte Carlo EAS ground particle data" href="groundparticles.html" />
+    <link rel="prev" title="Simulation base classes" href="base.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="groundparticles.html" title="Simulations based on Monte Carlo EAS ground particle data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="base.html" title="Simulation base classes"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../simulations.html" accesskey="U">Simulation of the detection of EAS events</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Detector simulations</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.simulations.detector">
+<span id="detector-simulations"></span><h1>Detector simulations<a class="headerlink" href="#module-sapphire.simulations.detector" title="Link to this heading">¶</a></h1>
+<p>Common HiSPARC station response simulations</p>
+<p>These are some common simulations for HiSPARC detectors.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.detector.</span></span><span class="sig-name descname"><span class="pre">HiSPARCSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.simulate_and_store_offsets">
+<span class="sig-name descname"><span class="pre">simulate_and_store_offsets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_and_store_offsets" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate and store station and detector offsets</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_offsets">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_detector_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_detectors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_offsets" title="Link to this definition">¶</a></dt>
+<dd><p>Get multiple detector offsets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_detectors</strong> – number of offsets to return.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of detector timing offsets in ns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_offset">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_detector_offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate time offsets between detectors in one station</p>
+<p>This offset should be fixed for each detector for a simulation run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>detector timing offset in ns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.simulate_station_offset">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_station_offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_station_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate time offsets between different stations</p>
+<p>This offset should be fixed for each station for a simulation run.
+The actual distribution is not yet very clear. We assume it is
+gaussian for convenience. Then the stddev is about 16 ns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>station timing offset in ns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.simulate_gps_uncertainty">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_gps_uncertainty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_gps_uncertainty" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate uncertainty from GPS receiver</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.simulate_adc_sampling">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_adc_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_adc_sampling" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate ADC time binning due to the sampling frequency</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t</strong> – time to be binned.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>time ceiled in 2.5 ns base.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.simulate_signal_transport_time">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_signal_transport_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_signal_transport_time" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate transport times of scintillation light to the PMT</p>
+<p>Generates random transit times within a given distribution and
+adds it to the times the particles passed the detector.</p>
+<p>Distribution based on Fokkema2012 sec 4.2, figure 4.3</p>
+<p>Be careful when editing this function, be sure to check both
+the single and vectorized part.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> – number of times to simulate</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of signal transport times</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_mips">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_detector_mips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_mips" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate the detector signal for particles</p>
+<p>Simulation of convoluted distribution of electron and
+muon energy losses with the scintillator response</p>
+<p>The detector response (energy loss and detector efficiency) is derived
+in Montanus2014.</p>
+<p>The energy loss is taken from the Bethe-Bloch equation. The detector
+response is statistically modelled. The effect of particle angle of
+incidence is accounted for. The resulting probability
+distribution is used below.</p>
+<p>The statistics can be simulated by taking a random number y between
+0 and 1, and convert it to a signal s in MIP using the probability
+distribution.</p>
+<dl class="simple">
+<dt>Montanus2014: J.C.M. Montanus, The Landau distribution,</dt><dd><p>Internal note (Nikhef), 22 may 2014</p>
+</dd>
+</dl>
+<p>Be careful when editing this function, be sure to check both
+the single and vectorized part.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – number of particles.</p></li>
+<li><p><strong>theta</strong> – angle of incidence of the particles. Either a single
+value valid for all particles, or an array with an angle
+for each particle.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>signal strength in number of mips.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.generate_core_position">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_core_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_max</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_core_position" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a random core position within a circle</p>
+<p>DF: This is the fastest implementation I could come up with.  I
+timed several permutations of numpy / math, and tried a Monte
+Carlo method in which I pick x and y in a square (fast) and then
+determine if they fall inside a circle or not (surprisingly
+slow, because of an if-statement, and despite some optimizations
+suggested by HM).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong> – Maximum core distance, in meters.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Random x, y position in the disc with radius r_max.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.generate_zenith">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_zenith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0471975511965976</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_zenith" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a random zenith</p>
+<p>Generate a random zenith for a uniform distribution on a sphere.
+For a random position on a sphere the zenith should not be chosen
+from a uniform [0, pi/2] distribution.</p>
+<p>Source: <a class="reference external" href="http://mathworld.wolfram.com/SpherePointPicking.html">http://mathworld.wolfram.com/SpherePointPicking.html</a></p>
+<p>This function does not account for attenuation due to the extra path
+length, nor for the reduced effective surface of the detectors due to
+the angle. CORSIKA simulated showers already contain the atmospheric
+attenuation and precise positions for each particle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>min</strong><strong>,</strong><strong>max</strong> – minimum and maximum zenith angles, in radians.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>random zenith position on a sphere, in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.generate_attenuated_zenith">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_attenuated_zenith</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_attenuated_zenith" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a random zenith</p>
+<p>Pick from the expected zenith distribution.</p>
+<p>There is a difference between expected shower zeniths detected on the
+ground and at the top of the atmosphere. This distribution takes the
+attenuation of air showers due to the extra path length in the
+atmosphere into account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>random zenith angle, in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.inverse_zenith_probability">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inverse_zenith_probability</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.inverse_zenith_probability" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse cumulative probability distribution for zenith</p>
+<p>Derived from Schultheiss “The acceptancy of the HiSPARC Network”,
+(internal note), eq 2.4 from Rossi.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>p</strong> – probability value between 0 and 1.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>zenith with corresponding cumulative probability, in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.generate_azimuth">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_azimuth</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_azimuth" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a random azimuth</p>
+<p>Showers from each azimuth have equal probability</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>shower azimuth angle, in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.HiSPARCSimulation.generate_energy">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e+21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-2.75</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_energy" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a random shower energy</p>
+<p>Source: <a class="reference external" href="http://mathworld.wolfram.com/RandomNumber.html">http://mathworld.wolfram.com/RandomNumber.html</a></p>
+<p>Simple approximation of the cosmic-ray energy spectrum. Showers
+with higher energy occur less often, following a power law.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>e_min</strong><strong>,</strong><strong>e_max</strong> – Energy bounds for the distribution (in eV).</p></li>
+<li><p><strong>alpha</strong> – Steepness of the power law distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>primary particle energy, in eV.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.ErrorlessSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.detector.</span></span><span class="sig-name descname"><span class="pre">ErrorlessSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.ErrorlessSimulation" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_offsets">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_detector_offsets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_detectors</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_offsets" title="Link to this definition">¶</a></dt>
+<dd><p>Get multiple detector offsets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_detectors</strong> – number of offsets to return.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of detector timing offsets in ns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_offset">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_detector_offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate time offsets between detectors in one station</p>
+<p>This offset should be fixed for each detector for a simulation run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>detector timing offset in ns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.ErrorlessSimulation.simulate_station_offset">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_station_offset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_station_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate time offsets between different stations</p>
+<p>This offset should be fixed for each station for a simulation run.
+The actual distribution is not yet very clear. We assume it is
+gaussian for convenience. Then the stddev is about 16 ns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>station timing offset in ns.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.ErrorlessSimulation.simulate_gps_uncertainty">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_gps_uncertainty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_gps_uncertainty" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate uncertainty from GPS receiver</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.ErrorlessSimulation.simulate_adc_sampling">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_adc_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_adc_sampling" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate ADC time binning due to the sampling frequency</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t</strong> – time to be binned.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>time ceiled in 2.5 ns base.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.ErrorlessSimulation.simulate_signal_transport_time">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_signal_transport_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_signal_transport_time" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate transport times of scintillation light to the PMT</p>
+<p>Generates random transit times within a given distribution and
+adds it to the times the particles passed the detector.</p>
+<p>Distribution based on Fokkema2012 sec 4.2, figure 4.3</p>
+<p>Be careful when editing this function, be sure to check both
+the single and vectorized part.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> – number of times to simulate</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of signal transport times</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_mips">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simulate_detector_mips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_mips" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate the detector signal for particles</p>
+<p>Simulation of convoluted distribution of electron and
+muon energy losses with the scintillator response</p>
+<p>The detector response (energy loss and detector efficiency) is derived
+in Montanus2014.</p>
+<p>The energy loss is taken from the Bethe-Bloch equation. The detector
+response is statistically modelled. The effect of particle angle of
+incidence is accounted for. The resulting probability
+distribution is used below.</p>
+<p>The statistics can be simulated by taking a random number y between
+0 and 1, and convert it to a signal s in MIP using the probability
+distribution.</p>
+<dl class="simple">
+<dt>Montanus2014: J.C.M. Montanus, The Landau distribution,</dt><dd><p>Internal note (Nikhef), 22 may 2014</p>
+</dd>
+</dl>
+<p>Be careful when editing this function, be sure to check both
+the single and vectorized part.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – number of particles.</p></li>
+<li><p><strong>theta</strong> – angle of incidence of the particles. Either a single
+value valid for all particles, or an array with an angle
+for each particle.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>signal strength in number of mips.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Detector simulations</a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_and_store_offsets"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.simulate_and_store_offsets()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_offsets"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.simulate_detector_offsets()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_offset"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.simulate_detector_offset()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_station_offset"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.simulate_station_offset()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_gps_uncertainty"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.simulate_gps_uncertainty()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_adc_sampling"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.simulate_adc_sampling()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_signal_transport_time"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.simulate_signal_transport_time()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.simulate_detector_mips"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.simulate_detector_mips()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_core_position"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.generate_core_position()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_zenith"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.generate_zenith()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_attenuated_zenith"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.generate_attenuated_zenith()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.inverse_zenith_probability"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.inverse_zenith_probability()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_azimuth"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.generate_azimuth()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.HiSPARCSimulation.generate_energy"><code class="docutils literal notranslate"><span class="pre">HiSPARCSimulation.generate_energy()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.ErrorlessSimulation"><code class="docutils literal notranslate"><span class="pre">ErrorlessSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_offsets"><code class="docutils literal notranslate"><span class="pre">ErrorlessSimulation.simulate_detector_offsets()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_offset"><code class="docutils literal notranslate"><span class="pre">ErrorlessSimulation.simulate_detector_offset()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_station_offset"><code class="docutils literal notranslate"><span class="pre">ErrorlessSimulation.simulate_station_offset()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_gps_uncertainty"><code class="docutils literal notranslate"><span class="pre">ErrorlessSimulation.simulate_gps_uncertainty()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_adc_sampling"><code class="docutils literal notranslate"><span class="pre">ErrorlessSimulation.simulate_adc_sampling()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_signal_transport_time"><code class="docutils literal notranslate"><span class="pre">ErrorlessSimulation.simulate_signal_transport_time()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.detector.ErrorlessSimulation.simulate_detector_mips"><code class="docutils literal notranslate"><span class="pre">ErrorlessSimulation.simulate_detector_mips()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="base.html"
+                          title="previous chapter">Simulation base classes</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="groundparticles.html"
+                          title="next chapter">Simulations based on Monte Carlo EAS ground particle data</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="groundparticles.html" title="Simulations based on Monte Carlo EAS ground particle data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="base.html" title="Simulation base classes"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../simulations.html" >Simulation of the detection of EAS events</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Detector simulations</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>KASCADE data &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Public data access" href="publicdb.html" />
+    <link rel="prev" title="Event Summary Data" href="esd.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="publicdb.html" title="Public data access"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="esd.html" title="Event Summary Data"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">KASCADE data</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.kascade">
+<span id="kascade-data"></span><h1>KASCADE data<a class="headerlink" href="#module-sapphire.kascade" title="Link to this heading">¶</a></h1>
+<p>Read and store KASCADE data.</p>
+<p>Read data files provided by the KASCADE collaboration and store them
+in a format compatible with HiSPARC data.</p>
+<p>This module contains the following class:</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#sapphire.kascade.StoreKascadeData" title="sapphire.kascade.StoreKascadeData"><code class="xref py py-class docutils literal notranslate"><span class="pre">StoreKascadeData</span></code></a></dt><dd><p>Read and store KASCADE data files.</p>
+</dd>
+<dt><a class="reference internal" href="#sapphire.kascade.KascadeCoincidences" title="sapphire.kascade.KascadeCoincidences"><code class="xref py py-class docutils literal notranslate"><span class="pre">KascadeCoincidences</span></code></a></dt><dd><p>Find HiSPARC and KASCADE events that belong together.</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.kascade.StoreKascadeData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.kascade.</span></span><span class="sig-name descname"><span class="pre">StoreKascadeData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kascade_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kascade_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/kascade'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hisparc_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.kascade.StoreKascadeData" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – the PyTables datafile</p></li>
+<li><p><strong>hisparc_path</strong> – path to the group containing HiSPARC station data.</p></li>
+<li><p><strong>kascade_path</strong> – path of group where KASCADE data will be stored.</p></li>
+<li><p><strong>kascade_filename</strong> – filename of the KASCADE data source.</p></li>
+<li><p><strong>force</strong> – overwrite existing KASCADE group if it already exists.</p></li>
+<li><p><strong>progress</strong> – if True progress info will be shown.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.kascade.StoreKascadeData.read_and_store_data">
+<span class="sig-name descname"><span class="pre">read_and_store_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.kascade.StoreKascadeData.read_and_store_data" title="Link to this definition">¶</a></dt>
+<dd><p>Read and store KASCADE data matching HiSPARC data</p>
+<p>This function looks at the HiSPARC event data in the specified
+datafile and then processes and adds KASCADE data surrounding
+those events, for later coincidence processing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.kascade.KascadeCoincidences">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.kascade.</span></span><span class="sig-name descname"><span class="pre">KascadeCoincidences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hisparc_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kascade_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_existing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.kascade.KascadeCoincidences" title="Link to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="sapphire.kascade.KascadeCoincidences.search_coincidences">
+<span class="sig-name descname"><span class="pre">search_coincidences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeshift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtlimit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.kascade.KascadeCoincidences.search_coincidences" title="Link to this definition">¶</a></dt>
+<dd><p>Search for coincidences</p>
+<p>This function does the actual searching of coincidences. It uses
+a timeshift to shift the HiSPARC data (we know that these employ
+GPS time, so not taking UTC leap seconds into account). The
+shift will also compensate for delays in the experimental setup.</p>
+<p>The coincidences are stored as an instance variable
+(self.coincidences). Final storage can be done by calling
+<a class="reference internal" href="#sapphire.kascade.KascadeCoincidences.store_coincidences" title="sapphire.kascade.KascadeCoincidences.store_coincidences"><code class="xref py py-meth docutils literal notranslate"><span class="pre">store_coincidences()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timeshift</strong> – the amount of time the HiSPARC data are shifted (in
+seconds).  Default: 0.</p></li>
+<li><p><strong>dtlimit</strong> – limit on the time difference between hisparc and
+kascade events in seconds.  If this limit is exceeded,
+coincidences are not stored.  Default: None.</p></li>
+<li><p><strong>limit</strong> – limit on the number of KASCADE events investigated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.kascade.KascadeCoincidences.store_coincidences">
+<span class="sig-name descname"><span class="pre">store_coincidences</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.kascade.KascadeCoincidences.store_coincidences" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">KASCADE data</a><ul>
+<li><a class="reference internal" href="#sapphire.kascade.StoreKascadeData"><code class="docutils literal notranslate"><span class="pre">StoreKascadeData</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.kascade.StoreKascadeData.read_and_store_data"><code class="docutils literal notranslate"><span class="pre">StoreKascadeData.read_and_store_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.kascade.KascadeCoincidences"><code class="docutils literal notranslate"><span class="pre">KascadeCoincidences</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.kascade.KascadeCoincidences.search_coincidences"><code class="docutils literal notranslate"><span class="pre">KascadeCoincidences.search_coincidences()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.kascade.KascadeCoincidences.store_coincidences"><code class="docutils literal notranslate"><span class="pre">KascadeCoincidences.store_coincidences()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="esd.html"
+                          title="previous chapter">Event Summary Data</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="publicdb.html"
+                          title="next chapter">Public data access</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="publicdb.html" title="Public data access"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="esd.html" title="Event Summary Data"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">KASCADE data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

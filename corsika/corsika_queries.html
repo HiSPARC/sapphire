@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Query CORSIKA overview for simulations &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Create an overview of CORSIKA simulations" href="generate_corsika_overview.html" />
+    <link rel="prev" title="CORSIKA Blocks" href="blocks.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generate_corsika_overview.html" title="Create an overview of CORSIKA simulations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="blocks.html" title="CORSIKA Blocks"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" accesskey="U">CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Query CORSIKA overview for simulations</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.corsika.corsika_queries">
+<span id="query-corsika-overview-for-simulations"></span><h1>Query CORSIKA overview for simulations<a class="headerlink" href="#module-sapphire.corsika.corsika_queries" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.corsika.corsika_queries.</span></span><span class="sig-name descname"><span class="pre">CorsikaQuery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulations_group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/simulations'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery" title="Link to this definition">¶</a></dt>
+<dd><p>Setup variables to point to the tables</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – either a PyTables file or path to a HDF5 file</p></li>
+<li><p><strong>simulations_group</strong> – path to the simulations group</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.finish">
+<span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.finish" title="Link to this definition">¶</a></dt>
+<dd><p>Clean-up after using</p>
+<p>Do not use if you opened the file yourself and still intent to
+use it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.all_simulations">
+<span class="sig-name descname"><span class="pre">all_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_simulations" title="Link to this definition">¶</a></dt>
+<dd><p>Get all simulations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>all simulations.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.seeds">
+<span class="sig-name descname"><span class="pre">seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.seeds" title="Link to this definition">¶</a></dt>
+<dd><p>Get combined seeds for set of simulations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>combined seed1 and seed2.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.get_info">
+<span class="sig-name descname"><span class="pre">get_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seeds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.get_info" title="Link to this definition">¶</a></dt>
+<dd><p>Get info for a simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>seeds</strong> – combined string with seed1 and seed2.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>row matching the seeds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.all_energies">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">all_energies</span></span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_energies" title="Link to this definition">¶</a></dt>
+<dd><p>All available energies</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set of available simulation energies in log10(eV).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.all_particles">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">all_particles</span></span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_particles" title="Link to this definition">¶</a></dt>
+<dd><p>All available particles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set of available simulation particles.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.all_azimuths">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">all_azimuths</span></span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_azimuths" title="Link to this definition">¶</a></dt>
+<dd><p>All available azimuths</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set of available simulation azimuths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.all_zeniths">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">all_zeniths</span></span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_zeniths" title="Link to this definition">¶</a></dt>
+<dd><p>All available zeniths</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set of available simulation zeniths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.simulations">
+<span class="sig-name descname"><span class="pre">simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proton'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zenith</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.simulations" title="Link to this definition">¶</a></dt>
+<dd><p>Set of available energies given the requirements</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>particle</strong> – primary particle must be this kind, name of particle.
+Defaults to proton.</p></li>
+<li><p><strong>energy</strong> – primary energy must be this value, in log10(eV).</p></li>
+<li><p><strong>zenith</strong> – shower zenith must be this value, in degrees.</p></li>
+<li><p><strong>azimuth</strong> – shower azimuth must be this value, in degrees.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>simulations matching the query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.available_parameters">
+<span class="sig-name descname"><span class="pre">available_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.available_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Get set of available values of type parameter for a subset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parameter</strong> – name of the parameter for which the available
+values are returned.</p>
+</dd>
+<dt class="field-even">Param<span class="colon">:</span></dt>
+<dd class="field-even"><p>use the arguments available to <a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.simulations" title="sapphire.corsika.corsika_queries.CorsikaQuery.simulations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">simulations()</span></code></a> to filter
+the simulations.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>set of available values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.filter" title="Link to this definition">¶</a></dt>
+<dd><p>Filter to be in a range</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – variable to filter.</p></li>
+<li><p><strong>value</strong> – value to match.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.float_filter">
+<span class="sig-name descname"><span class="pre">float_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.float_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Filter float values</p>
+<p>Take into account that the values are likely not a perfect match.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – variable to filter.</p></li>
+<li><p><strong>value</strong> – value to match.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.range_filter">
+<span class="sig-name descname"><span class="pre">range_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.range_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Filter to be in a range</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – variable to filter.</p></li>
+<li><p><strong>min_value</strong><strong>,</strong><strong>max_value</strong> – limits on the value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.corsika_queries.CorsikaQuery.perform_query">
+<span class="sig-name descname"><span class="pre">perform_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.corsika_queries.CorsikaQuery.perform_query" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a query on the simulations table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>query</strong> – a valid PyTables query string for the simulations table.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>simulations matching the query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Query CORSIKA overview for simulations</a><ul>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.finish"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.finish()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_simulations"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.all_simulations()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.seeds"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.seeds()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.get_info"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.get_info()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_energies"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.all_energies</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_particles"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.all_particles</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_azimuths"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.all_azimuths</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.all_zeniths"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.all_zeniths</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.simulations"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.simulations()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.available_parameters"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.available_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.filter"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.filter()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.float_filter"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.float_filter()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.range_filter"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.range_filter()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.corsika_queries.CorsikaQuery.perform_query"><code class="docutils literal notranslate"><span class="pre">CorsikaQuery.perform_query()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="blocks.html"
+                          title="previous chapter">CORSIKA Blocks</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="generate_corsika_overview.html"
+                          title="next chapter">Create an overview of CORSIKA simulations</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="generate_corsika_overview.html" title="Create an overview of CORSIKA simulations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="blocks.html" title="CORSIKA Blocks"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" >CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Query CORSIKA overview for simulations</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

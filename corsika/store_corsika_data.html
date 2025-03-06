@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Store CORSIKA data as HDF5 &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="CORSIKA Units" href="units.html" />
+    <link rel="prev" title="CORSIKA Reader" href="reader.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="units.html" title="CORSIKA Units"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="reader.html" title="CORSIKA Reader"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" accesskey="U">CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Store CORSIKA data as HDF5</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.corsika.store_corsika_data">
+<span id="store-corsika-data-as-hdf5"></span><h1>Store CORSIKA data as HDF5<a class="headerlink" href="#module-sapphire.corsika.store_corsika_data" title="Link to this heading">¶</a></h1>
+<p>Store CORSIKA simulation data in HDF5 file</p>
+<p>This module reads the CORSIKA binary ground particles file and stores
+each particle individually in a HDF5 file, using PyTables.  This file
+can then be used as input for the detector simulation.</p>
+<p>The syntax and options for calling this script can be seen with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ store_corsika_data --help
+</pre></div>
+</div>
+<p>For example to convert a CORSIKA file in the current directory called
+DAT000000 to a HDF5 called corsika.h5 with a progress bar run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ store_corsika_data --progress DAT000000 corsika.h5
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.store_corsika_data.save_particle">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">save_particle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.store_corsika_data.save_particle" title="Link to this definition">¶</a></dt>
+<dd><p>Write the information of a particle into a row</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.store_corsika_data.save_thinned_particle">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">save_thinned_particle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.store_corsika_data.save_thinned_particle" title="Link to this definition">¶</a></dt>
+<dd><p>Write the information of a thinned particle into a row</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.store_corsika_data.store_and_sort_corsika_data">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">store_and_sort_corsika_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.store_corsika_data.store_and_sort_corsika_data" title="Link to this definition">¶</a></dt>
+<dd><p>First convert the data to HDF5 and create a sorted version</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.store_corsika_data.store_corsika_data">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">store_corsika_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'groundparticles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.store_corsika_data.store_corsika_data" title="Link to this definition">¶</a></dt>
+<dd><p>Store particles from a CORSIKA simulation in a HDF5 file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – CorsikaFile instance of the source DAT file.</p></li>
+<li><p><strong>destination</strong> – PyTables file instance of the destination file.</p></li>
+<li><p><strong>table_name</strong> – table name in which particles are stored.</p></li>
+<li><p><strong>progress</strong> – if True show progressbar when saving particles.</p></li>
+<li><p><strong>thin</strong> – if True assume the data contains thinned particles.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.store_corsika_data.create_index">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">create_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdf_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'groundparticles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.store_corsika_data.create_index" title="Link to this definition">¶</a></dt>
+<dd><p>Create a completely sorted index for the x column</p>
+<p>This can speed up queries to select data based on the x column.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.store_corsika_data.copy_and_sort_node">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">copy_and_sort_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hdf_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hdf_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'groundparticles'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.store_corsika_data.copy_and_sort_node" title="Link to this definition">¶</a></dt>
+<dd><p>Sort the data in the tables by the x column</p>
+<p>This speeds up queries to select data based on the x column.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.store_corsika_data.create_tempfile_path">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">create_tempfile_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.store_corsika_data.create_tempfile_path" title="Link to this definition">¶</a></dt>
+<dd><p>Create a temporary file, close it, and return the path</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.store_corsika_data.main">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.store_corsika_data.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.store_corsika_data.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Store CORSIKA data as HDF5</a><ul>
+<li><a class="reference internal" href="#sapphire.corsika.store_corsika_data.save_particle"><code class="docutils literal notranslate"><span class="pre">save_particle()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.store_corsika_data.save_thinned_particle"><code class="docutils literal notranslate"><span class="pre">save_thinned_particle()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.store_corsika_data.store_and_sort_corsika_data"><code class="docutils literal notranslate"><span class="pre">store_and_sort_corsika_data()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.store_corsika_data.store_corsika_data"><code class="docutils literal notranslate"><span class="pre">store_corsika_data()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.store_corsika_data.create_index"><code class="docutils literal notranslate"><span class="pre">create_index()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.store_corsika_data.copy_and_sort_node"><code class="docutils literal notranslate"><span class="pre">copy_and_sort_node()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.store_corsika_data.create_tempfile_path"><code class="docutils literal notranslate"><span class="pre">create_tempfile_path()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.store_corsika_data.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="reader.html"
+                          title="previous chapter">CORSIKA Reader</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="units.html"
+                          title="next chapter">CORSIKA Units</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="units.html" title="CORSIKA Units"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="reader.html" title="CORSIKA Reader"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" >CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Store CORSIKA data as HDF5</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

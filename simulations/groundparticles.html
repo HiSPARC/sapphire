@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Simulations based on Monte Carlo EAS ground particle data &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Simulations based on theoretical models of EAS lateral distributions" href="ldf.html" />
+    <link rel="prev" title="Detector simulations" href="detector.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldf.html" title="Simulations based on theoretical models of EAS lateral distributions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="detector.html" title="Detector simulations"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../simulations.html" accesskey="U">Simulation of the detection of EAS events</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulations based on Monte Carlo EAS ground particle data</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.simulations.groundparticles">
+<span id="simulations-based-on-monte-carlo-eas-ground-particle-data"></span><h1>Simulations based on Monte Carlo EAS ground particle data<a class="headerlink" href="#module-sapphire.simulations.groundparticles" title="Link to this heading">¶</a></h1>
+<p>Perform simulations of CORSIKA air showers on a cluster of stations</p>
+<p>This simulation uses a HDF5 file created from a CORSIKA simulation with
+the <code class="docutils literal notranslate"><span class="pre">store_corsika_data</span></code> script. The shower is ‘thrown’ on the cluster
+with random core positions and azimuth angles.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tables</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">GroundParticlesSimulation</span><span class="p">,</span> <span class="n">ScienceParkCluster</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s1">&#39;/tmp/test_groundparticle_simulation.h5&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">ScienceParkCluster</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span> <span class="o">=</span> <span class="n">GroundParticlesSimulation</span><span class="p">(</span><span class="s1">&#39;corsika.h5&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">cluster</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+<span class="gp">... </span>                                <span class="s1">&#39;/&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.groundparticles.</span></span><span class="sig-name descname"><span class="pre">GroundParticlesSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corsikafile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_core_distance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation" title="Link to this definition">¶</a></dt>
+<dd><p>Simulation initialization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corsikafile_path</strong> – path to the corsika.h5 file containing
+the groundparticles.</p></li>
+<li><p><strong>max_core_distance</strong> – maximum distance of shower core to
+center of cluster.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulation.finish">
+<span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.finish" title="Link to this definition">¶</a></dt>
+<dd><p>Clean-up after simulation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulation.generate_shower_parameters">
+<span class="sig-name descname"><span class="pre">generate_shower_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.generate_shower_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Generate shower parameters like core position, energy, etc.</p>
+<p>For this groundparticles simulation, only the shower core position
+and rotation angle of the shower are generated.  Do <em>not</em>
+interpret these parameters as the position of the cluster, or the
+rotation of the cluster!  Interpret them as <em>shower</em> parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary with shower parameters: core_pos
+(x, y-tuple) and azimuth.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_detector_response">
+<span class="sig-name descname"><span class="pre">simulate_detector_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_detector_response" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate detector response to a shower.</p>
+<p>Checks if leptons have passed a detector. If so, it returns the number
+of leptons in the detector and the arrival time of the first lepton
+passing the detector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detector</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Detector" title="sapphire.clusters.Detector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a> for which
+the observables will be determined.</p></li>
+<li><p><strong>shower_parameters</strong> – dictionary with the shower parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_detector_mips_for_particles">
+<span class="sig-name descname"><span class="pre">simulate_detector_mips_for_particles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_detector_mips_for_particles" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate the detector signal for particles</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>particles</strong> – particle rows with the p_[x, y, z]
+components of the particle momenta.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_trigger">
+<span class="sig-name descname"><span class="pre">simulate_trigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector_observables</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_trigger" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate a trigger response.</p>
+<p>This implements the trigger as used on HiSPARC stations:
+- 4-detector station: at least two high or three low signals.
+- 2-detector station: at least 2 low signals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>detector_observables</strong> – list of dictionaries, each containing
+the observables of one detector.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the station triggers, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_gps">
+<span class="sig-name descname"><span class="pre">simulate_gps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station_observables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_gps" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate gps timestamp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>station_observables</strong> – dictionary containing the observables
+of the station.</p></li>
+<li><p><strong>shower_parameters</strong> – dictionary with the shower parameters.</p></li>
+<li><p><strong>station</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">sapphire.clusters.Station</span></code></a> for which
+to simulate the gps timestamp.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>station_observables updated with gps timestamp and
+trigger time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulation.get_particles_in_detector">
+<span class="sig-name descname"><span class="pre">get_particles_in_detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.get_particles_in_detector" title="Link to this definition">¶</a></dt>
+<dd><p>Get particles that hit a detector.</p>
+<p>Particle ids 2, 3, 5, 6 are electrons and muons,
+id 4 is no longer used (were neutrino’s).</p>
+<p>The detector is approximated by a square with a surface of 0.5
+square meter which is <em>not</em> correctly rotated.  In fact, during
+the simulation, the rotation of the detector is undefined.  This
+is faster than a more thorough implementation.</p>
+<p>The CORSIKA simulation azimuth is used for the projection because the
+cluster is rotated such that from the perspective of the rotated
+detectors the CORSIKA showers come from the desired azimuth. In the
+simulation frame the CORSIKA shower azimuth remains unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detector</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Detector" title="sapphire.clusters.Detector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a> for which
+to get particles.</p></li>
+<li><p><strong>shower_parameters</strong> – dictionary with the shower parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesGammaSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.groundparticles.</span></span><span class="sig-name descname"><span class="pre">GroundParticlesGammaSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corsikafile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_core_distance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesGammaSimulation" title="Link to this definition">¶</a></dt>
+<dd><p>Simulation which includes signals from gamma particles in the shower</p>
+<p>Simulation initialization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corsikafile_path</strong> – path to the corsika.h5 file containing
+the groundparticles.</p></li>
+<li><p><strong>max_core_distance</strong> – maximum distance of shower core to
+center of cluster.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.simulate_detector_response">
+<span class="sig-name descname"><span class="pre">simulate_detector_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.simulate_detector_response" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate detector response to a shower.</p>
+<p>Checks if particles have passed a detector. If so, it returns the
+number of particles in the detector and the arrival time of the first
+particle passing the detector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detector</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Detector" title="sapphire.clusters.Detector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a> for which
+the observables will be determined.</p></li>
+<li><p><strong>shower_parameters</strong> – dictionary with the shower parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.get_particles_in_detector">
+<span class="sig-name descname"><span class="pre">get_particles_in_detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.get_particles_in_detector" title="Link to this definition">¶</a></dt>
+<dd><p>Get particles that hit a detector.</p>
+<p>Particle ids 2, 3, 5, 6 are electrons and muons,
+id 4 is no longer used (were neutrino’s).</p>
+<p>The detector is approximated by a square with a surface of 0.5
+square meter which is <em>not</em> correctly rotated.  In fact, during
+the simulation, the rotation of the detector is undefined.  This
+is faster than a more thorough implementation.</p>
+<p><em>Detector height is ignored!</em></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detector</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Detector" title="sapphire.clusters.Detector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a> for which
+to get particles.</p></li>
+<li><p><strong>shower_parameters</strong> – dictionary with the shower parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.simulate_detector_mips_for_gammas">
+<span class="sig-name descname"><span class="pre">simulate_detector_mips_for_gammas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">particles</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.simulate_detector_mips_for_gammas" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate the detector signal for gammas</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>particles</strong> – particle rows with the p_[x, y, z]
+components of the particle momenta.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.DetectorBoundarySimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.groundparticles.</span></span><span class="sig-name descname"><span class="pre">DetectorBoundarySimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corsikafile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_core_distance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.DetectorBoundarySimulation" title="Link to this definition">¶</a></dt>
+<dd><p>More accurately simulate the detection area of the detectors.</p>
+<p>Take the orientation of the detectors into account and use the
+exact detector boundaries. This requires a slightly more complex
+query which is a bit slower.</p>
+<p>Simulation initialization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corsikafile_path</strong> – path to the corsika.h5 file containing
+the groundparticles.</p></li>
+<li><p><strong>max_core_distance</strong> – maximum distance of shower core to
+center of cluster.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.DetectorBoundarySimulation.get_particles_in_detector">
+<span class="sig-name descname"><span class="pre">get_particles_in_detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shower_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.DetectorBoundarySimulation.get_particles_in_detector" title="Link to this definition">¶</a></dt>
+<dd><p>Simulate the detector detection area accurately.</p>
+<p>First particles are filtered to see which fall inside a
+non-rotated square box around the detector (i.e. sides of 1.2m).
+For the remaining particles a more accurate query is used to see
+which actually hit the detector. The advantage of using the
+square is that column indexes can be used, which may speed up
+queries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detector</strong> – <a class="reference internal" href="../clusters.html#sapphire.clusters.Detector" title="sapphire.clusters.Detector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a> for which
+to get particles.</p></li>
+<li><p><strong>shower_parameters</strong> – dictionary with the shower parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.DetectorBoundarySimulation.get_line_boundary_eqs">
+<span class="sig-name descname"><span class="pre">get_line_boundary_eqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.DetectorBoundarySimulation.get_line_boundary_eqs" title="Link to this definition">¶</a></dt>
+<dd><p>Get line equations using three points</p>
+<p>Given three points, this function computes the equations for two
+parallel lines going through these points.  The first and second
+point are on the same line, whereas the third point is taken to
+be on a line which runs parallel to the first.  The return value
+is an equation and two boundaries which can be used to test if a
+point is between the two lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p0</strong><strong>,</strong><strong>p1</strong> – (x, y) tuples on the same line.</p></li>
+<li><p><strong>p2</strong> – (x, y) tuple on the parallel line.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>value1, equation, value2, such that points satisfying
+value1 &lt; equation &lt; value2 are between the parallel lines.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">get_line_boundary_eqs</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="go">(0.0, &#39;y - 1.000000 * x&#39;, 2.0)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.ParticleCounterSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.groundparticles.</span></span><span class="sig-name descname"><span class="pre">ParticleCounterSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corsikafile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_core_distance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.ParticleCounterSimulation" title="Link to this definition">¶</a></dt>
+<dd><p>Do not simulate mips, just count the number of particles.</p>
+<p>Simulation initialization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corsikafile_path</strong> – path to the corsika.h5 file containing
+the groundparticles.</p></li>
+<li><p><strong>max_core_distance</strong> – maximum distance of shower core to
+center of cluster.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.ParticleCounterSimulation.simulate_detector_mips">
+<span class="sig-name descname"><span class="pre">simulate_detector_mips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.ParticleCounterSimulation.simulate_detector_mips" title="Link to this definition">¶</a></dt>
+<dd><p>A mip for a mip, count number of particles in a detector.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.FixedCoreDistanceSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.groundparticles.</span></span><span class="sig-name descname"><span class="pre">FixedCoreDistanceSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corsikafile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_core_distance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.FixedCoreDistanceSimulation" title="Link to this definition">¶</a></dt>
+<dd><p>Shower core at a fixed core distance (from cluster origin).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>core_distance</strong> – distance of shower core to center of cluster.</p>
+</dd>
+</dl>
+<p>Simulation initialization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corsikafile_path</strong> – path to the corsika.h5 file containing
+the groundparticles.</p></li>
+<li><p><strong>max_core_distance</strong> – maximum distance of shower core to
+center of cluster.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.FixedCoreDistanceSimulation.generate_core_position">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_core_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r_max</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.FixedCoreDistanceSimulation.generate_core_position" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a random core position on a circle</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r_max</strong> – Fixed core distance, in meters.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Random x, y position on the circle with radius r_max.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.GroundParticlesSimulationWithoutErrors">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.groundparticles.</span></span><span class="sig-name descname"><span class="pre">GroundParticlesSimulationWithoutErrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corsikafile_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_core_distance</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.GroundParticlesSimulationWithoutErrors" title="Link to this definition">¶</a></dt>
+<dd><p>This simulation does not simulate errors/uncertainties</p>
+<p>This results in perfect timing (first particle through detector)
+and particle counting for the detectors.</p>
+<p>Simulation initialization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corsikafile_path</strong> – path to the corsika.h5 file containing
+the groundparticles.</p></li>
+<li><p><strong>max_core_distance</strong> – maximum distance of shower core to
+center of cluster.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.simulations.groundparticles.</span></span><span class="sig-name descname"><span class="pre">MultipleGroundParticlesSimulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">corsikaoverview_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_core_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_energy</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation" title="Link to this definition">¶</a></dt>
+<dd><p>Use multiple CORSIKA simulated air showers in one run.</p>
+<p>Simulations will be selected from the set of available showers.
+Each time an energy and zenith angle is generated a shower is selected
+from the CORSIKA overview. Each shower is reused multiple times to
+take advantage of caching, and to reduce IO stress.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This simulation loads a new shower often it is therefore more I/O
+intensive than <a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation" title="sapphire.simulations.groundparticles.GroundParticlesSimulation"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroundParticlesSimulation</span></code></a>. Do not run many
+of these simulations simultaneously!</p>
+</div>
+<p>Simulation initialization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>corsikaoverview_path</strong> – path to the corsika_overview.h5 file
+containing the available simulations.</p></li>
+<li><p><strong>max_core_distance</strong> – maximum distance of shower core to
+center of cluster.</p></li>
+<li><p><strong>min_energy</strong><strong>,</strong><strong>max_energy</strong> – upper and lower shower energy limits,
+in eV.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.DATA">
+<span class="sig-name descname"><span class="pre">DATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/data/hisparc/corsika/data/{seeds}/corsika.h5'</span></em><a class="headerlink" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.DATA" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.finish">
+<span class="sig-name descname"><span class="pre">finish</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.finish" title="Link to this definition">¶</a></dt>
+<dd><p>Clean-up after simulation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.generate_shower_parameters">
+<span class="sig-name descname"><span class="pre">generate_shower_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.generate_shower_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Generate shower parameters like core position, energy, etc.</p>
+<p>For this groundparticles simulation, only the shower core position
+and rotation angle of the shower are generated.  Do <em>not</em>
+interpret these parameters as the position of the cluster, or the
+rotation of the cluster!  Interpret them as <em>shower</em> parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dictionary with shower parameters: core_pos
+(x, y-tuple) and azimuth.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.select_simulation">
+<span class="sig-name descname"><span class="pre">select_simulation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.select_simulation" title="Link to this definition">¶</a></dt>
+<dd><p>Generate parameters for selecting a CORSIKA simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>simulation row from a CORSIKA Simulations table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Simulations based on Monte Carlo EAS ground particle data</a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.finish"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulation.finish()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.generate_shower_parameters"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulation.generate_shower_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_detector_response"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulation.simulate_detector_response()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_detector_mips_for_particles"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulation.simulate_detector_mips_for_particles()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_trigger"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulation.simulate_trigger()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.simulate_gps"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulation.simulate_gps()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulation.get_particles_in_detector"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulation.get_particles_in_detector()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesGammaSimulation"><code class="docutils literal notranslate"><span class="pre">GroundParticlesGammaSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.simulate_detector_response"><code class="docutils literal notranslate"><span class="pre">GroundParticlesGammaSimulation.simulate_detector_response()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.get_particles_in_detector"><code class="docutils literal notranslate"><span class="pre">GroundParticlesGammaSimulation.get_particles_in_detector()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesGammaSimulation.simulate_detector_mips_for_gammas"><code class="docutils literal notranslate"><span class="pre">GroundParticlesGammaSimulation.simulate_detector_mips_for_gammas()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.DetectorBoundarySimulation"><code class="docutils literal notranslate"><span class="pre">DetectorBoundarySimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.DetectorBoundarySimulation.get_particles_in_detector"><code class="docutils literal notranslate"><span class="pre">DetectorBoundarySimulation.get_particles_in_detector()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.DetectorBoundarySimulation.get_line_boundary_eqs"><code class="docutils literal notranslate"><span class="pre">DetectorBoundarySimulation.get_line_boundary_eqs()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.ParticleCounterSimulation"><code class="docutils literal notranslate"><span class="pre">ParticleCounterSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.ParticleCounterSimulation.simulate_detector_mips"><code class="docutils literal notranslate"><span class="pre">ParticleCounterSimulation.simulate_detector_mips()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.FixedCoreDistanceSimulation"><code class="docutils literal notranslate"><span class="pre">FixedCoreDistanceSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.FixedCoreDistanceSimulation.generate_core_position"><code class="docutils literal notranslate"><span class="pre">FixedCoreDistanceSimulation.generate_core_position()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.GroundParticlesSimulationWithoutErrors"><code class="docutils literal notranslate"><span class="pre">GroundParticlesSimulationWithoutErrors</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation"><code class="docutils literal notranslate"><span class="pre">MultipleGroundParticlesSimulation</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.DATA"><code class="docutils literal notranslate"><span class="pre">MultipleGroundParticlesSimulation.DATA</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.finish"><code class="docutils literal notranslate"><span class="pre">MultipleGroundParticlesSimulation.finish()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.generate_shower_parameters"><code class="docutils literal notranslate"><span class="pre">MultipleGroundParticlesSimulation.generate_shower_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.simulations.groundparticles.MultipleGroundParticlesSimulation.select_simulation"><code class="docutils literal notranslate"><span class="pre">MultipleGroundParticlesSimulation.select_simulation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="detector.html"
+                          title="previous chapter">Detector simulations</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="ldf.html"
+                          title="next chapter">Simulations based on theoretical models of EAS lateral distributions</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ldf.html" title="Simulations based on theoretical models of EAS lateral distributions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="detector.html" title="Detector simulations"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../simulations.html" >Simulation of the detection of EAS events</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulations based on Monte Carlo EAS ground particle data</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

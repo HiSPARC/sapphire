@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Nikhef Stoomboot facilities &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Simulation of the detection of EAS events" href="simulations.html" />
+    <link rel="prev" title="Public data access" href="publicdb.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simulations.html" title="Simulation of the detection of EAS events"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="publicdb.html" title="Public data access"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nikhef Stoomboot facilities</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.qsub">
+<span id="nikhef-stoomboot-facilities"></span><h1>Nikhef Stoomboot facilities<a class="headerlink" href="#module-sapphire.qsub" title="Link to this heading">¶</a></h1>
+<p>Access the Nikhef Stoomboot cluster.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This module is only for use at Nikhef. The Stoomboot cluster is only
+accessible for Nikhef users.</p>
+</div>
+<p>Easy to use functions to make use of the Nikhef Stoomboot facilities.
+This checks the available slots on the requested queue, creates the
+scripts to submit, submits the jobs, and cleans up afterwards.</p>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">qsub</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qsub</span><span class="o">.</span><span class="n">check_queue</span><span class="p">(</span><span class="s1">&#39;long&#39;</span><span class="p">)</span>
+<span class="go">340</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">qsub</span><span class="o">.</span><span class="n">submit_job</span><span class="p">(</span><span class="s1">&#39;touch /data/hisparc/test&#39;</span><span class="p">,</span> <span class="s1">&#39;job_1&#39;</span><span class="p">,</span> <span class="s1">&#39;express&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.qsub.check_queue">
+<span class="sig-prename descclassname"><span class="pre">sapphire.qsub.</span></span><span class="sig-name descname"><span class="pre">check_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.qsub.check_queue" title="Link to this definition">¶</a></dt>
+<dd><p>Check for available job slots on the selected queue for current user</p>
+<p>Maximum numbers from:
+<code class="docutils literal notranslate"><span class="pre">qstat</span> <span class="pre">-Q</span> <span class="pre">-f</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">-e</span> <span class="pre">Queue:</span> <span class="pre">-e</span> <span class="pre">max_user_queuable</span> <span class="pre">-e</span> <span class="pre">max_queuable</span></code>.
+Note that some queues also have global maximum number of jobs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>queue</strong> – queue name for which to check current number of job
+slots in use.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>number of available slots.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.qsub.submit_job">
+<span class="sig-prename descclassname"><span class="pre">sapphire.qsub.</span></span><span class="sig-name descname"><span class="pre">submit_job</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.qsub.submit_job" title="Link to this definition">¶</a></dt>
+<dd><p>Submit a job to Stoomboot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>script</strong> – contents of the script to run.</p></li>
+<li><p><strong>name</strong> – name for the job.</p></li>
+<li><p><strong>queue</strong> – name of the queue to run the job on.</p></li>
+<li><p><strong>extra</strong> – optional extra arguments for the qsub command.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.qsub.create_script">
+<span class="sig-prename descclassname"><span class="pre">sapphire.qsub.</span></span><span class="sig-name descname"><span class="pre">create_script</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.qsub.create_script" title="Link to this definition">¶</a></dt>
+<dd><p>Create script as temp file to be run on Stoomboot</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.qsub.delete_script">
+<span class="sig-prename descclassname"><span class="pre">sapphire.qsub.</span></span><span class="sig-name descname"><span class="pre">delete_script</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.qsub.delete_script" title="Link to this definition">¶</a></dt>
+<dd><p>Delete script after submitting to Stoomboot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>script_path</strong> – path to the script to be removed</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Nikhef Stoomboot facilities</a><ul>
+<li><a class="reference internal" href="#sapphire.qsub.check_queue"><code class="docutils literal notranslate"><span class="pre">check_queue()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.qsub.submit_job"><code class="docutils literal notranslate"><span class="pre">submit_job()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.qsub.create_script"><code class="docutils literal notranslate"><span class="pre">create_script()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.qsub.delete_script"><code class="docutils literal notranslate"><span class="pre">delete_script()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="publicdb.html"
+                          title="previous chapter">Public data access</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="simulations.html"
+                          title="next chapter">Simulation of the detection of EAS events</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simulations.html" title="Simulation of the detection of EAS events"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="publicdb.html" title="Public data access"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Nikhef Stoomboot facilities</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

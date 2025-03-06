@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Low-level storage constructs &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Test installation" href="tests.html" />
+    <link rel="prev" title="Simulation of detector response due to gammas" href="simulations/gammas.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="Test installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="simulations/gammas.html" title="Simulation of detector response due to gammas"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Low-level storage constructs</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.storage">
+<span id="low-level-storage-constructs"></span><h1>Low-level storage constructs<a class="headerlink" href="#module-sapphire.storage" title="Link to this heading">¶</a></h1>
+<p>PyTables table descriptions for data storage</p>
+<p>This module contains the table descriptions used by the detector
+simulation to store intermediate and final data in a HDF5 file.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.storage.EventObservables">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.storage.</span></span><span class="sig-name descname"><span class="pre">EventObservables</span></span><a class="headerlink" href="#sapphire.storage.EventObservables" title="Link to this definition">¶</a></dt>
+<dd><p>Store information about the observables of an event.</p>
+<p>The observables are described for each station independently.  So, for each
+event (with a unique <a class="reference internal" href="#sapphire.storage.EventObservables.id" title="sapphire.storage.EventObservables.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">id</span></code></a>), there is a table row for each station
+(with a unique <a class="reference internal" href="#sapphire.storage.EventObservables.station_id" title="sapphire.storage.EventObservables.station_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">station_id</span></code></a>), such that only the (id, station_id)
+combinations are unique in the table.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.EventObservables.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#sapphire.storage.EventObservables.id" title="Link to this definition">¶</a></dt>
+<dd><p>a unique identifier for the simulated event (only unique in this table)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.EventObservables.station_id">
+<span class="sig-name descname"><span class="pre">station_id</span></span><a class="headerlink" href="#sapphire.storage.EventObservables.station_id" title="Link to this definition">¶</a></dt>
+<dd><p>station identifier, such that you can do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">station</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">stations</span><span class="p">[</span><span class="n">station_id</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">r,</span> <span class="pre">phi,</span> <span class="pre">x,</span> <span class="pre">y</span></span></dt>
+<dd><p>coordinates of the station.  Depending on the simulation, this might be
+constant throughout the simulation, or it might change event by event.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.EventObservables.alpha">
+<span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#sapphire.storage.EventObservables.alpha" title="Link to this definition">¶</a></dt>
+<dd><p>rotation of the station around its center</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.EventObservables.N">
+<span class="sig-name descname"><span class="pre">N</span></span><a class="headerlink" href="#sapphire.storage.EventObservables.N" title="Link to this definition">¶</a></dt>
+<dd><p>number of detectors with at least one particle</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.EventObservables.columns">
+<span class="sig-name descname"><span class="pre">columns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'N':</span> <span class="pre">UInt8Col(shape=(),</span> <span class="pre">dflt=np.uint8(0),</span> <span class="pre">pos=None),</span> <span class="pre">'alpha':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'ext_timestamp':</span> <span class="pre">UInt64Col(shape=(),</span> <span class="pre">dflt=np.uint64(0),</span> <span class="pre">pos=None),</span> <span class="pre">'id':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=None),</span> <span class="pre">'n1':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'n2':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'n3':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'n4':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'nanoseconds':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=None),</span> <span class="pre">'phi':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'r':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'station_id':</span> <span class="pre">UInt8Col(shape=(),</span> <span class="pre">dflt=np.uint8(0),</span> <span class="pre">pos=None),</span> <span class="pre">'t1':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'t2':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'t3':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'t4':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'timestamp':</span> <span class="pre">Time32Col(shape=(),</span> <span class="pre">dflt=np.int32(0),</span> <span class="pre">pos=None),</span> <span class="pre">'x':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'y':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None)}</span></em><a class="headerlink" href="#sapphire.storage.EventObservables.columns" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.storage.</span></span><span class="sig-name descname"><span class="pre">Coincidence</span></span><a class="headerlink" href="#sapphire.storage.Coincidence" title="Link to this definition">¶</a></dt>
+<dd><p>Store information about a coincidence of stations within a cluster.</p>
+<p>An extensive air shower can trigger multiple stations, resulting in a set
+of events which are from the same shower.  This is called a coincidence.</p>
+<p>This table assigns an <a class="reference internal" href="#sapphire.storage.Coincidence.id" title="sapphire.storage.Coincidence.id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">id</span></code></a> to a coincidence and provides some
+additional information.  The events making up the coincidence can be looked
+up using the <code class="docutils literal notranslate"><span class="pre">c_index</span></code> table.  Let <code class="docutils literal notranslate"><span class="pre">coincidence</span></code> be a row from
+this table, then you can do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">coincidence_id</span> <span class="o">=</span> <span class="n">coincidence</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event_ids</span> <span class="o">=</span> <span class="n">c_index</span><span class="p">[</span><span class="n">coincidence_id</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coincidence_event_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">events</span><span class="p">[</span><span class="n">u</span><span class="p">]</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">event_ids</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Note that all events included in the coincidence are not required to
+actually have measured particles.  For example, simulations include all
+events from the same shower in the coincidence, regardless of observed
+particles.  On the other hand, experimental datasets only include stations
+which have triggered, but may include events which have not actually
+measured the same shower, but simply measured other particles at the same
+time, by chance.</p>
+<p>Simulations may set the <a class="reference internal" href="#sapphire.storage.Coincidence.x" title="sapphire.storage.Coincidence.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">x</span></code></a>, <a class="reference internal" href="#sapphire.storage.Coincidence.y" title="sapphire.storage.Coincidence.y"><code class="xref py py-attr docutils literal notranslate"><span class="pre">y</span></code></a>, <a class="reference internal" href="#sapphire.storage.Coincidence.zenith" title="sapphire.storage.Coincidence.zenith"><code class="xref py py-attr docutils literal notranslate"><span class="pre">zenith</span></code></a>,
+<a class="reference internal" href="#sapphire.storage.Coincidence.azimuth" title="sapphire.storage.Coincidence.azimuth"><code class="xref py py-attr docutils literal notranslate"><span class="pre">azimuth</span></code></a>, <a class="reference internal" href="#sapphire.storage.Coincidence.size" title="sapphire.storage.Coincidence.size"><code class="xref py py-attr docutils literal notranslate"><span class="pre">size</span></code></a>, and <a class="reference internal" href="#sapphire.storage.Coincidence.energy" title="sapphire.storage.Coincidence.energy"><code class="xref py py-attr docutils literal notranslate"><span class="pre">energy</span></code></a> attributes to simulation
+parameters, like core position and shower parameters.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#sapphire.storage.Coincidence.id" title="Link to this definition">¶</a></dt>
+<dd><p>a unique identifier for the coincidence (only unique in this table)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.N">
+<span class="sig-name descname"><span class="pre">N</span></span><a class="headerlink" href="#sapphire.storage.Coincidence.N" title="Link to this definition">¶</a></dt>
+<dd><p>the number of triggered stations</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.x">
+<span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#sapphire.storage.Coincidence.x" title="Link to this definition">¶</a></dt>
+<dd><p>The x coordinate of the shower core in a simulation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.y">
+<span class="sig-name descname"><span class="pre">y</span></span><a class="headerlink" href="#sapphire.storage.Coincidence.y" title="Link to this definition">¶</a></dt>
+<dd><p>The y coordinate of the shower core in a simulation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.zenith">
+<span class="sig-name descname"><span class="pre">zenith</span></span><a class="headerlink" href="#sapphire.storage.Coincidence.zenith" title="Link to this definition">¶</a></dt>
+<dd><p>The zenith direction of the (simulated) shower.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.azimuth">
+<span class="sig-name descname"><span class="pre">azimuth</span></span><a class="headerlink" href="#sapphire.storage.Coincidence.azimuth" title="Link to this definition">¶</a></dt>
+<dd><p>The azimuth direction of the (simulated) shower.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.size">
+<span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#sapphire.storage.Coincidence.size" title="Link to this definition">¶</a></dt>
+<dd><p>The size (number of leptons) of the (simulated) shower.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><a class="headerlink" href="#sapphire.storage.Coincidence.energy" title="Link to this definition">¶</a></dt>
+<dd><p>The primary particle energy of the (simulated) shower.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.Coincidence.columns">
+<span class="sig-name descname"><span class="pre">columns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'N':</span> <span class="pre">UInt8Col(shape=(),</span> <span class="pre">dflt=np.uint8(0),</span> <span class="pre">pos=4),</span> <span class="pre">'azimuth':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=8),</span> <span class="pre">'energy':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=10),</span> <span class="pre">'ext_timestamp':</span> <span class="pre">UInt64Col(shape=(),</span> <span class="pre">dflt=np.uint64(0),</span> <span class="pre">pos=3),</span> <span class="pre">'id':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=0),</span> <span class="pre">'nanoseconds':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=2),</span> <span class="pre">'size':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=9),</span> <span class="pre">'timestamp':</span> <span class="pre">Time32Col(shape=(),</span> <span class="pre">dflt=np.int32(0),</span> <span class="pre">pos=1),</span> <span class="pre">'x':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=5),</span> <span class="pre">'y':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=6),</span> <span class="pre">'zenith':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=7)}</span></em><a class="headerlink" href="#sapphire.storage.Coincidence.columns" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.storage.TimeDelta">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.storage.</span></span><span class="sig-name descname"><span class="pre">TimeDelta</span></span><a class="headerlink" href="#sapphire.storage.TimeDelta" title="Link to this definition">¶</a></dt>
+<dd><p>Store time differences</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.TimeDelta.columns">
+<span class="sig-name descname"><span class="pre">columns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'delta':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=3),</span> <span class="pre">'ext_timestamp':</span> <span class="pre">UInt64Col(shape=(),</span> <span class="pre">dflt=np.uint64(0),</span> <span class="pre">pos=0),</span> <span class="pre">'nanoseconds':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=2),</span> <span class="pre">'timestamp':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=1)}</span></em><a class="headerlink" href="#sapphire.storage.TimeDelta.columns" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.storage.ReconstructedCoincidence">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.storage.</span></span><span class="sig-name descname"><span class="pre">ReconstructedCoincidence</span></span><a class="headerlink" href="#sapphire.storage.ReconstructedCoincidence" title="Link to this definition">¶</a></dt>
+<dd><p>Store information about reconstructed coincidences</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.ReconstructedCoincidence.columns">
+<span class="sig-name descname"><span class="pre">columns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'azimuth':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=7),</span> <span class="pre">'energy':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=9),</span> <span class="pre">'error_azimuth':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=13),</span> <span class="pre">'error_energy':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=15),</span> <span class="pre">'error_size':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=14),</span> <span class="pre">'error_x':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=10),</span> <span class="pre">'error_y':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=11),</span> <span class="pre">'error_zenith':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=12),</span> <span class="pre">'ext_timestamp':</span> <span class="pre">UInt64Col(shape=(),</span> <span class="pre">dflt=np.uint64(0),</span> <span class="pre">pos=2),</span> <span class="pre">'id':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=1),</span> <span class="pre">'min_n':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=3),</span> <span class="pre">'reference_azimuth':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=19),</span> <span class="pre">'reference_energy':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=21),</span> <span class="pre">'reference_size':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=20),</span> <span class="pre">'reference_x':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=16),</span> <span class="pre">'reference_y':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=17),</span> <span class="pre">'reference_zenith':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=18),</span> <span class="pre">'size':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=8),</span> <span class="pre">'x':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=4),</span> <span class="pre">'y':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=5),</span> <span class="pre">'zenith':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=6)}</span></em><a class="headerlink" href="#sapphire.storage.ReconstructedCoincidence.columns" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.storage.ReconstructedEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.storage.</span></span><span class="sig-name descname"><span class="pre">ReconstructedEvent</span></span><a class="headerlink" href="#sapphire.storage.ReconstructedEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Store information about reconstructed events</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.ReconstructedEvent.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#sapphire.storage.ReconstructedEvent.id" title="Link to this definition">¶</a></dt>
+<dd><p>Index referring to the id of the event that was reconstructed.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">d1,d2,d3,d4</span></span></dt>
+<dd><p>Booleans indicating which detectors participated in the
+reconstruction.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.ReconstructedEvent.columns">
+<span class="sig-name descname"><span class="pre">columns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'azimuth':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=7),</span> <span class="pre">'d1':</span> <span class="pre">BoolCol(shape=(),</span> <span class="pre">dflt=np.False_,</span> <span class="pre">pos=22),</span> <span class="pre">'d2':</span> <span class="pre">BoolCol(shape=(),</span> <span class="pre">dflt=np.False_,</span> <span class="pre">pos=23),</span> <span class="pre">'d3':</span> <span class="pre">BoolCol(shape=(),</span> <span class="pre">dflt=np.False_,</span> <span class="pre">pos=24),</span> <span class="pre">'d4':</span> <span class="pre">BoolCol(shape=(),</span> <span class="pre">dflt=np.False_,</span> <span class="pre">pos=25),</span> <span class="pre">'energy':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=9),</span> <span class="pre">'error_azimuth':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=13),</span> <span class="pre">'error_energy':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=15),</span> <span class="pre">'error_size':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=14),</span> <span class="pre">'error_x':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=10),</span> <span class="pre">'error_y':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=11),</span> <span class="pre">'error_zenith':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=12),</span> <span class="pre">'ext_timestamp':</span> <span class="pre">UInt64Col(shape=(),</span> <span class="pre">dflt=np.uint64(0),</span> <span class="pre">pos=2),</span> <span class="pre">'id':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=1),</span> <span class="pre">'min_n':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=3),</span> <span class="pre">'reference_azimuth':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=19),</span> <span class="pre">'reference_energy':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=21),</span> <span class="pre">'reference_size':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=20),</span> <span class="pre">'reference_x':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=16),</span> <span class="pre">'reference_y':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=17),</span> <span class="pre">'reference_zenith':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=18),</span> <span class="pre">'size':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=8),</span> <span class="pre">'x':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=4),</span> <span class="pre">'y':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=5),</span> <span class="pre">'zenith':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=6)}</span></em><a class="headerlink" href="#sapphire.storage.ReconstructedEvent.columns" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.storage.KascadeEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.storage.</span></span><span class="sig-name descname"><span class="pre">KascadeEvent</span></span><a class="headerlink" href="#sapphire.storage.KascadeEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Store events from KASCADE</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.KascadeEvent.columns">
+<span class="sig-name descname"><span class="pre">columns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Num_e':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=9),</span> <span class="pre">'Num_mu':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=10),</span> <span class="pre">'P200':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=13),</span> <span class="pre">'T200':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=14),</span> <span class="pre">'azimuth':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=8),</span> <span class="pre">'core_pos':</span> <span class="pre">Float64Col(shape=(np.int64(2),),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=6),</span> <span class="pre">'dens_e':</span> <span class="pre">Float64Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=11),</span> <span class="pre">'dens_mu':</span> <span class="pre">Float64Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=12),</span> <span class="pre">'energy':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=5),</span> <span class="pre">'event_id':</span> <span class="pre">Int64Col(shape=(),</span> <span class="pre">dflt=np.int64(0),</span> <span class="pre">pos=1),</span> <span class="pre">'ext_timestamp':</span> <span class="pre">UInt64Col(shape=(),</span> <span class="pre">dflt=np.uint64(0),</span> <span class="pre">pos=4),</span> <span class="pre">'nanoseconds':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=3),</span> <span class="pre">'run_id':</span> <span class="pre">Int32Col(shape=(),</span> <span class="pre">dflt=np.int32(0),</span> <span class="pre">pos=0),</span> <span class="pre">'timestamp':</span> <span class="pre">Time32Col(shape=(),</span> <span class="pre">dflt=np.int32(0),</span> <span class="pre">pos=2),</span> <span class="pre">'zenith':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=7)}</span></em><a class="headerlink" href="#sapphire.storage.KascadeEvent.columns" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.storage.ReconstructedKascadeEvent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.storage.</span></span><span class="sig-name descname"><span class="pre">ReconstructedKascadeEvent</span></span><a class="headerlink" href="#sapphire.storage.ReconstructedKascadeEvent" title="Link to this definition">¶</a></dt>
+<dd><p>Store information about reconstructed events</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sapphire.storage.ReconstructedKascadeEvent.columns">
+<span class="sig-name descname"><span class="pre">columns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'alpha':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'id':</span> <span class="pre">UInt32Col(shape=(),</span> <span class="pre">dflt=np.uint32(0),</span> <span class="pre">pos=None),</span> <span class="pre">'k_Num_e':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'k_Num_mu':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'k_P200':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'k_T200':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'k_core_pos':</span> <span class="pre">Float64Col(shape=(np.int64(2),),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'k_dens_e':</span> <span class="pre">Float64Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'k_dens_mu':</span> <span class="pre">Float64Col(shape=(np.int64(4),),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'k_energy':</span> <span class="pre">Float64Col(shape=(),</span> <span class="pre">dflt=np.float64(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'min_n134':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'n1':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'n2':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'n3':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'n4':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'phi':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'r':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'reconstructed_phi':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'reconstructed_theta':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'reference_phi':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'reference_theta':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'station_id':</span> <span class="pre">UInt8Col(shape=(),</span> <span class="pre">dflt=np.uint8(0),</span> <span class="pre">pos=None),</span> <span class="pre">'t1':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'t2':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'t3':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None),</span> <span class="pre">'t4':</span> <span class="pre">Float32Col(shape=(),</span> <span class="pre">dflt=np.float32(0.0),</span> <span class="pre">pos=None)}</span></em><a class="headerlink" href="#sapphire.storage.ReconstructedKascadeEvent.columns" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Low-level storage constructs</a><ul>
+<li><a class="reference internal" href="#sapphire.storage.EventObservables"><code class="docutils literal notranslate"><span class="pre">EventObservables</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.storage.EventObservables.id"><code class="docutils literal notranslate"><span class="pre">EventObservables.id</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.EventObservables.station_id"><code class="docutils literal notranslate"><span class="pre">EventObservables.station_id</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.EventObservables.alpha"><code class="docutils literal notranslate"><span class="pre">EventObservables.alpha</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.EventObservables.N"><code class="docutils literal notranslate"><span class="pre">EventObservables.N</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.EventObservables.columns"><code class="docutils literal notranslate"><span class="pre">EventObservables.columns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence"><code class="docutils literal notranslate"><span class="pre">Coincidence</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.id"><code class="docutils literal notranslate"><span class="pre">Coincidence.id</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.N"><code class="docutils literal notranslate"><span class="pre">Coincidence.N</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.x"><code class="docutils literal notranslate"><span class="pre">Coincidence.x</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.y"><code class="docutils literal notranslate"><span class="pre">Coincidence.y</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.zenith"><code class="docutils literal notranslate"><span class="pre">Coincidence.zenith</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.azimuth"><code class="docutils literal notranslate"><span class="pre">Coincidence.azimuth</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.size"><code class="docutils literal notranslate"><span class="pre">Coincidence.size</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.energy"><code class="docutils literal notranslate"><span class="pre">Coincidence.energy</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.Coincidence.columns"><code class="docutils literal notranslate"><span class="pre">Coincidence.columns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.storage.TimeDelta"><code class="docutils literal notranslate"><span class="pre">TimeDelta</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.storage.TimeDelta.columns"><code class="docutils literal notranslate"><span class="pre">TimeDelta.columns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.storage.ReconstructedCoincidence"><code class="docutils literal notranslate"><span class="pre">ReconstructedCoincidence</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.storage.ReconstructedCoincidence.columns"><code class="docutils literal notranslate"><span class="pre">ReconstructedCoincidence.columns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.storage.ReconstructedEvent"><code class="docutils literal notranslate"><span class="pre">ReconstructedEvent</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.storage.ReconstructedEvent.id"><code class="docutils literal notranslate"><span class="pre">ReconstructedEvent.id</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.storage.ReconstructedEvent.columns"><code class="docutils literal notranslate"><span class="pre">ReconstructedEvent.columns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.storage.KascadeEvent"><code class="docutils literal notranslate"><span class="pre">KascadeEvent</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.storage.KascadeEvent.columns"><code class="docutils literal notranslate"><span class="pre">KascadeEvent.columns</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.storage.ReconstructedKascadeEvent"><code class="docutils literal notranslate"><span class="pre">ReconstructedKascadeEvent</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.storage.ReconstructedKascadeEvent.columns"><code class="docutils literal notranslate"><span class="pre">ReconstructedKascadeEvent.columns</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="simulations/gammas.html"
+                          title="previous chapter">Simulation of detector response due to gammas</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="tests.html"
+                          title="next chapter">Test installation</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tests.html" title="Test installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="simulations/gammas.html" title="Simulation of detector response due to gammas"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Low-level storage constructs</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

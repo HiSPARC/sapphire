@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Transformations between Celestial coordinate systems &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Time conversion functions" href="clock.html" />
+    <link rel="prev" title="Conversion between different bases" href="base.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clock.html" title="Time conversion functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="base.html" title="Conversion between different bases"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" accesskey="U">Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Transformations between Celestial coordinate systems</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.transformations.celestial">
+<span id="transformations-between-celestial-coordinate-systems"></span><h1>Transformations between Celestial coordinate systems<a class="headerlink" href="#module-sapphire.transformations.celestial" title="Link to this heading">¶</a></h1>
+<p>Perform various Celestial coordinate transformations</p>
+<p>This module performs transformations between different
+Celestial coordinate systems.</p>
+<p>Legacy transformations (all those not marked astropy):
+Formulae from: Duffett-Smith1990
+‘Astronomy with your personal computer’
+ISBN 0-521-38995-X</p>
+<p>New transformations have been added with _astropy added to function name
+They are very exact, in the order of arcsec.
+Ethan van Woerkom is the author of the new transformations; contact him
+for further information.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.zenithazimuth_to_equatorial">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">zenithazimuth_to_equatorial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zenith</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.zenithazimuth_to_equatorial" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Zenith Azimuth to Equatorial coordinates (J2000.0)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong><strong>,</strong><strong>longitude</strong> – Position of the observer on Earth in degrees.
+North and east positive.</p></li>
+<li><p><strong>timestamp</strong> – GPS timestamp of the observation in seconds.</p></li>
+<li><p><strong>zenith</strong> – zenith is the angle relative to the Zenith in radians.</p></li>
+<li><p><strong>azimuth</strong> – azimuth angle of the observation in radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Right ascension (ra) and Declination (dec) in radians.</p>
+</dd>
+</dl>
+<p>From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.zenithazimuth_to_horizontal">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">zenithazimuth_to_horizontal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zenith</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.zenithazimuth_to_horizontal" title="Link to this definition">¶</a></dt>
+<dd><p>Convert from Zenith Azimuth to Horizontal coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zenith</strong> – Zenith in radians</p></li>
+<li><p><strong>azimuth</strong> – Azimuth in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return altitude, alt_azimuth<span class="colon">:</span></dt>
+<dd class="field-even"><p>Alt, Az in radians</p>
+</dd>
+</dl>
+<p>Zenith Azimuth is the coordinate system used by HiSPARC. Zenith is
+the angle between the zenith and the direction. Azimuth is the angle
+in the horizontal plane, from East to North (ENWS).</p>
+<p>Horizontal is the coordinate system as described in
+Duffett-Smith1990 p38. Altitude is the angle above the horizon and
+Azimuth the angle in the horizontal plane, from North to East (NESW).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.horizontal_to_zenithazimuth">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">horizontal_to_zenithazimuth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">altitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alt_azimuth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.horizontal_to_zenithazimuth" title="Link to this definition">¶</a></dt>
+<dd><p>Inverse of zenithazimuth_to_horizontal is the same transformation</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.horizontal_to_equatorial">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">horizontal_to_equatorial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">altitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alt_azimuth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.horizontal_to_equatorial" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Horizontal to Equatorial coordinates (J2000.0)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong> – Position of the observer on Earth in degrees.
+North positive.</p></li>
+<li><p><strong>lst</strong> – Local Siderial Time observer at the time of observation
+in decimal hours.</p></li>
+<li><p><strong>altitude</strong> – altitude is the angle above the horizon in radians.</p></li>
+<li><p><strong>alt_azimuth</strong> – Azimuth angle in horizontal plane in radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Right ascension (ra) and Declination (dec) in radians.</p>
+</dd>
+</dl>
+<p>Warning: Inexact transformation; astropy functions preferred.</p>
+<p>From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.horizontal_to_hadec">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">horizontal_to_hadec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">altitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alt_azimuth</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.horizontal_to_hadec" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Horizontal to Hour Angle and Declination</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong> – Position of the observer on Earth in degrees.
+North positive.</p></li>
+<li><p><strong>altitude</strong> – altitude is the angle above the horizon in radians.</p></li>
+<li><p><strong>alt_azimuth</strong> – Azimuth angle in horizontal plane in radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Hour angle (ha) and Declination (dec) in radians.</p>
+</dd>
+</dl>
+<p>Warning: Inexact transformation; astropy functions preferred.</p>
+<p>From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.ha_to_ra">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">ha_to_ra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lst</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.ha_to_ra" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Hour angle to right ascension</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ha</strong> – Hour angle in radians.</p></li>
+<li><p><strong>lst</strong> – Local Siderial Time observer at the time of observation
+in decimal hours.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Right ascension (ra) in radians.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.equatorial_to_zenithazimuth">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">equatorial_to_zenithazimuth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_ascension</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">declination</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.equatorial_to_zenithazimuth" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Equatorial (J2000.0) to Zenith Azimuth coordinates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong><strong>,</strong><strong>longitude</strong> – Position of the observer on Earth in degrees.
+North and east positive.</p></li>
+<li><p><strong>timestamp</strong> – GPS timestamp of the observation in seconds.</p></li>
+<li><p><strong>right_ascension</strong> – right_ascension of the observation in radians.</p></li>
+<li><p><strong>declination</strong> – declination of the observation in radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>zenith and azimuth in radians.</p>
+</dd>
+</dl>
+<p>This function was renamed from equatorial_to_horizontal to
+equatorial_to_zenithazimuth in order to make it operate as the name does.</p>
+<p>From Duffett-Smith1990, 1500 EQHOR and 1600 HRANG</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.zenithazimuth_to_equatorial_astropy">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">zenithazimuth_to_equatorial_astropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utc_timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zenaz_coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.zenithazimuth_to_equatorial_astropy" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Converts iterables of tuples of zenithazimuth</dt><dd><p>to equatorial coordinates</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong> – Latitude in decimal degrees</p></li>
+<li><p><strong>longitude</strong> – Longitude in decimal degrees</p></li>
+<li><p><strong>utc_timestamp</strong> – Unix UTC timestamp integer</p></li>
+<li><p><strong>zenaz_coordinates</strong> – np.array of tuples (zen, az) in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array of tuples (ra, dec) in radians</p>
+</dd>
+</dl>
+<p>For increased speed using array input is recommended.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.equatorial_to_zenithazimuth_astropy">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">equatorial_to_zenithazimuth_astropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utc_timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equatorial_coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.equatorial_to_zenithazimuth_astropy" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Converts iterables of tuples of equatorial</dt><dd><p>to zenithazimuth coordinates</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong> – Latitude in decimal degrees</p></li>
+<li><p><strong>longitude</strong> – Longitude in decimal degrees</p></li>
+<li><p><strong>utc_timestamp</strong> – Unix UTC timestamp integer</p></li>
+<li><p><strong>equatorial_coordinates</strong> – np.array of tuples (ra, dec) in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array of tuples (zen, az) in radians</p>
+</dd>
+</dl>
+<p>For increased speed using array input is recommended.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.equatorial_to_horizontal_astropy">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">equatorial_to_horizontal_astropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utc_timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equatorial_coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.equatorial_to_horizontal_astropy" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Converts iterables of tuples of equatorial coordinates</dt><dd><p>to horizontal coordinates</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong> – Latitude in decimal degrees</p></li>
+<li><p><strong>longitude</strong> – Longitude in decimal degrees</p></li>
+<li><p><strong>utc_timestamp</strong> – Unix UTC timestamp integer</p></li>
+<li><p><strong>equatorial_coordinates</strong> – np.array of tuples (ra, dec) in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array of tuples (az, alt) in radians</p>
+</dd>
+</dl>
+<p>For increased speed using array input is recommended.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.celestial.horizontal_to_equatorial_astropy">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.celestial.</span></span><span class="sig-name descname"><span class="pre">horizontal_to_equatorial_astropy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">utc_timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizontal_coordinates</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.celestial.horizontal_to_equatorial_astropy" title="Link to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Converts iterables of tuples of</dt><dd><p>horizontal coordinates to equatorial coordinates</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latitude</strong> – Latitude in decimal degrees</p></li>
+<li><p><strong>longitude</strong> – Longitude in decimal degrees</p></li>
+<li><p><strong>utc_timestamp</strong> – Unix UTC timestamp integer</p></li>
+<li><p><strong>horizontal_coordinates</strong> – np.array of tuples (az, alt) in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array of tuples (ra, dec) in radians</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Transformations between Celestial coordinate systems</a><ul>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.zenithazimuth_to_equatorial"><code class="docutils literal notranslate"><span class="pre">zenithazimuth_to_equatorial()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.zenithazimuth_to_horizontal"><code class="docutils literal notranslate"><span class="pre">zenithazimuth_to_horizontal()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.horizontal_to_zenithazimuth"><code class="docutils literal notranslate"><span class="pre">horizontal_to_zenithazimuth()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.horizontal_to_equatorial"><code class="docutils literal notranslate"><span class="pre">horizontal_to_equatorial()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.horizontal_to_hadec"><code class="docutils literal notranslate"><span class="pre">horizontal_to_hadec()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.ha_to_ra"><code class="docutils literal notranslate"><span class="pre">ha_to_ra()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.equatorial_to_zenithazimuth"><code class="docutils literal notranslate"><span class="pre">equatorial_to_zenithazimuth()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.zenithazimuth_to_equatorial_astropy"><code class="docutils literal notranslate"><span class="pre">zenithazimuth_to_equatorial_astropy()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.equatorial_to_zenithazimuth_astropy"><code class="docutils literal notranslate"><span class="pre">equatorial_to_zenithazimuth_astropy()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.equatorial_to_horizontal_astropy"><code class="docutils literal notranslate"><span class="pre">equatorial_to_horizontal_astropy()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.celestial.horizontal_to_equatorial_astropy"><code class="docutils literal notranslate"><span class="pre">horizontal_to_equatorial_astropy()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="base.html"
+                          title="previous chapter">Conversion between different bases</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="clock.html"
+                          title="next chapter">Time conversion functions</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clock.html" title="Time conversion functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="base.html" title="Conversion between different bases"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" >Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Transformations between Celestial coordinate systems</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

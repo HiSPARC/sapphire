@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Time conversion functions &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Transformations between geographic coordinate systems" href="geographic.html" />
+    <link rel="prev" title="Transformations between Celestial coordinate systems" href="celestial.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="geographic.html" title="Transformations between geographic coordinate systems"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="celestial.html" title="Transformations between Celestial coordinate systems"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" accesskey="U">Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Time conversion functions</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.transformations.clock">
+<span id="time-conversion-functions"></span><h1>Time conversion functions<a class="headerlink" href="#module-sapphire.transformations.clock" title="Link to this heading">¶</a></h1>
+<p>Time transformations</p>
+<p>This handles all the wibbly wobbly timey wimey stuff.
+Such as easy conversions between different time systems.
+Supported systems: GPS, UTC, GMST, LST, JD and MJD.</p>
+<p>Formulae from:</p>
+<p>IETF list of leap seconds
+‘Leap seconds announced by the IERS’
+<a class="reference external" href="https://www.ietf.org/timezones/data/leap-seconds.list">https://www.ietf.org/timezones/data/leap-seconds.list</a></p>
+<p>Duffett-Smith1990
+‘Astronomy with your personal computer’
+ISBN 0-521-38995-X</p>
+<p>USNO
+‘Computing Greenwich Apparent Sidereal Time’
+<a class="reference external" href="http://aa.usno.navy.mil/faq/docs/GAST.php">http://aa.usno.navy.mil/faq/docs/GAST.php</a></p>
+<p>Adrian Price-Whelan
+apwlib.convert
+<a class="reference external" href="https://github.com/adrn/apwlib">https://github.com/adrn/apwlib</a></p>
+<dl class="py data">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.LEAP_SECONDS">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">LEAP_SECONDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(('January</span> <span class="pre">1,</span> <span class="pre">2017',</span> <span class="pre">18),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">2015',</span> <span class="pre">17),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">2012',</span> <span class="pre">16),</span> <span class="pre">('January</span> <span class="pre">1,</span> <span class="pre">2009',</span> <span class="pre">15),</span> <span class="pre">('January</span> <span class="pre">1,</span> <span class="pre">2006',</span> <span class="pre">14),</span> <span class="pre">('January</span> <span class="pre">1,</span> <span class="pre">1999',</span> <span class="pre">13),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">1997',</span> <span class="pre">12),</span> <span class="pre">('January</span> <span class="pre">1,</span> <span class="pre">1996',</span> <span class="pre">11),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">1994',</span> <span class="pre">10),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">1993',</span> <span class="pre">9),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">1992',</span> <span class="pre">8),</span> <span class="pre">('January</span> <span class="pre">1,</span> <span class="pre">1991',</span> <span class="pre">7),</span> <span class="pre">('January</span> <span class="pre">1,</span> <span class="pre">1990',</span> <span class="pre">6),</span> <span class="pre">('January</span> <span class="pre">1,</span> <span class="pre">1988',</span> <span class="pre">5),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">1985',</span> <span class="pre">4),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">1983',</span> <span class="pre">3),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">1982',</span> <span class="pre">2),</span> <span class="pre">('July</span> <span class="pre">1,</span> <span class="pre">1981',</span> <span class="pre">1))</span></em><a class="headerlink" href="#sapphire.transformations.clock.LEAP_SECONDS" title="Link to this definition">¶</a></dt>
+<dd><p>Dates of leap second introductions.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.time_to_decimal">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">time_to_decimal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.time_to_decimal" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a time or datetime object into decimal time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time</strong> – datetime.time or datetime.datetime object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>decimal number representing the input time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.decimal_to_time">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">decimal_to_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hours</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.decimal_to_time" title="Link to this definition">¶</a></dt>
+<dd><p>Converts decimal time to a time object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>hours</strong> – datetime.time or datetime.datetime object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>decimal number representing the input time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.date_to_juliandate">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">date_to_juliandate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">year</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.date_to_juliandate" title="Link to this definition">¶</a></dt>
+<dd><p>Convert year, month, and day to a Julian Date</p>
+<p>Julian Date is the number of days since noon on January 1, 4713 B.C.
+So the returned date will end in .5 because the date refers to midnight.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>year</strong> – a Gregorian year (B.C. years are negative).</p></li>
+<li><p><strong>month</strong> – a Gregorian month (1-12).</p></li>
+<li><p><strong>day</strong> – a Gregorian day (1-31).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the Julian Date for the given year, month, and day.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.datetime_to_juliandate">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">datetime_to_juliandate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.datetime_to_juliandate" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a datetime object in UTC to a Julian Date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> – datetime object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Julian Date for the given datetime object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.juliandate_to_modifiedjd">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">juliandate_to_modifiedjd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">juliandate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.juliandate_to_modifiedjd" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a Julian Date to a Modified Julian Date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>juliandate</strong> – a Julian Date.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the Modified Julian Date.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.modifiedjd_to_juliandate">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">modifiedjd_to_juliandate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modifiedjd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.modifiedjd_to_juliandate" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a Modified Julian Date to Julian Date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>modifiedjf</strong> – a Modified Julian Date.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Julian Date.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.datetime_to_modifiedjd">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">datetime_to_modifiedjd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.datetime_to_modifiedjd" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a datetime object in UTC to a Modified Julian Date</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> – datetime object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the Modified Julian Date.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.juliandate_to_gmst">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">juliandate_to_gmst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">juliandate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.juliandate_to_gmst" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a Julian Date to Greenwich Mean Sidereal Time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>juliandate</strong> – Julian Date.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>decimal hours in GMST.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.utc_to_gmst">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">utc_to_gmst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.utc_to_gmst" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a datetime object in UTC time to Greenwich Mean Sidereal Time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> – datetime object in UTC time.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>decimal hours in GMST.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.gmst_to_utc">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">gmst_to_utc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.gmst_to_utc" title="Link to this definition">¶</a></dt>
+<dd><p>Convert datetime object in Greenwich Mean Sidereal Time to UTC</p>
+<p>Note: this requires a datetime object, not just the decimal hours.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> – datetime object in GMST time.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>datetime object in UTC.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.juliandate_to_utc">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">juliandate_to_utc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">juliandate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.juliandate_to_utc" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Julian Date to datetime object in UTC</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>juliandate</strong> – a Julian Date.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>datetime object in UTC time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.modifiedjd_to_utc">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">modifiedjd_to_utc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">modifiedjd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.modifiedjd_to_utc" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a Modified Julian Date to datetime object in UTC</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>juliandate</strong> – a Modified Julian Date.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>datetime object in UTC time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.gmst_to_lst">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">gmst_to_lst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hours</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.gmst_to_lst" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Greenwich Mean Sidereal Time to Local Sidereal Time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hours</strong> – decimal hours in GMST.</p></li>
+<li><p><strong>longitude</strong> – location in degrees, east positive.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>decimal hours in LST.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.lst_to_gmst">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">lst_to_gmst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hours</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.lst_to_gmst" title="Link to this definition">¶</a></dt>
+<dd><p>Convert Local Sidereal Time to Greenwich Mean Sidereal Time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>hours</strong> – decimal hours in LST.</p></li>
+<li><p><strong>longitude</strong> – location in degrees, east positive.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>decimal hours in GMST.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.utc_to_lst">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">utc_to_lst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.utc_to_lst" title="Link to this definition">¶</a></dt>
+<dd><p>Convert UTC to Local Sidereal Time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dt</strong> – datetime object in UTC.</p></li>
+<li><p><strong>longitude</strong> – location in degrees, east positive.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>decimal hours in LST.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.gps_to_utc">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">gps_to_utc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.gps_to_utc" title="Link to this definition">¶</a></dt>
+<dd><p>Convert GPS time to UTC</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – GPS timestamp in seconds.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>UTC timestamp in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.utc_to_gps">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">utc_to_gps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.utc_to_gps" title="Link to this definition">¶</a></dt>
+<dd><p>Convert UTC to GPS time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – UTC timestamp in seconds.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>GPS timestamp in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.utc_from_string">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">utc_from_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.utc_from_string" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a date string to UTC</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>date</strong> – date string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>UTC timestamp in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.gps_from_string">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">gps_from_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.gps_from_string" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a date string to GPS time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>date</strong> – date string.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>GPS timestamp in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.gps_to_lst">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">gps_to_lst</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">longitude</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.gps_to_lst" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a GPS timestamp to lst</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timestamp</strong> – GPS timestamp in seconds.</p></li>
+<li><p><strong>longitude</strong> – location in degrees, east positive.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>decimal hours in LST.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.gps_to_datetime">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">gps_to_datetime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.gps_to_datetime" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a GPS timestamp to datetime object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – GPS timestamp in seconds.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>datetime object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.datetime_to_gps">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">datetime_to_gps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.datetime_to_gps" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a GPS datetime object to a timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt</strong> – GPS datetime object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>GPS timestamp in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.transformations.clock.process_time">
+<span class="sig-prename descclassname"><span class="pre">sapphire.transformations.clock.</span></span><span class="sig-name descname"><span class="pre">process_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.transformations.clock.process_time" title="Link to this definition">¶</a></dt>
+<dd><p>Convert timestamp or datetime to timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time</strong> – GPS datetime object or GPS timestamp.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>GPS timestamp.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Time conversion functions</a><ul>
+<li><a class="reference internal" href="#sapphire.transformations.clock.LEAP_SECONDS"><code class="docutils literal notranslate"><span class="pre">LEAP_SECONDS</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.time_to_decimal"><code class="docutils literal notranslate"><span class="pre">time_to_decimal()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.decimal_to_time"><code class="docutils literal notranslate"><span class="pre">decimal_to_time()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.date_to_juliandate"><code class="docutils literal notranslate"><span class="pre">date_to_juliandate()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.datetime_to_juliandate"><code class="docutils literal notranslate"><span class="pre">datetime_to_juliandate()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.juliandate_to_modifiedjd"><code class="docutils literal notranslate"><span class="pre">juliandate_to_modifiedjd()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.modifiedjd_to_juliandate"><code class="docutils literal notranslate"><span class="pre">modifiedjd_to_juliandate()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.datetime_to_modifiedjd"><code class="docutils literal notranslate"><span class="pre">datetime_to_modifiedjd()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.juliandate_to_gmst"><code class="docutils literal notranslate"><span class="pre">juliandate_to_gmst()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.utc_to_gmst"><code class="docutils literal notranslate"><span class="pre">utc_to_gmst()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.gmst_to_utc"><code class="docutils literal notranslate"><span class="pre">gmst_to_utc()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.juliandate_to_utc"><code class="docutils literal notranslate"><span class="pre">juliandate_to_utc()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.modifiedjd_to_utc"><code class="docutils literal notranslate"><span class="pre">modifiedjd_to_utc()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.gmst_to_lst"><code class="docutils literal notranslate"><span class="pre">gmst_to_lst()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.lst_to_gmst"><code class="docutils literal notranslate"><span class="pre">lst_to_gmst()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.utc_to_lst"><code class="docutils literal notranslate"><span class="pre">utc_to_lst()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.gps_to_utc"><code class="docutils literal notranslate"><span class="pre">gps_to_utc()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.utc_to_gps"><code class="docutils literal notranslate"><span class="pre">utc_to_gps()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.utc_from_string"><code class="docutils literal notranslate"><span class="pre">utc_from_string()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.gps_from_string"><code class="docutils literal notranslate"><span class="pre">gps_from_string()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.gps_to_lst"><code class="docutils literal notranslate"><span class="pre">gps_to_lst()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.gps_to_datetime"><code class="docutils literal notranslate"><span class="pre">gps_to_datetime()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.datetime_to_gps"><code class="docutils literal notranslate"><span class="pre">datetime_to_gps()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.transformations.clock.process_time"><code class="docutils literal notranslate"><span class="pre">process_time()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="celestial.html"
+                          title="previous chapter">Transformations between Celestial coordinate systems</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="geographic.html"
+                          title="next chapter">Transformations between geographic coordinate systems</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="geographic.html" title="Transformations between geographic coordinate systems"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="celestial.html" title="Transformations between Celestial coordinate systems"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../transformations.html" >Coordinate and time transformations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Time conversion functions</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

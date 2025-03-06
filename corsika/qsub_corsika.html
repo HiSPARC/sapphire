@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>CORSIKA on Stoomboot &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="../_static/hisparc_style.css?v=71c9f363" />
+    <script src="../_static/documentation_options.js?v=51b770b3"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="../_static/favicon.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Convert CORSIKA simulations on Stoomboot" href="qsub_store_corsika_data.html" />
+    <link rel="prev" title="CORSIKA Particles" href="particles.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="qsub_store_corsika_data.html" title="Convert CORSIKA simulations on Stoomboot"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="particles.html" title="CORSIKA Particles"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" accesskey="U">CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CORSIKA on Stoomboot</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.corsika.qsub_corsika">
+<span id="corsika-on-stoomboot"></span><h1>CORSIKA on Stoomboot<a class="headerlink" href="#module-sapphire.corsika.qsub_corsika" title="Link to this heading">¶</a></h1>
+<p>Run CORSIKA simulations on Stoomboot</p>
+<p>In order to quickly get a good sample of simulated showers we use the
+Nikhef computer cluster Stoomboot to run multiple jobs simultaneously.
+For this purpose a script has been written that will make this easy.
+The <a class="reference internal" href="#module-sapphire.corsika.qsub_corsika" title="sapphire.corsika.qsub_corsika"><code class="xref py py-mod docutils literal notranslate"><span class="pre">qsub_corsika</span></code></a> script can submit as many
+jobs as you want with the parameters that you desire. It automatically
+ensures that a unique combination of seeds for the random number
+sequences are used for each simulation.</p>
+<p>To run this file correctly do it in the correct env:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ source activate corsika
+</pre></div>
+</div>
+<p>The syntax for calling the script can be seen by calling its help:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ qsub_corsika --help
+</pre></div>
+</div>
+<p>For example, running 100 showers with proton primaries of 1e16 eV
+coming in at 22.5 degrees zenith and 90 degrees azimuth on the
+standard Stoomboot queue with the default CORSIKA configuration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ qsub_corsika 100 16 proton 22.5 -q generic -a 90
+</pre></div>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_corsika.</span></span><span class="sig-name descname"><span class="pre">CorsikaBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proton'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zenith</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">22.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">180</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'generic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corsika</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'corsika74000Linux_QGSII_gheisha'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch" title="Link to this definition">¶</a></dt>
+<dd><p>Run many simultaneous CORSIKA simulations using Stoomboot</p>
+<p>Stoomboot is the Nikhef computer cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>energy</strong> – the energy of the primary particle in log10(E[eV]),
+so an energy of 16 (10**16 eV) corresponds to 10**7 GeV,
+integer values and values ending in .5 are allowed.</p></li>
+<li><p><strong>particle</strong> – name of primary particle, e.g. proton, gamma or iron</p></li>
+<li><p><strong>zenith</strong> – zenith angle of the primary particle (in degrees),
+common choices: 0, 7.5, 15, 22.5, 30, 37.5, 45 and 52.5.</p></li>
+<li><p><strong>azimuth</strong> – azimuth angle of the primary particle (in degrees),
+common choices: 0, 45, 90, 135, 180, 225, 270 and 315.</p></li>
+<li><p><strong>queue</strong> – choose a queue to submit the job to:
+express - max 10 minutes, max 2 jobs
+short - max 4 hours, max 1000 jobs
+generic - max 24 hours, max 500 jobs
+long - max 96 hours (default 48 hours), max 500 jobs</p></li>
+<li><p><strong>corsika</strong> – name of the compiled CORSIKA executable to use:
+corsika74000Linux_EPOS_gheisha
+corsika74000Linux_QGSII_gheisha
+corsika74000Linux_QGSJET_gheisha
+corsika74000Linux_SIBYLL_gheisha</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.corsika_energy">
+<span class="sig-name descname"><span class="pre">corsika_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">energy</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.corsika_energy" title="Link to this definition">¶</a></dt>
+<dd><p>Convert energy to format for CORSIKA input</p>
+<p>Convert from log10(E/eV) to E[GeV] and split value to multiplier
+and power.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>energy</strong> – primary particle energy as log10(E/eV).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>separate multiplier and power</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.run" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.prepare_env">
+<span class="sig-name descname"><span class="pre">prepare_env</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.prepare_env" title="Link to this definition">¶</a></dt>
+<dd><p>Setup CORSIKA environment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.submit_job">
+<span class="sig-name descname"><span class="pre">submit_job</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.submit_job" title="Link to this definition">¶</a></dt>
+<dd><p>Submit job to Stoomboot</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.taken_seeds">
+<span class="sig-name descname"><span class="pre">taken_seeds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.taken_seeds" title="Link to this definition">¶</a></dt>
+<dd><p>Get list of seeds already used</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.generate_random_seeds">
+<span class="sig-name descname"><span class="pre">generate_random_seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">taken</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.generate_random_seeds" title="Link to this definition">¶</a></dt>
+<dd><p>Get unused combination of two seeds for CORSIKA</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>taken</strong> – List of seed combinations already taken
+each is formatted like this: ‘seed1_seed2’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.make_rundir">
+<span class="sig-name descname"><span class="pre">make_rundir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.make_rundir" title="Link to this definition">¶</a></dt>
+<dd><p>Make the run directory</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.goto_rundir">
+<span class="sig-name descname"><span class="pre">goto_rundir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.goto_rundir" title="Link to this definition">¶</a></dt>
+<dd><p>Move into the run directory</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.get_rundir">
+<span class="sig-name descname"><span class="pre">get_rundir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.get_rundir" title="Link to this definition">¶</a></dt>
+<dd><p>Get run directory path</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.create_input">
+<span class="sig-name descname"><span class="pre">create_input</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.create_input" title="Link to this definition">¶</a></dt>
+<dd><p>Make CORSIKA steering file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.create_script">
+<span class="sig-name descname"><span class="pre">create_script</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.create_script" title="Link to this definition">¶</a></dt>
+<dd><p>Make Stoomboot script file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.CorsikaBatch.copy_config">
+<span class="sig-name descname"><span class="pre">copy_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.copy_config" title="Link to this definition">¶</a></dt>
+<dd><p>Copy the CORSIKA config file to the output directory</p>
+<p>This way we can always check how CORSIKA was configured for each
+run.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.multiple_jobs">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_corsika.</span></span><span class="sig-name descname"><span class="pre">multiple_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">particle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zenith</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">corsika</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.multiple_jobs" title="Link to this definition">¶</a></dt>
+<dd><p>Use this to submit multiple jobs to Stoomboot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> – Number of jobs to submit</p></li>
+<li><p><strong>energy</strong> – log10(E[eV]) energy of primary particle</p></li>
+<li><p><strong>particle</strong> – Particle kind (as string, see
+<a class="reference internal" href="particles.html#module-sapphire.corsika.particles" title="sapphire.corsika.particles"><code class="xref py py-mod docutils literal notranslate"><span class="pre">particles</span></code></a> for possibilities)</p></li>
+<li><p><strong>zenith</strong> – Zenith angle in degrees of the primary particle</p></li>
+<li><p><strong>azimuth</strong> – Azimuth angle in degrees of the primary particle</p></li>
+<li><p><strong>queue</strong> – Stoomboot queue to submit to</p></li>
+<li><p><strong>corsika</strong> – Name of the CORSIKA executable to use</p></li>
+<li><p><strong>progress</strong> – if True print an overview of the chosen parameters and
+show a progressbar of the job submission progress.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.corsika.qsub_corsika.main">
+<span class="sig-prename descclassname"><span class="pre">sapphire.corsika.qsub_corsika.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.corsika.qsub_corsika.main" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">CORSIKA on Stoomboot</a><ul>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.corsika_energy"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.corsika_energy()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.run"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.run()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.prepare_env"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.prepare_env()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.submit_job"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.submit_job()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.taken_seeds"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.taken_seeds()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.generate_random_seeds"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.generate_random_seeds()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.make_rundir"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.make_rundir()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.goto_rundir"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.goto_rundir()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.get_rundir"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.get_rundir()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.create_input"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.create_input()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.create_script"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.create_script()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.CorsikaBatch.copy_config"><code class="docutils literal notranslate"><span class="pre">CorsikaBatch.copy_config()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.multiple_jobs"><code class="docutils literal notranslate"><span class="pre">multiple_jobs()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.corsika.qsub_corsika.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="particles.html"
+                          title="previous chapter">CORSIKA Particles</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="qsub_store_corsika_data.html"
+                          title="next chapter">Convert CORSIKA simulations on Stoomboot</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="qsub_store_corsika_data.html" title="Convert CORSIKA simulations on Stoomboot"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="particles.html" title="CORSIKA Particles"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../corsika.html" >CORSIKA simulations</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">CORSIKA on Stoomboot</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>

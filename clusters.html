@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>HiSPARC clusters &#8212; SAPPHiRE 2.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/nature.css?v=279e0f84" />
+    <link rel="stylesheet" type="text/css" href="_static/hisparc_style.css?v=71c9f363" />
+    <script src="_static/documentation_options.js?v=51b770b3"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CORSIKA simulations" href="corsika.html" />
+    <link rel="prev" title="HiSPARC API" href="api.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="corsika.html" title="CORSIKA simulations"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="HiSPARC API"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" accesskey="U">SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">HiSPARC clusters</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="module-sapphire.clusters">
+<span id="hisparc-clusters"></span><h1>HiSPARC clusters<a class="headerlink" href="#module-sapphire.clusters" title="Link to this heading">¶</a></h1>
+<p>Define HiSPARC detectors, stations and clusters.</p>
+<p>The <a class="reference internal" href="#sapphire.clusters.BaseCluster" title="sapphire.clusters.BaseCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCluster</span></code></a> defines a HiSPARC cluster consisting of one or
+more stations.  The <a class="reference internal" href="#sapphire.clusters.Station" title="sapphire.clusters.Station"><code class="xref py py-class docutils literal notranslate"><span class="pre">Station</span></code></a> defines a HiSPARC station,
+consisting of one or more <a class="reference internal" href="#sapphire.clusters.Detector" title="sapphire.clusters.Detector"><code class="xref py py-class docutils literal notranslate"><span class="pre">Detector</span></code></a> objects.</p>
+<p>To easily create a cluster object for a specific set of real HiSPARC
+stations the <a class="reference internal" href="#sapphire.clusters.HiSPARCStations" title="sapphire.clusters.HiSPARCStations"><code class="xref py py-class docutils literal notranslate"><span class="pre">HiSPARCStations</span></code></a> can be used, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">sapphire</span><span class="w"> </span><span class="kn">import</span> <span class="n">HiSPARCStations</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">HiSPARCStations</span><span class="p">([</span><span class="mi">102</span><span class="p">,</span> <span class="mi">104</span><span class="p">,</span> <span class="mi">105</span><span class="p">],</span> <span class="n">force_stale</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The use of <code class="docutils literal notranslate"><span class="pre">force_stale</span></code> forces the use of local data, which
+is much faster to load than data from the server.</p>
+<p>These cluster objects are mainly used by simulations and reconstructions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">Detector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">station</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'UD'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_timestamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Detector" title="Link to this definition">¶</a></dt>
+<dd><p>A HiSPARC detector</p>
+<p>Initialize detector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>station</strong> – station instance this detector is part of.</p></li>
+<li><p><strong>position</strong> – x,y,z position of the center of the detectors
+relative to the station center. z is optional. Multiple positions
+can be provided by giving lists for each axis.</p></li>
+<li><p><strong>orientation</strong> – orientation of the long side of the detector.
+Either the angle in radians, or ‘UD’ or ‘LR’ meaning an
+up-down or left-right orientation of the long side of the
+detector respectively.</p></li>
+<li><p><strong>detector_timestamps</strong> – list of timestamps, the timestamp at
+which each of the layouts became active.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector.detector_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">detector_size</span></span><a class="headerlink" href="#sapphire.clusters.Detector.detector_size" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector.get_area">
+<span class="sig-name descname"><span class="pre">get_area</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Detector.get_area" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector.get_xy_coordinates">
+<span class="sig-name descname"><span class="pre">get_xy_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Detector.get_xy_coordinates" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector.get_coordinates">
+<span class="sig-name descname"><span class="pre">get_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Detector.get_coordinates" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector.get_polar_coordinates">
+<span class="sig-name descname"><span class="pre">get_polar_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Detector.get_polar_coordinates" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector.get_cylindrical_coordinates">
+<span class="sig-name descname"><span class="pre">get_cylindrical_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Detector.get_cylindrical_coordinates" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector.get_lla_coordinates">
+<span class="sig-name descname"><span class="pre">get_lla_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Detector.get_lla_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Get detector LLA coordinates (latitude, longitude, altitude)</p>
+<p>get detector WGS84 coordinates
+LLA: Latitude, Longitude, Altitude</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple (latitude, longitude, altitude).
+Latitude, longitude in degrees. Altitude in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Detector.get_corners">
+<span class="sig-name descname"><span class="pre">get_corners</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Detector.get_corners" title="Link to this definition">¶</a></dt>
+<dd><p>Get the x, y coordinates of the detector corners</p>
+<p>The z-coordinate is not returned because all detectors are
+assumed to be laying flat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>coordinates of detector corners, list of (x, y) tuples.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.Station">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">Station</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detectors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">station_timestamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detector_timestamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station" title="Link to this definition">¶</a></dt>
+<dd><p>A HiSPARC station</p>
+<p>Initialize station</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cluster</strong> – cluster this station is a part of</p></li>
+<li><p><strong>station_id</strong> – int (unique identifier)</p></li>
+<li><p><strong>position</strong> – x,y,z position of the station center relative
+to the cluster center, z is optional.</p></li>
+<li><p><strong>angle</strong> – angle of rotation of the station in radians</p></li>
+<li><p><strong>detectors</strong> – list of tuples.  Each tuple consists of (dx, dy,
+orientation) where dx and dy are x and y positions of the
+center of the detectors relative to the station center.
+Orientation is either ‘UD’ or ‘LR’ meaning an up-down or
+left-right orientation of the long side of the detector
+respectively.</p></li>
+<li><p><strong>station_timestamps</strong> – list of timestamps, the timestamp at
+which each of the positions became active.</p></li>
+<li><p><strong>detector_timestamps</strong> – list of timestamps, the timestamp at
+which each of the layouts became active.</p></li>
+<li><p><strong>number</strong> – optional unique identifier for a station this can
+be used by the cluster to find a specific station and makes
+it easier to link to a real station. If not given it will be
+equal to the station_id.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.detectors">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">detectors</span></span><a class="headerlink" href="#sapphire.clusters.Station.detectors" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.get_area">
+<span class="sig-name descname"><span class="pre">get_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">detector_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.get_area" title="Link to this definition">¶</a></dt>
+<dd><p>Get the total area covered by the detectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>detector_ids</strong> – list of detectors for which to get the total area.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>total area of the detectors in m^2.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.get_xy_coordinates">
+<span class="sig-name descname"><span class="pre">get_xy_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.get_xy_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Same as get_coordinates but without the z and alpha</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.get_xyalpha_coordinates">
+<span class="sig-name descname"><span class="pre">get_xyalpha_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.get_xyalpha_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Same as get_coordinates but without the z</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.get_coordinates">
+<span class="sig-name descname"><span class="pre">get_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.get_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate coordinates of a station</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x, y, z, alpha; coordinates and rotation of station
+relative to absolute coordinate system</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.get_polar_alpha_coordinates">
+<span class="sig-name descname"><span class="pre">get_polar_alpha_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.get_polar_alpha_coordinates" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.get_cylindrical_alpha_coordinates">
+<span class="sig-name descname"><span class="pre">get_cylindrical_alpha_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.get_cylindrical_alpha_coordinates" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.get_lla_coordinates">
+<span class="sig-name descname"><span class="pre">get_lla_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.get_lla_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Get station LLA coordinates (latitude, longitude, altitude)</p>
+<p>LLA: Latitude, Longitude, Altitude</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple (latitude, longitude, altitude).
+Latitude, longitude in degrees. Altitude in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.calc_r_and_phi_for_detectors">
+<span class="sig-name descname"><span class="pre">calc_r_and_phi_for_detectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.calc_r_and_phi_for_detectors" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.calc_rphiz_for_detectors">
+<span class="sig-name descname"><span class="pre">calc_rphiz_for_detectors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.calc_rphiz_for_detectors" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate angle and distance between detectors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>d0</strong><strong>,</strong><strong>d1</strong> – detector ids to find the vector between.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>r,phi,z pointing from d0 to d1.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.calc_xy_center_of_mass_coordinates">
+<span class="sig-name descname"><span class="pre">calc_xy_center_of_mass_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.calc_xy_center_of_mass_coordinates" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.Station.calc_center_of_mass_coordinates">
+<span class="sig-name descname"><span class="pre">calc_center_of_mass_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.Station.calc_center_of_mass_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate center of mass coordinates of detectors in station</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x, y, z; coordinates of station center relative to
+absolute coordinate system</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">BaseCluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lla</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(52.35592417,</span> <span class="pre">4.95114402,</span> <span class="pre">56.10234594)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for HiSPARC clusters</p>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.set_timestamp">
+<span class="sig-name descname"><span class="pre">set_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.set_timestamp" title="Link to this definition">¶</a></dt>
+<dd><p>Set the timestamp to set the active station and detector locations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp</strong> – timestamp in seconds.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.set_center_off_mass_at_origin">
+<span class="sig-name descname"><span class="pre">set_center_off_mass_at_origin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.set_center_off_mass_at_origin" title="Link to this definition">¶</a></dt>
+<dd><p>Set the cluster center of mass to (0, 0, 0)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.stations">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stations</span></span><a class="headerlink" href="#sapphire.clusters.BaseCluster.stations" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.get_station">
+<span class="sig-name descname"><span class="pre">get_station</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.get_station" title="Link to this definition">¶</a></dt>
+<dd><p>Get a station by its number</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.get_xy_coordinates">
+<span class="sig-name descname"><span class="pre">get_xy_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.get_xy_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Same as get_coordinates but without the z and alpha</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.get_xyalpha_coordinates">
+<span class="sig-name descname"><span class="pre">get_xyalpha_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.get_xyalpha_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Like get_coordinates, but without z</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.get_coordinates">
+<span class="sig-name descname"><span class="pre">get_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.get_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Get cluster coordinates (x, y, z, alpha).</p>
+<p>The coordinates should be interpreted as follows: first, the
+cluster is rotated over angle alpha, around its original center.
+Then, the cluster is translated to (x, y, z).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.get_polar_alpha_coordinates">
+<span class="sig-name descname"><span class="pre">get_polar_alpha_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.get_polar_alpha_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Like get_cylindrical_coordinates but without z.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.get_cylindrical_alpha_coordinates">
+<span class="sig-name descname"><span class="pre">get_cylindrical_alpha_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.get_cylindrical_alpha_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Get cluster coordinates (r, phi, z, alpha).</p>
+<p>The coordinates should be interpreted as follows: first, the
+cluster is rotated over angle alpha, around its original center.
+Then, the cluster is translated to (r, phi, z).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.get_lla_coordinates">
+<span class="sig-name descname"><span class="pre">get_lla_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.get_lla_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Get cluster LLA coordinates (latitude, longitude, altitude)</p>
+<p>get cluster WGS84 coordinates
+LLA: Latitude, Longitude, Altitude</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple (latitude, longitude, altitude).
+Latitude, longitude in degrees. Altitude in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.set_coordinates">
+<span class="sig-name descname"><span class="pre">set_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.set_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Set cluster coordinates (x, y, z, alpha).</p>
+<p>The coordinates should be interpreted as follows: first, the
+cluster is rotated over angle alpha, around its original center.
+Then, the cluster is translated to (x, y, z).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.set_cylindrical_coordinates">
+<span class="sig-name descname"><span class="pre">set_cylindrical_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.set_cylindrical_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Set cluster coordinates (r, phi, z, alpha).</p>
+<p>The coordinates should be interpreted as follows: first, the
+cluster is rotated over angle alpha, around its original center.
+Than, the cluster is translated to (r, phi).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.calc_rphiz_for_stations">
+<span class="sig-name descname"><span class="pre">calc_rphiz_for_stations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.calc_rphiz_for_stations" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate distance between and direction of two stations</p>
+<p>The calculated result is between the center of mass coordinates
+of the two stations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s0</strong><strong>,</strong><strong>s1</strong> – The station ids for the two stations.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>r, phi, z; the distance between and direction of the two
+given stations.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.calc_xy_center_of_mass_coordinates">
+<span class="sig-name descname"><span class="pre">calc_xy_center_of_mass_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.calc_xy_center_of_mass_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Like calc_center_of_mass_coordinates, but without z</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.calc_center_of_mass_coordinates">
+<span class="sig-name descname"><span class="pre">calc_center_of_mass_coordinates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.calc_center_of_mass_coordinates" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate center of mass coordinates of all detectors in cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>x, y, z; coordinates of cluster center relative to
+absolute coordinate system</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.calc_distance_between_stations">
+<span class="sig-name descname"><span class="pre">calc_distance_between_stations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.calc_distance_between_stations" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate distance between two stations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s1</strong><strong>,</strong><strong>s2</strong> – station numbers.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>distance between stations.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sapphire.clusters.BaseCluster.calc_horizontal_distance_between_stations">
+<span class="sig-name descname"><span class="pre">calc_horizontal_distance_between_stations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.BaseCluster.calc_horizontal_distance_between_stations" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate 2D distance between two HiSPARC stations. Ignores altitude</p>
+<p>The 2D plane is the East-North plane defined by the ENU axes at the
+reference location for this cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>s1</strong><strong>,</strong><strong>s2</strong> – station numbers.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>distance between stations.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.CompassStations">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">CompassStations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">0,</span> <span class="pre">0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lla</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(52.35592417,</span> <span class="pre">4.95114402,</span> <span class="pre">56.10234594)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.CompassStations" title="Link to this definition">¶</a></dt>
+<dd><p>Add detectors to stations using compass coordinates</p>
+<p>Compass coordinates consist of r, alpha, z, beta. These define
+the location and orientation of detectors. For more information
+see <cite>Coordinate systems and units in HiSPARC</cite>.</p>
+<p>This is meant for data from the Publicdb Database API, which
+uses that coordinate system.</p>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.SimpleCluster">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">SimpleCluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.SimpleCluster" title="Link to this definition">¶</a></dt>
+<dd><p>Define a simple cluster containing four stations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>size</strong> – This value is the distance between the three outer stations.</p>
+</dd>
+</dl>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.SingleStation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">SingleStation</span></span><a class="headerlink" href="#sapphire.clusters.SingleStation" title="Link to this definition">¶</a></dt>
+<dd><p>Define a cluster containing a single station</p>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.SingleDetectorStation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">SingleDetectorStation</span></span><a class="headerlink" href="#sapphire.clusters.SingleDetectorStation" title="Link to this definition">¶</a></dt>
+<dd><p>Define a cluster containing a single 1-detector station</p>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.SingleTwoDetectorStation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">SingleTwoDetectorStation</span></span><a class="headerlink" href="#sapphire.clusters.SingleTwoDetectorStation" title="Link to this definition">¶</a></dt>
+<dd><p>Define a cluster containing a single 2 detector station</p>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.SingleDiamondStation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">SingleDiamondStation</span></span><a class="headerlink" href="#sapphire.clusters.SingleDiamondStation" title="Link to this definition">¶</a></dt>
+<dd><p>Define a cluster containing a single diamond shaped station</p>
+<p>Detectors 1, 3 and 4 are in the usual position for a 4 detector
+layout, detector 2 is moved out of the center and positioned to
+create a second equilateral triangle with detectors 1, 2 and 4.</p>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.HiSPARCStations">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">HiSPARCStations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_fresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_stale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.HiSPARCStations" title="Link to this definition">¶</a></dt>
+<dd><p>A cluster containing any real station from the HiSPARC network</p>
+<p>The gps position and number of detectors are taken from the API.
+The detector positions are retrieved if available, otherwise
+default values are used!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stations</strong> – A list of station numbers to include. The
+coordinates are retrieved from the Public Database API.
+The first station is placed at the origin of the cluster.</p></li>
+<li><p><strong>skip_missing</strong> – Set to True to skip stations which have missing
+location data, otherwise an exception will be raised. Stations
+with missing location data will be excluded. Does not apply
+to missing detector positions.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span> <span class="o">=</span> <span class="n">HiSPARCStations</span><span class="p">([</span><span class="mi">7001</span><span class="p">,</span> <span class="mi">7002</span><span class="p">,</span> <span class="mi">7003</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.ScienceParkCluster">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">ScienceParkCluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_fresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_stale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.ScienceParkCluster" title="Link to this definition">¶</a></dt>
+<dd><p>A cluster containing stations from the Science Park subcluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stations</strong> – A list of station numbers to include. Only stations
+from the Science Park subcluster (5xx) are supported. By default 507
+is excluded.</p>
+</dd>
+</dl>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sapphire.clusters.HiSPARCNetwork">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">HiSPARCNetwork</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force_fresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_stale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.HiSPARCNetwork" title="Link to this definition">¶</a></dt>
+<dd><p>A cluster containing all station from the HiSPARC network</p>
+<p>Override this function to build your cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>position</strong> – x,y,z position for the center of the cluster.</p></li>
+<li><p><strong>angle</strong> – rotation of the cluster in the x,y-plane.</p></li>
+<li><p><strong>lla</strong> – Reference WGS84 location of the cluster origin.
+Defaults to (old) GPS location of station 501 (Nikhef).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sapphire.clusters.flatten_cluster">
+<span class="sig-prename descclassname"><span class="pre">sapphire.clusters.</span></span><span class="sig-name descname"><span class="pre">flatten_cluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sapphire.clusters.flatten_cluster" title="Link to this definition">¶</a></dt>
+<dd><p>Set the altitudes for all detectors in a cluster object to z=0</p>
+<p>Modify the given cluster by setting the z coordinates of the stations
+and detectors to 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cluster</strong> – <a class="reference internal" href="#sapphire.clusters.BaseCluster" title="sapphire.clusters.BaseCluster"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCluster</span></code></a> object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/header.png" alt="Logo of SAPPHiRE"/>
+            </a></p>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">HiSPARC clusters</a><ul>
+<li><a class="reference internal" href="#sapphire.clusters.Detector"><code class="docutils literal notranslate"><span class="pre">Detector</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.clusters.Detector.detector_size"><code class="docutils literal notranslate"><span class="pre">Detector.detector_size</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Detector.get_area"><code class="docutils literal notranslate"><span class="pre">Detector.get_area()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Detector.get_xy_coordinates"><code class="docutils literal notranslate"><span class="pre">Detector.get_xy_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Detector.get_coordinates"><code class="docutils literal notranslate"><span class="pre">Detector.get_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Detector.get_polar_coordinates"><code class="docutils literal notranslate"><span class="pre">Detector.get_polar_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Detector.get_cylindrical_coordinates"><code class="docutils literal notranslate"><span class="pre">Detector.get_cylindrical_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Detector.get_lla_coordinates"><code class="docutils literal notranslate"><span class="pre">Detector.get_lla_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Detector.get_corners"><code class="docutils literal notranslate"><span class="pre">Detector.get_corners()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.clusters.Station"><code class="docutils literal notranslate"><span class="pre">Station</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.clusters.Station.detectors"><code class="docutils literal notranslate"><span class="pre">Station.detectors</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.get_area"><code class="docutils literal notranslate"><span class="pre">Station.get_area()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.get_xy_coordinates"><code class="docutils literal notranslate"><span class="pre">Station.get_xy_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.get_xyalpha_coordinates"><code class="docutils literal notranslate"><span class="pre">Station.get_xyalpha_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.get_coordinates"><code class="docutils literal notranslate"><span class="pre">Station.get_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.get_polar_alpha_coordinates"><code class="docutils literal notranslate"><span class="pre">Station.get_polar_alpha_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.get_cylindrical_alpha_coordinates"><code class="docutils literal notranslate"><span class="pre">Station.get_cylindrical_alpha_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.get_lla_coordinates"><code class="docutils literal notranslate"><span class="pre">Station.get_lla_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.calc_r_and_phi_for_detectors"><code class="docutils literal notranslate"><span class="pre">Station.calc_r_and_phi_for_detectors()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.calc_rphiz_for_detectors"><code class="docutils literal notranslate"><span class="pre">Station.calc_rphiz_for_detectors()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.calc_xy_center_of_mass_coordinates"><code class="docutils literal notranslate"><span class="pre">Station.calc_xy_center_of_mass_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.Station.calc_center_of_mass_coordinates"><code class="docutils literal notranslate"><span class="pre">Station.calc_center_of_mass_coordinates()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster"><code class="docutils literal notranslate"><span class="pre">BaseCluster</span></code></a><ul>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.set_timestamp"><code class="docutils literal notranslate"><span class="pre">BaseCluster.set_timestamp()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.set_center_off_mass_at_origin"><code class="docutils literal notranslate"><span class="pre">BaseCluster.set_center_off_mass_at_origin()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.stations"><code class="docutils literal notranslate"><span class="pre">BaseCluster.stations</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.get_station"><code class="docutils literal notranslate"><span class="pre">BaseCluster.get_station()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.get_xy_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.get_xy_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.get_xyalpha_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.get_xyalpha_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.get_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.get_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.get_polar_alpha_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.get_polar_alpha_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.get_cylindrical_alpha_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.get_cylindrical_alpha_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.get_lla_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.get_lla_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.set_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.set_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.set_cylindrical_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.set_cylindrical_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.calc_rphiz_for_stations"><code class="docutils literal notranslate"><span class="pre">BaseCluster.calc_rphiz_for_stations()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.calc_xy_center_of_mass_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.calc_xy_center_of_mass_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.calc_center_of_mass_coordinates"><code class="docutils literal notranslate"><span class="pre">BaseCluster.calc_center_of_mass_coordinates()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.calc_distance_between_stations"><code class="docutils literal notranslate"><span class="pre">BaseCluster.calc_distance_between_stations()</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.BaseCluster.calc_horizontal_distance_between_stations"><code class="docutils literal notranslate"><span class="pre">BaseCluster.calc_horizontal_distance_between_stations()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sapphire.clusters.CompassStations"><code class="docutils literal notranslate"><span class="pre">CompassStations</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.SimpleCluster"><code class="docutils literal notranslate"><span class="pre">SimpleCluster</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.SingleStation"><code class="docutils literal notranslate"><span class="pre">SingleStation</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.SingleDetectorStation"><code class="docutils literal notranslate"><span class="pre">SingleDetectorStation</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.SingleTwoDetectorStation"><code class="docutils literal notranslate"><span class="pre">SingleTwoDetectorStation</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.SingleDiamondStation"><code class="docutils literal notranslate"><span class="pre">SingleDiamondStation</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.HiSPARCStations"><code class="docutils literal notranslate"><span class="pre">HiSPARCStations</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.ScienceParkCluster"><code class="docutils literal notranslate"><span class="pre">ScienceParkCluster</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.HiSPARCNetwork"><code class="docutils literal notranslate"><span class="pre">HiSPARCNetwork</span></code></a></li>
+<li><a class="reference internal" href="#sapphire.clusters.flatten_cluster"><code class="docutils literal notranslate"><span class="pre">flatten_cluster()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="api.html"
+                          title="previous chapter">HiSPARC API</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="corsika.html"
+                          title="next chapter">CORSIKA simulations</a></p>
+  </div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="corsika.html" title="CORSIKA simulations"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="HiSPARC API"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SAPPHiRE 2.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="sapphire.html" >SAPPHiRE Reference</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">HiSPARC clusters</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2009-2018, David Fokkema, Arne de Laat, and Tom Kooij.
+    </div>
+  </body>
+</html>
