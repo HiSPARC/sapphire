@@ -189,4 +189,5 @@ class WhichTests(unittest.TestCase):
     def test_non_existent_program(self):
         """Check for error for non-existent program"""
 
-        self.assertRaises(Exception, utils.which, 'a_very_unlikely_program_name_to_exist_cosmic_ray')
+        with self.assertRaises(RuntimeError):
+            utils.which('a_very_unlikely_program_name_to_exist_cosmic_ray')
