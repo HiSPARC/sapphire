@@ -254,9 +254,7 @@ class CoincidenceQuery:
             return reconstruction
         else:
             raise RuntimeError(
-                'Coincidences are not (properly) reconstructed.'
-                'Perform reconstructions and reinitialize this '
-                'class.',
+                'Coincidences are not (properly) reconstructed.Perform reconstructions and reinitialize this class.',
             )
 
     def all_events(self, coincidences, n=0):
